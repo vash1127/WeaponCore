@@ -57,7 +57,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
-        internal readonly Dictionary<long, MyCockpit> ControllingPlayers = new Dictionary<long, MyCockpit>();
+        internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
 
 
         internal Session Session;

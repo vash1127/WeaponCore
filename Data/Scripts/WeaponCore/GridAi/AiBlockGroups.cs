@@ -33,6 +33,7 @@ namespace WeaponCore.Support
 
         internal void ApplySettings()
         {
+            Log.Line($"apply group");
             foreach (var comp in Comps)
             {
                 var o = comp.Set.Value.Overrides;
@@ -83,6 +84,7 @@ namespace WeaponCore.Support
 
         internal void SetValue(WeaponComponent comp, string setting, int value)
         {
+            Log.Line($"apply weapon");
             var o = comp.Set.Value.Overrides;
             switch (setting)
             {
