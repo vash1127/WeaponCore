@@ -74,7 +74,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
+            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.TerminalControlled || Target.State == Target.Targets.Acquired)
                 return;
 
             var azStep = System.AzStep;

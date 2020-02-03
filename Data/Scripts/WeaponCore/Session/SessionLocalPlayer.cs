@@ -52,6 +52,7 @@ namespace WeaponCore
                         {
                             GunnerBlackList = true;
                             GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, MyAPIGateway.Session.Player.IdentityId);
+                            comp.State.Value.PlayerIdInTerminal = MyAPIGateway.Session.Player.IdentityId;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
                             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -78,7 +79,10 @@ namespace WeaponCore
                         {
                             WeaponComponent comp;
                             if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
+                            {
                                 GridTargetingAIs[oldCube.CubeGrid].Gunners.Remove(comp);
+                                comp.State.Value.PlayerIdInTerminal = -1;
+                            }
                         }
                     }
                 }

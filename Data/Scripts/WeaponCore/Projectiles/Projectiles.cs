@@ -284,7 +284,7 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Center = p.Position;
                         p.PruneSphere.Radius = p.Info.System.CollisionSize;
                     }
-                    if (!((p.Info.System.SelfDamage || p.Gunner == WeaponComponent.Control.Direct) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
+                    if (!((p.Info.System.SelfDamage || p.TerminalControlled) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
                         if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
 

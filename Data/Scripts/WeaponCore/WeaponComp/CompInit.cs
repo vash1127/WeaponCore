@@ -34,8 +34,6 @@ namespace WeaponCore.Support
         private bool PostInit()
         {
             if (!_isServer && _clientNotReady) return false;
-            //Session.Instance.CreateLogicElements(Turret);
-            //WepUi.CreateUi(Turret);
             if (_isServer && !IsFunctional) return false;
 
             if (_mpActive && _isServer) State.NetworkUpdate();
@@ -64,7 +62,7 @@ namespace WeaponCore.Support
                     var w = Platform.Weapons[i];
                     w.Set = Set.Value.Weapons[i];
                     w.State = State.Value.Weapons[i];
-                    w.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                    w.State.ManualShoot = Weapon.TerminalActionState.ShootOn;
                 }
                 Set.Value.Overrides.ManualAim = false;
 
