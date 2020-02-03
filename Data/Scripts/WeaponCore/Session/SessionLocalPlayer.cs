@@ -20,10 +20,11 @@ namespace WeaponCore
             if (ActiveCockPit != null && GridTargetingAIs.TryGetValue(ActiveCockPit.CubeGrid, out TrackingAi))
             {
                 InGridAiCockPit = true;
+                TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveCockPit;
                 return true;
             }
             TrackingAi?.Focus.IsFocused(TrackingAi);
-
+            TrackingAi?.ControllingPlayers.Remove(MyAPIGateway.Session.Player.IdentityId);
             TrackingAi = null;
             ActiveCockPit = null;
             return false;
