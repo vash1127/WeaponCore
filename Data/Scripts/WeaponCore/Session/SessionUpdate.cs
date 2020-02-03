@@ -354,7 +354,8 @@ namespace WeaponCore
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
 
-                    if (!w.Set.Enable || !w.Comp.State.Value.Online || !w.Comp.Set.Value.Overrides.Activate || w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.TerminalControlled)
+                    var comp = w.Comp;
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.TerminalControlled)
                     {
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
@@ -370,11 +371,6 @@ namespace WeaponCore
                     if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired)
                     {
 
-                        var comp = w.Comp;
-                        var weaponEnabled = !comp.State.Value.Online || w.Set.Enable;
-
-                        if (!weaponEnabled)
-                            continue;
 
                         if (seekProjectile || comp.ManualAim || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w))
                         {
@@ -384,7 +380,7 @@ namespace WeaponCore
                                 GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                         }
 
-                        if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange || !gridAi.DbReady)
+                        if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange)
                         {
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
