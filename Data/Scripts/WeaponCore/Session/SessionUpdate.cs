@@ -170,9 +170,9 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
                                 w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange) || comp.ManualAim && !w.Target.IsFakeTarget;
-                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && w.Target.State != Targets.StillSeeking && !comp.TerminalControlled) {
-
-                                    if (!comp.ManualAim) w.Target.State = Targets.StillSeeking;
+                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && !w.AcquiringTarget && !comp.TerminalControlled)
+                                {
+                                    w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
                                 else if (w.IsTurret && !w.TrackTarget && w.Target.State != Targets.Acquired && gridAi.TargetingInfo.TargetInRange)
@@ -354,8 +354,9 @@ namespace WeaponCore
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
 
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.TerminalControlled)
+                    if (!w.Set.Enable || !w.Comp.State.Value.Online || !w.Comp.Set.Value.Overrides.Activate || w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.TerminalControlled)
                     {
+                        w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         continue;
                     }
@@ -385,7 +386,7 @@ namespace WeaponCore
 
                         if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange || !gridAi.DbReady)
                         {
-                            if (w.Target.State == Targets.StillSeeking) w.Target.State = Targets.Expired;
+                            w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
                         }
                     }
