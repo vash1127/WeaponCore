@@ -32,9 +32,7 @@ namespace WeaponCore
                 if (shipController != null)
                 {
                     if (((Sandbox.Game.Entities.IMyControllableEntity) shipController).CanSwitchAmmoMagazine())
-                    {
                         shipController.SwitchToWeapon(null);
-                    }
                 }
             }
             else

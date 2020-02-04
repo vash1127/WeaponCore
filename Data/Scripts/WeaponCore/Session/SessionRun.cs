@@ -176,7 +176,7 @@ namespace WeaponCore
             {
                 if (_lastDrawTick == Tick || _paused)return;
                 _lastDrawTick = Tick;
-                //DsUtil.Start("draw");
+                DsUtil.Start("draw");
                 if (!DedicatedServer)
                 {
                     CameraMatrix = Session.Camera.WorldMatrix;
@@ -190,7 +190,7 @@ namespace WeaponCore
 
                     Av.Run();
                 }
-                //DsUtil.Complete("draw", true);
+                DsUtil.Complete("draw", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }

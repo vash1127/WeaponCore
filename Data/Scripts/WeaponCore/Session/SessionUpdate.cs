@@ -49,24 +49,11 @@ namespace WeaponCore
                         continue;
                     }
                     */
-                    if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180)
+                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || Tick10)
                         gridAi.UpdateGridPower();
 
                     if (!gridAi.HasPower)
                         continue;
-                    /*
-                    foreach (var fat in gridAi.MyGrid.GetFatBlocks())
-                    {
-                        var camera = fat as MyCameraBlock;
-                        if (camera != null)
-                        {
-                            camera.ForceFirstPersonCamera = true;
-                            var cameraMatrix = camera.WorldMatrix;
-                            MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Spectator, camera, cameraMatrix.Translation + cameraMatrix.Forward * 0.200000002980232);
-                        }
-                    }
-                    */
-
                     ///
                     /// Comp update section
                     ///
@@ -279,13 +266,13 @@ namespace WeaponCore
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose)
+                    var comp = w.Comp;
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
                         continue;
                     }
 
-                    var comp = w.Comp;
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 
@@ -335,7 +322,7 @@ namespace WeaponCore
                         continue;
                     }
 
-                    if (gridAi.LastPowerUpdateTick != Tick && (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180))
+                    if (gridAi.LastPowerUpdateTick != Tick)
                         gridAi.UpdateGridPower();
 
                     if (!w.DrawingPower || gridAi.RequestedPowerChanged || gridAi.AvailablePowerChanged || (w.RecalcPower && Tick60))
@@ -366,17 +353,15 @@ namespace WeaponCore
 
         private void CheckAcquire()
         {
-            for (int i = AcquireTargets.Count - 1; i >= 0; i--)
-            {
-                var w = AcquireTargets[i];
+            for (int i = AcquireTargets.Count - 1; i >= 0; i--) {
 
+                var w = AcquireTargets[i];
                 using (w.Comp.MyCube.Pin())
-                using (w.Comp.Ai.MyGrid.Pin())
-                {
+                using (w.Comp.Ai.MyGrid.Pin()) {
 
                     var comp = w.Comp;
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.TerminalControlled != None)
-                    {
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) {
+                        
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         continue;
@@ -388,20 +373,18 @@ namespace WeaponCore
 
                     var checkTime = w.TargetChanged || sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || seekProjectile;
 
-                    if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired)
-                    {
+                    if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) {
 
+                        if (seekProjectile || comp.ManualAim || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w)) {
 
-                        if (seekProjectile || comp.ManualAim || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w))
-                        {
                             if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired)
                                 GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
                             else
                                 GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                         }
 
-                        if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange)
-                        {
+                        if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange) {
+
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
                         }
@@ -410,26 +393,22 @@ namespace WeaponCore
             }
         }
 
-        private void ShootWeapons() 
-        {
-            for (int i = ShootingWeapons.Count - 1; i >= 0; i--)
-            {
-                var w = ShootingWeapons[i];
+        private void ShootWeapons()  {
+            for (int i = ShootingWeapons.Count - 1; i >= 0; i--) {
 
+                var w = ShootingWeapons[i];
                 using (w.Comp.MyCube.Pin())
-                using (w.Comp.Ai.MyGrid.Pin())
-                {
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                    {
+                using (w.Comp.Ai.MyGrid.Pin()) {
+
+                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+
                         ShootingWeapons.RemoveAtFast(i);
                         continue;
                     }
                     //TODO add logic for power priority
-                    if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge)
-                    {
+                    if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
-                        if (w.ChargeDelayTicks == 0)
-                        {
+                        if (w.ChargeDelayTicks == 0) {
                             var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                             w.OldUseablePower = w.UseablePower;
                             w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
@@ -443,14 +422,14 @@ namespace WeaponCore
                             w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                             w.Charging = true;
                         }
-                        else if (w.ChargeUntilTick <= Tick)
-                        {
+                        else if (w.ChargeUntilTick <= Tick) {
+
                             w.Charging = false;
                             w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.System.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower))
-                    {
+                    else if (!w.System.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
+
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         w.DrawPower(true);
@@ -464,11 +443,10 @@ namespace WeaponCore
 
                     if (w.ShootDelayTick <= Tick) w.Shoot();
 
-                    if (!w.System.MustCharge && w.State.ManualShoot == ShootOnce)
-                    {
+                    if (!w.System.MustCharge && w.State.ManualShoot == ShootOnce) {
+
                         w.State.ManualShoot = ShootOff;
                         w.StopShooting();
-                        //w.Comp.Ai.ManualComps = w.Comp.Ai.ManualComps - 1 > 0 ? w.Comp.Ai.ManualComps - 1 : 0;
                     }
                 }
             }
