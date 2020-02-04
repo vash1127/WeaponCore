@@ -49,7 +49,7 @@ namespace WeaponCore.Control
                 }
             }
         }
-
+        
         internal static void AlterControls<T>() where T : IMyTerminalBlock
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
