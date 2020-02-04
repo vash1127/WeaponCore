@@ -64,6 +64,7 @@ namespace WeaponCore
                     CreateShootClick<T>();
 
                 }
+                if (builderType == null) return;
 
                 TerminalHelpers.Separator<T>(0, "WC_sep0");
 
@@ -72,18 +73,16 @@ namespace WeaponCore
                 {
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
-
                         MyDefinitionId defId;
                         MyDefinitionBase def = null;
-                        Type type = null;
 
                         if (ReplaceVanilla && VanillaCoreIds.TryGetValue(wp.Key, out defId))
                         {
-                            type = defId.TypeId;
-                            def = MyDefinitionManager.Static.GetDefinition(defId);
+                            if (!MyDefinitionManager.Static.TryGetDefinition(defId, out def)) return;
                         }
                         else
                         {
+                            Type type = null;
                             foreach (var tmpdef in AllDefinitions)
                             {
                                 if (tmpdef.Id.SubtypeId == wp.Key)
@@ -93,22 +92,11 @@ namespace WeaponCore
                                     break;
                                 }
                             }
+                            if (type == null) return;
                         }
 
-                        if (def == null || type == null) return;
-
-                        MyObjectBuilder_DefinitionBase ob = null;
-
-                        try
-                        {
-                            
-                            ob = def.GetObjectBuilder();
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Line($"Error In create controls : {e.StackTrace}");
-                        }
-                        if (ob != null && (builderType != null && builderType.GetType() == ob.GetType()))
+                        var ob = def.GetObjectBuilder();
+                        if (ob != null && builderType.GetType() == ob.GetType())
                         {
                             var wepName = ws.Value.WeaponName;
                             var wepId = ws.Value.WeaponId;
