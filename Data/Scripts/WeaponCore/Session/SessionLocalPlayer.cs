@@ -23,7 +23,16 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveControlBlock;
-                return ActiveCockPit != null;
+
+                if (ActiveCockPit != null)
+                {
+                    ActiveCockPit.SwitchToWeapon(null);
+                    return true;
+                }
+                else if(ControlledEntity is MyRemoteControl)
+                    ((MyRemoteControl)ControlledEntity).SwitchToWeapon(null);
+
+                return false;
             }
             TrackingAi?.Focus.IsFocused(TrackingAi);
             TrackingAi?.ControllingPlayers.Remove(MyAPIGateway.Session.Player.IdentityId);

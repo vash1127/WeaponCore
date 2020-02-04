@@ -38,16 +38,22 @@ namespace WeaponCore
 
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
+
+                    CreateShootClick<T>();
+
                     builderType = new MyObjectBuilder_LargeTurretBaseDefinition();
                 }
-                else if (typeof(T) == typeof(IMyUserControllableGun))
+                else if (typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun))
                 {
                     if (!session.BaseControlsActions)
                     {
-                        TerminalHelpers.AlterActions<T>();
-                        TerminalHelpers.AlterControls<T>();
+                        TerminalHelpers.AlterActions<IMyUserControllableGun>();
+                        TerminalHelpers.AlterControls<IMyUserControllableGun>();
                         session.BaseControlsActions = true;
                     }
+
+                    CreateShootClick<T>();
+
                     builderType = new MyObjectBuilder_WeaponBlockDefinition();
                 }
                 else if (typeof(T) == typeof(IMyConveyorSorter))
@@ -57,10 +63,9 @@ namespace WeaponCore
                     TerminalHelpers.AlterControls<T>();
                     TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, (b, i) => { var comp = b?.Components?.Get<WeaponComponent>(); return comp == null || comp.HasTurret; }, WepUi.GetMinRange, WepUi.GetMaxRange);
 
-                    
-                }
+                    CreateShootClick<T>();
 
-                MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
+                }
 
                 TerminalHelpers.Separator<T>(0, "WC_sep0");
 
@@ -121,6 +126,54 @@ namespace WeaponCore
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
+        }
+
+        internal void CreateShootClick<T>()
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder($"Toggle Mouse Shoot");
+            action.Action = delegate (IMyTerminalBlock blk) {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    if (w.State.ManualShoot == ShootClick)
+                    {
+                        w.State.ManualShoot = ShootOff;
+                        comp.MouseShoot = false;
+                        //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                    }
+                    else if (w.State.ManualShoot != ShootOff)
+                    {
+                        w.State.ManualShoot = ShootClick;
+                        comp.MouseShoot = true;
+                    }
+                    else
+                    {
+                        w.State.ManualShoot = ShootClick;
+                        comp.MouseShoot = true;
+                        //comp.Ai.ManualComps++;
+                    }
+                }
+            };
+            action.Writer = (blk, t) =>
+            {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp != null && comp.MouseShoot)
+                    t.Append("On");
+                else
+                    t.Append("Off");
+            };
+            action.Enabled = (b) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+            };
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
         internal bool WeaponEnabled(IMyTerminalBlock block, int weaponHash)

@@ -18,6 +18,8 @@ namespace WeaponCore.Control
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
 
+            //Log.Line($"Type: {typeof(T)}");
+
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
             for (int i = isTurretType ? 13 : 0; i < actions.Count; i++)
@@ -25,7 +27,7 @@ namespace WeaponCore.Control
                 var a = actions[i];
                 //Log.Line($"Count: {i} ID:{a.Id}");
 
-                if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce"))
+                if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce") && !a.Id.Contains("WC_"))
                     a.Enabled = b => !b.Components.Has<WeaponComponent>();
 
                 else if(a.Id.Contains("Control"))
@@ -37,11 +39,11 @@ namespace WeaponCore.Control
 
                 else if (a.Id.Equals("ShootOnce"))
                 {
-                    var oldAction = a.Action;
+                    //var oldAction = a.Action;
                     a.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        oldAction(blk);
+                        //oldAction(blk);
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
@@ -51,54 +53,6 @@ namespace WeaponCore.Control
                         }
                     };
                 }
-            }
-
-            if (!isTurretType)
-            {
-                var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
-                action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-                action.Name = new StringBuilder($"Toggle Mouse Shoot");
-                action.Action = delegate (IMyTerminalBlock blk) {
-                    var comp = blk?.Components?.Get<WeaponComponent>();
-                    if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    {
-                        var w = comp.Platform.Weapons[i];
-                        if (w.State.ManualShoot == ShootClick)
-                        {
-                            w.State.ManualShoot = ShootOff;
-                            comp.MouseShoot = false;
-                            //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                        }
-                        else if (w.State.ManualShoot != ShootOff)
-                        {
-                            w.State.ManualShoot = ShootClick;
-                            comp.MouseShoot = true;
-                        }
-                        else
-                        {
-                            w.State.ManualShoot = ShootClick;
-                            comp.MouseShoot = true;
-                            //comp.Ai.ManualComps++;
-                        }
-                    }
-                };
-                action.Writer = (blk, t) =>
-                {
-                    var comp = blk?.Components?.Get<WeaponComponent>();
-                    if (comp != null && comp.MouseShoot)
-                        t.Append("On");
-                    else
-                        t.Append("Off");
-                };
-                action.Enabled = (b) =>
-                {
-                    var comp = b?.Components?.Get<WeaponComponent>();
-                    return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                };
-                action.ValidForGroups = true;
-
-                MyAPIGateway.TerminalControls.AddAction<T>(action);
             }
         }
 
@@ -141,7 +95,7 @@ namespace WeaponCore.Control
                         break;
 
                     case "ShootOnce":
-                        ((IMyTerminalControlButton)c).Action += blk =>
+                        ((IMyTerminalControlButton)c).Action = blk =>
                         {
                             var comp = blk?.Components?.Get<WeaponComponent>();
                             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
@@ -157,7 +111,7 @@ namespace WeaponCore.Control
                         break;
 
                     case "Shoot":
-                        ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, on) =>
+                        ((IMyTerminalControlOnOffSwitch)c).Setter = (blk, on) =>
                         {
                             var comp = blk?.Components?.Get<WeaponComponent>();
                             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
