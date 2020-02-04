@@ -1,6 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.Multiplayer;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -28,8 +31,10 @@ namespace WeaponCore
                 var shipController = ActiveControlBlock as MyShipController;
                 if (shipController != null)
                 {
-                    if (((Sandbox.Game.Entities.IMyControllableEntity)shipController).CanSwitchAmmoMagazine())
+                    if (((Sandbox.Game.Entities.IMyControllableEntity) shipController).CanSwitchAmmoMagazine())
+                    {
                         shipController.SwitchToWeapon(null);
+                    }
                 }
             }
             else
@@ -43,6 +48,7 @@ namespace WeaponCore
 
             return InGridAiBlock;
         }
+
 
         internal void EntityControlUpdate()
         {
