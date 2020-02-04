@@ -113,7 +113,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
 
-        internal void CreateShootClick<T>()
+        internal static void CreateShootClick<T>()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
@@ -189,7 +189,7 @@ namespace WeaponCore
                 else
                     w.State.ManualShoot = ShootOn;
             };
-            action0.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
+            action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
             action0.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
@@ -309,7 +309,7 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
 
-        internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
+        internal static bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
