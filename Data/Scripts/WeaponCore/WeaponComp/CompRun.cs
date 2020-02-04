@@ -217,7 +217,6 @@ namespace WeaponCore.Support
             if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 Set.Value.Inventory = BlockInventory.GetObjectBuilder();
-                
                 if (MyCube?.Storage != null)
                 {
                     State.SaveState();

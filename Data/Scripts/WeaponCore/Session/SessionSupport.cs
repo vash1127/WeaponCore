@@ -206,10 +206,10 @@ namespace WeaponCore
             VanillaIds[largeGatId] = largeGatHash;
             VanillaIds[largeMissileId] = largeMissileHash;
 
-            vanillaCoreIds[smallMissileHash] = smallMissileId;
-            vanillaCoreIds[smallGatHash] = smallGatId;
-            vanillaCoreIds[largeGatHash] = largeGatId;
-            vanillaCoreIds[largeMissileHash] = largeMissileId;
+            VanillaCoreIds[smallMissileHash] = smallMissileId;
+            VanillaCoreIds[smallGatHash] = smallGatId;
+            VanillaCoreIds[largeGatHash] = largeGatId;
+            VanillaCoreIds[largeMissileHash] = largeMissileId;
         }
     }
 }

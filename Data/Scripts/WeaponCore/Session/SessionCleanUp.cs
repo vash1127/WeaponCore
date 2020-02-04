@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WeaponCore.Support;
+﻿using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -145,7 +140,7 @@ namespace WeaponCore
             Projectiles.Clean();
             WeaponCoreBlockDefs.Clear();
             VanillaIds.Clear();
-            vanillaCoreIds.Clear();
+            VanillaCoreIds.Clear();
             WeaponCoreFixedBlockDefs.Clear();
             WeaponCoreTurretBlockDefs.Clear();
             Projectiles.CheckPool.Clean();

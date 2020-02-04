@@ -47,19 +47,5 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
-
-        public void UpgradeHandler(object o)
-        {
-            try
-            {
-                var message = o as byte[];
-                if (message == null) return;
-                var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<UpgradeDefinition[]>(message);
-                foreach (var upgDef in slaveDefArray)
-                    _upgradeDefinitions.Add(upgDef);
-            }
-            catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
-        }
-
     }
 }

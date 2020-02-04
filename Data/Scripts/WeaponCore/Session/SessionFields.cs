@@ -51,6 +51,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
         internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
+        
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
@@ -67,7 +68,7 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
-        internal readonly Dictionary<MyStringHash, MyDefinitionId> vanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
+        internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
 
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -93,19 +94,11 @@ namespace WeaponCore
         internal readonly double VisDirToleranceCosine;
         internal readonly double AimDirToleranceCosine;
 
-
-        //internal readonly MyConcurrentPool<Shrinking> ShrinkPool = new MyConcurrentPool<Shrinking>(100);
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
-
-
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
-        
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
-
-        private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
-        private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
 
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
@@ -148,14 +141,8 @@ namespace WeaponCore
 
         internal string TriggerEntityModel;
         internal object InitObj = new object();
-        internal bool HighLoad;
-        internal bool InMenu;
-        internal double Load;
-        internal bool GunnerBlackList;
-        internal uint Tick;
-        internal int PlayerEventId;
-        //internal int ModelCount;
 
+        internal int PlayerEventId;
         internal int TargetRequests;
         internal int TargetChecks;
         internal int BlockChecks;
@@ -172,25 +159,24 @@ namespace WeaponCore
         internal int LCount;
         internal int SCount;
 
-        internal enum AnimationType
-        {
-            Movement,
-            ShowInstant,
-            HideInstant,
-            ShowFade,
-            HideFade,
-            Delay
-        }
+        internal uint Tick;
 
         internal ulong AuthorSteamId = 76561197969691953;
+
         internal long AuthorPlayerId;
         internal long LastTerminalId;
+
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
         internal double MaxEntitySpeed;
+        internal double Load;
+
         internal float UiBkOpacity;
         internal float UiOpacity;
+        internal bool HighLoad;
+        internal bool InMenu;
+        internal bool GunnerBlackList;
         internal bool MpActive;
         internal bool IsServer;
         internal bool DedicatedServer;
@@ -212,6 +198,21 @@ namespace WeaponCore
         internal bool InGridAiBlock;
         internal bool IsCreative;
 
+        internal enum AnimationType
+        {
+            Movement,
+            ShowInstant,
+            HideInstant,
+            ShowFade,
+            HideFade,
+            Delay
+        }
+
+        private int _loadCounter = 1;
+        private int _shortLoadCounter = 1;
+        private uint _lastDrawTick;
+        private bool _paused;
+
         public Session()
         {
             UiInput = new UiInput(this);
@@ -230,13 +231,5 @@ namespace WeaponCore
 
             LoadVanillaData();
         }
-
-
-
-        private int _loadCounter = 1;
-        private int _shortLoadCounter = 1;
-
-        private uint _lastDrawTick;
-        private bool _paused;
     }
 }

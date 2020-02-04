@@ -130,8 +130,6 @@ namespace WeaponCore.Platform
             else // azimuth only and full turret already have the right matrix
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
 
-            //MyPivotPos = MathFuncs.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir);
-
             Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
             if (Vector3D.IsZero(axis))
                 MyPivotPos = centerTestPos;

@@ -1,6 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.Multiplayer;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -15,32 +18,37 @@ namespace WeaponCore
     {
         internal bool UpdateLocalAiAndCockpit()
         {
-            ActiveCockPit = ControlledEntity as MyCockpit;
-            ActiveControlBlock = ControlledEntity as MyCubeBlock;
-            var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             InGridAiBlock = false;
+
+            ActiveControlBlock = ControlledEntity as MyCubeBlock;
+            ActiveCockPit = ActiveControlBlock as MyCockpit;
+
+            var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             if (activeBlock != null && GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveControlBlock;
-
-                if (ActiveCockPit != null)
+                var shipController = ActiveControlBlock as MyShipController;
+                if (shipController != null)
                 {
-                    ActiveCockPit.SwitchToWeapon(null);
-                    return true;
+                    if (((Sandbox.Game.Entities.IMyControllableEntity) shipController).CanSwitchAmmoMagazine())
+                    {
+                        shipController.SwitchToWeapon(null);
+                    }
                 }
-                else if(ControlledEntity is MyRemoteControl)
-                    ((MyRemoteControl)ControlledEntity).SwitchToWeapon(null);
-
-                return false;
             }
-            TrackingAi?.Focus.IsFocused(TrackingAi);
-            TrackingAi?.ControllingPlayers.Remove(MyAPIGateway.Session.Player.IdentityId);
-            TrackingAi = null;
-            ActiveCockPit = null;
-            ActiveControlBlock = null;
-            return false;
+            else
+            {
+                TrackingAi?.Focus.IsFocused(TrackingAi);
+                TrackingAi?.ControllingPlayers.Remove(MyAPIGateway.Session.Player.IdentityId);
+                TrackingAi = null;
+                ActiveCockPit = null;
+                ActiveControlBlock = null;
+            }
+
+            return InGridAiBlock;
         }
+
 
         internal void EntityControlUpdate()
         {

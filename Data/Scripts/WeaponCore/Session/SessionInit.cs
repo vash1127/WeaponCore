@@ -48,8 +48,6 @@ namespace WeaponCore
                     SyncBufferedDistSqr = (SyncDist + 500) * (SyncDist + 500);
                 }
 
-                //ShieldMod = true;
-
                 Physics = MyAPIGateway.Physics;
                 Camera = MyAPIGateway.Session.Camera;
                 TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
@@ -115,7 +113,7 @@ namespace WeaponCore
                         foreach (var def in AllDefinitions)
                         {
                             var defid = new MyDefinitionId();
-                            if (def.Id.SubtypeName == subTypeId || (ReplaceVanilla && vanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeId), out defid) && defid == def.Id)) {
+                            if (def.Id.SubtypeName == subTypeId || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeId), out defid) && defid == def.Id)) {
                                 var gunDef = def as MyLargeTurretBaseDefinition;
                                 if (gunDef != null)
                                 {

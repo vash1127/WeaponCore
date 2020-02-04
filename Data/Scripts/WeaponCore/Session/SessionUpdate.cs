@@ -3,6 +3,8 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
@@ -52,7 +54,19 @@ namespace WeaponCore
 
                     if (!gridAi.HasPower)
                         continue;
-                    
+                    /*
+                    foreach (var fat in gridAi.MyGrid.GetFatBlocks())
+                    {
+                        var camera = fat as MyCameraBlock;
+                        if (camera != null)
+                        {
+                            camera.ForceFirstPersonCamera = true;
+                            var cameraMatrix = camera.WorldMatrix;
+                            MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Spectator, camera, cameraMatrix.Translation + cameraMatrix.Forward * 0.200000002980232);
+                        }
+                    }
+                    */
+
                     ///
                     /// Comp update section
                     ///
