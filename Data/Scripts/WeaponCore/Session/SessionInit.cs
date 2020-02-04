@@ -48,8 +48,6 @@ namespace WeaponCore
                     SyncBufferedDistSqr = (SyncDist + 500) * (SyncDist + 500);
                 }
 
-                //ShieldMod = true;
-
                 Physics = MyAPIGateway.Physics;
                 Camera = MyAPIGateway.Session.Camera;
                 TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);

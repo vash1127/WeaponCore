@@ -176,7 +176,7 @@ namespace WeaponCore
             {
                 if (_lastDrawTick == Tick || _paused)return;
                 _lastDrawTick = Tick;
-                DsUtil.Start("draw");
+                //DsUtil.Start("draw");
                 if (!DedicatedServer)
                 {
                     CameraMatrix = Session.Camera.WorldMatrix;
@@ -190,7 +190,7 @@ namespace WeaponCore
 
                     Av.Run();
                 }
-                DsUtil.Complete("draw", true);
+                //DsUtil.Complete("draw", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
@@ -219,10 +219,9 @@ namespace WeaponCore
                 foreach (var mod in MyAPIGateway.Session.Mods)
                 {
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
-                    //else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
+                    else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
                 }
                 ReplaceVanilla = true;
-
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
             }

@@ -8,12 +8,10 @@ using WeaponCore.Support;
 using VRage.Utils;
 using WeaponCore.Control;
 using WeaponCore.Platform;
-using static WeaponCore.Platform.Weapon.TerminalActionState;
-using static WeaponCore.Platform.Weapon;
 using Sandbox.Definitions;
 using VRage.Game;
-using Sandbox.Common.ObjectBuilders;
 using Sandbox.Common.ObjectBuilders.Definitions;
+using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WeaponCore
 {
@@ -108,19 +106,18 @@ namespace WeaponCore
                         }
                         catch (Exception e)
                         {
-                            //Log.Line($"Type: {wp.Key}");
                             Log.Line($"Error In create controls : {e.StackTrace}");
                         }
-                        if (builderType.GetType() == ob.GetType())
+                        if (ob != null && (builderType != null && builderType.GetType() == ob.GetType()))
                         {
                             var wepName = ws.Value.WeaponName;
-                            var wepID = ws.Value.WeaponId;
+                            var wepId = ws.Value.WeaponId;
 
-                            if (!wepIDs.Contains(wepID))
-                                wepIDs.Add(wepID);
+                            if (!wepIDs.Contains(wepId))
+                                wepIDs.Add(wepId);
                             else
                                 continue;
-                            CreateShootActionSet<T>(wepName, wepID, session);
+                            CreateShootActionSet<T>(wepName, wepId, session);
                         }
                     }
                 }
@@ -143,7 +140,6 @@ namespace WeaponCore
                     {
                         w.State.ManualShoot = ShootOff;
                         comp.MouseShoot = false;
-                        //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                     }
                     else if (w.State.ManualShoot != ShootOff)
                     {
@@ -154,7 +150,6 @@ namespace WeaponCore
                     {
                         w.State.ManualShoot = ShootClick;
                         comp.MouseShoot = true;
-                        //comp.Ai.ManualComps++;
                     }
                 }
             };
@@ -174,34 +169,6 @@ namespace WeaponCore
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
-        }
-
-        internal bool WeaponEnabled(IMyTerminalBlock block, int weaponHash)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-            
-            int weaponId;
-            if (!comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId)) return false;
-            return comp.Platform.Weapons[weaponId].System.WeaponId == weaponHash && comp.Set.Value.Weapons[weaponId].Enable;
-        }
-
-        internal void EnableWeapon(IMyTerminalBlock block, int weaponHash, bool enabled)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
-            {
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
-                {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponId == weaponHash)
-                    {
-                        comp.Set.Value.Weapons[weaponId].Enable = enabled;
-                        comp.SettingsUpdated = true;
-                        comp.ClientUiUpdate = true;
-                    }
-                }
-            }
         }
 
         internal static void CreateShootActionSet<T>(string name, int id, Session session) where T : IMyTerminalBlock
@@ -229,15 +196,10 @@ namespace WeaponCore
                         if(w.State.CurrentAmmo != w.System.EnergyMagSize)
                             w.State.CurrentAmmo = 0;
                     }
-
-                    //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                 }
                 else if (w.State.ManualShoot != ShootOff) w.State.ManualShoot = ShootOn;
                 else
-                {
                     w.State.ManualShoot = ShootOn;
-                    //comp.Ai.ManualComps++;
-                }
             };
             action0.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
             action0.Enabled = (b) =>
@@ -266,10 +228,7 @@ namespace WeaponCore
 
                 if (wState.ManualShoot != ShootOff) wState.ManualShoot = ShootOn;
                 else
-                {
                     wState.ManualShoot = ShootOn;
-                    //comp.Ai.ManualComps++;
-                }
             };
             action1.Writer = (b, t) => t.Append("On");
             action1.Enabled = (b) =>
@@ -307,8 +266,6 @@ namespace WeaponCore
                     if (w.State.CurrentAmmo != w.System.EnergyMagSize)
                         w.State.CurrentAmmo = 0;
                 }
-
-                //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
             };
             action2.Writer = (b, t) => t.Append("Off");
             action2.Enabled = (b) =>
@@ -342,7 +299,6 @@ namespace WeaponCore
                     {
                         if (comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot != ShootOff) return;
                         comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
-                        //comp.Ai.ManualComps++;
                     }
                 }
             };
@@ -385,7 +341,6 @@ namespace WeaponCore
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var cube = (MyCubeBlock)block;
-
             GridAi gridAi;
             if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
             {
