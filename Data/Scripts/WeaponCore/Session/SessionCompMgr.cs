@@ -88,7 +88,7 @@ namespace WeaponCore
             else
             {
                 var block = cube as IMyConveyorSorter;
-                def = block.BlockDefinition;
+                if (block != null) def = block.BlockDefinition;
             }
 
             var replacement = ReplaceVanilla && VanillaIds.ContainsKey(def);

@@ -861,7 +861,6 @@ namespace WeaponCore.Support
                     {
                         comp.MouseShoot = false;
                         wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                        //ManualComps = ManualComps - 1 > 0 ? ManualComps - 1 : 0;
                     }
 
                 }
