@@ -462,7 +462,8 @@ namespace WeaponCore.Platform
 
             w.EventTriggerStateChanged(EventTriggers.Reloading, false);
             w.Reloading = false;
-            w.State.ShotsFired = 0;
+            if(!w.System.HasBurstDelay)
+                w.State.ShotsFired = 0;
         }
 
         public void StartFiringSound()
