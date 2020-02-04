@@ -77,7 +77,7 @@ namespace WeaponCore.Control
                 //"Shoot"
             };
 
-            for (int i = isTurretType ? 14 : 0; i < controls.Count; i++)
+            for (int i = isTurretType ? 13 : 0; i < controls.Count; i++)
             {
                 var c = controls[i];
 
