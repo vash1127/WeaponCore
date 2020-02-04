@@ -77,7 +77,7 @@ namespace WeaponCore
                         MyDefinitionBase def = null;
                         Type type = null;
 
-                        if (ReplaceVanilla && vanillaCoreIds.TryGetValue(wp.Key, out defId))
+                        if (ReplaceVanilla && VanillaCoreIds.TryGetValue(wp.Key, out defId))
                         {
                             type = defId.TypeId;
                             def = MyDefinitionManager.Static.GetDefinition(defId);

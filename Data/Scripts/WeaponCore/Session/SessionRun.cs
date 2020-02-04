@@ -213,7 +213,6 @@ namespace WeaponCore
 
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
-                MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
                 IsCreative = MyAPIGateway.Session.CreativeMode;
 
                 foreach (var mod in MyAPIGateway.Session.Mods)
@@ -234,7 +233,6 @@ namespace WeaponCore
             {
                 MyAPIGateway.Multiplayer.UnregisterMessageHandler(PacketId, ReceivedPacket);
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
-                MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
                 MyEntities.OnEntityCreate -= OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
