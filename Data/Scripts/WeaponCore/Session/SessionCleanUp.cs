@@ -1,4 +1,5 @@
-﻿using WeaponCore.Support;
+﻿using Sandbox.ModAPI;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -28,6 +29,7 @@ namespace WeaponCore
         internal void PurgeAll()
         {
             FutureEvents.Purge((int)Tick);
+            PurgeTerminalSystem();
 
             foreach (var item in _effectedCubes)
             {

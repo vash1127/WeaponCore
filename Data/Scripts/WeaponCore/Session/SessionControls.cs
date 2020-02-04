@@ -11,6 +11,8 @@ using WeaponCore.Platform;
 using Sandbox.Definitions;
 using VRage.Game;
 using Sandbox.Common.ObjectBuilders.Definitions;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.ModAPI.Interfaces;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WeaponCore
@@ -18,6 +20,40 @@ namespace WeaponCore
     public partial class Session
     {
         #region UI Config
+        public static void PurgeTerminalSystem()
+        {
+            var actions = new List<IMyTerminalAction>();
+            var iActions = new List<ITerminalAction>();
+            var controls = new List<IMyTerminalControl>();
+            var cube = new MyCockpit();
+            var t = (IMyTerminalBlock)cube;
+
+            MyAPIGateway.TerminalActionsHelper.GetActions(t.GetType(), iActions);
+            MyAPIGateway.TerminalControls.GetActions<IMyUserControllableGun>(out actions);
+            MyAPIGateway.TerminalControls.GetControls<IMyUserControllableGun>(out controls);
+
+            foreach (var a in actions)
+            {
+                a.Writer = (block, builder) => {};
+                a.Action = block => {};
+                a.Enabled = block => false;
+                MyAPIGateway.TerminalControls.RemoveAction<IMyUserControllableGun>(a);
+            }
+            foreach (var a in controls)
+            {
+                a.Enabled = block => false;
+                a.Visible = block => false;
+                MyAPIGateway.TerminalControls.RemoveControl<IMyUserControllableGun>(a);
+            }
+            foreach (var iA in iActions)
+            {
+                var a = (IMyTerminalAction)iA;
+                a.Writer = (block, builder) => { };
+                a.Action = block => { };
+                a.Enabled = block => false;
+                MyAPIGateway.TerminalControls.RemoveAction<IMyTerminalBlock>(a);
+            }
+        }
 
         public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {

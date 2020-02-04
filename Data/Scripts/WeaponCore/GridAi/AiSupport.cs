@@ -741,6 +741,8 @@ namespace WeaponCore.Support
             MyPlanetTmp = null;
             MyPlanet = null;
             TerminalSystem = null;
+            LastWeaponTerminal = null;
+            LastTerminal = null;
             PowerDistributor = null;
         }
         internal void UpdateGridPower()
