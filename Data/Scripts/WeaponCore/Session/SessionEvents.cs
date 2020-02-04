@@ -1,9 +1,7 @@
 ﻿using System;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
@@ -54,13 +52,12 @@ namespace WeaponCore
                             TurretControls = true;
                         }
                     }
-                   else if ((!FixedGunControls || !FixedMissileControls) && controllableGun != null && turret == null)
+                    else if ((!FixedGunControls || !FixedMissileControls) && controllableGun != null && turret == null)
                     {
                         if (controllableGun is IMySmallMissileLauncher && !FixedMissileControls)
                         {
                             lock (InitObj)
                             {
-                                var type = myEntity.GetType();
                                 if (!FixedMissileControls)
                                     MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
                                 FixedMissileControls = true;
@@ -70,7 +67,6 @@ namespace WeaponCore
                         {
                             lock (InitObj)
                             {
-                                var type = myEntity.GetType();
                                 if (!FixedGunControls)
                                     MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
                                 FixedGunControls = true;

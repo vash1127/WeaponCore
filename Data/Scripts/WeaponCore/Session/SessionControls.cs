@@ -19,7 +19,7 @@ namespace WeaponCore
     {
         #region UI Config
 
-        public void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {
             try
             {
@@ -66,24 +66,22 @@ namespace WeaponCore
                 }
                 if (builderType == null) return;
 
-                //TerminalHelpers.Separator<T>(0, "WC_sep0");
-
                 var wepIDs = new HashSet<int>();
-                foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
+                foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in session.WeaponPlatforms)
                 {
-                    foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
+                    foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in session.WeaponPlatforms[wp.Key].WeaponSystems)
                     {
                         MyDefinitionId defId;
                         MyDefinitionBase def = null;
 
-                        if (ReplaceVanilla && VanillaCoreIds.TryGetValue(wp.Key, out defId))
+                        if (session.ReplaceVanilla && session.VanillaCoreIds.TryGetValue(wp.Key, out defId))
                         {
                             if (!MyDefinitionManager.Static.TryGetDefinition(defId, out def)) return;
                         }
                         else
                         {
                             Type type = null;
-                            foreach (var tmpdef in AllDefinitions)
+                            foreach (var tmpdef in session.AllDefinitions)
                             {
                                 if (tmpdef.Id.SubtypeId == wp.Key)
                                 {
@@ -105,10 +103,11 @@ namespace WeaponCore
                                 wepIDs.Add(wepId);
                             else
                                 continue;
-                            CreateShootActionSet<T>(wepName, wepId, session);
+                            CreateShootActionSet<T>(wepName, wepId);
                         }
                     }
                 }
+
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
@@ -159,7 +158,7 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal static void CreateShootActionSet<T>(string name, int id, Session session) where T : IMyTerminalBlock
+        internal static void CreateShootActionSet<T>(string name, int id) where T : IMyTerminalBlock
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";

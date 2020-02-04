@@ -201,8 +201,8 @@ namespace WeaponCore.Control
                         var azSteps = w.Azimuth / w.System.AzStep;
                         var elSteps = w.Elevation / w.System.ElStep;
 
-                        if (azSteps < 0) azSteps = azSteps * -1;
-                        if (azSteps < 0) azSteps = azSteps * -1;
+                        if (azSteps < 0) azSteps *= -1;
+                        if (azSteps < 0) azSteps *= -1;
 
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
@@ -243,7 +243,7 @@ namespace WeaponCore.Control
                 }
                 else
                 {
-                    comp.Session.FutureEvents.Schedule((object o) => 
+                    comp.Session.FutureEvents.Schedule(o => 
                         {
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
