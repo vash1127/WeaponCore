@@ -70,12 +70,19 @@ namespace WeaponCore.Platform
                     StartRotateSound();
             }
 
-            if (!IsShooting) StartShooting();         
+            if (!IsShooting) StartShooting();
+
+            var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
             if (System.BurstMode && ++State.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
             {
-                    State.ShotsFired = 1;                    
-                    EventTriggerStateChanged(EventTriggers.BurstReload, false);
+                State.ShotsFired = 1;
+                EventTriggerStateChanged(EventTriggers.BurstReload, false);
+            }
+            else if (System.HasBurstDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+            {
+                State.ShotsFired = 0;
+                _shootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
             }
 
             if (Comp.Ai.VelocityUpdateTick != tick)
@@ -285,7 +292,6 @@ namespace WeaponCore.Platform
                 if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
                 if (IsShooting) StopShooting();
 
-                var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                 _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay: tick + TicksPerShot + delay;
             }
             else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
