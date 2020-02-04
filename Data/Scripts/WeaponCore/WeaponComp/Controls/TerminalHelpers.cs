@@ -18,14 +18,11 @@ namespace WeaponCore.Control
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
 
-            //Log.Line($"Type: {typeof(T)}");
-
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
             for (int i = isTurretType ? 13 : 0; i < actions.Count; i++)
             {
                 var a = actions[i];
-                //Log.Line($"Count: {i} ID:{a.Id}");
 
                 if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce") && !a.Id.Contains("WC_"))
                     a.Enabled = b => !b.Components.Has<WeaponComponent>();
@@ -39,17 +36,14 @@ namespace WeaponCore.Control
 
                 else if (a.Id.Equals("ShootOnce"))
                 {
-                    //var oldAction = a.Action;
                     a.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        //oldAction(blk);
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                             comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-                            //comp.Ai.ManualComps++;
                         }
                     };
                 }
@@ -74,7 +68,6 @@ namespace WeaponCore.Control
                 "CustomData",
                 "Control",
                 "Range",
-                //"Shoot"
             };
 
             for (int i = isTurretType ? 13 : 0; i < controls.Count; i++)
@@ -104,7 +97,6 @@ namespace WeaponCore.Control
                             {
                                 if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                                 comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-                                //comp.Ai.ManualComps++;
                             }
 
                         };
@@ -133,15 +125,11 @@ namespace WeaponCore.Control
                                             w.State.CurrentAmmo = 0;
                                     }
 
-                                    //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                 }
                                 else if (on && w.State.ManualShoot != ShootOff)
                                     w.State.ManualShoot = ShootOn;
                                 else if (on)
-                                {
                                     w.State.ManualShoot = ShootOn;
-                                    //comp.Ai.ManualComps++;
-                                }
                             }
                         };
                         break;
