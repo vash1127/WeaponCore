@@ -82,17 +82,15 @@ namespace WeaponCore
                         }
                         else
                         {
-                            Type type = null;
                             foreach (var tmpdef in AllDefinitions)
                             {
                                 if (tmpdef.Id.SubtypeId == wp.Key)
                                 {
-                                    type = tmpdef.Id.TypeId;
                                     def = tmpdef;
                                     break;
                                 }
                             }
-                            if (type == null) return;
+                            if (def == null) return;
                         }
 
                         var ob = def.GetObjectBuilder();
@@ -113,7 +111,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
 
-        internal void CreateShootClick<T>()
+        internal static void CreateShootClick<T>()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
