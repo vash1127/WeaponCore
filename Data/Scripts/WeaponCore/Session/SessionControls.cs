@@ -66,7 +66,7 @@ namespace WeaponCore
                 }
                 if (builderType == null) return;
 
-                TerminalHelpers.Separator<T>(0, "WC_sep0");
+                //TerminalHelpers.Separator<T>(0, "WC_sep0");
 
                 var wepIDs = new HashSet<int>();
                 foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
