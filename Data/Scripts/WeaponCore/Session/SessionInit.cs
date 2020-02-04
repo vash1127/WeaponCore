@@ -171,6 +171,8 @@ namespace WeaponCore
 
                 WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
             }
+
+            MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
             /*
             Projectiles.EntityPool = new MyConcurrentPool<MyEntity>[ModelCount];
             for (int j = 0; j < ModelCount; j++)

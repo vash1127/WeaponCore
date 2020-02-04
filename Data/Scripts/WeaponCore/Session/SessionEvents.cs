@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
@@ -53,13 +54,27 @@ namespace WeaponCore
                             TurretControls = true;
                         }
                     }
-                   else if (!GunControls && controllableGun != null && turret == null)
+                   else if ((!FixedGunControls || !FixedMissileControls) && controllableGun != null && turret == null)
                     {
-                        lock (InitObj)
+                        if (controllableGun is IMySmallMissileLauncher && !FixedMissileControls)
                         {
-                            if (!GunControls)
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyUserControllableGun>(this));
-                            GunControls = true;
+                            lock (InitObj)
+                            {
+                                var type = myEntity.GetType();
+                                if (!FixedMissileControls)
+                                    MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
+                                FixedMissileControls = true;
+                            }
+                        }
+                        else if(controllableGun is IMySmallGatlingGun && !FixedGunControls)
+                        {
+                            lock (InitObj)
+                            {
+                                var type = myEntity.GetType();
+                                if (!FixedGunControls)
+                                    MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
+                                FixedGunControls = true;
+                            }
                         }
                     }
                     InitComp(cube);
