@@ -54,12 +54,10 @@ namespace WeaponCore.Platform
                 PreFired = false;
             }
 
-            if (System.HasBarrelRotation) 
+            if (System.HasBarrelRotation)
             {
                 if (session.Tick10 && _barrelRate < 9)
                     _barrelRate++;
-
-                Log.Line($"_barrelRate: {_barrelRate}");
 
                 MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
 
