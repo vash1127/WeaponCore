@@ -56,13 +56,19 @@ namespace WeaponCore.Platform
 
             if (System.HasBarrelRotation)
             {
-                if (session.Tick10 && _barrelRate < 9)
-                    _barrelRate++;
-
                 MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
 
                 if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
                     StartRotateSound();
+
+                if (_spinUpTick <= tick && _barrelRate < 9)
+                {
+                    _spunUp = ++_barrelRate == 9;
+                    _spinUpTick = tick + _ticksBeforeSpinUp;
+                }
+
+                if (!_spunUp)
+                    return;
             }
 
             if (_shootTick > tick)

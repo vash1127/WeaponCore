@@ -243,6 +243,7 @@ namespace WeaponCore.Platform
         internal void UpdateBarrelRotation()
         {
             var steps = (360f / System.Barrels.Length) / (3600f / System.BarrelSpinRate);
+            _ticksBeforeSpinUp = (uint)(3600f / System.BarrelSpinRate);
             for (int i = 0; i < 10; i++) {
 
                 var multi = (float)(i + 1)/10;
@@ -291,13 +292,14 @@ namespace WeaponCore.Platform
                 muzzle.LastAv2Tick = Comp.Session.Tick;
 
             }
-            _barrelRate = 0;
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
+                    _barrelRate = 0;
+                    _spunUp = false;
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;

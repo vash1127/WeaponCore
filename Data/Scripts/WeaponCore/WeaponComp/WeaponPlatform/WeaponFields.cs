@@ -28,6 +28,9 @@ namespace WeaponCore.Platform
         private uint _shootTick;
         private uint _posChangedTick = 1;
         private uint _prefiredTick;
+        private uint _spinUpTick;
+        private uint _ticksBeforeSpinUp;
+        private bool _spunUp;
         internal bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
