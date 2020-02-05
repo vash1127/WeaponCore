@@ -116,7 +116,12 @@ namespace WeaponCore
                 DsUtil.Start("shoot");
                 if (ShootingWeapons.Count > 0) ShootWeapons();
                 DsUtil.Complete("shoot", true);
-                if (UiInput.PlayerCamera && !WheelUi.WheelActive && !InMenu) TargetSelection();
+                if (!WheelUi.WheelActive && !InMenu)
+                {
+                    UpdateLocalAiAndCockpit();
+                    if (UiInput.PlayerCamera) 
+                        TargetSelection();
+                }
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -177,19 +182,17 @@ namespace WeaponCore
                 if (_lastDrawTick == Tick || _paused)return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
-                if (!DedicatedServer)
-                {
-                    CameraMatrix = Session.Camera.WorldMatrix;
-                    CameraPos = CameraMatrix.Translation;
-                    CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
-                    {
-                        if (WheelUi.WheelActive) WheelUi.DrawWheel();
-                        TargetUi.DrawTargetUi();
-                    }
+                CameraMatrix = Session.Camera.WorldMatrix;
+                CameraPos = CameraMatrix.Translation;
+                CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
 
-                    Av.Run();
+                if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                {
+                    if (WheelUi.WheelActive) WheelUi.DrawWheel();
+                    TargetUi.DrawTargetUi();
                 }
+
+                Av.Run();
                 DsUtil.Complete("draw", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }

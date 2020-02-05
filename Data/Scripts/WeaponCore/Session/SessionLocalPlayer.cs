@@ -1,9 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.Game.Multiplayer;
-using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -19,7 +16,6 @@ namespace WeaponCore
         internal bool UpdateLocalAiAndCockpit()
         {
             InGridAiBlock = false;
-
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
             ActiveCockPit = ActiveControlBlock as MyCockpit;
 
@@ -27,7 +23,7 @@ namespace WeaponCore
             if (activeBlock != null && GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
-                TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveControlBlock;
+                TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
                 var controller = ActiveControlBlock as Sandbox.Game.Entities.IMyControllableEntity;
                 if (controller != null)
                 {
@@ -38,15 +34,13 @@ namespace WeaponCore
             else
             {
                 TrackingAi?.Focus.IsFocused(TrackingAi);
-                TrackingAi?.ControllingPlayers.Remove(MyAPIGateway.Session.Player.IdentityId);
+                TrackingAi?.ControllingPlayers.Remove(Session.Player.IdentityId);
                 TrackingAi = null;
                 ActiveCockPit = null;
                 ActiveControlBlock = null;
             }
-
             return InGridAiBlock;
         }
-
 
         internal void EntityControlUpdate()
         {
@@ -139,10 +133,11 @@ namespace WeaponCore
 
         internal void TargetSelection()
         {
-            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
+
+            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.MouseButtonRight) && InGridAiBlock)
                 TrackingAi.Focus.ReleaseActive(TrackingAi);
 
-            if (UpdateLocalAiAndCockpit())
+            if (InGridAiBlock)
             {
                 if ((TargetUi.DrawReticle || UiInput.FirstPersonView) && MyAPIGateway.Input.IsNewLeftMouseReleased())
                     TargetUi.SelectTarget();

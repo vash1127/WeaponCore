@@ -15,7 +15,7 @@ namespace WeaponCore
         {
             var s = _session;
             DrawReticle = false;
-            if (!s.UpdateLocalAiAndCockpit()) return;
+            if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
             if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && s.TrackingAi.GetTargetState()) DrawTarget();
         }
