@@ -28,11 +28,11 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveControlBlock;
-                var shipController = ActiveControlBlock as MyShipController;
-                if (shipController != null)
+                var controller = ActiveControlBlock as Sandbox.Game.Entities.IMyControllableEntity;
+                if (controller != null)
                 {
-                    if (((Sandbox.Game.Entities.IMyControllableEntity) shipController).CanSwitchAmmoMagazine())
-                        shipController.SwitchToWeapon(null);
+                    if (controller.CanSwitchAmmoMagazine())
+                        controller.SwitchToWeapon(null);
                 }
             }
             else

@@ -35,8 +35,8 @@ namespace WeaponCore
             MyAPIGateway.TerminalActionsHelper.GetActions(t.GetType(), iActions);
             MyAPIGateway.TerminalControls.GetActions<IMyUserControllableGun>(out actions);
             MyAPIGateway.TerminalControls.GetControls<IMyUserControllableGun>(out controls);
-            MyAPIGateway.TerminalControls.GetActions<MyConveyorSorter>(out sActions);
-            MyAPIGateway.TerminalControls.GetControls<MyConveyorSorter>(out sControls);
+            //MyAPIGateway.TerminalControls.GetActions<IMyConveyorSorter>(out sActions);
+           // MyAPIGateway.TerminalControls.GetControls<IMyConveyorSorter>(out sControls);
 
             foreach (var a in actions)
             {
