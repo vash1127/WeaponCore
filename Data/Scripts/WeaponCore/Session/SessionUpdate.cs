@@ -189,11 +189,6 @@ namespace WeaponCore
 
                                     if (w.TargetChanged && w.Target.State != Targets.Acquired || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
                                         FutureEvents.Schedule(w.TurretHomePosition, null, 240);
-
-                                    /*if (comp.UserControlled != comp.WasControlled && comp.UserControlled)
-                                        gridAi.ManualComps++;
-                                    else if (comp.UserControlled != comp.WasControlled && !comp.UserControlled)
-                                        gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;*/
                                 }
 
                                 if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo)
@@ -206,15 +201,9 @@ namespace WeaponCore
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget;
                                 var validShootStates = fakeTarget && !comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                                var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
-                                /*
-                                if (w.System.WeaponName.Contains("Oct") && Tick60)
-                                {
-                                    Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - fakeTarget:{fakeTarget} - validShootStates:{validShootStates} - manualShot:{manualShot}({w.State.ManualShoot}) - playerId:{comp.State.Value.PlayerIdInTerminal} - manualAim:{comp.ManualAim} - drawReticle:{TargetUi.DrawReticle}");
-                                    Log.Line($"            : validShootStates [shootOnce:{w.State.ManualShoot == ShootOnce}] [aiShoot:{w.AiShooting && w.State.ManualShoot == ShootOff}] [targetState:{w.Target.State}]");
-                                    Log.Line($"            : manualShot [User:{(comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick)}] [cameraControl:{comp.TerminalControlled == CameraControl}] [ButtonPress:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight)}]");
-                                }
-                                */
+
+                                var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+                                
                                 if (canShoot && (validShootStates || manualShot)) {
 
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge) {

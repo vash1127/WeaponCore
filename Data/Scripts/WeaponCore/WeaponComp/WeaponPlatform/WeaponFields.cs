@@ -76,6 +76,7 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly bool TrackProjectiles;
+        internal readonly bool PrimaryWeaponGroup;
 
         internal Targets TargetState = Targets.Expired;
         internal EventTriggers LastEvent;
@@ -222,7 +223,7 @@ namespace WeaponCore.Platform
                 ReloadSound.Init(System.Values.Audio.HardPoint.ReloadSound);
             }
 
-            if (AvCapable && system.BarrelRotationSound && system.BarrelAxisRotation)
+            if (AvCapable && system.BarrelRotationSound)
             {
                 RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 RotateSound = new MySoundPair();
@@ -237,6 +238,7 @@ namespace WeaponCore.Platform
             }
 
             WeaponId = weaponId;
+            PrimaryWeaponGroup = WeaponId % 2 == 0;
             IsTurret = System.Values.HardPoint.Block.TurretAttached;
             TurretMode = System.Values.HardPoint.Block.TurretController;
             TrackTarget = System.Values.HardPoint.Block.TrackTargets;

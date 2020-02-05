@@ -285,7 +285,7 @@ namespace WeaponCore.Platform
             {
                 uint delay = 0;
                 if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
-                    session.FutureEvents.Schedule((object o) => { EventTriggerStateChanged(EventTriggers.BurstReload, true); }, null, delay);
+                    session.FutureEvents.Schedule(o => { EventTriggerStateChanged(EventTriggers.BurstReload, true); }, null, delay);
                 else
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
 
@@ -301,7 +301,6 @@ namespace WeaponCore.Platform
             {
                 State.ManualShoot = TerminalActionState.ShootOff;
                 StopShooting();
-                //Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
             }
             _muzzlesToFire.Clear();
 
