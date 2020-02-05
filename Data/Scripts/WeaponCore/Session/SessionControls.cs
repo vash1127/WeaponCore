@@ -25,12 +25,18 @@ namespace WeaponCore
             var actions = new List<IMyTerminalAction>();
             var iActions = new List<ITerminalAction>();
             var controls = new List<IMyTerminalControl>();
+            var sControls = new List<IMyTerminalControl>();
+            var sActions = new List<IMyTerminalAction>();
+
+
             var cube = new MyCockpit();
             var t = (IMyTerminalBlock)cube;
 
             MyAPIGateway.TerminalActionsHelper.GetActions(t.GetType(), iActions);
             MyAPIGateway.TerminalControls.GetActions<IMyUserControllableGun>(out actions);
             MyAPIGateway.TerminalControls.GetControls<IMyUserControllableGun>(out controls);
+            MyAPIGateway.TerminalControls.GetActions<MyConveyorSorter>(out sActions);
+            MyAPIGateway.TerminalControls.GetControls<MyConveyorSorter>(out sControls);
 
             foreach (var a in actions)
             {
@@ -45,6 +51,21 @@ namespace WeaponCore
                 a.Visible = block => false;
                 MyAPIGateway.TerminalControls.RemoveControl<IMyUserControllableGun>(a);
             }
+
+            foreach (var a in sActions)
+            {
+                a.Writer = (block, builder) => { };
+                a.Action = block => { };
+                a.Enabled = block => false;
+                MyAPIGateway.TerminalControls.RemoveAction<MyConveyorSorter>(a);
+            }
+            foreach (var c in sControls)
+            {
+                c.Enabled = block => false;
+                c.Visible = block => false;
+                MyAPIGateway.TerminalControls.RemoveControl<MyConveyorSorter>(c);
+            }
+
             foreach (var iA in iActions)
             {
                 var a = (IMyTerminalAction)iA;
