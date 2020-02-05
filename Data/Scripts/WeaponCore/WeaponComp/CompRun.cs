@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
-using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 namespace WeaponCore.Support
@@ -13,11 +12,11 @@ namespace WeaponCore.Support
     {
         public override void OnAddedToContainer()
         {
-            try
-            {
+            try {
+
                 base.OnAddedToContainer();
-                if (Container.Entity.InScene)
-                {
+                if (Container.Entity.InScene) {
+
                     if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                         PlatformInit();
                 }
@@ -45,8 +44,8 @@ namespace WeaponCore.Support
 
         internal void PlatformInit()
         {
-            switch (Platform.Init(this))
-            {
+            switch (Platform.Init(this)) {
+
                 case MyWeaponPlatform.PlatformState.Invalid:
                     Log.Line($"Platform PreInit is in an invalid state");
                     break;
@@ -64,19 +63,18 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
-            using (MyCube.Pin())
+            using (MyCube.Pin()) 
             {
-                if (!MyCube.MarkedForClose && Entity != null)
+                if (!MyCube.MarkedForClose && Entity != null) 
                 {
+
                     _isServer = Session.IsServer;
                     _isDedicated = Session.DedicatedServer;
                     _mpActive = Session.MpActive;
-
                     Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
                     Ai.FirstRun = true;
 
                     StorageSetup();
-
                     InventoryInit();
                     PowerInit();
                     Ai.CompChange(true, this);
@@ -89,34 +87,36 @@ namespace WeaponCore.Support
 
                     if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
                     else OnAddedToSceneTasks();
-                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
 
-                }
+                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
+                } 
                 else Log.Line($"Comp Init() failed");
             }
         }
 
         internal void ReInit()
         {
-            using (MyCube.Pin())
-            {
-                if (!MyCube.MarkedForClose && Entity != null)
-                {
+            using (MyCube.Pin())  {
+
+                if (!MyCube.MarkedForClose && Entity != null)  {
+
                     GridAi ai;
-                    if (!Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
-                    {
+                    if (!Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai)) {
+
                         var newAi = Session.GridAiPool.Get();
                         newAi.Init(MyCube.CubeGrid, Session);
                         Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
                         Ai = newAi;
                     }
-                    else Ai = ai;
+                    else {
+                        Ai = ai;
+                    }
 
-                    if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
-                    {
+                    if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this)) {
+
                         Ai.FirstRun = true;
-
                         var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
+
                         if (!Ai.WeaponCounter.ContainsKey(blockDef))
                             Ai.WeaponCounter.TryAdd(blockDef, Session.WeaponCountPool.Get());
 
@@ -129,13 +129,17 @@ namespace WeaponCore.Support
                             Platform.ResetParts(this);
 
                         Entity.NeedsWorldMatrix = true;
-                        if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
-                        else OnAddedToSceneTasks();
+
+                        if (!Ai.GridInit) 
+                            Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                        else 
+                            OnAddedToSceneTasks();
                     }
-                    else Log.Line($"Comp ReInit() failed stage2!");
+                    else {
+                        Log.Line($"Comp ReInit() failed stage2!");
+                    }
                 }
-                else
-                {
+                else {
                     Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
                 }
             }
@@ -143,17 +147,18 @@ namespace WeaponCore.Support
 
         internal void OnAddedToSceneTasks()
         {
-            try
-            {
+            try {
+
                 Ai.UpdatePowerSources = true;
-                if (!Ai.GridInit)
-                {
+                if (!Ai.GridInit) {
+
                     Ai.GridInit = true;
                     Ai.InitFakeShipController();
                     Ai.ScanBlockGroups = true;
                     var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
-                    for (int i = 0; i < fatList.Count; i++)
-                    {
+                    
+                    for (int i = 0; i < fatList.Count; i++) {
+
                         var cubeBlock = fatList[i];
                         if (cubeBlock is MyBatteryBlock || cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler || cubeBlock is IMyShipConnector)
                             Ai.FatBlockAdded(cubeBlock);
@@ -165,27 +170,25 @@ namespace WeaponCore.Support
                 OptimalDps = 0;
                 MaxHeat = 0;
 
-                //range slider fix - removed from weaponFields.cs
                 var maxTrajectory = 0d;
                 var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
-                for (int i = 0; i < Platform.Weapons.Length; i++)
-                {
-                    var weapon = Platform.Weapons[i];
 
+                for (int i = 0; i < Platform.Weapons.Length; i++) {
+                    
+                    var weapon = Platform.Weapons[i];
                     weapon.InitTracking();
                     
                     double weaponMaxRange;
                     DpsAndHeatInit(weapon, ob, out weaponMaxRange);
                     maxTrajectory += weaponMaxRange;
-
-                    weapon.UpdateBarrelRotation();
                 }
 
-                if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange)
-                {
+                if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {
+
                     Ai.MaxTargetingRange = maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius;
                     Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
                 }
+
                 Ai.OptimalDps += OptimalDps;
 
                 
@@ -196,10 +199,6 @@ namespace WeaponCore.Support
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
-        }
-
-        internal void OnRemovedFromSceneQueue()
-        {
         }
 
         public override void OnRemovedFromScene()
@@ -214,11 +213,12 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready)
-            {
+            if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready) {
+
                 Set.Value.Inventory = BlockInventory.GetObjectBuilder();
-                if (MyCube?.Storage != null)
-                {
+
+                if (MyCube?.Storage != null) {
+
                     State.SaveState();
                     Set.SaveSettings();
                 }
@@ -226,9 +226,6 @@ namespace WeaponCore.Support
             return false;
         }
 
-        public override string ComponentTypeDebugString
-        {
-            get { return "Shield"; }
-        }
+        public override string ComponentTypeDebugString => "WeaponCore";
     }
 }

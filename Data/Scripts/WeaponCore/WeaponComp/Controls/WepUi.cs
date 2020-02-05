@@ -159,53 +159,6 @@ namespace WeaponCore
 
             }
             SetDps(block, comp.Set.Value.DpsModifier);
-            /*
-            var oldRequired = w.RequiredPower;
-            var oldUsable = w.UseablePower;
-            w.UpdateRequiredPower();
-
-            w.TicksPerShot = (uint)(3600f / w.RateOfFire);
-            w.TimePerShot = (3600d / w.RateOfFire);
-
-            w.UpdateBarrelRotation();
-
-            var oldDps = w.Dps;
-            w.Dps = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
-
-            if (w.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
-            {
-                if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    w.Dps += (w.DetonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                      ? w.System.Values.Ammo.Trajectory.AccelPerSec /
-                                        w.System.Values.Ammo.Trajectory.DesiredSpeed
-                                      : 1);
-                else
-                    w.Dps += (w.AreaEffectDmg / 2) *
-                                  (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                      ? w.System.Values.Ammo.Trajectory.AccelPerSec /
-                                        w.System.Values.Ammo.Trajectory.DesiredSpeed
-                                      : 1);
-            }
-
-            comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
-            comp.OptimalDps += w.Dps;
-
-            if (w.IsShooting)
-            {
-                if (oldRequired - oldUsable < 0.001)
-                {
-                    w.UseablePower = w.RequiredPower;
-                    comp.SinkPower -= (oldUsable - w.UseablePower);
-                    comp.MyCube.ResourceSink.Update();
-                }
-
-                comp.Ai.RequestedWeaponsDraw -= (oldRequired - w.RequiredPower);
-
-                comp.CurrentDps -= (oldDps - w.Dps);
-            }
-
-
-        }*/
         }
 
         internal static bool GetOverload(IMyTerminalBlock block)

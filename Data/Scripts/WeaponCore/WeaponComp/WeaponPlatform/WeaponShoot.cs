@@ -59,7 +59,7 @@ namespace WeaponCore.Platform
 
             _shootTick = tick + TicksPerShot;
 
-            if (System.BarrelAxisRotation)
+            if (System.HasBarrelRotation) 
             {
                 if (session.Tick10 && _barrelRate < 9)
                     _barrelRate++;

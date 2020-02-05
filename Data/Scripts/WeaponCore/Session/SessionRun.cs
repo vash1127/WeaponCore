@@ -218,11 +218,14 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 IsCreative = MyAPIGateway.Session.CreativeMode;
 
-                foreach (var mod in MyAPIGateway.Session.Mods)
+                foreach (var mod in Session.Mods)
                 {
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
                     else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
                 }
+
+                if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\WeaponCore")) 
+                    ReplaceVanilla = true;
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);

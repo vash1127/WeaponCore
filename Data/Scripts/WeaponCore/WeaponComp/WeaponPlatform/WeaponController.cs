@@ -201,7 +201,7 @@ namespace WeaponCore.Platform
                     BarrelSpinRate = (int)barrelRate;
                     TicksPerShot = (uint)(3600f / RateOfFire);
 
-                    UpdateBarrelRotation();
+                    if (System.HasBarrelRotation) UpdateBarrelRotation();
                     CurrentlyDegrading = true;
                 }
                 else if (set && CurrentlyDegrading)
@@ -211,7 +211,7 @@ namespace WeaponCore.Platform
                     BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Set.Value.RofModifier);
                     TicksPerShot = (uint)(3600f / RateOfFire);
 
-                    UpdateBarrelRotation();
+                    if (System.HasBarrelRotation) UpdateBarrelRotation();
                 }
 
                 var resetFakeTick = false;

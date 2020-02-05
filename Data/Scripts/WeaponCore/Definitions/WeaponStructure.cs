@@ -66,13 +66,12 @@ namespace WeaponCore.Support
         public readonly TurretType TurretMovement;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
-        public readonly bool HasBarrelRate;
+        public readonly bool HasBarrelRotation;
         public readonly bool ElevationOnly;
         public readonly bool LimitedAxisTurret;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
-        public readonly bool BarrelAxisRotation;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool LineWidthVariance;
@@ -210,7 +209,6 @@ namespace WeaponCore.Support
             AmmoParticleShrinks = values.Graphics.Particles.Ammo.ShrinkByDistance;
             HitParticleShrinks = values.Graphics.Particles.Hit.ShrinkByDistance;
             
-            BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelAxisRotation);
 
             HitParticle = values.Graphics.Particles.Hit.Name != string.Empty;
 
@@ -233,7 +231,8 @@ namespace WeaponCore.Support
 
             Fields(out PulseInterval, out PulseChance);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
-            BarrelValues(out BarrelsPerShot, out BarrelSpinRate, out HasBarrelRate, out RateOfFire);
+            BarrelValues(out BarrelsPerShot, out RateOfFire);
+            BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
             AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
             Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay, out IsHybrid);
 
@@ -311,21 +310,21 @@ namespace WeaponCore.Support
             if (wepCoolDown > .95f) wepCoolDown = .95f;
         }
 
-        private void BarrelValues(out int barrelsPerShot, out int barrelSpinRate, out bool hasBarrelRate, out int rateOfFire)
-        {
-            barrelsPerShot = Values.HardPoint.Loading.BarrelsPerShot;
-            barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate;
-            hasBarrelRate = BarrelSpinRate > 0;
-            rateOfFire = Values.HardPoint.Loading.RateOfFire;
-        }
-
-        private void BarrelsAv(out bool barrelEffect1, out bool barrelEffect2, out float barrel1AvTicks, out float barrel2AvTicks, out bool barrelAxisRotation)
+        private void BarrelsAv(out bool barrelEffect1, out bool barrelEffect2, out float barrel1AvTicks, out float barrel2AvTicks, out int barrelSpinRate, out bool hasBarrelRotation)
         {
             barrelEffect1 = Values.Graphics.Particles.Barrel1.Name != string.Empty;
             barrelEffect2 = Values.Graphics.Particles.Barrel2.Name != string.Empty;
             barrel1AvTicks = Values.Graphics.Particles.Barrel1.Extras.MaxDuration;
             barrel2AvTicks = Values.Graphics.Particles.Barrel2.Extras.MaxDuration;
-            barrelAxisRotation = Values.HardPoint.RotateBarrelAxis != 0;
+            barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate > 0 ? Values.HardPoint.Loading.BarrelSpinRate : RateOfFire;
+            if (barrelSpinRate > 3599) barrelSpinRate = 3599;
+            hasBarrelRotation = BarrelSpinRate > 0 && Values.HardPoint.RotateBarrelAxis != 0;
+        }
+
+        private void BarrelValues(out int barrelsPerShot, out int rateOfFire)
+        {
+            barrelsPerShot = Values.HardPoint.Loading.BarrelsPerShot;
+            rateOfFire = Values.HardPoint.Loading.RateOfFire;
         }
 
         private void AreaEffects(out AreaDamage.AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect)

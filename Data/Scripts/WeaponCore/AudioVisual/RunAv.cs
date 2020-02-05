@@ -25,10 +25,10 @@ namespace WeaponCore.Support
 
         internal bool ExplosionReady
         {
-            get
-            {
-                if (++ExplosionCounter <= 5)
-                {
+            get {
+
+                if (++ExplosionCounter <= 5) {
+
                     return true;
                 }
                 return false;
@@ -47,8 +47,8 @@ namespace WeaponCore.Support
 
         internal void Run()
         {
-            if (Session.Tick600)
-            {
+            if (Session.Tick600) {
+
                 Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} [P] {Session.Projectiles.ActiveProjetiles.Count} [P-Pool] {Session.Projectiles.ProjectilePool.Count} [AvPool] {AvShotPool.Count} [AvBarrels] 1:{AvBarrels1.Count} 2:{AvBarrels2.Count} =-");
                 _glows = 0;
                 _shrinks = 0;
@@ -244,10 +244,10 @@ namespace WeaponCore.Support
         private void RunShrinks(AvShot av)
         {
             var s = av.TracerShrinks.Dequeue();
-            if (av.LastTick != Session.Tick)
-            {
-                if (!av.System.OffsetEffect)
-                {
+            if (av.LastTick != Session.Tick) {
+
+                if (!av.System.OffsetEffect) {
+
                     if (av.OnScreen != AvShot.Screen.None)
                         MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
                 }
@@ -263,8 +263,8 @@ namespace WeaponCore.Support
 
         internal void RunAvBarrels1()
         {
-            for (int i = AvBarrels1.Count - 1; i >= 0; i--)
-            {
+            for (int i = AvBarrels1.Count - 1; i >= 0; i--) {
+
                 var avBarrel = AvBarrels1[i];
 
                 var weapon = avBarrel.Weapon;
@@ -275,12 +275,12 @@ namespace WeaponCore.Support
 
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
 
-                if (!muzzle.Av1Looping && ticksAgo >= weapon.System.Barrel1AvTicks || weapon.StopBarrelAv)
-                {
-                    if (entityExists)
-                    {
-                        if (weapon.BarrelEffects1[muzzle.MuzzleId] != null)
-                        {
+                if (!muzzle.Av1Looping && ticksAgo >= weapon.System.Barrel1AvTicks || weapon.StopBarrelAv) {
+
+                    if (entityExists) {
+
+                        if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
+
                             weapon.StopBarrelAv = false;
                             weapon.BarrelEffects1[muzzle.MuzzleId].Stop();
                             weapon.BarrelEffects1[muzzle.MuzzleId] = null;
@@ -291,8 +291,8 @@ namespace WeaponCore.Support
                     continue;
                 }
 
-                if (weapon.Comp.Ai != null && weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick)
-                {
+                if (weapon.Comp.Ai != null && weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick) {
+
                     weapon.Comp.Ai.GridVel = weapon.Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                     weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                     weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
@@ -301,16 +301,17 @@ namespace WeaponCore.Support
                 var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
                 if (entityExists) matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
 
-                if (entityExists && !weapon.StopBarrelAv)
-                {
+                if (entityExists && !weapon.StopBarrelAv) {
+
                     var particles = weapon.System.Values.Graphics.Particles;
-                    if (weapon.BarrelEffects1[muzzle.MuzzleId] == null && ticksAgo <= 0)
-                    {
+                    if (weapon.BarrelEffects1[muzzle.MuzzleId] == null && ticksAgo <= 0) {
+
                         var matrix1 = matrix;
                         matrix1.Translation += particles.Barrel1.Offset;
                         MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects1[muzzle.MuzzleId]);
-                        if (weapon.BarrelEffects1[muzzle.MuzzleId] != null)
-                        {
+                        
+                        if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
+
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel1.Color;
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                             weapon.BarrelEffects1[muzzle.MuzzleId].DistanceMax = particles.Barrel1.Extras.MaxDistance;
@@ -321,14 +322,14 @@ namespace WeaponCore.Support
                             weapon.BarrelEffects1[muzzle.MuzzleId].Play();
                         }
                     }
-                    else if (particles.Barrel1.Extras.Restart && weapon.BarrelEffects1[muzzle.MuzzleId] != null && weapon.BarrelEffects1[muzzle.MuzzleId].IsEmittingStopped)
-                    {
+                    else if (particles.Barrel1.Extras.Restart && weapon.BarrelEffects1[muzzle.MuzzleId] != null && weapon.BarrelEffects1[muzzle.MuzzleId].IsEmittingStopped) {
+
                         weapon.BarrelEffects1[muzzle.MuzzleId].WorldMatrix = matrix;
                         weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                         weapon.BarrelEffects1[muzzle.MuzzleId].Play();
                     }
-                    else if (weapon.BarrelEffects1[muzzle.MuzzleId] != null)
-                    {
+                    else if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
+
                         weapon.BarrelEffects1[muzzle.MuzzleId].WorldMatrix = matrix;
                         weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                     }
@@ -338,8 +339,8 @@ namespace WeaponCore.Support
 
         internal void RunAvBarrels2()
         {
-            for (int i = AvBarrels2.Count - 1; i >= 0; i--)
-            {
+            for (int i = AvBarrels2.Count - 1; i >= 0; i--) {
+
                 var avBarrel = AvBarrels2[i];
 
                 var weapon = avBarrel.Weapon;
@@ -348,12 +349,12 @@ namespace WeaponCore.Support
                 var entityExists = weapon.MuzzlePart.Item1?.Parent != null && !weapon.MuzzlePart.Item1.MarkedForClose;
                 var matrix = MatrixD.Zero;
 
-                if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv)
-                {
-                    if (entityExists)
-                    {
-                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null)
-                        {
+                if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv) {
+
+                    if (entityExists) {
+
+                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
+
                             weapon.StopBarrelAv = false;
                             weapon.BarrelEffects2[muzzle.MuzzleId].Stop();
                             weapon.BarrelEffects2[muzzle.MuzzleId] = null;
@@ -364,8 +365,8 @@ namespace WeaponCore.Support
                     continue;
                 }
 
-                if (weapon.Comp.Ai != null && weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick)
-                {
+                if (weapon.Comp.Ai != null && weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick) {
+
                     weapon.Comp.Ai.GridVel = weapon.Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                     weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                     weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
@@ -374,17 +375,16 @@ namespace WeaponCore.Support
                 var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
                 if (entityExists) matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
 
-                if (entityExists && !weapon.StopBarrelAv)
-                {
+                if (entityExists && !weapon.StopBarrelAv) {
 
                     var particles = weapon.System.Values.Graphics.Particles;
-                    if (weapon.BarrelEffects2[muzzle.MuzzleId] == null && ticksAgo <= 0)
-                    {
+                    if (weapon.BarrelEffects2[muzzle.MuzzleId] == null && ticksAgo <= 0) {
+
                         var matrix1 = matrix;
                         matrix1.Translation += particles.Barrel2.Offset;
                         MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId]);
-                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null)
-                        {
+                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
+
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                             weapon.BarrelEffects2[muzzle.MuzzleId].DistanceMax = particles.Barrel2.Extras.MaxDistance;
@@ -395,14 +395,14 @@ namespace WeaponCore.Support
                             weapon.BarrelEffects2[muzzle.MuzzleId].Play();
                         }
                     }
-                    else if (particles.Barrel2.Extras.Restart && weapon.BarrelEffects2[muzzle.MuzzleId] != null && weapon.BarrelEffects2[muzzle.MuzzleId].IsEmittingStopped)
-                    {
+                    else if (particles.Barrel2.Extras.Restart && weapon.BarrelEffects2[muzzle.MuzzleId] != null && weapon.BarrelEffects2[muzzle.MuzzleId].IsEmittingStopped) {
+
                         weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
                         weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                         weapon.BarrelEffects2[muzzle.MuzzleId].Play();
                     }
-                    else if (weapon.BarrelEffects2[muzzle.MuzzleId] != null)
-                    {
+                    else if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
+
                         weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
                         weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                     }
@@ -412,11 +412,11 @@ namespace WeaponCore.Support
 
         internal void Start()
         {
-            for (int i = AvStart.Count - 1; i >= 0; i--)
-            {
+            for (int i = AvStart.Count - 1; i >= 0; i--) {
+
                 var av = AvStart[i];
-                if (av.StartSoundActived)
-                {
+                if (av.StartSoundActived) {
+
                     av.StartSoundActived = false;
                     av.FireEmitter.PlaySound(av.FireSound, true);
                 }
@@ -426,14 +426,14 @@ namespace WeaponCore.Support
 
         internal void End()
         {
-            for (int i = AvEnd.Count - 1; i >= 0; i--)
-            {
+            for (int i = AvEnd.Count - 1; i >= 0; i--) {
+
                 var av = AvEnd[i];
-                if (av.FakeExplosion && av.DetonateFakeExp)
-                {
+                if (av.FakeExplosion && av.DetonateFakeExp) {
+
                     av.FakeExplosion = false;
-                    if (ExplosionReady)
-                    {
+                    if (ExplosionReady) {
+                        
                         if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
                         else SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
                     }
@@ -444,7 +444,6 @@ namespace WeaponCore.Support
             }
             AvEnd.Clear();
         }
-
     }
 
     internal struct AvBarrel
