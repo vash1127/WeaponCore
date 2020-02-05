@@ -47,6 +47,60 @@ namespace WeaponCore.Control
                         }
                     };
                 }
+                else if (a.Id.Equals("Shoot"))
+                {
+                    a.Action = blk =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+                        /*if (comp.ClickShootAction == null || comp.shootAction == null)
+                        {
+                            comp.ClickShootAction = (IMyTerminalAction)MyAPIGateway.TerminalActionsHelper.GetActionWithName("WC_Shoot_Click", typeof(T));
+                            comp.shootAction = a;
+                        }*/
+
+                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                        {
+                            var w = comp.Platform.Weapons[j];
+
+                            if (comp.ShootOn)
+                            {
+                                w.State.ManualShoot = ShootOff;
+                                if (w.IsShooting)
+                                    w.StopShooting();
+                                else if (w.DrawingPower && !w.System.MustCharge)
+                                    w.StopPowerDraw();
+
+                                if (w.System.MustCharge)
+                                {
+                                    if (w.State.CurrentAmmo != w.System.EnergyMagSize)
+                                        w.State.CurrentAmmo = 0;
+                                }
+                            }
+                            else
+                            {
+                                
+                                comp.ClickShoot = false;
+                                w.State.ManualShoot = ShootOn;
+                                //a.WriteValue(blk, comp.Session.sbOn);
+                                //comp.ClickShootAction.WriteValue(blk, comp.Session.sbOff);
+                            }
+                        }
+
+                        comp.ShootOn = !comp.ShootOn;
+                    };
+
+                    a.Writer = (blk, sb) => 
+                    {
+                        var on = blk.Components.Get<WeaponComponent>()?.ShootOn ?? false;
+
+                        if (on)
+                            sb.Append("On");
+                        else
+                            sb.Append("Off");
+                    };
+                }
             }
         }
         
@@ -102,7 +156,7 @@ namespace WeaponCore.Control
                         };
                         break;
 
-                    case "Shoot":
+                    /*case "Shoot":
                         ((IMyTerminalControlOnOffSwitch)c).Setter = (blk, on) =>
                         {
                             var comp = blk?.Components?.Get<WeaponComponent>();
@@ -132,7 +186,7 @@ namespace WeaponCore.Control
                                     w.State.ManualShoot = ShootOn;
                             }
                         };
-                        break;
+                        break;*/
 
                     case "OnOff":
                         ((IMyTerminalControlOnOffSwitch)c).Setter += OnOffAnimations;

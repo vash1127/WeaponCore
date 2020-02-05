@@ -54,21 +54,23 @@ namespace WeaponCore.Platform
                 PreFired = false;
             }
 
-            if (_shootTick > tick)
-                return;
-
-            _shootTick = tick + TicksPerShot;
-
             if (System.HasBarrelRotation) 
             {
                 if (session.Tick10 && _barrelRate < 9)
                     _barrelRate++;
+
+                Log.Line($"_barrelRate: {_barrelRate}");
 
                 MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
 
                 if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
                     StartRotateSound();
             }
+
+            if (_shootTick > tick)
+                return;
+
+            _shootTick = tick + TicksPerShot;
 
             if (!IsShooting) StartShooting();
 

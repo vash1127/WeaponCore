@@ -2,9 +2,8 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -39,6 +38,9 @@ namespace WeaponCore.Support
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
+
+        internal IMyTerminalAction shootAction;
+        internal IMyTerminalAction ClickShootAction;
 
         internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;
@@ -79,9 +81,10 @@ namespace WeaponCore.Support
         internal bool UserControlled;
         internal bool Overheated;
         internal bool Debug;
-        internal bool MouseShoot;
         internal bool UnlimitedPower;
         internal bool Registered;
+        internal bool ShootOn;
+        internal bool ClickShoot;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

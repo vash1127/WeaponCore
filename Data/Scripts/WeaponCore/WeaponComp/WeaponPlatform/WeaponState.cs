@@ -239,14 +239,20 @@ namespace WeaponCore.Platform
             var ewar = (int)System.Values.Ammo.AreaEffect.AreaEffect > 3;
             ShotEnergyCost = ewar ? System.Values.HardPoint.EnergyCost * AreaEffectDmg : System.Values.HardPoint.EnergyCost * BaseDamage;
         }
-
+        /*
         internal void UpdateBarrelRotation()
         {
             var steps = (360f / System.Barrels.Length) / (3600f / System.BarrelSpinRate);
+            var rof = System.HasBarrelRotation ? BarrelSpinRate < 3599 ? BarrelSpinRate : 3599 : RateOfFire < 3599 ? RateOfFire : 3599;
             for (int i = 0; i < 10; i++) {
 
-                var multi = (float)(i + 1)/10;
-                var angle = MathHelper.ToRadians(steps * multi);
+                //var multi = (float)(i + 1)/10;
+                //var angle = MathHelper.ToRadians(steps * multi);
+
+                var multi = ((float)(i + 1))/10;
+
+                var angle = MathHelper.ToRadians(((360f / System.Barrels.Length) / (3600f / rof)) * multi);
+
                 switch (System.Values.HardPoint.RotateBarrelAxis) {
 
                     case 1:
@@ -261,6 +267,43 @@ namespace WeaponCore.Platform
                 }
             }
         }
+        */
+
+
+        internal void UpdateBarrelRotation()
+        {
+            if (Comp.MyCube != null && !Comp.MyCube.MarkedForClose)
+            {
+                var axis = System.Values.HardPoint.RotateBarrelAxis;
+                if (axis == 0) return;
+
+                var rof = BarrelSpinRate > 0 ? BarrelSpinRate < 3599 ? BarrelSpinRate : 3599 : RateOfFire < 3599 ? RateOfFire : 3599;
+
+                if (MuzzlePart.Item1 != Comp.MyCube)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        var multi = ((float)(i + 1)) / 10;
+
+                        var angle = MathHelper.ToRadians(((360f / System.Barrels.Length) / (3600f / rof)) * multi);
+
+                        switch (axis)
+                        {
+                            case 1:
+                                BarrelRotationPerShot[i] = MuzzlePart.Item2 * Matrix.CreateRotationX(angle) * MuzzlePart.Item3;
+                                break;
+                            case 2:
+                                BarrelRotationPerShot[i] = MuzzlePart.Item2 * Matrix.CreateRotationY(angle) * MuzzlePart.Item3;
+                                break;
+                            case 3:
+                                BarrelRotationPerShot[i] = MuzzlePart.Item2 * Matrix.CreateRotationZ(angle) * MuzzlePart.Item3;
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
 
         public void StartShooting()
         {

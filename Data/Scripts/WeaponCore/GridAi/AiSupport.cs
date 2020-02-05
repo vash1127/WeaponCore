@@ -851,9 +851,10 @@ namespace WeaponCore.Support
                 {
                     var wState = comp.State.Value.Weapons[comp.Platform.Weapons[i].WeaponId];
 
-                    if (wState.ManualShoot == Weapon.TerminalActionState.ShootClick)
+                    if (comp.ClickShoot)
                     {
-                        comp.MouseShoot = false;
+                        comp.ClickShoot = false;
+                        //comp.ClickShootAction.WriteValue(comp.MyCube, comp.Session.sbOff);
                         wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
                     }
 

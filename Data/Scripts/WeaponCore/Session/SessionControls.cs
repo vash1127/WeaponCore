@@ -19,6 +19,10 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        
+        internal StringBuilder sbOn = new StringBuilder("On");
+        internal StringBuilder sbOff = new StringBuilder("Off");
+
         #region UI Config
         public static void PurgeTerminalSystem()
         {
@@ -177,34 +181,44 @@ namespace WeaponCore
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+                /*if (comp.ClickShootAction == null || comp.shootAction == null)
+                {
+                    comp.ClickShootAction = action;
+                    comp.shootAction = (IMyTerminalAction)MyAPIGateway.TerminalActionsHelper.GetActionWithName("Shoot", typeof(T));
+                }*/
+
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-                    if (w.State.ManualShoot == ShootClick)
+                    if (comp.ClickShoot)
                     {
                         w.State.ManualShoot = ShootOff;
-                        comp.MouseShoot = false;
-                    }
-                    else if (w.State.ManualShoot != ShootOff)
-                    {
-                        w.State.ManualShoot = ShootClick;
-                        comp.MouseShoot = true;
+                        //action.WriteValue(blk, comp.Session.sbOff);
                     }
                     else
                     {
                         w.State.ManualShoot = ShootClick;
-                        comp.MouseShoot = true;
+                        comp.ShootOn = false;
+                        //action.WriteValue(blk, comp.Session.sbOn);
+                        //comp.shootAction.WriteValue(blk, comp.Session.sbOff);
                     }
                 }
+
+                comp.ClickShoot = !comp.ClickShoot;
+
             };
-            action.Writer = (blk, t) =>
+
+            action.Writer = (blk, sb) =>
             {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp != null && comp.MouseShoot)
-                    t.Append("On");
+                var on = blk.Components.Get<WeaponComponent>()?.ClickShoot ?? false;
+
+                if (on)
+                    sb.Append("On");
                 else
-                    t.Append("Off");
+                    sb.Append("Off");
             };
+
             action.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
