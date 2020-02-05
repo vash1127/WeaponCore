@@ -323,7 +323,7 @@ namespace WeaponCore.Support
                 else barrelSpinRate = RateOfFire < 3699 ? RateOfFire : 3599;
             }
 
-            hasBarrelRotation = barrelSpinRate > 0 && Values.HardPoint.RotateBarrelAxis != 0;
+            hasBarrelRotation = barrelSpinRate > 0;
         }
 
         private void BarrelValues(out int barrelsPerShot, out int rateOfFire)
