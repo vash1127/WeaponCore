@@ -316,9 +316,14 @@ namespace WeaponCore.Support
             barrelEffect2 = Values.Graphics.Particles.Barrel2.Name != string.Empty;
             barrel1AvTicks = Values.Graphics.Particles.Barrel1.Extras.MaxDuration;
             barrel2AvTicks = Values.Graphics.Particles.Barrel2.Extras.MaxDuration;
-            barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate > 0 ? Values.HardPoint.Loading.BarrelSpinRate : RateOfFire;
-            if (barrelSpinRate > 3599) barrelSpinRate = 3599;
-            hasBarrelRotation = BarrelSpinRate > 0 && Values.HardPoint.RotateBarrelAxis != 0;
+            
+            barrelSpinRate = 0;
+            if (Values.HardPoint.RotateBarrelAxis != 0) {
+                if (Values.HardPoint.Loading.BarrelSpinRate > 0) barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate < 3600 ? Values.HardPoint.Loading.BarrelSpinRate : 3599;
+                else barrelSpinRate = RateOfFire < 3699 ? RateOfFire : 3599;
+            }
+
+            hasBarrelRotation = barrelSpinRate > 0 && Values.HardPoint.RotateBarrelAxis != 0;
         }
 
         private void BarrelValues(out int barrelsPerShot, out int rateOfFire)
