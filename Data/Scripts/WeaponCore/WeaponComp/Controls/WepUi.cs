@@ -60,7 +60,9 @@ namespace WeaponCore
             var newBase = w.System.BaseDamage * comp.Set.Value.DpsModifier;
 
             if (w.System.IsBeamWeapon)
+            {
                 newBase *= comp.Set.Value.Overload;
+            }
 
             if (newBase < 0)
                 newBase = 0;
@@ -221,10 +223,8 @@ namespace WeaponCore
             if (newValue)
                 comp.Set.Value.Overload = 2;
             else
-            {
                 comp.Set.Value.Overload = 1;
-                comp.MaxRequiredPower = 0;
-            }
+
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 if(comp.Platform.Weapons[i].System.IsBeamWeapon && !comp.Platform.Weapons[i].System.MustCharge)
