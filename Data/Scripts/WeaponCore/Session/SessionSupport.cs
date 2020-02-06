@@ -49,8 +49,8 @@ namespace WeaponCore
                     if (!MiscLoaded)
                     {
                         MiscLoaded = true;
-                        if (!IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
-
+                        if (!IsServer)
+                            PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
                     }
                     GameLoaded = true;
                 }

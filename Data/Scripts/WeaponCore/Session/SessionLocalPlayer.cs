@@ -1,8 +1,11 @@
 ﻿using System.Collections.Concurrent;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
@@ -24,11 +27,18 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
-                var controller = ActiveControlBlock as Sandbox.Game.Entities.IMyControllableEntity;
+                var controller = ActiveControlBlock as MyShipController;
                 if (controller != null)
                 {
-                    if (controller.CanSwitchAmmoMagazine())
-                        controller.SwitchToWeapon(null);
+                    if (((Sandbox.Game.Entities.IMyControllableEntity)controller).CanSwitchAmmoMagazine())
+                    {
+                        var controlledOB = controller.GetObjectBuilderCubeBlock() as MyObjectBuilder_ShipController;
+                        var hasValue = controlledOB.SelectedGunId.HasValue;
+                        MyDefinitionId gunId = hasValue ? controlledOB.SelectedGunId.Value : new VRage.ObjectBuilders.SerializableDefinitionId();
+
+                        if (hasValue && (ReplaceVanilla && VanillaIds.ContainsKey(gunId)) || WeaponPlatforms.ContainsKey(gunId.SubtypeId))
+                            controller.SwitchToWeapon(null);
+                    }
                 }
             }
             else
