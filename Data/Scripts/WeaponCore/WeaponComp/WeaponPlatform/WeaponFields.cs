@@ -5,6 +5,7 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.Target;
@@ -24,6 +25,7 @@ namespace WeaponCore.Platform
         private int _nextVirtual;
         private int _barrelRate;
         private int _fakeHeatTick;
+        private int _numModelBarrels;
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
@@ -208,6 +210,18 @@ namespace WeaponCore.Platform
             
             System = system;
             Comp = comp;
+
+            MyStringHash subtype;
+            if (comp.MyCube.DefinitionId.HasValue && comp.Session.VanillaIds.TryGetValue(comp.MyCube.DefinitionId.Value, out subtype))
+            {
+                if (subtype.String.Contains("Gatling"))
+                    _numModelBarrels = 6;
+                else
+                    _numModelBarrels = System.Barrels.Length;
+            }
+            else
+                _numModelBarrels = System.Barrels.Length;
+
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;
 
             AvCapable = System.HasBarrelShootAv && !Comp.Session.DedicatedServer;

@@ -36,10 +36,17 @@ namespace WeaponCore.Control
 
                 else if (a.Id.Equals("ShootOnce"))
                 {
+                    var oldAction = a.Action;
                     a.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        {
+                            if (comp == null)
+                                a.Action(blk);
+
+                            return;
+                        }
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
@@ -49,10 +56,17 @@ namespace WeaponCore.Control
                 }
                 else if (a.Id.Equals("Shoot"))
                 {
+                    var oldAction = a.Action;
                     a.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        {
+                            if (comp == null)
+                                a.Action(blk);
+
+                            return;
+                        }
 
                         /*if (comp.ClickShootAction == null || comp.shootAction == null)
                         {
@@ -91,11 +105,16 @@ namespace WeaponCore.Control
                         comp.ShootOn = !comp.ShootOn;
                     };
 
+                    var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => 
                     {
-                        var on = blk.Components.Get<WeaponComponent>()?.ShootOn ?? false;
-
-                        if (on)
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null)
+                        {
+                            oldWriter(blk, sb);
+                            return;
+                        }
+                        if (comp.ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -141,7 +160,7 @@ namespace WeaponCore.Control
                         };
                         break;
 
-                    case "ShootOnce":
+                    /*case "ShootOnce":
                         ((IMyTerminalControlButton)c).Action = blk =>
                         {
                             var comp = blk?.Components?.Get<WeaponComponent>();
@@ -154,7 +173,7 @@ namespace WeaponCore.Control
                             }
 
                         };
-                        break;
+                        break;*/
 
                     /*case "Shoot":
                         ((IMyTerminalControlOnOffSwitch)c).Setter = (blk, on) =>

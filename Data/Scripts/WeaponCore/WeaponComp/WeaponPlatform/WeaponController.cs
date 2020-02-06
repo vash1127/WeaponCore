@@ -252,5 +252,27 @@ namespace WeaponCore.Platform
             }
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
+
+        internal void SpinDownBarrel(object o)
+        {
+
+            if (IsShooting) return;
+
+            MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
+
+            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                StartRotateSound();
+
+            if (_spinUpTick <= Comp.Session.Tick && _barrelRate > 0)
+            {
+                _spinUpTick = Comp.Session.Tick + _ticksBeforeSpinUp;
+                _barrelRate--;
+                Comp.Session.FutureEvents.Schedule(SpinDownBarrel, null, 1);
+            }
+            else if (_barrelRate > 0)
+                Comp.Session.FutureEvents.Schedule(SpinDownBarrel, null, 1);
+            else
+                StopRotateSound();
+        }
     }
 }

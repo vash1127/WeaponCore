@@ -242,8 +242,9 @@ namespace WeaponCore.Platform
         
         internal void UpdateBarrelRotation()
         {
-            var steps = (360f / System.Barrels.Length) / (3600f / System.BarrelSpinRate);
-            _ticksBeforeSpinUp = (uint)(3600f / System.BarrelSpinRate);
+            var interval = (3600f / System.BarrelSpinRate) * (3.14f / _numModelBarrels);
+            var steps = (360f / _numModelBarrels) / interval;
+            _ticksBeforeSpinUp = (uint)interval;
             for (int i = 0; i < 10; i++) {
 
                 var multi = (float)(i + 1)/10;
@@ -298,7 +299,7 @@ namespace WeaponCore.Platform
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
-                    _barrelRate = 0;
+                    //_barrelRate = 0;
                     _spunUp = false;
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
@@ -315,6 +316,7 @@ namespace WeaponCore.Platform
 
                 }
                 IsShooting = false;
+                SpinDownBarrel(null);
             }
         }
 
