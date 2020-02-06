@@ -316,7 +316,7 @@ namespace WeaponCore.Platform
 
                 }
                 IsShooting = false;
-                SpinDownBarrel(null);
+                if(System.HasBarrelRotation) SpinDownBarrel(null);
             }
         }
 
