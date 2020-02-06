@@ -242,7 +242,7 @@ namespace WeaponCore.Platform
         
         internal void UpdateBarrelRotation()
         {
-            var interval = (3600f / System.BarrelSpinRate) * (3.14f / _numModelBarrels);
+            var interval = (3600f / System.BarrelSpinRate) * ((float)Math.PI / _numModelBarrels);
             var steps = (360f / _numModelBarrels) / interval;
             _ticksBeforeSpinUp = (uint)interval;
             for (int i = 0; i < 10; i++) {
