@@ -64,6 +64,8 @@ namespace WeaponCore
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
 
+            //MyVisualScriptLogicProvider.PlayerEnteredCockpit += cockpit;
+            MyVisualScriptLogicProvider.ToolbarItemChanged += RemoveAction;
 
             foreach (var x in WeaponDefinitions)
             {
