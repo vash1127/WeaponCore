@@ -43,7 +43,7 @@ namespace WeaponCore.Control
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             if (comp == null)
-                                a.Action(blk);
+                                oldAction(blk);
 
                             return;
                         }
@@ -63,7 +63,7 @@ namespace WeaponCore.Control
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             if (comp == null)
-                                a.Action(blk);
+                                oldAction(blk);
 
                             return;
                         }
