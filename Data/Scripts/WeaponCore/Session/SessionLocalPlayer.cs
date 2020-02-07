@@ -1,8 +1,12 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
@@ -24,12 +28,6 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
-                var controller = ActiveControlBlock as Sandbox.Game.Entities.IMyControllableEntity;
-                if (controller != null)
-                {
-                    if (controller.CanSwitchAmmoMagazine())
-                        controller.SwitchToWeapon(null);
-                }
             }
             else
             {
@@ -41,6 +39,43 @@ namespace WeaponCore
             }
             return InGridAiBlock;
         }
+
+        private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
+        {
+            if (entityId != 0)
+            {
+                var myDefinitionId = MyVisualScriptLogicProvider.GetDefinitionId(typeId, subtypeId);
+                if ((ReplaceVanilla && VanillaIds.ContainsKey(myDefinitionId)) || WeaponPlatforms.ContainsKey(myDefinitionId.SubtypeId))
+                {
+                    try
+                    {
+                        MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
+                        MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
+                    }
+                    catch (Exception e)
+                    {
+                        FutureEvents.Schedule((object o) =>
+                        {
+                        //player is sitting in cockpit on game load and has an action to be removed
+                        try
+                            {
+                                MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
+                                MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
+                            }
+                            catch (Exception e2)
+                            {
+                                Log.Line($"error in action removal: {e2}");
+                            }
+                        }, null, 10);
+                    }
+                }
+            }
+        }
+
+        /*private void cockpit(string entityName, long playerId, string gridName)
+        {
+            
+        }*/
 
         internal void EntityControlUpdate()
         {

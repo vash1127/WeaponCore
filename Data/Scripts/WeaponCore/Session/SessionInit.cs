@@ -31,8 +31,9 @@ namespace WeaponCore
 
                 MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
                 MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
+                MyVisualScriptLogicProvider.ToolbarItemChanged += RemoveAction;
 
-                var env = MyDefinitionManager.Static.EnvironmentDefinition;
+            var env = MyDefinitionManager.Static.EnvironmentDefinition;
                 if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
                 else if (env.SmallShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.SmallShipMaxSpeed;
                 if (MpActive)
@@ -63,7 +64,6 @@ namespace WeaponCore
             Inited = true;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
-
 
             foreach (var x in WeaponDefinitions)
             {

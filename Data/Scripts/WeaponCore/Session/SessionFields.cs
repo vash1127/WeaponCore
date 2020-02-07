@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -10,6 +11,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -117,6 +119,7 @@ namespace WeaponCore
         internal MyCubeBlock ActiveControlBlock;
 
         internal MyEntity ControlledEntity;
+        //internal MyObjectBuilder_ShipController ControlledOB;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
 
