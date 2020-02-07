@@ -2,6 +2,7 @@ using System;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -224,7 +225,7 @@ namespace WeaponCore
                     else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
                 }
 
-                if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\WeaponCore")) 
+                //if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\WeaponCore")) 
                     ReplaceVanilla = true;
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
