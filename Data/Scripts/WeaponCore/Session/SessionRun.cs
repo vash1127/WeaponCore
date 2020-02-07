@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -229,6 +230,24 @@ namespace WeaponCore
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
+
+                var list = Static.GetAllSessionPreloadObjectBuilders();
+                var comparer = new HackEqualityComparer();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    var tuple = (IStructuralEquatable)list[i];
+                    if (tuple != null)
+                    {
+                        tuple.GetHashCode(comparer);
+                        var hacked = comparer.Def;
+                        if (hacked?.CubeBlocks != null)
+                        {
+                            foreach (var cube in hacked.CubeBlocks)
+                            {
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

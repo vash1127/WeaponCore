@@ -216,6 +216,20 @@ namespace WeaponCore
         private uint _lastDrawTick;
         private bool _paused;
 
+        class HackEqualityComparer : System.Collections.IEqualityComparer
+        {
+            internal MyObjectBuilder_Definitions Def;
+            public bool Equals(object a, object b) => false;
+            public int GetHashCode(object o)
+            {
+                var definitions = o as MyObjectBuilder_Definitions;
+                if (definitions != null)
+                    Def = definitions;
+                return 0;
+            }
+        }
+
+
         public Session()
         {
             UiInput = new UiInput(this);
