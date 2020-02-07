@@ -75,9 +75,10 @@ namespace WeaponCore
                     {
                         TerminalHelpers.AlterActions<IMyUserControllableGun>();
                         TerminalHelpers.AlterControls<IMyUserControllableGun>();
-                        CreateShootClick<IMyUserControllableGun>();
                         session.BaseControlsActions = true;
                     }
+
+                    CreateShootClick<T>();
 
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
@@ -92,14 +93,11 @@ namespace WeaponCore
                     {
                         TerminalHelpers.AlterActions<IMyUserControllableGun>();
                         TerminalHelpers.AlterControls<IMyUserControllableGun>();
-                        CreateShootClick<IMyUserControllableGun>();
+                        
                         session.BaseControlsActions = true;
                     }
 
-                    if (typeof(T) == typeof(IMySmallMissileLauncher))
-                        CreateShootClick<IMySmallMissileLauncher>();
-
-
+                    CreateShootClick<T>();
 
                     builderType = new MyObjectBuilder_WeaponBlockDefinition();
                 }
