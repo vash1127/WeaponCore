@@ -62,33 +62,7 @@ namespace WeaponCore
                         if (entity is MyCubeGrid)
                         {
                             var grid = entity as MyCubeGrid;
-                            foreach (var cube in grid.GetFatBlocks())
-                            {
-                                if(cube is MyShipController)
-                                {
-                                    var ob = cube.GetObjectBuilderCubeBlock() as MyObjectBuilder_ShipController;
-
-                                    var reinit = false;
-
-                                    for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
-                                    {
-                                        var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
-                                        if (toolbarItem != null) {
-                                            var defId = (MyDefinitionId)toolbarItem.defId;
-                                            if (((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId)))
-                                            {
-                                                var index = ob.Toolbar.Slots[i].Index;
-                                                var item = ob.Toolbar.Slots[i].Item;
-                                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot() { Index = index, Item = item };
-                                                reinit = true;
-
-                                            } }
-                                    }
-
-                                    if (reinit)
-                                        cube.Init(ob, grid);
-                                }
-                            }
+                            RemoveCoreToolbarWeapons(grid);
                         }
 
                     }
@@ -112,6 +86,39 @@ namespace WeaponCore
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
+        }
+
+        internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
+        {
+            foreach (var cube in grid.GetFatBlocks())
+            {
+                if (cube is MyShipController)
+                {
+                    var ob = cube.GetObjectBuilderCubeBlock() as MyObjectBuilder_ShipController;
+
+                    var reinit = false;
+
+                    for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
+                    {
+                        var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
+                        if (toolbarItem != null)
+                        {
+                            var defId = (MyDefinitionId)toolbarItem.defId;
+                            if (((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId)))
+                            {
+                                var index = ob.Toolbar.Slots[i].Index;
+                                var item = ob.Toolbar.Slots[i].Item;
+                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot() { Index = index, Item = item };
+                                reinit = true;
+
+                            }
+                        }
+                    }
+
+                    if (reinit)
+                        cube.Init(ob, grid);
+                }
+            }
         }
 
         internal int ShortLoadAssigner()
