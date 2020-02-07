@@ -229,7 +229,6 @@ namespace WeaponCore
             }
         }
 
-
         public Session()
         {
             UiInput = new UiInput(this);

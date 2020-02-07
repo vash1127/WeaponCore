@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Sandbox.Engine.Networking;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -226,12 +227,12 @@ namespace WeaponCore
                     else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
                 }
 
-                //if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\WeaponCore")) 
+                if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement")) 
                     ReplaceVanilla = true;
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
-
+                /*
                 var list = Static.GetAllSessionPreloadObjectBuilders();
                 var comparer = new HackEqualityComparer();
                 for (int i = 0; i < list.Count; i++)
@@ -243,12 +244,13 @@ namespace WeaponCore
                         var hacked = comparer.Def;
                         if (hacked?.CubeBlocks != null)
                         {
-                            foreach (var cube in hacked.CubeBlocks)
+                            foreach (var cube in hacked.Definitions)
                             {
                             }
                         }
                     }
                 }
+                */
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

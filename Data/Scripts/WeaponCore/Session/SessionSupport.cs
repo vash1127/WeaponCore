@@ -55,16 +55,11 @@ namespace WeaponCore
                     }
                     GameLoaded = true;
 
-                    HashSet<IMyEntity> entities = new HashSet<IMyEntity>();
-                    MyAPIGateway.Entities.GetEntities(entities);
-                    foreach (var entity in entities)
+                    foreach (var myEntity in MyEntities.GetEntities())
                     {
-                        if (entity is MyCubeGrid)
-                        {
-                            var grid = entity as MyCubeGrid;
+                        var grid = myEntity as MyCubeGrid;
+                        if (grid != null)
                             RemoveCoreToolbarWeapons(grid);
-                        }
-
                     }
 
                 }
@@ -94,23 +89,20 @@ namespace WeaponCore
             {
                 if (cube is MyShipController)
                 {
-                    var ob = cube.GetObjectBuilderCubeBlock() as MyObjectBuilder_ShipController;
-
+                    var ob = (MyObjectBuilder_ShipController)cube.GetObjectBuilderCubeBlock();
                     var reinit = false;
-
                     for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
                     {
                         var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
                         if (toolbarItem != null)
                         {
                             var defId = (MyDefinitionId)toolbarItem.defId;
-                            if (((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId)))
+                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId))
                             {
                                 var index = ob.Toolbar.Slots[i].Index;
                                 var item = ob.Toolbar.Slots[i].Item;
-                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot() { Index = index, Item = item };
+                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot { Index = index, Item = item };
                                 reinit = true;
-
                             }
                         }
                     }
