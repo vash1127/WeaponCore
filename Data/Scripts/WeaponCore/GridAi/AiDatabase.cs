@@ -11,9 +11,6 @@ namespace WeaponCore.Support
     {
         internal void Scan()
         {
-            if (Scanning)
-                return;
-
             using (_scanLock.AcquireExclusiveUsing())
             {
                 if (!Scanning && Session.Tick - _lastScan > 100)
@@ -22,7 +19,6 @@ namespace WeaponCore.Support
                     _lastScan = Session.Tick;
                     GridVolume.Radius = MaxTargetingRange;
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref GridVolume, _possibleTargets);
-
                     foreach (var grid in PrevSubGrids)
                         RemSubGrids.Add(grid);
 

@@ -109,6 +109,7 @@ namespace WeaponCore.Support
         internal bool HadPower;
         internal bool CheckProjectiles;
         internal bool WeaponTerminalAccess;
+        internal bool FadeOut;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double ClosestStaticSqr = double.MaxValue;
