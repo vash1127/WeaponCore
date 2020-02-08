@@ -79,8 +79,6 @@ namespace WeaponCore
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
 
-                    //CreateShootClick<T>();
-
                     builderType = new MyObjectBuilder_LargeTurretBaseDefinition();
                 }
                 else if (typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun))
