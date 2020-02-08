@@ -294,7 +294,6 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    var barrelCount = m.Value.Barrels.Length;
                     if (reset)
                     {
                         var registered = false;
@@ -347,7 +346,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    for (int i = 0; i < barrelCount; i++)
+                    for (int i = 0; i < m.Value.Barrels.Length; i++)
                     {
                         var barrel = m.Value.Barrels[i];
 

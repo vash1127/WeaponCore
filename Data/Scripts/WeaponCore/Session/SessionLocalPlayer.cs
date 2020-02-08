@@ -200,25 +200,21 @@ namespace WeaponCore
                     foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
                     {
                         subpart1.Value.Render.Transparency = transparency;
-                        subpart1.Value.Render.UpdateTransparency();
                         if (subpart1.Value?.Subparts != null)
                         {
                             foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
                             {
                                 subpart2.Value.Render.Transparency = transparency;
-                                subpart2.Value.Render.UpdateTransparency();
                                 if (subpart2.Value?.Subparts != null)
                                 {
                                     foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
                                     {
                                         subpart3.Value.Render.Transparency = transparency;
-                                        subpart3.Value.Render.UpdateTransparency();
                                         if (subpart3.Value?.Subparts != null)
                                         {
                                             foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
                                             {
                                                 subpart4.Value.Render.Transparency = transparency;
-                                                subpart4.Value.Render.UpdateTransparency();
                                                 SetTransparencyForSubparts(subpart4.Value, transparency);
                                             }
                                         }
@@ -239,7 +235,6 @@ namespace WeaponCore
             foreach (KeyValuePair<string, MyEntitySubpart> subpart in renderEntity.Subparts)
             {
                 subpart.Value.Render.Transparency = transparency;
-                subpart.Value.Render.UpdateTransparency();
                 SetTransparencyForSubparts(subpart.Value, transparency);
             }
         }
