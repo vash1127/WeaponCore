@@ -39,7 +39,7 @@ namespace WeaponCore
             }
             return InGridAiBlock;
         }
-
+        /*
         private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
         {
             if (entityId != 0)
@@ -71,11 +71,7 @@ namespace WeaponCore
                 }
             }
         }
-
-        /*private void cockpit(string entityName, long playerId, string gridName)
-        {
-            
-        }*/
+        */
 
         internal void EntityControlUpdate()
         {

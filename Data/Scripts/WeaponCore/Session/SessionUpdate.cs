@@ -232,6 +232,8 @@ namespace WeaponCore
                                 }
                                 else if (w.IsShooting)
                                     w.StopShooting();
+                                else if (w.BarrelRate > 0)
+                                    w.SpinBarrel();
 
                                 if (comp.Debug)
                                     WeaponDebug(w);
