@@ -301,12 +301,7 @@ namespace WeaponCore.Support
                     return false;
 
                 var bigOwners = MyGrid.BigOwners;
-                if (bigOwners == null || bigOwners.Count <= 0)
-                {
-                    MyOwner = 0;
-                    return false;
-                }
-                MyOwner = bigOwners[0];
+                MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
                 return true;
             }
         }
@@ -726,6 +721,7 @@ namespace WeaponCore.Support
             BlockCount = 0;
             MyOwner = 0;
             PointDefense = false;
+            FadeOut = false;
             SupressMouseShoot = false;
             OverPowered = false;
             UpdatePowerSources = false;

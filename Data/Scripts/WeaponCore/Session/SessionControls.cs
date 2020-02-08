@@ -19,10 +19,6 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        
-        internal StringBuilder sbOn = new StringBuilder("On");
-        internal StringBuilder sbOff = new StringBuilder("Off");
-
         #region UI Config
         public static void PurgeTerminalSystem()
         {

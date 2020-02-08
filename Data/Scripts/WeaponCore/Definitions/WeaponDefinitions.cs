@@ -338,6 +338,7 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal bool NoAudioVisual;
         [ProtoMember(5)] internal bool NoGuidance;
         [ProtoMember(6)] internal ShrapnelShape Shape;
+        [ProtoMember(7)] internal bool AreaEffect;
     }
 
     [ProtoContract]

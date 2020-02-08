@@ -164,10 +164,13 @@ namespace WeaponCore.Platform
                 comp.HasChargeWeapon = comp.HasChargeWeapon || system.MustCharge;
 
                 var weapon = Weapons[i];
+                
+                if (!comp.Debug && weapon.System.Values.HardPoint.Block.Debug)
+                    comp.Debug = true;
+
                 if (weapon.System.Values.HardPoint.Block.TurretController)
                 {
                     weapon.TrackingAi = true;
-                    comp.Debug = weapon.System.Values.HardPoint.Block.Debug || comp.Debug;
                     weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
                     weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
 

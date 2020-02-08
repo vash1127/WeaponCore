@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-using Sandbox.Common.ObjectBuilders;
-using Sandbox.Definitions;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
@@ -28,11 +25,22 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
+                if (!TrackingAi.FadeOut && TargetUi.ReticleOnSelf)
+                    ToggleTransparent(TrackingAi, false);
+                else if (TrackingAi.FadeOut && !TargetUi.ReticleOnSelf)
+                    ToggleTransparent(TrackingAi, true);
             }
             else
             {
-                TrackingAi?.Focus.IsFocused(TrackingAi);
-                TrackingAi?.ControllingPlayers.Remove(Session.Player.IdentityId);
+                if (TrackingAi != null)
+                {
+                    if (TrackingAi.FadeOut)
+                        ToggleTransparent(TrackingAi, true);
+
+                    TrackingAi.Focus.IsFocused(TrackingAi);
+                    TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
+                }
+
                 TrackingAi = null;
                 ActiveCockPit = null;
                 ActiveControlBlock = null;
@@ -40,42 +48,30 @@ namespace WeaponCore
             return InGridAiBlock;
         }
 
-        private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
+        private void ToggleTransparent(GridAi ai, bool setvisible)
         {
-            if (entityId != 0)
+            TrackingAi.FadeOut = !setvisible;
+            var transparency = setvisible ? 0 : 0.72f;
+            var character = MyAPIGateway.Session.Player.Character;
+            if (character != null)
             {
-                var myDefinitionId = MyVisualScriptLogicProvider.GetDefinitionId(typeId, subtypeId);
-                if ((ReplaceVanilla && VanillaIds.ContainsKey(myDefinitionId)) || WeaponPlatforms.ContainsKey(myDefinitionId.SubtypeId))
+                if (setvisible)
                 {
-                    try
-                    {
-                        MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
-                        MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
-                    }
-                    catch (Exception e)
-                    {
-                        FutureEvents.Schedule((object o) =>
-                        {
-                        //player is sitting in cockpit on game load and has an action to be removed
-                        try
-                            {
-                                MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
-                                MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
-                            }
-                            catch (Exception e2)
-                            {
-                                Log.Line($"error in action removal: {e2}");
-                            }
-                        }, null, 10);
-                    }
+                    character.Render.Transparency = 0;
+                    character.Render.UpdateRenderObject(true);
+                }
+                else
+                {
+                    character.Render.Transparency = 1;
+                    character.Render.RemoveRenderObjects();
                 }
             }
-        }
-
-        /*private void cockpit(string entityName, long playerId, string gridName)
-        {
             
-        }*/
+            SetTransparency(ai.MyGrid, transparency, setvisible);
+         
+            foreach (var sub in ai.SubGrids)
+                SetTransparency(sub, transparency, setvisible);
+        }
 
         internal void EntityControlUpdate()
         {
@@ -185,6 +181,67 @@ namespace WeaponCore
             }
         }
 
+        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible)
+        {
+            foreach (IMySlimBlock cubeBlock in grid.GetBlocks())
+            {
+                var transparency = -transparencyOrigin;
+                if ((double)cubeBlock.Dithering == (double)transparency && (double)cubeBlock.CubeGrid.Render.Transparency == (double)transparency)
+                    continue;
+                cubeBlock.CubeGrid.Render.Transparency = transparency;
+                cubeBlock.Dithering = transparency;
+                cubeBlock.UpdateVisual();
+                var fatBlock = cubeBlock.FatBlock as MyCubeBlock;
+                var thruster = fatBlock as MyThrust;
+                thruster?.Render.UpdateFlameProperties(setvisible, 0);
+                MyEntity renderEntity = fatBlock;
+                if (renderEntity?.Subparts != null)
+                {
+                    foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
+                    {
+                        subpart1.Value.Render.Transparency = transparency;
+                        subpart1.Value.Render.UpdateTransparency();
+                        if (subpart1.Value?.Subparts != null)
+                        {
+                            foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
+                            {
+                                subpart2.Value.Render.Transparency = transparency;
+                                subpart2.Value.Render.UpdateTransparency();
+                                if (subpart2.Value?.Subparts != null)
+                                {
+                                    foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
+                                    {
+                                        subpart3.Value.Render.Transparency = transparency;
+                                        subpart3.Value.Render.UpdateTransparency();
+                                        if (subpart3.Value?.Subparts != null)
+                                        {
+                                            foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
+                                            {
+                                                subpart4.Value.Render.Transparency = transparency;
+                                                subpart4.Value.Render.UpdateTransparency();
+                                                SetTransparencyForSubparts(subpart4.Value, transparency);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SetTransparencyForSubparts(MyEntity renderEntity, float transparency)
+        {
+            foreach (KeyValuePair<string, MyEntitySubpart> subpart in renderEntity.Subparts)
+            {
+                subpart.Value.Render.Transparency = transparency;
+                subpart.Value.Render.UpdateTransparency();
+                SetTransparencyForSubparts(subpart.Value, transparency);
+            }
+        }
+
+
         internal void RemoveGps()
         {
             if (TargetGps != null)
@@ -266,5 +323,40 @@ namespace WeaponCore
                 else TargetArmed = false;
             }
         }
+
+        /*
+        private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
+        {
+            if (entityId != 0)
+            {
+                var myDefinitionId = MyVisualScriptLogicProvider.GetDefinitionId(typeId, subtypeId);
+                if ((ReplaceVanilla && VanillaIds.ContainsKey(myDefinitionId)) || WeaponPlatforms.ContainsKey(myDefinitionId.SubtypeId))
+                {
+                    try
+                    {
+                        MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
+                        MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
+                    }
+                    catch (Exception e)
+                    {
+                        FutureEvents.Schedule((object o) =>
+                        {
+                        //player is sitting in cockpit on game load and has an action to be removed
+                        try
+                            {
+                                MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
+                                MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
+                            }
+                            catch (Exception e2)
+                            {
+                                Log.Line($"error in action removal: {e2}");
+                            }
+                        }, null, 10);
+                    }
+                }
+            }
+        }
+        */
+
     }
 }

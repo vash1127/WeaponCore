@@ -71,7 +71,6 @@ namespace WeaponCore
 
                                 if (comp.Status != Started)
                                     comp.HealthCheck();
-
                                 //Log.Line($"Comp: {comp.MyCube.DebugName}: offline");
                                 continue;
                             }
@@ -107,7 +106,6 @@ namespace WeaponCore
                                 /// 
                                 var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
                                 var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
-
                                 w.TargetState = w.Target.State;
                                 if (w.Target.State == Targets.Acquired) {
 
@@ -115,7 +113,7 @@ namespace WeaponCore
                                         w.Target.Reset(!comp.ManualAim);
 
                                     }
-                                    else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) {
+                                    else if (w.Target.Entity != null && (overRides.ManualAim || w.Target.Entity.MarkedForClose)) {
                                         w.Target.Reset();
 
                                     }
@@ -173,8 +171,8 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange) || comp.ManualAim && !w.Target.IsFakeTarget;
-                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.ManualAim) && !w.AcquiringTarget && comp.TerminalControlled == None)
+                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !overRides.ManualAim) || comp.ManualAim && !w.Target.IsFakeTarget;
+                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !overRides.ManualAim) && !w.AcquiringTarget && comp.TerminalControlled == None)
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
@@ -199,7 +197,7 @@ namespace WeaponCore
                                 ///
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
-                                var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget;
+                                var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget && !comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
@@ -232,6 +230,8 @@ namespace WeaponCore
                                 }
                                 else if (w.IsShooting)
                                     w.StopShooting();
+                                else if (w.BarrelSpinning)
+                                    w.SpinBarrel(true);
 
                                 if (comp.Debug)
                                     WeaponDebug(w);

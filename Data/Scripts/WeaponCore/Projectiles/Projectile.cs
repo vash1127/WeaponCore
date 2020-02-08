@@ -206,9 +206,8 @@ namespace WeaponCore.Projectiles
             {
                 var shrapnel = Info.System.Values.Ammo.Shrapnel;
                 Info.BaseDamagePool = shrapnel.BaseDamage;
-                Info.DetonationDamage = Info.System.Values.Ammo.AreaEffect.Detonation.DetonationDamage;
-                Info.AreaEffectDamage = Info.System.Values.Ammo.AreaEffect.AreaEffectDamage;
-
+                Info.DetonationDamage = Info.System.Values.Ammo.Shrapnel.AreaEffect ? Info.System.Values.Ammo.AreaEffect.Detonation.DetonationDamage : 0;
+                Info.AreaEffectDamage = Info.System.Values.Ammo.Shrapnel.AreaEffect ? Info.System.Values.Ammo.AreaEffect.AreaEffectDamage : 0;
                 MaxTrajectory = shrapnel.MaxTrajectory;
                 TracerLength = TracerLength / shrapnel.Fragments >= 1 ? TracerLength / shrapnel.Fragments : 1;
             }

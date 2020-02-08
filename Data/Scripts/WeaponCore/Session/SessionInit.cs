@@ -25,7 +25,7 @@ namespace WeaponCore
 
             MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
-            MyVisualScriptLogicProvider.ToolbarItemChanged += RemoveAction;
+            //MyVisualScriptLogicProvider.ToolbarItemChanged += RemoveAction;
 
             var env = MyDefinitionManager.Static.EnvironmentDefinition;
             if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;

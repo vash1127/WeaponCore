@@ -56,14 +56,10 @@ namespace WeaponCore.Platform
 
             if (System.HasBarrelRotation)
             {
-                MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
-
-                if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                    StartRotateSound();
-
-                if (_spinUpTick <= tick && _barrelRate < 9)
+                SpinBarrel();
+                if (_spinUpTick <= tick && BarrelRate < 9)
                 {
-                    _spunUp = ++_barrelRate == 9;
+                    _spunUp = ++BarrelRate == 9;
                     _spinUpTick = tick + _ticksBeforeSpinUp;
                 }
 
@@ -372,7 +368,6 @@ namespace WeaponCore.Platform
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
-                    Log.Line($"{System.WeaponName} - ShootRayCheckFail - projectile not alive");
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
                     return;
@@ -382,7 +377,6 @@ namespace WeaponCore.Platform
             {
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
                 {
-                    //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
                     return;
@@ -390,7 +384,6 @@ namespace WeaponCore.Platform
                 var cube = Target.Entity as MyCubeBlock;
                 if (cube != null && !cube.IsWorking)
                 {
-                    //Log.Line($"{System.WeaponName} - ShootRayCheckFail - block is no longer working - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
                     return;
@@ -398,7 +391,6 @@ namespace WeaponCore.Platform
                 var topMostEnt = Target.Entity.GetTopMostParent();
                 if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
                 {
-                    //Log.Line("topmostEnt checks");
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
                     return;
@@ -408,7 +400,6 @@ namespace WeaponCore.Platform
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
             {
-                //Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
                 masterWeapon.Target.Reset();
                 if (masterWeapon !=  this) Target.Reset();
                 return;
@@ -428,7 +419,6 @@ namespace WeaponCore.Platform
 
                 masterWeapon.Target.Reset();
                 if (masterWeapon != this) Target.Reset();
-                //Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName} - {Target?.Entity?.MarkedForClose}");
                 return;
             }
 
@@ -441,17 +431,13 @@ namespace WeaponCore.Platform
                 var parentAsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
 
                 if (rootAsGrid == null && parentAsGrid == null)
-                {
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
-                }
 
                 var grid = parentAsGrid ?? rootAsGrid;
                 if (grid == Comp.Ai.MyGrid)
                 {
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
                     return;
                 }
 
@@ -459,14 +445,11 @@ namespace WeaponCore.Platform
                 {
                     if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
-                        //Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
                         masterWeapon.Target.Reset();
                         if (masterWeapon != this) Target.Reset();
                     }
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
-                //Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 return;
             }
             if (System.ClosestFirst)
@@ -493,8 +476,6 @@ namespace WeaponCore.Platform
                     {
                         masterWeapon.Target.Reset();
                         if (masterWeapon != this) Target.Reset();
-                        //if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
-                        //else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
                     }
                 }
             }

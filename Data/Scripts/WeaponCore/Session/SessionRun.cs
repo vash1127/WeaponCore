@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using Sandbox.Engine.Networking;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -224,14 +225,13 @@ namespace WeaponCore
                 {
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
                     else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
+                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
+                        ReplaceVanilla = true;
                 }
-
-                //if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\WeaponCore")) 
-                    ReplaceVanilla = true;
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
-
+                /*
                 var list = Static.GetAllSessionPreloadObjectBuilders();
                 var comparer = new HackEqualityComparer();
                 for (int i = 0; i < list.Count; i++)
@@ -243,12 +243,13 @@ namespace WeaponCore
                         var hacked = comparer.Def;
                         if (hacked?.CubeBlocks != null)
                         {
-                            foreach (var cube in hacked.CubeBlocks)
+                            foreach (var cube in hacked.Definitions)
                             {
                             }
                         }
                     }
                 }
+                */
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
@@ -266,7 +267,7 @@ namespace WeaponCore
 
                 MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
                 MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-                MyVisualScriptLogicProvider.ToolbarItemChanged -= RemoveAction;
+                //MyVisualScriptLogicProvider.ToolbarItemChanged -= RemoveAction;
                 ApiServer.Unload();
 
                 PurgeAll();

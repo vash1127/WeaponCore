@@ -21,11 +21,9 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
-
+        private readonly int _numModelBarrels;
         private int _nextVirtual;
-        private int _barrelRate;
         private int _fakeHeatTick;
-        private int _numModelBarrels;
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
@@ -38,6 +36,7 @@ namespace WeaponCore.Platform
         internal double TimePerShot;
         internal int LoadId;
         internal int ShortLoadId;
+        internal int BarrelRate;
 
         internal MyTuple<MyEntity, Matrix, Matrix, Vector3> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;
@@ -146,6 +145,7 @@ namespace WeaponCore.Platform
         internal bool TargetChanged;
         internal bool StopBarrelAv;
         internal bool AcquiringTarget;
+        internal bool BarrelSpinning;
         public enum TerminalActionState
         {
             ShootOn,
