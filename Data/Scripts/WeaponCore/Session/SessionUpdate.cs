@@ -71,7 +71,6 @@ namespace WeaponCore
 
                                 if (comp.Status != Started)
                                     comp.HealthCheck();
-
                                 //Log.Line($"Comp: {comp.MyCube.DebugName}: offline");
                                 continue;
                             }
@@ -198,7 +197,7 @@ namespace WeaponCore
                                 ///
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
-                                var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget;
+                                var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget && !comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
