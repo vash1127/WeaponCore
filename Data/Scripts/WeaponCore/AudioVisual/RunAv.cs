@@ -349,7 +349,7 @@ namespace WeaponCore.Support
                 var entityExists = weapon.MuzzlePart.Item1?.Parent != null && !weapon.MuzzlePart.Item1.MarkedForClose;
                 var matrix = MatrixD.Zero;
 
-                if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv) {
+                if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || !weapon.Comp.State.Value.Online || !weapon.Comp.Set.Value.Overrides.Activate || !weapon.Set.Enable) {
 
                     if (entityExists) {
 

@@ -19,28 +19,16 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        
-        internal StringBuilder sbOn = new StringBuilder("On");
-        internal StringBuilder sbOff = new StringBuilder("Off");
-
         #region UI Config
         public static void PurgeTerminalSystem()
         {
             var actions = new List<IMyTerminalAction>();
-            var iActions = new List<ITerminalAction>();
             var controls = new List<IMyTerminalControl>();
             var sControls = new List<IMyTerminalControl>();
             var sActions = new List<IMyTerminalAction>();
 
-
-            var cube = new MyCockpit();
-            var t = (IMyTerminalBlock)cube;
-
-            MyAPIGateway.TerminalActionsHelper.GetActions(t.GetType(), iActions);
             MyAPIGateway.TerminalControls.GetActions<IMyUserControllableGun>(out actions);
             MyAPIGateway.TerminalControls.GetControls<IMyUserControllableGun>(out controls);
-            //MyAPIGateway.TerminalControls.GetActions<IMyConveyorSorter>(out sActions);
-           // MyAPIGateway.TerminalControls.GetControls<IMyConveyorSorter>(out sControls);
 
             foreach (var a in actions)
             {
@@ -69,15 +57,6 @@ namespace WeaponCore
                 c.Visible = block => false;
                 MyAPIGateway.TerminalControls.RemoveControl<MyConveyorSorter>(c);
             }
-
-            foreach (var iA in iActions)
-            {
-                var a = (IMyTerminalAction)iA;
-                a.Writer = (block, builder) => { };
-                a.Action = block => { };
-                a.Enabled = block => false;
-                MyAPIGateway.TerminalControls.RemoveAction<IMyTerminalBlock>(a);
-            }
         }
 
         public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
@@ -95,10 +74,12 @@ namespace WeaponCore
                         session.BaseControlsActions = true;
                     }
 
+                    CreateShootClick<T>();
+
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
 
-                    CreateShootClick<T>();
+                    //CreateShootClick<T>();
 
                     builderType = new MyObjectBuilder_LargeTurretBaseDefinition();
                 }
@@ -108,6 +89,7 @@ namespace WeaponCore
                     {
                         TerminalHelpers.AlterActions<IMyUserControllableGun>();
                         TerminalHelpers.AlterControls<IMyUserControllableGun>();
+                        
                         session.BaseControlsActions = true;
                     }
 

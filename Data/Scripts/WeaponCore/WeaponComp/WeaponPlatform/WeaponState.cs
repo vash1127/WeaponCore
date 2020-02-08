@@ -141,7 +141,6 @@ namespace WeaponCore.Platform
                     break;
                 case EventTriggers.TurnOn:
                 case EventTriggers.TurnOff:
-                    //Threaded event
                     if (active && AnimationsSet.ContainsKey(state))
                     {
                         var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
@@ -283,7 +282,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false, bool power = true)
         {
             StopFiringSound(false);
-            StopRotateSound();
+            if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
             {
                 var muzzle = Muzzles[i];
@@ -299,7 +298,6 @@ namespace WeaponCore.Platform
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
-                    //_barrelRate = 0;
                     _spunUp = false;
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
@@ -316,7 +314,6 @@ namespace WeaponCore.Platform
 
                 }
                 IsShooting = false;
-                if(System.HasBarrelRotation) SpinDownBarrel(null);
             }
         }
 
@@ -364,12 +361,10 @@ namespace WeaponCore.Platform
             Reloading = true;
             if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
-                Comp.Session.FutureEvents.Schedule((object o)=> { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
+                Comp.Session.FutureEvents.Schedule(o=> { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
                 return;
             }
             
-            //EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
-
             if (IsShooting)
                 StopShooting();
 
@@ -472,11 +467,6 @@ namespace WeaponCore.Platform
         public void StopReloadSound()
         {
             ReloadEmitter?.StopSound(true);
-        }
-
-        public void StartRotateSound()
-        {
-            RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
         }
 
         public void StopRotateSound()

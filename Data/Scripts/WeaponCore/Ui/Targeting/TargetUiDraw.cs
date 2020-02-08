@@ -1,10 +1,8 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore
@@ -15,6 +13,7 @@ namespace WeaponCore
         {
             var s = _session;
             DrawReticle = false;
+            ReticleOnSelf = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
             if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && s.TrackingAi.GetTargetState()) DrawTarget();
@@ -58,13 +57,12 @@ namespace WeaponCore
                 _pointerPosition = _3RdPersonPos;
                 InitPointerOffset(0.05);
             }
-
+            
             SelectTarget(manualSelect: false);
 
             if (s.Tick - _lastDrawTick > 1 && _delay++ < 10) return;
             _delay = 0;
             _lastDrawTick = s.Tick;
-
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
             DrawReticle = true;
         }

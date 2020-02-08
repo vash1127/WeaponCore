@@ -59,7 +59,7 @@ namespace WeaponCore.Support
                         }
                     }
                 }
-                else if (myCubeBlock is IMyLargeTurretBase || myCubeBlock is MyConveyorSorter) ScanBlockGroups = true;
+                else if (myCubeBlock is IMyUserControllableGun || myCubeBlock is MyConveyorSorter) ScanBlockGroups = true;
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
         }

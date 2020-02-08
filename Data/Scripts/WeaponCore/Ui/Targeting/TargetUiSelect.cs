@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
@@ -71,13 +73,14 @@ namespace WeaponCore
 
             var foundTarget = false;
             MyEntity closestEnt = null;
-
             _session.Physics.CastRay(start, end, _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
                 var hit = _hitInfo[i];
                 closestEnt = hit.HitEntity as MyEntity;
                 var hitGrid = closestEnt as MyCubeGrid;
+
+
                 if (manualSelect)
                 {
                     if (hitGrid == null || hitGrid.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hitGrid)) continue;
@@ -87,6 +90,7 @@ namespace WeaponCore
 
                 if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid))
                 {
+                    ReticleOnSelf = true;
                     ai.DummyTarget.Update(end);
                     return false;
                 }

@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
-using Sandbox.Common.ObjectBuilders;
+﻿using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Collections;
 using VRage.Game;
-using VRage.Game.Entity;
-using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -19,43 +12,45 @@ namespace WeaponCore
 {
     public partial class Session
     {
-            private void BeforeStartInit()
+        private void BeforeStartInit()
+        {
+
+            MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
+            IsServer = MyAPIGateway.Multiplayer.IsServer;
+            DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
+
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(PacketId, ReceivedPacket);
+
+            if (!DedicatedServer && IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
+
+            MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
+            MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
+            //MyVisualScriptLogicProvider.ToolbarItemChanged += RemoveAction;
+
+            var env = MyDefinitionManager.Static.EnvironmentDefinition;
+            if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
+            else if (env.SmallShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.SmallShipMaxSpeed;
+            if (MpActive)
             {
-                MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
-                IsServer = MyAPIGateway.Multiplayer.IsServer;
-                DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
-
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(PacketId, ReceivedPacket);
-
-                if (!DedicatedServer && IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
-
-                MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
-                MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
-
-                var env = MyDefinitionManager.Static.EnvironmentDefinition;
-                if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
-                else if (env.SmallShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.SmallShipMaxSpeed;
-                if (MpActive)
-                {
-                    SyncDist = MyAPIGateway.Session.SessionSettings.SyncDistance;
-                    SyncDistSqr = SyncDist * SyncDist;
-                    SyncBufferedDistSqr = SyncDistSqr + 250000;
-                }
-                else
-                {
-                    SyncDist = MyAPIGateway.Session.SessionSettings.ViewDistance;
-                    SyncDistSqr = SyncDist * SyncDist;
-                    SyncBufferedDistSqr = (SyncDist + 500) * (SyncDist + 500);
-                }
-
-                Physics = MyAPIGateway.Physics;
-                Camera = MyAPIGateway.Session.Camera;
-                TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
-
-                CheckDirtyGrids();
-
-                ApiServer.Load();
+                SyncDist = MyAPIGateway.Session.SessionSettings.SyncDistance;
+                SyncDistSqr = SyncDist * SyncDist;
+                SyncBufferedDistSqr = SyncDistSqr + 250000;
             }
+            else
+            {
+                SyncDist = MyAPIGateway.Session.SessionSettings.ViewDistance;
+                SyncDistSqr = SyncDist * SyncDist;
+                SyncBufferedDistSqr = (SyncDist + 500) * (SyncDist + 500);
+            }
+
+            Physics = MyAPIGateway.Physics;
+            Camera = MyAPIGateway.Session.Camera;
+            TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
+
+            CheckDirtyGrids();
+
+            ApiServer.Load();
+        }
 
         internal void Init()
         {
@@ -63,7 +58,6 @@ namespace WeaponCore
             Inited = true;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
-
 
             foreach (var x in WeaponDefinitions)
             {

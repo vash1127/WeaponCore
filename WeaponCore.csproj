@@ -21,6 +21,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>6</LangVersion>
+    <CodeAnalysisRuleSet>WeaponCore.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <LangVersion>7</LangVersion>
+    <CodeAnalysisRuleSet>WeaponCore.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace>WeaponCore</RootNamespace>
@@ -39,9 +41,11 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <None Include=".editorconfig" />
     <None Include="Data\Energy_Ammo.sbc" />
     <None Include="Data\Energy_Magazine.sbc" />
     <None Include="Data\EntityComponents.sbc" />
+    <None Include="WeaponCore.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiServer.cs" />
@@ -232,7 +236,9 @@
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Analyzer Include="..\..\..\..\..\Downloads\SEWhitelistChecker.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
