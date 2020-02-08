@@ -128,12 +128,12 @@ namespace WeaponCore.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
-                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName}");
-                        stringBuilder.Append($"\nEnabled: {weapon.Set.Enable && weapon.Comp.State.Value.Online && weapon.Comp.Set.Value.Overrides.Activate}");
-                        stringBuilder.Append($"\nTargetState: {weapon.Target.State}");
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {weapon.Set.Enable && weapon.Comp.State.Value.Online && weapon.Comp.Set.Value.Overrides.Activate}");
+                        stringBuilder.Append($"\nTargetState: {weapon.Target.State} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget || weapon.Comp.Set.Value.Overrides.ManualAim}");
                         stringBuilder.Append($"\nReload: {weapon.Reloading} - Ammo :{!weapon.OutOfAmmo}");
-                        stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - OverHeat: {weapon.Comp.Overheated}");
-                        stringBuilder.Append($"\nCanShoot: {weapon.ShootDelayTick <= weapon.Comp.Session.Tick} - Charging: {weapon.System.MustCharge}");
+                        stringBuilder.Append($"\nOverHeat: {weapon.Comp.Overheated} - Shooting: {weapon.IsShooting}");
+                        stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");
+                        stringBuilder.Append($"\nCanShoot: {weapon.ShootDelayTick <= weapon.Comp.Session.Tick} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
                     }
                 }
