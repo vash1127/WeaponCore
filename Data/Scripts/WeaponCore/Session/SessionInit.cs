@@ -165,11 +165,6 @@ namespace WeaponCore
             }
 
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
-            /*
-            Projectiles.EntityPool = new MyConcurrentPool<MyEntity>[ModelCount];
-            for (int j = 0; j < ModelCount; j++)
-                Projectiles.EntityPool[j] = new MyConcurrentPool<MyEntity>(0, ModelIdToName[j], 20000, WeaponCore.Projectiles.Projectiles.EntityActivator);
-            */
         }
 
     }

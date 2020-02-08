@@ -14,62 +14,57 @@ namespace WeaponCore
         {
             try
             {
-                var cube = myEntity as MyCubeBlock;
+
+                if (!Inited) lock (InitObj) Init();
                 var grid = myEntity as MyCubeGrid;
+                if (grid != null) grid.AddedToScene += GridAddedToScene;
 
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
-                if (grid != null)
-                    grid.AddedToScene += GridAddedToScene;
-
-                if (cube == null) return;
-
-                if (!Inited)
-                    lock (InitObj)
-                        Init();
-
-                var sorter = myEntity as MyConveyorSorter;
-                var turret = myEntity as IMyLargeTurretBase;
-                var controllableGun = myEntity as IMyUserControllableGun;
+                var cube = myEntity as MyCubeBlock;
+                var sorter = cube as MyConveyorSorter;
+                var turret = cube as IMyLargeTurretBase;
+                var controllableGun = cube as IMyUserControllableGun;
                 if (sorter != null || turret != null || controllableGun != null)
                 {
-                    if (!SorterControls && myEntity is MyConveyorSorter)
+                    if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
+                    lock (InitObj)
                     {
-                        lock (InitObj)
+                        if (!SorterControls && myEntity is MyConveyorSorter)
                         {
                             if (!SorterControls)
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
+
                             SorterControls = true;
+
                         }
-                    }
-                    else if (!TurretControls && turret != null)
-                    {
-                        lock (InitObj)
+                        else if (!TurretControls && turret != null)
                         {
                             if (!TurretControls)
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
+
                             TurretControls = true;
+
                         }
-                    }
-                    else if ((!FixedGunControls || !FixedMissileControls) && controllableGun != null && turret == null)
-                    {
-                        if (controllableGun is IMySmallMissileLauncher && !FixedMissileControls)
+                        else if ((!FixedGunControls || !FixedMissileControls) && controllableGun != null && turret == null)
                         {
-                            lock (InitObj)
+                            if (controllableGun is IMySmallMissileLauncher && !FixedMissileControls)
                             {
+                                
                                 if (!FixedMissileControls)
                                     MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
+                                
                                 FixedMissileControls = true;
                             }
-                        }
-                        else if(controllableGun is IMySmallGatlingGun && !FixedGunControls)
-                        {
-                            lock (InitObj)
+                            else if (controllableGun is IMySmallGatlingGun && !FixedGunControls)
                             {
                                 if (!FixedGunControls)
                                     MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
+                                
                                 FixedGunControls = true;
+
                             }
                         }
                     }
