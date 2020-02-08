@@ -25,17 +25,19 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
+                /*
                 if (!TrackingAi.FadeOut && TargetUi.ReticleOnSelf)
                     ToggleTransparent(TrackingAi, false);
                 else if (TrackingAi.FadeOut && !TargetUi.ReticleOnSelf)
                     ToggleTransparent(TrackingAi, true);
+                    */
             }
             else
             {
                 if (TrackingAi != null)
                 {
-                    if (TrackingAi.FadeOut)
-                        ToggleTransparent(TrackingAi, true);
+                    //if (TrackingAi.FadeOut)
+                        //ToggleTransparent(TrackingAi, true);
 
                     TrackingAi.Focus.IsFocused(TrackingAi);
                     TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
