@@ -54,6 +54,8 @@ namespace WeaponCore.Support
 
                         foreach (var w in Platform.Weapons)
                         {
+                            w.Azimuth = 0;
+                            w.Elevation = 0;
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
 
