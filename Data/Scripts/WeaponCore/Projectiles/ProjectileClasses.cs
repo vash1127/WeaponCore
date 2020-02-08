@@ -2,6 +2,7 @@
 using Sandbox.Engine.Physics;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -275,7 +276,6 @@ namespace WeaponCore.Support
     internal class Fragments
     {
         internal List<Fragment> Sharpnel = new List<Fragment>();
-
         internal void Init(Projectile p, MyConcurrentPool<Fragment> fragPool)
         {
             for (int i = 0; i < p.Info.System.Values.Ammo.Shrapnel.Fragments; i++)
@@ -289,7 +289,7 @@ namespace WeaponCore.Support
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
-                frag.Origin = p.LastPosition;
+                frag.Origin = p.Hit.HitPos != Vector3D.Zero ? p.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
@@ -348,6 +348,7 @@ namespace WeaponCore.Support
                 p.Info.OriginUp = frag.OriginUp;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
+
                 p.State = Projectiles.Projectile.ProjectileState.Start;
                 p.StartSpeed = frag.Velocity;
                 frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
