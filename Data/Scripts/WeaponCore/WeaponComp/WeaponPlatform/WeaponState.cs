@@ -471,7 +471,6 @@ namespace WeaponCore.Platform
 
         public void StopRotateSound()
         {
-            Log.Line("stop rotate sound external to rotate");
             RotateEmitter?.StopSound(true);
         }
 

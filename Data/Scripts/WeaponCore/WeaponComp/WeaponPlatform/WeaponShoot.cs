@@ -56,12 +56,12 @@ namespace WeaponCore.Platform
 
             if (System.HasBarrelRotation)
             {
+                SpinBarrel();
                 if (_spinUpTick <= tick && BarrelRate < 9)
                 {
                     _spunUp = ++BarrelRate == 9;
                     _spinUpTick = tick + _ticksBeforeSpinUp;
                 }
-                SpinBarrel();
 
                 if (!_spunUp)
                     return;

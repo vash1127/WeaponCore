@@ -253,20 +253,28 @@ namespace WeaponCore.Platform
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
 
-        internal void SpinBarrel()
+        internal void SpinBarrel(bool spinDown = false)
         {
             MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[BarrelRate];
-            if (_spinUpTick <= Comp.Session.Tick && BarrelRate > 0)
-            {
-                if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                    RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
 
+            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
+
+            if (_spinUpTick <= Comp.Session.Tick && spinDown)
+            {
                 _spinUpTick = Comp.Session.Tick + _ticksBeforeSpinUp;
                 BarrelRate--;
             }
 
-            if (PlayTurretAv && BarrelRate <= 0 && RotateEmitter != null && RotateEmitter.IsPlaying)
-                RotateEmitter.StopSound(true);
+            if (BarrelRate < 0)
+            {
+                BarrelRate = 0;
+                BarrelSpinning = false;
+
+                if (PlayTurretAv && RotateEmitter != null && RotateEmitter.IsPlaying)
+                    RotateEmitter.StopSound(true);
+            }
+            else BarrelSpinning = true;
         }
     }
 }

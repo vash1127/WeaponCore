@@ -107,7 +107,6 @@ namespace WeaponCore
                                 /// 
                                 var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
                                 var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
-
                                 w.TargetState = w.Target.State;
                                 if (w.Target.State == Targets.Acquired) {
 
@@ -115,7 +114,7 @@ namespace WeaponCore
                                         w.Target.Reset(!comp.ManualAim);
 
                                     }
-                                    else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) {
+                                    else if (w.Target.Entity != null && (overRides.ManualAim || w.Target.Entity.MarkedForClose)) {
                                         w.Target.Reset();
 
                                     }
@@ -173,8 +172,8 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange) || comp.ManualAim && !w.Target.IsFakeTarget;
-                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.ManualAim) && !w.AcquiringTarget && comp.TerminalControlled == None)
+                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !overRides.ManualAim) || comp.ManualAim && !w.Target.IsFakeTarget;
+                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !overRides.ManualAim) && !w.AcquiringTarget && comp.TerminalControlled == None)
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
@@ -232,8 +231,8 @@ namespace WeaponCore
                                 }
                                 else if (w.IsShooting)
                                     w.StopShooting();
-                                else if (w.BarrelRate > 0)
-                                    w.SpinBarrel();
+                                else if (w.BarrelSpinning)
+                                    w.SpinBarrel(true);
 
                                 if (comp.Debug)
                                     WeaponDebug(w);

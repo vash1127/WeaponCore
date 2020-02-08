@@ -145,6 +145,7 @@ namespace WeaponCore.Platform
         internal bool TargetChanged;
         internal bool StopBarrelAv;
         internal bool AcquiringTarget;
+        internal bool BarrelSpinning;
         public enum TerminalActionState
         {
             ShootOn,
