@@ -229,9 +229,6 @@ namespace WeaponCore
                         ReplaceVanilla = true;
                 }
 
-                if (ModContext.ModPath.Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement")) 
-                    ReplaceVanilla = true;
-
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
                 /*

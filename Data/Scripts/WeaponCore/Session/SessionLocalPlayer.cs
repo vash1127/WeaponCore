@@ -73,104 +73,6 @@ namespace WeaponCore
                 SetTransparency(sub, transparency, setvisible);
         }
 
-        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible)
-        {
-            foreach (IMySlimBlock cubeBlock in grid.GetBlocks())
-            {
-                var transparency = -transparencyOrigin;
-                if ((double)cubeBlock.Dithering == (double)transparency && (double)cubeBlock.CubeGrid.Render.Transparency == (double)transparency)
-                    continue;
-                cubeBlock.CubeGrid.Render.Transparency = transparency;
-                cubeBlock.Dithering = transparency;
-                cubeBlock.UpdateVisual();
-                var fatBlock = cubeBlock.FatBlock as MyCubeBlock;
-                var thruster = fatBlock as MyThrust;
-                thruster?.Render.UpdateFlameProperties(setvisible, 0);
-                MyEntity renderEntity = fatBlock;
-                if (renderEntity?.Subparts != null)
-                {
-                    foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
-                    {
-                        subpart1.Value.Render.Transparency = transparency;
-                        subpart1.Value.Render.RemoveRenderObjects();
-                        subpart1.Value.Render.AddRenderObjects();
-                        if (subpart1.Value?.Subparts != null)
-                        {
-                            foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
-                            {
-                                subpart2.Value.Render.Transparency = transparency;
-                                subpart2.Value.Render.RemoveRenderObjects();
-                                subpart2.Value.Render.AddRenderObjects();
-                                if (subpart2.Value?.Subparts != null)
-                                {
-                                    foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
-                                    {
-                                        subpart3.Value.Render.Transparency = transparency;
-                                        subpart3.Value.Render.RemoveRenderObjects();
-                                        subpart3.Value.Render.AddRenderObjects();
-                                        if (subpart3.Value?.Subparts != null)
-                                        {
-                                            foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
-                                            {
-                                                subpart4.Value.Render.Transparency = transparency;
-                                                subpart4.Value.Render.RemoveRenderObjects();
-                                                subpart4.Value.Render.AddRenderObjects();
-                                                SetTransparencyForSubparts(subpart4.Value, transparency);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void SetTransparencyForSubparts(MyEntity renderEntity, float transparency)
-        {
-            foreach (KeyValuePair<string, MyEntitySubpart> subpart in renderEntity.Subparts)
-            {
-                subpart.Value.Render.Transparency = transparency;
-                subpart.Value.Render.RemoveRenderObjects();
-                subpart.Value.Render.AddRenderObjects();
-                SetTransparencyForSubparts(subpart.Value, transparency);
-            }
-        }
-        /*
-        private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
-        {
-            if (entityId != 0)
-            {
-                var myDefinitionId = MyVisualScriptLogicProvider.GetDefinitionId(typeId, subtypeId);
-                if ((ReplaceVanilla && VanillaIds.ContainsKey(myDefinitionId)) || WeaponPlatforms.ContainsKey(myDefinitionId.SubtypeId))
-                {
-                    try
-                    {
-                        MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
-                        MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
-                    }
-                    catch (Exception e)
-                    {
-                        FutureEvents.Schedule((object o) =>
-                        {
-                        //player is sitting in cockpit on game load and has an action to be removed
-                        try
-                            {
-                                MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
-                                MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
-                            }
-                            catch (Exception e2)
-                            {
-                                Log.Line($"error in action removal: {e2}");
-                            }
-                        }, null, 10);
-                    }
-                }
-            }
-        }
-        */
-
         internal void EntityControlUpdate()
         {
             var lastControlledEnt = ControlledEntity;
@@ -279,6 +181,72 @@ namespace WeaponCore
             }
         }
 
+        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible)
+        {
+            foreach (IMySlimBlock cubeBlock in grid.GetBlocks())
+            {
+                var transparency = -transparencyOrigin;
+                if ((double)cubeBlock.Dithering == (double)transparency && (double)cubeBlock.CubeGrid.Render.Transparency == (double)transparency)
+                    continue;
+                cubeBlock.CubeGrid.Render.Transparency = transparency;
+                cubeBlock.Dithering = transparency;
+                cubeBlock.UpdateVisual();
+                var fatBlock = cubeBlock.FatBlock as MyCubeBlock;
+                var thruster = fatBlock as MyThrust;
+                thruster?.Render.UpdateFlameProperties(setvisible, 0);
+                MyEntity renderEntity = fatBlock;
+                if (renderEntity?.Subparts != null)
+                {
+                    foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
+                    {
+                        subpart1.Value.Render.Transparency = transparency;
+                        subpart1.Value.Render.RemoveRenderObjects();
+                        subpart1.Value.Render.AddRenderObjects();
+                        if (subpart1.Value?.Subparts != null)
+                        {
+                            foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
+                            {
+                                subpart2.Value.Render.Transparency = transparency;
+                                subpart2.Value.Render.RemoveRenderObjects();
+                                subpart2.Value.Render.AddRenderObjects();
+                                if (subpart2.Value?.Subparts != null)
+                                {
+                                    foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
+                                    {
+                                        subpart3.Value.Render.Transparency = transparency;
+                                        subpart3.Value.Render.RemoveRenderObjects();
+                                        subpart3.Value.Render.AddRenderObjects();
+                                        if (subpart3.Value?.Subparts != null)
+                                        {
+                                            foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
+                                            {
+                                                subpart4.Value.Render.Transparency = transparency;
+                                                subpart4.Value.Render.RemoveRenderObjects();
+                                                subpart4.Value.Render.AddRenderObjects();
+                                                SetTransparencyForSubparts(subpart4.Value, transparency);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SetTransparencyForSubparts(MyEntity renderEntity, float transparency)
+        {
+            foreach (KeyValuePair<string, MyEntitySubpart> subpart in renderEntity.Subparts)
+            {
+                subpart.Value.Render.Transparency = transparency;
+                subpart.Value.Render.RemoveRenderObjects();
+                subpart.Value.Render.AddRenderObjects();
+                SetTransparencyForSubparts(subpart.Value, transparency);
+            }
+        }
+
+
         internal void RemoveGps()
         {
             if (TargetGps != null)
@@ -360,5 +328,40 @@ namespace WeaponCore
                 else TargetArmed = false;
             }
         }
+
+        /*
+        private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
+        {
+            if (entityId != 0)
+            {
+                var myDefinitionId = MyVisualScriptLogicProvider.GetDefinitionId(typeId, subtypeId);
+                if ((ReplaceVanilla && VanillaIds.ContainsKey(myDefinitionId)) || WeaponPlatforms.ContainsKey(myDefinitionId.SubtypeId))
+                {
+                    try
+                    {
+                        MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
+                        MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
+                    }
+                    catch (Exception e)
+                    {
+                        FutureEvents.Schedule((object o) =>
+                        {
+                        //player is sitting in cockpit on game load and has an action to be removed
+                        try
+                            {
+                                MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
+                                MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
+                            }
+                            catch (Exception e2)
+                            {
+                                Log.Line($"error in action removal: {e2}");
+                            }
+                        }, null, 10);
+                    }
+                }
+            }
+        }
+        */
+
     }
 }

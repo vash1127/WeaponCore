@@ -289,7 +289,7 @@ namespace WeaponCore.Support
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
-                frag.Origin = p.Position;
+                frag.Origin = p.LastPosition;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
