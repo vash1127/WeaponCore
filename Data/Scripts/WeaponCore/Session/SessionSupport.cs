@@ -249,6 +249,14 @@ namespace WeaponCore
             VanillaCoreIds[smallGatHash] = smallGatId;
             VanillaCoreIds[largeGatHash] = largeGatId;
             VanillaCoreIds[largeMissileHash] = largeMissileId;
+
+            VanillaSubpartNames.Add("InteriorTurretBase1");
+            VanillaSubpartNames.Add("InteriorTurretBase2");
+            VanillaSubpartNames.Add("MissileTurretBase1");
+            VanillaSubpartNames.Add("MissileTurretBarrels");
+            VanillaSubpartNames.Add("GatlingTurretBase1");
+            VanillaSubpartNames.Add("GatlingTurretBase2");
+            VanillaSubpartNames.Add("GatlingBarrel");
         }
     }
 }

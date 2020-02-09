@@ -46,10 +46,9 @@ namespace WeaponCore.Support
 
                 using (MyCube.Pin())
                 {
+                    ent.OnClose -= SubpartClosed;
                     if (!MyCube.MarkedForClose && Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
-                        ent.OnClose -= SubpartClosed;
-
                         SavePartStates();
                         Platform.ResetParts(this);
                         RestorePartStates();

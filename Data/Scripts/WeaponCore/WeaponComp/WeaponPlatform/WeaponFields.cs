@@ -38,9 +38,9 @@ namespace WeaponCore.Platform
         internal int ShortLoadId;
         internal int BarrelRate;
 
-        internal MyTuple<MyEntity, Matrix, Matrix, Vector3> MuzzlePart;
-        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;
-        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> ElevationPart;
+        internal PartInfo MuzzlePart;
+        internal PartInfo AzimuthPart;
+        internal PartInfo ElevationPart;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
@@ -193,7 +193,7 @@ namespace WeaponCore.Platform
         {
             LoadId = comp.Session.LoadAssigner();
             ShortLoadId = comp.Session.ShortLoadAssigner();
-            MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
+            MuzzlePart = new PartInfo { Entity = entity };
             AnimationsSet = animationSets;
 
             if (AnimationsSet != null)

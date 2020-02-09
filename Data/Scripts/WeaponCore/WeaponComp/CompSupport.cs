@@ -97,7 +97,16 @@ namespace WeaponCore.Support
             }
 
             for (int i = 0; i < SubpartStates.Count; i++)
-                SubpartStates[i].Key.PositionComp.LocalMatrix = SubpartStates[i].Value;
+            {
+                if (!Session.VanillaSubpartNames.Contains(SubpartIndexToName[i]))
+                    SubpartStates[i].Key.PositionComp.LocalMatrix = SubpartStates[i].Value;
+            }
+
+            if(BaseType == BlockType.Turret)
+            {
+                TurretBase.Elevation = (float)Elevation;
+                TurretBase.Azimuth = (float)Azimuth;
+            }
         }
 
         public void StopAllSounds()

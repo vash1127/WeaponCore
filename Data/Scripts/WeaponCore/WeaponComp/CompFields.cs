@@ -31,7 +31,8 @@ namespace WeaponCore.Support
         internal readonly MyStringHash SubtypeHash;
         internal readonly List<KeyValuePair<MyEntity, MatrixD>> SubpartStates = new List<KeyValuePair<MyEntity, MatrixD>>();
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
-        internal readonly Dictionary<string, int> SubpartIndex = new Dictionary<string, int>();
+        internal readonly Dictionary<string, int> SubpartNameToIndex = new Dictionary<string, int>();
+        internal readonly Dictionary<int, string> SubpartIndexToName = new Dictionary<int, string>();
 
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
@@ -64,6 +65,8 @@ namespace WeaponCore.Support
         internal float CurrentCharge;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
+        internal double Azimuth;
+        internal double Elevation;
 
         internal GridAi Ai;
         internal Weapon TrackingWeapon;

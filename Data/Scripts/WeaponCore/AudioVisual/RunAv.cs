@@ -271,7 +271,7 @@ namespace WeaponCore.Support
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
 
-                var entityExists = weapon.MuzzlePart.Item1?.Parent != null && !weapon.MuzzlePart.Item1.MarkedForClose;
+                var entityExists = weapon.MuzzlePart.Entity?.Parent != null && !weapon.MuzzlePart.Entity.MarkedForClose;
                 var matrix = MatrixD.Zero;
 
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
@@ -347,7 +347,7 @@ namespace WeaponCore.Support
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
-                var entityExists = weapon.MuzzlePart.Item1?.Parent != null && !weapon.MuzzlePart.Item1.MarkedForClose;
+                var entityExists = weapon.MuzzlePart.Entity?.Parent != null && !weapon.MuzzlePart.Entity.MarkedForClose;
                 var matrix = MatrixD.Zero;
 
                 if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || !weapon.Comp.State.Value.Online || !weapon.Comp.Set.Value.Overrides.Activate || !weapon.Set.Enable) {

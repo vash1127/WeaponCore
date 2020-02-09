@@ -40,13 +40,13 @@ namespace WeaponCore.Platform
                     if (absAzChange >= System.AzStep)
                     {
                         if (rAz)
-                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item5;
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
                         else
-                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
                     }
                     else
                     {
-                        AzimuthPart.Item1.PositionComp.LocalMatrix *= (AzimuthPart.Item2 * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.Item3);
+                        AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.FromTransformation);
                     }
                 }
 
@@ -55,20 +55,28 @@ namespace WeaponCore.Platform
                     if (absElChange >= System.ElStep)
                     {
                         if (rEl)
-                            ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item5;
+                            ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.RevFullRotationStep;
                         else
-                            ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
+                            ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.FullRotationStep;
                     }
                     else
                     {
-                        ElevationPart.Item1.PositionComp.LocalMatrix *= (ElevationPart.Item2 * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.Item3);
+                        ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.FromTransformation);
                     }
                 }
             }
             else
-            {
-                if (moveEl) Comp.TurretBase.Elevation = (float)Elevation;
-                if (moveAz) Comp.TurretBase.Azimuth = (float)Azimuth;
+            {   
+                if (moveEl)
+                {
+                    Comp.TurretBase.Elevation = (float)Elevation;
+                    Comp.Elevation = Elevation;
+                }
+                if (moveAz)
+                {
+                    Comp.TurretBase.Azimuth = (float)Azimuth;
+                    Comp.Azimuth = Azimuth;
+                }
             }
 
         }
@@ -111,9 +119,9 @@ namespace WeaponCore.Platform
                 Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
             }
 
-            var azimuthMatrix = AzimuthPart.Item1.PositionComp.WorldMatrix;
-            var elevationMatrix = ElevationPart.Item1.PositionComp.WorldMatrix;
-            var weaponCenter = MuzzlePart.Item1.PositionComp.WorldMatrix.Translation;
+            var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrix;
+            var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrix;
+            var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrix.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
 
 
@@ -178,10 +186,10 @@ namespace WeaponCore.Platform
 
                         var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
 
-                        MuzzlePart.Item1?.SetEmissiveParts("Heating", color, intensity);
+                        MuzzlePart.Entity?.SetEmissiveParts("Heating", color, intensity);
                     }
                     else if (set)
-                        MuzzlePart.Item1?.SetEmissiveParts("Heating", Color.Transparent, 0);
+                        MuzzlePart.Entity?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                     LastHeat = currentHeat;
                 }
@@ -255,7 +263,7 @@ namespace WeaponCore.Platform
 
         internal void SpinBarrel(bool spinDown = false)
         {
-            MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[BarrelRate];
+            MuzzlePart.Entity.PositionComp.LocalMatrix *= BarrelRotationPerShot[BarrelRate];
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
                 RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
