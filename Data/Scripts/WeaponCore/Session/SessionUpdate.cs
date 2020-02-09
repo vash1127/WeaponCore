@@ -45,6 +45,8 @@ namespace WeaponCore
                     if (!gridAi.HasPower)
                         continue;
 
+                    var uiTargeting = TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId);
+
                     ///
                     /// Comp update section
                     ///
@@ -67,7 +69,7 @@ namespace WeaponCore
                             comp.ManualControl = overRides.ManaulControl;
                             comp.TargetPainter = !comp.ManualControl && overRides.TargetPainter;
 
-                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId);
+                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && uiTargeting;
                             
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : 
