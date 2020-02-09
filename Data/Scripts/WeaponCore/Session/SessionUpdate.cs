@@ -202,9 +202,9 @@ namespace WeaponCore
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = comp.TargetPainter && w.Target.IsFakeTarget && w.Target.IsAligned;
-                                var validShootStates = fakeTarget && !comp.Set.Value.Overrides.ManaulControl || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
+                                var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
-                                var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+                                var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
                                 
                                 if (canShoot && (validShootStates || manualShot)) {
 
