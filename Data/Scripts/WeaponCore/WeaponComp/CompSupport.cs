@@ -79,7 +79,7 @@ namespace WeaponCore.Support
 
         internal void SavePartStates()
         {
-            PauseAnimations = true;
+            ResettingSubparts = true;
             for(int i = 0; i < SubpartStates.Count; i++)
             {
                 var part = SubpartStates[i].Key;
@@ -89,7 +89,7 @@ namespace WeaponCore.Support
 
         internal void RestorePartStates(object o = null)
         {
-            PauseAnimations = false;
+            ResettingSubparts = false;
             for (int i = 0; i < AllAnimations.Count; i++)
             {
                 if (AllAnimations[i].Paused)

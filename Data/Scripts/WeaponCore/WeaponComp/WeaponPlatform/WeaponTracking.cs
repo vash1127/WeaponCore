@@ -238,7 +238,7 @@ namespace WeaponCore.Platform
                 var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
 
-                if (weapon.Target.IsTracking && weapon.Comp.TerminalControlled != CameraControl)
+                if (weapon.Target.IsTracking && weapon.Comp.TerminalControlled != CameraControl && !weapon.Comp.ResettingSubparts)
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;

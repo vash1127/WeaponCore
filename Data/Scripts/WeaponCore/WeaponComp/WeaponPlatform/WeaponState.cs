@@ -70,7 +70,7 @@ namespace WeaponCore.Platform
                                 animation.StartTick = session.Tick + animation.MotionDelay + delay;
                                 Comp.Session.AnimationsToProcess.Add(animation);
                                 animation.Running = true;
-                                animation.Paused = Comp.PauseAnimations;
+                                animation.Paused = Comp.ResettingSubparts;
                                 animation.CanPlay = canPlay;
 
                                 if (animation.DoesLoop)
@@ -107,7 +107,7 @@ namespace WeaponCore.Platform
 
                                 PartAnimation animCheck;
                                 animation.Running = true;
-                                animation.Paused = Comp.PauseAnimations;
+                                animation.Paused = Comp.ResettingSubparts;
                                 animation.CanPlay = canPlay;
                                 if (AnimationLookup.TryGetValue(
                                     animation.EventIdLookup[oppositeEvnt], out animCheck) && animCheck.Running)
@@ -161,7 +161,7 @@ namespace WeaponCore.Platform
                                 PartAnimation animCheck;
                                 animation.Running = true;
                                 animation.CanPlay = true;
-                                animation.Paused = Comp.PauseAnimations;
+                                animation.Paused = Comp.ResettingSubparts;
                                 string eventName;
                                 if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out eventName) && AnimationLookup.TryGetValue(eventName, out animCheck))
                                 {
@@ -208,7 +208,7 @@ namespace WeaponCore.Platform
 
                                 animation.Running = true;
                                 animation.CanPlay = canPlay;
-                                animation.Paused = Comp.PauseAnimations;
+                                animation.Paused = Comp.ResettingSubparts;
 
                                 if (animation.DoesLoop)
                                     animation.Looping = true;

@@ -94,7 +94,7 @@ namespace WeaponCore.Support
         internal bool Registered;
         internal bool ShootOn;
         internal bool ClickShoot;
-        internal bool PauseAnimations;
+        internal bool ResettingSubparts;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

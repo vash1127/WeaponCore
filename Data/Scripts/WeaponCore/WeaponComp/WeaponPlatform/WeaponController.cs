@@ -86,25 +86,27 @@ namespace WeaponCore.Platform
             if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.TerminalControlled != None || Target.State == Target.Targets.Acquired)
                 return;
 
-            var azStep = System.AzStep;
-            var elStep = System.ElStep;
+            if (!Comp.ResettingSubparts)
+            {
+                var azStep = System.AzStep;
+                var elStep = System.ElStep;
 
-            var oldAz = Azimuth;
-            var oldEl = Elevation;
+                var oldAz = Azimuth;
+                var oldEl = Elevation;
 
-            if (oldAz > 0)
-                Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
-            else if (oldAz < 0)
-                Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
+                if (oldAz > 0)
+                    Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
+                else if (oldAz < 0)
+                    Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
 
-            if (oldEl > 0)
-                Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
-            else if (oldEl < 0)
-                Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
+                if (oldEl > 0)
+                    Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
+                else if (oldEl < 0)
+                    Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
 
-            AimBarrel(oldAz - Azimuth, oldEl - Elevation);
-
+                AimBarrel(oldAz - Azimuth, oldEl - Elevation);
+            }
 
             if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
                 Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, 1);
