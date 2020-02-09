@@ -31,7 +31,6 @@ namespace WeaponCore.Support
             Entity = myEntity;
         }
 
-        // not thread safe.
         internal void CheckSubparts()
         {
             if (_trackedModel == Entity?.Model)
@@ -60,8 +59,6 @@ namespace WeaponCore.Support
                             if (query.TryGetSubpart(name, out res))
                             {
                                 _subparts.Add(res);
-                                //Log.Line(name);
-                                //EntityToName.Add(res, name);
                                 NameToEntity[name] = res;
                             }
                         }
@@ -70,6 +67,7 @@ namespace WeaponCore.Support
                 }
             }
         }
+
         IEnumerator<MyEntity> IEnumerable<MyEntity>.GetEnumerator()
         {
             return GetEnumerator();

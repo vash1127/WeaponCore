@@ -67,10 +67,10 @@ namespace WeaponCore
                 }
             }
             
-            SetTransparency(ai.MyGrid, transparency, setvisible);
+            SetTransparency(ai.MyGrid, transparency, setvisible, ai);
          
             foreach (var sub in ai.SubGrids)
-                SetTransparency(sub, transparency, setvisible);
+                SetTransparency(sub, transparency, setvisible, ai);
         }
 
         internal void EntityControlUpdate()
@@ -181,7 +181,7 @@ namespace WeaponCore
             }
         }
 
-        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible)
+        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible, GridAi ai)
         {
             foreach (IMySlimBlock cubeBlock in grid.GetBlocks())
             {
@@ -200,21 +200,25 @@ namespace WeaponCore
                     foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
                     {
                         subpart1.Value.Render.Transparency = transparency;
+                        subpart1.Value.Render.UpdateTransparency();
                         if (subpart1.Value?.Subparts != null)
                         {
                             foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
                             {
                                 subpart2.Value.Render.Transparency = transparency;
+                                subpart2.Value.Render.UpdateTransparency();
                                 if (subpart2.Value?.Subparts != null)
                                 {
                                     foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
                                     {
                                         subpart3.Value.Render.Transparency = transparency;
+                                        subpart3.Value.Render.UpdateTransparency();
                                         if (subpart3.Value?.Subparts != null)
                                         {
                                             foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
                                             {
                                                 subpart4.Value.Render.Transparency = transparency;
+                                                subpart4.Value.Render.UpdateTransparency();
                                                 SetTransparencyForSubparts(subpart4.Value, transparency);
                                             }
                                         }
@@ -226,6 +230,8 @@ namespace WeaponCore
                 }
                 if (cube is IMyUserControllableGun || cube is MyConveyorSorter && WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
                 {
+                    var comp = ai.WeaponBase[cube];
+                    comp.Platform.ResetParts(comp);
                 };
             }
         }
@@ -235,6 +241,7 @@ namespace WeaponCore
             foreach (KeyValuePair<string, MyEntitySubpart> subpart in renderEntity.Subparts)
             {
                 subpart.Value.Render.Transparency = transparency;
+                subpart.Value.Render.UpdateTransparency();
                 SetTransparencyForSubparts(subpart.Value, transparency);
             }
         }
