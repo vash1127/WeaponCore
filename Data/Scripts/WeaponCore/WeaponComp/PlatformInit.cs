@@ -164,10 +164,13 @@ namespace WeaponCore.Platform
                 comp.HasChargeWeapon = comp.HasChargeWeapon || system.MustCharge;
 
                 var weapon = Weapons[i];
+                
+                if (!comp.Debug && weapon.System.Values.HardPoint.Block.Debug)
+                    comp.Debug = true;
+
                 if (weapon.System.Values.HardPoint.Block.TurretController)
                 {
                     weapon.TrackingAi = true;
-                    comp.Debug = weapon.System.Values.HardPoint.Block.Debug || comp.Debug;
                     weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
                     weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
 
@@ -291,7 +294,6 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    var barrelCount = m.Value.Barrels.Length;
                     if (reset)
                     {
                         var registered = false;
@@ -344,7 +346,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    for (int i = 0; i < barrelCount; i++)
+                    for (int i = 0; i < m.Value.Barrels.Length; i++)
                     {
                         var barrel = m.Value.Barrels[i];
 

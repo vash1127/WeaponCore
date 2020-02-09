@@ -124,6 +124,19 @@ namespace WeaponCore.Support
                 }
 
                 stringBuilder.Append("\n\n** Use Weapon Wheel Menu\n** to control weapons using\n** MMB outside of this terminal");
+                if (Debug)
+                {
+                    foreach (var weapon in Platform.Weapons)
+                    {
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {weapon.Set.Enable && weapon.Comp.State.Value.Online && weapon.Comp.Set.Value.Overrides.Activate}");
+                        stringBuilder.Append($"\nTargetState: {weapon.Target.State} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget || weapon.Comp.Set.Value.Overrides.ManualAim}");
+                        stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.OutOfAmmo}");
+                        stringBuilder.Append($"\nOverHeat: {weapon.Comp.Overheated} - Shooting: {weapon.IsShooting}");
+                        stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");
+                        stringBuilder.Append($"\nCanShoot: {weapon.ShootDelayTick <= weapon.Comp.Session.Tick} - Charging: {weapon.Charging}");
+                        stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
+                    }
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
