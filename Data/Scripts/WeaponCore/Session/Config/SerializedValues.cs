@@ -66,8 +66,8 @@ namespace WeaponCore
         [ProtoMember(2)] public bool Neutrals = false;
         [ProtoMember(3)] public bool Unowned = false;
         [ProtoMember(4)] public bool Friendly = false;
-        [ProtoMember(5)] public bool ManualAim = false;
-        [ProtoMember(6)] public bool ManualFire = false;
+        [ProtoMember(5)] public bool TargetPainter = false;
+        [ProtoMember(6)] public bool ManaulControl = false;
         [ProtoMember(7)] public bool FocusTargets = false;
         [ProtoMember(8)] public bool FocusSubSystem = false;
         [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;

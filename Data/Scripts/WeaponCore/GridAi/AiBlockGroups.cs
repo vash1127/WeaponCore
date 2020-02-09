@@ -54,10 +54,10 @@ namespace WeaponCore.Support
                             o.FocusTargets = setting.Value > 0;
                             break;
                         case "ManualControl":
-                            o.ManualFire = setting.Value > 0;
+                            o.ManaulControl = setting.Value > 0;
                             break;
                         case "TargetPainter":
-                            o.ManualAim = setting.Value > 0;
+                            o.TargetPainter = setting.Value > 0;
                             break;
                         case "Unowned":
                             o.Unowned = setting.Value > 0;
@@ -101,10 +101,10 @@ namespace WeaponCore.Support
                     o.FocusTargets = value > 0;
                     break;
                 case "ManualControl":
-                    o.ManualFire = value > 0;
+                    o.ManaulControl = value > 0;
                     break;
                 case "TargetPainter":
-                    o.ManualAim = value > 0;
+                    o.TargetPainter = value > 0;
                     break;
                 case "Unowned":
                     o.Unowned = value > 0;
@@ -146,10 +146,10 @@ namespace WeaponCore.Support
                     value = o.FocusTargets ? 1 : 0;
                     break;
                 case "ManaulControl":
-                    value = o.ManualFire ? 1 : 0;
+                    value = o.ManaulControl ? 1 : 0;
                     break;
                 case "TargetPainter":
-                    value = o.ManualAim ? 1 : 0;
+                    value = o.TargetPainter ? 1 : 0;
                     break;
                 case "Unowned":
                     value = o.Unowned ? 1 : 0;

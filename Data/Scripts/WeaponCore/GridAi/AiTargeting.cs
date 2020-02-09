@@ -26,7 +26,7 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
             w.UpdatePivotPos();
 
-            if (!w.Comp.ManualAim)
+            if (!w.Comp.TargetPainter)
             {
                 w.AimCone.ConeDir = w.MyPivotDir;
                 w.AimCone.ConeTip = w.MyPivotPos;
@@ -57,7 +57,7 @@ namespace WeaponCore.Support
             {
                 w.NewTarget.Reset(true, true);
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(!w.Comp.ManualAim, true);
+                w.Target.Reset(!w.Comp.TargetPainter, true);
             }
             else w.WakeTargets();
         }

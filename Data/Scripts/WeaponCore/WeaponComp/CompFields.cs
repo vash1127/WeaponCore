@@ -75,8 +75,8 @@ namespace WeaponCore.Support
         internal bool CanOverload;
         internal bool HasTurret;
         internal bool HasChargeWeapon;
-        internal bool ManualAim;
-        internal bool ManualFire;
+        internal bool TargetPainter;
+        internal bool ManualControl;
         internal bool WasControlled;
         internal bool UserControlled;
         internal bool Overheated;
