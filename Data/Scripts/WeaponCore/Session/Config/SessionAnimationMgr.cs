@@ -691,6 +691,9 @@ namespace WeaponCore
             for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
+
+                if (animation.Paused) continue;
+
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.StartTick <= Tick)
                 {
                     if (animation.MovesPivotPos || animation.CanPlay)

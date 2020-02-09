@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
@@ -72,6 +75,29 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
+        }
+
+        internal void SavePartStates()
+        {
+            PauseAnimations = true;
+            for(int i = 0; i < SubpartStates.Count; i++)
+            {
+                var part = SubpartStates[i].Key;
+                SubpartStates[i] = new KeyValuePair<MyEntity, MatrixD>(part, part.PositionComp.LocalMatrix);
+            }
+        }
+
+        internal void RestorePartStates(object o = null)
+        {
+            PauseAnimations = false;
+            for (int i = 0; i < AllAnimations.Count; i++)
+            {
+                if (AllAnimations[i].Paused)
+                    AllAnimations[i].Paused = false;
+            }
+
+            for (int i = 0; i < SubpartStates.Count; i++)
+                SubpartStates[i].Key.PositionComp.LocalMatrix = SubpartStates[i].Value;
         }
 
         public void StopAllSounds()

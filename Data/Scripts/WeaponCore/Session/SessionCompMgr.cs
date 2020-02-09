@@ -91,6 +91,7 @@ namespace WeaponCore
                 if (block != null) def = block.BlockDefinition;
             }
 
+
             var replacement = ReplaceVanilla && VanillaIds.ContainsKey(def);
 
             if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId) && !replacement) return;

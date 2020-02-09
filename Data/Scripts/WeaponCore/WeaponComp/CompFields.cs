@@ -3,7 +3,9 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
+using System.Collections.Generic;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -27,6 +29,9 @@ namespace WeaponCore.Support
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
         internal readonly MyStringHash SubtypeHash;
+        internal readonly List<KeyValuePair<MyEntity, MatrixD>> SubpartStates = new List<KeyValuePair<MyEntity, MatrixD>>();
+        internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
+        internal readonly Dictionary<string, int> SubpartIndex = new Dictionary<string, int>();
 
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
@@ -85,6 +90,7 @@ namespace WeaponCore.Support
         internal bool Registered;
         internal bool ShootOn;
         internal bool ClickShoot;
+        internal bool PauseAnimations;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
