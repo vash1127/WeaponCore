@@ -69,30 +69,33 @@ namespace WeaponCore
             
 
             var foundTarget = false;
+            var rayOnlyHitSelf = false;
+            var rayHitSelf = false;
+
             MyEntity closestEnt = null;
             _session.Physics.CastRay(start, end, _hitInfo);
+
             for (int i = 0; i < _hitInfo.Count; i++) {
 
                 var hit = _hitInfo[i];
-                closestEnt = hit.HitEntity as MyEntity;
-                var hitGrid = closestEnt as MyCubeGrid;
-                var hitSelf = hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid);
+                closestEnt = hit.HitEntity.GetTopMostParent() as MyEntity;
 
-                if (hitSelf) {
-                    ReticleOnSelfTick = s.Tick;
-                    ReticleAgeOnSelf++;
+                var hitGrid = closestEnt as MyCubeGrid;
+
+                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid)) {
+                    rayHitSelf = true;
+                    rayOnlyHitSelf = true;
+                    continue;
                 }
-                else ReticleAgeOnSelf = 0;
+
+                if (rayOnlyHitSelf) rayOnlyHitSelf = false;
 
                 if (manualSelect) {
-                    if (hitSelf || hitGrid == null || !ai.Targets.ContainsKey(hitGrid)) continue;
+                    if (hitGrid == null || !ai.Targets.ContainsKey(hitGrid))
+                        continue;
+
                     s.SetTarget(hitGrid, ai);
                     return true;
-                }
-
-                if (hitSelf) {
-                    ai.DummyTarget.Update(end);
-                    return false;
                 }
 
                 foundTarget = true;
@@ -100,7 +103,13 @@ namespace WeaponCore
                 break;
             }
 
-            // If Raycast misses, we will accept the closest entitySphere in its place.
+            if (rayHitSelf) {
+                ReticleOnSelfTick = s.Tick;
+                ReticleAgeOnSelf++;
+                if (rayOnlyHitSelf) ai.DummyTarget.Update(end);
+            }
+            else ReticleAgeOnSelf = 0;
+
             Vector3D hitPos;
             bool foundOther = false;
             if (!foundTarget && RayCheckTargets(start, dir, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
@@ -114,8 +123,7 @@ namespace WeaponCore
 
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
-                _reticleColor = closestEnt != null ? activeColor : Color.White;
-                
+                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
                 if (!foundTarget) {
                     ai.DummyTarget.Update(end);
                 }
