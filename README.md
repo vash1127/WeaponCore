@@ -1,9 +1,48 @@
 # WeaponCore
-Copyright <YEAR> <COPYRIGHT HOLDER>
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+WeaponCore is a complete rewrite of Space Engineers combat system.
 
-That the Software is used exclusively for the game Space Engineers created by Keen Software House. 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+This "mod" by itself does not add new weapons to the game, it is the framework (engine) by which other weapon mod authors may create pretty much any kind of weapon they can imagine. More info will be coming to this page soon.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+# On Steam
+https://steamcommunity.com/sharedfiles/filedetails/?id=1918681825
+
+## Existing WeaponCore based Mods
+
+[Vanilla Replacement Mod](https://steamcommunity.com/sharedfiles/filedetails/?id=1931509062)
+
+[MCRN Railgun](https://steamcommunity.com/sharedfiles/filedetails/?id=1824058403)
+
+[Energy Weapons V2](https://steamcommunity.com/sharedfiles/filedetails/?id=1923259122)
+
+[Mexpex Warfare Industries](https://steamcommunity.com/sharedfiles/filedetails/?id=1920388300)
+
+[MWI - Homing Weaponry](https://steamcommunity.com/sharedfiles/filedetails/?id=1919062467)
+
+[SG A Lantean Drone Platform](https://steamcommunity.com/sharedfiles/filedetails/?id=1919124745)
+
+[Octo Beam Lasers](https://steamcommunity.com/sharedfiles/filedetails/?id=1824060550)
+
+
+
+# Documentation
+
+Modder documentation will soon be available in the wiki tab, this mod has a lot of content, so it may take some time.
+
+# Player Guide
+
+https://steamcommunity.com/sharedfiles/filedetails/?id=1989583682
+
+# Thanks and Credits
+
+Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations and cockpit controls! 
+
+Thanks to NukeGuard for the awesome GUI textures. 
+
+Last but not least special thanks to the math wizard himself, WhipLash141 for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems is this mod.
+
+# Patreon
+
+## If you appreciate WeaponCore please consider donating:
+
+[![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Patreon_logo_with_wordmark.svg/512px-Patreon_logo_with_wordmark.svg.png)](https://www.patreon.com/user?u=14228932)	
