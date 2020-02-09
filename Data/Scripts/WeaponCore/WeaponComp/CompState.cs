@@ -49,10 +49,13 @@ namespace WeaponCore.Support
                     if (!MyCube.MarkedForClose && Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
                         ent.OnClose -= SubpartClosed;
+
+                        SavePartStates();
                         Platform.ResetParts(this);
+                        RestorePartStates();
                         Status = Start.Started;
 
-                        foreach (var w in Platform.Weapons)
+                        /*foreach (var w in Platform.Weapons)
                         {
                             w.Azimuth = 0;
                             w.Elevation = 0;
@@ -61,7 +64,7 @@ namespace WeaponCore.Support
 
                             if (w.State.CurrentAmmo == 0)
                                 w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-                        }
+                        }*/
                     }
                 }
             }
