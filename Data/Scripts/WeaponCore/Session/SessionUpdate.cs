@@ -77,14 +77,18 @@ namespace WeaponCore
 
                             var overRides = comp.Set.Value.Overrides;
                             comp.WasControlled = comp.UserControlled;
-                            comp.TargetPainter = overRides.TargetPainter && TargetUi.DrawReticle && !InMenu;
                             comp.ManualControl = overRides.ManaulControl;
+                            comp.TargetPainter = !comp.ManualControl && overRides.TargetPainter;
+
+                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && TargetUi.DrawReticle && !InMenu;
+                            
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : 
                                 id == -2 ? ApiControl : 
                                     id == -3 ? CameraControl : ToolBarControl;
 
-                            comp.UserControlled = comp.TargetPainter || comp.TerminalControlled == CameraControl;
+                            comp.UserControlled = comp.TrackReticle || comp.TerminalControlled == CameraControl;
+
                             ///
                             /// Weapon update section
                             ///
@@ -109,11 +113,11 @@ namespace WeaponCore
                                 w.TargetState = w.Target.State;
                                 if (w.Target.State == Targets.Acquired) {
 
-                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TargetPainter || gridAi.DummyTarget.ClearTarget)) {
-                                        w.Target.Reset(!comp.TargetPainter);
+                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
+                                        w.Target.Reset(!comp.TrackReticle);
 
                                     }
-                                    else if (w.Target.Entity != null && (overRides.TargetPainter || w.Target.Entity.MarkedForClose)) {
+                                    else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) {
                                         w.Target.Reset();
 
                                     }
@@ -124,7 +128,7 @@ namespace WeaponCore
                                     else if (w.TrackingAi) {
 
                                         if (!Weapon.TrackingTarget(w, w.Target)) {
-                                            w.Target.Reset(!comp.TargetPainter);
+                                            w.Target.Reset(!comp.TrackReticle);
 
                                         }
                                     }
@@ -152,7 +156,7 @@ namespace WeaponCore
                                     }
                                 }
 
-                                w.AiShooting = w.Target.State == Targets.Acquired && !comp.TargetPainter && (w.Target.TargetLock && (w.TrackingAi || !w.TrackTarget) || !w.TrackingAi && w.TrackTarget);
+                                w.AiShooting = w.Target.State == Targets.Acquired && !comp.UserControlled && (w.Target.TargetLock && (w.TrackingAi || !w.TrackTarget) || !w.TrackingAi && w.TrackTarget);
 
                                 w.TargetChanged = targetAcquired || targetLost;
                                 w.ProjectilesNear = w.TrackProjectiles && w.Target.State != Targets.Acquired && (w.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
@@ -171,8 +175,8 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !overRides.TargetPainter) || comp.TargetPainter && !w.Target.IsFakeTarget;
-                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !overRides.TargetPainter) && !w.AcquiringTarget && comp.TerminalControlled == None)
+                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && comp.TerminalControlled == None)
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
@@ -366,7 +370,7 @@ namespace WeaponCore
 
                     if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) {
 
-                        if (seekProjectile || comp.TargetPainter || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w)) {
+                        if (seekProjectile || comp.TrackReticle || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w)) {
 
                             if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired)
                                 GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());

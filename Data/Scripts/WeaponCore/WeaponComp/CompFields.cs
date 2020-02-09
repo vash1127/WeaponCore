@@ -78,6 +78,7 @@ namespace WeaponCore.Support
         internal bool TargetPainter;
         internal bool ManualControl;
         internal bool WasControlled;
+        internal bool TrackReticle;
         internal bool UserControlled;
         internal bool Overheated;
         internal bool Debug;

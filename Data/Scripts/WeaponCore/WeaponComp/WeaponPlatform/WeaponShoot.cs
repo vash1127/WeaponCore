@@ -194,7 +194,7 @@ namespace WeaponCore.Platform
                         p.Info.Target.Entity = Target.Entity;
                         p.Info.Target.Projectile = Target.Projectile;
                         p.Info.Target.IsProjectile = Target.Projectile != null;
-                        p.Info.Target.IsFakeTarget = Comp.TargetPainter;
+                        p.Info.Target.IsFakeTarget = Comp.TrackReticle;
                         p.Info.Target.FiringCube = Comp.MyCube;
                         p.Info.WeaponId = WeaponId;
                         p.Info.MuzzleId = muzzle.MuzzleId;
@@ -319,7 +319,7 @@ namespace WeaponCore.Platform
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
             p.Info.Target.IsProjectile = Target.Projectile != null;
-            p.Info.Target.IsFakeTarget = Comp.TargetPainter;
+            p.Info.Target.IsFakeTarget = Comp.TrackReticle;
             p.Info.Target.FiringCube = Comp.MyCube;
             p.Info.BaseDamagePool = BaseDamage;
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
@@ -350,8 +350,8 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
             {
-                masterWeapon.Target.Reset(!Comp.TargetPainter);
-                if (masterWeapon != this) Target.Reset(!Comp.TargetPainter);
+                masterWeapon.Target.Reset(!Comp.TrackReticle);
+                if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
                 return;
             }
 
@@ -361,7 +361,7 @@ namespace WeaponCore.Platform
                 Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return;
             }
-            if (Comp.TargetPainter) return;
+            if (Comp.TrackReticle) return;
 
 
             if (Target.Projectile != null)
