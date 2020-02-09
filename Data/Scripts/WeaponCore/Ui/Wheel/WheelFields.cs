@@ -101,14 +101,14 @@ namespace WeaponCore
                 }
             },
             {
-                "ManualAim", new Dictionary<int, Names>
+                "TargetPainter", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "ManualFire", new Dictionary<int, Names>
+                "ManualControl", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
@@ -195,14 +195,14 @@ namespace WeaponCore
                 }
             },
             {
-                "ManualAim", new Dictionary<string, int>
+                "TargetPainter", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "ManualFire", new Dictionary<string, int>
+                "ManualControl", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
@@ -289,17 +289,17 @@ namespace WeaponCore
                 }
             },
             {
-                "ManualAim", new Dictionary<string, MyStringId[]>
+                "TargetPainter", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualAimEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
-                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualAimDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_TargetPainterEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_TargetPainterDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "ManualFire", new Dictionary<string, MyStringId[]>
+                "ManualControl", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualFireEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
-                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualFireDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualControlEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualControlDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {

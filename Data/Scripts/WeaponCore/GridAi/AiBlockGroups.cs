@@ -15,8 +15,8 @@ namespace WeaponCore.Support
             {"Meteors", 0 },
             {"Friendly", 0},
             {"Unowned", 0},
-            {"ManualAim", 0},
-            {"ManualFire", 0},
+            {"TargetPainter", 0},
+            {"ManualControl", 0},
             {"FocusTargets", 0},
             {"FocusSubSystem", 0},
             {"SubSystems", 0},
@@ -53,10 +53,10 @@ namespace WeaponCore.Support
                         case "FocusTargets":
                             o.FocusTargets = setting.Value > 0;
                             break;
-                        case "ManualFire":
+                        case "ManualControl":
                             o.ManualFire = setting.Value > 0;
                             break;
-                        case "ManualAim":
+                        case "TargetPainter":
                             o.ManualAim = setting.Value > 0;
                             break;
                         case "Unowned":
@@ -100,10 +100,10 @@ namespace WeaponCore.Support
                 case "FocusTargets":
                     o.FocusTargets = value > 0;
                     break;
-                case "ManualFire":
+                case "ManualControl":
                     o.ManualFire = value > 0;
                     break;
-                case "ManualAim":
+                case "TargetPainter":
                     o.ManualAim = value > 0;
                     break;
                 case "Unowned":
@@ -145,10 +145,10 @@ namespace WeaponCore.Support
                 case "FocusTargets":
                     value = o.FocusTargets ? 1 : 0;
                     break;
-                case "ManualFire":
+                case "ManaulControl":
                     value = o.ManualFire ? 1 : 0;
                     break;
-                case "ManualAim":
+                case "TargetPainter":
                     value = o.ManualAim ? 1 : 0;
                     break;
                 case "Unowned":
