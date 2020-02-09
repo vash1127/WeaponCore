@@ -74,33 +74,10 @@ namespace WeaponCore
 
         private void InitComp(MyCubeBlock cube, bool thread = true)
         {
-            MyDefinitionId def = new MyDefinitionId();
-            if (cube is IMyLargeTurretBase)
-            {
-                var block = cube as IMyLargeTurretBase;
-                def = block.BlockDefinition;
-            }
-            else if (cube is IMyUserControllableGun)
-            {
-                var block = cube as IMyUserControllableGun;
-                def = block.BlockDefinition;
-            }
-            else
-            {
-                var block = cube as IMyConveyorSorter;
-                if (block != null) def = block.BlockDefinition;
-            }
-
-
-            var replacement = ReplaceVanilla && VanillaIds.ContainsKey(def);
-
-            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId) && !replacement) return;
-
             using (cube.Pin())
             {
                 if (cube.MarkedForClose)
                     return;
-
                 GridAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
@@ -108,7 +85,8 @@ namespace WeaponCore
                     gridAi.Init(cube.CubeGrid, this);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
-                var blockDef = replacement ? VanillaIds[def] : cube.BlockDefinition.Id.SubtypeId;
+
+                var blockDef = ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) ? VanillaIds[cube.BlockDefinition.Id] : cube.BlockDefinition.Id.SubtypeId;
                 
                 var weaponComp = new WeaponComponent(this, gridAi, cube, blockDef);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))

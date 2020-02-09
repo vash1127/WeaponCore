@@ -64,7 +64,7 @@ namespace WeaponCore.Support
                     w.State = State.Value.Weapons[i];
                     w.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
                 }
-                Set.Value.Overrides.ManualAim = false;
+                Set.Value.Overrides.TargetPainter = false;
                 State.Value.PlayerIdInTerminal = -1;
 
                 if (isServer)

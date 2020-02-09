@@ -15,8 +15,8 @@ namespace WeaponCore.Support
             {"Meteors", 0 },
             {"Friendly", 0},
             {"Unowned", 0},
-            {"ManualAim", 0},
-            {"ManualFire", 0},
+            {"TargetPainter", 0},
+            {"ManualControl", 0},
             {"FocusTargets", 0},
             {"FocusSubSystem", 0},
             {"SubSystems", 0},
@@ -53,11 +53,11 @@ namespace WeaponCore.Support
                         case "FocusTargets":
                             o.FocusTargets = setting.Value > 0;
                             break;
-                        case "ManualFire":
-                            o.ManualFire = setting.Value > 0;
+                        case "ManualControl":
+                            o.ManaulControl = setting.Value > 0;
                             break;
-                        case "ManualAim":
-                            o.ManualAim = setting.Value > 0;
+                        case "TargetPainter":
+                            o.TargetPainter = setting.Value > 0;
                             break;
                         case "Unowned":
                             o.Unowned = setting.Value > 0;
@@ -100,11 +100,11 @@ namespace WeaponCore.Support
                 case "FocusTargets":
                     o.FocusTargets = value > 0;
                     break;
-                case "ManualFire":
-                    o.ManualFire = value > 0;
+                case "ManualControl":
+                    o.ManaulControl = value > 0;
                     break;
-                case "ManualAim":
-                    o.ManualAim = value > 0;
+                case "TargetPainter":
+                    o.TargetPainter = value > 0;
                     break;
                 case "Unowned":
                     o.Unowned = value > 0;
@@ -145,11 +145,11 @@ namespace WeaponCore.Support
                 case "FocusTargets":
                     value = o.FocusTargets ? 1 : 0;
                     break;
-                case "ManualFire":
-                    value = o.ManualFire ? 1 : 0;
+                case "ManaulControl":
+                    value = o.ManaulControl ? 1 : 0;
                     break;
-                case "ManualAim":
-                    value = o.ManualAim ? 1 : 0;
+                case "TargetPainter":
+                    value = o.TargetPainter ? 1 : 0;
                     break;
                 case "Unowned":
                     value = o.Unowned ? 1 : 0;

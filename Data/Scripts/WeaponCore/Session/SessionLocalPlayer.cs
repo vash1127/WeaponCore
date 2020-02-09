@@ -58,19 +58,19 @@ namespace WeaponCore
                 if (setvisible)
                 {
                     character.Render.Transparency = 0;
-                    character.Render.UpdateRenderObject(true);
+                    character.Render.UpdateTransparency();
                 }
                 else
                 {
                     character.Render.Transparency = 1;
-                    character.Render.RemoveRenderObjects();
+                    character.Render.UpdateTransparency();
                 }
             }
             
-            SetTransparency(ai.MyGrid, transparency, setvisible);
+            SetTransparency(ai.MyGrid, transparency, setvisible, ai);
          
             foreach (var sub in ai.SubGrids)
-                SetTransparency(sub, transparency, setvisible);
+                SetTransparency(sub, transparency, setvisible, ai);
         }
 
         internal void EntityControlUpdate()
@@ -181,7 +181,7 @@ namespace WeaponCore
             }
         }
 
-        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible)
+        private void SetTransparency(MyCubeGrid grid, float transparencyOrigin, bool setvisible, GridAi ai)
         {
             foreach (IMySlimBlock cubeBlock in grid.GetBlocks())
             {
@@ -191,10 +191,10 @@ namespace WeaponCore
                 cubeBlock.CubeGrid.Render.Transparency = transparency;
                 cubeBlock.Dithering = transparency;
                 cubeBlock.UpdateVisual();
-                var fatBlock = cubeBlock.FatBlock as MyCubeBlock;
-                var thruster = fatBlock as MyThrust;
+                var cube = cubeBlock.FatBlock as MyCubeBlock;
+                var thruster = cube as MyThrust;
                 thruster?.Render.UpdateFlameProperties(setvisible, 0);
-                MyEntity renderEntity = fatBlock;
+                MyEntity renderEntity = cube;
                 if (renderEntity?.Subparts != null)
                 {
                     foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
@@ -228,6 +228,11 @@ namespace WeaponCore
                         }
                     }
                 }
+                if (cube is IMyUserControllableGun || cube is MyConveyorSorter && WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                {
+                    var comp = ai.WeaponBase[cube];
+                    comp.Platform.ResetParts(comp);
+                };
             }
         }
 
