@@ -263,7 +263,6 @@ namespace WeaponCore.Platform
                     if (State.Heat <= 0 && State.Heat + HeatPShot > 0)
                         UpdateWeaponHeat(null);
 
-
                     State.Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
                     if (State.Heat > System.MaxHeat)
@@ -522,9 +521,7 @@ namespace WeaponCore.Platform
 
                 Vector3D? hit;
                 if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube))
-                {
                     return true;
-                }
             }
             return false;
         }

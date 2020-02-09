@@ -83,7 +83,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.TerminalControlled != None || Target.State == Target.Targets.Acquired)
+            if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
                 return;
 
             if (!Comp.ResettingSubparts)
