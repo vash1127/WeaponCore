@@ -457,12 +457,6 @@ namespace WeaponCore.Platform
 
         internal void ResetParts(WeaponComponent comp)
         {
-            for (int i = 0; i < Weapons.Length; i++)
-            {
-                var w = Weapons[i];
-                w.MuzzleIdToName.Clear();
-            }
-
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
 

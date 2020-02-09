@@ -23,7 +23,6 @@ namespace WeaponCore.Platform
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
             obj.OnMarkForClose -= EntPartClose;
-            Log.Line("test");
         }
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
