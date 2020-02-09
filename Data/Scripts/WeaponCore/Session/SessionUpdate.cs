@@ -97,7 +97,11 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[j];
 
                                 if (!w.Set.Enable)
+                                {
+                                    if (w.Target.State == Targets.Acquired)
+                                        w.Target.Reset();
                                     continue;
+                                }
 
                                 if (w.AvCapable && (!w.PlayTurretAv || Tick60)) {
                                     var avWasEnabled = w.PlayTurretAv;
