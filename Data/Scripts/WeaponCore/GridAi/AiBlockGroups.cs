@@ -43,15 +43,7 @@ namespace WeaponCore.Support
                     {
                         case "Active":
                             o.Activate = setting.Value > 0;
-                            if (!o.Activate) {
-
-                                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                                {
-                                    var weapon = comp.Platform.Weapons[i];
-                                    if (weapon.Target.State == Target.Targets.Acquired)
-                                        comp.Platform.Weapons[i].Target.Reset();
-                                }
-                            }
+                            if (!o.Activate) ClearTargets(comp);
                             break;
                         case "SubSystems":
                             o.SubSystem = (TargetingDefinition.BlockTypes)setting.Value;
@@ -99,16 +91,7 @@ namespace WeaponCore.Support
             {
                 case "Active":
                     o.Activate = value > 0;
-                    if (!o.Activate)
-                    {
-
-                        for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                        {
-                            var weapon = comp.Platform.Weapons[i];
-                            if (weapon.Target.State == Target.Targets.Acquired)
-                                comp.Platform.Weapons[i].Target.Reset();
-                        }
-                    }
+                    if (!o.Activate) ClearTargets(comp);
                     break;
                 case "SubSystems":
                     o.SubSystem = (TargetingDefinition.BlockTypes)value;
@@ -190,6 +173,16 @@ namespace WeaponCore.Support
                     break;
             }
             return value;
+        }
+
+        private void ClearTargets(WeaponComponent comp)
+        {
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var weapon = comp.Platform.Weapons[i];
+                if (weapon.Target.State == Target.Targets.Acquired)
+                    comp.Platform.Weapons[i].Target.Reset();
+            }
         }
     }
 }
