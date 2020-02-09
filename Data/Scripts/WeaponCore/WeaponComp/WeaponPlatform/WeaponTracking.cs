@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            return (inRange && canTrack) || weapon.Comp.TargetPainter;
+            return (inRange && canTrack) || weapon.Comp.TrackReticle;
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)
@@ -124,11 +124,11 @@ namespace WeaponCore.Platform
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
 
-            var targetCenter = weapon.Comp.TargetPainter ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var targetCenter = weapon.Comp.TrackReticle ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
 
             if (weapon.System.NeedsPrediction)
             {
-                if (weapon.Comp.TargetPainter)
+                if (weapon.Comp.TrackReticle)
                 {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
                     targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
@@ -161,7 +161,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range;
 
-            var isAligned = (inRange || weapon.Comp.TargetPainter) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = (inRange || weapon.Comp.TrackReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -175,11 +175,11 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             var system = weapon.System;
 
-            var targetCenter = weapon.Comp.TargetPainter ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var targetCenter = weapon.Comp.TrackReticle ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
 
             if (weapon.System.NeedsPrediction)
             {
-                if (weapon.Comp.TargetPainter)
+                if (weapon.Comp.TrackReticle)
                 {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
                     targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
@@ -211,7 +211,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
             var targetDir = targetPos - weapon.MyPivotPos;
             var locked = true;
-            if (weapon.Comp.TargetPainter || rangeToTargetSqr <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
+            if (weapon.Comp.TrackReticle || rangeToTargetSqr <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
             {
                 var maxAzimuthStep = system.AzStep;
                 var maxElevationStep = system.ElStep;
