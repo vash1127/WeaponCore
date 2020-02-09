@@ -71,6 +71,7 @@ namespace WeaponCore
 
                                 if (comp.Status != Started)
                                     comp.HealthCheck();
+
                                 //Log.Line($"Comp: {comp.MyCube.DebugName}: offline");
                                 continue;
                             }
@@ -95,7 +96,6 @@ namespace WeaponCore
                             for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                                 var w = comp.Platform.Weapons[j];
-
                                 if (!w.Set.Enable)
                                 {
                                     if (w.Target.State == Targets.Acquired)
