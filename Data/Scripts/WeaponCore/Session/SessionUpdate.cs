@@ -81,7 +81,7 @@ namespace WeaponCore
                             comp.ManualControl = overRides.ManaulControl;
                             comp.TargetPainter = !comp.ManualControl && overRides.TargetPainter;
 
-                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && TargetUi.DrawReticle && !InMenu;
+                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && TargetUi.DrawReticle && !InMenu && TrackingAi == gridAi;
                             
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : 
