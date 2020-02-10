@@ -442,11 +442,11 @@ namespace WeaponCore
 
                     if (w.ShootDelayTick <= Tick) w.Shoot();
 
-                    if (!w.System.MustCharge && w.State.ManualShoot == ShootOnce) {
+                    /*if (!w.System.MustCharge && w.State.ManualShoot == ShootOnce) {
 
                         w.State.ManualShoot = ShootOff;
                         w.StopShooting();
-                    }
+                    }*/
                 }
             }
             ShootingWeapons.Clear();

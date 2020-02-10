@@ -49,7 +49,7 @@ namespace WeaponCore.Control
                         }
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
-                            if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
+                            comp.Platform.Weapons[j].SingleShotCounter++;
                             comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                         }
                     };

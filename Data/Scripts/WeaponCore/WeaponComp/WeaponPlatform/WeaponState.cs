@@ -299,10 +299,10 @@ namespace WeaponCore.Platform
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
+                SingleShotCounter = 0;
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
-                    _spunUp = false;
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;

@@ -30,7 +30,7 @@ namespace WeaponCore.Platform
         private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
-        private bool _spunUp;
+        //private bool _spunUp;
         internal bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
@@ -109,6 +109,7 @@ namespace WeaponCore.Platform
         internal int HsRate;
         internal int EnergyPriority;
         internal int LastBlockCount;
+        internal int SingleShotCounter;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
         internal double Azimuth;

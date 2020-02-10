@@ -60,14 +60,15 @@ namespace WeaponCore.Platform
                 if (System.HasBarrelRotation)
                 {
                     SpinBarrel();
-                    if (_spinUpTick <= tick && BarrelRate < 9)
+                    if (BarrelRate < 9)
                     {
-                        _spunUp = ++BarrelRate == 9;
-                        _spinUpTick = tick + _ticksBeforeSpinUp;
-                    }
-
-                    if (!_spunUp)
+                        if (_spinUpTick <= tick)
+                        {
+                            BarrelRate++;
+                            _spinUpTick = tick + _ticksBeforeSpinUp;
+                        }
                         return;
+                    }
                 }
 
                 if (_shootTick > tick)
@@ -302,11 +303,9 @@ namespace WeaponCore.Platform
                 else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
                     StartReload();
 
-                if (System.MustCharge && State.ManualShoot == TerminalActionState.ShootOnce && State.CurrentAmmo == 0)
-                {
+                if (State.ManualShoot == TerminalActionState.ShootOnce && --SingleShotCounter <= 0)
                     State.ManualShoot = TerminalActionState.ShootOff;
-                    StopShooting();
-                }
+
                 _muzzlesToFire.Clear();
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
