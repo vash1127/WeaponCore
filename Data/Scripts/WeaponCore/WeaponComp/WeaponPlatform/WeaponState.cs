@@ -247,7 +247,7 @@ namespace WeaponCore.Platform
         {
             var interval = (3600f / System.BarrelSpinRate) * ((float)Math.PI / _numModelBarrels);
             var steps = (360f / _numModelBarrels) / interval;
-            _ticksBeforeSpinUp = (uint)interval;
+            _ticksBeforeSpinUp = (uint)interval / 10;
             for (int i = 0; i < 10; i++) {
 
                 var multi = (float)(i + 1)/10;
