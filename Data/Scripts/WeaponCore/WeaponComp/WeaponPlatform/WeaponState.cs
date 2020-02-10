@@ -245,12 +245,14 @@ namespace WeaponCore.Platform
         
         internal void UpdateBarrelRotation()
         {
+            const int loopCnt = 10;
             var interval = (3600f / System.BarrelSpinRate) * ((float)Math.PI / _numModelBarrels);
             var steps = (360f / _numModelBarrels) / interval;
-            _ticksBeforeSpinUp = (uint)interval / 10;
-            for (int i = 0; i < 10; i++) {
 
-                var multi = (float)(i + 1)/10;
+            _ticksBeforeSpinUp = (uint)interval / loopCnt;
+            for (int i = 0; i < loopCnt; i++) {
+
+                var multi = (float)(i + 1)/loopCnt;
                 var angle = MathHelper.ToRadians(steps * multi);
 
                 switch (System.Values.HardPoint.RotateBarrelAxis) {
