@@ -256,11 +256,6 @@ namespace WeaponCore
                         }
                     }
                 }
-                if (cube is IMyUserControllableGun || cube is MyConveyorSorter && WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                {
-                    var comp = ai.WeaponBase[cube];
-                    comp.Platform.ResetParts(comp);
-                };
             }
         }
 
