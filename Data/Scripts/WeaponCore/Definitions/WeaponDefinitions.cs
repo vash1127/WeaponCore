@@ -73,7 +73,6 @@ namespace WeaponCore.Support
         [ProtoMember(13)] internal AimControlDefinition Block;
         [ProtoMember(14)] internal UiDefinition Ui;
         [ProtoMember(15)] internal bool MuzzleCheck;
-
     }
 
     [ProtoContract]
@@ -93,6 +92,7 @@ namespace WeaponCore.Support
         [ProtoMember(12)] internal int MinElevation;
         [ProtoMember(13)] internal bool PrimaryTracking;
         [ProtoMember(14)] internal float InventorySize;
+        [ProtoMember(15)] internal bool LockOnFocus;
     }
 
     [ProtoContract]

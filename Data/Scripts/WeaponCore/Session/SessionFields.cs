@@ -103,7 +103,7 @@ namespace WeaponCore
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
-
+        private readonly List<IMySlimBlock> _slimCache = new List<IMySlimBlock>();
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
@@ -216,6 +216,7 @@ namespace WeaponCore
         private int _shortLoadCounter = 1;
         private uint _lastDrawTick;
         private bool _paused;
+        private bool _renderCached;
 
         class HackEqualityComparer : System.Collections.IEqualityComparer
         {

@@ -43,26 +43,23 @@ namespace WeaponCore
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var cockPit = s.ActiveCockPit;
+
             Vector3D start;
             Vector3D end;
             Vector3D dir;
-            if (!s.UiInput.FirstPersonView)
-            {
+            if (!s.UiInput.FirstPersonView) {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 start = offetPosition;
                 dir = Vector3D.Normalize(start - s.CameraPos);
                 end = offetPosition + (dir * ai.MaxTargetingRange);
             }
-            else
-            {
-                if (!_session.UiInput.AltPressed)
-                {
+            else {
+                if (!_session.UiInput.AltPressed) {
                     dir = Vector3D.Normalize(cockPit.PositionComp.WorldMatrix.Forward);
                     start = cockPit.PositionComp.WorldAABB.Center;
                     end = start + (dir * s.TrackingAi.MaxTargetingRange);
                 }
-                else
-                {
+                else {
                     var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                     start = offetPosition;
                     dir = Vector3D.Normalize(start - s.CameraPos);
@@ -72,27 +69,33 @@ namespace WeaponCore
             
 
             var foundTarget = false;
+            var rayOnlyHitSelf = false;
+            var rayHitSelf = false;
+
             MyEntity closestEnt = null;
             _session.Physics.CastRay(start, end, _hitInfo);
-            for (int i = 0; i < _hitInfo.Count; i++)
-            {
+
+            for (int i = 0; i < _hitInfo.Count; i++) {
+
                 var hit = _hitInfo[i];
-                closestEnt = hit.HitEntity as MyEntity;
+                closestEnt = hit.HitEntity.GetTopMostParent() as MyEntity;
+
                 var hitGrid = closestEnt as MyCubeGrid;
 
-
-                if (manualSelect)
-                {
-                    if (hitGrid == null || hitGrid.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hitGrid)) continue;
-                    s.SetTarget(hitGrid, ai);
-                    return true;
+                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid)) {
+                    rayHitSelf = true;
+                    rayOnlyHitSelf = true;
+                    continue;
                 }
 
-                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid))
-                {
-                    ReticleOnSelf = true;
-                    ai.DummyTarget.Update(end);
-                    return false;
+                if (rayOnlyHitSelf) rayOnlyHitSelf = false;
+
+                if (manualSelect) {
+                    if (hitGrid == null || !ai.Targets.ContainsKey(hitGrid))
+                        continue;
+
+                    s.SetTarget(hitGrid, ai);
+                    return true;
                 }
 
                 foundTarget = true;
@@ -100,26 +103,28 @@ namespace WeaponCore
                 break;
             }
 
-            // If Raycast misses, we will accept the closest entitySphere in its place.
+            if (rayHitSelf) {
+                ReticleOnSelfTick = s.Tick;
+                ReticleAgeOnSelf++;
+                if (rayOnlyHitSelf) ai.DummyTarget.Update(end);
+            }
+            else ReticleAgeOnSelf = 0;
+
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && RayCheckTargets(start, dir, out closestEnt, out hitPos, out foundOther, !manualSelect))
-            {
+            if (!foundTarget && RayCheckTargets(start, dir, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
                 foundTarget = true;
-                if (manualSelect)
-                {
+                if (manualSelect) {
                     s.SetTarget(closestEnt, ai);
                     return true;
                 }
                 ai.DummyTarget.Update(hitPos, closestEnt);
             }
 
-            if (!manualSelect)
-            {
+            if (!manualSelect) {
                 var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
-                _reticleColor = closestEnt != null ? activeColor : Color.White;
-                if (!foundTarget)
-                {
+                _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
+                if (!foundTarget) {
                     ai.DummyTarget.Update(end);
                 }
             }

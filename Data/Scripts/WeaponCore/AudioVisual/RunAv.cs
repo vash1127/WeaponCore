@@ -267,25 +267,17 @@ namespace WeaponCore.Support
             for (int i = AvBarrels1.Count - 1; i >= 0; i--) {
 
                 var avBarrel = AvBarrels1[i];
-
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
-
-                var entityExists = weapon.MuzzlePart.Entity?.Parent != null && !weapon.MuzzlePart.Entity.MarkedForClose;
-                var matrix = MatrixD.Zero;
-
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
 
                 if (!muzzle.Av1Looping && ticksAgo >= weapon.System.Barrel1AvTicks || weapon.StopBarrelAv) {
 
-                    if (entityExists) {
+                    if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
 
-                        if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
-
-                            weapon.StopBarrelAv = false;
-                            weapon.BarrelEffects1[muzzle.MuzzleId].Stop();
-                            weapon.BarrelEffects1[muzzle.MuzzleId] = null;
-                        }
+                        weapon.StopBarrelAv = false;
+                        weapon.BarrelEffects1[muzzle.MuzzleId].Stop();
+                        weapon.BarrelEffects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
                     AvBarrels1.RemoveAtFast(i);
@@ -298,6 +290,9 @@ namespace WeaponCore.Support
                     weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                     weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
                 }
+
+                var entityExists = weapon.MuzzlePart.Entity?.Parent != null && !weapon.MuzzlePart.Entity.MarkedForClose;
+                var matrix = MatrixD.Zero;
 
                 var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
                 if (entityExists) matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
@@ -343,23 +338,17 @@ namespace WeaponCore.Support
             for (int i = AvBarrels2.Count - 1; i >= 0; i--) {
 
                 var avBarrel = AvBarrels2[i];
-
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
-                var entityExists = weapon.MuzzlePart.Entity?.Parent != null && !weapon.MuzzlePart.Entity.MarkedForClose;
-                var matrix = MatrixD.Zero;
 
                 if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || !weapon.Comp.State.Value.Online || !weapon.Comp.Set.Value.Overrides.Activate || !weapon.Set.Enable) {
 
-                    if (entityExists) {
+                    if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
 
-                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
-
-                            weapon.StopBarrelAv = false;
-                            weapon.BarrelEffects2[muzzle.MuzzleId].Stop();
-                            weapon.BarrelEffects2[muzzle.MuzzleId] = null;
-                        }
+                        weapon.StopBarrelAv = false;
+                        weapon.BarrelEffects2[muzzle.MuzzleId].Stop();
+                        weapon.BarrelEffects2[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av2Looping = false;
                     AvBarrels2.RemoveAtFast(i);
@@ -373,7 +362,10 @@ namespace WeaponCore.Support
                     weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
                 }
 
+                var entityExists = weapon.MuzzlePart.Entity?.Parent != null && !weapon.MuzzlePart.Entity.MarkedForClose;
                 var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
+
+                var matrix = MatrixD.Zero;
                 if (entityExists) matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
 
                 if (entityExists && !weapon.StopBarrelAv) {

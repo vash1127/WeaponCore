@@ -53,10 +53,7 @@ namespace WeaponCore.Support
                             {
                                 FatMap fatMap;
                                 if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
-                                {
-                                    //Log.Line($"fatmap not count for: {grid.DebugName} - isTrash:{fatMap.Trash} - count:{fatMap.MyCubeBocks.Count}");
                                     continue;
-                                }
 
                                 var allFat = fatMap.MyCubeBocks;
                                 var fatCount = allFat.Count;
@@ -75,7 +72,6 @@ namespace WeaponCore.Support
                                             valid = true;
                                             break;
                                         }
-                                        //Log.Line($"invalidBlock:{fat.DebugName} - of:{fatCount} - isWorking:{fat.IsWorking} - blockId:{((IMySlimBlock)fat.SlimBlock).BlockDefinition.Id.SubtypeName}");
                                     }
                                     if (!valid) continue;
                                 }

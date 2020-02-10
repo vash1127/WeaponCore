@@ -3,11 +3,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
-using Sandbox.Engine.Utils;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Utils;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
@@ -41,38 +37,30 @@ namespace WeaponCore
                         gridAi.DeadProjectiles.Clear();
                         gridAi.LiveProjectileTick = Tick;
                     }
-
                     gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
-                    /*
-                    var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
-                    if (!gridAi.DbReady && weaponsInStandby)
-                    {
-                        Log.Line($"dbready:{gridAi.DbReady} - weaponStandby:{weaponsInStandby}");
-                        continue;
-                    }
-                    */
+
                     if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || Tick10)
                         gridAi.UpdateGridPower();
 
                     if (!gridAi.HasPower)
                         continue;
+
+                    var uiTargeting = TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId);
+
                     ///
                     /// Comp update section
                     ///
                     for (int i = 0; i < gridAi.Weapons.Count; i++) {
 
                         var comp = gridAi.Weapons[i];
-                        using (comp.MyCube.Pin())
-                        {
+                        using (comp.MyCube.Pin()) {
+
                             if (comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                                 continue;
 
                             if (!comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.Status != Started) {
 
-                                if (comp.Status != Started)
-                                    comp.HealthCheck();
-
-                                //Log.Line($"Comp: {comp.MyCube.DebugName}: offline");
+                                if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
 
@@ -81,7 +69,7 @@ namespace WeaponCore
                             comp.ManualControl = overRides.ManaulControl;
                             comp.TargetPainter = !comp.ManualControl && overRides.TargetPainter;
 
-                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && TargetUi.DrawReticle && !InMenu;
+                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && uiTargeting;
                             
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : 
@@ -96,8 +84,7 @@ namespace WeaponCore
                             for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                                 var w = comp.Platform.Weapons[j];
-                                if (!w.Set.Enable)
-                                {
+                                if (!w.Set.Enable) {
                                     if (w.Target.State == Targets.Acquired)
                                         w.Target.Reset();
                                     continue;
@@ -205,10 +192,10 @@ namespace WeaponCore
                                 ///
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
-                                var fakeTarget = comp.TargetPainter && w.Target.IsFakeTarget && w.Target.IsAligned;
+                                var fakeTarget = comp.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
-                                var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+                                var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
                                 
                                 if (canShoot && (validShootStates || manualShot)) {
 

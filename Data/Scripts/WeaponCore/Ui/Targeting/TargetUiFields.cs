@@ -14,7 +14,8 @@ namespace WeaponCore
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
         internal bool DrawReticle;
-        internal bool ReticleOnSelf;
+        internal uint ReticleOnSelfTick;
+        internal int ReticleAgeOnSelf;
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
