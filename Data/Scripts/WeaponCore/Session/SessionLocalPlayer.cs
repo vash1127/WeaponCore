@@ -217,7 +217,7 @@ namespace WeaponCore
                 cubeBlock.Dithering = transparency;
                 
                 var cube = cubeBlock.FatBlock as MyCubeBlock;
-                if (cube == null) continue;
+                if (cube == null || !cube.IsFunctional) continue;
                 
                 var thruster = cube as MyThrust;
                 thruster?.Render.UpdateFlameProperties(setvisible, 0);
@@ -227,24 +227,28 @@ namespace WeaponCore
                 {
                     foreach (KeyValuePair<string, MyEntitySubpart> subpart1 in renderEntity.Subparts)
                     {
+                        if (subpart1.Value.Closed) continue;
                         subpart1.Value.Render.Transparency = transparency;
                         subpart1.Value.Render.UpdateTransparency();
                         if (subpart1.Value?.Subparts != null)
                         {
                             foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
                             {
+                                if (subpart2.Value.Closed) continue;
                                 subpart2.Value.Render.Transparency = transparency;
                                 subpart2.Value.Render.UpdateTransparency();
                                 if (subpart2.Value?.Subparts != null)
                                 {
                                     foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
                                     {
+                                        if (subpart3.Value.Closed) continue;
                                         subpart3.Value.Render.Transparency = transparency;
                                         subpart3.Value.Render.UpdateTransparency();
                                         if (subpart3.Value?.Subparts != null)
                                         {
                                             foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
                                             {
+                                                if (subpart4.Value.Closed) continue;
                                                 subpart4.Value.Render.Transparency = transparency;
                                                 subpart4.Value.Render.UpdateTransparency();
                                                 SetTransparencyForSubparts(subpart4.Value, transparency);
@@ -256,11 +260,6 @@ namespace WeaponCore
                         }
                     }
                 }
-                if (cube is IMyUserControllableGun || cube is MyConveyorSorter && WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                {
-                    var comp = ai.WeaponBase[cube];
-                    comp.Platform.ResetParts(comp);
-                };
             }
         }
 
@@ -268,6 +267,7 @@ namespace WeaponCore
         {
             foreach (KeyValuePair<string, MyEntitySubpart> subpart in renderEntity.Subparts)
             {
+                if (subpart.Value.Closed) continue;
                 subpart.Value.Render.Transparency = transparency;
                 subpart.Value.Render.UpdateTransparency();
                 SetTransparencyForSubparts(subpart.Value, transparency);
