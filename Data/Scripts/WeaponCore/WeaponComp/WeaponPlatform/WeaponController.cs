@@ -157,7 +157,7 @@ namespace WeaponCore.Platform
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
-            MyPivotTestLine = new LineD(MyPivotPos + (left * 10), MyPivotPos - (left * 10));
+            MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
             if (Target.State == Target.Targets.Acquired)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);

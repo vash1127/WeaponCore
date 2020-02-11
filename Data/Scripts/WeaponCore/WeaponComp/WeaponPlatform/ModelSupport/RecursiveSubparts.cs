@@ -50,6 +50,7 @@ namespace WeaponCore.Support
                         continue;
                     _tmp.Clear();
                     ((IMyEntity)query).Model.GetDummies(_tmp);
+                    //Log.Line($"next part");
                     foreach (var kv in _tmp)
                     {
                         if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))
@@ -60,6 +61,7 @@ namespace WeaponCore.Support
                             {
                                 _subparts.Add(res);
                                 NameToEntity[name] = res;
+                                //Log.Line($"name: {name}");
                             }
                         }
                     }

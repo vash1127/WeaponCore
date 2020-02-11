@@ -5,6 +5,14 @@ using WeaponCore.Support;
 
 namespace WeaponCore
 {
+
+    public enum PacketType
+    {
+        TerminalUpdate,
+        StorageUpdate,
+        TargetUpdate,
+    }
+
     public partial class Session
     {
         #region Network sync
@@ -42,6 +50,9 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
         }
+
         #endregion
     }
+
+    //public class Packet 
 }

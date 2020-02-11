@@ -80,26 +80,30 @@ namespace WeaponCore.Support
         internal void SavePartStates()
         {
             ResettingSubparts = true;
-            for(int i = 0; i < SubpartStates.Count; i++)
+            for(int i = 0; i < SubpartStatesQuickList.Count; i++)
             {
-                var part = SubpartStates[i].Key;
-                SubpartStates[i] = new KeyValuePair<MyEntity, MatrixD>(part, part.PositionComp.LocalMatrix);
+                var part = SubpartStatesQuickList[i];
+                SubpartStates[part] =  part.PositionComp.LocalMatrix;
+                Log.Line($"Saved matrix {i}: {part.PositionComp.LocalMatrix}");
             }
         }
 
         internal void RestorePartStates(object o = null)
         {
-            ResettingSubparts = false;
             for (int i = 0; i < AllAnimations.Count; i++)
             {
                 if (AllAnimations[i].Paused)
                     AllAnimations[i].Paused = false;
             }
 
-            for (int i = 0; i < SubpartStates.Count; i++)
+            for (int i = 0; i < SubpartStatesQuickList.Count; i++)
             {
-                if (!Session.VanillaSubpartNames.Contains(SubpartIndexToName[i]))
-                    SubpartStates[i].Key.PositionComp.LocalMatrix = SubpartStates[i].Value;
+                if (!Session.VanillaSubpartNames.Contains(SubpartIndexToName[i]) || BaseType != BlockType.Turret)
+                {
+                    var part = SubpartStatesQuickList[i];
+                    part.PositionComp.LocalMatrix = SubpartStates[part];
+                    Log.Line($"loaded matrix {i}: {part.PositionComp.LocalMatrix}");
+                }
             }
 
             if(BaseType == BlockType.Turret)
@@ -107,6 +111,7 @@ namespace WeaponCore.Support
                 TurretBase.Elevation = (float)Elevation;
                 TurretBase.Azimuth = (float)Azimuth;
             }
+            ResettingSubparts = false;
         }
 
         public void StopAllSounds()

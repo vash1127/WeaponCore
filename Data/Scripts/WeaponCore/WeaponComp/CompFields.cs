@@ -29,7 +29,8 @@ namespace WeaponCore.Support
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
         internal readonly MyStringHash SubtypeHash;
-        internal readonly List<KeyValuePair<MyEntity, MatrixD>> SubpartStates = new List<KeyValuePair<MyEntity, MatrixD>>();
+        internal readonly List<MyEntity> SubpartStatesQuickList = new List<MyEntity>();
+        internal readonly Dictionary<MyEntity, MatrixD> SubpartStates = new Dictionary<MyEntity, MatrixD>();
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
         internal readonly Dictionary<string, int> SubpartNameToIndex = new Dictionary<string, int>();
         internal readonly Dictionary<int, string> SubpartIndexToName = new Dictionary<int, string>();

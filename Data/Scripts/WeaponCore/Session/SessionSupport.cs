@@ -152,9 +152,9 @@ namespace WeaponCore
 
         public void WeaponDebug(Weapon w)
         {
-            DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
-            DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
-            DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
+            DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Red, 0.05f);
+            DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Blue, 0.05f);
+            DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Green, 0.05f);
             DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
             //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
             //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);

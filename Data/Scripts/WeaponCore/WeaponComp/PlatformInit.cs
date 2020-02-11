@@ -351,9 +351,12 @@ namespace WeaponCore.Platform
             }
             foreach (var part in Parts.NameToEntity)
             {
-                comp.SubpartStates.Add(new KeyValuePair<MyEntity, MatrixD>(part.Value, MatrixD.Zero));
-                var index = comp.SubpartStates.Count - 1;
+                comp.SubpartStatesQuickList.Add(part.Value);
+                comp.SubpartStates[part.Value] = MatrixD.Zero;
+
+                var index = comp.SubpartStatesQuickList.Count - 1;
                 var name = part.Key;
+
                 comp.SubpartNameToIndex[name] = index;
                 comp.SubpartIndexToName[index] = name;
             }
@@ -398,8 +401,9 @@ namespace WeaponCore.Platform
                             if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                             {
                                 animation.Part = (MyEntitySubpart)part;
-                                if (animation.Running)
-                                    animation.Paused = true;
+                                //if (animation.Running)
+                                //  animation.Paused = true;
+                                animation.Reset();
                             }
                         }
                     }
@@ -451,19 +455,22 @@ namespace WeaponCore.Platform
             foreach (var part in Parts.NameToEntity)
             {
                 var index = comp.SubpartNameToIndex[part.Key];
-                var matrix = comp.SubpartStates[index].Value;
+                var matrix = comp.SubpartStatesQuickList[index];
 
-                comp.SubpartStates[index] = new KeyValuePair<MyEntity, MatrixD>(part.Value, matrix);
+                //comp.sub
             }
         }
 
         internal void ResetParts(WeaponComponent comp)
         {
+            //comp.SavePartStates();
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
-
+            
             //CompileTurret(comp, true);
             ResetTurret(comp);
+
+            //comp.RestorePartStates();
             comp.Status = Started;
         }
 
