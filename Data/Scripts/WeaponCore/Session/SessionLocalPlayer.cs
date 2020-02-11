@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -21,11 +22,12 @@ namespace WeaponCore
             ActiveCockPit = ActiveControlBlock as MyCockpit;
 
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
-            var reticlelastOnSelf = Tick - TargetUi.ReticleOnSelfTick;
+            //var reticlelastOnSelf = Tick - TargetUi.ReticleOnSelfTick;
             if (activeBlock != null && GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
+                /*
                 if (!TrackingAi.FadeOut && TargetUi.DrawReticle && reticlelastOnSelf <= 1 && TargetUi.ReticleAgeOnSelf > 120)
                 {
                     if (!_renderCached) UpdateCache();
@@ -33,13 +35,14 @@ namespace WeaponCore
                 }
                 else if (TrackingAi.FadeOut && (reticlelastOnSelf > 119 || !TargetUi.DrawReticle))
                     ToggleTransparent(TrackingAi, true);
+                */
             }
             else
             {
                 if (TrackingAi != null)
                 {
-                    if (TrackingAi.FadeOut)
-                        ToggleTransparent(TrackingAi, true);
+                    //if (TrackingAi.FadeOut)
+                        //ToggleTransparent(TrackingAi, true);
 
                     TrackingAi.Focus.IsFocused(TrackingAi);
                     TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
@@ -217,7 +220,7 @@ namespace WeaponCore
                 cubeBlock.Dithering = transparency;
                 
                 var cube = cubeBlock.FatBlock as MyCubeBlock;
-                if (cube == null || !cube.IsFunctional) continue;
+                if (cube == null || !cube.IsFunctional || cube is IMyButtonPanel) continue;
                 
                 var thruster = cube as MyThrust;
                 thruster?.Render.UpdateFlameProperties(setvisible, 0);
