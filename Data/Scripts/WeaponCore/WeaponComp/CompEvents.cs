@@ -135,6 +135,9 @@ namespace WeaponCore.Support
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShootDelayTick <= weapon.Comp.Session.Tick} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
+                        stringBuilder.Append($"\nMagSize: {weapon.System.EnergyMagSize} - CurrentCharge: {CurrentCharge}({weapon.CurrentCharge})");
+                        stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
+                        stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.System.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }
                 }
             }

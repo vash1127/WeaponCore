@@ -117,6 +117,7 @@ namespace WeaponCore.Projectiles
             ModelState = EntityState.None;
             LastEntityPos = Position;
 
+            Hit = new Hit();
             LastHitPos = null;
             LastHitEntVel = null;
             Info.AvShot = null;
@@ -992,7 +993,8 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose()
         {
-            if (!Info.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
+            if (!Info.IsShrapnel && GenerateShrapnel)
+                SpawnShrapnel();
             else Info.IsShrapnel = false;
 
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
