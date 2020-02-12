@@ -65,10 +65,8 @@ namespace WeaponCore.Support
         internal static bool ReacquireTarget(Projectile p)
         {
             p.ChaseAge = p.Info.Age;
-            
             var s = p.Info.System;
             var ai = p.Info.Ai;
-
             var weaponPos = p.Position;
             var overRides = p.Info.Overrides;
             var overActive = overRides.Activate;
@@ -91,6 +89,7 @@ namespace WeaponCore.Support
             var hasOffset = offset > 0;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
             var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets);
+
             for (int i = 0; i < adjTargetCount; i++)
             {
                 var focusTarget = hasOffset && i < offset;
