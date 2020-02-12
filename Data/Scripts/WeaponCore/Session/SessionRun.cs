@@ -119,7 +119,7 @@ namespace WeaponCore
                 DsUtil.Start("shoot");
                 if (ShootingWeapons.Count > 0) ShootWeapons();
                 DsUtil.Complete("shoot", true);
-                if (!WheelUi.WheelActive && !InMenu)
+                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
                 {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera) 
@@ -217,6 +217,7 @@ namespace WeaponCore
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Gui.GuiControlRemoved += MenuClosed;
+                MultiplayerId = MyAPIGateway.Multiplayer.MyId;
 
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);

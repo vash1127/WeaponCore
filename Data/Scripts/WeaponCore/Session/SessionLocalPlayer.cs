@@ -26,7 +26,16 @@ namespace WeaponCore
             if (activeBlock != null && GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
+                MyCubeBlock oldBlock;
+                TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock);
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
+
+                if (oldBlock != ActiveControlBlock)
+                {
+                    Log.Line($"activeBlock.EntityId: {activeBlock.EntityId}");
+                    SendPacketToServer(new LookupUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
+                }
+                
                 /*
                 if (!TrackingAi.FadeOut && TargetUi.DrawReticle && reticlelastOnSelf <= 1 && TargetUi.ReticleAgeOnSelf > 120)
                 {
@@ -42,10 +51,16 @@ namespace WeaponCore
                 if (TrackingAi != null)
                 {
                     //if (TrackingAi.FadeOut)
-                        //ToggleTransparent(TrackingAi, true);
+                    //ToggleTransparent(TrackingAi, true);
 
                     TrackingAi.Focus.IsFocused(TrackingAi);
-                    TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
+
+                    MyCubeBlock oldBlock;
+                    if (TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock))
+                    {
+                        SendPacketToServer(new LookupUpdatePacket { EntityId = oldBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = false });
+                        TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
+                    }
                 }
 
                 TrackingAi = null;
@@ -187,7 +202,7 @@ namespace WeaponCore
 
         internal void TargetSelection()
         {
-            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.MouseButtonRight) && InGridAiBlock)
+            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientMouseState.MouseButtonRight) && InGridAiBlock)
                 TrackingAi.Focus.ReleaseActive(TrackingAi);
 
             if (InGridAiBlock)

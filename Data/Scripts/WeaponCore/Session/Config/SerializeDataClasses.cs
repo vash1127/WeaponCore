@@ -13,6 +13,7 @@ namespace WeaponCore
         CompSettingsUpdate,
         TargetUpdate,
         ClientMouseEvent,
+        ActiveControlUpdate
     }
 
     [ProtoContract]
@@ -20,7 +21,8 @@ namespace WeaponCore
     [ProtoInclude(5, typeof(SettingPacket))]
     [ProtoInclude(6, typeof(TargetPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
-    public abstract class Packet
+    [ProtoInclude(8, typeof(LookupUpdatePacket))]
+    public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
         [ProtoMember(2)] internal ulong SenderId;
@@ -52,16 +54,23 @@ namespace WeaponCore
     [ProtoContract]
     public class MouseInputPacket : Packet
     {
-        [ProtoMember(1)] internal ServerMouseState Data = null;
+        [ProtoMember(1)] internal MouseState Data = null;
         public MouseInputPacket() { }
     }
 
     [ProtoContract]
-    internal class ServerMouseState
+    public class LookupUpdatePacket : Packet
     {
-        internal bool MouseButtonLeft;
-        internal bool MouseButtonMiddle;
-        internal bool MouseButtonRight;
+        [ProtoMember(1)] internal bool Data;
+        public LookupUpdatePacket() { }
+    }
+
+    [ProtoContract]
+    internal class MouseState
+    {
+        [ProtoMember(1)] internal bool MouseButtonLeft;
+        [ProtoMember(2)] internal bool MouseButtonMiddle;
+        [ProtoMember(3)] internal bool MouseButtonRight;
     }
 
     /*[ProtoInclude(3, typeof(DataCompState))]

@@ -135,6 +135,7 @@ namespace WeaponCore
             {
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
+                PlayerMouseStates[id] = new MouseState();
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
             }

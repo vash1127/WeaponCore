@@ -12,9 +12,6 @@ namespace WeaponCore
         internal bool LeftMouseReleased;
         internal bool RightMouseReleased;
         internal bool MouseButtonPressed;
-        internal bool MouseButtonLeft;
-        internal bool MouseButtonMiddle;
-        internal bool MouseButtonRight;
         internal bool MouseButtonLeftWasPressed;
         internal bool MouseButtonMiddleWasPressed;
         internal bool MouseButtonRightWasPressed;
@@ -32,12 +29,12 @@ namespace WeaponCore
         internal bool PlayerCamera;
         internal bool FirstPersonView;
         private readonly Session _session;
-        private readonly ServerMouseState _serverInput;
+        internal readonly MouseState ClientMouseState;
 
-        internal UiInput(Session session, ServerMouseState server)
+        internal UiInput(Session session)
         {
             _session = session;
-            _serverInput = server;
+            ClientMouseState = new MouseState();
         }
 
         internal void UpdateInputState()
@@ -52,27 +49,29 @@ namespace WeaponCore
             {
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
 
-                MouseButtonLeftWasPressed = MouseButtonLeft;
-                MouseButtonMiddleWasPressed = MouseButtonMiddle;
-                MouseButtonRightWasPressed = MouseButtonRight;
+                MouseButtonLeftWasPressed = ClientMouseState.MouseButtonLeft;
+                MouseButtonMiddleWasPressed = ClientMouseState.MouseButtonMiddle;
+                MouseButtonRightWasPressed = ClientMouseState.MouseButtonRight;
 
                 if (MouseButtonPressed)
                 {
-                    _serverInput.MouseButtonLeft = MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                    _serverInput.MouseButtonMiddle = MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
-                    _serverInput.MouseButtonRight = MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
+                    ClientMouseState.MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
+                    ClientMouseState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
+                    ClientMouseState.MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
                 }
                 else
                 {
-                    MouseButtonLeft = false;
-                    MouseButtonMiddle = false;
-                    MouseButtonRight = false;
+                    ClientMouseState.MouseButtonLeft = false;
+                    ClientMouseState.MouseButtonMiddle = false;
+                    ClientMouseState.MouseButtonRight = false;
                 }
 
-                if(_session.IsMultiplayer && _session.ControlledEntity is IMyShipController && (MouseButtonLeftWasPressed != MouseButtonLeft ||
-                MouseButtonMiddleWasPressed != MouseButtonMiddle ||
-                MouseButtonRightWasPressed != MouseButtonRight))
-                    _session.PacketizeToClientsInRange(null, new MouseInputPacket {SenderId = MyAPIGateway.Multiplayer.MyId, PType = PacketType.ClientMouseEvent, Data = _serverInput});
+                if (_session.IsMultiplayer && (MouseButtonLeftWasPressed != ClientMouseState.MouseButtonLeft ||
+                MouseButtonMiddleWasPressed != ClientMouseState.MouseButtonMiddle ||
+                MouseButtonRightWasPressed != ClientMouseState.MouseButtonRight))
+                {
+                    _session.SendPacketToServer(new MouseInputPacket {EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
+                }
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);

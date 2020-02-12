@@ -172,9 +172,17 @@ namespace WeaponCore
             {
                 PlayerEventId++;
                 IMyPlayer removedPlayer;
-                if (Players.TryRemove(l, out removedPlayer) && removedPlayer.SteamUserId == AuthorSteamId)
+                if (Players.TryRemove(l, out removedPlayer))
                 {
-                    AuthorPlayerId = 0;
+                    long playerId;
+                    MouseState ms;
+                    SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
+                    PlayerMouseStates.TryRemove(playerId, out ms);
+
+                    if (removedPlayer.SteamUserId == AuthorSteamId)
+                    {
+                        AuthorPlayerId = 0;
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }

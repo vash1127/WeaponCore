@@ -197,15 +197,16 @@ namespace WeaponCore
 
                                 var compCurPlayer = comp.State.Value.ManualControl;
 
-                                ServerMouseState sms;
+                                MouseState sms;
                                 PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
 
                                 //ui click handling for multiplayer support - toolbar only so far
-                                var leftClick = !DedicatedServer ? UiInput.MouseButtonLeft : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonLeft;
+                                var leftClick = !DedicatedServer ? UiInput.ClientMouseState.MouseButtonLeft : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonLeft;
 
-                                var rightClick = !DedicatedServer ? UiInput.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
+                                var rightClick = !DedicatedServer ? UiInput.ClientMouseState.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
 
-                                Log.Line($"leftClick: {leftClick} rightClick: {rightClick}");
+                                //if(DedicatedServer)
+                                    //Log.Line($"leftClick: {leftClick} rightClick: {rightClick} player in grid: {gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId)}");
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 

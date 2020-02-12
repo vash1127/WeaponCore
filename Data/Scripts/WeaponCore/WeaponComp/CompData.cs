@@ -74,10 +74,7 @@ namespace WeaponCore
             if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
                     Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new StatePacket {EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value});
             else // client, send settings to server
-            {
-                Log.Line($"Value.ShootOn: {Value.ShootOn}");
-                Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = MyAPIGateway.Multiplayer.MyId, Data = Value});
-            }
+                Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value});
         }
         #endregion
     }
@@ -153,7 +150,7 @@ namespace WeaponCore
                 Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
             else // client, send settings to server
             {
-                Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = MyAPIGateway.Multiplayer.MyId, Data = Value });
+                Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });
             }
         }
         #endregion
