@@ -285,6 +285,7 @@ namespace WeaponCore.Support
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
                 frag.Target = p.Info.Target.Entity;
+                frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
@@ -340,6 +341,7 @@ namespace WeaponCore.Support
                 p.Info.Ai = frag.Ai;
                 p.Info.Target.Entity = frag.Target;
                 p.Info.Target.FiringCube = frag.FiringCube;
+                p.Info.Overrides = frag.Overrides;
                 p.Info.IsShrapnel = true;
                 p.Info.EnableGuidance = frag.Guidance;
                 p.Info.WeaponId = frag.WeaponId;
@@ -366,6 +368,7 @@ namespace WeaponCore.Support
         public GridAi Ai;
         public MyEntity Target;
         public MyCubeBlock FiringCube;
+        public CompGroupOverrides Overrides;
         public Vector3D Origin;
         public Vector3D OriginUp;
         public Vector3D Direction;

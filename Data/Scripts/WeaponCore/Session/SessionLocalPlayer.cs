@@ -35,7 +35,7 @@ namespace WeaponCore
                 }
                 else if (TrackingAi.FadeOut && (reticlelastOnSelf > 119 || !TargetUi.DrawReticle))
                     ToggleTransparent(TrackingAi, true);
-                */
+                    */
             }
             else
             {
@@ -70,7 +70,7 @@ namespace WeaponCore
                 _slimCache.AddRange(sub.CubeBlocks);
 
         }
-
+        /*
         private void ToggleTransparent(GridAi ai, bool setvisible)
         {
             TargetUi.ReticleAgeOnSelf = 0;
@@ -90,11 +90,12 @@ namespace WeaponCore
                     character.Render.UpdateTransparency();
                 }
             }
+
             SetTransparency(transparency, setvisible, ai);
 
             if (setvisible) UpdateCache(clearCache: true);
         }
-
+        */
         internal void EntityControlUpdate()
         {
             var lastControlledEnt = ControlledEntity;
@@ -203,28 +204,24 @@ namespace WeaponCore
             }
         }
 
+        /*
         private void SetTransparency(float transparencyOrigin, bool setvisible, GridAi ai)
         {
-            ai.MyGrid.Render.Transparency = -transparencyOrigin;
-
-            foreach (var sub in ai.SubGrids)
-                sub.Render.Transparency = -transparencyOrigin;
-
             for (int i = 0; i < _slimCache.Count; i++)
             {
                 var cubeBlock = _slimCache[i];
                 var transparency = -transparencyOrigin;
                 if (cubeBlock.Dithering == transparency)
                     continue;
+                var cube = cubeBlock.FatBlock as MyCubeBlock;
+                if (cube != null  && (!cube.IsFunctional || cube is IMyButtonPanel || cube is MyThrust)) continue;
 
                 cubeBlock.Dithering = transparency;
                 
-                var cube = cubeBlock.FatBlock as MyCubeBlock;
-                if (cube == null || !cube.IsFunctional || cube is IMyButtonPanel) continue;
-                
+                if (cube == null) continue;
                 var thruster = cube as MyThrust;
-                thruster?.Render.UpdateFlameProperties(setvisible, 0);
-
+                if (thruster != null && thruster.IsFunctional)
+                    thruster.Render.UpdateFlameProperties(setvisible, 0);
                 MyEntity renderEntity = cube;
                 if (cube.Subparts != null)
                 {
@@ -232,28 +229,36 @@ namespace WeaponCore
                     {
                         if (subpart1.Value.Closed) continue;
                         subpart1.Value.Render.Transparency = transparency;
-                        subpart1.Value.Render.UpdateTransparency();
+                        //subpart1.Value.Render.UpdateTransparency();
+                        subpart1.Value.Render.RemoveRenderObjects();
+                        subpart1.Value.Render.AddRenderObjects();
                         if (subpart1.Value?.Subparts != null)
                         {
                             foreach (KeyValuePair<string, MyEntitySubpart> subpart2 in subpart1.Value.Subparts)
                             {
                                 if (subpart2.Value.Closed) continue;
                                 subpart2.Value.Render.Transparency = transparency;
-                                subpart2.Value.Render.UpdateTransparency();
+                                //subpart2.Value.Render.UpdateTransparency();
+                                subpart2.Value.Render.RemoveRenderObjects();
+                                subpart2.Value.Render.AddRenderObjects();
                                 if (subpart2.Value?.Subparts != null)
                                 {
                                     foreach (KeyValuePair<string, MyEntitySubpart> subpart3 in subpart2.Value.Subparts)
                                     {
                                         if (subpart3.Value.Closed) continue;
                                         subpart3.Value.Render.Transparency = transparency;
-                                        subpart3.Value.Render.UpdateTransparency();
+                                        //subpart3.Value.Render.UpdateTransparency();
+                                        subpart3.Value.Render.RemoveRenderObjects();
+                                        subpart3.Value.Render.AddRenderObjects();
                                         if (subpart3.Value?.Subparts != null)
                                         {
                                             foreach (KeyValuePair<string, MyEntitySubpart> subpart4 in subpart3.Value.Subparts)
                                             {
                                                 if (subpart4.Value.Closed) continue;
                                                 subpart4.Value.Render.Transparency = transparency;
-                                                subpart4.Value.Render.UpdateTransparency();
+                                                //subpart4.Value.Render.UpdateTransparency();
+                                                subpart4.Value.Render.RemoveRenderObjects();
+                                                subpart4.Value.Render.AddRenderObjects();
                                                 SetTransparencyForSubparts(subpart4.Value, transparency);
                                             }
                                         }
@@ -264,6 +269,15 @@ namespace WeaponCore
                     }
                 }
             }
+
+            ai.MyGrid.Render.Transparency = -transparencyOrigin;
+            ai.MyGrid.Render.UpdateRenderObject(!setvisible, true);
+            foreach (var sub in ai.SubGrids)
+            {
+                sub.Render.Transparency = -transparencyOrigin;
+                sub.Render.UpdateRenderObject(!setvisible, true);
+            }
+
         }
 
         private void SetTransparencyForSubparts(MyEntity renderEntity, float transparency)
@@ -272,11 +286,13 @@ namespace WeaponCore
             {
                 if (subpart.Value.Closed) continue;
                 subpart.Value.Render.Transparency = transparency;
-                subpart.Value.Render.UpdateTransparency();
+                //subpart.Value.Render.UpdateTransparency();
+                subpart.Value.Render.RemoveRenderObjects();
+                subpart.Value.Render.AddRenderObjects();
                 SetTransparencyForSubparts(subpart.Value, transparency);
             }
         }
-
+        */
         internal void RemoveGps()
         {
             if (TargetGps != null)

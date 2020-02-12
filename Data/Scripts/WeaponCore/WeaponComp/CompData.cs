@@ -145,9 +145,7 @@ namespace WeaponCore
                     Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new DataCompSettings(Block.EntityId, Value));
             else // client, send settings to server
             {
-                byte[] bytes = null;
-                    MyAPIGateway.Utilities.SerializeToBinary(new DataCompSettings(Block.EntityId, Value));
-
+                var bytes = MyAPIGateway.Utilities.SerializeToBinary(new DataCompSettings(Block.EntityId, Value));
                 MyAPIGateway.Multiplayer.SendMessageToServer(Session.PacketId, bytes);
             }
         }
