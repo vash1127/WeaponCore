@@ -134,6 +134,7 @@ namespace WeaponCore
             if (player.IdentityId == id)
             {
                 Players[id] = player;
+                SteamToPlayer[player.SteamUserId] = id;
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
             }

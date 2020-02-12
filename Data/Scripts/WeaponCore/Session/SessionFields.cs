@@ -24,7 +24,8 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal const ushort PacketId = 62518;
+        internal const ushort ServerPacketId = 62518;
+        internal const ushort ClientPacketId = 62519;
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
@@ -49,6 +50,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
+        internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
@@ -87,6 +89,7 @@ namespace WeaponCore
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
+        internal readonly Queue<WeaponComponent> CompTargetsToUpdate = new Queue<WeaponComponent>();
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
@@ -130,12 +133,14 @@ namespace WeaponCore
         internal DSUtils DsUtil;
         internal DSUtils DsUtil2;
         internal UiInput UiInput;
+        internal ServerMouseState ServerInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
+        internal Dictionary<long, ServerMouseState> PlayerMouseStates = new Dictionary<long, ServerMouseState>();
         internal Color[] HeatEmissives;
 
         internal Vector3D CameraPos;
@@ -167,7 +172,7 @@ namespace WeaponCore
         internal uint Tick;
 
         internal ulong AuthorSteamId = 76561197969691953;
-
+        internal ulong MultiplayerId;
         internal long AuthorPlayerId;
         internal long LastTerminalId;
 
@@ -202,6 +207,8 @@ namespace WeaponCore
         internal bool TargetArmed;
         internal bool InGridAiBlock;
         internal bool IsCreative;
+        internal bool IsMultiplayer;
+        internal bool IsClient;
 
         internal enum AnimationType
         {
@@ -234,7 +241,12 @@ namespace WeaponCore
 
         public Session()
         {
-            UiInput = new UiInput(this);
+            if (!DedicatedServer)
+            {
+                ServerInput = new ServerMouseState();
+                UiInput = new UiInput(this, ServerInput);                
+            }
+
             TargetUi = new TargetUi(this);
             WheelUi = new Wheel(this);
             DsUtil = new DSUtils(this);

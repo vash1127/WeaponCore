@@ -15,6 +15,9 @@ namespace WeaponCore
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
+        internal bool MouseButtonLeftWasPressed;
+        internal bool MouseButtonMiddleWasPressed;
+        internal bool MouseButtonRightWasPressed;
         internal bool WheelForward;
         internal bool WheelBackward;
         internal bool ShiftReleased;
@@ -29,10 +32,12 @@ namespace WeaponCore
         internal bool PlayerCamera;
         internal bool FirstPersonView;
         private readonly Session _session;
+        private readonly ServerMouseState _serverInput;
 
-        internal UiInput(Session session)
+        internal UiInput(Session session, ServerMouseState server)
         {
             _session = session;
+            _serverInput = server;
         }
 
         internal void UpdateInputState()
@@ -46,11 +51,16 @@ namespace WeaponCore
             if (s.InGridAiBlock && !s.InMenu)
             {
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
+
+                MouseButtonLeftWasPressed = MouseButtonLeft;
+                MouseButtonMiddleWasPressed = MouseButtonMiddle;
+                MouseButtonRightWasPressed = MouseButtonRight;
+
                 if (MouseButtonPressed)
                 {
-                    MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                    MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
-                    MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
+                    _serverInput.MouseButtonLeft = MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
+                    _serverInput.MouseButtonMiddle = MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
+                    _serverInput.MouseButtonRight = MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
                 }
                 else
                 {
@@ -58,6 +68,11 @@ namespace WeaponCore
                     MouseButtonMiddle = false;
                     MouseButtonRight = false;
                 }
+
+                if(_session.IsMultiplayer && _session.ControlledEntity is IMyShipController && (MouseButtonLeftWasPressed != MouseButtonLeft ||
+                MouseButtonMiddleWasPressed != MouseButtonMiddle ||
+                MouseButtonRightWasPressed != MouseButtonRight))
+                    _session.PacketizeToClientsInRange(null, new MouseInputPacket {SenderId = MyAPIGateway.Multiplayer.MyId, PType = PacketType.ClientMouseEvent, Data = _serverInput});
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);

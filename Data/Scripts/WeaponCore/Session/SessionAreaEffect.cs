@@ -157,7 +157,7 @@ namespace WeaponCore
                     tmpDamagePool -= blockHp;
                 }
 
-                if (fieldType == DotField)
+                if (fieldType == DotField && (IsServer || DedicatedServer))
                 {
                     block.DoDamage(scaledDamage, MyDamageType.Explosion, true, null, attackerId);
                     continue;

@@ -72,6 +72,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
+        internal Target[] TargetsToUpdate;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -93,8 +94,8 @@ namespace WeaponCore.Support
         internal bool Debug;
         internal bool UnlimitedPower;
         internal bool Registered;
-        internal bool ShootOn;
-        internal bool ClickShoot;
+        //internal bool ShootOn;
+        //internal bool ClickShoot;
         internal bool ResettingSubparts;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

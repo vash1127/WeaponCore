@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ProtoBuf;
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using VRageMath;
@@ -7,6 +8,7 @@ using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore.Support
 {
+    [ProtoContract]
     internal class Target
     {
         internal Targets State = Targets.Expired;

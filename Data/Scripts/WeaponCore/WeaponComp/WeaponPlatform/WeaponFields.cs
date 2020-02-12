@@ -109,7 +109,7 @@ namespace WeaponCore.Platform
         internal int HsRate;
         internal int EnergyPriority;
         internal int LastBlockCount;
-        internal int SingleShotCounter;
+        //internal int SingleShotCounter;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
         internal double Azimuth;

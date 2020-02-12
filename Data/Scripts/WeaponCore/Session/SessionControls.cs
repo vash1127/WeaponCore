@@ -167,31 +167,33 @@ namespace WeaponCore
                     comp.ClickShootAction = action;
                     comp.shootAction = (IMyTerminalAction)MyAPIGateway.TerminalActionsHelper.GetActionWithName("Shoot", typeof(T));
                 }*/
-
+                var cState = comp.State.Value;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-                    if (comp.ClickShoot)
+
+                    if (cState.ClickShoot)
                     {
                         w.State.ManualShoot = ShootOff;
-                        //action.WriteValue(blk, comp.Session.sbOff);
+                        cState.ManualControl.PlayerId = -1;
+                        cState.ManualControl.CurrentControlType = ControlType.None;
                     }
                     else
                     {
                         w.State.ManualShoot = ShootClick;
-                        comp.ShootOn = false;
-                        //action.WriteValue(blk, comp.Session.sbOn);
-                        //comp.shootAction.WriteValue(blk, comp.Session.sbOff);
+                        cState.ManualControl.PlayerId = comp.Session.Session.Player.IdentityId;
+                        cState.ManualControl.CurrentControlType = ControlType.Toolbar;
                     }
                 }
 
-                comp.ClickShoot = !comp.ClickShoot;
-
+                cState.ClickShoot = !cState.ClickShoot;
+                cState.ShootOn = cState.ClickShoot ? false : cState.ShootOn;
+                comp.UpdateStateMP();
             };
 
             action.Writer = (blk, sb) =>
             {
-                var on = blk.Components.Get<WeaponComponent>()?.ClickShoot ?? false;
+                var on = blk.Components.Get<WeaponComponent>()?.State.Value.ClickShoot ?? false;
 
                 if (on)
                     sb.Append("On");
@@ -222,22 +224,11 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[weaponId];
 
                 if (w.State.ManualShoot == ShootOn)
-                {
                     w.State.ManualShoot = ShootOff;
-                    if (w.IsShooting)
-                        w.StopShooting();
-                    else if (w.DrawingPower && !w.System.MustCharge)
-                        w.StopPowerDraw();
-
-                    if (w.System.MustCharge)
-                    {
-                        if(w.State.CurrentAmmo != w.System.EnergyMagSize)
-                            w.State.CurrentAmmo = 0;
-                    }
-                }
-                else if (w.State.ManualShoot != ShootOff) w.State.ManualShoot = ShootOn;
                 else
                     w.State.ManualShoot = ShootOn;
+
+                comp.UpdateStateMP();
             };
             action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
             action0.Enabled = (b) =>
@@ -262,11 +253,9 @@ namespace WeaponCore
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
                 
-                var wState = comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId];
+                comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOn;
+                comp.UpdateStateMP();
 
-                if (wState.ManualShoot != ShootOff) wState.ManualShoot = ShootOn;
-                else
-                    wState.ManualShoot = ShootOn;
             };
             action1.Writer = (b, t) => t.Append("On");
             action1.Enabled = (b) =>
@@ -290,20 +279,9 @@ namespace WeaponCore
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
 
-                var w = comp.Platform.Weapons[weaponId];
+                var w = comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
+                comp.UpdateStateMP();
 
-                if (w.State.ManualShoot == ShootOff) return;
-
-                w.State.ManualShoot = ShootOff;
-                if (w.IsShooting)
-                    w.StopShooting();
-                else if (w.DrawingPower && !w.System.MustCharge)
-                    w.StopPowerDraw();
-                else if (w.System.MustCharge)
-                {
-                    if (w.State.CurrentAmmo != w.System.EnergyMagSize)
-                        w.State.CurrentAmmo = 0;
-                }
             };
             action2.Writer = (b, t) => t.Append("Off");
             action2.Enabled = (b) =>
@@ -335,8 +313,10 @@ namespace WeaponCore
                 {
                     if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
                     {
-                        if (comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot != ShootOff) return;
-                        comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
+                        var cState = comp.State.Value;
+                        cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
+                        cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].SingleShotCounter++;
+                        comp.UpdateStateMP();
                     }
                 }
             };

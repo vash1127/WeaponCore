@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -287,7 +286,9 @@ namespace WeaponCore
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
 
-                    block.DoDamage(scaledDamage, damageType, true, null, attackerId);
+                    if(DedicatedServer || IsServer)
+                        block.DoDamage(scaledDamage, damageType, true, null, attackerId);
+
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
@@ -363,7 +364,9 @@ namespace WeaponCore
             if (scaledDamage < objHp) info.BaseDamagePool = 0;
             else info.BaseDamagePool -= objHp;
 
-            destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, true, null, attackerId);
+            if (IsServer || DedicatedServer)
+                destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, true, null, attackerId);
+
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;

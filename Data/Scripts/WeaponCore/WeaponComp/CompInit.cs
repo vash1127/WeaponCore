@@ -19,7 +19,7 @@ namespace WeaponCore.Support
             MyCube.ResourceSink.Update();
         }
 
-        private bool EntityAlive()
+        /*private bool EntityAlive()
         {
             if (Ai.MyGrid?.Physics == null) return false;
             //if (!_firstSync && _readyToSync) SaveAndSendAll();
@@ -29,7 +29,7 @@ namespace WeaponCore.Support
 
             if (ClientUiUpdate || SettingsUpdated) UpdateSettings();
             return true;
-        }
+        }*/
 
         private bool PostInit()
         {

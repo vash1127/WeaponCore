@@ -17,14 +17,33 @@ namespace WeaponCore.Support
                  MyCube.UpdateTerminal();
         }
 
-        private void SaveAndSendAll()
+        internal void SaveAndSendAll()
         {
             _firstSync = true;
-            if (!_isServer) return;
-            Set.SaveSettings();
-            Set.NetworkUpdate();
-            State.SaveState();
-            State.NetworkUpdate();
+            if (_isServer || _isDedicated)
+            {
+                Set.SaveSettings();
+                Set.NetworkUpdate();
+                State.SaveState();
+                State.NetworkUpdate();
+            }
+            else
+            {
+                Set.NetworkUpdate();
+                State.NetworkUpdate();
+            }
+        }
+
+        internal void UpdateStateMP()
+        {
+            if(Session.IsMultiplayer)
+                State.NetworkUpdate();
+        }
+
+        internal void UpdateSettingsMP()
+        {
+            if (Session.IsMultiplayer)
+                Set.NetworkUpdate();
         }
 
         internal void RemoveComp()

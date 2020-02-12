@@ -14,6 +14,8 @@ namespace WeaponCore
         public CompStateValues Value;
         public readonly WeaponComponent Comp;
         public readonly MyCubeBlock Block;
+        public uint LastUpdateTick;
+
         public CompState(WeaponComponent comp)
         {
             Comp = comp;
@@ -60,6 +62,7 @@ namespace WeaponCore
             {
                 Value = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length] };
                 for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponStateValues();
+                Value.ManualControl = new PlayerControl();
             }
             return loadedSomething;
         }
@@ -67,11 +70,13 @@ namespace WeaponCore
         #region Network
         public void NetworkUpdate()
         {
-
-            if (Comp.Session.IsServer)
+            Value.MId++;
+            if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
+                    Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new StatePacket {EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value});
+            else // client, send settings to server
             {
-                Value.MId++;
-                    Comp.Session.PacketizeToClientsInRange((IMyFunctionalBlock)Block, new DataCompState(Block.EntityId, Value));
+                Log.Line($"Value.ShootOn: {Value.ShootOn}");
+                Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = MyAPIGateway.Multiplayer.MyId, Data = Value});
             }
         }
         #endregion
@@ -80,8 +85,11 @@ namespace WeaponCore
     public class CompSettings
     {
         public CompSettingsValues Value;
+        public CompSettingsValues LastValue;
         public readonly WeaponComponent Comp;
         public readonly MyCubeBlock Block;
+        public uint LastUpdateTick;
+
         public CompSettings(WeaponComponent comp)
         {
             Comp = comp;
@@ -141,14 +149,11 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Comp.Session.IsServer)
-                    Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new DataCompSettings(Block.EntityId, Value));
+            if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
+                Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
             else // client, send settings to server
             {
-                byte[] bytes = null;
-                    MyAPIGateway.Utilities.SerializeToBinary(new DataCompSettings(Block.EntityId, Value));
-
-                MyAPIGateway.Multiplayer.SendMessageToServer(Session.PacketId, bytes);
+                Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = MyAPIGateway.Multiplayer.MyId, Data = Value });
             }
         }
         #endregion

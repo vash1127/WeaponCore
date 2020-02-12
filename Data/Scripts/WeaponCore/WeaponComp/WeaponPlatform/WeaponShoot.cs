@@ -268,7 +268,7 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat += HeatPShot;
                     if (State.Heat > System.MaxHeat)
                     {
-                        if (Comp.Set.Value.Overload > 1)
+                        if (Comp.Set.Value.Overload > 1 && (Comp.Session.IsServer || Comp.Session.DedicatedServer))
                         {
                             var dmg = .02f * Comp.MaxIntegrity;
                             Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
@@ -302,7 +302,7 @@ namespace WeaponCore.Platform
                 else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
                     StartReload();
 
-                if (State.ManualShoot == TerminalActionState.ShootOnce && --SingleShotCounter <= 0)
+                if (State.ManualShoot == TerminalActionState.ShootOnce && --Comp.State.Value.Weapons[WeaponId].SingleShotCounter <= 0)
                     State.ManualShoot = TerminalActionState.ShootOff;
 
                 _muzzlesToFire.Clear();

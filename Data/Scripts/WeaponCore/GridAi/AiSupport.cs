@@ -843,18 +843,21 @@ namespace WeaponCore.Support
             {
                 var comp = cubeComp.Value;
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                var cState = comp.State.Value;
+
+                if (!cState.ClickShoot) return;
+
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    var wState = comp.State.Value.Weapons[comp.Platform.Weapons[i].WeaponId];
+                    var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
 
-                    if (comp.ClickShoot)
-                    {
-                        comp.ClickShoot = false;
-                        //comp.ClickShootAction.WriteValue(comp.MyCube, comp.Session.sbOff);
+                    if (cState.ClickShoot)
                         wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                    }
 
                 }
+
+                cState.ClickShoot = false;
+                comp.UpdateStateMP();
             }
         }
 

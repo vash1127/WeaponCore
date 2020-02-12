@@ -6,7 +6,65 @@ using WeaponCore.Support;
 
 namespace WeaponCore
 {
-    [ProtoInclude(3, typeof(DataCompState))]
+
+    public enum PacketType
+    {
+        CompStateUpdate,
+        CompSettingsUpdate,
+        TargetUpdate,
+        ClientMouseEvent,
+    }
+
+    [ProtoContract]
+    [ProtoInclude(4, typeof(StatePacket))]
+    [ProtoInclude(5, typeof(SettingPacket))]
+    [ProtoInclude(6, typeof(TargetPacket))]
+    [ProtoInclude(7, typeof(MouseInputPacket))]
+    public abstract class Packet
+    {
+        [ProtoMember(1)] internal long EntityId;
+        [ProtoMember(2)] internal ulong SenderId;
+        [ProtoMember(3)] internal PacketType PType;        
+    }
+
+    [ProtoContract]
+    public class StatePacket : Packet
+    {
+        [ProtoMember(1)] internal CompStateValues Data = null;
+
+        public StatePacket() { }
+    }
+
+    [ProtoContract]
+    public class SettingPacket : Packet
+    {
+        [ProtoMember(1)] internal CompSettingsValues Data = null;
+        public SettingPacket() { }
+    }
+
+    [ProtoContract]
+    public class TargetPacket : Packet
+    {
+        [ProtoMember(1)] internal Target[] Data = null;
+        public TargetPacket() { }
+    }
+
+    [ProtoContract]
+    public class MouseInputPacket : Packet
+    {
+        [ProtoMember(1)] internal ServerMouseState Data = null;
+        public MouseInputPacket() { }
+    }
+
+    [ProtoContract]
+    internal class ServerMouseState
+    {
+        internal bool MouseButtonLeft;
+        internal bool MouseButtonMiddle;
+        internal bool MouseButtonRight;
+    }
+
+    /*[ProtoInclude(3, typeof(DataCompState))]
     [ProtoContract]
     public abstract class PacketBase
     {
@@ -37,7 +95,7 @@ namespace WeaponCore
 
         public abstract bool Received(bool isServer);
     }
-
+    
     [ProtoContract]
     public class DataCompState : PacketBase
     {
@@ -86,5 +144,5 @@ namespace WeaponCore
             comp?.UpdateSettings(Settings);
             return isServer;
         }
-    }
+    }*/
 }

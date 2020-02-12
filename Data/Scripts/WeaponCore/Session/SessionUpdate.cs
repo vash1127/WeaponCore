@@ -166,7 +166,7 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget && (DedicatedServer || IsServer);
                                 if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && comp.TerminalControlled == None)
                                 {
                                     w.AcquiringTarget = true;
@@ -195,7 +195,19 @@ namespace WeaponCore
                                 var fakeTarget = comp.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
-                                var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+                                var compCurPlayer = comp.State.Value.ManualControl;
+
+                                ServerMouseState sms;
+                                PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
+
+                                //ui click handling for multiplayer support - toolbar only so far
+                                var leftClick = !DedicatedServer ? UiInput.MouseButtonLeft : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonLeft;
+
+                                var rightClick = !DedicatedServer ? UiInput.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
+
+                                Log.Line($"leftClick: {leftClick} rightClick: {rightClick}");
+
+                                var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 
                                 if (canShoot && (validShootStates || manualShot)) {
 
@@ -369,13 +381,25 @@ namespace WeaponCore
                                 GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                         }
 
-                        if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange) {
+                        var aquired = w.Target.State == Targets.Acquired;
+
+                        if (aquired || !gridAi.TargetingInfo.TargetInRange) {
 
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
+                            if (aquired)
+                            {
+                                comp.TargetsToUpdate[w.WeaponId] = w.Target;
+                                CompTargetsToUpdate.Enqueue(comp);
+                            }
                         }
                     }
                 }
+            }
+            while(CompTargetsToUpdate.Count > 0)
+            {
+                var comp = CompTargetsToUpdate.Dequeue();
+                PacketizeToClientsInRange(comp.FunctionalBlock, new TargetPacket { EntityId = comp.FunctionalBlock.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate });
             }
         }
 

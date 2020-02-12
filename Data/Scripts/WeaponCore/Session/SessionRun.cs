@@ -204,7 +204,8 @@ namespace WeaponCore
 
         public override void HandleInput()
         {
-            UiInput.UpdateInputState();
+            if(!DedicatedServer)
+                UiInput.UpdateInputState();
         }
 
         public override void LoadData()
@@ -220,11 +221,13 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 IsCreative = MyAPIGateway.Session.CreativeMode;
+                IsMultiplayer = MyAPIGateway.Multiplayer.MultiplayerActive;
+                IsClient = !IsServer && !DedicatedServer;
 
                 foreach (var mod in Session.Mods)
                 {
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
-                    else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
+                    else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719) ReplaceVanilla = true;
                     else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
                         ReplaceVanilla = true;
                 }
@@ -258,7 +261,11 @@ namespace WeaponCore
         {
             try
             {
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(PacketId, ReceivedPacket);
+                if (IsServer || DedicatedServer)
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ServerReceivedPacket);
+                else
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);
+
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
                 MyEntities.OnEntityCreate -= OnEntityCreate;

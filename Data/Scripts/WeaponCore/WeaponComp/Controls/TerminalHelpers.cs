@@ -47,11 +47,17 @@ namespace WeaponCore.Control
 
                             return;
                         }
+                        var cState = comp.State.Value;
+
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
-                            comp.Platform.Weapons[j].SingleShotCounter++;
-                            comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
+                            cState.Weapons[comp.Platform.Weapons[j].WeaponId].SingleShotCounter++;
+                            cState.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                         }
+
+                        cState.ClickShoot = false;
+                        cState.ShootOn = false;
+                        comp.UpdateStateMP();
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -68,53 +74,33 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        /*if (comp.ClickShootAction == null || comp.shootAction == null)
-                        {
-                            comp.ClickShootAction = (IMyTerminalAction)MyAPIGateway.TerminalActionsHelper.GetActionWithName("WC_Shoot_Click", typeof(T));
-                            comp.shootAction = a;
-                        }*/
+                        var cState = comp.State.Value;
 
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             var w = comp.Platform.Weapons[j];
 
-                            if (comp.ShootOn)
-                            {
+                            if (cState.ShootOn)
                                 w.State.ManualShoot = ShootOff;
-                                if (w.IsShooting)
-                                    w.StopShooting();
-                                else if (w.DrawingPower && !w.System.MustCharge)
-                                    w.StopPowerDraw();
-
-                                if (w.System.MustCharge)
-                                {
-                                    if (w.State.CurrentAmmo != w.System.EnergyMagSize)
-                                        w.State.CurrentAmmo = 0;
-                                }
-                            }
                             else
-                            {
-                                
-                                comp.ClickShoot = false;
                                 w.State.ManualShoot = ShootOn;
-                                //a.WriteValue(blk, comp.Session.sbOn);
-                                //comp.ClickShootAction.WriteValue(blk, comp.Session.sbOff);
-                            }
                         }
 
-                        comp.ShootOn = !comp.ShootOn;
+                        cState.ShootOn = !cState.ShootOn;
+                        cState.ClickShoot = cState.ShootOn ? false : cState.ClickShoot;
+                        comp.UpdateStateMP();
                     };
 
                     var oldWriter = a.Writer;
                     a.Writer = (blk, sb) => 
                     {
                         var comp = blk.Components.Get<WeaponComponent>();
-                        if (comp == null)
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.ShootOn)
+                        if (comp.State.Value.ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");

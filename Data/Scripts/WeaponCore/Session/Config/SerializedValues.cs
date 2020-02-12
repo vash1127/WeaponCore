@@ -9,6 +9,8 @@ using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore
 {
+
+
     [ProtoContract]
     public class CompStateValues
     {
@@ -20,6 +22,10 @@ namespace WeaponCore
         [ProtoMember(6)] public int Heat;
         [ProtoMember(7)] public WeaponStateValues[] Weapons;
         [ProtoMember(8), DefaultValue(-1)] public long PlayerIdInTerminal = -1;
+        [ProtoMember(9)] public bool ShootOn;
+        [ProtoMember(10)] public bool ClickShoot;
+        [ProtoMember(11)] public PlayerControl ManualControl;
+
     }
 
     [ProtoContract]
@@ -51,6 +57,21 @@ namespace WeaponCore
         [ProtoMember(3)] public MyFixedPoint CurrentMags;
         [ProtoMember(4)] public int ShotsFired;
         [ProtoMember(5)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
+        [ProtoMember(6)] public int SingleShotCounter;
+    }
+
+    [ProtoContract]
+    public class PlayerControl
+    {
+        [ProtoMember(1), DefaultValue(-1)] public long PlayerId = -1;
+        [ProtoMember(2)] public ControlType CurrentControlType;
+    }
+    
+    public enum ControlType
+    {
+        UI,
+        Toolbar,
+        None
     }
 
     [ProtoContract]
