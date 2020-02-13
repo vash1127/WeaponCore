@@ -90,7 +90,6 @@ namespace WeaponCore
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
-        internal readonly Queue<WeaponComponent> CompTargetsToUpdate = new Queue<WeaponComponent>();
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();

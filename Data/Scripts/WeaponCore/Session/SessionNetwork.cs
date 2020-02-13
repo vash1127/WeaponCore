@@ -72,16 +72,12 @@ namespace WeaponCore
 
                             break;
                         case PacketType.TargetUpdate:
-                            var targetPacket = packet as TargetPacket;                            
+                            var targetPacket = packet as TargetPacket;
 
                             if (comp != null && targetPacket != null && targetPacket.Data != null)
                             {
-                                var targets = targetPacket.Data;
-                                for (int i = 0; i < targets.Length; i++)
-                                {
-                                    var targetSync = targets[i];
-                                    targetSync.SyncTarget(comp.Platform.Weapons[i].Target);
-                                }
+                                var syncTarget = targetPacket.Data;
+                                syncTarget.SyncTarget(comp.Platform.Weapons[syncTarget.weaponId].Target);
                             }
                             else
                             {
@@ -89,7 +85,7 @@ namespace WeaponCore
                                 GridAi ai;
                                 if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                                 {
-                                    var target = targetPacket.Data[0];
+                                    var target = targetPacket.Data;
                                     var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
 
                                     if (targetGrid != null)
@@ -190,7 +186,7 @@ namespace WeaponCore
 
                         if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                         {
-                            var target = targetPacket.Data[0];
+                            var target = targetPacket.Data;
                             var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
 
                             if (targetGrid != null)

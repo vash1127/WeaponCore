@@ -49,7 +49,7 @@ namespace WeaponCore
     [ProtoContract]
     public class TargetPacket : Packet
     {
-        [ProtoMember(1)] internal TransferTargets[] Data = null;
+        [ProtoMember(1)] internal TransferTargets Data = null;
         public TargetPacket() { }
     }
 
@@ -86,6 +86,7 @@ namespace WeaponCore
         [ProtoMember(6)] internal double OrigDistance;
         [ProtoMember(7)] internal long TopEntityId;
         [ProtoMember(8)] internal Targets State;
+        [ProtoMember(9)] internal int weaponId;
 
         internal void SyncTarget(Target target)
         {

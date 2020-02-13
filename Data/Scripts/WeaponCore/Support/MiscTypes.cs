@@ -57,7 +57,7 @@ namespace WeaponCore.Support
             if (reset) Reset();
         }
 
-        internal void SyncTarget(TransferTargets target)
+        internal void SyncTarget(TransferTargets target, int weaponId)
         {
             target.EntityId = Entity?.EntityId ?? -1;
             target.IsProjectile = IsProjectile;
@@ -66,6 +66,7 @@ namespace WeaponCore.Support
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
+            target.weaponId = weaponId;
             target.State = State;
         }
 

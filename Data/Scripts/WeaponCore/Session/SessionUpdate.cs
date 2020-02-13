@@ -387,17 +387,12 @@ namespace WeaponCore
                             AcquireTargets.RemoveAtFast(i);
                             if (aquired)
                             {
-                                w.Target.SyncTarget(comp.TargetsToUpdate[w.WeaponId]);
-                                CompTargetsToUpdate.Enqueue(comp);
+                                w.Target.SyncTarget(comp.TargetsToUpdate[w.WeaponId], w.WeaponId);
+                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate[w.WeaponId] });
                             }
                         }
                     }
                 }
-            }
-            while(CompTargetsToUpdate.Count > 0)
-            {
-                var comp = CompTargetsToUpdate.Dequeue();
-                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate });
             }
         }
 
