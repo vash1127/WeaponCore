@@ -59,7 +59,7 @@ namespace WeaponCore.Support
 
         internal void SyncTarget(TransferTargets target)
         {
-            target.EntityId = Entity.EntityId;
+            target.EntityId = Entity?.EntityId ?? -1;
             target.IsProjectile = IsProjectile;
             target.IsFakeTarget = IsFakeTarget;
             target.TargetPos = TargetPos;

@@ -3,6 +3,7 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
+using System;
 using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -73,7 +74,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal TransferTargets[] TargetsToUpdate;
+        internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -156,6 +157,10 @@ namespace WeaponCore.Support
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
+
+            Array.Resize(ref TargetsToUpdate, Platform.Weapons.Length);
+            for (int i = 0; i < TargetsToUpdate.Length; i++)
+                TargetsToUpdate[i] = new TransferTargets();
 
             State = new CompState(this);
             Set = new CompSettings(this);

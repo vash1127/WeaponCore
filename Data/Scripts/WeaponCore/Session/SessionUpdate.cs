@@ -397,7 +397,7 @@ namespace WeaponCore
             while(CompTargetsToUpdate.Count > 0)
             {
                 var comp = CompTargetsToUpdate.Dequeue();
-                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.FunctionalBlock.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate });
+                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate });
             }
         }
 

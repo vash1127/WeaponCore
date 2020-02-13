@@ -37,12 +37,7 @@ namespace WeaponCore.Platform
             Comp = comp;
 
             if (Weapons.Length != Structure.MuzzlePartNames.Length)
-            {
                 Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
-                Array.Resize(ref comp.TargetsToUpdate, Structure.MuzzlePartNames.Length);
-                for (int i = 0; i < comp.TargetsToUpdate.Length; i++)
-                    comp.TargetsToUpdate[i] = new TransferTargets();
-            }
         }
 
         internal void Clean()

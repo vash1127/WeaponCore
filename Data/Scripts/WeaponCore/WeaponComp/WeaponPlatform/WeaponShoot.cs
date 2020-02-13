@@ -332,6 +332,7 @@ namespace WeaponCore.Platform
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
             p.Info.DetonationDamage = DetonateDmg;
             p.Info.AreaEffectDamage = AreaEffectDmg;
+            p.Info.Seed = Comp.Seed;
 
             p.Info.WeaponCache = WeaponCache;
 

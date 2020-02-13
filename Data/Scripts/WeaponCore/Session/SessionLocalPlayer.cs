@@ -31,10 +31,7 @@ namespace WeaponCore
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
 
                 if (oldBlock != ActiveControlBlock)
-                {
-                    Log.Line($"activeBlock.EntityId: {activeBlock.EntityId}");
                     SendPacketToServer(new LookupUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
-                }
                 
                 /*
                 if (!TrackingAi.FadeOut && TargetUi.DrawReticle && reticlelastOnSelf <= 1 && TargetUi.ReticleAgeOnSelf > 120)
