@@ -45,8 +45,6 @@ namespace WeaponCore
                     if (!gridAi.HasPower)
                         continue;
 
-                    var uiTargeting = TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId);
-
                     ///
                     /// Comp update section
                     ///
@@ -65,11 +63,16 @@ namespace WeaponCore
                             }
 
                             var overRides = comp.Set.Value.Overrides;
-                            comp.WasControlled = comp.UserControlled;
-                            comp.ManualControl = overRides.ManaulControl;
-                            comp.TargetPainter = !comp.ManualControl && overRides.TargetPainter;
 
-                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && uiTargeting;
+                            comp.WasControlled = comp.UserControlled;
+                            comp.TrackReticle = (overRides.TargetPainter || overRides.ManualControl);
+
+                            var uiTargeting = !DedicatedServer ? TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId) : comp.TrackReticle && gridAi.ControllingPlayers.ContainsKey(comp.State.Value.CurrentPlayerControl.PlayerId);
+
+                            comp.TrackReticle = comp.TrackReticle && uiTargeting;
+
+                            if (Tick60 && DedicatedServer)
+                                Log.Line($"ManualControl: {overRides.ManualControl} TargetPainter: {overRides.TargetPainter}");                            
                             
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : 
@@ -192,10 +195,10 @@ namespace WeaponCore
                                 ///
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
-                                var fakeTarget = comp.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
+                                var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
-                                var compCurPlayer = comp.State.Value.ManualControl;
+                                var compCurPlayer = comp.State.Value.CurrentPlayerControl;
 
                                 MouseState sms;
                                 PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
@@ -205,7 +208,7 @@ namespace WeaponCore
 
                                 var rightClick = !DedicatedServer ? UiInput.ClientMouseState.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
 
-                                var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+                                var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 
                                 if (canShoot && (validShootStates || manualShot)) {
 

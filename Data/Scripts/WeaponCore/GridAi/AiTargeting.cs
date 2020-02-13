@@ -26,6 +26,8 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
             w.UpdatePivotPos();
 
+            Log.Line($"TrackReticle: {w.Comp.TrackReticle}");
+
             if (!w.Comp.TrackReticle)
             {
                 w.AimCone.ConeDir = w.MyPivotDir;
@@ -46,10 +48,7 @@ namespace WeaponCore.Support
                 {
                     w.Target.SetFake(predictedPos);
                     if (w.System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None || !w.MuzzleHitSelf())
-                    {
                         targetType = TargetType.Other;
-
-                    }
                 }
             }
 

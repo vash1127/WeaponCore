@@ -62,7 +62,7 @@ namespace WeaponCore
             {
                 Value = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length] };
                 for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponStateValues();
-                Value.ManualControl = new PlayerControl();
+                Value.CurrentPlayerControl = new PlayerControl();
             }
             return loadedSomething;
         }

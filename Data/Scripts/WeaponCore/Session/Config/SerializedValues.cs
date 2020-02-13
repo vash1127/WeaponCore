@@ -24,7 +24,7 @@ namespace WeaponCore
         [ProtoMember(8), DefaultValue(-1)] public long PlayerIdInTerminal = -1;
         [ProtoMember(9)] public bool ShootOn;
         [ProtoMember(10)] public bool ClickShoot;
-        [ProtoMember(11)] public PlayerControl ManualControl;
+        [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
 
     }
 
@@ -84,16 +84,16 @@ namespace WeaponCore
     public class CompGroupOverrides
     {
         [ProtoMember(1), DefaultValue(true)] public bool Activate = true;
-        [ProtoMember(2)] public bool Neutrals = false;
-        [ProtoMember(3)] public bool Unowned = false;
-        [ProtoMember(4)] public bool Friendly = false;
-        [ProtoMember(5)] public bool TargetPainter = false;
-        [ProtoMember(6)] public bool ManaulControl = false;
-        [ProtoMember(7)] public bool FocusTargets = false;
-        [ProtoMember(8)] public bool FocusSubSystem = false;
+        [ProtoMember(2)] public bool Neutrals;
+        [ProtoMember(3)] public bool Unowned;
+        [ProtoMember(4)] public bool Friendly;
+        [ProtoMember(5)] public bool TargetPainter;
+        [ProtoMember(6)] public bool ManualControl;
+        [ProtoMember(7)] public bool FocusTargets;
+        [ProtoMember(8)] public bool FocusSubSystem;
         [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(10)] public bool Meteors = false;
-        [ProtoMember(11)] public bool Biologicals = false;
-        [ProtoMember(12)] public bool Projectiles = false;
+        [ProtoMember(10)] public bool Meteors;
+        [ProtoMember(11)] public bool Biologicals;
+        [ProtoMember(12)] public bool Projectiles;
     }
 }

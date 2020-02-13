@@ -38,7 +38,7 @@ namespace WeaponCore.Support
             }
 
             if(!session.DedicatedServer && !session.IsServer)
-                session.SendPacketToServer(new TargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.TargetUpdate, Data = new TransferTargets[] { new TransferTargets { EntityId = target.EntityId } } });
+                session.SendPacketToServer(new TargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.TargetUpdate, Data = new TransferTargets { EntityId = target.EntityId } });
         }
 
         internal bool ReassignTarget(MyEntity target, int focusId, GridAi ai)

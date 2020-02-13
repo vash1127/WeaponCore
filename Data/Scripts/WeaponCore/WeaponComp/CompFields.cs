@@ -75,6 +75,7 @@ namespace WeaponCore.Support
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
         internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
+        //internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -87,8 +88,8 @@ namespace WeaponCore.Support
         internal bool CanOverload;
         internal bool HasTurret;
         internal bool HasChargeWeapon;
-        internal bool TargetPainter;
-        internal bool ManualControl;
+        //internal bool TargetPainter;
+        //internal bool ManualControl;
         internal bool WasControlled;
         internal bool TrackReticle;
         internal bool UserControlled;

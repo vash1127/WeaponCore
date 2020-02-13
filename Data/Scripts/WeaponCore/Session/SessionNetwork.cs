@@ -72,6 +72,7 @@ namespace WeaponCore
 
                             break;
                         case PacketType.TargetUpdate:
+                        {
                             var targetPacket = packet as TargetPacket;
 
                             if (comp != null && targetPacket != null && targetPacket.Data != null)
@@ -97,6 +98,23 @@ namespace WeaponCore
                             }
 
                             break;
+                        }
+                        case PacketType.FakeTargetUpdate:
+                            {
+
+                                var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                                var targetPacket = packet as FakeTargetPacket;
+
+                                GridAi ai;
+
+                                if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                {
+                                    ai.DummyTarget.TransferFrom(targetPacket.Data);
+                                    PacketizeToClientsInRange(myGrid, packet);
+                                }
+
+                                break;
+                            }
                     }
                 }
             }
@@ -124,6 +142,7 @@ namespace WeaponCore
                         if (statePacket.Data.MId > comp.State.Value.MId)
                         {
                             comp.State.Value = statePacket.Data;
+
                             for(int i = 0; i < comp.Platform.Weapons.Length; i++)
                             {
                                 var w = comp.Platform.Weapons[i];
@@ -138,11 +157,13 @@ namespace WeaponCore
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
+                        //Log.Line($"comp not null: {comp != null} setPacket not null: {setPacket != null}");
                         if (comp == null || setPacket == null) return;
 
                         if (setPacket.Data.MId > comp.Set.Value.MId)
                         {
                             comp.Set.Value = setPacket.Data;
+                            Log.Line($"ManaulControl: {comp.Set.Value.Overrides.ManualControl}");
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                             {
                                 var w = comp.Platform.Weapons[i];
@@ -178,6 +199,7 @@ namespace WeaponCore
                         }
                         break;
                     case PacketType.TargetUpdate:
+                    {
 
                         var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
                         var targetPacket = packet as TargetPacket;
@@ -197,6 +219,23 @@ namespace WeaponCore
                         }
 
                         break;
+                    }
+                    case PacketType.FakeTargetUpdate:
+                    {
+
+                        var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                        var targetPacket = packet as FakeTargetPacket;
+
+                        GridAi ai;
+
+                        if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                        {
+                                ai.DummyTarget.TransferFrom(targetPacket.Data);
+                            PacketizeToClientsInRange(myGrid, packet);
+                        }
+
+                        break;
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }

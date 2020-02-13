@@ -293,6 +293,7 @@ namespace WeaponCore.Support
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = p.Hit.HitPos != Vector3D.Zero ? p.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
+                frag.Seed = p.Info.Seed;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 var dirMatrix = Matrix.CreateFromDir(p.Direction);
@@ -349,6 +350,7 @@ namespace WeaponCore.Support
                 p.Info.MuzzleId = frag.MuzzleId;
                 p.Info.Origin = frag.Origin;
                 p.Info.OriginUp = frag.OriginUp;
+                p.Info.Seed = frag.Seed;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
 
@@ -377,6 +379,7 @@ namespace WeaponCore.Support
         public Vector3D PredictedTargetPos;
         public int WeaponId;
         public int MuzzleId;
+        public int Seed;
         internal bool Guidance;
     }
 }

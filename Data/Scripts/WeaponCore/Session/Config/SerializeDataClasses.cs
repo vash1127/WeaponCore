@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.Target;
 
 namespace WeaponCore
@@ -14,6 +15,7 @@ namespace WeaponCore
         CompStateUpdate,
         CompSettingsUpdate,
         TargetUpdate,
+        FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate
     }
@@ -24,6 +26,7 @@ namespace WeaponCore
     [ProtoInclude(6, typeof(TargetPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
     [ProtoInclude(8, typeof(LookupUpdatePacket))]
+    [ProtoInclude(9, typeof(FakeTargetPacket))] 
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -51,6 +54,13 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal TransferTargets Data = null;
         public TargetPacket() { }
+    }
+
+    [ProtoContract]
+    public class FakeTargetPacket : Packet
+    {
+        [ProtoMember(1)] internal FakeTarget Data = null;
+        public FakeTargetPacket() { }
     }
 
     [ProtoContract]
@@ -101,6 +111,8 @@ namespace WeaponCore
             target.State = State;
         }
     }
+
+   
 
     /*[ProtoInclude(3, typeof(DataCompState))]
     [ProtoContract]

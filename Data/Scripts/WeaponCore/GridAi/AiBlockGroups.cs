@@ -55,7 +55,17 @@ namespace WeaponCore.Support
                             o.FocusTargets = setting.Value > 0;
                             break;
                         case "ManualControl":
-                            o.ManaulControl = setting.Value > 0;
+                            o.ManualControl = setting.Value > 0;
+                            if(o.ManualControl)
+                            {
+                                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
+                                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+                            }
+                            else
+                            {
+                                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                            }
                             break;
                         case "TargetPainter":
                             o.TargetPainter = setting.Value > 0;
@@ -80,6 +90,8 @@ namespace WeaponCore.Support
                             break;
                     }
                 }
+                comp.UpdateSettingsMP();
+                comp.UpdateStateMP();
             }
         }
 
@@ -103,10 +115,31 @@ namespace WeaponCore.Support
                     o.FocusTargets = value > 0;
                     break;
                 case "ManualControl":
-                    o.ManaulControl = value > 0;
-                    break;
+                    o.ManualControl = value > 0;
+                    if (o.ManualControl)
+                    {
+                        comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
+                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+                    }
+                    else
+                    {
+                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                    }
+
+                        break;
                 case "TargetPainter":
                     o.TargetPainter = value > 0;
+                    if (o.TargetPainter)
+                    {
+                        comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
+                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+                    }
+                    else
+                    {
+                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                    }
                     break;
                 case "Unowned":
                     o.Unowned = value > 0;
@@ -127,6 +160,8 @@ namespace WeaponCore.Support
                     o.Neutrals = value > 0;
                     break;
             }
+            comp.UpdateSettingsMP();
+            comp.UpdateStateMP();
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)
@@ -148,7 +183,7 @@ namespace WeaponCore.Support
                     value = o.FocusTargets ? 1 : 0;
                     break;
                 case "ManaulControl":
-                    value = o.ManaulControl ? 1 : 0;
+                    value = o.ManualControl ? 1 : 0;
                     break;
                 case "TargetPainter":
                     value = o.TargetPainter ? 1 : 0;

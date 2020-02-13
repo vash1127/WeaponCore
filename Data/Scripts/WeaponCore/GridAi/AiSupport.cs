@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using ProtoBuf;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -26,14 +27,16 @@ namespace WeaponCore.Support
             internal int Current;
             internal int Max;
         }
+
+        [ProtoContract]
         internal class FakeTarget
         {
-            internal Vector3D Position;
-            internal Vector3 LinearVelocity;
-            internal Vector3 Acceleration;
-            internal bool ClearTarget;
+            [ProtoMember(1)] internal Vector3D Position;
+            [ProtoMember(2)] internal Vector3 LinearVelocity;
+            [ProtoMember(3)] internal Vector3 Acceleration;
+            [ProtoMember(4)] internal bool ClearTarget;
 
-            internal void Update(Vector3D hitPos, MyEntity ent = null)
+            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null)
             {
                 Position = hitPos;
                 if (ent != null)
@@ -42,7 +45,17 @@ namespace WeaponCore.Support
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
 
+                ai.Session.SendPacketToServer(new FakeTargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = ai.Session.MultiplayerId, PType = PacketType.FakeTargetUpdate, Data = this });
+
                 ClearTarget = false;
+            }
+
+            internal void TransferFrom(FakeTarget target)
+            {
+                Position = target.Position;
+                LinearVelocity = target.LinearVelocity;
+                Acceleration = target.Acceleration;
+                ClearTarget = target.ClearTarget;
             }
 
             internal void Clear()
