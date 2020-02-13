@@ -40,6 +40,8 @@ namespace WeaponCore.Platform
             {
                 Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
                 Array.Resize(ref comp.TargetsToUpdate, Structure.MuzzlePartNames.Length);
+                for (int i = 0; i < comp.TargetsToUpdate.Length; i++)
+                    comp.TargetsToUpdate[i] = new TransferTargets();
             }
         }
 

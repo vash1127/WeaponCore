@@ -57,6 +57,18 @@ namespace WeaponCore.Support
             if (reset) Reset();
         }
 
+        internal void SyncTarget(TransferTargets target)
+        {
+            target.EntityId = Entity.EntityId;
+            target.IsProjectile = IsProjectile;
+            target.IsFakeTarget = IsFakeTarget;
+            target.TargetPos = TargetPos;
+            target.HitShortDist = HitShortDist;
+            target.OrigDistance = OrigDistance;
+            target.TopEntityId = TopEntityId;
+            target.State = State;
+        }
+
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
         {
             Entity = ent;

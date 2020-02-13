@@ -2,7 +2,9 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.Target;
 
 namespace WeaponCore
 {
@@ -47,7 +49,7 @@ namespace WeaponCore
     [ProtoContract]
     public class TargetPacket : Packet
     {
-        [ProtoMember(1)] internal long[] Data = null;
+        [ProtoMember(1)] internal TransferTargets[] Data = null;
         public TargetPacket() { }
     }
 
@@ -71,6 +73,32 @@ namespace WeaponCore
         [ProtoMember(1)] internal bool MouseButtonLeft;
         [ProtoMember(2)] internal bool MouseButtonMiddle;
         [ProtoMember(3)] internal bool MouseButtonRight;
+    }
+
+    [ProtoContract]
+    internal class TransferTargets
+    {
+        [ProtoMember(1)] internal long EntityId;
+        [ProtoMember(2)] internal bool IsProjectile;
+        [ProtoMember(3)] internal bool IsFakeTarget;
+        [ProtoMember(4)] internal Vector3D TargetPos;
+        [ProtoMember(5)] internal double HitShortDist;
+        [ProtoMember(6)] internal double OrigDistance;
+        [ProtoMember(7)] internal long TopEntityId;
+        [ProtoMember(8)] internal Targets State;
+
+        internal void SyncTarget(Target target)
+        {
+            var entity = MyEntities.GetEntityByIdOrDefault(EntityId);
+            target.Entity = entity;
+            target.IsProjectile = IsProjectile;
+            target.IsFakeTarget = IsFakeTarget;
+            target.TargetPos = TargetPos;
+            target.HitShortDist = HitShortDist;
+            target.OrigDistance = OrigDistance;
+            target.TopEntityId = TopEntityId;
+            target.State = State;
+        }
     }
 
     /*[ProtoInclude(3, typeof(DataCompState))]

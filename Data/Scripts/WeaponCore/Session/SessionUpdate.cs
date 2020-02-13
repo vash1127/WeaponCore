@@ -166,8 +166,8 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget && (DedicatedServer || IsServer);
-                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && comp.TerminalControlled == None)
+                                w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                if ((DedicatedServer || IsServer) && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && comp.TerminalControlled == None)
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
@@ -387,7 +387,7 @@ namespace WeaponCore
                             AcquireTargets.RemoveAtFast(i);
                             if (aquired)
                             {
-                                comp.TargetsToUpdate[w.WeaponId] = w.Target.Entity.GetTopMostParent().EntityId;
+                                w.Target.SyncTarget(comp.TargetsToUpdate[w.WeaponId]);
                                 CompTargetsToUpdate.Enqueue(comp);
                             }
                         }

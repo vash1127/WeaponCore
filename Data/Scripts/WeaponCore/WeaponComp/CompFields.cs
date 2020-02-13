@@ -73,7 +73,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal long[] TargetsToUpdate;
+        internal TransferTargets[] TargetsToUpdate;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;

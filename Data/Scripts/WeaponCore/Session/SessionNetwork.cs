@@ -72,32 +72,31 @@ namespace WeaponCore
 
                             break;
                         case PacketType.TargetUpdate:
-                            var targetPacket = packet as TargetPacket;
-                            var targets = targetPacket.Data;
+                            var targetPacket = packet as TargetPacket;                            
 
-                            if (comp != null)
+                            if (comp != null && targetPacket != null && targetPacket.Data != null)
                             {
-
+                                var targets = targetPacket.Data;
                                 for (int i = 0; i < targets.Length; i++)
                                 {
-                                    var targetId = targets[i];
-                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-                                    
-                                    if(targetGrid != null)
-                                        GridAi.AcquireTarget(comp.Platform.Weapons[i], false, targetGrid);
+                                    var targetSync = targets[i];
+                                    targetSync.SyncTarget(comp.Platform.Weapons[i].Target);
                                 }
                             }
                             else
                             {
-                                var grid = ent as MyCubeGrid;
-                                GridAi trackingAi;
-                                if (grid != null && GridTargetingAIs.TryGetValue(grid, out trackingAi))
+                                var myGrid = ent as MyCubeGrid;
+                                GridAi ai;
+                                if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                                 {
-                                    var targetId = targetPacket.Data[0];
-                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                                    var target = targetPacket.Data[0];
+                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
 
-                                    if(targetGrid != null)
-                                        trackingAi.Focus.AddFocus(targetGrid, trackingAi);
+                                    if (targetGrid != null)
+                                    {
+                                        ai.Focus.AddFocus(targetGrid, ai);
+                                        PacketizeToClientsInRange(myGrid, packet);
+                                    }
                                 }
                             }
 
@@ -191,8 +190,8 @@ namespace WeaponCore
 
                         if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                         {
-                            var targetId = targetPacket.Data[0];
-                            var targetGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                            var target = targetPacket.Data[0];
+                            var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
 
                             if (targetGrid != null)
                             {
