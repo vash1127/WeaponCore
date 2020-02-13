@@ -452,7 +452,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle)
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, int seed)
         {
             var count = cardsToSort - firstCard;
             if (prevDeckLen < count)
@@ -461,9 +461,11 @@ namespace WeaponCore.Support
                 prevDeckLen = count;
             }
 
+            var rnd = new Random(seed);
+
             for (int i = 0; i < count; i++)
             {
-                var j = i < cardsToShuffle ? MyUtils.GetRandomInt(0, i + 1) : i;
+                var j = i < cardsToShuffle ? rnd.Next(i + 1) : i;
 
                 deck[i] = deck[j];
                 deck[j] = firstCard + i;

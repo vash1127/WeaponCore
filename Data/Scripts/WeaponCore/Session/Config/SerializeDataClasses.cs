@@ -47,7 +47,7 @@ namespace WeaponCore
     [ProtoContract]
     public class TargetPacket : Packet
     {
-        [ProtoMember(1)] internal Target[] Data = null;
+        [ProtoMember(1)] internal long[] Data = null;
         public TargetPacket() { }
     }
 

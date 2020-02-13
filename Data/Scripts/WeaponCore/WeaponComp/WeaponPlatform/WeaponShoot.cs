@@ -208,6 +208,7 @@ namespace WeaponCore.Platform
                             p.Info.AreaEffectDamage = AreaEffectDmg;
                             p.Info.WeaponCache = WeaponCache;
                             p.Info.WeaponCache.VirutalId = -1;
+                            p.Info.Seed = Comp.Seed;
 
                             p.TerminalControlled = Comp.TerminalControlled == CameraControl;
                             p.Info.ShooterVel = Comp.Ai.GridVel;

@@ -10,7 +10,7 @@ namespace WeaponCore
     public partial class Session
     {
         #region Network sync
-        internal void PacketizeToClientsInRange(IMyFunctionalBlock block, Packet packet)
+        internal void PacketizeToClientsInRange(MyEntity block, Packet packet)
         {
             try
             {
@@ -41,11 +41,13 @@ namespace WeaponCore
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
                 var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                 var comp = ent?.Components.Get<WeaponComponent>();
-                if (comp != null)
+                if (ent != null)
                 {
                     switch (packet.PType)
                     {
                         case PacketType.CompStateUpdate:
+                            if (comp == null) return;
+
                             var statePacket = packet as StatePacket;
                             comp.State.Value = statePacket.Data;
 
@@ -57,6 +59,8 @@ namespace WeaponCore
 
                             break;
                         case PacketType.CompSettingsUpdate:
+                            if (comp == null) return;
+
                             var setPacket = packet as SettingPacket;
                             comp.Set.Value = setPacket.Data;
 
@@ -70,8 +74,33 @@ namespace WeaponCore
                         case PacketType.TargetUpdate:
                             var targetPacket = packet as TargetPacket;
                             var targets = targetPacket.Data;
-                            for(int i = 0; i < targets.Length; i++)
-                                comp.Platform.Weapons[i].Target = targets[i];
+
+                            if (comp != null)
+                            {
+
+                                for (int i = 0; i < targets.Length; i++)
+                                {
+                                    var targetId = targets[i];
+                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                                    
+                                    if(targetGrid != null)
+                                        GridAi.AcquireTarget(comp.Platform.Weapons[i], false, targetGrid);
+                                }
+                            }
+                            else
+                            {
+                                var grid = ent as MyCubeGrid;
+                                GridAi trackingAi;
+                                if (grid != null && GridTargetingAIs.TryGetValue(grid, out trackingAi))
+                                {
+                                    var targetId = targetPacket.Data[0];
+                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                                    if(targetGrid != null)
+                                        trackingAi.Focus.AddFocus(targetGrid, trackingAi);
+                                }
+                            }
+
                             break;
                     }
                 }
@@ -84,7 +113,7 @@ namespace WeaponCore
             try
             {
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                IMyFunctionalBlock ent; // not inited here to avoid extras calls unless needed
+                MyEntity ent; // not inited here to avoid extras calls unless needed
                 WeaponComponent comp; // not inited here to avoid extras calls unless needed
                 long playerId = 0;
 
@@ -92,7 +121,7 @@ namespace WeaponCore
                 {
                     case PacketType.CompStateUpdate:
                         var statePacket = packet as StatePacket;
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as IMyFunctionalBlock;
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();                        
 
                         if (comp == null || statePacket == null) return;
@@ -111,7 +140,7 @@ namespace WeaponCore
 
                     case PacketType.CompSettingsUpdate:
                         var setPacket = packet as SettingPacket;
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as IMyFunctionalBlock;
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
                         if (comp == null || setPacket == null) return;
@@ -141,17 +170,37 @@ namespace WeaponCore
                         var updatePacket = packet as LookupUpdatePacket;
 
                         if (block == null || grid == null || updatePacket == null) return;
-
+                        GridAi trackingAi;
                         if (updatePacket.Data) //update/add
                         {
-                            if (GridTargetingAIs.TryGetValue(grid, out TrackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                TrackingAi.ControllingPlayers[playerId] = block;
+                            if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                                trackingAi.ControllingPlayers[playerId] = block;
                         }
                         else //remove
                         {
-                            if (GridTargetingAIs.TryGetValue(grid, out TrackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                TrackingAi.ControllingPlayers.TryGetValue(playerId, out block);
+                            if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                                trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
                         }
+                        break;
+                    case PacketType.TargetUpdate:
+
+                        var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                        var targetPacket = packet as TargetPacket;
+
+                        GridAi ai;
+
+                        if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                        {
+                            var targetId = targetPacket.Data[0];
+                            var targetGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (targetGrid != null)
+                            {
+                                ai.Focus.AddFocus(targetGrid, ai);
+                                PacketizeToClientsInRange(myGrid, packet);
+                            }
+                        }
+
                         break;
                 }
             }

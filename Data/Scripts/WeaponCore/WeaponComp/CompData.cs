@@ -72,7 +72,7 @@ namespace WeaponCore
         {
             Value.MId++;
             if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
-                    Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new StatePacket {EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value});
+                    Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new StatePacket {EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value});
             else // client, send settings to server
                 Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value});
         }
@@ -147,7 +147,7 @@ namespace WeaponCore
         {
             Value.MId++;
             if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
-                Comp.Session.PacketizeToClientsInRange(Comp.FunctionalBlock, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
+                Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
             else // client, send settings to server
             {
                 Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });

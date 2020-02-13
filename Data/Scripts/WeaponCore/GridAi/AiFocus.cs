@@ -24,17 +24,21 @@ namespace WeaponCore.Support
 
         internal void AddFocus(MyEntity target, GridAi ai)
         {
+            var session = ai.Session;
             Target[ActiveId] = target;
-            ai.TargetResetTick = ai.Session.Tick + 1;
+            ai.TargetResetTick = session.Tick + 1;
             foreach (var sub in ai.SubGrids)
             {
                 GridAi gridAi;
-                if (ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                if (session.GridTargetingAIs.TryGetValue(sub, out gridAi))
                 {
                     gridAi.Focus.Target[ActiveId] = target;
-                    gridAi.TargetResetTick = ai.Session.Tick + 1;
+                    gridAi.TargetResetTick = session.Tick + 1;
                 }
             }
+
+            if(!session.DedicatedServer && !session.IsServer)
+                session.SendPacketToServer(new TargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.TargetUpdate, Data =  new long[] { target.EntityId } });
         }
 
         internal bool ReassignTarget(MyEntity target, int focusId, GridAi ai)

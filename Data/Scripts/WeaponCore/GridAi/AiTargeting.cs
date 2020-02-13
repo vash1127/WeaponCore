@@ -88,7 +88,7 @@ namespace WeaponCore.Support
             var numOfTargets = ai.SortedTargets.Count;
             var hasOffset = offset > 0;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets);
+            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets, p.Info.Seed);
 
             for (int i = 0; i < adjTargetCount; i++)
             {
@@ -175,7 +175,7 @@ namespace WeaponCore.Support
             var hasOffset = offset > 0;
             var numOfTargets = ai.SortedTargets.Count;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.Comp.Seed);
             try
             {
                 for (int x = 0; x < adjTargetCount; x++)
@@ -322,7 +322,7 @@ namespace WeaponCore.Support
             }
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks);
+            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, w.Comp.Seed);
             var physics = ai.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;
@@ -590,7 +590,7 @@ namespace WeaponCore.Support
             var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
 
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.Comp.Seed);
 
             for (int x = 0; x < numOfTargets; x++)
             {

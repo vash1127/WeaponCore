@@ -205,9 +205,6 @@ namespace WeaponCore
 
                                 var rightClick = !DedicatedServer ? UiInput.ClientMouseState.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
 
-                                //if(DedicatedServer)
-                                    //Log.Line($"leftClick: {leftClick} rightClick: {rightClick} player in grid: {gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId)}");
-
                                 var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 
                                 if (canShoot && (validShootStates || manualShot)) {
@@ -390,7 +387,7 @@ namespace WeaponCore
                             AcquireTargets.RemoveAtFast(i);
                             if (aquired)
                             {
-                                comp.TargetsToUpdate[w.WeaponId] = w.Target;
+                                comp.TargetsToUpdate[w.WeaponId] = w.Target.Entity.GetTopMostParent().EntityId;
                                 CompTargetsToUpdate.Enqueue(comp);
                             }
                         }
@@ -400,7 +397,7 @@ namespace WeaponCore
             while(CompTargetsToUpdate.Count > 0)
             {
                 var comp = CompTargetsToUpdate.Dequeue();
-                PacketizeToClientsInRange(comp.FunctionalBlock, new TargetPacket { EntityId = comp.FunctionalBlock.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate });
+                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.FunctionalBlock.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate });
             }
         }
 

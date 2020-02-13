@@ -54,6 +54,7 @@ namespace WeaponCore.Support
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
         internal uint MatrixUpdateTick;
+        internal int Seed;
         internal float MaxInventoryVolume;
         internal float OptimalDps;
         internal float CurrentDps;
@@ -72,7 +73,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal Target[] TargetsToUpdate;
+        internal long[] TargetsToUpdate;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -131,6 +132,7 @@ namespace WeaponCore.Support
             Ai = ai;
             Session = session;
             MyCube = myCube;
+            Seed = MyCube.EntityId.GetHashCode();
             Slim = myCube.SlimBlock;
             SubtypeHash = subtype;
 
