@@ -387,9 +387,6 @@ namespace WeaponCore
                 WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    if (!comp.Session.DedicatedServer)
-                        comp.TerminalRefresh();
-
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;
                 }

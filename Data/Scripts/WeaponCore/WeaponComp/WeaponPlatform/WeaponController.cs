@@ -232,15 +232,8 @@ namespace WeaponCore.Platform
 
                 if (_fakeHeatTick * 30 == 60)
                 {
-                    if (!Comp.Session.DedicatedServer)
-                    {
-                        Comp.TerminalRefresh();
-                        Log.Line("Heat Refresh");
-                    }
-
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
                     State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
-
 
                     if (Comp.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
                     {
@@ -264,8 +257,6 @@ namespace WeaponCore.Platform
 
                     Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
                 }
-                else if (!Comp.Session.DedicatedServer)
-                    Comp.TerminalRefresh();
             }
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }

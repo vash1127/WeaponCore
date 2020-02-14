@@ -334,8 +334,6 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= useableDif;
             Comp.Ai.GridAvailablePower += useableDif;
             Comp.MyCube.ResourceSink.Update();
-            if (!Comp.Session.DedicatedServer)
-                Comp.TerminalRefresh();
         }
 
         public void StopPowerDraw()
@@ -351,8 +349,6 @@ namespace WeaponCore.Platform
             ChargeDelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
-            if(!Comp.Session.DedicatedServer)
-                Comp.TerminalRefresh();
         }
 
         public void StartReload(bool reset = false)
