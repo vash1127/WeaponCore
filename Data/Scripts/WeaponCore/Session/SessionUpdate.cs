@@ -63,7 +63,7 @@ namespace WeaponCore
                                 if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
-                            if (InMenu && LastTerminalId == comp.MyCube.EntityId) 
+                            if (InMenu && Tick10 && LastTerminalId == comp.MyCube.EntityId) 
                                 comp.TerminalRefresh();
 
                             var overRides = comp.Set.Value.Overrides;
