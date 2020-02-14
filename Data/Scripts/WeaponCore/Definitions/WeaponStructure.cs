@@ -119,6 +119,7 @@ namespace WeaponCore.Support
         public readonly bool EwarEffect;
         public readonly bool NeedsPrediction;
         public readonly bool HasBurstDelay;
+        public bool PreFireSound;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -535,6 +536,7 @@ namespace WeaponCore.Support
             HardPointRotationSound = Values.Audio.HardPoint.HardPointRotationSound != string.Empty;
             BarrelRotationSound = Values.Audio.HardPoint.BarrelRotationSound != string.Empty;
             NoAmmoSound = Values.Audio.HardPoint.NoAmmoSound != string.Empty;
+            PreFireSound = Values.Audio.HardPoint.PreFiringSound != string.Empty;
             var fSoundStart = Values.Audio.HardPoint.FiringSound;
             if (fSoundStart != string.Empty && Values.Audio.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.PerShot;

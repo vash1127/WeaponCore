@@ -295,6 +295,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false, bool power = true)
         {
             StopFiringSound(false);
+            StopPreFiringSound(false);
             if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
             {
@@ -461,6 +462,16 @@ namespace WeaponCore.Platform
             w.Reloading = false;
             if(!w.System.HasBurstDelay)
                 w.State.ShotsFired = 0;
+        }
+
+        public void StartPreFiringSound()
+        {
+            PreFiringEmitter?.PlaySound(FiringSound);
+        }
+
+        public void StopPreFiringSound(bool force)
+        {
+            PreFiringEmitter?.StopSound(force);
         }
 
         public void StartFiringSound()

@@ -25,6 +25,9 @@ namespace WeaponCore.Platform
                 var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
                 if (_ticksUntilShoot++ < System.DelayToFire)
                 {
+                    if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)
+                        StartPreFiringSound();
+
                     if (!PreFired)
                     {
                         var nxtMuzzle = NextMuzzle;
