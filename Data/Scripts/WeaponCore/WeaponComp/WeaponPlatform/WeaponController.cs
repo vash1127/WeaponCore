@@ -35,21 +35,6 @@ namespace WeaponCore.Platform
                 else
                     absElChange = elevationChange;
 
-                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
-                {
-                    if (absAzChange >= System.AzStep)
-                    {
-                        if (rAz)
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
-                        else
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
-                    }
-                    else
-                    {
-                        AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.FromTransformation);
-                    }
-                }
-
                 if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
                 {
                     if (absElChange >= System.ElStep)
@@ -61,7 +46,22 @@ namespace WeaponCore.Platform
                     }
                     else
                     {
-                        ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.FromTransformation);
+                        ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
+                    }
+                }
+
+                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
+                {
+                    if (absAzChange >= System.AzStep)
+                    {
+                        if (rAz)
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
+                        else
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
+                    }
+                    else
+                    {
+                        AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
                     }
                 }
             }
@@ -126,19 +126,15 @@ namespace WeaponCore.Platform
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrix.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
 
+            //Log.Line($"up: {AzimuthPart.RotationAxis} left: {ElevationPart.RotationAxis}");
+
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
             var forward = Comp.CubeMatrix.Forward;
             var left = Vector3D.Cross(MyPivotUp, forward);
 
-            if (System.ElevationOnly)//turrets limited to elevation only, makes constraints check whats in front of weapon not cube forward within elevation limits
-            {
-                forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
-                WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = elevationMatrix.Left };
-            }
-            else // azimuth only and full turret already have the right matrix
-                WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
+            WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
 
             Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
             if (Vector3D.IsZero(axis))
