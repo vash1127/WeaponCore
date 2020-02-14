@@ -682,6 +682,18 @@ namespace WeaponCore
             return Vector3.Zero;
         }
 
+        internal IMyModelDummy GetPartDummy(string partName, IMyModel model)
+        {
+            Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
+            model.GetDummies(dummyList);
+
+            IMyModelDummy dummy;
+            if (dummyList.TryGetValue(partName, out dummy))
+                return dummy;
+
+            return null;
+        }
+
         internal void ProcessAnimations()
         {
             PartAnimation anim;
