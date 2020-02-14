@@ -131,16 +131,18 @@ namespace WeaponCore.Platform
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
-            var forward = Comp.CubeMatrix.Forward;
-            var left = Vector3D.Cross(MyPivotUp, forward);
 
             if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
-                forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
+                var forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = elevationMatrix.Left };
             }
             else
+            {
+                var forward = AzimuthOnBase ? Comp.CubeMatrix.Forward : AzimuthPart.Entity.Parent.WorldMatrix.Forward;
+                var left = Vector3D.Cross(MyPivotUp, forward);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
+            }
 
             Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
             if (Vector3D.IsZero(axis))
@@ -159,7 +161,7 @@ namespace WeaponCore.Platform
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
-            MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (left * 10));
+            MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
             if (Target.State == Target.Targets.Acquired)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
@@ -231,7 +233,10 @@ namespace WeaponCore.Platform
                 if (_fakeHeatTick * 30 == 60)
                 {
                     if (!Comp.Session.DedicatedServer)
+                    {
                         Comp.TerminalRefresh();
+                        Log.Line("Heat Refresh");
+                    }
 
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
                     State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;

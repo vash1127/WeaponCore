@@ -154,8 +154,9 @@ namespace WeaponCore.Platform
                 {
                     Muzzles = new Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    AzimuthPart = new PartInfo{ Entity = azimuthPart},
+                    AzimuthPart = new PartInfo { Entity = azimuthPart },
                     ElevationPart = new PartInfo { Entity = elevationPart },
+                    AzimuthOnBase = azimuthPart.Parent == comp.MyCube,
                     AiOnlyWeapon = comp.BaseType != Turret || (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2")
                 };
 
