@@ -134,7 +134,13 @@ namespace WeaponCore.Platform
             var forward = Comp.CubeMatrix.Forward;
             var left = Vector3D.Cross(MyPivotUp, forward);
 
-            WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
+            if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
+            {
+                forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
+                WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = elevationMatrix.Left };
+            }
+            else
+                WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
 
             Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
             if (Vector3D.IsZero(axis))
