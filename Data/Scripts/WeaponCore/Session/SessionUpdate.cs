@@ -64,7 +64,7 @@ namespace WeaponCore
                                 if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
-                            if (InMenu && Tick20 && gridAi.LastTerminal == comp.MyCube) 
+                            if (InMenu && Tick20 && gridAi.LastTerminal == comp.MyCube)
                                 comp.TerminalRefresh();
 
                             var overRides = comp.Set.Value.Overrides;

@@ -108,8 +108,8 @@ namespace WeaponCore.Support
 
             if(BaseType == BlockType.Turret)
             {
-                TurretBase.Elevation = (float)Elevation;
-                TurretBase.Azimuth = (float)Azimuth;
+                //TurretBase.Elevation = (float)Elevation;
+                //TurretBase.Azimuth = (float)Azimuth;
             }
             ResettingSubparts = false;
         }

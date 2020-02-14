@@ -66,8 +66,8 @@ namespace WeaponCore.Support
         internal float CurrentCharge;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
-        internal double Azimuth;
-        internal double Elevation;
+        //internal double Azimuth;
+        //internal double Elevation;
 
         internal GridAi Ai;
         internal Weapon TrackingWeapon;

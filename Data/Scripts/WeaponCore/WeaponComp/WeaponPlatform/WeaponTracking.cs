@@ -257,7 +257,7 @@ namespace WeaponCore.Platform
                     {
                         weapon.Azimuth = az;
                         weapon.Elevation = el;
-                        weapon.AimBarrel(azDiff, elDiff, true, true);
+                        weapon.AimBarrel(azDiff, elDiff);
                     }
                 }
             }
@@ -280,12 +280,8 @@ namespace WeaponCore.Platform
                     for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
                     {
                         var w = weapon.Comp.Platform.Weapons[i];
-
-                        if (w.Target.State != Target.Targets.Acquired && w != weapon)
-                        {
-                            w.WakeTargets();
-                            GridAi.AcquireTarget(w, false, weapon.Target.Entity.GetTopMostParent());
-                        }
+                        w.Target.State = Target.Targets.Expired;
+                        w.Target.CheckTick -= 240;
                     }
                 }
             }

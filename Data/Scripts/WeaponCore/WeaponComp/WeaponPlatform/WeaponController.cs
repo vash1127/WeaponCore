@@ -70,12 +70,12 @@ namespace WeaponCore.Platform
                 if (moveEl)
                 {
                     Comp.TurretBase.Elevation = (float)Elevation;
-                    Comp.Elevation = Elevation;
+                    //Comp.Elevation = Elevation;
                 }
                 if (moveAz)
                 {
                     Comp.TurretBase.Azimuth = (float)Azimuth;
-                    Comp.Azimuth = Azimuth;
+                    //Comp.Azimuth = Azimuth;
                 }
             }
 
@@ -115,7 +115,7 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            if (Comp.MatrixUpdateTick < Comp.Session.Tick)
+            if (Comp.MatrixUpdateTick < Comp.Session.Tick && AzimuthOnBase)
             {
                 Comp.MatrixUpdateTick = Comp.Session.Tick;
                 Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
