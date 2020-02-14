@@ -466,6 +466,7 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal string BarrelRotationSound;
         [ProtoMember(5)] internal string FiringSound;
         [ProtoMember(6)] internal bool FiringSoundPerShot;
+        [ProtoMember(7)] internal string PreFiringSound;
     }
 
     [ProtoContract]

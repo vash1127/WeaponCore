@@ -69,11 +69,13 @@ namespace WeaponCore.Platform
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
         internal MySoundPair ReloadSound;
+        internal MySoundPair PreFiringSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
+        internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
@@ -231,6 +233,13 @@ namespace WeaponCore.Platform
                 FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
                 FiringSound.Init(System.Values.Audio.HardPoint.FiringSound);
+            }
+
+            if (AvCapable && system.PreFireSound)
+            {
+                PreFiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                PreFiringSound = new MySoundPair();
+                PreFiringSound.Init(System.Values.Audio.HardPoint.PreFiringSound);
             }
 
             if (AvCapable && system.WeaponReloadSound)
