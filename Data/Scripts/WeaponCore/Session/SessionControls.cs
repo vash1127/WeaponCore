@@ -383,9 +383,8 @@ namespace WeaponCore
             if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
             {
                 gridAi.LastTerminal = block;
-
                 WeaponComponent comp;
-                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Valid)
                 {
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;

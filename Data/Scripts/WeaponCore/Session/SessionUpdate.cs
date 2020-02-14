@@ -3,6 +3,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
@@ -63,7 +64,7 @@ namespace WeaponCore
                                 if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
-                            if (InMenu && Tick10 && LastTerminalId == comp.MyCube.EntityId) 
+                            if (InMenu && Tick20 && gridAi.LastTerminal == comp.MyCube) 
                                 comp.TerminalRefresh();
 
                             var overRides = comp.Set.Value.Overrides;
