@@ -63,6 +63,8 @@ namespace WeaponCore
                                 if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
+                            if (InMenu && LastTerminalId == comp.MyCube.EntityId) 
+                                comp.TerminalRefresh();
 
                             var overRides = comp.Set.Value.Overrides;
                             comp.WasControlled = comp.UserControlled;
@@ -277,9 +279,6 @@ namespace WeaponCore
                             w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
                             w.CurrentCharge = w.System.EnergyMagSize;
                         }
-
-                        if (!w.Comp.Session.DedicatedServer)
-                            w.Comp.TerminalRefresh();
                     }
 
                     if (w.ChargeUntilTick <= Tick || !w.Reloading)

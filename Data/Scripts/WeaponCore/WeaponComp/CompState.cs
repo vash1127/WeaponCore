@@ -121,7 +121,6 @@ namespace WeaponCore.Support
             if (Session.MpActive)
             {
                 State.NetworkUpdate();
-                if (_isServer) TerminalRefresh(false);
             }
 
             //if (!_isDedicated && State.Value.Message) BroadcastMessage();
