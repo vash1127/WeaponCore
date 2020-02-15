@@ -68,15 +68,10 @@ namespace WeaponCore.Platform
             else
             {   
                 if (moveEl)
-                {
                     Comp.TurretBase.Elevation = (float)Elevation;
-                    //Comp.Elevation = Elevation;
-                }
+
                 if (moveAz)
-                {
                     Comp.TurretBase.Azimuth = (float)Azimuth;
-                    //Comp.Azimuth = Azimuth;
-                }
             }
 
         }
