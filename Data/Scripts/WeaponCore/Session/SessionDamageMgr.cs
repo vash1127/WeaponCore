@@ -192,7 +192,6 @@ namespace WeaponCore
             }
             var objectsHit = t.ObjectsHit;
             var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
-            Log.Line($"gridDamage: - pool:{damagePool}");
 
             List<Vector3I> radiatedBlocks = null;
             if (radiant) GetBlockSphereDb(grid, areaRadius, out radiatedBlocks);
