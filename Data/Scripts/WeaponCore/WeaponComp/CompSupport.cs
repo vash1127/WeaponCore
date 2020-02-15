@@ -11,10 +11,16 @@ namespace WeaponCore.Support
         internal void TerminalRefresh(bool update = true)
         {
             if (Ai?.LastTerminal == MyCube)
+            {
                 TerminalBlock.RefreshCustomInfo();
+                Log.Line($"refresh customInfo");
+            }
 
             if (update && InControlPanel)
-                 MyCube.UpdateTerminal();
+            {
+                Log.Line($"update terminal");
+                MyCube.UpdateTerminal();
+            }
         }
 
         private void SaveAndSendAll()

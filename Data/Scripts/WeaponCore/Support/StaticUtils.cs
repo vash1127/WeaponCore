@@ -24,6 +24,12 @@ namespace WeaponCore.Support
             }
             else
             {
+                var sorter = block as IMyTerminalBlock;
+                if (sorter != null)
+                {
+                    sorter.ShowOnHUD = !sorter.ShowOnHUD;
+                    sorter.ShowOnHUD = !sorter.ShowOnHUD;
+                }
                 return;
             }
             block.ChangeOwner(ownerId, shareMode == MyOwnershipShareModeEnum.None ? MyOwnershipShareModeEnum.Faction : MyOwnershipShareModeEnum.None);

@@ -361,7 +361,6 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {
-            Log.Line("reloading");
             if (Reloading && !reset) return;
             if (reset && !Comp.State.Value.Online)
             {
