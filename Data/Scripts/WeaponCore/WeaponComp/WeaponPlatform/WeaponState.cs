@@ -35,27 +35,25 @@ namespace WeaponCore.Platform
                 case EventTriggers.StopFiring:
                 case EventTriggers.PreFire:
                 case EventTriggers.Firing:
-                    try
-                    {
                         if (AnimationsSet.ContainsKey(state))
                         {
                             var addToFiring = AnimationsSet.ContainsKey(EventTriggers.StopFiring) && state == EventTriggers.Firing;
-                            uint delay = 0;
-                            if (active)
-                            {
-                                if (state == EventTriggers.StopFiring)
+                            uint delay = 0;                                
+                                if (active)
                                 {
-                                    ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
-                                    if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
+                                    if (state == EventTriggers.StopFiring)
                                     {
-                                        if (CurLgstAnimPlaying.Running)
-                                            delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                                        ShootDelayTick += delay;
+                                        ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
+                                        if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
+                                        {
+                                                if (CurLgstAnimPlaying!= null && CurLgstAnimPlaying.Running)
+                                                    delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                                                ShootDelayTick += delay;
+                                        }
                                     }
+                                    LastEvent = state;
                                 }
-                                LastEvent = state;
-                            }
-
+                                
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
@@ -89,11 +87,6 @@ namespace WeaponCore.Platform
                             if (active && state == EventTriggers.StopFiring)
                                 _muzzlesFiring.Clear();
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Line($"Exception in firing: {e}");
-                    }
                     break;
                 case EventTriggers.StopTracking:
                 case EventTriggers.Tracking:
@@ -361,7 +354,7 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {
-            if (Reloading && !reset) return;
+            if (Reloading) return;
             if (reset && !Comp.State.Value.Online)
             {
                 Reloading = false;
@@ -369,6 +362,7 @@ namespace WeaponCore.Platform
             }
 
             Reloading = true;
+
             if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
                 Comp.Session.FutureEvents.Schedule(o=> { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
