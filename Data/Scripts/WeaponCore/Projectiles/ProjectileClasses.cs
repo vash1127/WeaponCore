@@ -290,7 +290,7 @@ namespace WeaponCore.Support
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
-                frag.Origin = p.Hit.HitPos != Vector3D.Zero ? p.Hit.HitPos : p.Position;
+                frag.Origin = !Vector3D.IsZero(p.Hit.HitPos) ? p.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;

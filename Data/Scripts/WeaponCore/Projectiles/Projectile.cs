@@ -167,7 +167,7 @@ namespace WeaponCore.Projectiles
             }
             else if (Info.Target.Entity != null) OriginTargetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
-            LockedTarget = OriginTargetPos != Vector3D.Zero;
+            LockedTarget = !Vector3D.IsZero(OriginTargetPos);
 
             if (SmartsOn && Info.System.TargetOffSet && LockedTarget)
             {
@@ -198,7 +198,7 @@ namespace WeaponCore.Projectiles
             }
             else MaxTrajectory = Info.System.Values.Ammo.Trajectory.MaxTrajectory;
 
-            if (PredictedTargetPos == Vector3D.Zero) PredictedTargetPos = Position + (Direction * MaxTrajectory);
+            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Direction * MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
@@ -223,7 +223,7 @@ namespace WeaponCore.Projectiles
 
             if (MoveToAndActivate)
             {
-                var distancePos = PredictedTargetPos != Vector3D.Zero ? PredictedTargetPos : OriginTargetPos;
+                var distancePos = !Vector3D.IsZero(PredictedTargetPos) ? PredictedTargetPos : OriginTargetPos;
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
@@ -374,7 +374,7 @@ namespace WeaponCore.Projectiles
 
         internal bool Intersected(bool add = true)
         {
-            if (Hit.HitPos == Vector3D.Zero) return false;
+            if (Vector3D.IsZero(Hit.HitPos)) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModel || Info.System.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.System.AmmoParticle && !Info.System.DrawLine;
@@ -432,7 +432,7 @@ namespace WeaponCore.Projectiles
         internal void CreateFakeBeams(bool miss = false)
         {
             Vector3D? hitPos = null;
-            if (Hit.HitPos != Vector3D.Zero) hitPos = Hit.HitPos;
+            if (!Vector3D.IsZero(Hit.HitPos)) hitPos = Hit.HitPos;
             for (int i = 0; i < VrPros.Count; i++)
             { 
                 var vp = VrPros[i];
@@ -604,7 +604,7 @@ namespace WeaponCore.Projectiles
                     }
 
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
-                    if (!(Info.Target.IsProjectile || fake) && (physics == null || targetPos == Vector3D.Zero))
+                    if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
                         PrevTargetPos = PredictedTargetPos;
                     else PrevTargetPos = targetPos;
 
