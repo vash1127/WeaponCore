@@ -254,21 +254,23 @@ namespace WeaponCore
             for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ChargingWeapons[i];
-
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
                     var comp = w.Comp;
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
+                    var gridAi = comp.Ai;
+
+                    if (gridAi.LastPowerUpdateTick != Tick)
+                        gridAi.UpdateGridPower();
+
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
                         continue;
                     }
 
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                        continue;
-
-                    var gridAi = w.Comp.Ai;
+                        continue;                    
 
                     if (Tick60 && w.DrawingPower)
                     {
@@ -311,8 +313,7 @@ namespace WeaponCore
                         continue;
                     }
 
-                    if (gridAi.LastPowerUpdateTick != Tick)
-                        gridAi.UpdateGridPower();
+                    
 
                     if (!w.DrawingPower || gridAi.RequestedPowerChanged || gridAi.AvailablePowerChanged || (w.RecalcPower && Tick60))
                     {
