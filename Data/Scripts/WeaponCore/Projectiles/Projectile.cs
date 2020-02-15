@@ -699,8 +699,10 @@ namespace WeaponCore.Projectiles
                                 ++Info.TriggerGrowthSteps;
                             }
                         }
+                        Info.TriggerMatrix = MatrixD.Identity;
                         MatrixD.Rescale(ref Info.TriggerMatrix, nextSize);
-                        if (EnableAv) Info.AvShot.TriggerMatrix = Info.TriggerMatrix;
+                        if (EnableAv)
+                            Info.AvShot.TriggerMatrix = Info.TriggerMatrix;
                     }
                 }
             }
