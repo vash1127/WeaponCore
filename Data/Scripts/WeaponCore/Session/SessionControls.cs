@@ -380,17 +380,13 @@ namespace WeaponCore
         {
             var cube = (MyCubeBlock)block;
             GridAi gridAi;
-            Log.Line("test0");
 
             if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
             {
                 gridAi.LastTerminal = block;
                 WeaponComponent comp;
-                Log.Line($"test1: {gridAi.WeaponBase.ContainsKey(cube)}");
-
-                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Valid)
+                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    Log.Line("test2");
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;
                 }
