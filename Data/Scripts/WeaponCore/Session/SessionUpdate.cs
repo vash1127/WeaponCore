@@ -260,8 +260,8 @@ namespace WeaponCore
                     var comp = w.Comp;
                     var gridAi = comp.Ai;
 
-                    if (gridAi.LastPowerUpdateTick != Tick)
-                        gridAi.UpdateGridPower();
+                    //if (gridAi.LastPowerUpdateTick != Tick)
+                        //gridAi.UpdateGridPower();
 
                     if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {

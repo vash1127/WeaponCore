@@ -148,7 +148,7 @@ namespace WeaponCore.Support
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
 
-            if (!weapon.System.EnergyAmmo || weapon.System.MustCharge)
+            if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
                 Session.ComputeStorage(weapon);
 
             if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading)
@@ -166,13 +166,25 @@ namespace WeaponCore.Support
                 weapon.CurrentCharge = 0;
                 weapon.State.CurrentAmmo = 0;
                 weapon.Reloading = false;
-                Session.ComputeStorage(weapon);
+                Session.FutureEvents.Schedule(InitChargingWeapons, weapon, 1);
             }
 
             /*if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {
                 Ai.ManualComps++;
             }*/
+        }
+
+        private void InitChargingWeapons(object o)
+        {
+            var w = o as Weapon;
+
+            if (w == null) return;
+
+            if(Session.GameLoaded)
+                Session.ComputeStorage(w);
+            else
+                Session.FutureEvents.Schedule(InitChargingWeapons, w, 1);
         }
 
         private void InventoryInit()
