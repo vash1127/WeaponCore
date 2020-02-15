@@ -526,6 +526,7 @@ namespace WeaponCore.Support
 
         [ProtoMember(1)] internal float Modifier;
         [ProtoMember(2)] internal ShieldType Type;
+        [ProtoMember(3)] internal float BypassModifier;
     }
 
     [ProtoContract]

@@ -146,6 +146,7 @@ namespace WeaponCore.Support
         public readonly float MaxTargetRadius;
         public readonly float MaxAmmoVolume;
         public readonly float TrailWidth;
+        public readonly float ShieldBypassMod;
         public readonly HardPointDefinition.Prediction Prediction;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
@@ -238,6 +239,7 @@ namespace WeaponCore.Support
             Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay, out IsHybrid);
 
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
+            ShieldBypassMod = Values.DamageScales.Shields.BypassModifier > 0 && Values.DamageScales.Shields.BypassModifier < 1 ? Values.DamageScales.Shields.BypassModifier : 1;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             
 
