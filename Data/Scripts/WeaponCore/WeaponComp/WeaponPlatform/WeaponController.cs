@@ -13,70 +13,69 @@ namespace WeaponCore.Platform
 
             if (AiOnlyWeapon)
             {
-                double absAzChange;
-                double absElChange;
-
-                bool rAz = false;
-                bool rEl = false;
-
-                if (azimuthChange < 0)
+                if (moveAz)
                 {
-                    absAzChange = azimuthChange * -1d;
-                    rAz = true;
-                }
-                else
-                    absAzChange = azimuthChange;
-
-                if (elevationChange < 0)
-                {
-                    absElChange = elevationChange * -1d;
-                    rEl = true;
-                }
-                else
-                    absElChange = elevationChange;
-
-                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
-                {
-                    if (absElChange >= System.ElStep)
+                    bool rAz = false;
+                    double absAzChange;
+                    if (azimuthChange < 0)
                     {
-                        if (rEl)
-                            ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.RevFullRotationStep;
-                        else
-                            ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.FullRotationStep;
+                        absAzChange = azimuthChange * -1d;
+                        rAz = true;
                     }
                     else
+                        absAzChange = azimuthChange;
+
+                    if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
                     {
-                        ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
+                        if (absAzChange >= System.AzStep)
+                        {
+                            if (rAz)
+                                AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
+                            else
+                                AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
+                        }
+                        else
+                        {
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
+                        }
                     }
                 }
 
-                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
+                if (moveEl)
                 {
-                    if (absAzChange >= System.AzStep)
+                    bool rEl = false;
+                    double absElChange;
+                    if (elevationChange < 0)
                     {
-                        if (rAz)
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
-                        else
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
+                        absElChange = elevationChange * -1d;
+                        rEl = true;
                     }
                     else
+                        absElChange = elevationChange;
+
+                    if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
                     {
-                        AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
+                        if (absElChange >= System.ElStep)
+                        {
+                            if (rEl)
+                                ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.RevFullRotationStep;
+                            else
+                                ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.FullRotationStep;
+                        }
+                        else
+                        {
+                            ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
+                        }
                     }
                 }
             }
             else
             {   
                 if (moveEl)
-                {
                     Comp.TurretBase.Elevation = (float)Elevation;
-                    //Comp.Elevation = Elevation;
-                }
+
                 if (moveAz)
-                {
                     Comp.TurretBase.Azimuth = (float)Azimuth;
-                    //Comp.Azimuth = Azimuth;
-                }
             }
 
         }
