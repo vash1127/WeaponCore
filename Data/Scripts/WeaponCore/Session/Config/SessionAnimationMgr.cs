@@ -121,7 +121,7 @@ namespace WeaponCore
                                     }
                                     else
                                     {
-                                        weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                        weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                                         currentEmissivePart.Add(-1);
                                     }
 
@@ -240,7 +240,7 @@ namespace WeaponCore
                                             }
                                             else
                                             {
-                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -316,7 +316,7 @@ namespace WeaponCore
                                             }
                                             else
                                             {
-                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -373,7 +373,7 @@ namespace WeaponCore
                                             }
                                             else
                                             {
-                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -405,7 +405,7 @@ namespace WeaponCore
                                             }
                                             else
                                             {
-                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -436,7 +436,7 @@ namespace WeaponCore
                                         }
                                         else
                                         {
-                                            weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                            weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                                             currentEmissivePart.Add(-1);
                                         }
 
