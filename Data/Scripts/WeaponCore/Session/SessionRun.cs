@@ -124,7 +124,7 @@ namespace WeaponCore
                 if (!WheelUi.WheelActive && !InMenu)
                 {
                     UpdateLocalAiAndCockpit();
-                    if (UiInput.PlayerCamera) 
+                    if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
                 }
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
