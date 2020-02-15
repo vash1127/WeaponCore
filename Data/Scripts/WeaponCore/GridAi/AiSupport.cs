@@ -62,6 +62,8 @@ namespace WeaponCore.Support
             {
                 ClearTarget = true;
             }
+
+            internal FakeTarget() { }
         }
 
         internal class AiTargetingInfo
