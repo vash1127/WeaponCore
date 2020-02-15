@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using System;
+using VRage.Collections;
 
 namespace WeaponCore.Platform
 {

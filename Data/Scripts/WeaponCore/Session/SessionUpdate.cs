@@ -40,7 +40,7 @@ namespace WeaponCore
                     }
                     gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
 
-                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || Tick10)
+                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || !gridAi.WasPowered && gridAi.MyGrid.IsPowered || Tick10 )
                         gridAi.UpdateGridPower();
 
                     if (!gridAi.HasPower)

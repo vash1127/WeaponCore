@@ -107,6 +107,7 @@ namespace WeaponCore.Support
         internal bool CheckReload;
         internal bool HasPower;
         internal bool HadPower;
+        internal bool WasPowered;
         internal bool CheckProjectiles;
         internal bool WeaponTerminalAccess;
         internal bool FadeOut;

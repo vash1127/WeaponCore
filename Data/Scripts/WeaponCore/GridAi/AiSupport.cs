@@ -813,6 +813,8 @@ namespace WeaponCore.Support
 
                 HadPower = HasPower;
                 HasPower = GridMaxPower > 0;
+                if (!WasPowered && HasPower) 
+                    WasPowered = true;
 
                 if (HasPower) return;
                 if (HadPower)
