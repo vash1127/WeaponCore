@@ -178,7 +178,6 @@ namespace WeaponCore.Support
                     }
                     if (av.Triggered && av.TriggerEntity != null)
                     {
-                        Log.Line("triggered av");
                         if ((!av.TriggerEntity.InScene))
                         {
                             av.TriggerEntity.InScene = true;
