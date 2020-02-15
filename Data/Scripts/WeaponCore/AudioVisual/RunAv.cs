@@ -183,7 +183,6 @@ namespace WeaponCore.Support
                             av.TriggerEntity.InScene = true;
                             av.TriggerEntity.Render.UpdateRenderObject(true, false);
                         }
-
                         av.TriggerEntity.PositionComp.SetWorldMatrix(av.TriggerMatrix, null, false, false, false);
                     }
 
