@@ -35,21 +35,6 @@ namespace WeaponCore.Platform
                 else
                     absElChange = elevationChange;
 
-                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
-                {
-                    if (absAzChange >= System.AzStep)
-                    {
-                        if (rAz)
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
-                        else
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
-                    }
-                    else
-                    {
-                        AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.FromTransformation);
-                    }
-                }
-
                 if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
                 {
                     if (absElChange >= System.ElStep)
@@ -61,7 +46,22 @@ namespace WeaponCore.Platform
                     }
                     else
                     {
-                        ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.FromTransformation);
+                        ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
+                    }
+                }
+
+                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
+                {
+                    if (absAzChange >= System.AzStep)
+                    {
+                        if (rAz)
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
+                        else
+                            AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
+                    }
+                    else
+                    {
+                        AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
                     }
                 }
             }
@@ -70,12 +70,12 @@ namespace WeaponCore.Platform
                 if (moveEl)
                 {
                     Comp.TurretBase.Elevation = (float)Elevation;
-                    Comp.Elevation = Elevation;
+                    //Comp.Elevation = Elevation;
                 }
                 if (moveAz)
                 {
                     Comp.TurretBase.Azimuth = (float)Azimuth;
-                    Comp.Azimuth = Azimuth;
+                    //Comp.Azimuth = Azimuth;
                 }
             }
 
@@ -115,7 +115,7 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            if (Comp.MatrixUpdateTick < Comp.Session.Tick)
+            if (Comp.MatrixUpdateTick < Comp.Session.Tick && AzimuthOnBase)
             {
                 Comp.MatrixUpdateTick = Comp.Session.Tick;
                 Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
@@ -126,19 +126,23 @@ namespace WeaponCore.Platform
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrix.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
 
+            //Log.Line($"up: {AzimuthPart.RotationAxis} left: {ElevationPart.RotationAxis}");
+
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
-            var forward = Comp.CubeMatrix.Forward;
-            var left = Vector3D.Cross(MyPivotUp, forward);
 
-            if (System.ElevationOnly)//turrets limited to elevation only, makes constraints check whats in front of weapon not cube forward within elevation limits
+            if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
-                forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
+                var forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = elevationMatrix.Left };
             }
-            else // azimuth only and full turret already have the right matrix
+            else
+            {
+                var forward = AzimuthOnBase ? Comp.CubeMatrix.Forward : AzimuthPart.Entity.Parent.WorldMatrix.Forward;
+                var left = Vector3D.Cross(MyPivotUp, forward);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
+            }
 
             Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
             if (Vector3D.IsZero(axis))
@@ -157,22 +161,19 @@ namespace WeaponCore.Platform
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
-            MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (left * 10));
+            MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
             if (Target.State == Target.Targets.Acquired)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }
 
-        internal void UpdateWeaponHeat(object o)
+        internal void UpdateWeaponHeat(object o = null)
         {
             try
             {
-                var reset = o == null;
-
                 var currentHeat = State.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
                 var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
-
 
                 if (!Comp.Session.DedicatedServer)
                 {
@@ -224,41 +225,36 @@ namespace WeaponCore.Platform
                     if (System.HasBarrelRotation) UpdateBarrelRotation();
                 }
 
-                var resetFakeTick = false;
-
                 if (_fakeHeatTick * 30 == 60)
                 {
-                    if (!Comp.Session.DedicatedServer)
-                        Comp.TerminalRefresh();
-
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
                     State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
-
 
                     if (Comp.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
                     {
                         //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         if (CurLgstAnimPlaying != null)
-                            ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                        ShootDelayTick += Comp.Session.Tick;
+                            ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
+                        
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
                         Comp.Overheated = false;
                     }
 
-                    resetFakeTick = true;
+                    _fakeHeatTick = -1;
                 }
 
-                if (State.Heat > 0 || reset)
+                //Log.Line($"currentHeat :{currentHeat} _fakeHeatTick: {_fakeHeatTick}");
+
+                if (State.Heat > 0)
                 {
-                    if (resetFakeTick || reset)
-                        _fakeHeatTick = 0;
-                    else
-                        _fakeHeatTick++;
-
-                    Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
+                    _fakeHeatTick++;
+                    Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
                 }
-                else if (!Comp.Session.DedicatedServer)
-                    Comp.TerminalRefresh();
+                else
+                {
+                    _fakeHeatTick = 0;
+                    _heatLoopRunning = false;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }

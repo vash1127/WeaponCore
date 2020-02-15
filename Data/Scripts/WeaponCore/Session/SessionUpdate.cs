@@ -3,6 +3,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
@@ -39,7 +40,7 @@ namespace WeaponCore
                     }
                     gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
 
-                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || Tick10)
+                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || !gridAi.WasPowered && gridAi.MyGrid.IsPowered || Tick10 )
                         gridAi.UpdateGridPower();
 
                     if (!gridAi.HasPower)
@@ -61,6 +62,8 @@ namespace WeaponCore
                                 if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
+                            if (InMenu && Tick20 && gridAi.LastTerminal == comp.MyCube)
+                                comp.TerminalRefresh();
 
                             var overRides = comp.Set.Value.Overrides;
 
@@ -229,6 +232,7 @@ namespace WeaponCore
                                             gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
                                         }
+
                                         ShootingWeapons.Add(w);
                                     }
                                     else if (w.ChargeUntilTick > Tick && !w.System.MustCharge) {
@@ -261,21 +265,23 @@ namespace WeaponCore
             for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ChargingWeapons[i];
-
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
                     var comp = w.Comp;
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
+                    var gridAi = comp.Ai;
+
+                    //if (gridAi.LastPowerUpdateTick != Tick)
+                        //gridAi.UpdateGridPower();
+
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
                         continue;
                     }
 
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                        continue;
-
-                    var gridAi = w.Comp.Ai;
+                        continue;                    
 
                     if (Tick60 && w.DrawingPower)
                     {
@@ -290,9 +296,6 @@ namespace WeaponCore
                             w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
                             w.CurrentCharge = w.System.EnergyMagSize;
                         }
-
-                        if (!w.Comp.Session.DedicatedServer)
-                            w.Comp.TerminalRefresh();
                     }
 
                     if (w.ChargeUntilTick <= Tick || !w.Reloading)
@@ -321,8 +324,7 @@ namespace WeaponCore
                         continue;
                     }
 
-                    if (gridAi.LastPowerUpdateTick != Tick)
-                        gridAi.UpdateGridPower();
+                    
 
                     if (!w.DrawingPower || gridAi.RequestedPowerChanged || gridAi.AvailablePowerChanged || (w.RecalcPower && Tick60))
                     {

@@ -252,7 +252,7 @@ namespace WeaponCore.Support
 
                     return false;
                 });
-
+                Log.Line("blockgroup");
                 BlockGroups.ApplyAdditionsAndModifications();
                 foreach (var group in BlockGroups)
                 {
@@ -828,6 +828,8 @@ namespace WeaponCore.Support
 
                 HadPower = HasPower;
                 HasPower = GridMaxPower > 0;
+                if (!WasPowered && HasPower) 
+                    WasPowered = true;
 
                 if (HasPower) return;
                 if (HadPower)

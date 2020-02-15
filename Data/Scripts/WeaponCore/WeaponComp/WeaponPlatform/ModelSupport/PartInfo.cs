@@ -11,5 +11,6 @@ namespace WeaponCore.Support
         internal Matrix FullRotationStep;
         internal Matrix RevFullRotationStep;
         internal Vector3 PartLocalLocation;
+        internal Vector3 RotationAxis;
     }
 }

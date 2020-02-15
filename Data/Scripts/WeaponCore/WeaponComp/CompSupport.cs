@@ -11,10 +11,14 @@ namespace WeaponCore.Support
         internal void TerminalRefresh(bool update = true)
         {
             if (Ai?.LastTerminal == MyCube)
+            {
                 TerminalBlock.RefreshCustomInfo();
+            }
 
             if (update && InControlPanel)
-                 MyCube.UpdateTerminal();
+            {
+                MyCube.UpdateTerminal();
+            }
         }
 
         internal void SaveAndSendAll()
@@ -127,8 +131,8 @@ namespace WeaponCore.Support
 
             if(BaseType == BlockType.Turret)
             {
-                TurretBase.Elevation = (float)Elevation;
-                TurretBase.Azimuth = (float)Azimuth;
+                //TurretBase.Elevation = (float)Elevation;
+                //TurretBase.Azimuth = (float)Azimuth;
             }
             ResettingSubparts = false;
         }

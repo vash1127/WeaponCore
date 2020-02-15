@@ -103,23 +103,25 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                 }
+                if (GameLoaded)
+                {
+                    DsUtil.Start("ai");
+                    AiLoop();
+                    DsUtil.Complete("ai", true);
 
-                DsUtil.Start("ai");
-                if (GameLoaded) AiLoop();
-                DsUtil.Complete("ai", true);
+                    DsUtil.Start("charge");
+                    if (ChargingWeapons.Count > 0) UpdateChargeWeapons();
+                    DsUtil.Complete("charge", true);
 
-                DsUtil.Start("charge");
-                if (ChargingWeapons.Count > 0) UpdateChargeWeapons();
-                DsUtil.Complete("charge", true);
+                    DsUtil.Start("acquire");
+                    if (AcquireTargets.Count > 0) CheckAcquire();
+                    DsUtil.Complete("acquire", true);
 
-                DsUtil.Start("acquire");
-                if (AcquireTargets.Count > 0) CheckAcquire();
-                DsUtil.Complete("acquire", true);
-
-                DsUtil.Start("shoot");
-                if (ShootingWeapons.Count > 0) ShootWeapons();
-                DsUtil.Complete("shoot", true);
-                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
+                    DsUtil.Start("shoot");
+                    if (ShootingWeapons.Count > 0) ShootWeapons();
+                    DsUtil.Complete("shoot", true);
+                }
+                if (!WheelUi.WheelActive && !InMenu)
                 {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera) 

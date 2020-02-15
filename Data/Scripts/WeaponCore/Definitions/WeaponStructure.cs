@@ -67,7 +67,7 @@ namespace WeaponCore.Support
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
         public readonly bool HasBarrelRotation;
-        public readonly bool ElevationOnly;
+        //public readonly bool ElevationOnly;
         public readonly bool LimitedAxisTurret;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
@@ -119,6 +119,7 @@ namespace WeaponCore.Support
         public readonly bool EwarEffect;
         public readonly bool NeedsPrediction;
         public readonly bool HasBurstDelay;
+        public bool PreFireSound;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -202,7 +203,7 @@ namespace WeaponCore.Support
             IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
-            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement, out ElevationOnly, out LimitedAxisTurret);
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement, out LimitedAxisTurret);
 
             MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
@@ -347,7 +348,7 @@ namespace WeaponCore.Support
             eWarEffect = areaEffect > (AreaDamage.AreaEffectType)3;
         }
 
-        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove, out bool elevationOnly, out bool limitedAxisTurret)
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove, out bool limitedAxisTurret)
         {
             azStep = Values.HardPoint.Block.RotateRate;
             elStep = Values.HardPoint.Block.ElevateRate;
@@ -356,14 +357,12 @@ namespace WeaponCore.Support
             minElevation = Values.HardPoint.Block.MinElevation;
             maxElevation = Values.HardPoint.Block.MaxElevation;
             
-            elevationOnly = false;
             limitedAxisTurret = false;
             turretMove = TurretType.Full;
 
             if (minAzimuth == maxAzimuth)
             {
                 turretMove = TurretType.ElevationOnly;
-                elevationOnly = true;
                 limitedAxisTurret = true;
             }
             if (minElevation == maxElevation && TurretMovement != TurretType.Full)
@@ -374,7 +373,6 @@ namespace WeaponCore.Support
             else if (minElevation == maxElevation)
             {
                 turretMove = TurretType.AzimuthOnly;
-                elevationOnly = false;
                 limitedAxisTurret = true;
             }
             //Log.Line($"TurretMovement: {TurretMovement}");
@@ -538,6 +536,7 @@ namespace WeaponCore.Support
             HardPointRotationSound = Values.Audio.HardPoint.HardPointRotationSound != string.Empty;
             BarrelRotationSound = Values.Audio.HardPoint.BarrelRotationSound != string.Empty;
             NoAmmoSound = Values.Audio.HardPoint.NoAmmoSound != string.Empty;
+            PreFireSound = Values.Audio.HardPoint.PreFiringSound != string.Empty;
             var fSoundStart = Values.Audio.HardPoint.FiringSound;
             if (fSoundStart != string.Empty && Values.Audio.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.PerShot;

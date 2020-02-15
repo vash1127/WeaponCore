@@ -50,7 +50,7 @@ namespace WeaponCore.Support
                         continue;
                     _tmp.Clear();
                     ((IMyEntity)query).Model.GetDummies(_tmp);
-                    //Log.Line($"next part");
+                    //Log.Line($"next part: {((IMyEntity)query).Model.AssetName}");
                     foreach (var kv in _tmp)
                     {
                         if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))

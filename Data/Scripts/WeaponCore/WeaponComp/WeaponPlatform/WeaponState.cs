@@ -35,58 +35,58 @@ namespace WeaponCore.Platform
                 case EventTriggers.StopFiring:
                 case EventTriggers.PreFire:
                 case EventTriggers.Firing:
-                    if (AnimationsSet.ContainsKey(state))
-                    {
-                        var stopFiring = AnimationsSet.ContainsKey(EventTriggers.StopFiring) && state == EventTriggers.Firing;
-                        uint delay = 0;
-                        if (active)
+                        if (AnimationsSet.ContainsKey(state))
                         {
-                            if (state == EventTriggers.StopFiring)
-                            {
-                                ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
-                                if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
+                            var addToFiring = AnimationsSet.ContainsKey(EventTriggers.StopFiring) && state == EventTriggers.Firing;
+                            uint delay = 0;                                
+                                if (active)
                                 {
-                                    if(CurLgstAnimPlaying.Running)
-                                        delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                                    ShootDelayTick += delay;
+                                    if (state == EventTriggers.StopFiring)
+                                    {
+                                        ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
+                                        if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
+                                        {
+                                                if (CurLgstAnimPlaying!= null && CurLgstAnimPlaying.Running)
+                                                    delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                                                ShootDelayTick += delay;
+                                        }
+                                    }
+                                    LastEvent = state;
+                                }
+                                
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
+                            {
+                                var animation = AnimationsSet[state][i];
+                                if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles != null && muzzles.Contains(animation.Muzzle)))
+                                {
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+                                    animation.Triggered = true;
+
+                                    if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                        CurLgstAnimPlaying = animation;
+
+                                    if (animation.Muzzle != "Any" && addToFiring) _muzzlesFiring.Add(animation.Muzzle);
+
+                                    animation.StartTick = session.Tick + animation.MotionDelay + delay;
+                                    Comp.Session.AnimationsToProcess.Add(animation);
+                                    animation.Running = true;
+                                    animation.Paused = Comp.ResettingSubparts;
+                                    animation.CanPlay = canPlay;
+
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else if (active && animation.DoesLoop)
+                                    animation.Looping = true;
+                                else
+                                {
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
                                 }
                             }
-                            LastEvent = state;
+                            if (active && state == EventTriggers.StopFiring)
+                                _muzzlesFiring.Clear();
                         }
-
-                        for (int i = 0; i < AnimationsSet[state].Length; i++)
-                        {
-                            var animation = AnimationsSet[state][i];
-                            if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles != null && muzzles.Contains(animation.Muzzle)))
-                            {
-                                if (animation.TriggerOnce && animation.Triggered) continue;
-                                animation.Triggered = true;
-
-                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
-                                    CurLgstAnimPlaying = animation;
-
-                                if (animation.Muzzle != "Any" && stopFiring) _muzzlesFiring.Add(animation.Muzzle);
-
-                                animation.StartTick = session.Tick + animation.MotionDelay + delay;
-                                Comp.Session.AnimationsToProcess.Add(animation);
-                                animation.Running = true;
-                                animation.Paused = Comp.ResettingSubparts;
-                                animation.CanPlay = canPlay;
-
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                            else if (active && animation.DoesLoop)
-                                animation.Looping = true;
-                            else
-                            {
-                                animation.Looping = false;
-                                animation.Triggered = false;
-                            }
-                        }
-                        if (active && state == EventTriggers.StopFiring)
-                            _muzzlesFiring.Clear();
-                    }
                     break;
                 case EventTriggers.StopTracking:
                 case EventTriggers.Tracking:
@@ -288,6 +288,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false, bool power = true)
         {
             StopFiringSound(false);
+            StopPreFiringSound(false);
             if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
             {
@@ -334,8 +335,6 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= useableDif;
             Comp.Ai.GridAvailablePower += useableDif;
             Comp.MyCube.ResourceSink.Update();
-            if (!Comp.Session.DedicatedServer)
-                Comp.TerminalRefresh();
         }
 
         public void StopPowerDraw()
@@ -351,13 +350,11 @@ namespace WeaponCore.Platform
             ChargeDelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
-            if(!Comp.Session.DedicatedServer)
-                Comp.TerminalRefresh();
         }
 
         public void StartReload(bool reset = false)
         {
-            if (Reloading && !reset) return;
+            if (Reloading) return;
             if (reset && !Comp.State.Value.Online)
             {
                 Reloading = false;
@@ -365,6 +362,7 @@ namespace WeaponCore.Platform
             }
 
             Reloading = true;
+
             if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
                 Comp.Session.FutureEvents.Schedule(o=> { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
@@ -458,6 +456,16 @@ namespace WeaponCore.Platform
             w.Reloading = false;
             if(!w.System.HasBurstDelay)
                 w.State.ShotsFired = 0;
+        }
+
+        public void StartPreFiringSound()
+        {
+            PreFiringEmitter?.PlaySound(PreFiringSound);
+        }
+
+        public void StopPreFiringSound(bool force)
+        {
+            PreFiringEmitter?.StopSound(force);
         }
 
         public void StartFiringSound()

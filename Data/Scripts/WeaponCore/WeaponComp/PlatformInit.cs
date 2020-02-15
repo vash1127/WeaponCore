@@ -154,8 +154,9 @@ namespace WeaponCore.Platform
                 {
                     Muzzles = new Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    AzimuthPart = new PartInfo{ Entity = azimuthPart},
+                    AzimuthPart = new PartInfo { Entity = azimuthPart },
                     ElevationPart = new PartInfo { Entity = elevationPart },
+                    AzimuthOnBase = azimuthPart.Parent == comp.MyCube,
                     AiOnlyWeapon = comp.BaseType != Turret || (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2")
                 };
 
@@ -242,22 +243,26 @@ namespace WeaponCore.Platform
                         var azimuthPart = weapon.AzimuthPart.Entity;
                         var elevationPart = weapon.ElevationPart.Entity;
 
-                        if (azimuthPart != null && azimuthPartName != "None")
+                        if (azimuthPart != null && azimuthPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.ElevationOnly)
                         {
                             var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
+                            var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
+
                             var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
                             var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
-                            var fullStepAzRotation = azPartPosTo * MatrixD.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
+                            var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, - m.Value.AzStep) * azPrtPosFrom;
                             var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
 
+                            weapon.AzimuthPart.RotationAxis = partDummy.Matrix.Up;
                             weapon.AzimuthPart.ToTransformation = azPartPosTo;
                             weapon.AzimuthPart.FromTransformation = azPrtPosFrom;
                             weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
                             weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
                             weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
                         }
-                        else if (azimuthPartName == "None")
+                        else
                         {
+                            weapon.AzimuthPart.RotationAxis = Vector3.Zero;
                             weapon.AzimuthPart.ToTransformation = Matrix.Zero;
                             weapon.AzimuthPart.FromTransformation = Matrix.Zero;
                             weapon.AzimuthPart.FullRotationStep = Matrix.Zero;
@@ -266,17 +271,19 @@ namespace WeaponCore.Platform
                         }
 
 
-                        if (elevationPart != null && elevationPartName != "None")
+                        if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.AzimuthOnly)
                         {
                             var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
+                            var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
 
                             var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
 
-                            var fullStepElRotation = elPartPosTo * MatrixD.CreateRotationX(-m.Value.ElStep) * elPartPosFrom;
+                            var fullStepElRotation = elPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Left, m.Value.ElStep) * elPartPosFrom;
 
                             var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
 
+                            weapon.ElevationPart.RotationAxis = partDummy.Matrix.Left;
                             weapon.ElevationPart.ToTransformation = elPartPosTo;
                             weapon.ElevationPart.FromTransformation = elPartPosFrom;
                             weapon.ElevationPart.FullRotationStep = fullStepElRotation;
@@ -285,6 +292,7 @@ namespace WeaponCore.Platform
                         }
                         else if (elevationPartName == "None")
                         {
+                            weapon.ElevationPart.RotationAxis = Vector3.Zero;
                             weapon.ElevationPart.ToTransformation = Matrix.Zero;
                             weapon.ElevationPart.FromTransformation = Matrix.Zero;
                             weapon.ElevationPart.FullRotationStep = Matrix.Zero;

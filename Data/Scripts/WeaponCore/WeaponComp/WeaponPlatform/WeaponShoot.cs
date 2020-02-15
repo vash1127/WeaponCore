@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using System;
+using VRage.Collections;
 
 namespace WeaponCore.Platform
 {
@@ -25,6 +26,9 @@ namespace WeaponCore.Platform
                 var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
                 if (_ticksUntilShoot++ < System.DelayToFire)
                 {
+                    if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)
+                        StartPreFiringSound();
+
                     if (!PreFired)
                     {
                         var nxtMuzzle = NextMuzzle;
@@ -262,23 +266,30 @@ namespace WeaponCore.Platform
 
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
 
-                    if (State.Heat <= 0 && State.Heat + HeatPShot > 0)
-                        UpdateWeaponHeat(null);
-
-                    State.Heat += HeatPShot;
-                    Comp.CurrentHeat += HeatPShot;
-                    if (State.Heat > System.MaxHeat)
+                    if (HeatPShot > 0)
                     {
-                        if (Comp.Set.Value.Overload > 1 && (Comp.Session.IsServer || Comp.Session.DedicatedServer))
-                        {
-                            var dmg = .02f * Comp.MaxIntegrity;
-                            Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
+                        if (!_heatLoopRunning) { 
+                            Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
+                           _heatLoopRunning = true;
                         }
-                        EventTriggerStateChanged(EventTriggers.Overheated, true);
-                        Comp.Overheated = true;
-                        StopShooting();
-                        break;
+
+                        State.Heat += HeatPShot;
+                        Comp.CurrentHeat += HeatPShot;
+                        if (State.Heat >= System.MaxHeat)
+                        {
+                            if (Comp.Set.Value.Overload > 1)
+                            {
+                                var dmg = .02f * Comp.MaxIntegrity;
+                                Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
+                            }
+                            EventTriggerStateChanged(EventTriggers.Overheated, true);
+                            Comp.Overheated = true;
+                            StopShooting();
+                            break;
+                        }
                     }
+
+                    
 
                     if (i == bps) NextMuzzle++;
 
