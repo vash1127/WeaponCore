@@ -264,12 +264,15 @@ namespace WeaponCore.Platform
 
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
 
-                    if (State.Heat <= 0 && State.Heat + HeatPShot > 0)
-                        UpdateWeaponHeat(null);
+                    if (!_heatLoopRunning && HeatPShot > 0)
+                    {
+                        Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
+                        _heatLoopRunning = true;
+                    }
 
                     State.Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
-                    if (State.Heat > System.MaxHeat)
+                    if (State.Heat >= System.MaxHeat)
                     {
                         if (Comp.Set.Value.Overload > 1)
                         {

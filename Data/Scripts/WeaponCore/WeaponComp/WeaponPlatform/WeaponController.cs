@@ -167,16 +167,13 @@ namespace WeaponCore.Platform
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }
 
-        internal void UpdateWeaponHeat(object o)
+        internal void UpdateWeaponHeat(object o = null)
         {
             try
             {
-                var reset = o == null;
-
                 var currentHeat = State.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
                 var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
-
 
                 if (!Comp.Session.DedicatedServer)
                 {
@@ -228,8 +225,6 @@ namespace WeaponCore.Platform
                     if (System.HasBarrelRotation) UpdateBarrelRotation();
                 }
 
-                var resetFakeTick = false;
-
                 if (_fakeHeatTick * 30 == 60)
                 {
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
@@ -239,23 +234,26 @@ namespace WeaponCore.Platform
                     {
                         //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         if (CurLgstAnimPlaying != null)
-                            ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                        ShootDelayTick += Comp.Session.Tick;
+                            ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
+                        
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
                         Comp.Overheated = false;
                     }
 
-                    resetFakeTick = true;
+                    _fakeHeatTick = -1;
                 }
 
-                if (State.Heat > 0 || reset)
-                {
-                    if (resetFakeTick || reset)
-                        _fakeHeatTick = 0;
-                    else
-                        _fakeHeatTick++;
+                //Log.Line($"currentHeat :{currentHeat} _fakeHeatTick: {_fakeHeatTick}");
 
-                    Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
+                if (State.Heat > 0)
+                {
+                    _fakeHeatTick++;
+                    Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
+                }
+                else
+                {
+                    _fakeHeatTick = 0;
+                    _heatLoopRunning = false;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }

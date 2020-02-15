@@ -199,7 +199,9 @@ namespace WeaponCore
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
-                                
+
+                                //Log.Line($"reloading: {reloading} canShoot: {canShoot} fakeTarget: {fakeTarget} validShootStates: {validShootStates} manualShot: {manualShot} heat: {w.State.Heat}");
+
                                 if (canShoot && (validShootStates || manualShot)) {
 
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge) {
@@ -219,6 +221,7 @@ namespace WeaponCore
                                             gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
                                         }
+
                                         ShootingWeapons.Add(w);
                                     }
                                     else if (w.ChargeUntilTick > Tick && !w.System.MustCharge) {

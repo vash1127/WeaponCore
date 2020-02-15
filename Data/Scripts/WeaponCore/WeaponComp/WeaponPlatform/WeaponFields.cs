@@ -30,6 +30,7 @@ namespace WeaponCore.Platform
         private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
+        private bool _heatLoopRunning;
         internal bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
