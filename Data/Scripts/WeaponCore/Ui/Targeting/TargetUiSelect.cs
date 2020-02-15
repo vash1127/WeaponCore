@@ -43,7 +43,6 @@ namespace WeaponCore
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var cockPit = s.ActiveCockPit;
-
             Vector3D start;
             Vector3D end;
             Vector3D dir;
@@ -66,7 +65,8 @@ namespace WeaponCore
                     end = offetPosition + (dir * ai.MaxTargetingRange);
                 }
             }
-            
+            Log.Line("test2");
+
 
             var foundTarget = false;
             var rayOnlyHitSelf = false;
@@ -74,6 +74,7 @@ namespace WeaponCore
 
             MyEntity closestEnt = null;
             _session.Physics.CastRay(start, end, _hitInfo);
+            Log.Line("test3");
 
             for (int i = 0; i < _hitInfo.Count; i++) {
 
@@ -102,6 +103,7 @@ namespace WeaponCore
                 ai.DummyTarget.Update(hit.Position, ai, closestEnt);
                 break;
             }
+            Log.Line("test4");
 
             if (rayHitSelf) {
                 ReticleOnSelfTick = s.Tick;
@@ -120,6 +122,7 @@ namespace WeaponCore
                 }
                 ai.DummyTarget.Update(hitPos, ai, closestEnt);
             }
+            Log.Line("test5");
 
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
@@ -128,6 +131,7 @@ namespace WeaponCore
                     ai.DummyTarget.Update(end, ai);
                 }
             }
+            Log.Line("test6");
 
             return foundTarget || foundOther;
         }

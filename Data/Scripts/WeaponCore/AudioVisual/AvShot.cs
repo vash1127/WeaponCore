@@ -182,6 +182,7 @@ namespace WeaponCore.Support
             }
             else if (lineEffect || Model == ModelState.None && System.AmmoParticle) {
 
+
                 var rayTracer = new RayD(TracerBack, PointDir);
                 var rayTrail = new RayD(TracerFront + (-Direction * ShortEstTravel), Direction);
 
@@ -202,6 +203,16 @@ namespace WeaponCore.Support
                 if (OnScreen != Screen.None && !TrailActivated && System.Trail) TrailActivated = true;
                 
                 if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
+
+                if (Model != ModelState.None)
+                {
+                    ModelSphereCurrent.Center = TracerFront;
+                    if (Triggered)
+                        ModelSphereCurrent.Radius = info.TriggerGrowthSteps < System.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : System.AreaEffectSize;
+
+                    if (OnScreen == Screen.None && Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
+                        OnScreen = Screen.ModelOnly;
+                }
             }
 
             if (info.MuzzleId == -1)

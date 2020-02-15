@@ -19,6 +19,7 @@ namespace WeaponCore.Projectiles
         internal bool GetAllEntitiesInLine(Projectile p, LineD beam)
         {
             var shieldByPass = p.Info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+            var shieldFullBypass = shieldByPass && p.Info.System.ShieldBypassMod >= 1;
             var ai = p.Info.Ai;
             var found = false;
             var lineCheck = p.Info.System.CollisionIsLine;
@@ -33,7 +34,7 @@ namespace WeaponCore.Projectiles
                 var voxel = ent as MyVoxelBase;
                 if (grid == null && p.EwarActive && p.Info.System.AreaEffect != DotField && ent is IMyCharacter) continue;
                 if (grid != null && (!(p.Info.System.SelfDamage || p.TerminalControlled) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
-                if (!shieldByPass && !p.EwarActive)
+                if (!shieldFullBypass && !p.ShieldBypassed && !p.EwarActive)
                 {
                     var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null)
@@ -48,6 +49,7 @@ namespace WeaponCore.Projectiles
 
                         if (dist != null && dist.Value < beam.Length && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
                         {
+                            if (shieldByPass) p.ShieldBypassed = true;
                             var hitEntity = HitEntityPool.Get();
                             hitEntity.Clean();
                             hitEntity.Info = p.Info;

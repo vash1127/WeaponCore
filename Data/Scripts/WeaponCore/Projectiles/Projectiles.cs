@@ -172,7 +172,7 @@ namespace WeaponCore.Projectiles
                     if (p.Info.System.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
                     if (p.Info.System.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize)
-                        p.Info.AvShot.TriggerMatrix = matrix;
+                        p.Info.TriggerMatrix = matrix;
 
                     if (p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle && p.Info.System.PrimeModel)
                     {

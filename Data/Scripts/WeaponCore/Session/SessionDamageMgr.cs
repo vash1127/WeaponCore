@@ -96,14 +96,18 @@ namespace WeaponCore
             var damageType = info.System.Values.DamageScales.Shields.Type;
             var energy = damageType == ShieldDefinition.ShieldType.Energy;
             var heal = damageType == ShieldDefinition.ShieldType.Heal;
+            var shieldByPass = info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+
             var areaEffect = info.System.Values.Ammo.AreaEffect;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
 
-            var scaledDamage = ((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
-            var detonateDamage = detonateOnEnd ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * system.ShieldModifier : 0;
+            var scaledDamage = (((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier) * info.System.ShieldBypassMod;
+            var detonateDamage = detonateOnEnd && !shieldByPass ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * system.ShieldModifier : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
+           
             if (heal) combinedDamage *= -1;
+
             var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, combinedDamage, energy, info.System.Values.Graphics.ShieldHitDraw);
             if (hit.HasValue)
             {
@@ -113,7 +117,13 @@ namespace WeaponCore
                     return;
                 }
                 var objHp = hit.Value;
-                if (scaledDamage < objHp) info.BaseDamagePool = 0;
+                if (scaledDamage < objHp)
+                {
+                    if (!shieldByPass)
+                        info.BaseDamagePool = 0;
+                    else 
+                        info.BaseDamagePool *= info.System.ShieldBypassMod;
+                }
                 else if (objHp > 0) info.BaseDamagePool -= (float)scaledDamage - objHp;
                 else info.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
 

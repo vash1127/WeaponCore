@@ -79,7 +79,7 @@ namespace WeaponCore.Support
 
             if (TriggerEntity != null)
             {
-                Ai.Session.TriggerEntityPool.Return(PrimeEntity);
+                Ai.Session.TriggerEntityPool.Return(TriggerEntity);
                 TriggerEntity = null;
             }
             AvShot = null;

@@ -176,7 +176,6 @@ namespace WeaponCore.Support
                             av.PrimeEntity.Render.RemoveRenderObjects();
                         }
                     }
-
                     if (av.Triggered && av.TriggerEntity != null)
                     {
                         if ((!av.TriggerEntity.InScene))
@@ -184,7 +183,6 @@ namespace WeaponCore.Support
                             av.TriggerEntity.InScene = true;
                             av.TriggerEntity.Render.UpdateRenderObject(true, false);
                         }
-
                         av.TriggerEntity.PositionComp.SetWorldMatrix(av.TriggerMatrix, null, false, false, false);
                     }
 

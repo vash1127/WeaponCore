@@ -252,7 +252,6 @@ namespace WeaponCore.Support
 
                     return false;
                 });
-                Log.Line("blockgroup");
                 BlockGroups.ApplyAdditionsAndModifications();
                 foreach (var group in BlockGroups)
                 {

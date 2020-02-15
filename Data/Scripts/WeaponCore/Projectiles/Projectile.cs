@@ -92,6 +92,7 @@ namespace WeaponCore.Projectiles
         internal bool ForceHitParticle;
         internal bool FakeExplosion;
         internal bool AtMaxRange;
+        internal bool ShieldBypassed;
         internal readonly ProInfo Info = new ProInfo();
         internal bool TerminalControlled;
         internal MyParticleEffect AmmoEffect;
@@ -140,6 +141,7 @@ namespace WeaponCore.Projectiles
             HitParticleActive = false;
             LinePlanetCheck = false;
             AtMaxRange = false;
+            ShieldBypassed = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -700,7 +702,8 @@ namespace WeaponCore.Projectiles
                             }
                         }
                         MatrixD.Rescale(ref Info.TriggerMatrix, nextSize);
-                        if (EnableAv) Info.AvShot.TriggerMatrix = Info.TriggerMatrix;
+                        if (EnableAv)
+                            Info.AvShot.TriggerMatrix = Info.TriggerMatrix;
                     }
                 }
             }
