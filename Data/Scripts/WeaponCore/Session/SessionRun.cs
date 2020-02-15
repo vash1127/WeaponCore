@@ -109,7 +109,7 @@ namespace WeaponCore
                 DsUtil.Complete("ai", true);
 
                 DsUtil.Start("charge");
-                if (ChargingWeapons.Count > 0) UpdateChargeWeapons();
+                if (GameLoaded && ChargingWeapons.Count > 0) UpdateChargeWeapons();
                 DsUtil.Complete("charge", true);
 
                 DsUtil.Start("acquire");
