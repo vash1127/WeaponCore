@@ -13,12 +13,10 @@ namespace WeaponCore.Support
             if (Ai?.LastTerminal == MyCube)
             {
                 TerminalBlock.RefreshCustomInfo();
-                Log.Line($"refresh customInfo");
             }
 
             if (update && InControlPanel)
             {
-                Log.Line($"update terminal");
                 MyCube.UpdateTerminal();
             }
         }

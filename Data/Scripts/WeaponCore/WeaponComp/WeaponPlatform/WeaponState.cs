@@ -466,7 +466,7 @@ namespace WeaponCore.Platform
 
         public void StartPreFiringSound()
         {
-            PreFiringEmitter?.PlaySound(FiringSound);
+            PreFiringEmitter?.PlaySound(PreFiringSound);
         }
 
         public void StopPreFiringSound(bool force)
