@@ -83,9 +83,21 @@ namespace WeaponCore.Platform
         public void TurretHomePosition(object o = null)
         {
             if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
+            {
+                ReturingHome = false;
                 return;
+            }
 
-            if (!Comp.ResettingSubparts)
+            var userControlled = o != null && (bool)o;
+            if (userControlled)
+            {
+                Azimuth = Comp.TurretBase.Azimuth;
+                Elevation = Comp.TurretBase.Elevation;
+            }
+
+            Target.ExpiredTick = 0;
+
+            if (!userControlled)
             {
                 var azStep = System.AzStep;
                 var elStep = System.ElStep;
@@ -108,8 +120,16 @@ namespace WeaponCore.Platform
             }
 
             if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
-                Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, 1);
-
+            {
+                ReturingHome = true;
+                IsHome = false;
+                Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
+            }
+            else
+            {
+                IsHome = true;
+                ReturingHome = false;
+            }
         }
 
         internal void UpdatePivotPos()

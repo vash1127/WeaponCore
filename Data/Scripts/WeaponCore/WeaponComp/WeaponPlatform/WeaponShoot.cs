@@ -370,8 +370,8 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
-                    masterWeapon.Target.Reset(!Comp.TrackReticle);
-                    if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, !Comp.TrackReticle);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, !Comp.TrackReticle);
                     return;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return;
@@ -391,8 +391,8 @@ namespace WeaponCore.Platform
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
             }
@@ -400,22 +400,22 @@ namespace WeaponCore.Platform
             {
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
                 var cube = Target.Entity as MyCubeBlock;
                 if (cube != null && !cube.IsWorking)
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }  
                 var topMostEnt = Target.Entity.GetTopMostParent();
                 if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
             }
@@ -423,8 +423,8 @@ namespace WeaponCore.Platform
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
             {
-                masterWeapon.Target.Reset();
-                if (masterWeapon !=  this) Target.Reset();
+                masterWeapon.Target.Reset(Comp.Session.Tick);
+                if (masterWeapon !=  this) Target.Reset(Comp.Session.Tick);
                 return;
             }
             Casting = true;
@@ -440,8 +440,8 @@ namespace WeaponCore.Platform
                 if (Target.Projectile != null)
                     return;
 
-                masterWeapon.Target.Reset();
-                if (masterWeapon != this) Target.Reset();
+                masterWeapon.Target.Reset(Comp.Session.Tick);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                 return;
             }
 
@@ -459,8 +459,8 @@ namespace WeaponCore.Platform
                 var grid = parentAsGrid ?? rootAsGrid;
                 if (grid == Comp.Ai.MyGrid)
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
 
@@ -468,8 +468,8 @@ namespace WeaponCore.Platform
                 {
                     if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
-                        masterWeapon.Target.Reset();
-                        if (masterWeapon != this) Target.Reset();
+                        masterWeapon.Target.Reset(Comp.Session.Tick);
+                        if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     }
                     return;
                 }
@@ -497,8 +497,8 @@ namespace WeaponCore.Platform
                     var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
                     if (shortDistExceed || escapeDistExceed)
                     {
-                        masterWeapon.Target.Reset();
-                        if (masterWeapon != this) Target.Reset();
+                        masterWeapon.Target.Reset(Comp.Session.Tick);
+                        if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     }
                 }
             }
@@ -514,8 +514,8 @@ namespace WeaponCore.Platform
             {
                 if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(false);
-                    if (masterWeapon != this) Target.Reset(false);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, false);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, false);
                 }
             }
         }

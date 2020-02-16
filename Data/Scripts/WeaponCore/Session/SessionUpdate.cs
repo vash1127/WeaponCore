@@ -89,9 +89,11 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[j];
                                 if (!w.Set.Enable) {
                                     if (w.Target.State == Targets.Acquired)
-                                        w.Target.Reset();
+                                        w.Target.Reset(comp.Session.Tick);
                                     continue;
                                 }
+
+                                if (w.WeaponReadyTick > Tick) return;
 
                                 if (w.AvCapable && (!w.PlayTurretAv || Tick60)) {
                                     var avWasEnabled = w.PlayTurretAv;
@@ -180,8 +182,8 @@ namespace WeaponCore
                                 /// 
                                 if (w.TurretMode) {
 
-                                    if (w.TargetChanged && w.Target.State != Targets.Acquired || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
-                                        FutureEvents.Schedule(w.TurretHomePosition, null, 300);
+                                    if ((w.Target.State != Targets.Acquired && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
+                                        w.TurretHomePosition(comp.WasControlled);
                                 }
 
                                 if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo)

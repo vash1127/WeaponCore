@@ -55,9 +55,9 @@ namespace WeaponCore.Support
 
             if (targetType == TargetType.None)
             {
-                w.NewTarget.Reset(true, true);
+                w.NewTarget.Reset(w.Comp.Session.Tick, true, true);
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(!w.Comp.TrackReticle, true);
+                w.Target.Reset(w.Comp.Session.Tick, !w.Comp.TrackReticle, true);
             }
             else w.WakeTargets();
         }
@@ -135,7 +135,7 @@ namespace WeaponCore.Support
                 p.Info.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
                 return true;
             }
-            p.Info.Target.Reset();
+            p.Info.Target.Reset(ai.Session.Tick);
             return false;
         }
 
@@ -221,7 +221,7 @@ namespace WeaponCore.Support
                         if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 
                         targetType = TargetType.Other;
-                        target.TransferTo(w.Target);
+                        target.TransferTo(w.Target, w.Comp.Session.Tick);
 
                         return;
                     }
@@ -245,7 +245,7 @@ namespace WeaponCore.Support
                         var topEntId = info.Target.GetTopMostParent().EntityId;
                         target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
                         targetType = TargetType.Other;
-                        target.TransferTo(w.Target);
+                        target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
                     }
                     if (forceTarget) break;
@@ -546,7 +546,7 @@ namespace WeaponCore.Support
                 target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
-            else target.Reset(w == null);
+            else target.Reset(w.Comp.Session.Tick, w == null);
 
             if (newEntity0 != null) top5.Add(newEntity0);
             if (newEntity1 != null) top5.Add(newEntity1);
@@ -635,7 +635,7 @@ namespace WeaponCore.Support
                             const long topEntId = long.MaxValue;
                             target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
                             targetType = TargetType.Projectile;
-                            target.TransferTo(w.Target);
+                            target.TransferTo(w.Target, w.Comp.Session.Tick);
                             return;
                         }
                     }
@@ -648,7 +648,7 @@ namespace WeaponCore.Support
                         const long topEntId = long.MaxValue;
                         target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
                         targetType = TargetType.Projectile;
-                        target.TransferTo(w.Target);
+                        target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
                     }
                 }

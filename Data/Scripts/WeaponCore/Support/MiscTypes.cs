@@ -27,6 +27,7 @@ namespace WeaponCore.Support
         internal int BlockPrevDeckLen;
         internal int DelayReleaseCnt;
         internal uint CheckTick;
+        internal uint ExpiredTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
         internal double HitShortDist;
@@ -45,7 +46,7 @@ namespace WeaponCore.Support
             FiringCube = firingCube;
         }
 
-        internal void TransferTo(Target target, bool reset = true)
+        internal void TransferTo(Target target, uint resetTick, bool reset = true)
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
@@ -56,7 +57,7 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.State = State;
-            if (reset) Reset();
+            if (reset) Reset(resetTick);
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
@@ -74,13 +75,20 @@ namespace WeaponCore.Support
 
         internal void SetFake(Vector3D pos)
         {
-            Reset(false);
+            Reset(0, false);
             IsFakeTarget = true;
             TargetPos = pos;
             State = Targets.Acquired;
         }
 
-        internal void Reset(bool expire = true, bool dontLog = false)
+        internal void ResetCanDelay(Weapon weapon, bool expire = true, bool dontLog = false)
+        {
+            if (weapon.DelayCeaseFire && ++DelayReleaseCnt < weapon.System.TimeToCeaseFire) return;
+            Log.Line($"delayedReset: {DelayReleaseCnt} < {weapon.System.TimeToCeaseFire} - {weapon.System.Values.HardPoint.DelayCeaseFire} - {weapon.System.WeaponName}");
+            Reset(weapon.Comp.Session.Tick, expire, dontLog);
+        }
+
+        internal void Reset(uint expiredTick, bool expire = true, bool dontLog = false)
         {
             Entity = null;
             IsProjectile = false;
@@ -96,6 +104,7 @@ namespace WeaponCore.Support
             if (expire)
             {
                 State = Targets.Expired;
+                ExpiredTick = expiredTick;
             }
             TargetLock = false;
         }
