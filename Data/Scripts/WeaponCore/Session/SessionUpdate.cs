@@ -110,21 +110,21 @@ namespace WeaponCore
                                 if (w.Target.State == Targets.Acquired) {
 
                                     if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
-                                        w.Target.Reset(!comp.TrackReticle);
+                                        w.Target.Reset(Tick, !comp.TrackReticle);
 
                                     }
                                     else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) {
-                                        w.Target.Reset();
+                                        w.Target.Reset(Tick);
 
                                     }
                                     else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
-                                        w.Target.Reset();
+                                        w.Target.Reset(Tick);
 
                                     }
                                     else if (w.TrackingAi) {
 
                                         if (!Weapon.TrackingTarget(w, w.Target)) {
-                                            w.Target.Reset(!comp.TrackReticle);
+                                            w.Target.Reset(Tick, !comp.TrackReticle);
 
                                         }
                                     }
@@ -136,17 +136,17 @@ namespace WeaponCore
                                             if (!w.TrackTarget) {
 
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget)) {
-                                                    w.Target.Reset();
+                                                    w.Target.Reset(Tick);
 
                                                 }
                                             }
                                             else if (!Weapon.TargetAligned(w, w.Target, out targetPos)) {
-                                                w.Target.Reset();
+                                                w.Target.Reset(Tick);
 
                                             }
                                         }
                                         else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
-                                            w.Target.Reset();
+                                            w.Target.Reset(Tick);
 
                                         }
                                     }
