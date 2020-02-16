@@ -180,11 +180,9 @@ namespace WeaponCore
                                 ///
                                 /// Check weapon's turret to see if its time to go home
                                 /// 
-                                if (w.TurretMode) {
 
-                                    if ((w.Target.State != Targets.Acquired && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
-                                        w.TurretHomePosition(comp.WasControlled);
-                                }
+                                if (w.TurretMode && (w.Target.State != Targets.Acquired && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
+                                    w.TurretHomePosition(comp.WasControlled);
 
                                 if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo)
                                     ComputeStorage(w);
@@ -196,10 +194,7 @@ namespace WeaponCore
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = comp.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-
                                 var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
-
-                                //Log.Line($"reloading: {reloading} canShoot: {canShoot} fakeTarget: {fakeTarget} validShootStates: {validShootStates} manualShot: {manualShot} heat: {w.State.Heat}");
 
                                 if (canShoot && (validShootStates || manualShot)) {
 
