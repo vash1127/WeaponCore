@@ -526,7 +526,7 @@ namespace WeaponCore
 
         }
 
-        internal Dictionary<Weapon.EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, Dictionary<Weapon.EventTriggers, PartAnimation[]> systemAnimations, RecursiveSubparts parts)
+        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, Dictionary<EventTriggers, PartAnimation[]> systemAnimations, RecursiveSubparts parts)
         {
             if (!system.AnimationsInited)
             {
@@ -796,7 +796,9 @@ namespace WeaponCore
                         {
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
                             var matrix = animation.Part.PositionComp.LocalMatrix;
+                            animation.Part.OnClose += testing;
                             animation.Part.Render.AddRenderObjects();
+                            
                             animation.Part.PositionComp.LocalMatrix = matrix;
                         }
                         else if (!DedicatedServer && (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade))
@@ -870,6 +872,11 @@ namespace WeaponCore
                     }
                 }
             }
+        }
+
+        private void testing(MyEntity obj)
+        {
+            Log.Line("Closed");
         }
     }
 }
