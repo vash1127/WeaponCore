@@ -25,7 +25,6 @@ namespace WeaponCore.Support
         internal int[] BlockDeck = new int[0];
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
-        internal int DelayReleaseCnt;
         internal uint CheckTick;
         internal uint ExpiredTick;
         internal BlockTypes LastBlockType;
@@ -81,13 +80,6 @@ namespace WeaponCore.Support
             State = Targets.Acquired;
         }
 
-        internal void ResetCanDelay(Weapon weapon, bool expire = true, bool dontLog = false)
-        {
-            if (weapon.DelayCeaseFire && ++DelayReleaseCnt < weapon.System.TimeToCeaseFire) return;
-            Log.Line($"delayedReset: {DelayReleaseCnt} < {weapon.System.TimeToCeaseFire} - {weapon.System.Values.HardPoint.DelayCeaseFire} - {weapon.System.WeaponName}");
-            Reset(weapon.Comp.Session.Tick, expire, dontLog);
-        }
-
         internal void Reset(uint expiredTick, bool expire = true, bool dontLog = false)
         {
             Entity = null;
@@ -100,7 +92,6 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
-            DelayReleaseCnt = 0;
             if (expire)
             {
                 State = Targets.Expired;
