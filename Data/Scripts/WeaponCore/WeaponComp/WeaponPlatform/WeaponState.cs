@@ -63,7 +63,6 @@ namespace WeaponCore.Platform
 
                                 if (animation.TriggerOnce && animation.Triggered) continue;
                                 animation.Triggered = true;
-                                Log.Line("Firing");
 
                                 if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                     CurLgstAnimPlaying = animation;

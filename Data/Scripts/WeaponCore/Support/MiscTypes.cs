@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.TargetingDefinition;
 
@@ -22,6 +23,7 @@ namespace WeaponCore.Support
         internal int[] BlockDeck = new int[0];
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
+        internal int DelayReleaseCnt;
         internal uint CheckTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
@@ -76,6 +78,12 @@ namespace WeaponCore.Support
             State = Targets.Acquired;
         }
 
+        internal void ResetCanDelay(Weapon weapon, bool expire = true, bool dontLog = false)
+        {
+            if (++DelayReleaseCnt > weapon.System.DelayToFire) return;
+            Reset(expire, dontLog);
+        }
+
         internal void Reset(bool expire = true, bool dontLog = false)
         {
             Entity = null;
@@ -88,12 +96,11 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
+            DelayReleaseCnt = 0;
             if (expire)
             {
-                //if (!dontLog) Log.Line($"expired target: {State}");
                 State = Targets.Expired;
             }
-            //else if (!dontLog) Log.Line($"no expire: {State}");
             TargetLock = false;
         }
     }

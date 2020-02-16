@@ -108,21 +108,21 @@ namespace WeaponCore
                                 if (w.Target.State == Targets.Acquired) {
 
                                     if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
-                                        w.Target.Reset(!comp.TrackReticle);
+                                        w.Target.ResetCanDelay(w, !comp.TrackReticle);
 
                                     }
                                     else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) {
-                                        w.Target.Reset();
+                                        w.Target.ResetCanDelay(w);
 
                                     }
                                     else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
-                                        w.Target.Reset();
+                                        w.Target.ResetCanDelay(w);
 
                                     }
                                     else if (w.TrackingAi) {
 
                                         if (!Weapon.TrackingTarget(w, w.Target)) {
-                                            w.Target.Reset(!comp.TrackReticle);
+                                            w.Target.ResetCanDelay(w, !comp.TrackReticle);
 
                                         }
                                     }
@@ -134,17 +134,17 @@ namespace WeaponCore
                                             if (!w.TrackTarget) {
 
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget)) {
-                                                    w.Target.Reset();
+                                                    w.Target.ResetCanDelay(w);
 
                                                 }
                                             }
                                             else if (!Weapon.TargetAligned(w, w.Target, out targetPos)) {
-                                                w.Target.Reset();
+                                                w.Target.ResetCanDelay(w);
 
                                             }
                                         }
                                         else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
-                                            w.Target.Reset();
+                                            w.Target.ResetCanDelay(w);
 
                                         }
                                     }
@@ -157,9 +157,6 @@ namespace WeaponCore
 
                                 if (comp.TerminalControlled == CameraControl && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
-
-                                if (w.DelayCeaseFire && (comp.TerminalControlled != CameraControl || !w.AiShooting || w.DelayFireCount++ > w.System.TimeToCeaseFire))
-                                    w.DelayFireCount = 0;
 
                                 if (w.TargetChanged) {
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
@@ -259,9 +256,6 @@ namespace WeaponCore
                 {
                     var comp = w.Comp;
                     var gridAi = comp.Ai;
-
-                    //if (gridAi.LastPowerUpdateTick != Tick)
-                        //gridAi.UpdateGridPower();
 
                     if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
@@ -432,12 +426,6 @@ namespace WeaponCore
                         continue;
 
                     if (w.ShootDelayTick <= Tick) w.Shoot();
-
-                    /*if (!w.System.MustCharge && w.State.ManualShoot == ShootOnce) {
-
-                        w.State.ManualShoot = ShootOff;
-                        w.StopShooting();
-                    }*/
                 }
             }
             ShootingWeapons.Clear();

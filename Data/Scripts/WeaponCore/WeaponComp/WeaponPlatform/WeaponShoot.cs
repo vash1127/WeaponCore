@@ -102,7 +102,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                if (Comp.TerminalControlled == None && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29) && !DelayCeaseFire)
+                if (Comp.TerminalControlled == None && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29))
                     ShootRayCheck();
 
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -370,10 +370,12 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
+                    Log.Line("hitself");
                     masterWeapon.Target.Reset(!Comp.TrackReticle);
                     if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
                     return;
                 }
+                Log.Line($"didnt hit self");
                 if (tick - Comp.LastRayCastTick <= 29) return;
             }
             Comp.LastRayCastTick = tick;
@@ -405,7 +407,7 @@ namespace WeaponCore.Platform
                     return;
                 }
                 var cube = Target.Entity as MyCubeBlock;
-                if (cube != null && !cube.IsWorking)
+                if (cube != null && !cube.IsWorking && !DelayCeaseFire)
                 {
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
@@ -437,7 +439,7 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null)
             {
-                if (Target.Projectile != null)
+                if (Target.Projectile != null || masterWeapon.DelayCeaseFire)
                     return;
 
                 masterWeapon.Target.Reset();
@@ -522,6 +524,7 @@ namespace WeaponCore.Platform
 
         public bool MuzzleHitSelf()
         {
+            Log.Line($"MuzzleHitCheck");
             for (int i = 0; i < Muzzles.Length; i++)
             {
                 var m = Muzzles[i];

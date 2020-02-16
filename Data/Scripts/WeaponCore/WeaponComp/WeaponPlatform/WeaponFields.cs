@@ -107,7 +107,6 @@ namespace WeaponCore.Platform
         internal uint ShootDelayTick;
         internal int RateOfFire;
         internal int BarrelSpinRate;
-        internal int DelayFireCount;
         internal int WeaponId;
         internal int HsRate;
         internal int EnergyPriority;
