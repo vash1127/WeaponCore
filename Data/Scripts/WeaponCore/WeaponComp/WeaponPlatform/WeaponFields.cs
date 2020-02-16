@@ -151,6 +151,8 @@ namespace WeaponCore.Platform
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;
         internal bool AzimuthOnBase;
+        internal bool ReturingHome;
+        internal bool IsHome;
         public enum TerminalActionState
         {
             ShootOn,

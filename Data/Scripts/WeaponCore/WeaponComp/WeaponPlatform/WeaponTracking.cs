@@ -255,6 +255,7 @@ namespace WeaponCore.Platform
                             weapon.Azimuth = az;
                         if (!elLocked)
                             weapon.Elevation = el;
+                        weapon.IsHome = false;
                         weapon.AimBarrel(azDiff, elDiff, !azLocked, !elLocked);
                     }
                 }

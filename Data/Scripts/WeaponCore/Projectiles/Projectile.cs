@@ -983,7 +983,7 @@ namespace WeaponCore.Projectiles
         internal void UnAssignProjectile(bool clear)
         {
             Info.Target.Projectile.Seekers.Remove(this);
-            if (clear) Info.Target.Reset(true, true);
+            if (clear) Info.Target.Reset(Info.Ai.Session.Tick, true, true);
             else
             {
                 Info.Target.IsProjectile = false;
@@ -1001,7 +1001,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
             Watchers.Clear();
 
-            foreach (var seeker in Seekers) seeker.Info.Target.Reset(true, true);
+            foreach (var seeker in Seekers) seeker.Info.Target.Reset(Info.Ai.Session.Tick, true, true);
             Seekers.Clear();
 
             if (EnableAv)

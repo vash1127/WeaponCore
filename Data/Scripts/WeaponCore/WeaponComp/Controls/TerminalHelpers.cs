@@ -279,7 +279,7 @@ namespace WeaponCore.Control
 
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                        w.Target.Reset();
+                        w.Target.Reset(comp.Session.Tick);
                         w.TurretHomePosition();
 
                     }

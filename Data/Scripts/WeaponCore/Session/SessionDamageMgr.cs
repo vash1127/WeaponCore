@@ -33,7 +33,7 @@ namespace WeaponCore
                 var phantom = info.System.Values.Ammo.BaseDamage <= 0;
                 var pInvalid = (int) p.State > 3;
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
-                if (tInvalid) info.Target.Reset();
+                if (tInvalid) info.Target.Reset(info.Ai.Session.Tick);
                 var skip = pInvalid || tInvalid;
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
