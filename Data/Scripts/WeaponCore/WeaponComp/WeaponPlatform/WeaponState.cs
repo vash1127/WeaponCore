@@ -44,11 +44,14 @@ namespace WeaponCore.Platform
                             if (state == EventTriggers.StopFiring)
                             {
                                 ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
+                                Log.Line($"ShootDelayTick: {ShootDelayTick}");
                                 if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
                                     if (CurLgstAnimPlaying != null && CurLgstAnimPlaying.Running)
+                                    {
                                         delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                                    ShootDelayTick += delay;
+                                        ShootDelayTick += delay;
+                                    }
                                 }
                             }
                             LastEvent = state;
@@ -57,14 +60,14 @@ namespace WeaponCore.Platform
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
                             var animation = AnimationsSet[state][i];
+                            Log.Line($"active: {active} TriggerOnce: {animation.TriggerOnce} Triggered: {animation.Triggered}");
+
                             if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles != null && muzzles.Contains(animation.Muzzle)))
                             {
-
-
                                 if (animation.TriggerOnce && animation.Triggered) continue;
                                 animation.Triggered = true;
 
-                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                     CurLgstAnimPlaying = animation;
 
                                 if (animation.Muzzle != "Any" && addToFiring) _muzzlesFiring.Add(animation.Muzzle);
@@ -80,7 +83,7 @@ namespace WeaponCore.Platform
                             }
                             else if (active && animation.DoesLoop)
                                 animation.Looping = true;
-                            else
+                            else if (!active)
                             {
                                 animation.Looping = false;
                                 animation.Triggered = false;
@@ -104,7 +107,7 @@ namespace WeaponCore.Platform
                                 if (animation.TriggerOnce && animation.Triggered) continue;
                                 animation.Triggered = true;
 
-                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                     CurLgstAnimPlaying = animation;
 
                                 PartAnimation animCheck;
@@ -135,7 +138,7 @@ namespace WeaponCore.Platform
                             }
                             else if (active && animation.DoesLoop)
                                 animation.Looping = true;
-                            else
+                            else if (!active)
                             {
                                 animation.Looping = false;
                                 animation.Triggered = false;
@@ -157,7 +160,7 @@ namespace WeaponCore.Platform
                             var animation = AnimationsSet[state][i];
                             if (!animation.Running)
                             {
-                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                     CurLgstAnimPlaying = animation;
 
                                 PartAnimation animCheck;
@@ -202,7 +205,7 @@ namespace WeaponCore.Platform
                                 if (animation.TriggerOnce && animation.Triggered) continue;
                                 animation.Triggered = true;
 
-                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                     CurLgstAnimPlaying = animation;
 
                                 animation.StartTick = session.Tick + animation.MotionDelay;
@@ -217,7 +220,7 @@ namespace WeaponCore.Platform
                             }
                             else if (active && animation.DoesLoop)
                                 animation.Looping = true;
-                            else
+                            else if (!active)
                             {
                                 animation.Looping = false;
                                 animation.Triggered = false;

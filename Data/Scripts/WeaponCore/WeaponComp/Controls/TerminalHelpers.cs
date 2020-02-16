@@ -302,7 +302,7 @@ namespace WeaponCore.Control
                     w.OffDelay = 0;
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay;
+                        w.AnimationDelayTick = w.ShootDelayTick = w.WeaponReadyTick = comp.Session.Tick + delay;
 
                     if (!w.System.EnergyAmmo || w.System.MustCharge)
                         Session.ComputeStorage(w);

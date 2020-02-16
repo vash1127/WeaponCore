@@ -105,6 +105,7 @@ namespace WeaponCore.Platform
         internal uint OffDelay;
         internal uint LastMuzzleCheck;
         internal uint ShootDelayTick;
+        internal uint WeaponReadyTick; //needed to prevent tracking while on animations are running
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;

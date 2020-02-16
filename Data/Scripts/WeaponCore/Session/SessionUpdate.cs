@@ -93,6 +93,8 @@ namespace WeaponCore
                                     continue;
                                 }
 
+                                if (w.WeaponReadyTick > Tick) return;
+
                                 if (w.AvCapable && (!w.PlayTurretAv || Tick60)) {
                                     var avWasEnabled = w.PlayTurretAv;
                                     w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;

@@ -68,7 +68,8 @@ namespace WeaponCore
                             AnimationType.HideInstant,
                             AnimationType.ShowFade,
                             AnimationType.HideFade,
-                            AnimationType.Delay
+                            AnimationType.Delay,
+                            AnimationType.EmissiveOnly
                         };
 
                         var moveIndexer = new List<int[]>();
@@ -234,7 +235,7 @@ namespace WeaponCore
                                                 if (move.TicksToMove == 1)
                                                     progress = 1;
                                                 else
-                                                    progress = (float)j / (move.TicksToMove - 1);
+                                                    progress = (float)(traveled / distance);
 
                                                 CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
@@ -310,7 +311,7 @@ namespace WeaponCore
                                                 if (move.TicksToMove == 1)
                                                     progress = 1;
                                                 else
-                                                    progress = (float)j / (move.TicksToMove - 1);
+                                                    progress = (float)(traveled / distance);
 
                                                 CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
@@ -421,8 +422,43 @@ namespace WeaponCore
                                 {
                                     moveSet.Add(Matrix.Zero);
 
+                                    var rate = 0d;
+                                    if (move.MovementType == RelMove.MoveType.ExpoGrowth)
+                                    {
+                                        var check = 0d;
+                                        while (check < move.TicksToMove)
+                                        {
+                                            rate += 0.001;
+                                            check = 0.001 * Math.Pow(1 + rate, move.TicksToMove);
+                                        }
+                                        rate += 1;
+                                    }
+                                    else if(move.MovementType == RelMove.MoveType.ExpoDecay)
+                                    {
+                                        var check = 1d;
+                                        while (check > 0)
+                                        {
+                                            rate += 0.001;
+                                            check = move.TicksToMove * Math.Pow(1 - rate, move.TicksToMove);
+                                            if (check < 0.001) check = 0;
+
+                                        }
+                                        rate = 1 - rate;
+                                    }
+
                                     for (int j = 0; j < move.TicksToMove; j++)
                                     {
+                                        var step = 0d;
+                                        if (move.MovementType == RelMove.MoveType.ExpoGrowth)
+                                            step = (0.001 * Math.Pow(rate, j)) / (double)move.TicksToMove;
+                                        if (move.MovementType == RelMove.MoveType.ExpoDecay)
+                                        {
+                                            var perc = ((double)move.TicksToMove * Math.Pow(rate, j)) / (double)move.TicksToMove;
+                                            step = MathHelper.Lerp(1d, 0d, perc);
+                                        }
+                                        else
+                                            step = (double)j / (double)(move.TicksToMove - 1);
+
                                         WeaponEmissive emissive;
                                         if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                         {
@@ -430,7 +466,7 @@ namespace WeaponCore
                                             if (move.TicksToMove == 1)
                                                 progress = 1;
                                             else
-                                                progress = (float)j / (move.TicksToMove - 1);
+                                                progress = (float)step;
 
                                             CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                         }
@@ -443,7 +479,7 @@ namespace WeaponCore
                                         emissiveIdSet.Add(id + moveIndexer.Count);
 
                                         moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
+                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 6, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                     }
                                 }
                             }
@@ -756,7 +792,6 @@ namespace WeaponCore
                             animation.Part.PositionComp.SetLocalMatrix(ref localMatrix,
                                 animation.MainEnt, true);
                         }
-
                         else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
                         {
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
@@ -816,6 +851,8 @@ namespace WeaponCore
                             }
                         }
                     }
+
+                    //Log.Line(animation.Looping)
 
                     if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
                     {
