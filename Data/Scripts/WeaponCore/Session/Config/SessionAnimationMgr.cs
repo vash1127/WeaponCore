@@ -704,7 +704,7 @@ namespace WeaponCore
             {
                 var animation = AnimationsToProcess[i];
 
-                if (animation.Paused) continue;
+                //if (animation.Paused) continue;
 
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.StartTick <= Tick)
                 {
@@ -760,12 +760,16 @@ namespace WeaponCore
                         else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
                         {
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
+                            var matrix = animation.Part.PositionComp.LocalMatrix;
                             animation.Part.Render.AddRenderObjects();
+                            animation.Part.PositionComp.LocalMatrix = matrix;
                         }
                         else if (!DedicatedServer && (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade))
                         {
                             animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
+                            var matrix = animation.Part.PositionComp.LocalMatrix;
                             animation.Part.Render.RemoveRenderObjects();
+                            animation.Part.PositionComp.LocalMatrix = matrix;
                         }
 
                         if (!DedicatedServer && currentEmissive.EmissiveParts != null)
