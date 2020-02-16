@@ -370,12 +370,10 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
-                    Log.Line("hitself");
                     masterWeapon.Target.Reset(!Comp.TrackReticle);
                     if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
                     return;
                 }
-                Log.Line($"didnt hit self");
                 if (tick - Comp.LastRayCastTick <= 29) return;
             }
             Comp.LastRayCastTick = tick;
@@ -524,7 +522,6 @@ namespace WeaponCore.Platform
 
         public bool MuzzleHitSelf()
         {
-            Log.Line($"MuzzleHitCheck");
             for (int i = 0; i < Muzzles.Length; i++)
             {
                 var m = Muzzles[i];

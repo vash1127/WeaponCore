@@ -227,7 +227,10 @@ namespace WeaponCore
                                     }
                                 }
                                 else if (w.IsShooting)
-                                    w.StopShooting();
+                                {
+                                    if (w.Target.State == Targets.Expired) 
+                                        w.StopShooting();
+                                }
                                 else if (w.BarrelSpinning)
                                     w.SpinBarrel(true);
 

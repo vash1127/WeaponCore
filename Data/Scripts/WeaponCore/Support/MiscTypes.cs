@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
@@ -80,7 +82,8 @@ namespace WeaponCore.Support
 
         internal void ResetCanDelay(Weapon weapon, bool expire = true, bool dontLog = false)
         {
-            if (++DelayReleaseCnt > weapon.System.DelayToFire) return;
+            if (weapon.DelayCeaseFire && ++DelayReleaseCnt < weapon.System.TimeToCeaseFire) return;
+            Log.Line($"delayedReset: {DelayReleaseCnt} < {weapon.System.TimeToCeaseFire} - {weapon.System.Values.HardPoint.DelayCeaseFire} - {weapon.System.WeaponName}");
             Reset(expire, dontLog);
         }
 

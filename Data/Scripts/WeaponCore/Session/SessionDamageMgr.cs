@@ -139,6 +139,7 @@ namespace WeaponCore
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             var system = t.System;
+
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
                 hitEnt.Blocks?.Clear();

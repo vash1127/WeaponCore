@@ -249,8 +249,12 @@ namespace WeaponCore.Support
             if (Tracer != TracerState.Off && lineOnScreen) {
                 if (Tracer == TracerState.Shrink && !ShrinkInited)
                     Shrink();
-                else if (System.IsBeamWeapon)
-                    RunBeam();
+                else if (System.IsBeamWeapon && System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
+                {
+                    ContainmentType containment;
+                    Ai.Session.CameraFrustrum.Contains(ref Hit.HitPos, out containment);
+                    if (containment != ContainmentType.Disjoint) RunBeam();
+                }
 
                 if (System.OffsetEffect)
                     PrepOffsetEffect(TracerFront, PointDir, VisualLength);
@@ -425,55 +429,51 @@ namespace WeaponCore.Support
 
         internal void RunBeam()
         {
-            if (System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
+            if (FiringWeapon != null)
             {
-
-                if (FiringWeapon != null)
+                var weapon = FiringWeapon.Platform.Weapons[WeaponId];
+                var effect = weapon.HitEffects[MuzzleId];
+                if (OnScreen != Screen.None)
                 {
-                    var weapon = FiringWeapon.Platform.Weapons[WeaponId];
-                    var effect = weapon.HitEffects[MuzzleId];
-                    if (OnScreen != Screen.None)
+                    if (effect != null)
                     {
-                        if (effect != null)
+                        var elapsedTime = effect.GetElapsedTime();
+                        if (elapsedTime <= 0 || elapsedTime >= 1)
                         {
-                            var elapsedTime = effect.GetElapsedTime();
-                            if (elapsedTime <= 0 || elapsedTime >= 1)
-                            {
-                                effect.Stop(true);
-                                effect = null;
-                            }
+                            effect.Stop(true);
+                            effect = null;
                         }
-                        MatrixD matrix;
-                        MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
+                    }
+                    MatrixD matrix;
+                    MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
+                    if (effect == null)
+                    {
+                        MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect);
                         if (effect == null)
                         {
-                            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect);
-                            if (effect == null)
-                            {
-                                weapon.HitEffects[MuzzleId] = null;
-                                return;
-                            }
-
-                            effect.DistanceMax = System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                            effect.DurationMax = System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                            effect.UserColorMultiplier = System.Values.Graphics.Particles.Hit.Color;
-                            effect.Loop = System.Values.Graphics.Particles.Hit.Extras.Loop;
-                            effect.UserRadiusMultiplier = System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
-                            var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
-                            effect.UserEmitterScale = (float)scale;
+                            weapon.HitEffects[MuzzleId] = null;
+                            return;
                         }
-                        else if (effect.IsEmittingStopped)
-                            effect.Play();
 
-                        effect.WorldMatrix = matrix;
-                        effect.Velocity = HitVelocity;
-                        weapon.HitEffects[MuzzleId] = effect;
+                        effect.DistanceMax = System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                        effect.DurationMax = System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
+                        effect.UserColorMultiplier = System.Values.Graphics.Particles.Hit.Color;
+                        effect.Loop = System.Values.Graphics.Particles.Hit.Extras.Loop;
+                        effect.UserRadiusMultiplier = System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
+                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
+                        effect.UserEmitterScale = (float)scale;
                     }
-                    else if (effect != null)
-                    {
-                        effect.Stop(false);
-                        weapon.HitEffects[MuzzleId] = null;
-                    }
+                    else if (effect.IsEmittingStopped)
+                        effect.Play();
+
+                    effect.WorldMatrix = matrix;
+                    effect.Velocity = HitVelocity;
+                    weapon.HitEffects[MuzzleId] = effect;
+                }
+                else if (effect != null)
+                {
+                    effect.Stop(false);
+                    weapon.HitEffects[MuzzleId] = null;
                 }
             }
         }
