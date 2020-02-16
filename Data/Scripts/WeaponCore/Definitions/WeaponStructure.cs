@@ -67,8 +67,6 @@ namespace WeaponCore.Support
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
         public readonly bool HasBarrelRotation;
-        //public readonly bool ElevationOnly;
-        public readonly bool LimitedAxisTurret;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -204,7 +202,7 @@ namespace WeaponCore.Support
             IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
-            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement, out LimitedAxisTurret);
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
 
             MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
@@ -350,7 +348,7 @@ namespace WeaponCore.Support
             eWarEffect = areaEffect > (AreaDamage.AreaEffectType)3;
         }
 
-        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove, out bool limitedAxisTurret)
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)
         {
             azStep = Values.HardPoint.Block.RotateRate;
             elStep = Values.HardPoint.Block.ElevateRate;
@@ -359,24 +357,14 @@ namespace WeaponCore.Support
             minElevation = Values.HardPoint.Block.MinElevation;
             maxElevation = Values.HardPoint.Block.MaxElevation;
             
-            limitedAxisTurret = false;
             turretMove = TurretType.Full;
 
             if (minAzimuth == maxAzimuth)
-            {
                 turretMove = TurretType.ElevationOnly;
-                limitedAxisTurret = true;
-            }
             if (minElevation == maxElevation && TurretMovement != TurretType.Full)
-            {
                 turretMove = TurretType.Fixed;
-                limitedAxisTurret = true;
-            }
             else if (minElevation == maxElevation)
-            {
                 turretMove = TurretType.AzimuthOnly;
-                limitedAxisTurret = true;
-            }
             //Log.Line($"TurretMovement: {TurretMovement}");
         }
 
