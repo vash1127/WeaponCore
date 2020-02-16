@@ -58,14 +58,13 @@ namespace WeaponCore.Support {
 
         internal MyEntity MainEnt;
         internal MyEntitySubpart Part;
-        internal Matrix SavedMatrix;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
         internal bool Looping;
         internal bool Running;
         internal bool Triggered;
         internal bool CanPlay;
-        internal bool Paused;
+        //internal bool Paused;
         internal uint StartTick;
 
         private int _currentMove;
