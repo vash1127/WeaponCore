@@ -184,7 +184,7 @@ namespace WeaponCore
                                 if (w.TurretMode && comp.State.Value.Online) {
 
                                     if (w.TargetChanged && w.Target.State != Targets.Acquired || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
-                                        FutureEvents.Schedule(w.TurretHomePosition, null, 240);
+                                        FutureEvents.Schedule(w.TurretHomePosition, null, 300);
                                 }
 
                                 if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo)
