@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.Graphics.GUI;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
@@ -423,7 +424,8 @@ namespace WeaponCore.Support
                 entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
                 IMyPlayer player;
                 Session.Players.TryGetValue(playerId, out player);
-                if (player != null && Session.Session.IsUserAdmin(player.SteamUserId)) return false;
+                if (player != null && Session.Session.IsUserAdmin(player.SteamUserId) && MySafeZone.CheckAdminIgnoreSafezones(player.SteamUserId))
+                    return false;
 
                 return !myCharacter.IsDead;
             }

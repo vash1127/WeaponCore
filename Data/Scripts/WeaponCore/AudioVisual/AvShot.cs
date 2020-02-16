@@ -269,7 +269,7 @@ namespace WeaponCore.Support
 
         internal void End(Vector3D endPos, bool detonateFakeExp = false)
         {
-            if (TracerFront == Vector3D.Zero) TracerFront = endPos;
+            if (Vector3D.IsZero(TracerFront)) TracerFront = endPos;
             Ai.Session.Av.AvEnd.Add(this);
             DetonateFakeExp = detonateFakeExp;
             Dirty = true;
