@@ -80,13 +80,6 @@ namespace WeaponCore.Support
             State = Targets.Acquired;
         }
 
-        internal void ResetCanDelay(Weapon weapon, bool expire = true, bool dontLog = false)
-        {
-            if (weapon.DelayCeaseFire && ++DelayReleaseCnt < weapon.System.TimeToCeaseFire) return;
-            Log.Line($"delayedReset: {DelayReleaseCnt} < {weapon.System.TimeToCeaseFire} - {weapon.System.Values.HardPoint.DelayCeaseFire} - {weapon.System.WeaponName}");
-            Reset(expire, dontLog);
-        }
-
         internal void Reset(bool expire = true, bool dontLog = false)
         {
             Entity = null;

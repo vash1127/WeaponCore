@@ -405,7 +405,7 @@ namespace WeaponCore.Platform
                     return;
                 }
                 var cube = Target.Entity as MyCubeBlock;
-                if (cube != null && !cube.IsWorking && !DelayCeaseFire)
+                if (cube != null && !cube.IsWorking)
                 {
                     masterWeapon.Target.Reset();
                     if (masterWeapon != this) Target.Reset();
@@ -437,7 +437,7 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null)
             {
-                if (Target.Projectile != null || masterWeapon.DelayCeaseFire)
+                if (Target.Projectile != null)
                     return;
 
                 masterWeapon.Target.Reset();

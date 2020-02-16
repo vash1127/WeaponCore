@@ -293,6 +293,7 @@ namespace WeaponCore.Platform
         {
             StopFiringSound(false);
             StopPreFiringSound(false);
+            CeaseFireDelayCnt = 0;
             if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
             {

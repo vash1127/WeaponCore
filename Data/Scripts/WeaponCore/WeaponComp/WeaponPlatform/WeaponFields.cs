@@ -112,6 +112,7 @@ namespace WeaponCore.Platform
         internal int EnergyPriority;
         internal int LastBlockCount;
         internal int SingleShotCounter;
+        internal int CeaseFireDelayCnt;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
         internal double Azimuth;
@@ -132,7 +133,6 @@ namespace WeaponCore.Platform
         internal bool IsShooting;
         internal bool PlayTurretAv;
         internal bool AvCapable;
-        internal bool DelayCeaseFire;
         internal bool Reloading;
         internal bool OutOfAmmo;
         internal bool CurrentlyDegrading;
@@ -277,7 +277,6 @@ namespace WeaponCore.Platform
             AimingTolerance = Math.Cos(toleranceInRadians);
 
             _numOfBarrels = System.Barrels.Length;
-            DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);

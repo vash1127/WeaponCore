@@ -108,21 +108,21 @@ namespace WeaponCore
                                 if (w.Target.State == Targets.Acquired) {
 
                                     if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
-                                        w.Target.ResetCanDelay(w, !comp.TrackReticle);
+                                        w.Target.Reset(!comp.TrackReticle);
 
                                     }
                                     else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) {
-                                        w.Target.ResetCanDelay(w);
+                                        w.Target.Reset();
 
                                     }
                                     else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
-                                        w.Target.ResetCanDelay(w);
+                                        w.Target.Reset();
 
                                     }
                                     else if (w.TrackingAi) {
 
                                         if (!Weapon.TrackingTarget(w, w.Target)) {
-                                            w.Target.ResetCanDelay(w, !comp.TrackReticle);
+                                            w.Target.Reset(!comp.TrackReticle);
 
                                         }
                                     }
@@ -134,17 +134,17 @@ namespace WeaponCore
                                             if (!w.TrackTarget) {
 
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget)) {
-                                                    w.Target.ResetCanDelay(w);
+                                                    w.Target.Reset();
 
                                                 }
                                             }
                                             else if (!Weapon.TargetAligned(w, w.Target, out targetPos)) {
-                                                w.Target.ResetCanDelay(w);
+                                                w.Target.Reset();
 
                                             }
                                         }
                                         else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
-                                            w.Target.ResetCanDelay(w);
+                                            w.Target.Reset();
 
                                         }
                                     }
@@ -178,7 +178,7 @@ namespace WeaponCore
                                 ///
                                 /// Check weapon's turret to see if its time to go home
                                 /// 
-                                if (w.TurretMode && comp.State.Value.Online) {
+                                if (w.TurretMode) {
 
                                     if (w.TargetChanged && w.Target.State != Targets.Acquired || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
                                         FutureEvents.Schedule(w.TurretHomePosition, null, 300);
@@ -228,7 +228,7 @@ namespace WeaponCore
                                 }
                                 else if (w.IsShooting)
                                 {
-                                    if (w.Target.State == Targets.Expired) 
+                                    if (!w.System.DelayCeaseFire || w.CeaseFireDelayCnt++ > w.System.CeaseFireDelay) 
                                         w.StopShooting();
                                 }
                                 else if (w.BarrelSpinning)

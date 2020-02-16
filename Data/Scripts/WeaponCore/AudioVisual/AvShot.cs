@@ -171,7 +171,6 @@ namespace WeaponCore.Support
             TracerFront = tracerFront;
             TracerBack = TracerFront + (-Direction * VisualLength);
             PointDir = pointDir;
-
             if (modelOnly) {
                 ModelSphereCurrent.Center = TracerFront;
                 if (Triggered)

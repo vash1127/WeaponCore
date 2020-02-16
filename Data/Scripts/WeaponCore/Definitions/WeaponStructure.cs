@@ -46,7 +46,7 @@ namespace WeaponCore.Support
         public readonly string[] Barrels;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
-        public readonly int TimeToCeaseFire;
+        public readonly int CeaseFireDelay;
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
         public readonly int MinAzimuth;
@@ -117,7 +117,7 @@ namespace WeaponCore.Support
         public readonly bool EwarEffect;
         public readonly bool NeedsPrediction;
         public readonly bool HasBurstDelay;
-        public bool PreFireSound;
+        public readonly bool DelayCeaseFire;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -163,6 +163,7 @@ namespace WeaponCore.Support
         public bool BarrelRotationSound;
         public bool AmmoTravelSound;
         public bool AnimationsInited;
+        public bool PreFireSound;
 
         public enum FiringSoundState
         {
@@ -220,9 +221,11 @@ namespace WeaponCore.Support
             TrailWidth = values.Graphics.Line.Trail.CustomWidth > 0 ? values.Graphics.Line.Trail.CustomWidth : values.Graphics.Line.Tracer.Width;
 
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
-            TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
+            CeaseFireDelay = values.HardPoint.DelayCeaseFire;
             ReloadTime = values.HardPoint.Loading.ReloadTime;
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
+            DelayCeaseFire = DelayToFire > 0;
+
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BaseDamage = values.Ammo.BaseDamage;
@@ -473,10 +476,6 @@ namespace WeaponCore.Support
             ent.NeedsWorldMatrix = false;
             ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             MyEntities.Add(ent, false);
-
-            //ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
-            //ent.InScene = false;
-            //ent.Render.RemoveRenderObjects();
             return ent;
         }
 

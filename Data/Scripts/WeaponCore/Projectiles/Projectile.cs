@@ -408,7 +408,7 @@ namespace WeaponCore.Projectiles
             var endPos = hit ? Hit.HitPos : Position + -Direction * (Info.DistanceTraveled - MaxTrajectory);  
             var overShot = Vector3D.Distance(endPos, Position);
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
-            var stepSizeToHit = stepSize - overShot;
+            var stepSizeToHit = Math.Abs(stepSize - overShot);
             var avSize = useCollisionSize ? Info.System.CollisionSize : TracerLength;
             double remainingTracer;
             
@@ -425,7 +425,7 @@ namespace WeaponCore.Projectiles
             else remainingTracer = 0;
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-
+            Log.Line($"[hit] - stepSize:{stepSize} - remainingTracer:{remainingTracer} - stepSizeToHit:{stepSizeToHit}");
             Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
         }
 
