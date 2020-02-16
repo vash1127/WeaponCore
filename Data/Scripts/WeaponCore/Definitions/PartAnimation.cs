@@ -58,6 +58,7 @@ namespace WeaponCore.Support {
 
         internal MyEntity MainEnt;
         internal MyEntitySubpart Part;
+        internal Matrix SavedMatrix;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
         internal bool Looping;

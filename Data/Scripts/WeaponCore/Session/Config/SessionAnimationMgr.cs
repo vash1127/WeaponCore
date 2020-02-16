@@ -760,11 +760,13 @@ namespace WeaponCore
                         else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
                         {
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
+                            animation.Part.PositionComp.LocalMatrix = animation.SavedMatrix;
                             animation.Part.Render.AddRenderObjects();
                         }
                         else if (!DedicatedServer && (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade))
                         {
                             animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
+                            animation.SavedMatrix = animation.Part.PositionComp.LocalMatrix;
                             animation.Part.Render.RemoveRenderObjects();
                         }
 
