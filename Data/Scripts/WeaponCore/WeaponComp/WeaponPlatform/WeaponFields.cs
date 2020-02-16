@@ -103,6 +103,7 @@ namespace WeaponCore.Platform
         internal uint ChargeUntilTick;
         internal uint AnimationDelayTick;
         internal uint OffDelay;
+        internal uint LastMuzzleCheck;
         internal uint ShootDelayTick;
         internal int RateOfFire;
         internal int BarrelSpinRate;

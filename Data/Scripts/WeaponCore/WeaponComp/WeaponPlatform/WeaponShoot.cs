@@ -102,7 +102,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                if (Comp.TerminalControlled == None && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire)
+                if (Comp.TerminalControlled == None && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29) && !DelayCeaseFire)
                     ShootRayCheck();
 
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -363,15 +363,21 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            Comp.LastRayCastTick = Comp.Session.Tick;
+            var tick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-            if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
+            if (System.Values.HardPoint.MuzzleCheck)
             {
-                masterWeapon.Target.Reset(!Comp.TrackReticle);
-                if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
-                return;
+                LastMuzzleCheck = tick;
+                if (MuzzleHitSelf())
+                {
+                    masterWeapon.Target.Reset(!Comp.TrackReticle);
+                    if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
+                    return;
+                }
+                if (tick - Comp.LastRayCastTick <= 29) return;
             }
-
+            Comp.LastRayCastTick = tick;
+            
             if (Target.IsFakeTarget)
             {
                 Casting = true;
