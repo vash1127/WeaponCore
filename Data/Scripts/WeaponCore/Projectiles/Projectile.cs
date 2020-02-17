@@ -406,25 +406,35 @@ namespace WeaponCore.Projectiles
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
             var endPos = hit ? Hit.HitPos : Position + -Direction * (Info.DistanceTraveled - MaxTrajectory);  
-            var overShot = Vector3D.Distance(endPos, Position);
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
-            var stepSizeToHit = Math.Abs(stepSize - overShot);
             var avSize = useCollisionSize ? Info.System.CollisionSize : TracerLength;
+
             double remainingTracer;
-            
-            if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
+            double stepSizeToHit;
+            if (Info.System.IsBeamWeapon)
             {
-                remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
+                var beamLength = Vector3D.Distance(Info.Origin, endPos);
+                remainingTracer = MathHelperD.Clamp(beamLength, 0, avSize);
+                stepSizeToHit = remainingTracer;
             }
-            else if (avSize >= overShot)
+            else
             {
-                remainingTracer = MathHelperD.Clamp(avSize - overShot, 0, Math.Min(avSize, Info.PrevDistanceTraveled + stepSizeToHit));
+                var overShot = Vector3D.Distance(endPos, Position);
+                stepSizeToHit = Math.Abs(stepSize - overShot);
+                if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
+                {
+                    remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
+                }
+                else if (avSize >= overShot)
+                {
+                    remainingTracer = MathHelperD.Clamp(avSize - overShot, 0, Math.Min(avSize, Info.PrevDistanceTraveled + stepSizeToHit));
+                }
+                else remainingTracer = 0;
             }
-            else remainingTracer = 0;
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Log.Line($"[hit] - stepSize:{stepSize} - remainingTracer:{remainingTracer} - stepSizeToHit:{stepSizeToHit} - overShot:{overShot} - hit:{hit} - avSize:{avSize} - {Info.DistanceTraveled}");
-            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, Info.System.IsBeamWeapon ? remainingTracer : stepSizeToHit, hit);
+
+            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
         }
 
         internal void CreateFakeBeams(bool miss = false)
