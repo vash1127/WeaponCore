@@ -10,7 +10,6 @@ using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using System;
-using VRage.Collections;
 
 namespace WeaponCore.Platform
 {
@@ -24,6 +23,8 @@ namespace WeaponCore.Platform
                 var tick = session.Tick;
                 var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
                 var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
+                if (System.WeaponName.Contains("Gatling")) Log.Line($"shooting: delayFire:{_ticksUntilShoot++ < System.DelayToFire} - PreFired:{PreFired} - ready:{_shootTick > tick}");
+
                 if (_ticksUntilShoot++ < System.DelayToFire)
                 {
                     if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)

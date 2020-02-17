@@ -185,7 +185,6 @@ namespace WeaponCore
                                 var fakeTarget = comp.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                                 var manualShot = (comp.TerminalControlled == CameraControl || comp.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
-
                                 if (canShoot && (validShootStates || manualShot)) {
 
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge) {
@@ -213,10 +212,15 @@ namespace WeaponCore
                                         w.StopShooting(false, false);
                                     }
                                 }
-                                else if (w.IsShooting)
-                                {
-                                    if (!w.System.DelayCeaseFire || w.CeaseFireDelayCnt++ > w.System.CeaseFireDelay) 
+                                else if (w.IsShooting) {
+                                    if (!w.System.DelayCeaseFire || !w.Target.IsAligned && w.CeaseFireDelayCnt++ > w.System.CeaseFireDelay) {
+                                        Log.Line($"stop shooting:{w.System.DelayCeaseFire} - {w.CeaseFireDelayCnt} > {w.System.CeaseFireDelay}");
                                         w.StopShooting();
+                                    }
+                                    else if (w.Target.IsAligned) {
+                                        w.CeaseFireDelayCnt = 0;
+                                    }
+                                    //else if (w.RotateEmitter.IsPlaying) w.StopRotateSound();
                                 }
                                 else if (w.BarrelSpinning)
                                     w.SpinBarrel(true);

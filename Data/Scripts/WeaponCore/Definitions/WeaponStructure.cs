@@ -222,9 +222,9 @@ namespace WeaponCore.Support
 
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
             CeaseFireDelay = values.HardPoint.DelayCeaseFire;
-            ReloadTime = values.HardPoint.Loading.ReloadTime;
+            DelayCeaseFire = CeaseFireDelay > 0;
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
-            DelayCeaseFire = DelayToFire > 0;
+            ReloadTime = values.HardPoint.Loading.ReloadTime;
 
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
