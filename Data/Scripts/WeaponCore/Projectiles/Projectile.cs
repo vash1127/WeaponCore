@@ -412,9 +412,7 @@ namespace WeaponCore.Projectiles
             var avSize = useCollisionSize ? Info.System.CollisionSize : TracerLength;
             double remainingTracer;
             
-            if (Info.System.IsBeamWeapon)
-                remainingTracer = stepSizeToHit;
-            else if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
+            if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
             {
                 remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
             }
@@ -425,8 +423,8 @@ namespace WeaponCore.Projectiles
             else remainingTracer = 0;
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Log.Line($"[hit] - stepSize:{stepSize} - remainingTracer:{remainingTracer} - stepSizeToHit:{stepSizeToHit}");
-            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
+            Log.Line($"[hit] - stepSize:{stepSize} - remainingTracer:{remainingTracer} - stepSizeToHit:{stepSizeToHit} - overShot:{overShot} - hit:{hit} - avSize:{avSize} - {Info.DistanceTraveled}");
+            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, Info.System.IsBeamWeapon ? remainingTracer : stepSizeToHit, hit);
         }
 
         internal void CreateFakeBeams(bool miss = false)
