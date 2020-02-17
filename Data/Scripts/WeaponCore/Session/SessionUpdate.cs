@@ -27,8 +27,7 @@ namespace WeaponCore
                     if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose)
                         continue;
 
-                    var dbIsStale = Tick - gridAi.TargetsUpdatedTick > 100;
-                    var readyToUpdate = dbIsStale && DbCallBackComplete && DbTask.IsComplete;
+                    var readyToUpdate = Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete;
 
                     if (readyToUpdate && gridAi.UpdateOwner())
                         gridAi.RequestDbUpdate();
