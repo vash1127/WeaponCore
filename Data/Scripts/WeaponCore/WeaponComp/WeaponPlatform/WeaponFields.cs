@@ -27,6 +27,7 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
+        private uint _azimuthSubpartUpdateTick;
         private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;

@@ -87,6 +87,7 @@ namespace WeaponCore.Platform
                 ReturingHome = false;
                 return;
             }
+            Target.ExpiredTick = 0;
 
             var userControlled = o != null && (bool)o;
             if (userControlled)
@@ -94,10 +95,7 @@ namespace WeaponCore.Platform
                 Azimuth = Comp.TurretBase.Azimuth;
                 Elevation = Comp.TurretBase.Elevation;
             }
-
-            Target.ExpiredTick = 0;
-
-            if (!userControlled)
+            else
             {
                 var azStep = System.AzStep;
                 var elStep = System.ElStep;

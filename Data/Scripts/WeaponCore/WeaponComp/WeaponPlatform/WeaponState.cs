@@ -19,10 +19,26 @@ namespace WeaponCore.Platform
             _posChangedTick = Comp.Session.Tick;
         }
 
+        public void UpdateParts(MyPositionComponentBase pComp)
+        {
+            if (_azimuthSubpartUpdateTick == Comp.Session.Tick) return;
+            _azimuthSubpartUpdateTick = Comp.Session.Tick;
+
+            var matrix = AzimuthPart.Entity.WorldMatrix;
+            foreach (var part in AzimuthPart.Entity.Subparts)
+            {
+                if(!part.Key.Contains(System.AzimuthPartName.String))
+                    part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
+            }
+        }
+
         internal void EntPartClose(MyEntity obj)
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
-            obj.OnMarkForClose -= EntPartClose;
+            obj.PositionComp.OnPositionChanged -= UpdateParts;
+
+            if (Comp.Session.VanillaSubpartNames.Contains(System.AzimuthPartName.String) && Comp.Session.VanillaSubpartNames.Contains(System.ElevationPartName.String))
+                obj.OnMarkForClose -= EntPartClose;
         }
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
