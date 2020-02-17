@@ -134,6 +134,7 @@ namespace WeaponCore
                             }
                             else
                             {
+                                var type = 6;
                                 if (!String.IsNullOrEmpty(move.CenterEmpty) &&
                                     (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
                                      move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
@@ -143,6 +144,8 @@ namespace WeaponCore
                                     rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
                                         move.RotAroundCenter.y / move.TicksToMove,
                                         move.RotAroundCenter.z / move.TicksToMove));
+
+                                    type = 0;
                                 }
                                 else
                                 {
@@ -154,6 +157,7 @@ namespace WeaponCore
                                     move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
                                 {
                                     rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove, move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove));
+                                    type = 0;
                                 }
                                 else
                                     rotationSet.Add(Matrix.Zero);
@@ -479,7 +483,7 @@ namespace WeaponCore
                                         emissiveIdSet.Add(id + moveIndexer.Count);
 
                                         moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 6, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
+                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                     }
                                 }
                             }
@@ -621,6 +625,8 @@ namespace WeaponCore
 
         internal Matrix CreateRotation(double x, double y, double z)
         {
+
+            Log.Line($"create rotations");
 
             var rotation = MatrixD.Zero;
 
@@ -776,6 +782,8 @@ namespace WeaponCore
                                 animation.Reverse = true;
                             }
                         }
+
+                        Log.Line($"animationType: {animationType} rotation: {rotation != Matrix.Zero} animation: {animation.SubpartId} animation moves: {animation.NumberOfMoves}");
 
                         if (rotation != Matrix.Zero)
                         {
