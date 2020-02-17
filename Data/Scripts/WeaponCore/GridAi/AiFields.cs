@@ -76,7 +76,7 @@ namespace WeaponCore.Support
         internal Vector3D PlanetClosestPoint;
         internal Vector3D NaturalGravity;
         internal BoundingSphereD GridVolume;
-        internal MyDefinitionId NewAmmoType;
+        //internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
         internal bool ScanBlockGroups = true;
@@ -104,7 +104,7 @@ namespace WeaponCore.Support
         internal bool StaticGridInRange;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
-        internal bool CheckReload;
+        //internal bool CheckReload;
         internal bool HasPower;
         internal bool HadPower;
         internal bool WasPowered;

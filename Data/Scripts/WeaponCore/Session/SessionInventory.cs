@@ -95,15 +95,15 @@ namespace WeaponCore
                 var magItem = weapon.System.AmmoItem;
 
                 weapon.Comp.IgnoreInvChange = true;
+
                 for (int i = 0; i < inventoriesToPull.Length; i++)
                 {
                     var amt = inventoriesToPull[i].Item2;
                     inventoriesToPull[i].Item1.RemoveItemsOfType(amt, def);
                     weapon.Comp.BlockInventory.Add(magItem, amt);
-                    weapon.Comp.Ai.CheckReload = true;
                 }
+                //ComputeStorage(weapon);
                 weapon.Comp.IgnoreInvChange = false;
-                
             }
         }
     }
