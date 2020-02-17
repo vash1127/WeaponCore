@@ -218,9 +218,11 @@ namespace WeaponCore
                                         w.StopShooting();
                                     }
                                     else if (w.Target.IsAligned) {
+                                        Log.Line($"target is aligned: {w.Target.State}");
                                         w.CeaseFireDelayCnt = 0;
                                     }
                                     //else if (w.RotateEmitter.IsPlaying) w.StopRotateSound();
+                                    Log.Line($"test: {w.System.DelayCeaseFire} - {w.CeaseFireDelayCnt} > {w.System.CeaseFireDelay}  ");
                                 }
                                 else if (w.BarrelSpinning)
                                     w.SpinBarrel(true);
