@@ -57,7 +57,7 @@ namespace WeaponCore.Support
             {
                 w.NewTarget.Reset(w.Comp.Session.Tick, true, true);
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(w.Comp.Session.Tick, !w.Comp.TrackReticle, true);
+                w.Target.Reset(uint.MaxValue, !w.Comp.TrackReticle, true);
             }
             else w.WakeTargets();
         }

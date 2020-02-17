@@ -95,7 +95,7 @@ namespace WeaponCore.Support
             if (expire)
             {
                 State = Targets.Expired;
-                ExpiredTick = expiredTick;
+                if (expiredTick != uint.MaxValue) ExpiredTick = expiredTick;
             }
             TargetLock = false;
         }
