@@ -87,7 +87,7 @@ namespace WeaponCore
                                     continue;
                                 }
 
-                                if (w.WeaponReadyTick > Tick) return;
+                                if (w.WeaponReadyTick > Tick) continue;
 
                                 if (w.AvCapable && (!w.PlayTurretAv || Tick60)) {
                                     var avWasEnabled = w.PlayTurretAv;

@@ -60,7 +60,6 @@ namespace WeaponCore.Platform
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
                             var animation = AnimationsSet[state][i];
-                            Log.Line($"active: {active} TriggerOnce: {animation.TriggerOnce} Triggered: {animation.Triggered}");
 
                             if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles != null && muzzles.Contains(animation.Muzzle)))
                             {
