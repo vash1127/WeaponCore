@@ -55,6 +55,7 @@ namespace WeaponCore.Support
                             break;
                         case "ManualControl":
                             o.ManaulControl = setting.Value > 0;
+                            comp.ManualControl = o.ManaulControl;
                             break;
                         case "TargetPainter":
                             o.TargetPainter = setting.Value > 0;
@@ -102,9 +103,12 @@ namespace WeaponCore.Support
                     break;
                 case "ManualControl":
                     o.ManaulControl = value > 0;
+                    comp.ManualControl = o.ManaulControl;
+                    comp.TargetPainter = !comp.ManualControl && o.TargetPainter;
                     break;
                 case "TargetPainter":
                     o.TargetPainter = value > 0;
+                    comp.TargetPainter = !comp.ManualControl && o.TargetPainter;
                     break;
                 case "Unowned":
                     o.Unowned = value > 0;

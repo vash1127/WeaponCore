@@ -64,21 +64,15 @@ namespace WeaponCore
                                 if (comp.Status != Started) comp.HealthCheck();
                                 continue;
                             }
+
                             if (InMenu && Tick20 && gridAi.LastTerminal == comp.MyCube)
                                 comp.TerminalRefresh();
 
-                            var overRides = comp.Set.Value.Overrides;
                             comp.WasControlled = comp.UserControlled;
-                            comp.ManualControl = overRides.ManaulControl;
-                            comp.TargetPainter = !comp.ManualControl && overRides.TargetPainter;
-
                             comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && uiTargeting;
                             
                             var id = comp.State.Value.PlayerIdInTerminal;
-                            comp.TerminalControlled = id == -1 ? None : 
-                                id == -2 ? ApiControl : 
-                                    id == -3 ? CameraControl : ToolBarControl;
-
+                            comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;
                             comp.UserControlled = comp.TrackReticle || comp.TerminalControlled == CameraControl;
 
                             ///
