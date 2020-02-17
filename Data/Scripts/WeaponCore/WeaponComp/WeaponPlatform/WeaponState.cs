@@ -35,7 +35,10 @@ namespace WeaponCore.Platform
         internal void EntPartClose(MyEntity obj)
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
-            obj.OnMarkForClose -= EntPartClose;
+            obj.PositionComp.OnPositionChanged -= UpdateParts;
+
+            if (Comp.Session.VanillaSubpartNames.Contains(System.AzimuthPartName.String) && Comp.Session.VanillaSubpartNames.Contains(System.ElevationPartName.String))
+                obj.OnMarkForClose -= EntPartClose;
         }
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
