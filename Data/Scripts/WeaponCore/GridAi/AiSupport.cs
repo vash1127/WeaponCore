@@ -874,7 +874,6 @@ namespace WeaponCore.Support
                         Session.ComputeStorage(w);
                 }
             }
-
         }
 
         #endregion
