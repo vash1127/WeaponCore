@@ -114,19 +114,20 @@ namespace WeaponCore.Support
                         var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
 
                         if (!hasIntentory && amount > 0)
+                        {
                             AmmoInventories[magId][myInventory] = amount;
-
+                            Session.FutureEvents.Schedule(CheckReload, magId, 1);
+                        }
                         else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
+                        {
                             AmmoInventories[magId][myInventory] += amount;
-
+                            Session.FutureEvents.Schedule(CheckReload, magId, 1);
+                        }
                         else if (hasIntentory)
                         {
                             MyFixedPoint pointRemoved;
-                            AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);    
+                            AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);
                         }
-
-                        CheckReload = true;
-                        NewAmmoType = magId;
                     }
                 }
             }

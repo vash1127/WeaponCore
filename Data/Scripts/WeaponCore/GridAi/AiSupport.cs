@@ -730,7 +730,7 @@ namespace WeaponCore.Support
             PowerIncrease = false;
             RequestedPowerChanged = false;
             RequestIncrease = false;
-            CheckReload = false;
+            //CheckReload = false;
             DbReady = false;
             Focus.Clean();
             MyShieldTmp = null;
@@ -859,6 +859,22 @@ namespace WeaponCore.Support
 
                 }
             }
+        }
+
+        internal void CheckReload(object o = null)
+        {
+            var magId = (MyDefinitionId?)o ?? new MyDefinitionId();
+
+            for (int i = 0; i < Weapons.Count; i++)
+            {
+                for(int j = 0; j < Weapons[i].Platform.Weapons.Length; j++)
+                {
+                    var w = Weapons[i].Platform.Weapons[j];
+                    if (w.System.AmmoDefId == magId)
+                        Session.ComputeStorage(w);
+                }
+            }
+
         }
 
         #endregion

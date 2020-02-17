@@ -184,9 +184,6 @@ namespace WeaponCore
                                 if (w.TurretMode && (w.Target.State != Targets.Acquired && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
                                     w.TurretHomePosition(comp.WasControlled);
 
-                                if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo)
-                                    ComputeStorage(w);
-
                                 ///
                                 /// Determine if its time to shoot
                                 ///
@@ -238,7 +235,6 @@ namespace WeaponCore
                     }
 
                     gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
-                    gridAi.CheckReload = false;
                 }
             }
 
