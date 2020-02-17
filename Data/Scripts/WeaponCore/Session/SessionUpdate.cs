@@ -68,11 +68,11 @@ namespace WeaponCore
                             if (InMenu && Tick20 && gridAi.LastTerminal == comp.MyCube)
                                 comp.TerminalRefresh();
 
-                            comp.WasControlled = comp.UserControlled;
-                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && uiTargeting;
-                            
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;
+
+                            comp.TrackReticle = (comp.TargetPainter || comp.ManualControl) && uiTargeting;
+                            comp.WasControlled = comp.UserControlled;
                             comp.UserControlled = comp.TrackReticle || comp.TerminalControlled == CameraControl;
 
                             ///
