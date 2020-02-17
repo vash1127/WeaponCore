@@ -248,7 +248,7 @@ namespace WeaponCore.Support
             if (Tracer != TracerState.Off && lineOnScreen) {
                 if (Tracer == TracerState.Shrink && !ShrinkInited)
                     Shrink();
-                else if (System.IsBeamWeapon && System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
+                else if (System.IsBeamWeapon && Hitting && System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
                 {
                     ContainmentType containment;
                     Ai.Session.CameraFrustrum.Contains(ref Hit.HitPos, out containment);
