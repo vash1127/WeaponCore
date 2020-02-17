@@ -294,7 +294,7 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-
+            CeaseFireDelayTick = Comp.Session.Tick;
             if (FiringEmitter != null) StartFiringSound();
             if (!IsShooting && !System.DesignatorWeapon)
             {
@@ -311,7 +311,7 @@ namespace WeaponCore.Platform
         {
             StopFiringSound(false);
             StopPreFiringSound(false);
-            CeaseFireDelayCnt = 0;
+            CeaseFireDelayTick = uint.MaxValue;
             if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
             {

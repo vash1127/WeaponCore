@@ -114,7 +114,7 @@ namespace WeaponCore
                                         w.Target.Reset(Tick);
 
                                     }
-                                    else if (w.TrackingAi) {
+                                    else if (w.AiEnabled) {
 
                                         if (!Weapon.TrackingTarget(w, w.Target)) {
                                             w.Target.Reset(Tick, !comp.TrackReticle);
@@ -145,7 +145,6 @@ namespace WeaponCore
                                     }
                                 }
 
-                                w.AiShooting = w.Target.State == Targets.Acquired && !comp.UserControlled && (w.Target.TargetLock && (w.TrackingAi || !w.TrackTarget) || !w.TrackingAi && w.TrackTarget);
 
                                 w.TargetChanged = targetAcquired || targetLost;
                                 w.ProjectilesNear = w.TrackProjectiles && w.Target.State != Targets.Acquired && (w.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
@@ -180,6 +179,8 @@ namespace WeaponCore
                                 ///
                                 /// Determine if its time to shoot
                                 ///
+                                /// 
+                                w.AiShooting =  (w.Target.TargetLock || w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay) && !comp.UserControlled;
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = comp.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
@@ -213,11 +214,11 @@ namespace WeaponCore
                                     }
                                 }
                                 else if (w.IsShooting) {
-                                    if (!w.System.DelayCeaseFire || !w.Target.IsAligned && w.CeaseFireDelayCnt++ > w.System.CeaseFireDelay) {
+                                    if (!w.System.DelayCeaseFire || !w.Target.IsAligned && Tick - w.CeaseFireDelayTick > w.System.CeaseFireDelay) {
                                         w.StopShooting();
                                     }
-                                    else if (w.Target.IsAligned) {
-                                        w.CeaseFireDelayCnt = 0;
+                                    else if (w.System.DelayCeaseFire && w.Target.IsAligned) {
+                                         w.CeaseFireDelayTick = Tick;
                                     }
                                 }
                                 else if (w.BarrelSpinning)
@@ -359,7 +360,7 @@ namespace WeaponCore
                         }
 
                         if (w.Target.State == Targets.Acquired || !gridAi.TargetingInfo.TargetInRange) {
-
+                           
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
                         }

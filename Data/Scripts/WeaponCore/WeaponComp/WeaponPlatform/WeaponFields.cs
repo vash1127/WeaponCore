@@ -98,6 +98,7 @@ namespace WeaponCore.Platform
         internal float DetonateDmg;
         internal float LastHeat;
         internal float CurrentCharge;
+        internal uint CeaseFireDelayTick = int.MaxValue;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint ChargeDelayTicks;
@@ -114,7 +115,6 @@ namespace WeaponCore.Platform
         internal int EnergyPriority;
         internal int LastBlockCount;
         internal int SingleShotCounter;
-        internal int CeaseFireDelayCnt;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
         internal double Azimuth;
@@ -131,7 +131,7 @@ namespace WeaponCore.Platform
         internal bool TrackTarget;
         internal bool AiShooting;
         internal bool SeekTarget;
-        internal bool TrackingAi;
+        internal bool AiEnabled;
         internal bool IsShooting;
         internal bool PlayTurretAv;
         internal bool AvCapable;
@@ -274,11 +274,21 @@ namespace WeaponCore.Platform
             IsTurret = System.Values.HardPoint.Block.TurretAttached;
             TurretMode = System.Values.HardPoint.Block.TurretController;
             TrackTarget = System.Values.HardPoint.Block.TrackTargets;
+            
+            if (System.Values.HardPoint.Block.TurretController)
+            {
+                AiEnabled = true;
+                AimOffset = System.Values.HardPoint.Block.Offset;
+                FixedOffset = System.Values.HardPoint.Block.FixedOffset;
+            }
+
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
             var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
+
+
 
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];

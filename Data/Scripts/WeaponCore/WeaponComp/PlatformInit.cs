@@ -180,10 +180,6 @@ namespace WeaponCore.Platform
 
                 if (weapon.System.Values.HardPoint.Block.TurretController)
                 {
-                    weapon.TrackingAi = true;
-                    weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
-                    weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
-
                     if (weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
                         comp.TrackingWeapon = weapon;
 

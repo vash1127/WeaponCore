@@ -209,7 +209,7 @@ namespace WeaponCore.Support
                     {
                         if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
                         session.CanShoot++;
-                        if (!w.TrackingAi)
+                        if (!w.AiEnabled)
                         {
                             var newCenter = w.System.NeedsPrediction ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
