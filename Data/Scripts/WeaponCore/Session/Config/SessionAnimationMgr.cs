@@ -15,14 +15,14 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths, out string[] heatingSubpartNames)
         {
 
-            var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
+            var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
             weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
             weaponEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
-            animationLengths = new Dictionary<Weapon.EventTriggers, uint>();
+            animationLengths = new Dictionary<EventTriggers, uint>();
 
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
@@ -30,6 +30,11 @@ namespace WeaponCore
             weaponLinearMoveSet = new Dictionary<string, Matrix[]>();
 
             var emissiveLookup = new Dictionary<string, WeaponEmissive>();
+
+            if (animations.HeatingEmissiveParts != null && animations.HeatingEmissiveParts.Length > 0)
+                heatingSubpartNames = animations.HeatingEmissiveParts;
+            else
+                heatingSubpartNames = new string[0];
 
             if (wepEmissivesSet != null)
             {

@@ -206,10 +206,12 @@ namespace WeaponCore.Platform
 
                         var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
 
-                        MuzzlePart.Entity?.SetEmissiveParts("Heating", color, intensity);
+                        for(int i = 0; i < HeatingParts.Count; i++)
+                            HeatingParts[i]?.SetEmissiveParts("Heating", color, intensity);
                     }
                     else if (set)
-                        MuzzlePart.Entity?.SetEmissiveParts("Heating", Color.Transparent, 0);
+                        for(int i = 0; i < HeatingParts.Count; i++)
+                            HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                     LastHeat = currentHeat;
                 }

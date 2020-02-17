@@ -534,6 +534,7 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
         [ProtoMember(2)] internal WeaponEmissive[] Emissives;
+        [ProtoMember(3)] internal string[] HeatingEmissiveParts;
     }
 
     [ProtoContract(IgnoreListHandling = true)]
