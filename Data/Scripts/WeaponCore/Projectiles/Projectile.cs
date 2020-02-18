@@ -688,11 +688,11 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (Info.System.Pulse && VelocityLengthSqr <= 0 && !Info.System.IsMine || !Vector3D.IsZero(Hit.HitPos))
+            if (Info.System.Pulse && !Info.TriggeredPulse && VelocityLengthSqr <= 0 && !Info.System.IsMine || !Vector3D.IsZero(Hit.HitPos))
             {
                 Info.TriggeredPulse = true;
                 Velocity = Vector3D.Zero;
-                DistanceToTravelSqr = Info.DistanceTraveled *Info.DistanceTraveled;
+                DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
             }
 
             if (Info.TriggeredPulse)
