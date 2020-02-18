@@ -202,7 +202,6 @@ namespace WeaponCore.Projectiles
 
         internal bool GenerateHitInfo(Projectile p)
         {
-            Log.Line("Generate hit info");
             var count = p.Info.HitList.Count;
             if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
             else GetEntityCompareDist(p.Info.HitList[0], null, V3Pool.Get());
@@ -233,14 +232,12 @@ namespace WeaponCore.Projectiles
             {
                 if (p.Info.System.Ewar && p.Info.System.Pulse && !p.Info.TriggeredPulse && p.Info.System.EwarTriggerRange > 0)
                 {
-                    Log.Line("hit trigger");
                     p.Info.TriggeredPulse = true;
                     p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                     p.Velocity = Vector3D.Zero;
                     p.Info.HitList.Clear();
                     return false;
                 }
-                Log.Line("true hit");
                 var hitEntity = p.Info.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Projectile?.Velocity ?? hitEntity.Entity?.Physics?.LinearVelocity ?? Vector3D.Zero;
