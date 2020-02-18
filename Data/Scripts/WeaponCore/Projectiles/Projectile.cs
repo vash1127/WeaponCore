@@ -692,6 +692,7 @@ namespace WeaponCore.Projectiles
             {
                 Info.TriggeredPulse = true;
                 Velocity = Vector3D.Zero;
+                DistanceToTravelSqr = Info.DistanceTraveled *Info.DistanceTraveled;
             }
 
             if (Info.TriggeredPulse)

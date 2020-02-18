@@ -234,6 +234,7 @@ namespace WeaponCore.Projectiles
                 {
                     p.Info.TriggeredPulse = true;
                     p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
+                    p.Velocity = Vector3D.Zero;
                     return false;
                 }
                 var hitEntity = p.Info.HitList[0];
