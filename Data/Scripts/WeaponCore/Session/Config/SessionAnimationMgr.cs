@@ -15,14 +15,14 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths, out string[] heatingSubpartNames)
         {
 
-            var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
+            var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
             weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
             weaponEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
-            animationLengths = new Dictionary<Weapon.EventTriggers, uint>();
+            animationLengths = new Dictionary<EventTriggers, uint>();
 
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
@@ -30,6 +30,11 @@ namespace WeaponCore
             weaponLinearMoveSet = new Dictionary<string, Matrix[]>();
 
             var emissiveLookup = new Dictionary<string, WeaponEmissive>();
+
+            if (animations.HeatingEmissiveParts != null && animations.HeatingEmissiveParts.Length > 0)
+                heatingSubpartNames = animations.HeatingEmissiveParts;
+            else
+                heatingSubpartNames = new string[0];
 
             if (wepEmissivesSet != null)
             {
@@ -59,7 +64,8 @@ namespace WeaponCore
                         List<string> rotCenterNameSet = new List<string>();
                         List<string> emissiveIdSet = new List<string>();
 
-                        var id = $"{moves.Key}{animationSet.SubpartId[t]}";
+                        Guid guid = Guid.NewGuid();
+                        var id = Convert.ToBase64String(guid.ToByteArray());
                         animationIdLookup.Add(id);
                         AnimationType[] typeSet = new[]
                         {
@@ -134,30 +140,7 @@ namespace WeaponCore
                             }
                             else
                             {
-                                if (!String.IsNullOrEmpty(move.CenterEmpty) &&
-                                    (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
-                                     move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
-                                     move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
-                                {
-                                    rotCenterNameSet.Add(move.CenterEmpty);
-                                    rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
-                                        move.RotAroundCenter.y / move.TicksToMove,
-                                        move.RotAroundCenter.z / move.TicksToMove));
-                                }
-                                else
-                                {
-                                    rotCenterNameSet.Add(null);
-                                    rotCenterSet.Add(Matrix.Zero);
-                                }
-
-                                if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
-                                    move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
-                                {
-                                    rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove, move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove));
-                                }
-                                else
-                                    rotationSet.Add(Matrix.Zero);
-
+                                var type = 6;
                                 if (move.LinearPoints != null && move.LinearPoints.Length > 0)
                                 {
                                     double distance = 0;
@@ -205,6 +188,12 @@ namespace WeaponCore
                                             traveled = distance - step;
                                             var changed = traveled - lastTraveled;
 
+                                            var progress = 0f;
+                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                                                progress = 1;
+                                            else
+                                                progress = (float)(traveled / distance);
+
                                             changed += remaining;
                                             if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
                                             {
@@ -231,12 +220,6 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                var progress = 0f;
-                                                if (move.TicksToMove == 1)
-                                                    progress = 1;
-                                                else
-                                                    progress = (float)(traveled / distance);
-
                                                 CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
@@ -246,6 +229,8 @@ namespace WeaponCore
                                             }
 
                                             emissiveIdSet.Add(id + moveIndexer.Count);
+
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
 
                                             moveIndexer.Add(new[]
                                                 {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
@@ -281,6 +266,12 @@ namespace WeaponCore
                                             traveled = step;
                                             var changed = traveled - lastTraveled;
 
+                                            var progress = 0f;
+                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                                                progress = 1;
+                                            else
+                                                progress = (float)(traveled / distance);
+
                                             changed += remaining;
                                             if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
                                             {
@@ -307,12 +298,6 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                var progress = 0f;
-                                                if (move.TicksToMove == 1)
-                                                    progress = 1;
-                                                else
-                                                    progress = (float)(traveled / distance);
-
                                                 CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
@@ -322,6 +307,8 @@ namespace WeaponCore
                                             }
 
                                             emissiveIdSet.Add(id + moveIndexer.Count);
+
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
 
                                             moveIndexer.Add(new[]
                                                 {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
@@ -336,6 +323,8 @@ namespace WeaponCore
                                         var vectorCount = 0;
                                         var remaining = 0d;
                                         var vecTotalMoved = 0d;
+
+                                        CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
 
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
@@ -386,22 +375,25 @@ namespace WeaponCore
                                             if (remaining > 0)
                                                 vectorCount++;
                                         }
-                                    }
+                                    }/*
                                     else
                                     {
                                         moveSet.Add(Matrix.Zero);
 
+                                        if (move.MovementType == RelMove.MoveType.Linear)
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
+                                            var progress = 0f;
+                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                                                progress = 1;
+                                            else
+                                                progress = (float)j / (move.TicksToMove - 1);
+
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                var progress = 0f;
-                                                if (move.TicksToMove == 1)
-                                                    progress = 1;
-                                                else
-                                                    progress = (float)j / (move.TicksToMove - 1);
-
                                                 CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
@@ -412,63 +404,45 @@ namespace WeaponCore
 
                                             emissiveIdSet.Add(id + moveIndexer.Count);
 
+                                            if(move.MovementType != RelMove.MoveType.Linear)
+                                                CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+
                                             moveIndexer.Add(new[]
                                                 {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                         }
-                                    }
+                                    }*/
 
                                 }
                                 else
                                 {
                                     moveSet.Add(Matrix.Zero);
 
-                                    var rate = 0d;
-                                    if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                    {
-                                        var check = 0d;
-                                        while (check < move.TicksToMove)
-                                        {
-                                            rate += 0.001;
-                                            check = 0.001 * Math.Pow(1 + rate, move.TicksToMove);
-                                        }
-                                        rate += 1;
-                                    }
-                                    else if(move.MovementType == RelMove.MoveType.ExpoDecay)
-                                    {
-                                        var check = 1d;
-                                        while (check > 0)
-                                        {
-                                            rate += 0.001;
-                                            check = move.TicksToMove * Math.Pow(1 - rate, move.TicksToMove);
-                                            if (check < 0.001) check = 0;
+                                    var rate = GetRate(move.MovementType, move.TicksToMove);
 
-                                        }
-                                        rate = 1 - rate;
-                                    }
+                                    if (move.MovementType == RelMove.MoveType.Linear)
+                                        CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
 
                                     for (int j = 0; j < move.TicksToMove; j++)
                                     {
-                                        var step = 0d;
+                                        var progress = 0d;
                                         if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                            step = (0.001 * Math.Pow(rate, j)) / (double)move.TicksToMove;
+                                            progress = (0.001 * Math.Pow(rate, j)) / (double)move.TicksToMove;
                                         if (move.MovementType == RelMove.MoveType.ExpoDecay)
                                         {
                                             var perc = ((double)move.TicksToMove * Math.Pow(rate, j)) / (double)move.TicksToMove;
-                                            step = MathHelper.Lerp(1d, 0d, perc);
+                                            progress = MathHelper.Lerp(1d, 0d, perc);
                                         }
                                         else
-                                            step = (double)j / (double)(move.TicksToMove - 1);
+                                            progress = (double)j / (double)(move.TicksToMove - 1);
+
+
+                                        if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                                            progress = 1;
 
                                         WeaponEmissive emissive;
                                         if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                         {
-                                            var progress = 0f;
-                                            if (move.TicksToMove == 1)
-                                                progress = 1;
-                                            else
-                                                progress = (float)step;
-
-                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
+                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                         }
                                         else
                                         {
@@ -478,8 +452,13 @@ namespace WeaponCore
 
                                         emissiveIdSet.Add(id + moveIndexer.Count);
 
+                                        Log.Line($"progress: {progress}");
+
+                                        if (move.MovementType != RelMove.MoveType.Linear)
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+
                                         moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 6, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
+                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                     }
                                 }
                             }
@@ -524,6 +503,35 @@ namespace WeaponCore
                 animationsKV.Value.CopyTo(weaponAnimationSets[animationsKV.Key], 0);
             }
 
+        }
+
+        internal double GetRate(RelMove.MoveType move, uint ticksToMove)
+        {
+            var rate = 1d;
+            if (move == RelMove.MoveType.ExpoGrowth)
+            {
+                var check = 0d;
+                while (check < ticksToMove)
+                {
+                    rate += 0.001;
+                    check = 0.001 * Math.Pow(1 + rate, ticksToMove);
+                }
+                rate += 1;
+            }
+            else if (move == RelMove.MoveType.ExpoDecay)
+            {
+                var check = 1d;
+                while (check > 0)
+                {
+                    rate += 0.001;
+                    check = ticksToMove * Math.Pow(1 - rate, ticksToMove);
+                    if (check < 0.001) check = 0;
+
+                }
+                rate = 1 - rate;
+            }
+
+            return rate;
         }
 
         internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, Dictionary<EventTriggers, PartAnimation[]> systemAnimations, RecursiveSubparts parts)
@@ -622,6 +630,8 @@ namespace WeaponCore
         internal Matrix CreateRotation(double x, double y, double z)
         {
 
+            Log.Line($"create rotations");
+
             var rotation = MatrixD.Zero;
 
             if (x > 0 || x < 0)
@@ -640,6 +650,37 @@ namespace WeaponCore
                     rotation = MatrixD.CreateRotationZ(MathHelperD.ToRadians(z));
 
             return rotation;
+        }
+
+        internal void CreateRotationSets(RelMove move, double progress, ref int type, ref List<string> rotCenterNameSet, ref List<Matrix> rotCenterSet, ref List<Matrix> rotationSet)
+        {
+            type = 6;
+            if (!String.IsNullOrEmpty(move.CenterEmpty) &&
+                                    (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
+                                     move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
+                                     move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
+            {
+                rotCenterNameSet.Add(move.CenterEmpty);
+                rotCenterSet.Add(CreateRotation(MathHelper.Lerp(0, move.RotAroundCenter.x / move.TicksToMove, progress),
+                    MathHelper.Lerp(0, move.RotAroundCenter.y / move.TicksToMove, progress),
+                    MathHelper.Lerp(0, move.RotAroundCenter.z / move.TicksToMove, progress)));
+
+                type = 0;
+            }
+            else
+            {
+                rotCenterNameSet.Add(null);
+                rotCenterSet.Add(Matrix.Zero);
+            }
+
+            if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
+                move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
+            {
+                rotationSet.Add(CreateRotation(MathHelper.Lerp(0, move.Rotation.x / move.TicksToMove, progress), MathHelper.Lerp(0, move.Rotation.y / move.TicksToMove, progress), MathHelper.Lerp(0, move.Rotation.z / move.TicksToMove,progress)));
+                type = 0;
+            }
+            else
+                rotationSet.Add(Matrix.Zero);
         }
 
         internal void CreateEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, EmissiveState> allEmissivesSet, ref List<int> currentEmissivePart)
@@ -778,14 +819,10 @@ namespace WeaponCore
                         }
 
                         if (rotation != Matrix.Zero)
-                        {
                             localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
-                        }
 
                         if (rotAroundCenter != Matrix.Zero)
-                        {
                             localMatrix *= animation.Reverse ? Matrix.Invert(rotAroundCenter) : rotAroundCenter;
-                        }
 
                         if (animationType == AnimationType.Movement)
                         {

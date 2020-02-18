@@ -42,6 +42,7 @@ namespace WeaponCore.Platform
         internal PartInfo MuzzlePart;
         internal PartInfo AzimuthPart;
         internal PartInfo ElevationPart;
+        internal List<MyEntity> HeatingParts;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;

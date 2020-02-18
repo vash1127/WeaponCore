@@ -44,6 +44,7 @@ namespace WeaponCore.Support
         public readonly string WeaponName;
         public readonly string ModelPath;
         public readonly string[] Barrels;
+        public readonly string[] HeatingSubparts;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
         public readonly int CeaseFireDelay;
@@ -266,7 +267,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable;
 
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts);
         }
 
         private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst, out bool isHybrid)
