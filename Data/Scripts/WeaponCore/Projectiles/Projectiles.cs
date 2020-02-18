@@ -142,7 +142,7 @@ namespace WeaponCore.Projectiles
                             p.VelocityLengthSqr = newVel.LengthSquared();
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                         }
-                        p.Velocity = newVel;
+                        p.Velocity = !p.Info.TriggeredPulse ? newVel : Vector3D.Zero;
                     }
                 }
                 
@@ -197,7 +197,10 @@ namespace WeaponCore.Projectiles
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
-                    if (!p.SmartsOn && p.Info.Age > p.Info.System.TargetLossTime) p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
+                    if (!p.SmartsOn && p.Info.Age > p.Info.System.TargetLossTime)
+                    {
+                        p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
+                    }
                     if (p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)
                     {
                         p.AtMaxRange = true;
