@@ -169,7 +169,7 @@ namespace WeaponCore.Projectiles
             }
             else if (Info.Target.Entity != null) OriginTargetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
-            LockedTarget = OriginTargetPos != Vector3D.Zero;
+            LockedTarget = !Vector3D.IsZero(OriginTargetPos);
 
             if (SmartsOn && Info.System.TargetOffSet && LockedTarget)
             {
@@ -200,7 +200,7 @@ namespace WeaponCore.Projectiles
             }
             else MaxTrajectory = Info.System.Values.Ammo.Trajectory.MaxTrajectory;
 
-            if (PredictedTargetPos == Vector3D.Zero) PredictedTargetPos = Position + (Direction * MaxTrajectory);
+            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Direction * MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
@@ -225,7 +225,7 @@ namespace WeaponCore.Projectiles
 
             if (MoveToAndActivate)
             {
-                var distancePos = PredictedTargetPos != Vector3D.Zero ? PredictedTargetPos : OriginTargetPos;
+                var distancePos = !Vector3D.IsZero(PredictedTargetPos) ? PredictedTargetPos : OriginTargetPos;
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
@@ -254,8 +254,10 @@ namespace WeaponCore.Projectiles
             }
             var accelPerSec = Info.System.Values.Ammo.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
-            StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
-            MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
+            StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
+            var desiredSpeed = (Direction * DesiredSpeed);
+            var relativeSpeedCap = StartSpeed + desiredSpeed;
+            MaxVelocity = relativeSpeedCap.LengthSquared() > desiredSpeed.LengthSquared() ? relativeSpeedCap : Vector3D.Zero + desiredSpeed;
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = accelPerSec * StepConst;
@@ -376,7 +378,7 @@ namespace WeaponCore.Projectiles
 
         internal bool Intersected(bool add = true)
         {
-            if (Hit.HitPos == Vector3D.Zero) return false;
+            if (Vector3D.IsZero(Hit.HitPos)) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModel || Info.System.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.System.AmmoParticle && !Info.System.DrawLine;
@@ -386,7 +388,7 @@ namespace WeaponCore.Projectiles
 
             Colliding = true;
             if (!Info.System.VirtualBeams && add) Info.Ai.Session.Hits.Add(this);
-            else
+            else if (Info.System.VirtualBeams)
             {
                 Info.WeaponCache.VirtualHit = true;
                 Info.WeaponCache.HitEntity.Entity = Hit.Entity;
@@ -408,23 +410,31 @@ namespace WeaponCore.Projectiles
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
             var endPos = hit ? Hit.HitPos : Position + -Direction * (Info.DistanceTraveled - MaxTrajectory);  
-            var overShot = Vector3D.Distance(endPos, Position);
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
-            var stepSizeToHit = stepSize - overShot;
             var avSize = useCollisionSize ? Info.System.CollisionSize : TracerLength;
+
             double remainingTracer;
-            
+            double stepSizeToHit;
             if (Info.System.IsBeamWeapon)
-                remainingTracer = stepSizeToHit;
-            else if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
             {
-                remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
+                var beamLength = Vector3D.Distance(Info.Origin, endPos);
+                remainingTracer = MathHelperD.Clamp(beamLength, 0, avSize);
+                stepSizeToHit = remainingTracer;
             }
-            else if (avSize >= overShot)
+            else
             {
-                remainingTracer = MathHelperD.Clamp(avSize - overShot, 0, Math.Min(avSize, Info.PrevDistanceTraveled + stepSizeToHit));
+                var overShot = Vector3D.Distance(endPos, Position);
+                stepSizeToHit = Math.Abs(stepSize - overShot);
+                if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
+                {
+                    remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
+                }
+                else if (avSize >= overShot)
+                {
+                    remainingTracer = MathHelperD.Clamp(avSize - overShot, 0, Math.Min(avSize, Info.PrevDistanceTraveled + stepSizeToHit));
+                }
+                else remainingTracer = 0;
             }
-            else remainingTracer = 0;
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
 
@@ -434,7 +444,7 @@ namespace WeaponCore.Projectiles
         internal void CreateFakeBeams(bool miss = false)
         {
             Vector3D? hitPos = null;
-            if (Hit.HitPos != Vector3D.Zero) hitPos = Hit.HitPos;
+            if (!Vector3D.IsZero(Hit.HitPos)) hitPos = Hit.HitPos;
             for (int i = 0; i < VrPros.Count; i++)
             { 
                 var vp = VrPros[i];
@@ -606,7 +616,7 @@ namespace WeaponCore.Projectiles
                     }
 
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
-                    if (!(Info.Target.IsProjectile || fake) && (physics == null || targetPos == Vector3D.Zero))
+                    if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
                         PrevTargetPos = PredictedTargetPos;
                     else PrevTargetPos = targetPos;
 
@@ -680,10 +690,14 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (VelocityLengthSqr <= 0 && !Info.AvShot.Triggered && !Info.System.IsMine)
-                Info.AvShot.Triggered = true;
+            if (Info.System.Pulse && !Info.TriggeredPulse && VelocityLengthSqr <= 0 && !Info.System.IsMine || !Vector3D.IsZero(Hit.HitPos))
+            {
+                Info.TriggeredPulse = true;
+                Velocity = Vector3D.Zero;
+                DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
+            }
 
-            if (Info.AvShot.Triggered)
+            if (Info.TriggeredPulse)
             {
                 var areaSize = Info.System.AreaEffectSize;
                 if (Info.TriggerGrowthSteps < areaSize)
@@ -703,17 +717,20 @@ namespace WeaponCore.Projectiles
                         }
                         MatrixD.Rescale(ref Info.TriggerMatrix, nextSize);
                         if (EnableAv)
+                        {
+                            Info.AvShot.Triggered = true;
                             Info.AvShot.TriggerMatrix = Info.TriggerMatrix;
+                        }
                     }
                 }
             }
 
-            if (Info.Age % Info.System.PulseInterval == 0 || State == ProjectileState.OneAndDone)
-                PulseEffect();
+            if (!Info.System.Pulse || Info.System.Pulse && Info.Age % Info.System.PulseInterval == 0)
+                EwarEffects();
             else EwarActive = false;
         }
 
-        internal void PulseEffect()
+        internal void EwarEffects()
         {
             switch (Info.System.AreaEffect)
             {
@@ -724,7 +741,7 @@ namespace WeaponCore.Projectiles
                     {
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai == Info.Ai || netted.Info.Target.IsProjectile) continue;
-                        if (MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                        if (!Info.System.Pulse || MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         {
                             EwarActive = true;
                             netted.Info.Target.Projectile = this;
@@ -735,32 +752,32 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
 
                     break;
                 case AreaEffectType.DotField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
             }
@@ -985,7 +1002,7 @@ namespace WeaponCore.Projectiles
         internal void UnAssignProjectile(bool clear)
         {
             Info.Target.Projectile.Seekers.Remove(this);
-            if (clear) Info.Target.Reset(true, true);
+            if (clear) Info.Target.Reset(Info.Ai.Session.Tick, true, true);
             else
             {
                 Info.Target.IsProjectile = false;
@@ -1003,7 +1020,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
             Watchers.Clear();
 
-            foreach (var seeker in Seekers) seeker.Info.Target.Reset(true, true);
+            foreach (var seeker in Seekers) seeker.Info.Target.Reset(Info.Ai.Session.Tick, true, true);
             Seekers.Clear();
 
             if (EnableAv)

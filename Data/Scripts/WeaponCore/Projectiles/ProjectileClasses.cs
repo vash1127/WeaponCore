@@ -47,6 +47,7 @@ namespace WeaponCore.Support
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool LastHitShield;
+        internal bool TriggeredPulse;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
 
@@ -61,14 +62,13 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            //Log.Line($"{MuzzleId}");
             VirDirection = virDirection;
             Origin = origin;
         }
 
         internal void Clean()
         {
-            Target.Reset(true, true);
+            Target.Reset(0, true, true);
             HitList.Clear();
 
             if (PrimeEntity != null)
@@ -88,6 +88,7 @@ namespace WeaponCore.Support
             WeaponCache = null;
             LastHitShield = false;
             IsShrapnel = false;
+            TriggeredPulse = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
@@ -291,7 +292,7 @@ namespace WeaponCore.Support
                 frag.MuzzleId = p.Info.MuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
-                frag.Origin = p.Hit.HitPos != Vector3D.Zero ? p.Hit.HitPos : p.Position;
+                frag.Origin = !Vector3D.IsZero(p.Hit.HitPos) ? p.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.Seed = p.Info.Seed;
                 frag.PredictedTargetPos = p.PredictedTargetPos;

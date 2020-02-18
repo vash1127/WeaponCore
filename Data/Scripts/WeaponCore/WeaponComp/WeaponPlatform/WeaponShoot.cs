@@ -10,7 +10,6 @@ using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using System;
-using VRage.Collections;
 
 namespace WeaponCore.Platform
 {
@@ -24,6 +23,7 @@ namespace WeaponCore.Platform
                 var tick = session.Tick;
                 var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
                 var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
+
                 if (_ticksUntilShoot++ < System.DelayToFire)
                 {
                     if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)
@@ -102,7 +102,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                if (Comp.TerminalControlled == None && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire)
+                if (Comp.TerminalControlled == None && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29))
                     ShootRayCheck();
 
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -125,7 +125,7 @@ namespace WeaponCore.Platform
                         muzzle.LastUpdateTick = tick;
                     }
 
-                    if (!System.EnergyAmmo || System.IsHybrid)
+                    if (!System.EnergyAmmo || System.IsHybrid || System.MustCharge)
                     {
                         if (State.CurrentAmmo == 0) break;
                         State.CurrentAmmo--;
@@ -296,7 +296,8 @@ namespace WeaponCore.Platform
                     NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                 }
 
-                EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+                if(IsShooting)
+                    EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
                 if (System.BurstMode && (State.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
@@ -365,15 +366,21 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            Comp.LastRayCastTick = Comp.Session.Tick;
+            var tick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-            if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
+            if (System.Values.HardPoint.MuzzleCheck)
             {
-                masterWeapon.Target.Reset(!Comp.TrackReticle);
-                if (masterWeapon != this) Target.Reset(!Comp.TrackReticle);
-                return;
+                LastMuzzleCheck = tick;
+                if (MuzzleHitSelf())
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, !Comp.TrackReticle);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, !Comp.TrackReticle);
+                    return;
+                }
+                if (tick - Comp.LastRayCastTick <= 29) return;
             }
-
+            Comp.LastRayCastTick = tick;
+            
             if (Target.IsFakeTarget)
             {
                 Casting = true;
@@ -387,8 +394,8 @@ namespace WeaponCore.Platform
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
             }
@@ -396,22 +403,22 @@ namespace WeaponCore.Platform
             {
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
                 var cube = Target.Entity as MyCubeBlock;
                 if (cube != null && !cube.IsWorking)
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }  
                 var topMostEnt = Target.Entity.GetTopMostParent();
                 if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
             }
@@ -419,8 +426,8 @@ namespace WeaponCore.Platform
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
             {
-                masterWeapon.Target.Reset();
-                if (masterWeapon !=  this) Target.Reset();
+                masterWeapon.Target.Reset(Comp.Session.Tick);
+                if (masterWeapon !=  this) Target.Reset(Comp.Session.Tick);
                 return;
             }
             Casting = true;
@@ -436,8 +443,8 @@ namespace WeaponCore.Platform
                 if (Target.Projectile != null)
                     return;
 
-                masterWeapon.Target.Reset();
-                if (masterWeapon != this) Target.Reset();
+                masterWeapon.Target.Reset(Comp.Session.Tick);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                 return;
             }
 
@@ -455,8 +462,8 @@ namespace WeaponCore.Platform
                 var grid = parentAsGrid ?? rootAsGrid;
                 if (grid == Comp.Ai.MyGrid)
                 {
-                    masterWeapon.Target.Reset();
-                    if (masterWeapon != this) Target.Reset();
+                    masterWeapon.Target.Reset(Comp.Session.Tick);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     return;
                 }
 
@@ -464,8 +471,8 @@ namespace WeaponCore.Platform
                 {
                     if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
-                        masterWeapon.Target.Reset();
-                        if (masterWeapon != this) Target.Reset();
+                        masterWeapon.Target.Reset(Comp.Session.Tick);
+                        if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     }
                     return;
                 }
@@ -493,8 +500,8 @@ namespace WeaponCore.Platform
                     var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
                     if (shortDistExceed || escapeDistExceed)
                     {
-                        masterWeapon.Target.Reset();
-                        if (masterWeapon != this) Target.Reset();
+                        masterWeapon.Target.Reset(Comp.Session.Tick);
+                        if (masterWeapon != this) Target.Reset(Comp.Session.Tick);
                     }
                 }
             }
@@ -510,8 +517,8 @@ namespace WeaponCore.Platform
             {
                 if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(false);
-                    if (masterWeapon != this) Target.Reset(false);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, false);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, false);
                 }
             }
         }

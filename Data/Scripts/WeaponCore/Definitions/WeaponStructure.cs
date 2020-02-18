@@ -44,9 +44,10 @@ namespace WeaponCore.Support
         public readonly string WeaponName;
         public readonly string ModelPath;
         public readonly string[] Barrels;
+        public readonly string[] HeatingSubparts;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
-        public readonly int TimeToCeaseFire;
+        public readonly int CeaseFireDelay;
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
         public readonly int MinAzimuth;
@@ -64,11 +65,10 @@ namespace WeaponCore.Support
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
         public readonly TurretType TurretMovement;
+        public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
         public readonly bool HasBarrelRotation;
-        //public readonly bool ElevationOnly;
-        public readonly bool LimitedAxisTurret;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -119,7 +119,7 @@ namespace WeaponCore.Support
         public readonly bool EwarEffect;
         public readonly bool NeedsPrediction;
         public readonly bool HasBurstDelay;
-        public bool PreFireSound;
+        public readonly bool DelayCeaseFire;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -133,6 +133,7 @@ namespace WeaponCore.Support
         public readonly double TracerLength;
         public readonly double AzStep;
         public readonly double ElStep;
+        public readonly double EwarTriggerRange;
         public readonly float DesiredProjectileSpeed;
         public readonly double SmartsDelayDistSqr;
         public readonly float TargetLossDegree;
@@ -165,6 +166,7 @@ namespace WeaponCore.Support
         public bool BarrelRotationSound;
         public bool AmmoTravelSound;
         public bool AnimationsInited;
+        public bool PreFireSound;
 
         public enum FiringSoundState
         {
@@ -204,7 +206,7 @@ namespace WeaponCore.Support
             IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
-            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement, out LimitedAxisTurret);
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
 
             MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
@@ -222,20 +224,22 @@ namespace WeaponCore.Support
             TrailWidth = values.Graphics.Line.Trail.CustomWidth > 0 ? values.Graphics.Line.Trail.CustomWidth : values.Graphics.Line.Tracer.Width;
 
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
-            TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
-            ReloadTime = values.HardPoint.Loading.ReloadTime;
+            CeaseFireDelay = values.HardPoint.DelayCeaseFire;
+            DelayCeaseFire = CeaseFireDelay > 0;
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
+            ReloadTime = values.HardPoint.Loading.ReloadTime;
+
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BaseDamage = values.Ammo.BaseDamage;
             MaxTargets = Values.Ammo.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(Values.Ammo.Trajectory.TargetLossDegree)) : 0;
 
-            Fields(out PulseInterval, out PulseChance);
+            Fields(out PulseInterval, out PulseChance, out Pulse);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
-            AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
+            AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
             Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay, out IsHybrid);
 
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
@@ -265,7 +269,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable;
 
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts);
         }
 
         private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst, out bool isHybrid)
@@ -297,10 +301,11 @@ namespace WeaponCore.Support
             needsPrediction = type != HardPointDefinition.Prediction.Off && !IsBeamWeapon && DesiredProjectileSpeed > 0;
         }
 
-        private void Fields(out int pulseInterval, out int pulseChance)
+        private void Fields(out int pulseInterval, out int pulseChance, out bool pulse)
         {
             pulseInterval = Values.Ammo.AreaEffect.Pulse.Interval;
             pulseChance = Values.Ammo.AreaEffect.Pulse.PulseChance;
+            pulse = pulseInterval > 0 && pulseChance > 0;
         }
 
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
@@ -335,7 +340,7 @@ namespace WeaponCore.Support
             rateOfFire = Values.HardPoint.Loading.RateOfFire;
         }
 
-        private void AreaEffects(out AreaDamage.AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect)
+        private void AreaEffects(out AreaDamage.AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange)
         {
             areaEffect = Values.Ammo.AreaEffect.AreaEffect;
             areaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
@@ -348,9 +353,10 @@ namespace WeaponCore.Support
             detonateRadiusLarge = Session.ModRadius(Values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
             eWar = areaEffect > (AreaDamage.AreaEffectType)2;
             eWarEffect = areaEffect > (AreaDamage.AreaEffectType)3;
+            eWarTriggerRange = Values.Ammo.AreaEffect.EwarFields.TriggerRange;
         }
 
-        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove, out bool limitedAxisTurret)
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)
         {
             azStep = Values.HardPoint.Block.RotateRate;
             elStep = Values.HardPoint.Block.ElevateRate;
@@ -359,24 +365,14 @@ namespace WeaponCore.Support
             minElevation = Values.HardPoint.Block.MinElevation;
             maxElevation = Values.HardPoint.Block.MaxElevation;
             
-            limitedAxisTurret = false;
             turretMove = TurretType.Full;
 
             if (minAzimuth == maxAzimuth)
-            {
                 turretMove = TurretType.ElevationOnly;
-                limitedAxisTurret = true;
-            }
             if (minElevation == maxElevation && TurretMovement != TurretType.Full)
-            {
                 turretMove = TurretType.Fixed;
-                limitedAxisTurret = true;
-            }
             else if (minElevation == maxElevation)
-            {
                 turretMove = TurretType.AzimuthOnly;
-                limitedAxisTurret = true;
-            }
             //Log.Line($"TurretMovement: {TurretMovement}");
         }
 
@@ -485,10 +481,6 @@ namespace WeaponCore.Support
             ent.NeedsWorldMatrix = false;
             ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             MyEntities.Add(ent, false);
-
-            //ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
-            //ent.InScene = false;
-            //ent.Render.RemoveRenderObjects();
             return ent;
         }
 

@@ -27,6 +27,7 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
+        private uint _azimuthSubpartUpdateTick;
         private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
@@ -41,6 +42,7 @@ namespace WeaponCore.Platform
         internal PartInfo MuzzlePart;
         internal PartInfo AzimuthPart;
         internal PartInfo ElevationPart;
+        internal List<MyEntity> HeatingParts;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
@@ -97,16 +99,18 @@ namespace WeaponCore.Platform
         internal float DetonateDmg;
         internal float LastHeat;
         internal float CurrentCharge;
+        internal uint CeaseFireDelayTick = int.MaxValue;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint ChargeDelayTicks;
         internal uint ChargeUntilTick;
         internal uint AnimationDelayTick;
         internal uint OffDelay;
+        internal uint LastMuzzleCheck;
         internal uint ShootDelayTick;
+        internal uint WeaponReadyTick; //needed to prevent tracking while on animations are running
         internal int RateOfFire;
         internal int BarrelSpinRate;
-        internal int DelayFireCount;
         internal int WeaponId;
         internal int HsRate;
         internal int EnergyPriority;
@@ -128,11 +132,10 @@ namespace WeaponCore.Platform
         internal bool TrackTarget;
         internal bool AiShooting;
         internal bool SeekTarget;
-        internal bool TrackingAi;
+        internal bool AiEnabled;
         internal bool IsShooting;
         internal bool PlayTurretAv;
         internal bool AvCapable;
-        internal bool DelayCeaseFire;
         internal bool Reloading;
         internal bool OutOfAmmo;
         internal bool CurrentlyDegrading;
@@ -150,6 +153,8 @@ namespace WeaponCore.Platform
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;
         internal bool AzimuthOnBase;
+        internal bool ReturingHome;
+        internal bool IsHome;
         public enum TerminalActionState
         {
             ShootOn,
@@ -270,14 +275,23 @@ namespace WeaponCore.Platform
             IsTurret = System.Values.HardPoint.Block.TurretAttached;
             TurretMode = System.Values.HardPoint.Block.TurretController;
             TrackTarget = System.Values.HardPoint.Block.TrackTargets;
+            
+            if (System.Values.HardPoint.Block.TurretController)
+            {
+                AiEnabled = true;
+                AimOffset = System.Values.HardPoint.Block.Offset;
+                FixedOffset = System.Values.HardPoint.Block.FixedOffset;
+            }
+
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
             var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
 
+
+
             _numOfBarrels = System.Barrels.Length;
-            DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);

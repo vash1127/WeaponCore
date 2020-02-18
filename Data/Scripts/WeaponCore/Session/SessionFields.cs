@@ -216,7 +216,8 @@ namespace WeaponCore
             HideInstant,
             ShowFade,
             HideFade,
-            Delay
+            Delay,
+            EmissiveOnly
         }
 
         private int _loadCounter = 1;

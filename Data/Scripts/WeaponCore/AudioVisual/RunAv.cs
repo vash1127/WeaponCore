@@ -73,6 +73,9 @@ namespace WeaponCore.Support
                 {
                     if (!av.System.OffsetEffect)
                     {
+                        //DsDebugDraw.DrawSingleVec(av.TracerBack, 15f, Color.Blue);
+                        //DsDebugDraw.DrawSingleVec(av.TracerFront, 15f, Color.Red);
+
                         if (av.Tracer != AvShot.TracerState.Shrink)
                             MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                     }

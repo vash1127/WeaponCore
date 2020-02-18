@@ -83,9 +83,19 @@ namespace WeaponCore.Platform
         public void TurretHomePosition(object o = null)
         {
             if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
+            {
+                ReturingHome = false;
                 return;
+            }
+            Target.ExpiredTick = 0;
 
-            if (!Comp.ResettingSubparts)
+            var userControlled = o != null && (bool)o;
+            if (userControlled)
+            {
+                Azimuth = Comp.TurretBase.Azimuth;
+                Elevation = Comp.TurretBase.Elevation;
+            }
+            else
             {
                 var azStep = System.AzStep;
                 var elStep = System.ElStep;
@@ -108,12 +118,32 @@ namespace WeaponCore.Platform
             }
 
             if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
-                Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, 1);
-
+            {
+                ReturingHome = true;
+                IsHome = false;
+                Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
+            }
+            else
+            {
+                IsHome = true;
+                ReturingHome = false;
+            }
         }
 
         internal void UpdatePivotPos()
         {
+            if (AzimuthPart == null || ElevationPart == null || MuzzlePart == null)
+            {
+                Log.Line($"Part was null");
+                Comp.Platform.ResetParts(Comp);
+
+                if (AzimuthPart == null || ElevationPart == null || MuzzlePart == null)
+                {
+                    Log.Line($"Part still null");
+                    return;
+                }
+            }
+
             if (Comp.MatrixUpdateTick < Comp.Session.Tick && AzimuthOnBase)
             {
                 Comp.MatrixUpdateTick = Comp.Session.Tick;
@@ -172,7 +202,7 @@ namespace WeaponCore.Platform
             {
                 var currentHeat = State.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
-                var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
+                var set = currentHeat - LastHeat > 0.001 || currentHeat - LastHeat < 0.001;
 
                 if (!Comp.Session.DedicatedServer)
                 {
@@ -188,10 +218,12 @@ namespace WeaponCore.Platform
 
                         var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
 
-                        MuzzlePart.Entity?.SetEmissiveParts("Heating", color, intensity);
+                        for(int i = 0; i < HeatingParts.Count; i++)
+                            HeatingParts[i]?.SetEmissiveParts("Heating", color, intensity);
                     }
                     else if (set)
-                        MuzzlePart.Entity?.SetEmissiveParts("Heating", Color.Transparent, 0);
+                        for(int i = 0; i < HeatingParts.Count; i++)
+                            HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                     LastHeat = currentHeat;
                 }

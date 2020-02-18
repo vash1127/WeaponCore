@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game;
 using ProtoBuf;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.TargetingDefinition;
 
@@ -25,6 +28,7 @@ namespace WeaponCore.Support
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
         internal uint CheckTick;
+        internal uint ExpiredTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
         internal double HitShortDist;
@@ -43,7 +47,7 @@ namespace WeaponCore.Support
             FiringCube = firingCube;
         }
 
-        internal void TransferTo(Target target, bool reset = true)
+        internal void TransferTo(Target target, uint resetTick, bool reset = true)
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
@@ -54,7 +58,7 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.State = State;
-            if (reset) Reset();
+            if (reset) Reset(resetTick);
         }
 
         internal void SyncTarget(TransferTargets target, int weaponId)
@@ -85,13 +89,13 @@ namespace WeaponCore.Support
 
         internal void SetFake(Vector3D pos)
         {
-            Reset(false);
+            Reset(0, false);
             IsFakeTarget = true;
             TargetPos = pos;
             State = Targets.Acquired;
         }
 
-        internal void Reset(bool expire = true, bool dontLog = false)
+        internal void Reset(uint expiredTick, bool expire = true, bool dontLog = false)
         {
             Entity = null;
             IsProjectile = false;
@@ -105,10 +109,9 @@ namespace WeaponCore.Support
             TopEntityId = 0;
             if (expire)
             {
-                //if (!dontLog) Log.Line($"expired target: {State}");
                 State = Targets.Expired;
+                if (expiredTick != uint.MaxValue) ExpiredTick = expiredTick;
             }
-            //else if (!dontLog) Log.Line($"no expire: {State}");
             TargetLock = false;
         }
     }

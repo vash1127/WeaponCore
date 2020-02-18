@@ -89,8 +89,6 @@ namespace WeaponCore.Support
         {
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
-            //if (Charging && !(SinkPower > 0)) return "[Insufficient Power]";
-            //if (Charging) return "[Systems Charging]";
             return "[Systems Online]";
         }
 

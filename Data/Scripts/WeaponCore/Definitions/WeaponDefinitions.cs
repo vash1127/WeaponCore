@@ -252,6 +252,8 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal int Duration;
         [ProtoMember(2)] internal bool StackDuration;
         [ProtoMember(3)] internal bool Depletable;
+        [ProtoMember(4)] internal double TriggerRange;
+        [ProtoMember(5)] internal int MaxStacks;
     }
 
     [ProtoContract]
@@ -534,6 +536,7 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
         [ProtoMember(2)] internal WeaponEmissive[] Emissives;
+        [ProtoMember(3)] internal string[] HeatingEmissiveParts;
     }
 
     [ProtoContract(IgnoreListHandling = true)]

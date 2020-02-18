@@ -265,7 +265,7 @@ namespace WeaponCore.Control
 
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                        w.Target.Reset();
+                        w.Target.Reset(comp.Session.Tick);
                         w.TurretHomePosition();
 
                     }
@@ -288,7 +288,7 @@ namespace WeaponCore.Control
                     w.OffDelay = 0;
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay;
+                        w.AnimationDelayTick = w.ShootDelayTick = w.WeaponReadyTick = comp.Session.Tick + delay;
 
                     if (!w.System.EnergyAmmo || w.System.MustCharge)
                         Session.ComputeStorage(w);

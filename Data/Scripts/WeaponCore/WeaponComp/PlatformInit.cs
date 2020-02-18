@@ -180,10 +180,6 @@ namespace WeaponCore.Platform
 
                 if (weapon.System.Values.HardPoint.Block.TurretController)
                 {
-                    weapon.TrackingAi = true;
-                    weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
-                    weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
-
                     if (weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
                         comp.TrackingWeapon = weapon;
 
@@ -219,6 +215,9 @@ namespace WeaponCore.Platform
 
                     weapon.MuzzlePart.Entity = muzzlePart;
 
+                    weapon.HeatingParts = new List<MyEntity>();
+                    weapon.HeatingParts.Add(weapon.MuzzlePart.Entity);
+
                     if (muzzlePartName != "None")
                     {
                         var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model);
@@ -229,13 +228,6 @@ namespace WeaponCore.Platform
                         weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
                         weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
                         weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
-
-                        try
-                        {
-                            weapon.MuzzlePart.Entity.SetEmissiveParts("Heating", Color.Transparent, 0);
-                        }
-                        catch (Exception ex) { Log.Line($"Exception in no emissive parts for barrel: {ex}"); }
-
                     }
 
                     if (weapon.AiOnlyWeapon)
@@ -307,6 +299,9 @@ namespace WeaponCore.Platform
                     {
                         weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                         weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
+
+                        if (comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
+                            weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.UpdateParts;
                     }
                     else
                     {
@@ -314,6 +309,9 @@ namespace WeaponCore.Platform
                         {
                             weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                             weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
+
+                            if (comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
+                                weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.UpdateParts;
                         }
                         else
                         {
@@ -334,6 +332,21 @@ namespace WeaponCore.Platform
                         }
                         else
                             weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
+                    }
+
+                    for(int i = 0; i < m.Value.HeatingSubparts.Length; i++)
+                    {
+                        var partName = m.Value.HeatingSubparts[i];
+                        MyEntity ent;
+                        if (Parts.NameToEntity.TryGetValue(partName, out ent))
+                        {
+                            weapon.HeatingParts.Add(ent);
+                            try
+                            {
+                                ent.SetEmissiveParts("Heating", Color.Transparent, 0);
+                            }
+                            catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
+                        }
                     }
 
                     //was run only on weapon first build, needs to run every reset as well
@@ -357,7 +370,7 @@ namespace WeaponCore.Platform
                     c++;
                 }
             }
-            foreach (var part in Parts.NameToEntity)
+            /*foreach (var part in Parts.NameToEntity)
             {
                 comp.SubpartStatesQuickList.Add(part.Value);
                 comp.SubpartStates[part.Value] = MatrixD.Zero;
@@ -367,7 +380,7 @@ namespace WeaponCore.Platform
 
                 comp.SubpartNameToIndex[name] = index;
                 comp.SubpartIndexToName[index] = name;
-            }
+            }*/
         }
 
         internal void ResetTurret(WeaponComponent comp)
@@ -401,6 +414,9 @@ namespace WeaponCore.Platform
 
                     weapon.MuzzlePart.Entity = muzzlePart;
 
+                    weapon.HeatingParts.Clear();
+                    weapon.HeatingParts.Add(weapon.MuzzlePart.Entity);
+
                     foreach (var animationSet in weapon.AnimationsSet)
                     {
                         foreach (var animation in animationSet.Value)
@@ -420,6 +436,9 @@ namespace WeaponCore.Platform
                     {
                         weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                         weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
+
+                        if(comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
+                            weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.UpdateParts;
                     }
                     else
                     {
@@ -427,7 +446,9 @@ namespace WeaponCore.Platform
                         {
                             weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                             weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
-                            
+
+                            if (comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
+                                weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.UpdateParts;
                         }
                         else
                         {
@@ -439,6 +460,21 @@ namespace WeaponCore.Platform
                     for (int i = 0; i < m.Value.Barrels.Length; i++)
                         weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
 
+
+                    for (int i = 0; i < m.Value.HeatingSubparts.Length; i++)
+                    {
+                        var partName = m.Value.HeatingSubparts[i];
+                        MyEntity ent;
+                        if (Parts.NameToEntity.TryGetValue(partName, out ent))
+                        {
+                            weapon.HeatingParts.Add(ent);
+                            try
+                            {
+                                ent.SetEmissiveParts("Heating", Color.Transparent, 0);
+                            }
+                            catch (Exception ex) { Log.Line($"Exception no emmissive Found: {ex}"); }
+                        }
+                    }
 
                     //was run only on weapon first build, needs to run every reset as well
                     try
@@ -460,13 +496,12 @@ namespace WeaponCore.Platform
                 }
                 c++;
             }
-            foreach (var part in Parts.NameToEntity)
+            /*foreach (var part in Parts.NameToEntity)
             {
                 var index = comp.SubpartNameToIndex[part.Key];
                 var matrix = comp.SubpartStatesQuickList[index];
-
                 //comp.sub
-            }
+            }*/
         }
 
         internal void ResetParts(WeaponComponent comp)

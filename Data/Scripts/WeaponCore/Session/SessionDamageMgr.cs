@@ -32,7 +32,7 @@ namespace WeaponCore
                 var phantom = info.System.Values.Ammo.BaseDamage <= 0;
                 var pInvalid = (int) p.State > 3;
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
-                if (tInvalid) info.Target.Reset();
+                if (tInvalid) info.Target.Reset(info.Ai.Session.Tick);
                 var skip = pInvalid || tInvalid;
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
@@ -138,6 +138,7 @@ namespace WeaponCore
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             var system = t.System;
+
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
                 hitEnt.Blocks?.Clear();
@@ -165,7 +166,7 @@ namespace WeaponCore
             var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = system.Values.Ammo.Mass;
-
+            var sync = MpActive && IsServer;
             if (t.IsShrapnel)
             {
                 var shrapnel = system.Values.Ammo.Shrapnel;
@@ -296,9 +297,7 @@ namespace WeaponCore
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
 
-                    if(DedicatedServer || IsServer)
-                        block.DoDamage(scaledDamage, damageType, true, null, attackerId);
-
+                    block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
@@ -352,6 +351,7 @@ namespace WeaponCore
             if (destObj == null || entity == null) return;
             var shieldHeal = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Heal;
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+            var sync = MpActive && IsServer;
 
             //projectile.ObjectsHit++;
             var attackerId = info.Target.FiringCube.EntityId;
@@ -374,9 +374,7 @@ namespace WeaponCore
             if (scaledDamage < objHp) info.BaseDamagePool = 0;
             else info.BaseDamagePool -= objHp;
 
-            if (IsServer || DedicatedServer)
-                destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, true, null, attackerId);
-
+            destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, sync, null, attackerId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -456,6 +454,8 @@ namespace WeaponCore
                 var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
                 var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
                 var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 1, double.MaxValue);
+                var sync = MpActive && IsServer;
+
                 if (tRadius > 5) objHp *= 5;
                 if (scaledDamage < objHp)
                 {
@@ -484,7 +484,7 @@ namespace WeaponCore
 
                     dRadius /= reduceBy;
                     if (dRadius < 1.5) dRadius = 1.5f;
-                    destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
+                   if (sync) destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
                 }
             }
         }

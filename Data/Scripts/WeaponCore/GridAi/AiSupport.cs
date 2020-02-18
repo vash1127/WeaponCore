@@ -5,6 +5,7 @@ using ProtoBuf;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.Graphics.GUI;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
@@ -438,7 +439,8 @@ namespace WeaponCore.Support
                 entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
                 IMyPlayer player;
                 Session.Players.TryGetValue(playerId, out player);
-                if (player != null && Session.Session.IsUserAdmin(player.SteamUserId)) return false;
+                if (player != null && Session.Session.IsUserAdmin(player.SteamUserId) && MySafeZone.CheckAdminIgnoreSafezones(player.SteamUserId))
+                    return false;
 
                 return !myCharacter.IsDead;
             }
@@ -745,7 +747,7 @@ namespace WeaponCore.Support
             PowerIncrease = false;
             RequestedPowerChanged = false;
             RequestIncrease = false;
-            CheckReload = false;
+            //CheckReload = false;
             DbReady = false;
             Focus.Clean();
             MyShieldTmp = null;
@@ -876,6 +878,21 @@ namespace WeaponCore.Support
 
                 cState.ClickShoot = false;
                 comp.UpdateStateMP();
+            }
+        }
+
+        internal void CheckReload(object o = null)
+        {
+            var magId = (MyDefinitionId?)o ?? new MyDefinitionId();
+
+            for (int i = 0; i < Weapons.Count; i++)
+            {
+                for(int j = 0; j < Weapons[i].Platform.Weapons.Length; j++)
+                {
+                    var w = Weapons[i].Platform.Weapons[j];
+                    if (w.System.AmmoDefId == magId)
+                        Session.ComputeStorage(w);
+                }
             }
         }
 

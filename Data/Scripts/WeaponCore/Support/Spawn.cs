@@ -82,17 +82,14 @@ namespace WeaponCore.Support
         {
             try
             {
-                //var myParent = parented ? parent : null;
                 var ent = new MyEntity();
                 ent.Init(null, model, null, null, null);
-                //ent.Name = $"{parent.EntityId}";
                 ent.Render.CastShadows = false;
                 ent.IsPreview = true;
                 ent.Render.Visible = true;
                 ent.Save = false;
                 ent.SyncFlag = false;
                 ent.NeedsWorldMatrix = false;
-                //ent.RemoveFromGamePruningStructure();
                 ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
                 MyEntities.Add(ent);
                 return ent;

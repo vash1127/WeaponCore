@@ -111,7 +111,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void RestorePartStates(object o = null)
+        /*internal void RestorePartStates(object o = null)
         {
             for (int i = 0; i < AllAnimations.Count; i++)
             {
@@ -135,7 +135,7 @@ namespace WeaponCore.Support
                 //TurretBase.Azimuth = (float)Azimuth;
             }
             ResettingSubparts = false;
-        }
+        }*/
 
         public void StopAllSounds()
         {

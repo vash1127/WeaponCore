@@ -28,7 +28,6 @@ namespace WeaponCore
 
             MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
-            //MyVisualScriptLogicProvider.ToolbarItemChanged += RemoveAction;
 
             var env = MyDefinitionManager.Static.EnvironmentDefinition;
             if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
@@ -109,7 +108,7 @@ namespace WeaponCore
                     {
                         foreach (var def in AllDefinitions)
                         {
-                            var defid = new MyDefinitionId();
+                            MyDefinitionId defid;
                             if (def.Id.SubtypeName == subTypeId || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeId), out defid) && defid == def.Id)) {
                                 var gunDef = def as MyLargeTurretBaseDefinition;
                                 if (gunDef != null)
