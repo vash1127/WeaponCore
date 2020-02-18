@@ -36,50 +36,55 @@ namespace WeaponCore
             Weapon weapon;
             while (WeaponAmmoPullQueue.TryDequeue(out weapon))
             {
-                if (!weapon.Comp.InventoryInited) continue;
-                var def = weapon.System.AmmoDefId;
-                float itemMass;
-                float itemVolume;
-
-                MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
-
-                var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
-                var weaponInventory = weapon.Comp.BlockInventory;
-                var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / itemVolume);
-
-                var magsAdded = 0;
-
-                lock (weapon.Comp.Ai.AmmoInventories[def])
+                using (weapon.Comp.Ai?.MyGrid.Pin())
+                using (weapon.Comp.MyCube.Pin())
                 {
-                    List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
-                    foreach(var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
-                    {
-                        var magsAvailable = (int)currentInventory.Value;
-                        var inventory = currentInventory.Key;
+                    if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited) continue;
+                    var def = weapon.System.AmmoDefId;
+                    float itemMass;
+                    float itemVolume;
 
-                        if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
+                    MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
+
+                    var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
+                    var weaponInventory = weapon.Comp.BlockInventory;
+                    var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / itemVolume);
+
+                    var magsAdded = 0;
+
+                    lock (weapon.Comp.Ai.AmmoInventories[def])
+                    {
+                        List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
+
+                        foreach (var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
                         {
-                            if (magsAvailable >= magsNeeded)
+                            var magsAvailable = (int)currentInventory.Value;
+                            var inventory = currentInventory.Key;
+
+                            if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                             {
-                                inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
-                                magsNeeded = 0;
-                                magsAdded += magsNeeded;
-                            }
-                            else
-                            {
-                                inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
-                                magsNeeded -= magsAvailable;
-                                magsAdded += magsAvailable;
+                                if (magsAvailable >= magsNeeded)
+                                {
+                                    inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
+                                    magsNeeded = 0;
+                                    magsAdded += magsNeeded;
+                                }
+                                else
+                                {
+                                    inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
+                                    magsNeeded -= magsAvailable;
+                                    magsAdded += magsAvailable;
+                                }
                             }
                         }
+                        weapon.CurrentAmmoVolume += magsAdded * itemVolume;
+
+                        if (inventories.Count > 0)
+                            AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });
+
+                        weapon.Comp.Session.AmmoPulls++;
                     }
-                    weapon.CurrentAmmoVolume += magsAdded * itemVolume;
-
-                    if (inventories.Count > 0)
-                        AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });
-
-                    weapon.Comp.Session.AmmoPulls++;
-                }                
+                }
             }
         }
 
