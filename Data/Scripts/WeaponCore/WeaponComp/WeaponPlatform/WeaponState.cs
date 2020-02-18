@@ -60,7 +60,6 @@ namespace WeaponCore.Platform
                             if (state == EventTriggers.StopFiring)
                             {
                                 ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
-                                Log.Line($"ShootDelayTick: {ShootDelayTick}");
                                 if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
                                     if (CurLgstAnimPlaying != null && CurLgstAnimPlaying.Running)
@@ -329,6 +328,7 @@ namespace WeaponCore.Platform
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
+                    Log.Line($"Stop Shooting");
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;

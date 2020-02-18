@@ -190,7 +190,7 @@ namespace WeaponCore.Platform
             {
                 var currentHeat = State.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
-                var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
+                var set = currentHeat - LastHeat > 0.001 || currentHeat - LastHeat < 0.001;
 
                 if (!Comp.Session.DedicatedServer)
                 {
