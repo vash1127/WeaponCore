@@ -13,10 +13,14 @@ namespace WeaponCore.Platform
     {
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            if (_posChangedTick != Comp.Session.Tick)
-                UpdatePivotPos();
+            try
+            {
+                if (_posChangedTick != Comp.Session.Tick)
+                    UpdatePivotPos();
 
-            _posChangedTick = Comp.Session.Tick;
+                _posChangedTick = Comp.Session.Tick;
+            }
+            catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
         }
 
         public void UpdateParts(MyPositionComponentBase pComp)

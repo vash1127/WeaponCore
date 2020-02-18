@@ -27,6 +27,7 @@ namespace WeaponCore
 
         private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
+            Log.Line("update field");
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose) return;
             var depletable = info.System.Values.Ammo.AreaEffect.EwarFields.Depletable;
@@ -45,7 +46,7 @@ namespace WeaponCore
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
             var attackerId = info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
-
+            Log.Line("update effects");
             var found = false;
             if (_gridEffects.TryGetValue(grid, out effects))
             {
@@ -102,7 +103,7 @@ namespace WeaponCore
             var maxTick = stack ? (uint)(nextTick + (duration * maxStack)) : (uint)(nextTick + duration);
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
             var sync = MpActive && IsServer;
-
+            Log.Line("compute effects");
             foreach (var block in blocks)
             {
                 var cube = block.FatBlock as MyCubeBlock;
@@ -163,6 +164,7 @@ namespace WeaponCore
                 if (fieldType == DotField)
                 {
                     block.DoDamage(scaledDamage, MyDamageType.Explosion, sync, null, attackerId);
+                    Log.Line($"dot damage");
                     continue;
                 }
 
@@ -214,6 +216,7 @@ namespace WeaponCore
 
         private void ApplyEffect()
         {
+            Log.Line("apply effects");
             var tick = Tick;
             foreach (var item in _effectedCubes)
             {

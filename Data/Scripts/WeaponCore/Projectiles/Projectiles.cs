@@ -230,8 +230,8 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
-                var inTriggerRange = p.Info.System.Ewar && p.Info.System.Pulse && !p.Info.TriggeredPulse && p.Info.System.EwarTriggerRange > 0;
-                var beam = inTriggerRange ? new LineD(p.LastPosition, p.Position + (p.Direction * p.Info.System.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
+                var triggerRange = p.Info.System.Ewar && p.Info.System.Pulse && !p.Info.TriggeredPulse && p.Info.System.EwarTriggerRange > 0 ? p.Info.System.EwarTriggerRange : 0;
+                var beam = triggerRange > 0 ? new LineD(p.LastPosition, p.Position + (p.Direction * triggerRange)) : new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
@@ -268,7 +268,7 @@ namespace WeaponCore.Projectiles
                 else if (p.Info.System.CollisionIsLine)
                 {
                     p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = p.Info.System.CollisionSize + p.Info.System.EwarTriggerRange;
+                    p.PruneSphere.Radius = p.Info.System.CollisionSize + triggerRange;
                     if (p.Info.System.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
                     {
                         if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
@@ -278,16 +278,16 @@ namespace WeaponCore.Projectiles
                 else
                 {
                     p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                    var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
+                    var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() + triggerRange : p.Info.System.AreaEffectSize + triggerRange;
                     if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                     {
                         p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = currentRadius + p.Info.System.EwarTriggerRange;
+                        p.PruneSphere.Radius = currentRadius;
                     }
-                    else if (p.PruneSphere.Radius < p.Info.System.CollisionSize)
+                    else if (p.PruneSphere.Radius < p.Info.System.CollisionSize + triggerRange)
                     {
                         p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = p.Info.System.CollisionSize + p.Info.System.EwarTriggerRange;
+                        p.PruneSphere.Radius = p.Info.System.CollisionSize + triggerRange;
                     }
                     if (!((p.Info.System.SelfDamage || p.TerminalControlled) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
