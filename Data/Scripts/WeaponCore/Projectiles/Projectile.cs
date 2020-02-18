@@ -252,8 +252,10 @@ namespace WeaponCore.Projectiles
             }
             var accelPerSec = Info.System.Values.Ammo.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
-            StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
-            MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
+            StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
+            var desiredSpeed = (Direction * DesiredSpeed);
+            var relativeSpeedCap = StartSpeed + desiredSpeed;
+            MaxVelocity = relativeSpeedCap.LengthSquared() > desiredSpeed.LengthSquared() ? relativeSpeedCap : Vector3D.Zero + desiredSpeed;
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = accelPerSec * StepConst;
