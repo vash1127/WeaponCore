@@ -97,8 +97,11 @@ namespace WeaponCore
             var eWarInfo = system.Values.Ammo.AreaEffect.EwarFields;
             var duration = (uint)eWarInfo.Duration;
             var stack = eWarInfo.StackDuration;
+            var maxStack = eWarInfo.MaxStacks;
             var nextTick = Tick + 1;
+            var maxTick = stack ? (uint)(nextTick + (duration * maxStack)) : (uint)(nextTick + duration);
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
+            var sync = MpActive && IsServer;
 
             foreach (var block in blocks)
             {
@@ -159,7 +162,7 @@ namespace WeaponCore
 
                 if (fieldType == DotField)
                 {
-                    block.DoDamage(scaledDamage, MyDamageType.Explosion, true, null, attackerId);
+                    block.DoDamage(scaledDamage, MyDamageType.Explosion, sync, null, attackerId);
                     continue;
                 }
 
@@ -175,11 +178,17 @@ namespace WeaponCore
                             blockState.Health -= scaledDamage;
                             blockState.Endtick = Tick + (duration + 1);
                         }
-                        else
+                        else if (blockState.Endtick + (duration + 1) < maxTick)
                         {
                             blockState.Health = 0;
                             healthPool -= 1;
                             blockState.Endtick += (duration + 1);
+                        }
+                        else
+                        {
+                            blockState.Health = 0;
+                            healthPool -= 1;
+                            blockState.Endtick = maxTick;
                         }
                     }
                     else

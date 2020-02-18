@@ -65,6 +65,7 @@ namespace WeaponCore.Support
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
         public readonly TurretType TurretMovement;
+        public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
         public readonly bool HasBarrelRotation;
@@ -132,6 +133,7 @@ namespace WeaponCore.Support
         public readonly double TracerLength;
         public readonly double AzStep;
         public readonly double ElStep;
+        public readonly double EwarTriggerRange;
         public readonly float DesiredProjectileSpeed;
         public readonly double SmartsDelayDistSqr;
         public readonly float TargetLossDegree;
@@ -233,11 +235,11 @@ namespace WeaponCore.Support
             MaxTargets = Values.Ammo.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(Values.Ammo.Trajectory.TargetLossDegree)) : 0;
 
-            Fields(out PulseInterval, out PulseChance);
+            Fields(out PulseInterval, out PulseChance, out Pulse);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
-            AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
+            AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
             Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay, out IsHybrid);
 
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
@@ -299,10 +301,11 @@ namespace WeaponCore.Support
             needsPrediction = type != HardPointDefinition.Prediction.Off && !IsBeamWeapon && DesiredProjectileSpeed > 0;
         }
 
-        private void Fields(out int pulseInterval, out int pulseChance)
+        private void Fields(out int pulseInterval, out int pulseChance, out bool pulse)
         {
             pulseInterval = Values.Ammo.AreaEffect.Pulse.Interval;
             pulseChance = Values.Ammo.AreaEffect.Pulse.PulseChance;
+            pulse = pulseInterval > 0 && pulseChance > 0;
         }
 
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
@@ -337,7 +340,7 @@ namespace WeaponCore.Support
             rateOfFire = Values.HardPoint.Loading.RateOfFire;
         }
 
-        private void AreaEffects(out AreaDamage.AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect)
+        private void AreaEffects(out AreaDamage.AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange)
         {
             areaEffect = Values.Ammo.AreaEffect.AreaEffect;
             areaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
@@ -350,6 +353,7 @@ namespace WeaponCore.Support
             detonateRadiusLarge = Session.ModRadius(Values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
             eWar = areaEffect > (AreaDamage.AreaEffectType)2;
             eWarEffect = areaEffect > (AreaDamage.AreaEffectType)3;
+            eWarTriggerRange = Values.Ammo.AreaEffect.EwarFields.TriggerRange;
         }
 
         private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)

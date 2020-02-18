@@ -227,7 +227,8 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
-                var beam = new LineD(p.LastPosition, p.Position);
+                var inTriggerRange = p.Info.System.Ewar && p.Info.System.Pulse && !p.Info.TriggeredPulse && p.Info.System.EwarTriggerRange > 0;
+                var beam = inTriggerRange ? new LineD(p.LastPosition, p.Position + (p.Direction * p.Info.System.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {

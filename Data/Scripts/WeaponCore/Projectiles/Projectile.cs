@@ -688,10 +688,12 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (VelocityLengthSqr <= 0 && !Info.AvShot.Triggered && !Info.System.IsMine)
-                Info.AvShot.Triggered = true;
+            if (Info.System.Pulse && VelocityLengthSqr <= 0 && !Info.System.IsMine || !Vector3D.IsZero(Hit.HitPos))
+            {
+                Info.TriggeredPulse = true;
+            }
 
-            if (Info.AvShot.Triggered)
+            if (Info.TriggeredPulse)
             {
                 var areaSize = Info.System.AreaEffectSize;
                 if (Info.TriggerGrowthSteps < areaSize)
@@ -711,17 +713,20 @@ namespace WeaponCore.Projectiles
                         }
                         MatrixD.Rescale(ref Info.TriggerMatrix, nextSize);
                         if (EnableAv)
+                        {
+                            Info.AvShot.Triggered = true;
                             Info.AvShot.TriggerMatrix = Info.TriggerMatrix;
+                        }
                     }
                 }
             }
 
-            if (Info.Age % Info.System.PulseInterval == 0 || State == ProjectileState.OneAndDone)
-                PulseEffect();
+            if (!Info.System.Pulse || Info.System.Pulse && Info.Age % Info.System.PulseInterval == 0)
+                EwarEffects();
             else EwarActive = false;
         }
 
-        internal void PulseEffect()
+        internal void EwarEffects()
         {
             switch (Info.System.AreaEffect)
             {
@@ -732,7 +737,7 @@ namespace WeaponCore.Projectiles
                     {
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai == Info.Ai || netted.Info.Target.IsProjectile) continue;
-                        if (MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                        if (!Info.System.Pulse || MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         {
                             EwarActive = true;
                             netted.Info.Target.Projectile = this;
@@ -743,32 +748,32 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
 
                     break;
                 case AreaEffectType.DotField:
-                    if (Info.AvShot.Triggered && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
+                    if (!Info.System.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance)
                         EwarActive = true;
                     break;
             }

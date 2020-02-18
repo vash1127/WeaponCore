@@ -46,6 +46,7 @@ namespace WeaponCore.Support
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool LastHitShield;
+        internal bool TriggeredPulse;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
 
@@ -60,7 +61,6 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            //Log.Line($"{MuzzleId}");
             VirDirection = virDirection;
             Origin = origin;
         }
@@ -87,6 +87,7 @@ namespace WeaponCore.Support
             WeaponCache = null;
             LastHitShield = false;
             IsShrapnel = false;
+            TriggeredPulse = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;

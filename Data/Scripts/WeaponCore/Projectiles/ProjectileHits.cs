@@ -177,7 +177,6 @@ namespace WeaponCore.Projectiles
             }
             p.SegmentList.Clear();
 
-
             return found && GenerateHitInfo(p);
         }
 
@@ -231,6 +230,12 @@ namespace WeaponCore.Projectiles
             var finalCount = p.Info.HitList.Count;
             if (finalCount > 0)
             {
+                if (p.Info.System.Ewar && p.Info.System.Pulse && !p.Info.TriggeredPulse && p.Info.System.EwarTriggerRange > 0)
+                {
+                    p.Info.TriggeredPulse = true;
+                    p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
+                    return false;
+                }
                 var hitEntity = p.Info.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Projectile?.Velocity ?? hitEntity.Entity?.Physics?.LinearVelocity ?? Vector3D.Zero;
@@ -241,6 +246,7 @@ namespace WeaponCore.Projectiles
                     hitBlock = hitEntity.Blocks[0];
                 p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, Projectile = null, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero };
                 if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
+
                 return true;
             }
             return false;

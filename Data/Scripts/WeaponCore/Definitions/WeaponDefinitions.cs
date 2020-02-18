@@ -252,6 +252,8 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal int Duration;
         [ProtoMember(2)] internal bool StackDuration;
         [ProtoMember(3)] internal bool Depletable;
+        [ProtoMember(4)] internal double TriggerRange;
+        [ProtoMember(5)] internal int MaxStacks;
     }
 
     [ProtoContract]
