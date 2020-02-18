@@ -452,8 +452,6 @@ namespace WeaponCore
 
                                         emissiveIdSet.Add(id + moveIndexer.Count);
 
-                                        Log.Line($"progress: {progress}");
-
                                         if (move.MovementType != RelMove.MoveType.Linear)
                                             CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
 
@@ -629,8 +627,6 @@ namespace WeaponCore
 
         internal Matrix CreateRotation(double x, double y, double z)
         {
-
-            Log.Line($"create rotations");
 
             var rotation = MatrixD.Zero;
 
