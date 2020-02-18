@@ -299,7 +299,6 @@ namespace WeaponCore
                     }
 
                     block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
-                    block.ApplyAccumulatedDamage();
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
