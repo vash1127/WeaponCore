@@ -111,7 +111,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.EnableAv) 
                     p.Info.AvShot.OnScreen = Screen.None;
-                if (p.AccelLength > 0)
+                if (p.AccelLength > 0 && !p.Info.TriggeredPulse)
                 {
                     if (p.SmartsOn) p.RunSmart();
                     else
@@ -142,7 +142,7 @@ namespace WeaponCore.Projectiles
                             p.VelocityLengthSqr = newVel.LengthSquared();
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                         }
-                        p.Velocity = !p.Info.TriggeredPulse ? newVel : Vector3D.Zero;
+                        p.Velocity = newVel;
                     }
                 }
                 

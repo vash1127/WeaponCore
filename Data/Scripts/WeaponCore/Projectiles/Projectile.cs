@@ -691,6 +691,7 @@ namespace WeaponCore.Projectiles
             if (Info.System.Pulse && VelocityLengthSqr <= 0 && !Info.System.IsMine || !Vector3D.IsZero(Hit.HitPos))
             {
                 Info.TriggeredPulse = true;
+                Velocity = Vector3D.Zero;
             }
 
             if (Info.TriggeredPulse)
