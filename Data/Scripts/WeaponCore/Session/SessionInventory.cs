@@ -39,7 +39,7 @@ namespace WeaponCore
                 using (weapon.Comp.Ai?.MyGrid.Pin())
                 using (weapon.Comp.MyCube.Pin())
                 {
-                    if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited) continue;
+                    if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) continue;
                     var def = weapon.System.AmmoDefId;
                     float itemMass;
                     float itemVolume;

@@ -52,7 +52,7 @@ namespace WeaponCore
     [ProtoContract]
     public class TargetPacket : Packet
     {
-        [ProtoMember(1)] internal TransferTargets Data = null;
+        [ProtoMember(1)] internal TransferTarget Data = null;
         public TargetPacket() { }
     }
 
@@ -86,7 +86,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    internal class TransferTargets
+    public class TransferTarget
     {
         [ProtoMember(1)] internal long EntityId;
         [ProtoMember(2)] internal bool IsProjectile;

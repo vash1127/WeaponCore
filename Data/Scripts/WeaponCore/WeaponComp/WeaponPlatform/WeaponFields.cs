@@ -98,7 +98,7 @@ namespace WeaponCore.Platform
         internal float AreaEffectDmg;
         internal float DetonateDmg;
         internal float LastHeat;
-        internal float CurrentCharge;
+        //internal float CurrentCharge;
         internal uint CeaseFireDelayTick = int.MaxValue;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;

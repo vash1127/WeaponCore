@@ -276,20 +276,23 @@ namespace WeaponCore
                     }
 
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                        continue;                    
+                        continue;
+
+                    var wState = w.Comp.State.Value.Weapons[w.WeaponId];
+                    var cState = w.Comp.State.Value;
 
                     if (Tick60 && w.DrawingPower)
                     {
-                        if ((w.Comp.CurrentCharge + w.UseablePower) < w.System.EnergyMagSize)
+                        if ((cState.CurrentCharge + w.UseablePower) < w.System.EnergyMagSize)
                         {
-                            w.CurrentCharge += w.UseablePower;
-                            w.Comp.CurrentCharge += w.UseablePower;
+                            wState.CurrentCharge += w.UseablePower;
+                            cState.CurrentCharge += w.UseablePower;
 
                         }
                         else
                         {
-                            w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
-                            w.CurrentCharge = w.System.EnergyMagSize;
+                            w.Comp.State.Value.CurrentCharge += (w.System.EnergyMagSize - wState.CurrentCharge);
+                            wState.CurrentCharge = w.System.EnergyMagSize;
                         }
                     }
 
@@ -335,7 +338,7 @@ namespace WeaponCore
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        w.ChargeDelayTicks = (uint)(((w.System.EnergyMagSize - w.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                        w.ChargeDelayTicks = (uint)(((w.System.EnergyMagSize - wState.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                         w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
 
                         if (!w.DrawingPower)

@@ -248,7 +248,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            if (!On) comp.CurrentCharge = 0;
+            if (!On) comp.State.Value.CurrentCharge = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
@@ -273,11 +273,11 @@ namespace WeaponCore.Control
 
                     if (w.System.MustCharge && ((w.System.IsHybrid && w.State.CurrentAmmo != w.System.MagazineDef.Capacity) || (!w.System.IsHybrid && w.State.CurrentAmmo != w.System.EnergyMagSize)))
                     {
-                        w.CurrentCharge = 0;
+                        w.State.CurrentCharge = 0;
                         w.State.CurrentAmmo = 0;
                         w.Reloading = false;
                     }
-                    comp.CurrentCharge += w.CurrentCharge;
+                    comp.State.Value.CurrentCharge += w.State.CurrentCharge;
 
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))

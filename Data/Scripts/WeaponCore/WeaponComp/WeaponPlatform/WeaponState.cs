@@ -341,8 +341,8 @@ namespace WeaponCore.Platform
                     else if (System.MustCharge && State.CurrentAmmo != 0)
                     {
                         State.CurrentAmmo = 0;
-                        Comp.CurrentCharge -= CurrentCharge;
-                        CurrentCharge = 0;
+                        Comp.State.Value.CurrentCharge -= State.CurrentCharge;
+                        State.CurrentCharge = 0;
                     }
 
                 }
@@ -428,9 +428,6 @@ namespace WeaponCore.Platform
                     Comp.Ai.RequestedWeaponsDraw += RequiredPower;
                     ChargeUntilTick = (uint)System.ReloadTime + Comp.Session.Tick;
                     Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-                    var currDif = Comp.CurrentCharge - CurrentCharge;
-                    Comp.CurrentCharge = currDif > 0 ? currDif : 0;
-                    CurrentCharge = 0;
                 }
                 else
                 {
@@ -453,8 +450,8 @@ namespace WeaponCore.Platform
                 if (!w.System.IsHybrid)
                 {
                     w.State.CurrentAmmo = w.System.EnergyMagSize;
-                    w.Comp.CurrentCharge = w.System.EnergyMagSize;
-                    w.CurrentCharge = w.System.EnergyMagSize;
+                    w.Comp.State.Value.CurrentCharge = w.System.EnergyMagSize;
+                    w.State.CurrentCharge = w.System.EnergyMagSize;
                 }
 
                 w.StopPowerDraw();
@@ -472,8 +469,8 @@ namespace WeaponCore.Platform
                     w.State.CurrentAmmo = w.System.MagazineDef.Capacity;
                     if (w.System.IsHybrid)
                     {
-                        w.Comp.CurrentCharge = w.System.EnergyMagSize;
-                        w.CurrentCharge = w.System.EnergyMagSize;
+                        w.Comp.State.Value.CurrentCharge = w.System.EnergyMagSize;
+                        w.State.CurrentCharge = w.System.EnergyMagSize;
                     }
                 }
             }

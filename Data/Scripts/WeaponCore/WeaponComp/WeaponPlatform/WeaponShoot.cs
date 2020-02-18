@@ -313,7 +313,13 @@ namespace WeaponCore.Platform
                     _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
                 else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
+                {
+                    var currDif = Comp.State.Value.CurrentCharge - State.CurrentCharge;
+                    Comp.State.Value.CurrentCharge = currDif > 0 ? currDif : 0;
+                    State.CurrentCharge = 0;
+
                     StartReload();
+                }
 
                 if (State.ManualShoot == TerminalActionState.ShootOnce && --Comp.State.Value.Weapons[WeaponId].SingleShotCounter <= 0)
                     State.ManualShoot = TerminalActionState.ShootOff;

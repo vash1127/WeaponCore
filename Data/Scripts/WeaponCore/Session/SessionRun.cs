@@ -223,8 +223,6 @@ namespace WeaponCore
 
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
-                IsCreative = MyAPIGateway.Session.CreativeMode;
-                IsMultiplayer = MyAPIGateway.Multiplayer.MultiplayerActive;
 
                 foreach (var mod in Session.Mods)
                 {

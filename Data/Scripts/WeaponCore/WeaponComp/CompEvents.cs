@@ -114,7 +114,7 @@ namespace WeaponCore.Support
                 if (HasEnergyWeapon)
                 {
                     stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.0") + " Mw");
-                    if(HasChargeWeapon) stringBuilder.Append("\n[Current Charge]: " + CurrentCharge.ToString("0.0") + " Mw");
+                    if(HasChargeWeapon) stringBuilder.Append("\n[Current Charge]: " + State.Value.CurrentCharge.ToString("0.0") + " Mw");
                     stringBuilder.Append("\n[Required Power]: " + MaxRequiredPower.ToString("0.0") + " Mw");
                 }
 
@@ -130,7 +130,7 @@ namespace WeaponCore.Support
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShootDelayTick <= weapon.Comp.Session.Tick} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
-                        stringBuilder.Append($"\nMagSize: {weapon.System.EnergyMagSize} - CurrentCharge: {CurrentCharge}({weapon.CurrentCharge})");
+                        stringBuilder.Append($"\nMagSize: {weapon.System.EnergyMagSize} - CurrentCharge: {State.Value.CurrentCharge}({weapon.State.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
                         stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.System.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }

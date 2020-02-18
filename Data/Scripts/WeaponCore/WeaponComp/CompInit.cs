@@ -62,8 +62,11 @@ namespace WeaponCore.Support
                     w.Set = Set.Value.Weapons[i];
                     w.State = State.Value.Weapons[i];
                     w.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                    if (w.State.Heat > 0)
+                        w.UpdateWeaponHeat();
                 }
                 Set.Value.Overrides.TargetPainter = false;
+                Set.Value.Overrides.ManualControl = false;
                 State.Value.PlayerIdInTerminal = -1;
 
                 if (isServer)
@@ -155,15 +158,15 @@ namespace WeaponCore.Support
                 weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
             else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && weapon.State.CurrentAmmo == weapon.System.MagazineDef.Capacity) || weapon.State.CurrentAmmo == weapon.System.EnergyMagSize))
             {
-                weapon.CurrentCharge = weapon.System.EnergyMagSize;
-                CurrentCharge += weapon.System.EnergyMagSize;
+                weapon.State.CurrentCharge = weapon.System.EnergyMagSize;
+                State.Value.CurrentCharge += weapon.System.EnergyMagSize;
             }
-            else if (weapon.System.MustCharge)
+            else if (!Session.IsClient && weapon.System.MustCharge)
             {
-                if (weapon.CurrentCharge > 0)
-                    CurrentCharge -= weapon.CurrentCharge;
+                if (weapon.State.CurrentCharge > 0)
+                    State.Value.CurrentCharge -= weapon.State.CurrentCharge;
 
-                weapon.CurrentCharge = 0;
+                weapon.State.CurrentCharge = 0;
                 weapon.State.CurrentAmmo = 0;
                 weapon.Reloading = false;
                 Session.FutureEvents.Schedule(InitChargingWeapons, weapon, 1);

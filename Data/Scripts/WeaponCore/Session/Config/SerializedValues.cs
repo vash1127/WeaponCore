@@ -25,6 +25,7 @@ namespace WeaponCore
         [ProtoMember(9)] public bool ShootOn;
         [ProtoMember(10)] public bool ClickShoot;
         [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
+        [ProtoMember(11)] public float CurrentCharge;
 
     }
 
@@ -58,6 +59,7 @@ namespace WeaponCore
         [ProtoMember(4)] public int ShotsFired;
         [ProtoMember(5)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         [ProtoMember(6)] public int SingleShotCounter;
+        [ProtoMember(7)] public float CurrentCharge;
     }
 
     [ProtoContract]
@@ -78,6 +80,12 @@ namespace WeaponCore
     public class WeaponSettingsValues
     {
         [ProtoMember(1)] public bool Enable = true;
+    }
+
+    [ProtoContract]
+    public class MPTargetSync
+    {
+        [ProtoMember(1)] public TransferTarget[] Targets;
     }
 
     [ProtoContract]

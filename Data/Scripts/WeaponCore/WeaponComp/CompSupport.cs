@@ -40,13 +40,13 @@ namespace WeaponCore.Support
 
         internal void UpdateStateMP()
         {
-            if(Session.IsMultiplayer)
+            if(Session.MpActive)
                 State.NetworkUpdate();
         }
 
         internal void UpdateSettingsMP()
         {
-            if (Session.IsMultiplayer)
+            if (Session.MpActive)
                 Set.NetworkUpdate();
         }
 

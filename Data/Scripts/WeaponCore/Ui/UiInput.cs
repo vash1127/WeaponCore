@@ -66,7 +66,7 @@ namespace WeaponCore
                     ClientMouseState.MouseButtonRight = false;
                 }
 
-                if (_session.IsMultiplayer && (MouseButtonLeftWasPressed != ClientMouseState.MouseButtonLeft ||
+                if (_session.MpActive && (MouseButtonLeftWasPressed != ClientMouseState.MouseButtonLeft ||
                 MouseButtonMiddleWasPressed != ClientMouseState.MouseButtonMiddle ||
                 MouseButtonRightWasPressed != ClientMouseState.MouseButtonRight))
                 {

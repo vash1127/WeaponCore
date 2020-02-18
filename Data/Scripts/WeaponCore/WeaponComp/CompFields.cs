@@ -65,7 +65,7 @@ namespace WeaponCore.Support
         internal float HeatSinkRate;
         internal float SinkPower;
         internal float MaxRequiredPower;
-        internal float CurrentCharge;
+        //internal float CurrentCharge;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
         //internal double Azimuth;
@@ -74,7 +74,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
+        internal TransferTarget[] TargetsToUpdate = new TransferTarget[1];
         //internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
@@ -161,7 +161,7 @@ namespace WeaponCore.Support
 
             Array.Resize(ref TargetsToUpdate, Platform.Weapons.Length);
             for (int i = 0; i < TargetsToUpdate.Length; i++)
-                TargetsToUpdate[i] = new TransferTargets();
+                TargetsToUpdate[i] = new TransferTarget();
 
             State = new CompState(this);
             Set = new CompSettings(this);

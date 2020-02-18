@@ -134,17 +134,7 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            if (AzimuthPart == null || ElevationPart == null || MuzzlePart == null)
-            {
-                Log.Line($"Part was null");
-                Comp.Platform.ResetParts(Comp);
-
-                if (AzimuthPart == null || ElevationPart == null || MuzzlePart == null)
-                {
-                    Log.Line($"Part still null");
-                    return;
-                }
-            }
+            if (AzimuthPart == null || ElevationPart == null || MuzzlePart == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             if (Comp.MatrixUpdateTick < Comp.Session.Tick && AzimuthOnBase)
             {
