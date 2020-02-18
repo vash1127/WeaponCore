@@ -103,6 +103,8 @@ namespace WeaponCore
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
+        private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
+        private readonly Dictionary<IMySlimBlock, float> _SlimHealthClient = new Dictionary<IMySlimBlock, float>();
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);

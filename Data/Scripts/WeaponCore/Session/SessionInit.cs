@@ -18,8 +18,9 @@ namespace WeaponCore
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
+            IsClient = !IsServer && !DedicatedServer;
 
-            if(IsServer || DedicatedServer)
+            if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
             else
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);

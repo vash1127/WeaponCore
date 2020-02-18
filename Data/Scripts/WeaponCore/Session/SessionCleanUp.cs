@@ -115,6 +115,8 @@ namespace WeaponCore
             WeaponDefinitions.Clear();
             _slimsSortedList.Clear();
             _destroyedSlims.Clear();
+            _destroyedSlimsClient.Clear();
+            _SlimHealthClient.Clear();
             _slimsSet.Clear();
             _turretDefinitions.Clear();
 

@@ -151,6 +151,7 @@ namespace WeaponCore
             }
 
             _destroyedSlims.Clear();
+            _destroyedSlimsClient.Clear();
             //grid.Physics.Gravity = (Vector3D.Normalize(hitEnt.Beam.From - grid.Physics.CenterOfMassWorld) * 10);
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
@@ -166,7 +167,7 @@ namespace WeaponCore
             var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = system.Values.Ammo.Mass;
-            var sync = MpActive && IsServer;
+            var sync = MpActive && (DedicatedServer || IsServer);
             if (t.IsShrapnel)
             {
                 var shrapnel = system.Values.Ammo.Shrapnel;
@@ -207,10 +208,16 @@ namespace WeaponCore
 
                 if (!nova)
                 {
-                    if (_destroyedSlims.Contains(rootBlock)) continue;
+                    if (_destroyedSlims.Contains(rootBlock) || _destroyedSlimsClient.Contains(rootBlock)) continue;
                     if (rootBlock.IsDestroyed)
                     {
                         _destroyedSlims.Add(rootBlock);
+                        if (IsClient)
+                        {
+                            _destroyedSlimsClient.Add(rootBlock);
+                            if (_SlimHealthClient.ContainsKey(rootBlock))
+                                _SlimHealthClient.Remove(rootBlock);
+                        }
                         continue;
                     }
                 }
@@ -228,7 +235,7 @@ namespace WeaponCore
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? _slimsSortedList[j].Slim : rootBlock;
-                    var blockHp = block.Integrity;
+                    var blockHp = !IsClient ? block.Integrity : _SlimHealthClient.ContainsKey(block) ? _SlimHealthClient[block] : block.Integrity;
                     float damageScale = 1;
 
                     if (system.DamageScaling)
@@ -288,16 +295,43 @@ namespace WeaponCore
                         else
                         {
                             _destroyedSlims.Add(block);
+                            if (IsClient)
+                            {
+                                _destroyedSlimsClient.Add(block);
+                                if (_SlimHealthClient.ContainsKey(block))
+                                    _SlimHealthClient.Remove(block);
+                            }
                             damagePool -= blockHp;
                         }
                     }
                     else
                     {
                         scaledDamage = areaEffectDmg * damageScale;
-                        if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
+                        if (scaledDamage >= blockHp)
+                        {
+                            _destroyedSlims.Add(block);
+                            if (IsClient)
+                            {
+                                _destroyedSlimsClient.Add(block);
+                                if (_SlimHealthClient.ContainsKey(block))
+                                    _SlimHealthClient.Remove(block);
+                            }
+                        }
                     }
 
-                    block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                    if (!IsClient)
+                        block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                    else
+                    {
+                        var hasBlock = _SlimHealthClient.ContainsKey(block);
+                        if (hasBlock && _SlimHealthClient[block] - scaledDamage > 0)
+                            _SlimHealthClient[block] -= scaledDamage;
+                        else if (hasBlock)
+                            _SlimHealthClient.Remove(block);
+                        else if (block.Integrity - scaledDamage > 0)
+                            _SlimHealthClient[block] = blockHp - scaledDamage;
+                    }
+
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))

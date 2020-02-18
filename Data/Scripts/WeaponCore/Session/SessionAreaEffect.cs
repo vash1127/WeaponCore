@@ -100,7 +100,7 @@ namespace WeaponCore
             var nextTick = Tick + 1;
             var maxTick = stack ? (uint)(nextTick + (duration * maxStack)) : (uint)(nextTick + duration);
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
-            var sync = MpActive && IsServer;
+            var sync = MpActive && (DedicatedServer || IsServer);
             foreach (var block in blocks)
             {
                 var cube = block.FatBlock as MyCubeBlock;
