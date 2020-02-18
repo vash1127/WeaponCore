@@ -328,7 +328,6 @@ namespace WeaponCore.Platform
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
-                    Log.Line($"Stop Shooting");
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
