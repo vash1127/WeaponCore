@@ -265,7 +265,7 @@ namespace WeaponCore.Projectiles
                 else if (p.Info.System.CollisionIsLine)
                 {
                     p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = p.Info.System.CollisionSize;
+                    p.PruneSphere.Radius = p.Info.System.CollisionSize + p.Info.System.EwarTriggerRange;
                     if (p.Info.System.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
                     {
                         if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
@@ -279,12 +279,12 @@ namespace WeaponCore.Projectiles
                     if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                     {
                         p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = currentRadius;
+                        p.PruneSphere.Radius = currentRadius + p.Info.System.EwarTriggerRange;
                     }
                     else if (p.PruneSphere.Radius < p.Info.System.CollisionSize)
                     {
                         p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = p.Info.System.CollisionSize;
+                        p.PruneSphere.Radius = p.Info.System.CollisionSize + p.Info.System.EwarTriggerRange;
                     }
                     if (!((p.Info.System.SelfDamage || p.TerminalControlled) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
