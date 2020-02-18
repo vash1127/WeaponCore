@@ -295,7 +295,8 @@ namespace WeaponCore.Platform
                     NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                 }
 
-                EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+                if(IsShooting)
+                    EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
                 if (System.BurstMode && (State.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
