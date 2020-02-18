@@ -386,7 +386,7 @@ namespace WeaponCore.Projectiles
 
             Colliding = true;
             if (!Info.System.VirtualBeams && add) Info.Ai.Session.Hits.Add(this);
-            else
+            else if (Info.System.VirtualBeams)
             {
                 Info.WeaponCache.VirtualHit = true;
                 Info.WeaponCache.HitEntity.Entity = Hit.Entity;
