@@ -82,6 +82,8 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
+            if (Comp == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.MyCube.Closed || Target == null) return;
+
             if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
             {
                 ReturingHome = false;
@@ -90,12 +92,12 @@ namespace WeaponCore.Platform
             Target.ExpiredTick = 0;
 
             var userControlled = o != null && (bool)o;
-            if (userControlled)
+            if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret)
             {
                 Azimuth = Comp.TurretBase.Azimuth;
                 Elevation = Comp.TurretBase.Elevation;
             }
-            else
+            else if (!userControlled)
             {
                 var azStep = System.AzStep;
                 var elStep = System.ElStep;

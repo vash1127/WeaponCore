@@ -74,20 +74,27 @@ namespace WeaponCore.Support
 
         internal void Purge(int tick)
         {
-            for (int i = tick; i < tick + 7200; i++)
-                Tick((uint)i, true);
-
-            lock (_callbacks)
+            try
             {
-                Active = false;
-                foreach (var list in _callbacks)
-                {
-                    foreach (var call in list)
-                        call.Purge();
-                    list.Clear();
-                }
+                for (int i = tick; i < tick + 7200; i++)
+                    Tick((uint)i, true);
 
-                _callbacks = null;
+                lock (_callbacks)
+                {
+                    Active = false;
+                    foreach (var list in _callbacks)
+                    {
+                        foreach (var call in list)
+                            call.Purge();
+                        list.Clear();
+                    }
+
+                    _callbacks = null;
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Line($"Exception in FutureEvent purge, Callback likely null {e}");
             }
         }
     }

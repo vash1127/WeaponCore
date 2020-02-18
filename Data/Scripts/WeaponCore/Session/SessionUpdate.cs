@@ -74,9 +74,9 @@ namespace WeaponCore
 
                             comp.TrackReticle = comp.TrackReticle && uiTargeting;
 
-                            //if (Tick60 && DedicatedServer)
-                                //Log.Line($"ManualControl: {overRides.ManualControl} TargetPainter: {overRides.TargetPainter}");                            
-                            
+                            if (Tick60 && DedicatedServer)
+                                Log.Line($"comp.TrackReticle: {comp.TrackReticle}");                         
+
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;
                             
