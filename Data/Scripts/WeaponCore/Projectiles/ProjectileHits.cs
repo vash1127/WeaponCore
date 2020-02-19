@@ -275,7 +275,7 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var voxel = ent as MyVoxelBase;
 
-                if (triggerEvent && !info.Ai.Targets.ContainsKey(ent))
+                if (triggerEvent && !info.Ai.Targets.ContainsKey(ent) && ent.Physics != null && ent.Physics.Enabled && ent.IsPreview)
                 {
                     hitEnt.Hit = false;
                     dist = double.MaxValue;
