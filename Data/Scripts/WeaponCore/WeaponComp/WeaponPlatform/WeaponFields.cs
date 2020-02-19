@@ -33,6 +33,7 @@ namespace WeaponCore.Platform
         private uint _ticksBeforeSpinUp;
         private bool _heatLoopRunning;
         internal bool PreFired;
+        internal bool FinishBurst;
         internal uint TicksPerShot;
         internal double TimePerShot;
         internal int LoadId;

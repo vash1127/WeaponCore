@@ -120,6 +120,7 @@ namespace WeaponCore.Support
         public readonly bool NeedsPrediction;
         public readonly bool HasBurstDelay;
         public readonly bool DelayCeaseFire;
+        public readonly bool AlwaysFireFullBurst;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -240,7 +241,7 @@ namespace WeaponCore.Support
             BarrelValues(out BarrelsPerShot, out RateOfFire);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
             AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
-            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay, out IsHybrid);
+            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay, out IsHybrid, out AlwaysFireFullBurst);
 
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
             ShieldBypassMod = Values.DamageScales.Shields.BypassModifier > 0 && Values.DamageScales.Shields.BypassModifier < 1 ? Values.DamageScales.Shields.BypassModifier : 1;
@@ -272,10 +273,11 @@ namespace WeaponCore.Support
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts);
         }
 
-        private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst, out bool isHybrid)
+        private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst, out bool isHybrid, out bool fireFullBurst)
         {
             energyAmmo = AmmoDefId.SubtypeId.String == "Blank";
             isHybrid = Values.HardPoint.Hybrid;
+            fireFullBurst = Values.HardPoint.Loading.FireFullBurst;
             mustCharge = (energyAmmo || isHybrid) && ReloadTime > 0;
             burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
 

@@ -311,6 +311,9 @@ namespace WeaponCore.Platform
 
                     _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
+                else if (System.BurstMode && System.AlwaysFireFullBurst)
+                    FinishBurst = State.CurrentAmmo > 0 && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
+
                 else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
                     StartReload();
 
