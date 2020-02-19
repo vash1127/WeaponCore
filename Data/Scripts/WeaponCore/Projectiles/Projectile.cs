@@ -688,6 +688,7 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
+            Log.Line("RunEwar");
             if (Info.System.Pulse && !Info.TriggeredPulse && VelocityLengthSqr <= 0 && !Info.System.IsMine || !Vector3D.IsZero(Hit.HitPos))
             {
                 Info.TriggeredPulse = true;
