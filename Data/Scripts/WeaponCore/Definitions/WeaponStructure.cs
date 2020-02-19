@@ -355,7 +355,7 @@ namespace WeaponCore.Support
             detonateRadiusLarge = Session.ModRadius(Values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
             eWar = areaEffect > (AreaDamage.AreaEffectType)2;
             eWarEffect = areaEffect > (AreaDamage.AreaEffectType)3;
-            eWarTriggerRange = Values.Ammo.AreaEffect.EwarFields.TriggerRange;
+            eWarTriggerRange = eWar && Pulse && Values.Ammo.AreaEffect.EwarFields.TriggerRange > 0 ? Values.Ammo.AreaEffect.EwarFields.TriggerRange : 0;
         }
 
         private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)

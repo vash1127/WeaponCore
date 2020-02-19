@@ -104,7 +104,7 @@ namespace WeaponCore.Support
             {
                 var ent = _possibleTargets[i];
                 var hasPhysics = ent.Physics != null;
-                if (Session.ShieldApiLoaded && !hasPhysics && !ent.IsPreview && !ent.Render.CastShadows)
+                if (Session.ShieldApiLoaded && hasPhysics && !ent.Physics.Enabled && ent.Physics.IsPhantom && !ent.Render.CastShadows)
                 {
                     long testId;
                     long.TryParse(ent.Name, out testId);

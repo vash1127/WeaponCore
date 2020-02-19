@@ -230,9 +230,9 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
-                var trigger = p.Info.System.Ewar && p.Info.System.Pulse && p.Info.System.EwarTriggerRange > 0;
-                var triggerRange = trigger && !p.Info.TriggeredPulse ? p.Info.System.EwarTriggerRange : 0;
-                var beam = trigger ? new LineD(p.LastPosition, p.Position + (p.Direction * triggerRange)) : new LineD(p.LastPosition, p.Position);
+                var triggerRange = p.Info.System.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.System.EwarTriggerRange : 0;
+                var useEwarSphere = triggerRange > 0 || p.EwarActive;
+                var beam = triggerRange > 0 ? new LineD(p.LastPosition, p.Position + (p.Direction * triggerRange)) : new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
@@ -269,9 +269,9 @@ namespace WeaponCore.Projectiles
 
                 if (p.MineSeeking && !p.MineTriggered)
                     p.SeekEnemy();
-                else if (trigger)
+                else if (useEwarSphere)
                 {
-                    if (triggerRange <= 0) {
+                    if (p.EwarActive) {
                         p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
                         var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
                         if (p.PruneSphere.Radius < currentRadius) {

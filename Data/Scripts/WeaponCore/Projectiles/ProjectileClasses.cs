@@ -130,6 +130,7 @@ namespace WeaponCore.Support
         public bool Hit;
         public bool SphereCheck;
         public bool DamageOverTime;
+        public bool PulseTrigger;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public double? HitDist;
@@ -153,6 +154,7 @@ namespace WeaponCore.Support
             PruneSphere = new BoundingSphereD();
             SphereCheck = false;
             DamageOverTime = false;
+            PulseTrigger = false;
         }
     }
 

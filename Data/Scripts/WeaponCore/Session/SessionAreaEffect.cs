@@ -27,6 +27,7 @@ namespace WeaponCore
 
         private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
+            Log.Line("UpdateField");
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose) return;
             var depletable = info.System.Values.Ammo.AreaEffect.EwarFields.Depletable;
@@ -41,6 +42,7 @@ namespace WeaponCore
 
         private void UpdateEffect(HitEntity hitEnt, ProInfo info)
         {
+            Log.Line("UpdateEffect");
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
@@ -92,6 +94,7 @@ namespace WeaponCore
 
         private void ComputeEffects(WeaponSystem system, MyCubeGrid grid, float damagePool, float healthPool, long attackerId, List<IMySlimBlock> blocks)
         {
+            Log.Line("ComputeEffects");
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var eWarInfo = system.Values.Ammo.AreaEffect.EwarFields;
             var duration = (uint)eWarInfo.Duration;
@@ -212,6 +215,7 @@ namespace WeaponCore
 
         private void ApplyEffect()
         {
+            Log.Line("ApplyEffect");
             var tick = Tick;
             foreach (var item in _effectedCubes)
             {
