@@ -27,7 +27,7 @@ namespace WeaponCore
 
         internal void SendPacketToServer(Packet packet)
         {
-            if (!IsMultiplayer) return;
+            if (!MpActive) return;
 
             byte[] bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
 

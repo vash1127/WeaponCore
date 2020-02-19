@@ -163,6 +163,8 @@ namespace WeaponCore
                                 if (w.TargetChanged) {
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
+                                    if (w.Target.State == Targets.Expired)
+                                        w.Comp.TargetsToUpdate.Targets[w.WeaponId] = null;
                                 }
 
                                 ///
@@ -388,10 +390,10 @@ namespace WeaponCore
 
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
-                            if (aquired)
+                            if (aquired && MpActive)
                             {
-                                w.Target.SyncTarget(comp.TargetsToUpdate[w.WeaponId], w.WeaponId);
-                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate[w.WeaponId] });
+                                w.Target.SyncTarget(comp.TargetsToUpdate.Targets[w.WeaponId], w.WeaponId);
+                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate.Targets[w.WeaponId] });
                             }
                         }
                     }

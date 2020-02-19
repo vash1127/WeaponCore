@@ -1,5 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using ProtoBuf;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRageMath;
@@ -25,7 +28,7 @@ namespace WeaponCore
         [ProtoMember(9)] public bool ShootOn;
         [ProtoMember(10)] public bool ClickShoot;
         [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
-        [ProtoMember(11)] public float CurrentCharge;
+        [ProtoMember(12)] public float CurrentCharge;
 
     }
 
@@ -86,6 +89,38 @@ namespace WeaponCore
     public class MPTargetSync
     {
         [ProtoMember(1)] public TransferTarget[] Targets;
+
+
+        public void Save(WeaponComponent comp, Guid id)
+        {
+            if (!comp.Session.MpActive) return;
+
+            if (comp.MyCube == null || comp.MyCube.Storage == null) return;
+            
+            var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
+            comp.MyCube.Storage[id] = Convert.ToBase64String(binary);
+        }
+
+        public static void Load(WeaponComponent comp, Guid id)
+        {
+            if (!comp.Session.MpActive) return;
+
+            string rawData;
+            byte[] base64;
+            if (comp.MyCube.Storage.TryGetValue(id, out rawData))
+            {
+                base64 = Convert.FromBase64String(rawData);
+                comp.TargetsToUpdate = MyAPIGateway.Utilities.SerializeFromBinary<MPTargetSync>(base64);
+            }
+            else
+            {
+                comp.TargetsToUpdate = new MPTargetSync();
+                comp.TargetsToUpdate.Targets = new TransferTarget[comp.Platform.Weapons.Length]; 
+                for (int i = 0; i < comp.TargetsToUpdate.Targets.Length; i++)
+                    comp.TargetsToUpdate.Targets[i] = new TransferTarget();
+            }
+        }
+        public MPTargetSync() { }
     }
 
     [ProtoContract]

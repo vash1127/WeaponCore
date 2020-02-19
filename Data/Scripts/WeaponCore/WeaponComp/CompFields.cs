@@ -74,7 +74,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal TransferTarget[] TargetsToUpdate = new TransferTarget[1];
+        internal MPTargetSync TargetsToUpdate;
         //internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
@@ -158,10 +158,6 @@ namespace WeaponCore.Support
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
-
-            Array.Resize(ref TargetsToUpdate, Platform.Weapons.Length);
-            for (int i = 0; i < TargetsToUpdate.Length; i++)
-                TargetsToUpdate[i] = new TransferTarget();
 
             State = new CompState(this);
             Set = new CompSettings(this);

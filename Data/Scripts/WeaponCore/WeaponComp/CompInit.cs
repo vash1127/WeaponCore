@@ -54,6 +54,7 @@ namespace WeaponCore.Support
 
                 Set.LoadSettings();
                 Set.SettingsInit();
+                MPTargetSync.Load(this, Session.MPTargetSync);
                 UpdateSettings(Set.Value);
 
                 for (int i = 0; i < Platform.Weapons.Length; i++)
@@ -161,7 +162,7 @@ namespace WeaponCore.Support
                 weapon.State.CurrentCharge = weapon.System.EnergyMagSize;
                 State.Value.CurrentCharge += weapon.System.EnergyMagSize;
             }
-            else if (!Session.IsClient && weapon.System.MustCharge)
+            else if ((!Session.IsClient || !Session.MpActive) && weapon.System.MustCharge)
             {
                 if (weapon.State.CurrentCharge > 0)
                     State.Value.CurrentCharge -= weapon.State.CurrentCharge;
@@ -171,6 +172,8 @@ namespace WeaponCore.Support
                 weapon.Reloading = false;
                 Session.FutureEvents.Schedule(InitChargingWeapons, weapon, 1);
             }
+            else if (weapon.System.MustCharge)
+                Session.FutureEvents.Schedule(InitChargingWeapons, weapon, 1);
 
             /*if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {
@@ -180,6 +183,7 @@ namespace WeaponCore.Support
 
         private void InitChargingWeapons(object o)
         {
+            Log.Line($"InitChargingWeapons");
             var w = o as Weapon;
 
             if (w == null) return;

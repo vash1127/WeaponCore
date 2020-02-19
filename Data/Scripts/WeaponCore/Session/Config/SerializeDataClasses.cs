@@ -110,6 +110,11 @@ namespace WeaponCore
             target.TopEntityId = TopEntityId;
             target.State = State;
         }
+
+        public TransferTarget()
+        {
+            State = Targets.Expired;
+        }
     }
 
    

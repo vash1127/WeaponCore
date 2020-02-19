@@ -90,6 +90,16 @@ namespace WeaponCore.Support
                     else OnAddedToSceneTasks();
 
                     Platform.State = MyWeaponPlatform.PlatformState.Ready;
+
+                    if (Session.MpActive)
+                    {
+                        for (int i = 0; i < TargetsToUpdate.Targets.Length; i++)
+                        {
+                            var target = TargetsToUpdate.Targets[i];
+                            if (target.State != Target.Targets.Expired)
+                                TargetsToUpdate.Targets[i].SyncTarget(Platform.Weapons[i].Target);
+                        }
+                    }
                 } 
                 else Log.Line($"Comp Init() failed");
             }
@@ -222,6 +232,8 @@ namespace WeaponCore.Support
 
                     State.SaveState();
                     Set.SaveSettings();
+                    if(_mpActive)
+                        TargetsToUpdate.Save(this, Session.MPTargetSync);
                 }
             }
             return false;
