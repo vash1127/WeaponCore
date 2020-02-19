@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Engine.Physics;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -189,8 +190,7 @@ namespace WeaponCore.Support
 
             LastTick = thisTick;
 
-            if (_start)
-            {
+            if (_start) {
                 _startTick = thisTick;
                 _endPos = lineTest.To;
             }
@@ -199,20 +199,16 @@ namespace WeaponCore.Support
 
             var fastPath = runTime > (_maxDelay * 3) + 1;
             var useCache = runTime > (_maxDelay * 3) + 2;
-            if (fastPath)
-            {
-                if (_miss > 1)
-                {
+            if (fastPath) {
+                if (_miss > 1) {
                     if (_idle && _miss % 120 == 0) _idle = false;
                     else _idle = true;
 
-                    //Log.Line($"{t.System.WeaponName} - idle:{_idle} - miss:{_miss} - runtime:{runTime} - {_idle} - {thisTick}");
                     if (_idle) return true;
                 }
                 RequestTick = thisTick;
                 MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
             }
-            //if (!useCache) Log.Line($"not using cache: {t.System.WeaponName} - miss:{_miss} - runTime:{runTime} - dist:{dist} - newDir:{_endDir} - oldDir:{oldDir}");
             return useCache;
         }
 
