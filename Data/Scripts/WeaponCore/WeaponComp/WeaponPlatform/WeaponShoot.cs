@@ -301,6 +301,7 @@ namespace WeaponCore.Platform
                 if (System.BurstMode && (State.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     uint delay = 0;
+                    FinishBurst = false;
                     if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
                         session.FutureEvents.Schedule(o => { EventTriggerStateChanged(EventTriggers.BurstReload, true); }, null, delay);
                     else
@@ -312,7 +313,7 @@ namespace WeaponCore.Platform
                     _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
                 else if (System.BurstMode && System.AlwaysFireFullBurst)
-                    FinishBurst = State.CurrentAmmo > 0 && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
+                    FinishBurst = (State.CurrentAmmo > 0 || System.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
 
                 else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
                     StartReload();
