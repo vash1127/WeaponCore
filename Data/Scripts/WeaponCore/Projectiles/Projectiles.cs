@@ -293,6 +293,7 @@ namespace WeaponCore.Projectiles
                 }
                 else
                 {
+                    p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
                     if (p.PruneSphere.Radius < p.Info.System.CollisionSize)
                     {
                         p.PruneSphere.Center = p.Position;
