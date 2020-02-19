@@ -134,7 +134,7 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            if (AzimuthPart == null || ElevationPart == null || MuzzlePart == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (AzimuthPart?.Entity?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             if (Comp.MatrixUpdateTick < Comp.Session.Tick && AzimuthOnBase)
             {

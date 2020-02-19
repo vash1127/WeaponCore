@@ -208,7 +208,7 @@ namespace WeaponCore
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 
-                                if (canShoot && (validShootStates || manualShot)) {
+                                if (canShoot && (validShootStates || manualShot || w.FinishBurst)) {
 
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge) {
 

@@ -387,6 +387,7 @@ namespace WeaponCore.Platform
                 return;
             }
 
+            FinishBurst = false;
             Reloading = true;
 
             if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)

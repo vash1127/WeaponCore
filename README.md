@@ -1,6 +1,6 @@
 # WeaponCore
 
-WeaponCore is a complete rewrite of Space Engineers combat system.
+WeaponCore is a complete rewrite of the Space Engineers combat system.
 
 This "mod" by itself does not add new weapons to the game, it is the framework (engine) by which other weapon mod authors may create pretty much any kind of weapon they can imagine. More info will be coming to this page soon.
 
@@ -32,6 +32,10 @@ Modder documentation will soon be available in the wiki tab, this mod has a lot 
 # Player Guide
 
 https://steamcommunity.com/sharedfiles/filedetails/?id=1989583682
+
+# Modder Guide
+
+https://steamcommunity.com/sharedfiles/filedetails/?id=1998506274
 
 # Thanks and Credits
 
