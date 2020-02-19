@@ -107,7 +107,7 @@ namespace WeaponCore
                 if (damagePool <= 0 || healthPool <= 0) break;
 
                 if (fieldType != DotField)
-                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !_effectedCubes.ContainsKey(cube.EntityId)) continue;
+                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !_effectedCubes.ContainsKey(cube.EntityId) || !(cube is IMyFunctionalBlock)) continue;
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
