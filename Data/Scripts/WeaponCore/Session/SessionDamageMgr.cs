@@ -68,11 +68,9 @@ namespace WeaponCore
                             DamageProjectile(hitEnt, info);
                             continue;
                         case HitEntity.Type.Field:
-                            Log.Line($"Field");
                             UpdateField(hitEnt, info);
                             continue;
                         case HitEntity.Type.Effect:
-                            Log.Line("Effect");
                             UpdateEffect(hitEnt, info);
                             continue;
                     }
