@@ -203,30 +203,20 @@ namespace WeaponCore.Projectiles
         internal bool GenerateHitInfo(Projectile p)
         {
             var count = p.Info.HitList.Count;
-            if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
-            else GetEntityCompareDist(p.Info.HitList[0], null, V3Pool.Get());
+            if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get(), p.Info));
+            else GetEntityCompareDist(p.Info.HitList[0], null, V3Pool.Get(), p.Info);
 
-            var endOfIndex = p.Info.HitList.Count - 1;
-            var lastValidEntry = int.MaxValue;
-
-            for (int i = endOfIndex; i >= 0; i--)
+            for (int i = p.Info.HitList.Count - 1; i >= 0; i--)
             {
-                if (p.Info.HitList[i].Hit)
+                var ent = p.Info.HitList[i];
+                if (!ent.Hit)
                 {
-                    lastValidEntry = i + 1;
-                    break;
+                    p.Info.HitList.RemoveAtFast(i);
+                    HitEntityPool.Return(ent);
                 }
+                else break;
             }
 
-            if (lastValidEntry == int.MaxValue) lastValidEntry = 0;
-            var howManyToRemove = count - lastValidEntry;
-            while (howManyToRemove-- > 0)
-            {
-                var ent = p.Info.HitList[endOfIndex];
-                p.Info.HitList.RemoveAt(endOfIndex);
-                HitEntityPool.Return(ent);
-                endOfIndex--;
-            }
             var finalCount = p.Info.HitList.Count;
             if (finalCount > 0)
             {
@@ -236,7 +226,6 @@ namespace WeaponCore.Projectiles
                     p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                     p.Velocity = Vector3D.Zero;
                     p.Info.HitList.Clear();
-                    Log.Line("triggered");
                     return false;
                 }
                 var hitEntity = p.Info.HitList[0];
@@ -255,12 +244,13 @@ namespace WeaponCore.Projectiles
             return false;
         }
 
-        internal int GetEntityCompareDist(HitEntity x, HitEntity y, List<Vector3I> slims)
+        internal int GetEntityCompareDist(HitEntity x, HitEntity y, List<Vector3I> slims, ProInfo info)
         {
             var xDist = double.MaxValue;
             var yDist = double.MaxValue;
             var beam = x.Intersection;
             var count = y != null ? 2 : 1;
+            var triggerEvent = info.System.Ewar && info.System.Pulse && !info.TriggeredPulse && info.System.EwarTriggerRange > 0;
             for (int i = 0; i < count; i++)
             {
                 var isX = i == 0;
@@ -278,12 +268,19 @@ namespace WeaponCore.Projectiles
                     ent = hitEnt.Entity;
                 }
 
+                var dist = double.MaxValue;
+
+
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as MyCubeGrid;
                 var voxel = ent as MyVoxelBase;
 
-                var dist = double.MaxValue;
-                if (hitEnt.Projectile != null)
+                if (triggerEvent && !info.Ai.Targets.ContainsKey(ent))
+                {
+                    hitEnt.Hit = false;
+                    dist = double.MaxValue;
+                }
+                else if (hitEnt.Projectile != null)
                 {
                     dist = hitEnt.HitDist.Value;
                     hitEnt.Hit = true;
