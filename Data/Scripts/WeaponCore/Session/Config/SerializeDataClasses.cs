@@ -52,7 +52,8 @@ namespace WeaponCore
     [ProtoContract]
     public class TargetPacket : Packet
     {
-        [ProtoMember(1)] internal TransferTarget Data = null;
+        [ProtoMember(1)] internal TransferTarget TargetData = null;
+        [ProtoMember(2)] internal WeaponStateValues WeaponData = null;
         public TargetPacket() { }
     }
 
@@ -95,7 +96,7 @@ namespace WeaponCore
         [ProtoMember(5)] internal double HitShortDist;
         [ProtoMember(6)] internal double OrigDistance;
         [ProtoMember(7)] internal long TopEntityId;
-        [ProtoMember(8)] internal Targets State;
+        [ProtoMember(8)] internal Targets State = Targets.Expired;
         [ProtoMember(9)] internal int weaponId;
 
         internal void SyncTarget(Target target)
@@ -113,7 +114,6 @@ namespace WeaponCore
 
         public TransferTarget()
         {
-            State = Targets.Expired;
         }
     }
 

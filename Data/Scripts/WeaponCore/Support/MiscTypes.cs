@@ -20,6 +20,7 @@ namespace WeaponCore.Support
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetLock;
+        internal bool Client;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
@@ -42,9 +43,10 @@ namespace WeaponCore.Support
             Acquired,
         }
 
-        internal Target(MyCubeBlock firingCube = null)
+        internal Target(MyCubeBlock firingCube = null, bool client = false)
         {
             FiringCube = firingCube;
+            Client = client;
         }
 
         internal void TransferTo(Target target, uint resetTick, bool reset = true)
@@ -97,6 +99,7 @@ namespace WeaponCore.Support
 
         internal void Reset(uint expiredTick, bool expire = true, bool dontLog = false)
         {
+            //if (Client) return;
             Entity = null;
             IsProjectile = false;
             IsFakeTarget = false;

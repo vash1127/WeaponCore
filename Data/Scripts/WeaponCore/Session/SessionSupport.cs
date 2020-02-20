@@ -55,6 +55,9 @@ namespace WeaponCore
                     }
                     GameLoaded = true;
 
+                    while (ChargingWeaponsToReload.Count > 0)
+                        ComputeStorage(ChargingWeaponsToReload.Dequeue());
+
                     foreach (var myEntity in MyEntities.GetEntities())
                     {
                         var grid = myEntity as MyCubeGrid;

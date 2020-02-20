@@ -137,8 +137,7 @@ namespace WeaponCore
             try
             {
                 if (Placer != null) UpdatePlacer();
-                if (!DedicatedServer)
-                    ProcessAnimations();
+                ProcessAnimations();
 
                 DsUtil.Start("projectiles");
 

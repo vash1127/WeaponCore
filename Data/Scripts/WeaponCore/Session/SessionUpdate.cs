@@ -74,8 +74,8 @@ namespace WeaponCore
 
                             comp.TrackReticle = comp.TrackReticle && uiTargeting;
 
-                            if (Tick60 && DedicatedServer)
-                                Log.Line($"comp.TrackReticle: {comp.TrackReticle}");                         
+                            //if (Tick60 && DedicatedServer)
+                                //Log.Line($"comp.TrackReticle: {comp.TrackReticle}");                    
 
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;
@@ -108,6 +108,7 @@ namespace WeaponCore
                                 var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
                                 var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
                                 w.TargetState = w.Target.State;
+                                
                                 if (w.Target.State == Targets.Acquired) {
 
                                     if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
@@ -123,14 +124,14 @@ namespace WeaponCore
 
                                     }
                                     else if (w.AiEnabled) {
-
+                                        w.UpdatePivotPos();
                                         if (!Weapon.TrackingTarget(w, w.Target)) {
                                             w.Target.Reset(Tick, !comp.TrackReticle);
 
                                         }
                                     }
                                     else {
-
+                                        w.UpdatePivotPos();
                                         Vector3D targetPos;
                                         if (w.IsTurret) {
 
@@ -164,7 +165,7 @@ namespace WeaponCore
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
                                     if (w.Target.State == Targets.Expired)
-                                        w.Comp.TargetsToUpdate.Targets[w.WeaponId] = null;
+                                        w.Comp.TargetsToUpdate.Targets[w.WeaponId].State = Targets.Expired;
                                 }
 
                                 ///
@@ -246,7 +247,7 @@ namespace WeaponCore
                                 else if (w.BarrelSpinning)
                                     w.SpinBarrel(true);
 
-                                if (comp.Debug)
+                                if (comp.Debug && !DedicatedServer)
                                     WeaponDebug(w);
                             }
                         }
@@ -392,8 +393,9 @@ namespace WeaponCore
                             AcquireTargets.RemoveAtFast(i);
                             if (aquired && MpActive)
                             {
+                                
                                 w.Target.SyncTarget(comp.TargetsToUpdate.Targets[w.WeaponId], w.WeaponId);
-                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, Data = comp.TargetsToUpdate.Targets[w.WeaponId] });
+                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, TargetData = comp.TargetsToUpdate.Targets[w.WeaponId], WeaponData = w.State });
                             }
                         }
                     }

@@ -155,7 +155,7 @@ namespace WeaponCore.Support
             if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
                 Session.ComputeStorage(weapon);
 
-            if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading)
+            if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading && !weapon.System.MustCharge)
                 weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
             else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && weapon.State.CurrentAmmo == weapon.System.MagazineDef.Capacity) || weapon.State.CurrentAmmo == weapon.System.EnergyMagSize))
             {
@@ -170,28 +170,21 @@ namespace WeaponCore.Support
                 weapon.State.CurrentCharge = 0;
                 weapon.State.CurrentAmmo = 0;
                 weapon.Reloading = false;
-                Session.FutureEvents.Schedule(InitChargingWeapons, weapon, 1);
+                if (!Session.GameLoaded)
+                    Session.ChargingWeaponsToReload.Enqueue(weapon);
+                else
+                    Session.ComputeStorage(weapon);
             }
             else if (weapon.System.MustCharge)
-                Session.FutureEvents.Schedule(InitChargingWeapons, weapon, 1);
+                if (!Session.GameLoaded)
+                    Session.ChargingWeaponsToReload.Enqueue(weapon);
+                else
+                    Session.ComputeStorage(weapon);
 
             /*if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {
                 Ai.ManualComps++;
             }*/
-        }
-
-        private void InitChargingWeapons(object o)
-        {
-            Log.Line($"InitChargingWeapons");
-            var w = o as Weapon;
-
-            if (w == null) return;
-
-            if(Session.GameLoaded)
-                Session.ComputeStorage(w);
-            else
-                Session.FutureEvents.Schedule(InitChargingWeapons, w, 1);
         }
 
         private void InventoryInit()

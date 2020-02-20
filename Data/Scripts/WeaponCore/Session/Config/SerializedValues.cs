@@ -84,7 +84,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public bool Enable = true;
     }
-
+    
+    
     [ProtoContract]
     public class MPTargetSync
     {

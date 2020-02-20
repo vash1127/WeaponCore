@@ -891,7 +891,7 @@ namespace WeaponCore
 
                     if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
                     {
-                        AnimationsToProcess.RemoveAt(i);
+                        AnimationsToProcess.RemoveAtFast(i);
                         animation.Running = false;
 
                         if (!DedicatedServer && animation.ResetEmissives)
@@ -904,6 +904,9 @@ namespace WeaponCore
                         }
                     }
                 }
+                else
+                    AnimationsToProcess.RemoveAtFast(i);
+
             }
         }
 

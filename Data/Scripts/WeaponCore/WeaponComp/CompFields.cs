@@ -75,7 +75,7 @@ namespace WeaponCore.Support
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
         internal MPTargetSync TargetsToUpdate;
-        //internal TransferTargets[] TargetsToUpdate = new TransferTargets[1];
+        //internal TransferTarget[] TargetsToUpdate = new TransferTarget[1];
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -161,6 +161,13 @@ namespace WeaponCore.Support
 
             State = new CompState(this);
             Set = new CompSettings(this);
+
+            /*TargetsToUpdate = new MPTargetSync();
+
+            Array.Resize(ref TargetsToUpdate.Targets, Platform.Weapons.Length);
+            for (int i = 0; i < TargetsToUpdate.Targets.Length; i++)
+                TargetsToUpdate.Targets[i] = new TransferTarget();
+            */
 
             MyCube.OnClose += Session.CloseComps;
         }        

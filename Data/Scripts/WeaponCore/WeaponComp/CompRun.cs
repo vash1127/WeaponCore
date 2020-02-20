@@ -91,14 +91,21 @@ namespace WeaponCore.Support
 
                     Platform.State = MyWeaponPlatform.PlatformState.Ready;
 
-                    if (Session.MpActive)
+                    
+                    
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
-                        for (int i = 0; i < TargetsToUpdate.Targets.Length; i++)
+                        var weapon = Platform.Weapons[i];
+                        var target = TargetsToUpdate.Targets[i];
+
+                        weapon.UpdatePivotPos();
+
+                        if (Session.MpActive && Session.IsClient)
                         {
-                            var target = TargetsToUpdate.Targets[i];
                             if (target.State != Target.Targets.Expired)
-                                TargetsToUpdate.Targets[i].SyncTarget(Platform.Weapons[i].Target);
+                                TargetsToUpdate.Targets[weapon.WeaponId].SyncTarget(weapon.Target);
                         }
+
                     }
                 } 
                 else Log.Line($"Comp Init() failed");

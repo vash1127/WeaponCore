@@ -90,6 +90,7 @@ namespace WeaponCore
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
+        internal readonly Queue<Weapon> ChargingWeaponsToReload = new Queue<Weapon>();
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
@@ -110,7 +111,7 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
         private readonly List<IMySlimBlock> _slimCache = new List<IMySlimBlock>();
-
+        
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);

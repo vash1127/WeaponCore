@@ -186,9 +186,9 @@ namespace WeaponCore.Platform
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                         RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
                 }
-                weapon.UpdatePivotPos();
             }
             CompileTurret(comp);
+
             State = PlatformState.Inited;
 
             return State;

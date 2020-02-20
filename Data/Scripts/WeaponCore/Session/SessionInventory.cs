@@ -26,8 +26,9 @@ namespace WeaponCore
 
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                 weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
+            
 
-            if (weapon.State.CurrentAmmo == 0 && (weapon.System.MustCharge || weapon.State.CurrentMags > 0 || comp.Session.IsCreative))
+            if ((weapon.State.CurrentAmmo == 0 && (weapon.System.MustCharge || weapon.State.CurrentMags > 0 || comp.Session.IsCreative)) || (comp.Session.IsClient && weapon.System.MustCharge && weapon.State.CurrentAmmo < weapon.System.EnergyMagSize))
                 weapon.StartReload();
         }
 
