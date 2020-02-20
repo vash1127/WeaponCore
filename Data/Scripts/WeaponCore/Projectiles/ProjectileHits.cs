@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.HitEntity.Type;
@@ -22,7 +20,7 @@ namespace WeaponCore.Projectiles
             var shieldFullBypass = shieldByPass && p.Info.System.ShieldBypassMod >= 1;
             var ai = p.Info.Ai;
             var found = false;
-            var lineCheck = p.Info.System.CollisionIsLine;
+            var lineCheck = p.Info.System.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
             var planetBeam = beam;
             planetBeam.To = p.Info.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
             bool projetileInShield = false;
@@ -32,9 +30,10 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
-                if (ent is IMyCharacter && p.EwarActive && p.Info.System.AreaEffect != DotField) continue;
+                if (ent is IMyCharacter && p.Info.EwarActive && p.Info.System.AreaEffect != DotField) continue;
                 if (grid != null && (!(p.Info.System.SelfDamage || p.TerminalControlled) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
-                if (!shieldFullBypass && !p.ShieldBypassed && !p.EwarActive)
+
+                if (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.System.AreaEffect == DotField && p.Info.System.AreaEffect == EmpField))
                 {
                     var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null)
@@ -47,34 +46,27 @@ namespace WeaponCore.Projectiles
                                 projetileInShield = true;
                         }
 
-                        if (dist != null && dist.Value < beam.Length && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
+                        if (dist != null && (dist.Value < beam.Length || p.Info.EwarActive) && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
                         {
                             var hitEntity = HitEntityPool.Get();
                             hitEntity.Clean();
                             hitEntity.Info = p.Info;
                             found = true;
-                            if (shieldByPass || !(p.Info.System.EwarTriggerRange > 0 && !p.Info.TriggeredPulse))
-                            {
-                                if (shieldByPass) p.ShieldBypassed = true;
-                                hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
-                                hitEntity.Intersection = beam;
-                                hitEntity.EventType = Shield;
-                                hitEntity.SphereCheck = !lineCheck;
-                                hitEntity.PruneSphere = p.PruneSphere;
-                                hitEntity.HitPos = beam.From + (beam.Direction * dist.Value);
-                                hitEntity.HitDist = dist;
-                            }
-                            else
-                            {
-                                hitEntity.Entity = ent;
-                                hitEntity.EventType = Field;
-                            }
+                            if (shieldByPass) p.ShieldBypassed = true;
+                            hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
+                            hitEntity.Intersection = beam;
+                            hitEntity.EventType = Shield;
+                            hitEntity.SphereCheck = !lineCheck;
+                            hitEntity.PruneSphere = p.PruneSphere;
+                            hitEntity.HitPos = beam.From + (beam.Direction * dist.Value);
+                            hitEntity.HitDist = dist;
+
                             p.Info.HitList.Add(hitEntity);
                         }
                         else continue;
                     }
                 }
-                
+
                 if ((ent == ai.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.Physics.IsPhantom && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
@@ -93,15 +85,9 @@ namespace WeaponCore.Projectiles
                             {
                                 IHitInfo cachedPlanetResult;
                                 if (p.Info.WeaponCache.VoxelHits[p.CachedId].NewResult(out cachedPlanetResult))
-                                {
-                                    //Log.Line("cached hit");
                                     voxelHit = cachedPlanetResult.Position;
-                                }
                                 else
-                                {
-                                    //Log.Line($"cachedPlanet but no new result: {p.LinePlanetCheck}");
                                     continue;
-                                }
                             }
 
                             if (p.LinePlanetCheck)
@@ -152,7 +138,7 @@ namespace WeaponCore.Projectiles
 
                     if (grid != null)
                     {
-                        if (!(p.EwarActive && p.Info.System.EwarEffect))
+                        if (!(p.Info.EwarActive && p.Info.System.EwarEffect))
                             hitEntity.EventType = Grid;
                         else if (!p.Info.System.Pulse)
                             hitEntity.EventType = Effect;
@@ -235,6 +221,7 @@ namespace WeaponCore.Projectiles
                 p.Info.TriggeredPulse = true;
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                 p.Velocity = Vector3D.Zero;
+                p.Hit.HitPos = p.Position + p.Direction * p.Info.System.EwarTriggerRange;
                 p.Info.HitList.Clear();
                 return false;
             }
@@ -289,7 +276,7 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as MyCubeGrid;
                 var voxel = ent as MyVoxelBase;
-                if (triggerEvent && (info.Ai.Targets.ContainsKey(ent) || ent.Physics != null && !ent.Physics.Enabled && ent.Physics.IsPhantom))
+                if (triggerEvent && (info.Ai.Targets.ContainsKey(ent) || shield != null))
                     hitEnt.PulseTrigger = true;
                 else if (hitEnt.Projectile != null)
                 {
@@ -307,7 +294,7 @@ namespace WeaponCore.Projectiles
                     if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                     else
                     {
-                        if (hitEnt.SphereCheck || eWarPulse)
+                        if (hitEnt.SphereCheck || info.EwarActive)
                         {
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
@@ -378,7 +365,7 @@ namespace WeaponCore.Projectiles
                     if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                     else
                     {
-                        if (hitEnt.SphereCheck || eWarPulse)
+                        if (hitEnt.SphereCheck || info.EwarActive)
                         {
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 

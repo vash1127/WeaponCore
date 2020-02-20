@@ -53,24 +53,30 @@ namespace WeaponCore
                     switch (hitEnt.EventType)
                     {
                         case HitEntity.Type.Shield:
+                            Log.Line($"Shield");
                             DamageShield(hitEnt, info);
                             continue;
                         case HitEntity.Type.Grid:
+                            Log.Line($"grid");
                             DamageGrid(hitEnt, info);
                             continue;
                         case HitEntity.Type.Destroyable:
+                            Log.Line($"Destoryable");
                             DamageDestObj(hitEnt, info);
                             continue;
                         case HitEntity.Type.Voxel:
+                            Log.Line($"voxel");
                             DamageVoxel(hitEnt, info);
                             continue;
                         case HitEntity.Type.Projectile:
                             DamageProjectile(hitEnt, info);
                             continue;
                         case HitEntity.Type.Field:
+                            Log.Line($"field");
                             UpdateField(hitEnt, info);
                             continue;
                         case HitEntity.Type.Effect:
+                            Log.Line($"effect");
                             UpdateEffect(hitEnt, info);
                             continue;
                     }
@@ -118,7 +124,9 @@ namespace WeaponCore
                     return;
                 }
                 var objHp = hit.Value;
-                if (scaledDamage < objHp)
+                if (info.EwarActive)
+                    info.BaseHealthPool -= 1;
+                else if (scaledDamage < objHp)
                 {
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;

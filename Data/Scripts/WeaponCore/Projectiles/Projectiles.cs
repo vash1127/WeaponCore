@@ -216,9 +216,9 @@ namespace WeaponCore.Projectiles
                     }
                 }
                 else p.AtMaxRange = true;
-
                 if (p.Info.System.Ewar)
                     p.RunEwar();
+
                 p.Active = true;
             }
         }
@@ -231,9 +231,8 @@ namespace WeaponCore.Projectiles
 
                 if (!p.Active || (int)p.State > 3) continue;
                 var triggerRange = p.Info.System.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.System.EwarTriggerRange : 0;
-                var useEwarSphere = triggerRange > 0 || p.EwarActive;
-                var beam = triggerRange > 0 ? new LineD(p.LastPosition, p.Position + (p.Direction * triggerRange)) : new LineD(p.LastPosition, p.Position);
-
+                var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
+                var beam = useEwarSphere ? new LineD(p.Position + (-p.Direction * p.Info.System.EwarTriggerRange), p.Position + (p.Direction * p.Info.System.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
                     var dInfo = p.Info.System.Values.Ammo.AreaEffect.Detonation;
@@ -249,7 +248,6 @@ namespace WeaponCore.Projectiles
                         for (int i = 0; i < checkList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
                             { Distance = 0, Element = checkList[i] });
-
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
@@ -271,7 +269,7 @@ namespace WeaponCore.Projectiles
                     p.SeekEnemy();
                 else if (useEwarSphere)
                 {
-                    if (p.EwarActive) {
+                    if (p.Info.EwarActive) {
                         p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
                         var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
                         if (p.PruneSphere.Radius < currentRadius) {
@@ -280,7 +278,9 @@ namespace WeaponCore.Projectiles
                         }
                     }
                     else
+                    {
                         p.PruneSphere = new BoundingSphereD(p.Position, triggerRange);
+                    }
 
                     sphere = true;
                 }

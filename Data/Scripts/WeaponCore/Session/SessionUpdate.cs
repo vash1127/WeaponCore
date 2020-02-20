@@ -225,7 +225,7 @@ namespace WeaponCore
                                 else if (w.BarrelSpinning)
                                     w.SpinBarrel(true);
 
-                                if (comp.Debug)
+                                if (comp.Debug && !DedicatedServer)
                                     WeaponDebug(w);
                             }
                         }

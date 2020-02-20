@@ -135,6 +135,7 @@ namespace WeaponCore.Support
         public readonly double AzStep;
         public readonly double ElStep;
         public readonly double EwarTriggerRange;
+        public readonly double MaxLateralThrust;
         public readonly float DesiredProjectileSpeed;
         public readonly double SmartsDelayDistSqr;
         public readonly float TargetLossDegree;
@@ -214,7 +215,6 @@ namespace WeaponCore.Support
             AmmoParticleShrinks = values.Graphics.Particles.Ammo.ShrinkByDistance;
             HitParticleShrinks = values.Graphics.Particles.Hit.ShrinkByDistance;
             
-
             HitParticle = values.Graphics.Particles.Hit.Name != string.Empty;
 
             DrawLine = Values.Graphics.Line.Tracer.Enable;
@@ -252,6 +252,7 @@ namespace WeaponCore.Support
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
             MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue;
+            MaxLateralThrust = MathHelperD.Clamp(values.Ammo.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
             ClosestFirst = values.Targeting.ClosestFirst;
             Sound();
 

@@ -48,6 +48,7 @@ namespace WeaponCore.Support
         internal bool EnableGuidance = true;
         internal bool LastHitShield;
         internal bool TriggeredPulse;
+        internal bool EwarActive;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
 
@@ -89,6 +90,7 @@ namespace WeaponCore.Support
             LastHitShield = false;
             IsShrapnel = false;
             TriggeredPulse = false;
+            EwarActive = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
