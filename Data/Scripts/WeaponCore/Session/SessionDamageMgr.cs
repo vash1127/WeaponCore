@@ -53,30 +53,24 @@ namespace WeaponCore
                     switch (hitEnt.EventType)
                     {
                         case HitEntity.Type.Shield:
-                            Log.Line($"Shield");
                             DamageShield(hitEnt, info);
                             continue;
                         case HitEntity.Type.Grid:
-                            Log.Line($"grid");
                             DamageGrid(hitEnt, info);
                             continue;
                         case HitEntity.Type.Destroyable:
-                            Log.Line($"Destoryable");
                             DamageDestObj(hitEnt, info);
                             continue;
                         case HitEntity.Type.Voxel:
-                            Log.Line($"voxel");
                             DamageVoxel(hitEnt, info);
                             continue;
                         case HitEntity.Type.Projectile:
                             DamageProjectile(hitEnt, info);
                             continue;
                         case HitEntity.Type.Field:
-                            Log.Line($"field");
                             UpdateField(hitEnt, info);
                             continue;
                         case HitEntity.Type.Effect:
-                            Log.Line($"effect");
                             UpdateEffect(hitEnt, info);
                             continue;
                     }
@@ -362,7 +356,6 @@ namespace WeaponCore
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var sync = MpActive && IsServer;
 
-            //projectile.ObjectsHit++;
             var attackerId = info.Target.FiringCube.EntityId;
 
             var objHp = destObj.Integrity;
