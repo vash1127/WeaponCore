@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.ModAPI;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -15,7 +16,7 @@ namespace WeaponCore.Support
         private Func<IList<MyDefinitionId>> _getAllCoreWeapons;
         private Func<IList<MyDefinitionId>> _getAllCoreStaticLaunchers;
         private Func<IList<MyDefinitionId>> _getAllCoreTurrets;
-        private Action<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int> _setTargetEntity;
+        private Action<IMyEntity, IMyEntity, int> _setTargetEntity;
         private Action<IMyTerminalBlock> _fireWeaponOnce;
         private Action<IMyTerminalBlock, bool> _toggleWeaponFire;
         private Func<IMyTerminalBlock, bool> _isWeaponReadyToFire;
@@ -23,8 +24,8 @@ namespace WeaponCore.Support
         private Func<IMyTerminalBlock, IList<IList<Threat>>> _getTurretTargetTypes;
         private Action<IMyTerminalBlock, IList<IList<Threat>>> _setTurretTargetTypes;
         private Action<IMyTerminalBlock, float> _setTurretTargetingRange;
-        private Func<IMyTerminalBlock, IList<VRage.Game.ModAPI.Ingame.IMyEntity>> _getTargetedEntity;
-        private OutFunc<IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, Vector3D?, bool?> _isTargetAligned;
+        private Func<IMyTerminalBlock, IList<IMyEntity>> _getTargetedEntity;
+        private OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool?> _isTargetAligned;
         private Func<IMyTerminalBlock, float> _getHeatLevel;
         private Func<IMyTerminalBlock, float> _currentPowerConsumption;
         private Func<MyDefinitionId, float> _maxPowerConsumption;
@@ -86,7 +87,7 @@ namespace WeaponCore.Support
             _getAllCoreWeapons = (Func<IList<MyDefinitionId>>)delegates["GetAllCoreWeapons"];
             _getAllCoreStaticLaunchers = (Func<IList<MyDefinitionId>>)delegates["GetCoreStaticLaunchers"];
             _getAllCoreTurrets = (Func<IList<MyDefinitionId>>)delegates["GetCoreTurrets"];
-            _setTargetEntity = (Action<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int>)delegates["SetTargetEntity"];
+            _setTargetEntity = (Action<IMyEntity, IMyEntity, int>)delegates["SetTargetEntity"];
             _fireWeaponOnce = (Action<IMyTerminalBlock>)delegates["FireOnce"];
             _toggleWeaponFire = (Action<IMyTerminalBlock, bool>)delegates["ToggleFire"];
             _isWeaponReadyToFire = (Func<IMyTerminalBlock, bool>)delegates["WeaponReady"];
@@ -94,8 +95,8 @@ namespace WeaponCore.Support
             _getTurretTargetTypes = (Func<IMyTerminalBlock, IList<IList<Threat>>>)delegates["GetTurretTargetTypes"];
             _setTurretTargetingRange = (Action <IMyTerminalBlock, float>)delegates["SetTurretRange"];
             _setTurretTargetTypes = (Action<IMyTerminalBlock, IList<IList<Threat>>>)delegates["SetTurretTargetTypes"];
-            _getTargetedEntity = (Func<IMyTerminalBlock, List<VRage.Game.ModAPI.Ingame.IMyEntity>>)delegates["GetTargetedEntity"];
-            _isTargetAligned = (OutFunc<IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, Vector3D?, bool?>)delegates["TargetPredictedPosition"];
+            _getTargetedEntity = (Func<IMyTerminalBlock, List<IMyEntity>>)delegates["GetTargetedEntity"];
+            _isTargetAligned = (OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool?>)delegates["TargetPredictedPosition"];
             _getHeatLevel = (Func<IMyTerminalBlock, float>)delegates["GetHeatLevel"];
             _currentPowerConsumption = (Func<IMyTerminalBlock, float>)delegates["CurrentPower"];
             _maxPowerConsumption = (Func<MyDefinitionId, float>)delegates["MaxPower"];
@@ -108,7 +109,7 @@ namespace WeaponCore.Support
         public IList<MyDefinitionId> GetAllCoreStaticLaunchers() => _getAllCoreStaticLaunchers?.Invoke();
         public IList<MyDefinitionId> GetAllCoreTurrets() => _getAllCoreTurrets?.Invoke();
         public IList<IList<Threat>> GetTurretTargetTypes(IMyTerminalBlock weapon) => _getTurretTargetTypes?.Invoke(weapon);
-        public IList<VRage.Game.ModAPI.Ingame.IMyEntity> GetTargetedEntity(IMyTerminalBlock weapon) => _getTargetedEntity?.Invoke(weapon);
+        public IList<IMyEntity> GetTargetedEntity(IMyTerminalBlock weapon) => _getTargetedEntity?.Invoke(weapon);
         public bool? IsWeaponReadyToFire(IMyTerminalBlock weapon) => _isWeaponReadyToFire?.Invoke(weapon);
         public float? GetMaxWeaponRange(IMyTerminalBlock weapon) => _getMaxWeaponRange?.Invoke(weapon);
         public float? GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon);
@@ -117,11 +118,11 @@ namespace WeaponCore.Support
 
         public void DisablePowerRequirements(IMyTerminalBlock weapon) => _disablePowerRequirements?.Invoke(weapon);
         public void SetTurretTargetingRange(IMyTerminalBlock weapon, float range) => _setTurretTargetingRange?.Invoke(weapon, range);
-        public void SetTargetEntity(VRage.Game.ModAPI.Ingame.IMyEntity shooter, VRage.Game.ModAPI.Ingame.IMyEntity target, int priority) => _setTargetEntity?.Invoke(shooter, target, priority);
+        public void SetTargetEntity(IMyEntity shooter, IMyEntity target, int priority) => _setTargetEntity?.Invoke(shooter, target, priority);
         public void FireWeaponOnce(IMyTerminalBlock weapon) => _fireWeaponOnce?.Invoke(weapon);
         public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on) => _toggleWeaponFire?.Invoke(weapon, on);
         public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<IList<Threat>> threats) => _setTurretTargetTypes?.Invoke(weapon, threats);
-        public bool? IsTargetAligned(IMyTerminalBlock weaponBlock, VRage.Game.ModAPI.Ingame.IMyEntity targetEnt, int weaponId, out Vector3D? targetPos)
+        public bool? IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D? targetPos)
         {
             targetPos = null;
             var aligned = _isTargetAligned?.Invoke(weaponBlock, targetEnt, weaponId, out targetPos);
