@@ -47,6 +47,8 @@ namespace WeaponCore.Support
                 }
                 else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector)
                 {
+                    if (Session.IsClient) return;
+
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory))
                     {

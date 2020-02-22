@@ -477,8 +477,8 @@ namespace WeaponCore.Platform
             if (!System.EnergyAmmo && State.CurrentMags > 0 || Comp.Session.IsCreative)
             {
                 State.CurrentAmmo = System.MagazineDef.Capacity;
-                //if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
-                   //MyAPIGateway.Parallel.Start(() => { Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId); });
+                if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
+                   Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
             }
         }
 

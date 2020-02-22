@@ -12,23 +12,33 @@ namespace WeaponCore
         internal static void ComputeStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
-            if (!comp.MyCube.HasInventory) return;
-            var def = weapon.System.AmmoDefId;
-            float itemMass;
-            float itemVolume;
 
-            MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
+            if (!comp.Session.IsClient)
+            {
+                if (!comp.MyCube.HasInventory) return;
+                var def = weapon.System.AmmoDefId;
 
-            var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
+                var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
-            weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(def);
-            weapon.CurrentAmmoVolume = (float)weapon.State.CurrentMags * itemVolume;
+                var oldMags = weapon.State.CurrentMags;
 
-            if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
-                weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-            
+                weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(def);
+                weapon.CurrentAmmoVolume = (float)weapon.State.CurrentMags * weapon.System.MagVolume;
 
-            if ((weapon.State.CurrentAmmo == 0 && (weapon.System.MustCharge || weapon.State.CurrentMags > 0 || comp.Session.IsCreative)) || (comp.Session.IsClient && weapon.System.MustCharge && weapon.State.CurrentAmmo < weapon.System.EnergyMagSize))
+                if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
+                    weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
+
+                var state = weapon.State;
+
+                if (oldMags != weapon.State.CurrentMags)
+                    comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
+            }
+
+            var hasMags = weapon.State.CurrentMags > 0;
+            var chargeReload = weapon.System.MustCharge && (weapon.System.EnergyAmmo || hasMags);
+            var standardReload = !weapon.System.MustCharge && !weapon.System.EnergyAmmo && hasMags;
+
+            if (weapon.State.CurrentAmmo == 0 && (comp.Session.IsCreative || chargeReload || standardReload))
                 weapon.StartReload();
         }
 

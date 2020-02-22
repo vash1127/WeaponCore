@@ -149,6 +149,8 @@ namespace WeaponCore.Support
         public readonly float MaxAmmoVolume;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
+        public readonly float MagMass;
+        public readonly float MagVolume;
         public readonly HardPointDefinition.Prediction Prediction;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
@@ -197,7 +199,9 @@ namespace WeaponCore.Support
             WeaponId = weaponId;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            
+
+            MyInventory.GetItemVolumeAndMass(AmmoDefId, out MagMass, out MagVolume);
+
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);

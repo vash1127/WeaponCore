@@ -77,6 +77,7 @@ namespace WeaponCore
         [ProtoMember(4)] public bool Overheated;
         [ProtoMember(5)] public bool Reloading;
         [ProtoMember(6)] public bool Charging;
+        [ProtoMember(7)] public int WeaponId;
 
         public void SetState (WeaponStateValues wState)
         {

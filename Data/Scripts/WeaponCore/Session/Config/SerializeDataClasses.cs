@@ -17,16 +17,17 @@ namespace WeaponCore
         TargetUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
-        ActiveControlUpdate
+        ActiveControlUpdate,
+        WeaponSync,
     }
 
     [ProtoContract]
     [ProtoInclude(4, typeof(StatePacket))]
     [ProtoInclude(5, typeof(SettingPacket))]
-    [ProtoInclude(6, typeof(TargetPacket))]
+    [ProtoInclude(6, typeof(WeaponSyncPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
     [ProtoInclude(8, typeof(LookupUpdatePacket))]
-    [ProtoInclude(9, typeof(FakeTargetPacket))] 
+    [ProtoInclude(9, typeof(FakeTargetPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -50,11 +51,19 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class TargetPacket : Packet
+    [ProtoInclude(10, typeof(TargetPacket))]
+    public class WeaponSyncPacket : Packet
     {
-        [ProtoMember(1)] internal TransferTarget TargetData = null;
         [ProtoMember(2)] internal WeaponSyncValues WeaponData;
         [ProtoMember(3)] internal WeaponTimings Timmings = null;
+
+        public WeaponSyncPacket() { }
+    }
+
+    [ProtoContract]
+    public class TargetPacket : WeaponSyncPacket
+    {
+        [ProtoMember(1)] internal TransferTarget TargetData = null;
         public TargetPacket() { }
     }
 

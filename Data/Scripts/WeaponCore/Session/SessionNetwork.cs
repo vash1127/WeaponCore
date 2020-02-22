@@ -82,39 +82,9 @@ namespace WeaponCore
                                     var weaponData = targetPacket.WeaponData;
                                     var wid = syncTarget.WeaponId;
                                     var weapon = comp.Platform.Weapons[wid];
-                                    var cState = comp.State.Value;
-                                    var wState = cState.Weapons[wid];
-                                    var wasReloading = wState.Reloading;
-
-                                    comp.CurrentHeat -= weapon.State.Heat;
-                                    cState.CurrentCharge -= weapon.State.CurrentCharge;
-
-                                    weaponData.SetState(wState);
-
-                                    comp.CurrentHeat += weapon.State.Heat;
-                                    cState.CurrentCharge += weapon.State.CurrentCharge;
-
-
                                     var timings = targetPacket.Timmings.SyncOffsetClient(Tick);
 
-                                    comp.WeaponValues.Timings[wid] = timings;
-                                    weapon.Timings = timings;
-
-                                    if (!weapon.System.MustCharge && !wasReloading && weapon.State.CurrentAmmo <= 0)
-                                        weapon.StartReload();
-                                    else if (weapon.System.MustCharge && weapon.State.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
-                                        weapon.ChargeReload();
-                                    else if (weapon.System.MustCharge && !weapon.State.Reloading && wasReloading)
-                                        weapon.Reloaded();
-
-                                    if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
-                                    {
-                                        var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
-                                        comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
-                                    }
-
-
-
+                                    SyncWeapon(weapon, timings, ref weaponData);
                                     syncTarget.SyncTarget(weapon.Target);
                                 }
                                 else
@@ -152,10 +122,58 @@ namespace WeaponCore
 
                                 break;
                             }
+
+                        case PacketType.WeaponSync:
+                            var syncPacket = packet as WeaponSyncPacket;
+
+                            if (comp != null && syncPacket != null)
+                            {
+                                var weaponData = syncPacket.WeaponData;
+                                var wid = weaponData.WeaponId;
+                                var weapon = comp.Platform.Weapons[wid];
+                                var timings = syncPacket.Timmings.SyncOffsetClient(Tick);
+
+                                SyncWeapon(weapon, timings, ref weaponData);
+                            }
+                                break;
                     }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
+        }
+
+        private void SyncWeapon(Weapon weapon, WeaponTimings timings, ref WeaponSyncValues weaponData)
+        {
+            var comp = weapon.Comp;
+            var cState = comp.State.Value;
+            var wState = weapon.State;
+            
+
+            var wasReloading = wState.Reloading;
+
+            comp.CurrentHeat -= weapon.State.Heat;
+            cState.CurrentCharge -= weapon.State.CurrentCharge;
+
+            weaponData.SetState(wState);
+
+            comp.CurrentHeat += weapon.State.Heat;
+            cState.CurrentCharge += weapon.State.CurrentCharge;            
+
+            comp.WeaponValues.Timings[weapon.WeaponId] = timings;
+            weapon.Timings = timings;
+
+            if (!weapon.System.MustCharge && !wasReloading && weapon.State.CurrentAmmo <= 0)
+                weapon.StartReload();
+            else if (weapon.System.MustCharge && weapon.State.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
+                weapon.ChargeReload();
+            else if (weapon.System.MustCharge && !weapon.State.Reloading && wasReloading)
+                weapon.Reloaded();
+
+            if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
+            {
+                var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
+                comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
+            }
         }
 
         private void ServerReceivedPacket(byte[] rawData)

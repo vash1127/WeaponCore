@@ -22,7 +22,8 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
 
-                BlockInventory.ContentsChanged += OnContentsChanged;
+                if(!Session.IsClient)
+                    BlockInventory.ContentsChanged += OnContentsChanged;
 
             }
             else
@@ -36,7 +37,8 @@ namespace WeaponCore.Support
                     MyCube.IsWorkingChanged -= IsWorkingChanged;
 
                     if (BlockInventory == null) Log.Line($"BlockInventory is null");
-                    else BlockInventory.ContentsChanged -= OnContentsChanged;
+                    else
+                        if (!Session.IsClient) BlockInventory.ContentsChanged -= OnContentsChanged;
                 }
             }
         }
