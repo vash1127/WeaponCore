@@ -111,8 +111,11 @@ namespace WeaponCore
                                 
                                 if (w.Target.State == Targets.Acquired) {
 
-                                    if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
-                                        w.Target.Reset(Tick, !comp.TrackReticle);
+                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget)) {
+                                        if(!IsClient)
+                                            w.Target.Reset(Tick, !comp.TrackReticle); //testing, ent is null on client load
+                                        else if(comp.WeaponValues.Targets[w.WeaponId].State == Targets.Acquired)
+                                                comp.WeaponValues.Targets[w.WeaponId].SyncTarget(w.Target);
 
                                     }
                                     else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) {
@@ -272,10 +275,11 @@ namespace WeaponCore
                     var comp = w.Comp;
                     var gridAi = comp.Ai;
 
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
+                    if (comp == null || w == null || comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
-                        ChargingWeaponsCheck.Remove(w);
+                        if (ChargingWeaponsCheck.Contains(w))
+                            ChargingWeaponsCheck.Remove(w);
                         continue;
                     }
 
@@ -302,15 +306,15 @@ namespace WeaponCore
 
                     if (w.Timings.ChargeUntilTick <= Tick || !w.State.Reloading)
                     {
-                        Log.Line($"w.State.Reloading: {w.State.Reloading}");
                         if (w.State.Reloading)
                         {
-                            //w.Reloaded();                           
-                            w.State.CurrentAmmo = w.System.MagazineDef.Capacity;
+                            w.Reloaded();                           
+                            /*w.State.CurrentAmmo = w.System.MagazineDef.Capacity;
                             comp.State.Value.CurrentCharge = w.System.EnergyMagSize;
                             w.State.CurrentCharge = w.System.EnergyMagSize;
                             w.State.Reloading = false;
                             w.Timings.ChargeUntilTick = 0;
+                            w.Timings.ChargeDelayTicks = 0;*/
                         }
 
                         if (w.DrawingPower)

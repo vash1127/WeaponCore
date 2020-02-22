@@ -455,42 +455,31 @@ namespace WeaponCore.Platform
 
         internal void Reloaded(object o = null)
         {
+            State.Reloading = false;
+
             if (System.MustCharge)
             {
-                if (!System.IsHybrid)
-                {
-                    State.CurrentAmmo = System.EnergyMagSize;
-                    Comp.State.Value.CurrentCharge = System.EnergyMagSize;
-                    State.CurrentCharge = System.EnergyMagSize;
-                }
-
-                StopPowerDraw();
-
-                DrawingPower = false;
+                State.CurrentAmmo = System.EnergyMagSize;
+                Comp.State.Value.CurrentCharge = System.EnergyMagSize;
+                State.CurrentCharge = System.EnergyMagSize;
+                
 
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
             }
 
-            if (!System.EnergyAmmo || System.IsHybrid)
-            {
-                if (Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId) > 0 || Comp.Session.IsCreative)
-                {
-                    State.CurrentAmmo = System.MagazineDef.Capacity;
-                    if (System.IsHybrid)
-                    {
-                        Comp.State.Value.CurrentCharge = System.EnergyMagSize;
-                        State.CurrentCharge = System.EnergyMagSize;
-                    }
-                }
-            }
-
-            Log.Line($"CurrentAmmo: {State.CurrentAmmo} CurrentCharge: {Comp.State.Value.CurrentCharge} CurrentCharge: {State.CurrentCharge}");
-
             EventTriggerStateChanged(EventTriggers.Reloading, false);
-            State.Reloading = false;
+
+
             if (!System.HasBurstDelay)
                 State.ShotsFired = 0;
+
+            if (!System.EnergyAmmo && State.CurrentMags > 0 || Comp.Session.IsCreative)
+            {
+                State.CurrentAmmo = System.MagazineDef.Capacity;
+                //if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
+                   //MyAPIGateway.Parallel.Start(() => { Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId); });
+            }
         }
 
         public void StartPreFiringSound()

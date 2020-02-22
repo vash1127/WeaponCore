@@ -120,13 +120,13 @@ namespace WeaponCore
         [ProtoMember(6)] public uint WeaponReadyTick;
         [ProtoMember(7)] public uint LastHeatUpdateTick;
 
-        public uint Offset = 2;
+        public uint Offset = 4;
 
         public WeaponTimings SyncOffsetServer(uint tick)
         {
             var offset = tick + Offset;
 
-            var rtn = new WeaponTimings
+            return new WeaponTimings
             {
                 ChargeDelayTicks = ChargeDelayTicks,
                 AnimationDelayTick = AnimationDelayTick > tick ? AnimationDelayTick >= offset ? AnimationDelayTick - offset : 0 : 0,
@@ -136,10 +136,6 @@ namespace WeaponCore
                 WeaponReadyTick = WeaponReadyTick > tick ? WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0 : 0,
                 LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset >= 0 ? (tick - LastHeatUpdateTick) - offset : 0,
             };
-
-            Log.Line($"ChargeUntilTick: {ChargeUntilTick} ShootDelayTick: {ShootDelayTick}");
-
-            return rtn;
 
         }
 
