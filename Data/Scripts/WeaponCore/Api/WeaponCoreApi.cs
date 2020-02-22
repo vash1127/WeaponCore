@@ -12,9 +12,9 @@ namespace WeaponCore.Support
         private delegate T5 OutFunc<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, out T4 arg4);
 
 
-        private Func<List<MyDefinitionId>> _getAllCoreWeapons;
-        private Func<List<MyDefinitionId>> _getAllCoreStaticLaunchers;
-        private Func<List<MyDefinitionId>> _getAllCoreTurrets;
+        private Func<IList<MyDefinitionId>> _getAllCoreWeapons;
+        private Func<IList<MyDefinitionId>> _getAllCoreStaticLaunchers;
+        private Func<IList<MyDefinitionId>> _getAllCoreTurrets;
         private Action<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int> _setTargetEntity;
         private Action<IMyTerminalBlock> _fireWeaponOnce;
         private Action<IMyTerminalBlock, bool> _toggleWeaponFire;
@@ -29,7 +29,7 @@ namespace WeaponCore.Support
         private Func<IMyTerminalBlock, float> _currentPowerConsumption;
         private Func<MyDefinitionId, float> _maxPowerConsumption;
         private Action<IMyTerminalBlock> _disablePowerRequirements;
-        private Func<List<WeaponDefinition>> _getAllWeaponDefinitions;
+        private Func<IList<WeaponDefinition>> _getAllWeaponDefinitions;
 
 
         private const long Channel = 67549756549;
