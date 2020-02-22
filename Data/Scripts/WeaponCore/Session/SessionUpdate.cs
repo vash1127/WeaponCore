@@ -115,7 +115,7 @@ namespace WeaponCore
                                         if(!IsClient)
                                             w.Target.Reset(Tick, !comp.TrackReticle); //testing, ent is null on client load
                                         else if(comp.WeaponValues.Targets[w.WeaponId].State == Targets.Acquired)
-                                                comp.WeaponValues.Targets[w.WeaponId].SyncTarget(w.Target);
+                                            comp.WeaponValues.Targets[w.WeaponId].SyncTarget(w.Target);
 
                                     }
                                     else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) {

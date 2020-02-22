@@ -171,6 +171,7 @@ namespace WeaponCore
 
             if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
             {
+                weapon.HeatLoopRunning = true;
                 var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
                 comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
             }

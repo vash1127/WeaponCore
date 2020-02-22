@@ -460,7 +460,7 @@ namespace WeaponCore.Support
                             if (castRay)
                             {
                                 ai.Session.ClosestRayCasts++;
-                                bestTest = physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                                bestTest = MyAPIGateway.Physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
 
                                 if (hit.HitEntity != ai.MyGrid || hit == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
                                     notSelfHit = true;

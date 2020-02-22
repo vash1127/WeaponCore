@@ -776,12 +776,10 @@ namespace WeaponCore
             for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
-
-                AnimationsToProcess.RemoveAtFast(i);
-                continue;
+                
                 //if (animation.Paused) continue;
 
-                if (animation != null && !animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.Part != null && animation.StartTick <= Tick)
+                if (animation != null && animation.MainEnt != null && !animation.MainEnt.MarkedForClose && animation.Part != null && animation.StartTick <= Tick)
                 {
                     if (animation.MovesPivotPos || animation.CanPlay)
                     {
@@ -793,7 +791,7 @@ namespace WeaponCore
                         EmissiveState currentEmissive;
 
                         animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
-
+                        
                         //Log.Line($"animationType: {animationType}");
 
                         if (animation.Reverse)
@@ -816,6 +814,7 @@ namespace WeaponCore
                                 animation.Reverse = true;
                             }
                         }
+                       
 
                         if (rotation != Matrix.Zero)
                             localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
@@ -844,6 +843,7 @@ namespace WeaponCore
                             animation.Part.Render.RemoveRenderObjects();
                             animation.Part.PositionComp.LocalMatrix = matrix;
                         }
+                        
 
                         if (!DedicatedServer && currentEmissive.EmissiveParts != null && currentEmissive.EmissiveParts.Length > 0)
                         {
@@ -891,6 +891,7 @@ namespace WeaponCore
                     }
 
                     //Log.Line(animation.Looping)
+                    
 
                     if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
                     {
@@ -901,8 +902,15 @@ namespace WeaponCore
                         {
                             for (int j = 0; j < animation.EmissiveParts.Length; j++)
                             {
-                                var emissivePart = animation.EmissiveParts[j];
-                                animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                                try
+                                {
+                                    var emissivePart = animation.EmissiveParts[j];
+                                    animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                                }
+                                catch (Exception e)
+                                {
+                                    Log.Line($"Error with emissives: {e}");
+                                }
                             }
                         }
                     }
