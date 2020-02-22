@@ -4,7 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
-
+using static WeaponCore.Support.WeaponCoreApi.Threat;
 namespace WeaponCore.Support
 {
     internal class WeaponCoreApi
