@@ -110,11 +110,11 @@ namespace WeaponCore.Support
         public IList<MyDefinitionId> GetAllCoreTurrets() => _getAllCoreTurrets?.Invoke();
         public IList<IList<Threat>> GetTurretTargetTypes(IMyTerminalBlock weapon) => _getTurretTargetTypes?.Invoke(weapon);
         public IList<IMyEntity> GetTargetedEntity(IMyTerminalBlock weapon) => _getTargetedEntity?.Invoke(weapon);
-        public bool? IsWeaponReadyToFire(IMyTerminalBlock weapon) => _isWeaponReadyToFire?.Invoke(weapon);
-        public float? GetMaxWeaponRange(IMyTerminalBlock weapon) => _getMaxWeaponRange?.Invoke(weapon);
-        public float? GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon);
-        public float? CurrentPowerConsumption(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon);
-        public float? MaxPowerConsumption(MyDefinitionId weaponDef) => _maxPowerConsumption?.Invoke(weaponDef);
+        public bool IsWeaponReadyToFire(IMyTerminalBlock weapon) => _isWeaponReadyToFire?.Invoke(weapon) ?? false;
+        public float GetMaxWeaponRange(IMyTerminalBlock weapon) => _getMaxWeaponRange?.Invoke(weapon) ?? 0f;
+        public float GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon) ?? 0f;
+        public float CurrentPowerConsumption(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
+        public float MaxPowerConsumption(MyDefinitionId weaponDef) => _maxPowerConsumption?.Invoke(weaponDef) ?? 0f;
 
         public void DisablePowerRequirements(IMyTerminalBlock weapon) => _disablePowerRequirements?.Invoke(weapon);
         public void SetTurretTargetingRange(IMyTerminalBlock weapon, float range) => _setTurretTargetingRange?.Invoke(weapon, range);
@@ -122,11 +122,11 @@ namespace WeaponCore.Support
         public void FireWeaponOnce(IMyTerminalBlock weapon) => _fireWeaponOnce?.Invoke(weapon);
         public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on) => _toggleWeaponFire?.Invoke(weapon, on);
         public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<IList<Threat>> threats) => _setTurretTargetTypes?.Invoke(weapon, threats);
-        public bool? IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D? targetPos)
+        public bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D? targetPos)
         {
             targetPos = null;
             var aligned = _isTargetAligned?.Invoke(weaponBlock, targetEnt, weaponId, out targetPos);
-            return aligned;
+            return aligned ?? false;
         }
     }
 }
