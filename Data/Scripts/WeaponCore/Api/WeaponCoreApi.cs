@@ -83,9 +83,9 @@ namespace WeaponCore.Support
         public void ApiLoad(IReadOnlyDictionary<string, Delegate> delegates)
         {
             _apiInit = true;
-            _getAllCoreWeapons = (Func<List<MyDefinitionId>>)delegates["GetAllCoreWeapons"];
-            _getAllCoreStaticLaunchers = (Func<List<MyDefinitionId>>)delegates["GetCoreStaticLaunchers"];
-            _getAllCoreTurrets = (Func<List<MyDefinitionId>>)delegates["GetCoreTurrets"];
+            _getAllCoreWeapons = (Func<IList<MyDefinitionId>>)delegates["GetAllCoreWeapons"];
+            _getAllCoreStaticLaunchers = (Func<IList<MyDefinitionId>>)delegates["GetCoreStaticLaunchers"];
+            _getAllCoreTurrets = (Func<IList<MyDefinitionId>>)delegates["GetCoreTurrets"];
             _setTargetEntity = (Action<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int>)delegates["SetTargetEntity"];
             _fireWeaponOnce = (Action<IMyTerminalBlock>)delegates["FireOnce"];
             _toggleWeaponFire = (Action<IMyTerminalBlock, bool>)delegates["ToggleFire"];
@@ -100,7 +100,7 @@ namespace WeaponCore.Support
             _currentPowerConsumption = (Func<IMyTerminalBlock, float>)delegates["CurrentPower"];
             _maxPowerConsumption = (Func<MyDefinitionId, float>)delegates["MaxPower"];
             _disablePowerRequirements = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
-            _getAllWeaponDefinitions = (Func<List<WeaponDefinition>>)delegates["GetAllWeaponDefinitions"];
+            _getAllWeaponDefinitions = (Func<IList<WeaponDefinition>>)delegates["GetAllWeaponDefinitions"];
     }
 
         public IList<WeaponDefinition> GetAllWeaponDefinitions() => _getAllWeaponDefinitions?.Invoke();
