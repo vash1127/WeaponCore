@@ -774,7 +774,6 @@ namespace WeaponCore.Projectiles
                 case AreaEffectType.DotField:
                     if (!Info.System.Pulse ||
                         Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.System.PulseChance) {
-                        Log.Line($"DotField");
                         Info.EwarActive = true;
                     }
                     break;

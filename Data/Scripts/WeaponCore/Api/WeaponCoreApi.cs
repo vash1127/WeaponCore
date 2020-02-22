@@ -29,7 +29,8 @@ namespace WeaponCore.Support
         private Func<IMyTerminalBlock, float> _currentPowerConsumption;
         private Func<MyDefinitionId, float> _maxPowerConsumption;
         private Action<IMyTerminalBlock> _disablePowerRequirements;
-        
+        private Func<List<WeaponDefinition>> _getAllWeaponDefinitions;
+
 
         private const long Channel = 67549756549;
 
@@ -99,8 +100,10 @@ namespace WeaponCore.Support
             _currentPowerConsumption = (Func<IMyTerminalBlock, float>)delegates["CurrentPower"];
             _maxPowerConsumption = (Func<MyDefinitionId, float>)delegates["MaxPower"];
             _disablePowerRequirements = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
-        }
+            _getAllWeaponDefinitions = (Func<List<WeaponDefinition>>)delegates["GetAllWeaponDefinitions"];
+    }
 
+        public IList<WeaponDefinition> GetAllWeaponDefinitions() => _getAllWeaponDefinitions?.Invoke();
         public IList<MyDefinitionId> GetAllCoreWeapons() => _getAllCoreWeapons?.Invoke();
         public IList<MyDefinitionId> GetAllCoreStaticLaunchers() => _getAllCoreStaticLaunchers?.Invoke();
         public IList<MyDefinitionId> GetAllCoreTurrets() => _getAllCoreTurrets?.Invoke();

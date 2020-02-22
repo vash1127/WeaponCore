@@ -42,7 +42,9 @@ namespace WeaponCore.Support
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
                 ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
                 ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower),
-                ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower)
+                ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
+                ["GetAllWeaponDefinitions"] = new Func<List<WeaponDefinition>>(GetAllWeaponDefinitions),
+
             };
 
             _terminalPbApiMethods = new Dictionary<string, Delegate>()
@@ -68,6 +70,11 @@ namespace WeaponCore.Support
             var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCorePbAPI");
             pb.Getter = (b) => _terminalPbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
+        }
+
+        private List<WeaponDefinition> GetAllWeaponDefinitions()
+        {
+            return new List<WeaponDefinition>(_session.WeaponDefinitions);
         }
 
         private List<MyDefinitionId> GetAllCoreWeapons()
