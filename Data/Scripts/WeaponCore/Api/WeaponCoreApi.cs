@@ -25,7 +25,7 @@ namespace WeaponCore.Support
         private Action<IMyTerminalBlock, IList<IList<Threat>>> _setTurretTargetTypes;
         private Action<IMyTerminalBlock, float> _setTurretTargetingRange;
         private Func<IMyTerminalBlock, IList<IMyEntity>> _getTargetedEntity;
-        private OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool?> _isTargetAligned;
+        private OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool> _isTargetAligned;
         private Func<IMyTerminalBlock, float> _getHeatLevel;
         private Func<IMyTerminalBlock, float> _currentPowerConsumption;
         private Func<MyDefinitionId, float> _maxPowerConsumption;
@@ -96,7 +96,7 @@ namespace WeaponCore.Support
             _setTurretTargetingRange = (Action <IMyTerminalBlock, float>)delegates["SetTurretRange"];
             _setTurretTargetTypes = (Action<IMyTerminalBlock, IList<IList<Threat>>>)delegates["SetTurretTargetTypes"];
             _getTargetedEntity = (Func<IMyTerminalBlock, IList<IMyEntity>>)delegates["GetTargetedEntity"];
-            _isTargetAligned = (OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool?>)delegates["TargetPredictedPosition"];
+            _isTargetAligned = (OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool>)delegates["TargetPredictedPosition"];
             _getHeatLevel = (Func<IMyTerminalBlock, float>)delegates["GetHeatLevel"];
             _currentPowerConsumption = (Func<IMyTerminalBlock, float>)delegates["CurrentPower"];
             _maxPowerConsumption = (Func<MyDefinitionId, float>)delegates["MaxPower"];

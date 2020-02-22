@@ -32,16 +32,16 @@ namespace WeaponCore.Support
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
-                ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, bool>(WeaponReady),
+                ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<Threat>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
-                ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool?>(IsTargetAligned),
-                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
-                ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
-                ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower),
+                ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool>(IsTargetAligned),
+                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
+                ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
+                ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower),
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
                 ["GetAllWeaponDefinitions"] = new Func<List<WeaponDefinition>>(GetAllWeaponDefinitions),
 
@@ -52,16 +52,16 @@ namespace WeaponCore.Support
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
-                ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, bool>(WeaponReady),
+                ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<Threat>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
-                ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool?>(IsTargetAligned),
-                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
-                ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
-                ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower)
+                ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool>(IsTargetAligned),
+                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
+                ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
+                ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower)
             };
         }
 
@@ -156,7 +156,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private static bool? WeaponReady(IMyTerminalBlock weaponBlock)
+        private static bool WeaponReady(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -168,7 +168,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static float? GetMaxRange(IMyTerminalBlock weaponBlock)
+        private static float GetMaxRange(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -207,7 +207,7 @@ namespace WeaponCore.Support
                 var maxTrajectory = GetMaxRange(weaponBlock);
 
                 if (range > maxTrajectory)
-                    comp.Set.Value.Range = maxTrajectory.Value;
+                    comp.Set.Value.Range = maxTrajectory;
                 else
                     comp.Set.Value.Range = range;
             }
@@ -242,7 +242,7 @@ namespace WeaponCore.Support
             return targets;
         }
 
-        private bool? IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D targetPos)
+        private bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D targetPos)
         {
             targetPos = targetEnt.WorldMatrix.Translation;
             Target target = new Target((MyCubeBlock)weaponBlock) { Entity = (MyEntity)targetEnt };
@@ -257,7 +257,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static float? GetHeatLevel(IMyTerminalBlock weaponBlock)
+        private static float GetHeatLevel(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -272,7 +272,7 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private static float? CurrentPower(IMyTerminalBlock weaponBlock)
+        private static float CurrentPower(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -287,7 +287,7 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private float? MaxPower(MyDefinitionId weaponDef)
+        private float MaxPower(MyDefinitionId weaponDef)
         {
             float power = 0f;
             WeaponStructure weapons;
