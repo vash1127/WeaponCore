@@ -86,27 +86,39 @@ namespace WeaponCore.Support
 
                     Entity.NeedsWorldMatrix = true;
 
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                    {
+                        var weapon = Platform.Weapons[i];
+
+                        weapon.Set = Set.Value.Weapons[i];
+                        weapon.State = State.Value.Weapons[i];
+                        weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+
+                        weapon.UpdatePivotPos();
+                        weapon.Timings = WeaponValues.Timings[weapon.WeaponId];
+
+                        if (Session.MpActive && Session.IsClient)
+                        {
+                            var target = WeaponValues.Targets[weapon.WeaponId];
+                            if (target.State != Target.Targets.Expired)
+                                target.SyncTarget(weapon.Target);
+
+                            if (weapon.State.CurrentAmmo <= 0 && (!weapon.System.EnergyAmmo || weapon.System.MustCharge))
+                                weapon.StartReload();
+
+                            if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
+                            {
+                                var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
+                                weapon.Comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
+                            }
+                        }
+
+                    }
+
                     if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
                     else OnAddedToSceneTasks();
 
                     Platform.State = MyWeaponPlatform.PlatformState.Ready;
-
-                    
-                    
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
-                    {
-                        var weapon = Platform.Weapons[i];
-                        var target = TargetsToUpdate.Targets[i];
-
-                        weapon.UpdatePivotPos();
-
-                        if (Session.MpActive && Session.IsClient)
-                        {
-                            if (target.State != Target.Targets.Expired)
-                                TargetsToUpdate.Targets[weapon.WeaponId].SyncTarget(weapon.Target);
-                        }
-
-                    }
                 } 
                 else Log.Line($"Comp Init() failed");
             }
@@ -240,7 +252,7 @@ namespace WeaponCore.Support
                     State.SaveState();
                     Set.SaveSettings();
                     if(_mpActive)
-                        TargetsToUpdate.Save(this, Session.MPTargetSync);
+                        WeaponValues.Save(this, Session.MPTargetSync);
                 }
             }
             return false;

@@ -196,6 +196,8 @@ namespace WeaponCore.Platform
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
                 var set = currentHeat - LastHeat > 0.001 || currentHeat - LastHeat < 0.001;
 
+                Timings.LastHeatUpdateTick = Comp.Session.Tick;
+
                 if (!Comp.Session.DedicatedServer)
                 {
                     var heatPercent = currentHeat / System.MaxHeat;
@@ -253,14 +255,14 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
                     State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
 
-                    if (Comp.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
+                    if (State.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
                     {
                         //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         if (CurLgstAnimPlaying != null)
-                            ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
+                            Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
                         
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
-                        Comp.Overheated = false;
+                        State.Overheated = false;
                     }
 
                     _fakeHeatTick = -1;
@@ -276,7 +278,8 @@ namespace WeaponCore.Platform
                 else
                 {
                     _fakeHeatTick = 0;
-                    _heatLoopRunning = false;
+                    HeatLoopRunning = false;
+                    Timings.LastHeatUpdateTick = 0;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }

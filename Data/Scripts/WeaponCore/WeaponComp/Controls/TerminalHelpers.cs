@@ -263,7 +263,7 @@ namespace WeaponCore.Control
                         if (azSteps < 0) azSteps *= -1;
                         if (azSteps < 0) azSteps *= -1;
 
-                        w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
+                        w.Timings.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
                         w.Target.Reset(comp.Session.Tick);
                         w.TurretHomePosition();
@@ -275,27 +275,27 @@ namespace WeaponCore.Control
                     {
                         w.State.CurrentCharge = 0;
                         w.State.CurrentAmmo = 0;
-                        w.Reloading = false;
+                        w.State.Reloading = false;
                     }
                     comp.State.Value.CurrentCharge += w.State.CurrentCharge;
 
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay + w.OffDelay;
+                        w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = comp.Session.Tick + delay + w.Timings.OffDelay;
                 }
                 else
                 {
-                    w.OffDelay = 0;
+                    w.Timings.OffDelay = 0;
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = w.WeaponReadyTick = comp.Session.Tick + delay;
+                        w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
 
                     if (!w.System.EnergyAmmo || w.System.MustCharge)
                         Session.ComputeStorage(w);
                 }
 
                 
-                if (w.AnimationDelayTick < comp.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
+                if (w.Timings.AnimationDelayTick < comp.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
                 {
                     w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                     w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
@@ -308,7 +308,7 @@ namespace WeaponCore.Control
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
                         }, 
                         null, 
-                        w.AnimationDelayTick - comp.Session.Tick
+                        w.Timings.AnimationDelayTick - comp.Session.Tick
                     );
                 }
 

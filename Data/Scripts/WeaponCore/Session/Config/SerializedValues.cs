@@ -63,6 +63,30 @@ namespace WeaponCore
         [ProtoMember(5)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         [ProtoMember(6)] public int SingleShotCounter;
         [ProtoMember(7)] public float CurrentCharge;
+        [ProtoMember(8)] public bool Overheated;
+        [ProtoMember(9)] public bool Reloading;
+        [ProtoMember(10)] public bool Charging;
+    }
+
+    [ProtoContract]
+    public struct WeaponSyncValues
+    {
+        [ProtoMember(1)] public float Heat;
+        [ProtoMember(2)] public int CurrentAmmo;
+        [ProtoMember(3)] public float CurrentCharge;
+        [ProtoMember(4)] public bool Overheated;
+        [ProtoMember(5)] public bool Reloading;
+        [ProtoMember(6)] public bool Charging;
+
+        public void SetState (WeaponStateValues wState)
+        {
+            wState.Heat = Heat;
+            wState.CurrentAmmo = CurrentAmmo;
+            wState.CurrentCharge = CurrentCharge;
+            wState.Overheated = Overheated;
+            wState.Reloading = Reloading || (wState.CurrentCharge == 0 && wState.CurrentAmmo == 0);
+            wState.Charging = Charging;
+        }
     }
 
     [ProtoContract]
@@ -84,44 +108,122 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public bool Enable = true;
     }
-    
-    
+
     [ProtoContract]
-    public class MPTargetSync
+    public class WeaponTimings
+    {
+        [ProtoMember(1)] public uint ChargeDelayTicks;
+        [ProtoMember(2)] public uint ChargeUntilTick;
+        [ProtoMember(3)] public uint AnimationDelayTick;
+        [ProtoMember(4)] public uint OffDelay;
+        [ProtoMember(5)] public uint ShootDelayTick;
+        [ProtoMember(6)] public uint WeaponReadyTick;
+        [ProtoMember(7)] public uint LastHeatUpdateTick;
+
+        public uint Offset = 2;
+
+        public WeaponTimings SyncOffsetServer(uint tick)
+        {
+            var offset = tick + Offset;
+
+            var rtn = new WeaponTimings
+            {
+                ChargeDelayTicks = ChargeDelayTicks,
+                AnimationDelayTick = AnimationDelayTick > tick ? AnimationDelayTick >= offset ? AnimationDelayTick - offset : 0 : 0,
+                ChargeUntilTick = ChargeUntilTick > tick ? ChargeUntilTick >= offset ? ChargeUntilTick - offset : 0 : 0,
+                OffDelay = OffDelay > tick ? OffDelay >= offset ? OffDelay - offset : 0 : 0,
+                ShootDelayTick = ShootDelayTick > tick ? ShootDelayTick >= offset ? ShootDelayTick - offset : 0 : 0,
+                WeaponReadyTick = WeaponReadyTick > tick ? WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0 : 0,
+                LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset >= 0 ? (tick - LastHeatUpdateTick) - offset : 0,
+            };
+
+            Log.Line($"ChargeUntilTick: {ChargeUntilTick} ShootDelayTick: {ShootDelayTick}");
+
+            return rtn;
+
+        }
+
+        public WeaponTimings SyncOffsetClient(uint tick)
+        {
+            return new WeaponTimings
+            {
+                ChargeDelayTicks = ChargeDelayTicks,
+                AnimationDelayTick = AnimationDelayTick > 0 ? AnimationDelayTick + tick : 0,
+                ChargeUntilTick = ChargeUntilTick > 0 ? ChargeUntilTick + tick : 0,
+                OffDelay = OffDelay > 0 ? OffDelay + tick : 0,
+                ShootDelayTick = ShootDelayTick > 0 ? ShootDelayTick + tick : 0,
+                WeaponReadyTick = WeaponReadyTick > 0 ? WeaponReadyTick + tick : 0,
+            };
+        }
+    }
+
+    [ProtoContract]
+    public class WeaponValues
     {
         [ProtoMember(1)] public TransferTarget[] Targets;
-
+        [ProtoMember(2)] public WeaponTimings[] Timings;
 
         public void Save(WeaponComponent comp, Guid id)
         {
             if (!comp.Session.MpActive) return;
 
             if (comp.MyCube == null || comp.MyCube.Storage == null) return;
-            
+
+            var sv = new WeaponValues();
+            sv.Targets = Targets;
+            sv.Timings = new WeaponTimings[comp.Platform.Weapons.Length];
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var wid = comp.Platform.Weapons[i].WeaponId;
+                sv.Timings[wid] = new WeaponTimings();
+                var timings = Timings[wid];
+
+                sv.Timings[wid] = timings.SyncOffsetServer(comp.Session.Tick);
+            }
+
             var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
             comp.MyCube.Storage[id] = Convert.ToBase64String(binary);
+
         }
 
         public static void Load(WeaponComponent comp, Guid id)
         {
-            if (!comp.Session.MpActive) return;
-
             string rawData;
             byte[] base64;
-            if (comp.MyCube.Storage.TryGetValue(id, out rawData))
+            if (comp.Session.MpActive && comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(id, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
-                comp.TargetsToUpdate = MyAPIGateway.Utilities.SerializeFromBinary<MPTargetSync>(base64);
+                comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
+
+                var timings = comp.WeaponValues.Timings;
+                var tick = comp.Session.Tick;
+
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var wid = comp.Platform.Weapons[i].WeaponId;
+
+                    timings[wid].AnimationDelayTick = timings[wid].AnimationDelayTick > 0 ? timings[wid].AnimationDelayTick + tick : 0;
+                    timings[wid].ChargeUntilTick = timings[wid].ChargeUntilTick > 0 ? timings[wid].ChargeUntilTick + tick : 0;
+                    timings[wid].OffDelay = timings[wid].OffDelay > 0 ? timings[wid].OffDelay + tick : 0;
+                    timings[wid].WeaponReadyTick = timings[wid].WeaponReadyTick > 0 ? timings[wid].WeaponReadyTick + tick : 0;
+                    timings[wid].ShootDelayTick = timings[wid].ShootDelayTick > 0 ? timings[wid].ShootDelayTick + tick : 0;
+                }
+
             }
             else
             {
-                comp.TargetsToUpdate = new MPTargetSync();
-                comp.TargetsToUpdate.Targets = new TransferTarget[comp.Platform.Weapons.Length]; 
-                for (int i = 0; i < comp.TargetsToUpdate.Targets.Length; i++)
-                    comp.TargetsToUpdate.Targets[i] = new TransferTarget();
+                comp.WeaponValues = new WeaponValues();
+                comp.WeaponValues.Targets = new TransferTarget[comp.Platform.Weapons.Length];
+                comp.WeaponValues.Timings = new WeaponTimings[comp.Platform.Weapons.Length];
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    comp.WeaponValues.Targets[i] = new TransferTarget();
+                    comp.WeaponValues.Timings[i] = new WeaponTimings();
+                }
             }
         }
-        public MPTargetSync() { }
+        public WeaponValues() { }
     }
 
     [ProtoContract]

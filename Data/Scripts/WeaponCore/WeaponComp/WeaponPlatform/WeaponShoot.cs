@@ -268,9 +268,9 @@ namespace WeaponCore.Platform
 
                     if (HeatPShot > 0)
                     {
-                        if (!_heatLoopRunning) { 
+                        if (!HeatLoopRunning) { 
                             Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
-                           _heatLoopRunning = true;
+                           HeatLoopRunning = true;
                         }
 
                         State.Heat += HeatPShot;
@@ -283,7 +283,7 @@ namespace WeaponCore.Platform
                                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, (Comp.Session.DedicatedServer || Comp.Session.IsServer), null, Comp.Ai.MyGrid.EntityId);
                             }
                             EventTriggerStateChanged(EventTriggers.Overheated, true);
-                            Comp.Overheated = true;
+                            State.Overheated = true;
                             StopShooting();
                             break;
                         }
@@ -313,17 +313,12 @@ namespace WeaponCore.Platform
 
                     _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
-                else if (System.BurstMode && System.AlwaysFireFullBurst)
+                else if (System.BurstMode && System.AlwaysFireFullBurst && State.CurrentAmmo > 0)
                     FinishBurst = (State.CurrentAmmo > 0 || System.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
 
-                else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
-                {
-                    var currDif = Comp.State.Value.CurrentCharge - State.CurrentCharge;
-                    Comp.State.Value.CurrentCharge = currDif > 0 ? currDif : 0;
-                    State.CurrentCharge = 0;
-
+                else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0 && !State.Reloading)
                     StartReload();
-                }
+                
 
                 if (State.ManualShoot == TerminalActionState.ShootOnce && --Comp.State.Value.Weapons[WeaponId].SingleShotCounter <= 0)
                     State.ManualShoot = TerminalActionState.ShootOff;

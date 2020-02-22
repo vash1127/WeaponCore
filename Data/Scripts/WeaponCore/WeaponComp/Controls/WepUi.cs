@@ -124,7 +124,7 @@ namespace WeaponCore
             comp.OptimalDps -= dpsDif;
             comp.Ai.OptimalDps -= dpsDif;
 
-            w.ChargeDelayTicks = 0;
+            w.Timings.ChargeDelayTicks = 0;
         }
 
         internal static float GetRof(IMyTerminalBlock block)

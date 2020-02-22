@@ -63,17 +63,16 @@ namespace WeaponCore.Platform
                         {
                             if (state == EventTriggers.StopFiring)
                             {
-                                ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
+                                Timings.ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
                                 if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
                                     if (CurLgstAnimPlaying != null && CurLgstAnimPlaying.Running)
                                     {
                                         delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                                        ShootDelayTick += delay;
+                                        Timings.ShootDelayTick += delay;
                                     }
                                 }
                             }
-                            LastEvent = state;
                         }
 
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
@@ -116,7 +115,7 @@ namespace WeaponCore.Platform
                     if (AnimationsSet.ContainsKey(state))
                     {
                         var oppositeEvnt = state == EventTriggers.Tracking ? EventTriggers.StopTracking : EventTriggers.Tracking;
-                        if (active) LastEvent = state;
+                        //if (active) LastEvent = state;
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
                             var animation = AnimationsSet[state][i];
@@ -172,7 +171,7 @@ namespace WeaponCore.Platform
 
                         if ((state == EventTriggers.TurnOn && !Comp.State.Value.Online) || state == EventTriggers.TurnOff && Comp.State.Value.Online) return;
 
-                        LastEvent = state;
+                        //LastEvent = state;
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
                             var animation = AnimationsSet[state][i];
@@ -200,7 +199,7 @@ namespace WeaponCore.Platform
                                     session.ThreadedAnimations.Enqueue(animation);
 
                                 animation.StartTick = session.Tick + animation.MotionDelay;
-                                if (state == EventTriggers.TurnOff) animation.StartTick += OffDelay;
+                                if (state == EventTriggers.TurnOff) animation.StartTick += Timings.OffDelay;
                             }
                             else
                                 animation.Reverse = false;
@@ -214,7 +213,7 @@ namespace WeaponCore.Platform
                 case EventTriggers.Reloading:
                     if (AnimationsSet.ContainsKey(state))
                     {
-                        if (active) LastEvent = state;
+                        //if (active) LastEvent = state;
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
                             var animation = AnimationsSet[state][i];
@@ -247,6 +246,8 @@ namespace WeaponCore.Platform
                     }
                     break;
             }
+            if(active)
+                LastEvent = state;
         }
 
         internal void UpdateRequiredPower()
@@ -373,26 +374,24 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= UseablePower;
             Comp.Ai.GridAvailablePower += UseablePower;
 
-            ChargeDelayTicks = 0;
+            Timings.ChargeDelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
         }
 
         public void StartReload(bool reset = false)
         {
-            if (Reloading) return;
-            if (reset && !Comp.State.Value.Online)
-            {
-                Reloading = false;
-                return;
-            }
+            
+            if (reset) State.Reloading = false;
+
+            if (State.Reloading) return;
 
             FinishBurst = false;
-            Reloading = true;
+            State.Reloading = true;
 
-            if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
+            if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
-                Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
+                Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, Timings.AnimationDelayTick - Comp.Session.Tick);
                 return;
             }
 
@@ -406,7 +405,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
                     OutOfAmmo = true;
                 }
-                Reloading = false;
+                State.Reloading = false;
             }
             else
             {
@@ -419,21 +418,14 @@ namespace WeaponCore.Platform
                 uint delay;
                 if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay))
                 {
-                    AnimationDelayTick = Comp.Session.Tick + delay;
+                    Timings.AnimationDelayTick = Comp.Session.Tick + delay;
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (System.MustCharge)
-                {
-                    Comp.Session.ChargingWeapons.Add(this);
-                    Comp.Ai.RequestedWeaponsDraw += RequiredPower;
-                    ChargeUntilTick = (uint)System.ReloadTime + Comp.Session.Tick;
-                    Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-                }
-                else
-                {
-                    Comp.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
-                }
+                if (System.MustCharge && !Comp.Session.ChargingWeaponsCheck.Contains(this))
+                    ChargeReload();
+                else if (!System.MustCharge)
+                    Comp.Session.FutureEvents.Schedule(Reloaded, null, (uint)System.ReloadTime);
 
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
@@ -442,44 +434,63 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal static void Reloaded(object o)
+        public void ChargeReload()
         {
-            var w = o as Weapon;
-            if (w == null) return;
-            if (w.System.MustCharge)
+            var syncCharge = Timings.ChargeUntilTick > 0;
+            if (!syncCharge)
             {
-                if (!w.System.IsHybrid)
-                {
-                    w.State.CurrentAmmo = w.System.EnergyMagSize;
-                    w.Comp.State.Value.CurrentCharge = w.System.EnergyMagSize;
-                    w.State.CurrentCharge = w.System.EnergyMagSize;
-                }
-
-                w.StopPowerDraw();
-
-                w.DrawingPower = false;
-
-                w.ChargeUntilTick = 0;
-                w.ChargeDelayTicks = 0;
+                var currDif = Comp.State.Value.CurrentCharge - State.CurrentCharge;
+                Comp.State.Value.CurrentCharge = currDif > 0 ? currDif : 0;
+                State.CurrentCharge = 0;
             }
 
-            if (!w.System.EnergyAmmo || w.System.IsHybrid)
+            Comp.Session.ChargingWeapons.Add(this);
+            Comp.Session.ChargingWeaponsCheck.Add(this);
+
+            Comp.Ai.RequestedWeaponsDraw += RequiredPower;
+
+            Timings.ChargeUntilTick = syncCharge ? Timings.ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
+            Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
+        }
+
+        internal void Reloaded(object o = null)
+        {
+            if (System.MustCharge)
             {
-                if (w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId) > 0 || w.Comp.Session.IsCreative)
+                if (!System.IsHybrid)
                 {
-                    w.State.CurrentAmmo = w.System.MagazineDef.Capacity;
-                    if (w.System.IsHybrid)
+                    State.CurrentAmmo = System.EnergyMagSize;
+                    Comp.State.Value.CurrentCharge = System.EnergyMagSize;
+                    State.CurrentCharge = System.EnergyMagSize;
+                }
+
+                StopPowerDraw();
+
+                DrawingPower = false;
+
+                Timings.ChargeUntilTick = 0;
+                Timings.ChargeDelayTicks = 0;
+            }
+
+            if (!System.EnergyAmmo || System.IsHybrid)
+            {
+                if (Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId) > 0 || Comp.Session.IsCreative)
+                {
+                    State.CurrentAmmo = System.MagazineDef.Capacity;
+                    if (System.IsHybrid)
                     {
-                        w.Comp.State.Value.CurrentCharge = w.System.EnergyMagSize;
-                        w.State.CurrentCharge = w.System.EnergyMagSize;
+                        Comp.State.Value.CurrentCharge = System.EnergyMagSize;
+                        State.CurrentCharge = System.EnergyMagSize;
                     }
                 }
             }
 
-            w.EventTriggerStateChanged(EventTriggers.Reloading, false);
-            w.Reloading = false;
-            if (!w.System.HasBurstDelay)
-                w.State.ShotsFired = 0;
+            Log.Line($"CurrentAmmo: {State.CurrentAmmo} CurrentCharge: {Comp.State.Value.CurrentCharge} CurrentCharge: {State.CurrentCharge}");
+
+            EventTriggerStateChanged(EventTriggers.Reloading, false);
+            State.Reloading = false;
+            if (!System.HasBurstDelay)
+                State.ShotsFired = 0;
         }
 
         public void StartPreFiringSound()

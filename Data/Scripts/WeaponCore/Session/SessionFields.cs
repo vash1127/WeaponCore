@@ -78,7 +78,8 @@ namespace WeaponCore
 
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        
+        internal readonly HashSet<Weapon> ChargingWeaponsCheck = new HashSet<Weapon>();
+
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();

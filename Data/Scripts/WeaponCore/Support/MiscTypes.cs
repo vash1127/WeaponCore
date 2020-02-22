@@ -72,7 +72,7 @@ namespace WeaponCore.Support
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
-            target.weaponId = weaponId;
+            target.WeaponId = weaponId;
             target.State = State;
         }
 

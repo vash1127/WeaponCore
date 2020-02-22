@@ -777,9 +777,11 @@ namespace WeaponCore
             {
                 var animation = AnimationsToProcess[i];
 
+                AnimationsToProcess.RemoveAtFast(i);
+                continue;
                 //if (animation.Paused) continue;
 
-                if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.StartTick <= Tick)
+                if (animation != null && !animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.Part != null && animation.StartTick <= Tick)
                 {
                     if (animation.MovesPivotPos || animation.CanPlay)
                     {
@@ -792,6 +794,7 @@ namespace WeaponCore
 
                         animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
 
+                        //Log.Line($"animationType: {animationType}");
 
                         if (animation.Reverse)
                         {
@@ -842,7 +845,7 @@ namespace WeaponCore
                             animation.Part.PositionComp.LocalMatrix = matrix;
                         }
 
-                        if (!DedicatedServer && currentEmissive.EmissiveParts != null)
+                        if (!DedicatedServer && currentEmissive.EmissiveParts != null && currentEmissive.EmissiveParts.Length > 0)
                         {
                             if (currentEmissive.CycleParts)
                             {

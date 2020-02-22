@@ -3,6 +3,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -79,9 +80,44 @@ namespace WeaponCore
                                 {
                                     var syncTarget = targetPacket.TargetData;
                                     var weaponData = targetPacket.WeaponData;
-                                    comp.State.Value.Weapons[syncTarget.weaponId] = weaponData;
-                                    comp.Platform.Weapons[syncTarget.weaponId].State = weaponData;
-                                    syncTarget.SyncTarget(comp.Platform.Weapons[syncTarget.weaponId].Target);
+                                    var wid = syncTarget.WeaponId;
+                                    var weapon = comp.Platform.Weapons[wid];
+                                    var cState = comp.State.Value;
+                                    var wState = cState.Weapons[wid];
+                                    var wasReloading = wState.Reloading;
+
+                                    comp.CurrentHeat -= weapon.State.Heat;
+                                    cState.CurrentCharge -= weapon.State.CurrentCharge;
+
+                                    weaponData.SetState(wState);
+
+                                    comp.CurrentHeat += weapon.State.Heat;
+                                    cState.CurrentCharge += weapon.State.CurrentCharge;
+
+
+                                    var timings = targetPacket.Timmings.SyncOffsetClient(Tick);
+
+                                    comp.WeaponValues.Timings[wid] = timings;
+                                    weapon.Timings = timings;
+
+                                    Log.Line($"Ammo: {weapon.State.CurrentAmmo} Charge: {weapon.State.CurrentCharge} Charging: {weapon.State.Charging} wasReloading: {wasReloading} Reloading: {weapon.State.Reloading} Heat: {weapon.State.Heat} Overheated: {weapon.State.Overheated}");
+
+                                    if (!weapon.System.MustCharge && !wasReloading && weapon.State.CurrentAmmo <= 0)
+                                        weapon.StartReload();
+                                    else if (weapon.System.MustCharge && weapon.State.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
+                                        weapon.ChargeReload();
+                                    else if (weapon.System.MustCharge && !weapon.State.Reloading && wasReloading)
+                                        weapon.Reloaded();
+
+                                    if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
+                                    {
+                                        var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
+                                        comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
+                                    }
+
+
+
+                                    syncTarget.SyncTarget(weapon.Target);
                                 }
                                 else
                                 {

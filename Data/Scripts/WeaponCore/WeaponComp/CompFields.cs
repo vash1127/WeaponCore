@@ -74,7 +74,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal MPTargetSync TargetsToUpdate;
+        internal WeaponValues WeaponValues;
         //internal TransferTarget[] TargetsToUpdate = new TransferTarget[1];
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
@@ -93,7 +93,7 @@ namespace WeaponCore.Support
         internal bool WasControlled;
         internal bool TrackReticle;
         internal bool UserControlled;
-        internal bool Overheated;
+        //internal bool Overheated;
         internal bool Debug;
         internal bool UnlimitedPower;
         internal bool Registered;

@@ -31,7 +31,7 @@ namespace WeaponCore.Platform
         private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
-        private bool _heatLoopRunning;
+        internal bool HeatLoopRunning;
         internal bool PreFired;
         internal bool FinishBurst;
         internal uint TicksPerShot;
@@ -78,6 +78,7 @@ namespace WeaponCore.Platform
         internal MySoundPair RotateSound;
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
+        internal WeaponTimings Timings;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -103,13 +104,13 @@ namespace WeaponCore.Platform
         internal uint CeaseFireDelayTick = int.MaxValue;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
-        internal uint ChargeDelayTicks;
-        internal uint ChargeUntilTick;
-        internal uint AnimationDelayTick;
-        internal uint OffDelay;
+        //internal uint ChargeDelayTicks;
+        //internal uint ChargeUntilTick;
+        //internal uint AnimationDelayTick;
+        //internal uint OffDelay;
         internal uint LastMuzzleCheck;
-        internal uint ShootDelayTick;
-        internal uint WeaponReadyTick; //needed to prevent tracking while on animations are running
+        //internal uint ShootDelayTick;
+        //internal uint WeaponReadyTick; //needed to prevent tracking while on animations are running
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;
@@ -137,13 +138,13 @@ namespace WeaponCore.Platform
         internal bool IsShooting;
         internal bool PlayTurretAv;
         internal bool AvCapable;
-        internal bool Reloading;
+        //internal bool Reloading;
         internal bool OutOfAmmo;
         internal bool CurrentlyDegrading;
         internal bool HitOther;
         internal bool FixedOffset;
         internal bool AiOnlyWeapon;
-        internal bool Charging;
+        //internal bool Charging;
         internal bool DrawingPower;
         internal bool RequestedPower;
         internal bool ResetPower;

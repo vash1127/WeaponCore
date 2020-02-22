@@ -54,29 +54,20 @@ namespace WeaponCore.Support
 
                 Set.LoadSettings();
                 Set.SettingsInit();
-                MPTargetSync.Load(this, Session.MPTargetSync);
+                WeaponValues.Load(this, Session.MPTargetSync);
                 UpdateSettings(Set.Value);
 
-                for (int i = 0; i < Platform.Weapons.Length; i++)
-                {
-                    var w = Platform.Weapons[i];
-                    w.Set = Set.Value.Weapons[i];
-                    w.State = State.Value.Weapons[i];
-                    w.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                    if (w.State.Heat > 0)
-                        w.UpdateWeaponHeat();
-                }
                 Set.Value.Overrides.TargetPainter = false;
                 Set.Value.Overrides.ManualControl = false;
                 State.Value.PlayerIdInTerminal = -1;
 
-                if (isServer)
+                /*if (isServer)
                 {
                     foreach (var w in State.Value.Weapons)
                     {
                         w.Heat = 0;
                     }
-                }
+                }*/
             }
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{State == null}({State?.Value == null})[{State?.Value?.Weapons == null}] - SetNull:{Set == null}({Set?.Value == null})[{Set?.Value?.Weapons == null}] - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
@@ -155,7 +146,7 @@ namespace WeaponCore.Support
             if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
                 Session.ComputeStorage(weapon);
 
-            if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading && !weapon.System.MustCharge)
+            if (weapon.State.CurrentAmmo == 0 && !weapon.State.Reloading && !weapon.System.MustCharge)
                 weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
             else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && weapon.State.CurrentAmmo == weapon.System.MagazineDef.Capacity) || weapon.State.CurrentAmmo == weapon.System.EnergyMagSize))
             {
@@ -169,7 +160,7 @@ namespace WeaponCore.Support
 
                 weapon.State.CurrentCharge = 0;
                 weapon.State.CurrentAmmo = 0;
-                weapon.Reloading = false;
+                weapon.State.Reloading = false;
                 if (!Session.GameLoaded)
                     Session.ChargingWeaponsToReload.Enqueue(weapon);
                 else
