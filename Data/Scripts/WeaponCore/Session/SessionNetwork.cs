@@ -100,8 +100,6 @@ namespace WeaponCore
                                     comp.WeaponValues.Timings[wid] = timings;
                                     weapon.Timings = timings;
 
-                                    Log.Line($"Ammo: {weapon.State.CurrentAmmo} Charge: {weapon.State.CurrentCharge} Charging: {weapon.State.Charging} wasReloading: {wasReloading} Reloading: {weapon.State.Reloading} Heat: {weapon.State.Heat} Overheated: {weapon.State.Overheated}");
-
                                     if (!weapon.System.MustCharge && !wasReloading && weapon.State.CurrentAmmo <= 0)
                                         weapon.StartReload();
                                     else if (weapon.System.MustCharge && weapon.State.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
