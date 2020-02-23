@@ -376,7 +376,6 @@ namespace WeaponCore.Support
                 turretMove = TurretType.Fixed;
             else if (minElevation == maxElevation)
                 turretMove = TurretType.AzimuthOnly;
-            //Log.Line($"TurretMovement: {TurretMovement}");
         }
 
         private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)

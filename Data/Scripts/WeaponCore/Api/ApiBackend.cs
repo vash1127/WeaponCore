@@ -34,8 +34,8 @@ namespace WeaponCore.Support
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<Threat>>>(SetTurretTargetTypes),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool>(IsTargetAligned),
@@ -54,8 +54,8 @@ namespace WeaponCore.Support
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<Threat>>>(SetTurretTargetTypes),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool>(IsTargetAligned),
@@ -71,6 +71,7 @@ namespace WeaponCore.Support
             pb.Getter = (b) => _terminalPbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
         }
+        internal static string[] ThreatMap = new string[6] { "Projectiles", "Characters", "Grids", "Neutrals", "Meteors", "Other" };
 
         private List<WeaponDefinition> GetAllWeaponDefinitions()
         {
@@ -187,12 +188,26 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private static IList<IList<Threat>> GetTurretTargetTypes(IMyTerminalBlock weaponBlock)
+        private static IList<IList<string>> GetTurretTargetTypes(IMyTerminalBlock weaponBlock)
         {
-            return new List<IList<Threat>>();
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp))
+            {
+                var compList = new List<IList<string>>();
+                foreach (var weapon in comp.Platform.Weapons)
+                {
+                    var list = new List<string>();
+                    var threats = weapon.System.Values.Targeting.Threats;
+                    for (int i = 0; i < threats.Length; i++) list.Add(threats[i].ToString());
+                    compList.Add(list);
+                }
+                return compList;
+            }
+
+            return new List<IList<string>>();
         }
 
-        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<IList<Threat>> threats)
+        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<IList<string>> threats)
         {
 
         }

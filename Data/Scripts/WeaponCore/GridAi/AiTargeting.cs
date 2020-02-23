@@ -32,7 +32,7 @@ namespace WeaponCore.Support
                 w.AimCone.ConeTip = w.MyPivotPos;
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
                 var shootProjectile = pCount > 0 && w.System.TrackProjectile;
-                var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
+                var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Session.Threat.Projectiles;
                 var onlyCheckProjectile = w.ProjectilesNear && !w.TargetChanged && w.Comp.Ai.Session.Count != w.LoadId && !attemptReset;
 
                 if (!projectilesFirst && w.System.TrackOther && !onlyCheckProjectile) AcquireOther(w, out targetType, attemptReset, targetGrid);

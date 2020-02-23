@@ -11,6 +11,10 @@ namespace WeaponCore
     {
         internal Vector3D PointerOffset;
         internal Vector3D TargetOffset;
+        internal Vector3D AimPosition;
+        internal Vector3D AimDirection;
+        internal Vector3D AimUp = MatrixD.Identity.Up;
+        internal MatrixD AimMatrix;
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
         internal bool DrawReticle;
@@ -25,8 +29,8 @@ namespace WeaponCore
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly Session _session;
         private readonly List<MyEntity> _targetCache = new List<MyEntity>();
-        private Vector2 _pointerPosition = new Vector2(0, 0.25f);
-        private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
+        private Vector2 _pointerPosition = new Vector2(0, 0.0f);
+        private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;
 
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()

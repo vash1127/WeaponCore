@@ -6,8 +6,10 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -97,6 +99,17 @@ namespace WeaponCore
         {
             try
             {
+                /*
+                if (TargetUi.DrawReticle)
+                {
+                    //var pos = TargetUi.AimPosition + (TargetUi.AimDirection * 50f);
+                    //var matrix = ActiveCockPit.PositionComp.WorldMatrix;
+                    //matrix.Translation = pos;
+                    SpyCam.PositionComp.SetWorldMatrix(TargetUi.AimMatrix, SpyCam.CubeGrid, false, false);
+                    SpyCam.RequestSetView();
+                }
+                else MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Entity, MyAPIGateway.Session.CameraController.Entity);
+                */
                 if (!DedicatedServer)
                 {
                     EntityControlUpdate();
@@ -191,7 +204,7 @@ namespace WeaponCore
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
 
-                if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.InSpyCam) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();
                     TargetUi.DrawTargetUi();

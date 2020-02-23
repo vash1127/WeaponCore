@@ -13,10 +13,10 @@ namespace WeaponCore
     {
         internal bool ActivateSelector()
         {
-            if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
+            if (!_session.UiInput.InSpyCam && _session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
-            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed || _session.UiInput.InSpyCam;
             return enableActivator;
         }
 
@@ -43,36 +43,51 @@ namespace WeaponCore
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var cockPit = s.ActiveCockPit;
-            Vector3D start;
             Vector3D end;
-            Vector3D dir;
-            if (!s.UiInput.FirstPersonView) {
+
+            if (s.UiInput.InSpyCam)
+            {
+                var offetPosition = Vector3D.Transform(PointerOffset, s.ActiveCockPit.WorldMatrix);
+                AimPosition = s.ActiveCockPit.PositionComp.WorldAABB.Center;
+                AimDirection = s.ActiveCockPit.WorldMatrix.Forward;
+                end = AimPosition + (AimDirection * ai.MaxTargetingRange);
+            }
+            else if (!s.UiInput.FirstPersonView) {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
-                start = offetPosition;
-                dir = Vector3D.Normalize(start - s.CameraPos);
-                end = offetPosition + (dir * ai.MaxTargetingRange);
+                AimPosition = offetPosition;
+                AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
+                end = offetPosition + (AimDirection * ai.MaxTargetingRange);
             }
             else {
                 if (!_session.UiInput.AltPressed) {
-                    dir = Vector3D.Normalize(cockPit.PositionComp.WorldMatrix.Forward);
-                    start = cockPit.PositionComp.WorldAABB.Center;
-                    end = start + (dir * s.TrackingAi.MaxTargetingRange);
+                    AimDirection = cockPit.PositionComp.WorldMatrix.Forward;
+                    AimPosition = cockPit.PositionComp.WorldAABB.Center;
+                    end = AimPosition + (AimDirection * s.TrackingAi.MaxTargetingRange);
                 }
                 else {
                     var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
-                    start = offetPosition;
-                    dir = Vector3D.Normalize(start - s.CameraPos);
-                    end = offetPosition + (dir * ai.MaxTargetingRange);
+                    AimPosition = offetPosition;
+                    AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
+                    end = offetPosition + (AimDirection * ai.MaxTargetingRange);
                 }
             }
 
-
+            var up = s.ActiveCockPit.WorldMatrix.Up;
+            var forward = s.ActiveCockPit.WorldMatrix.Forward;
+            var centerPos = s.ActiveCockPit.PositionComp.WorldAABB.Center;
+            var sphere = BoundingSphereD.CreateFromBoundingBox(s.ActiveCockPit.CubeGrid.GetPhysicalGroupAABB());
+            var dir = Vector3D.Normalize(centerPos - end);
+            var ray = new RayD(ref end, ref dir);
+            var dist = (ray.Intersects(sphere) ?? 0);
+            Log.Line($"{dist} - {sphere.Center} - {sphere.Radius}");
+            var sphereEdge = new Vector3D(end + (dir * dist));
+            MatrixD.CreateWorld(ref sphereEdge, ref forward, ref up, out AimMatrix);
             var foundTarget = false;
             var rayOnlyHitSelf = false;
             var rayHitSelf = false;
 
             MyEntity closestEnt = null;
-            _session.Physics.CastRay(start, end, _hitInfo);
+            _session.Physics.CastRay(AimPosition, end, _hitInfo);
 
             for (int i = 0; i < _hitInfo.Count; i++) {
 
@@ -111,7 +126,7 @@ namespace WeaponCore
 
             Vector3D hitPos;
             bool foundOther = false;
-            if (!foundTarget && RayCheckTargets(start, dir, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
+            if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
                 foundTarget = true;
                 if (manualSelect) {
                     s.SetTarget(closestEnt, ai);

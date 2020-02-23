@@ -4,7 +4,7 @@ using VRage.Game;
 using VRage.Utils;
 using VRageMath;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
-
+using WeaponCore.Support;
 namespace WeaponCore
 {
     internal partial class TargetUi
@@ -39,8 +39,8 @@ namespace WeaponCore
                 if (s.UiInput.PreviousWheel != s.UiInput.CurrentWheel)
                 {
                     var currentPos = _pointerPosition.Y;
-                    if (s.UiInput.CurrentWheel > s.UiInput.PreviousWheel) currentPos += 0.1f;
-                    else currentPos -= 0.1f;
+                    if (s.UiInput.CurrentWheel > s.UiInput.PreviousWheel) currentPos += 0.05f;
+                    else currentPos -= 0.05f;
                     var clampPos = MathHelper.Clamp(currentPos, -1.25f, 1.25f);
                     _3RdPersonPos.Y = clampPos;
                     InitPointerOffset(0.05);

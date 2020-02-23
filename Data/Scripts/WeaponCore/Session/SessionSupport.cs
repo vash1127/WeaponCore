@@ -11,7 +11,6 @@ using VRage.ModAPI;
 using VRage.Game;
 using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
-using System.Collections.Generic;
 
 namespace WeaponCore
 {
@@ -65,6 +64,7 @@ namespace WeaponCore
                 }
                 else if (!FirstLoop)
                 {
+                    Spawn.SpawnCamera("SpyCam", out SpyCam);
                     FirstLoop = true;
                     foreach (var t in AllDefinitions)
                     {
@@ -257,6 +257,20 @@ namespace WeaponCore
             VanillaSubpartNames.Add("GatlingTurretBase1");
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
+        }
+
+        private MyCameraBlock CameraEntityActivator()
+        {
+            var ent = new MyEntity();
+            ent.Init(null, null, null, null, null);
+            ent.Render.CastShadows = false;
+            ent.IsPreview = true;
+            ent.Save = false;
+            ent.SyncFlag = false;
+            ent.NeedsWorldMatrix = false;
+            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+            MyEntities.Add(ent, false);
+            return ent as MyCameraBlock;
         }
     }
 }
