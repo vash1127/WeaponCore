@@ -117,7 +117,9 @@ namespace WeaponCore
                     return;
                 }
                 var objHp = hit.Value;
-                if (scaledDamage < objHp)
+                if (info.EwarActive)
+                    info.BaseHealthPool -= 1;
+                else if (scaledDamage < objHp)
                 {
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;
@@ -387,7 +389,6 @@ namespace WeaponCore
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var sync = MpActive && IsServer;
 
-            //projectile.ObjectsHit++;
             var attackerId = info.Target.FiringCube.EntityId;
 
             var objHp = destObj.Integrity;

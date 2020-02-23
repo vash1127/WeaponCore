@@ -216,9 +216,9 @@ namespace WeaponCore.Projectiles
                     }
                 }
                 else p.AtMaxRange = true;
-
                 if (p.Info.System.Ewar)
                     p.RunEwar();
+
                 p.Active = true;
             }
         }
@@ -230,9 +230,9 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
-                var triggerRange = p.Info.System.Ewar && p.Info.System.Pulse && !p.Info.TriggeredPulse && p.Info.System.EwarTriggerRange > 0 ? p.Info.System.EwarTriggerRange : 0;
-                var beam = triggerRange > 0 ? new LineD(p.LastPosition, p.Position + (p.Direction * triggerRange)) : new LineD(p.LastPosition, p.Position);
-
+                var triggerRange = p.Info.System.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.System.EwarTriggerRange : 0;
+                var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
+                var beam = useEwarSphere ? new LineD(p.Position + (-p.Direction * p.Info.System.EwarTriggerRange), p.Position + (p.Direction * p.Info.System.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
                     var dInfo = p.Info.System.Values.Ammo.AreaEffect.Detonation;
@@ -248,7 +248,6 @@ namespace WeaponCore.Projectiles
                         for (int i = 0; i < checkList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
                             { Distance = 0, Element = checkList[i] });
-
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
@@ -262,45 +261,66 @@ namespace WeaponCore.Projectiles
                     else
                         p.State = ProjectileState.Detonate;
                 }
-                
+
+                var sphere = false;
+                var line = false;
+
                 if (p.MineSeeking && !p.MineTriggered)
                     p.SeekEnemy();
+                else if (useEwarSphere)
+                {
+                    if (p.Info.EwarActive) {
+                        p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
+                        var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
+                        if (p.PruneSphere.Radius < currentRadius) {
+                            p.PruneSphere.Center = p.Position;
+                            p.PruneSphere.Radius = currentRadius;
+                        }
+                    }
+                    else
+                    {
+                        p.PruneSphere = new BoundingSphereD(p.Position, triggerRange);
+                    }
+
+                    sphere = true;
+                }
                 else if (p.Info.System.CollisionIsLine)
                 {
                     p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = p.Info.System.CollisionSize + triggerRange;
+                    p.PruneSphere.Radius = p.Info.System.CollisionSize;
                     if (p.Info.System.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
-                    {
-                        if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
-                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
-                    }
+                        line = true;
                 }
                 else
                 {
                     p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                    var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() + triggerRange : p.Info.System.AreaEffectSize + triggerRange;
-                    if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
+                    if (p.PruneSphere.Radius < p.Info.System.CollisionSize)
                     {
                         p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = currentRadius;
+                        p.PruneSphere.Radius = p.Info.System.CollisionSize;
                     }
-                    else if (p.PruneSphere.Radius < p.Info.System.CollisionSize + triggerRange)
-                    {
-                        p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = p.Info.System.CollisionSize + triggerRange;
-                    }
-                    if (!((p.Info.System.SelfDamage || p.TerminalControlled) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
-                    {
-                        if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
 
-                        var checkList = CheckPool.Get();
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
-                        for (int i = 0; i < checkList.Count; i++)
-                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+                    if (!((p.Info.System.SelfDamage || p.TerminalControlled) && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
+                        sphere = true;
+                }
 
-                        checkList.Clear();
-                        CheckPool.Return(checkList);
-                    }
+                if (sphere)
+                {
+                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) 
+                        p.CheckForNearVoxel(60);
+
+                    var checkList = CheckPool.Get();
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
+                    for (int i = 0; i < checkList.Count; i++)
+                        p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+
+                    checkList.Clear();
+                    CheckPool.Return(checkList);
+                }
+                else if (line)
+                {
+                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
+                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
                 }
 
                 if (p.Info.Target.IsProjectile || p.SegmentList.Count > 0)

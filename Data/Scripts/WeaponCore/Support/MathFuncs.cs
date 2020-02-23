@@ -45,7 +45,8 @@ namespace WeaponCore.Support
 
             var hitPos = krayPos + (krayDir * -nullDist.Value);
             var worldHitPos = Vector3D.Transform(hitPos, ellipsoidMatrix);
-            return Vector3.Distance(worldHitPos, ray.Position);
+            var dist = Vector3.Distance(worldHitPos, ray.Position);
+            return float.IsNaN(dist) ? (float?) null : dist;
         }
 
         public static bool PointInEllipsoid(Vector3D point, MatrixD ellipsoidMatrix)

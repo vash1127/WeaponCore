@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
@@ -159,7 +160,11 @@ namespace WeaponCore.Support
 
         public void StopAllAv()
         {
-            if (Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (Platform?.State != MyWeaponPlatform.PlatformState.Ready)
+            {
+                Log.Line($"{BlockInventory != null} - {Platform != null} - {State != null} - {BaseType}");
+                return;
+            }
             StopAllSounds();
             StopAllGraphics();
         }

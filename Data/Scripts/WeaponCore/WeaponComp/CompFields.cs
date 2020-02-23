@@ -140,9 +140,10 @@ namespace WeaponCore.Support
 
             MaxIntegrity = Slim.MaxIntegrity;
 
-            if (MyCube is IMyLargeTurretBase)
+            var turret = MyCube as IMyLargeTurretBase;
+            if (turret != null)
             {
-                TurretBase = myCube as IMyLargeTurretBase;
+                TurretBase = turret;
                 TurretBase.EnableIdleRotation = false;
                 BaseType = BlockType.Turret;
             }
