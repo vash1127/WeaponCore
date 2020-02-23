@@ -102,9 +102,6 @@ namespace WeaponCore
                 /*
                 if (TargetUi.DrawReticle)
                 {
-                    //var pos = TargetUi.AimPosition + (TargetUi.AimDirection * 50f);
-                    //var matrix = ActiveCockPit.PositionComp.WorldMatrix;
-                    //matrix.Translation = pos;
                     SpyCam.PositionComp.SetWorldMatrix(TargetUi.AimMatrix, SpyCam.CubeGrid, false, false);
                     SpyCam.RequestSetView();
                 }
