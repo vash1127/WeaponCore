@@ -114,7 +114,7 @@ namespace WeaponCore.Support
                 {
                     if (!focusTarget && info.FatCount < 2) continue;
 
-                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, null, !focusTarget)) continue;
+                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, null, !focusTarget, p.Info.Seed)) continue;
                     return true;
                 }
 
@@ -215,7 +215,7 @@ namespace WeaponCore.Support
                         }
                         else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w, true, w.Comp.Seed)) continue;
 
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
@@ -253,7 +253,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null, bool checkPower = true)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null, bool checkPower = true, int seed = 0)
         {
             if (system.TargetSubSystems)
             {
@@ -279,7 +279,7 @@ namespace WeaponCore.Support
                             target.LastBlockType = bt;
                             if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w, checkPower)) return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, checkPower)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, seed, checkPower)) return true;
                     }
 
                     if (focusSubSystem) break;
@@ -288,10 +288,10 @@ namespace WeaponCore.Support
                 if (system.OnlySubSystems || focusSubSystem && w.Comp.Set.Value.Overrides.SubSystem != Any) return false;
             }
             FatMap fatMap;
-            return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, checkPower);
+            return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, seed, checkPower);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, int seed, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -319,7 +319,7 @@ namespace WeaponCore.Support
             }
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, w.Comp.Seed);
+            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, seed);
             var physics = ai.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;

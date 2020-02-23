@@ -425,7 +425,10 @@ namespace WeaponCore.Platform
                 if (System.MustCharge && !Comp.Session.ChargingWeaponsCheck.Contains(this))
                     ChargeReload();
                 else if (!System.MustCharge)
-                    Comp.Session.FutureEvents.Schedule(Reloaded, null, (uint)System.ReloadTime);
+                {
+                    CancelableReloadAction += Reloaded;
+                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+                }
 
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;

@@ -411,7 +411,7 @@ namespace WeaponCore
                             {
                                 
                                 w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
-                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, TargetData = comp.WeaponValues.Targets[w.WeaponId], WeaponData = new WeaponSyncValues {CurrentAmmo = w.State.CurrentAmmo, CurrentCharge = w.State.CurrentCharge, Heat = w.State.Heat, Overheated = w.State.Overheated, Reloading = w.State.Reloading, Charging = w.State.Charging }, Timmings = w.Timings.SyncOffsetServer(Tick) });
+                                PacketizeToClientsInRange(comp.MyCube, new TargetPacket { EntityId = comp.MyCube.EntityId, PType = PacketType.TargetUpdate, TargetData = comp.WeaponValues.Targets[w.WeaponId], WeaponData = new WeaponSyncValues {CurrentAmmo = w.State.CurrentAmmo, CurrentCharge = w.State.CurrentCharge, Heat = w.State.Heat, Overheated = w.State.Overheated, Reloading = w.State.Reloading, Charging = w.State.Charging, currentMags = w.State.CurrentMags }, Timmings = w.Timings.SyncOffsetServer(Tick) });
                             }
                         }
                     }

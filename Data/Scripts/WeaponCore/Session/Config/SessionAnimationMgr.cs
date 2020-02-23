@@ -898,19 +898,12 @@ namespace WeaponCore
                         AnimationsToProcess.RemoveAtFast(i);
                         animation.Running = false;
 
-                        if (!DedicatedServer && animation.ResetEmissives)
+                        if (!DedicatedServer && animation.ResetEmissives && animation.EmissiveParts != null)
                         {
                             for (int j = 0; j < animation.EmissiveParts.Length; j++)
                             {
-                                try
-                                {
-                                    var emissivePart = animation.EmissiveParts[j];
-                                    animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
-                                }
-                                catch (Exception e)
-                                {
-                                    Log.Line($"Error with emissives: {e}");
-                                }
+                                var emissivePart = animation.EmissiveParts[j];
+                                animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
                             }
                         }
                     }

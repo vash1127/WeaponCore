@@ -78,14 +78,16 @@ namespace WeaponCore
         [ProtoMember(5)] public bool Reloading;
         [ProtoMember(6)] public bool Charging;
         [ProtoMember(7)] public int WeaponId;
+        [ProtoMember(8)] public MyFixedPoint currentMags;
 
         public void SetState (WeaponStateValues wState)
         {
             wState.Heat = Heat;
             wState.CurrentAmmo = CurrentAmmo;
+            wState.CurrentMags = currentMags;
             wState.CurrentCharge = CurrentCharge;
             wState.Overheated = Overheated;
-            wState.Reloading = Reloading || (wState.CurrentCharge == 0 && wState.CurrentAmmo == 0);
+            wState.Reloading = Reloading;
             wState.Charging = Charging;
         }
     }
