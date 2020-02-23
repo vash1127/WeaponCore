@@ -10,8 +10,6 @@ namespace WeaponCore.Support
     internal class WeaponCoreApi
     {
         private bool _apiInit;
-        private delegate T5 OutFunc<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, out T4 arg4);
-
 
         private Func<IList<MyDefinitionId>> _getAllCoreWeapons;
         private Func<IList<MyDefinitionId>> _getAllCoreStaticLaunchers;
@@ -25,16 +23,19 @@ namespace WeaponCore.Support
         private Action<IMyTerminalBlock, IList<IList<string>>> _setTurretTargetTypes;
         private Action<IMyTerminalBlock, float> _setTurretTargetingRange;
         private Func<IMyTerminalBlock, IList<IMyEntity>> _getTargetedEntity;
-        private OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool> _isTargetAligned;
+        private Func<IMyTerminalBlock, IMyEntity, int, bool> _isTargetAligned;
+        private Func<IMyTerminalBlock, IMyEntity, int, Vector3D?> _getPredictedTargetPos;
         private Func<IMyTerminalBlock, float> _getHeatLevel;
         private Func<IMyTerminalBlock, float> _currentPowerConsumption;
         private Func<MyDefinitionId, float> _maxPowerConsumption;
         private Action<IMyTerminalBlock> _disablePowerRequirements;
-        private Func<IList<WeaponDefinition>> _getAllWeaponDefinitions;
+        private Action<IList<byte[]>> _getAllWeaponDefinitions;
 
         private const long Channel = 67549756549;
+        private readonly List<byte[]> _byteArrays = new List<byte[]>();
 
         public bool IsReady { get; private set; }
+        public readonly List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
 
         private void HandleMessage(object o)
         {
@@ -70,7 +71,7 @@ namespace WeaponCore.Support
             IsReady = false;
         }
 
-        public void ApiLoad(IReadOnlyDictionary<string, Delegate> delegates)
+        public void ApiLoad(IReadOnlyDictionary<string, Delegate> delegates, bool getWeaponDefinitions = false)
         {
             _apiInit = true;
             _getAllCoreWeapons = (Func<IList<MyDefinitionId>>)delegates["GetAllCoreWeapons"];
@@ -85,15 +86,24 @@ namespace WeaponCore.Support
             _setTurretTargetingRange = (Action <IMyTerminalBlock, float>)delegates["SetTurretRange"];
             _setTurretTargetTypes = (Action<IMyTerminalBlock, IList<IList<string>>>)delegates["SetTurretTargetTypes"];
             _getTargetedEntity = (Func<IMyTerminalBlock, IList<IMyEntity>>)delegates["GetTargetedEntity"];
-            _isTargetAligned = (OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D?, bool>)delegates["TargetPredictedPosition"];
+            _isTargetAligned = (Func<IMyTerminalBlock, IMyEntity, int, bool>)delegates["IsTargetAligned"];
+            _getPredictedTargetPos = (Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>)delegates["GetPredictedTargetPosition"];
             _getHeatLevel = (Func<IMyTerminalBlock, float>)delegates["GetHeatLevel"];
             _currentPowerConsumption = (Func<IMyTerminalBlock, float>)delegates["CurrentPower"];
             _maxPowerConsumption = (Func<MyDefinitionId, float>)delegates["MaxPower"];
             _disablePowerRequirements = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
-            _getAllWeaponDefinitions = (Func<IList<WeaponDefinition>>)delegates["GetAllWeaponDefinitions"];
-    }
+            _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
+            if (getWeaponDefinitions)
+            {
+                GetAllWeaponDefinitions(_byteArrays);
+                foreach (var byteArray in _byteArrays)
+                {
+                    WeaponDefinitions.Add(MyAPIGateway.Utilities.SerializeFromBinary<WeaponDefinition>(byteArray));
+                }
+            }
+        }
 
-        public IList<WeaponDefinition> GetAllWeaponDefinitions() => _getAllWeaponDefinitions?.Invoke();
+        public void GetAllWeaponDefinitions(IList<byte[]> collection) => _getAllWeaponDefinitions?.Invoke(collection);
         public IList<MyDefinitionId> GetAllCoreWeapons() => _getAllCoreWeapons?.Invoke();
         public IList<MyDefinitionId> GetAllCoreStaticLaunchers() => _getAllCoreStaticLaunchers?.Invoke();
         public IList<MyDefinitionId> GetAllCoreTurrets() => _getAllCoreTurrets?.Invoke();
@@ -104,18 +114,13 @@ namespace WeaponCore.Support
         public float GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon) ?? 0f;
         public float CurrentPowerConsumption(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
         public float MaxPowerConsumption(MyDefinitionId weaponDef) => _maxPowerConsumption?.Invoke(weaponDef) ?? 0f;
-
         public void DisablePowerRequirements(IMyTerminalBlock weapon) => _disablePowerRequirements?.Invoke(weapon);
         public void SetTurretTargetingRange(IMyTerminalBlock weapon, float range) => _setTurretTargetingRange?.Invoke(weapon, range);
         public void SetTargetEntity(IMyEntity shooter, IMyEntity target, int priority) => _setTargetEntity?.Invoke(shooter, target, priority);
         public void FireWeaponOnce(IMyTerminalBlock weapon) => _fireWeaponOnce?.Invoke(weapon);
         public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on) => _toggleWeaponFire?.Invoke(weapon, on);
         public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<IList<string>> threats) => _setTurretTargetTypes?.Invoke(weapon, threats);
-        public bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D? targetPos)
-        {
-            targetPos = null;
-            var aligned = _isTargetAligned?.Invoke(weaponBlock, targetEnt, weaponId, out targetPos);
-            return aligned ?? false;
-        }
+        public bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId) => _isTargetAligned?.Invoke(weaponBlock, targetEnt, weaponId) ?? false;
+        public Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId) => _getPredictedTargetPos?.Invoke(weaponBlock, targetEnt, weaponId) ?? null;
     }
 }

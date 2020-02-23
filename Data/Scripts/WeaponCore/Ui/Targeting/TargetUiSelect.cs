@@ -79,7 +79,7 @@ namespace WeaponCore
             var dir = Vector3D.Normalize(centerPos - end);
             var ray = new RayD(ref end, ref dir);
             var dist = (ray.Intersects(sphere) ?? 0);
-            Log.Line($"{dist} - {sphere.Center} - {sphere.Radius}");
+            //Log.Line($"{dist} - {sphere.Center} - {sphere.Radius}");
             var sphereEdge = new Vector3D(end + (dir * dist));
             MatrixD.CreateWorld(ref sphereEdge, ref forward, ref up, out AimMatrix);
             var foundTarget = false;

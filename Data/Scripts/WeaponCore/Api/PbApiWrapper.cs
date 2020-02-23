@@ -6,6 +6,7 @@ using VRage.ModAPI;
 
 namespace WeaponCore.Support
 {
+    /*
     internal class WeaponCorePbApi
     {
         private IMyTerminalBlock _block;
@@ -28,4 +29,5 @@ namespace WeaponCore.Support
         public IMyTerminalBlock GetCoreBlock(IMyEntity entity) => _getCoreBlock?.Invoke(entity) ?? null;
         public bool IsCoreBlock() => _isCoreBlock?.Invoke(_block) ?? false;
     }
+    */
 }

@@ -18,7 +18,6 @@ namespace WeaponCore.Support
         private readonly Session _session;
         internal readonly Dictionary<string, Delegate> ModApiMethods;
         private readonly Dictionary<string, Delegate> _terminalPbApiMethods;
-        private delegate T5 OutFunc<T1,T2,T3,T4, T5>(T1 arg1, T2 arg2, T3 arg3, out T4 arg4);
 
         internal ApiBackend(Session session)
         {
@@ -38,12 +37,13 @@ namespace WeaponCore.Support
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
-                ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool>(IsTargetAligned),
+                ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
+                ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
                 ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
                 ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower),
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
-                ["GetAllWeaponDefinitions"] = new Func<List<WeaponDefinition>>(GetAllWeaponDefinitions),
+                ["GetAllWeaponDefinitions"] = new Action<IList<byte[]>>(GetAllWeaponDefinitions),
 
             };
 
@@ -58,7 +58,8 @@ namespace WeaponCore.Support
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
-                ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool>(IsTargetAligned),
+                ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
+                ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
                 ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
                 ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower)
@@ -71,11 +72,10 @@ namespace WeaponCore.Support
             pb.Getter = (b) => _terminalPbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
         }
-        internal static string[] ThreatMap = new string[6] { "Projectiles", "Characters", "Grids", "Neutrals", "Meteors", "Other" };
-
-        private List<WeaponDefinition> GetAllWeaponDefinitions()
+        private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
-            return new List<WeaponDefinition>(_session.WeaponDefinitions);
+            foreach (var wepDef in _session.WeaponDefinitions)
+                collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 
         private List<MyDefinitionId> GetAllCoreWeapons()
@@ -257,9 +257,8 @@ namespace WeaponCore.Support
             return targets;
         }
 
-        private bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId, out Vector3D targetPos)
+        private bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
-            targetPos = targetEnt.WorldMatrix.Translation;
             Target target = new Target((MyCubeBlock)weaponBlock) { Entity = (MyEntity)targetEnt };
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -267,9 +266,26 @@ namespace WeaponCore.Support
                 if (comp.Platform.State != Ready) return false;
                 var w = comp.Platform.Weapons[weaponId];
 
+                Vector3D targetPos;
                 return Weapon.TargetAligned(w, target, out targetPos);
             }
             return false;
+        }
+
+        private Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
+        {
+            Target target = new Target((MyCubeBlock)weaponBlock) { Entity = (MyEntity)targetEnt };
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp))
+            {
+                if (comp.Platform.State != Ready) return null;
+                var w = comp.Platform.Weapons[weaponId];
+
+                Vector3D targetPos;
+                Weapon.TargetAligned(w, target, out targetPos);
+                return targetPos;
+            }
+            return null;
         }
 
         private static float GetHeatLevel(IMyTerminalBlock weaponBlock)
