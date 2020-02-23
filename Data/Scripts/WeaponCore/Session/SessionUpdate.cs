@@ -70,9 +70,10 @@ namespace WeaponCore
                             comp.WasControlled = comp.UserControlled;
                             comp.TrackReticle = (overRides.TargetPainter || overRides.ManualControl);
 
-                            var uiTargeting = !DedicatedServer ? TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId) : comp.TrackReticle && gridAi.ControllingPlayers.ContainsKey(comp.State.Value.CurrentPlayerControl.PlayerId);
 
-                            comp.TrackReticle = comp.TrackReticle && uiTargeting;
+                           var uiTargeting = !DedicatedServer ? TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId) : comp.TrackReticle && gridAi.ControllingPlayers.ContainsKey(comp.State.Value.CurrentPlayerControl.PlayerId);
+
+                            comp.TrackReticle = comp.TrackReticle && uiTargeting; //&& uiTargeting;
 
                             //if (Tick60 && DedicatedServer)
                                 //Log.Line($"comp.TrackReticle: {comp.TrackReticle}");                    

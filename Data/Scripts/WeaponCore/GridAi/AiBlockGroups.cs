@@ -55,16 +55,6 @@ namespace WeaponCore.Support
                             break;
                         case "ManualControl":
                             o.ManualControl = setting.Value > 0;
-                            if(o.ManualControl)
-                            {
-                                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
-                            }
-                            else
-                            {
-                                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
-                            }
                             break;
                         case "TargetPainter":
                             o.TargetPainter = setting.Value > 0;
@@ -89,6 +79,18 @@ namespace WeaponCore.Support
                             break;
                     }
                 }
+
+                if (o.ManualControl || o.TargetPainter)
+                {
+                    comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
+                    comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+                }
+                else
+                {
+                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                    comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                }
+
                 comp.UpdateSettingsMP();
                 comp.UpdateStateMP();
             }
@@ -114,30 +116,9 @@ namespace WeaponCore.Support
                     break;
                 case "ManualControl":
                     o.ManualControl = value > 0;
-                    if (o.ManualControl)
-                    {
-                        comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
-                    }
-                    else
-                    {
-                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
-                    }
-
-                        break;
+                    break;
                 case "TargetPainter":
                     o.TargetPainter = value > 0;
-                    if (o.TargetPainter)
-                    {
-                        comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
-                    }
-                    else
-                    {
-                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                        comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
-                    }
                     break;
                 case "Unowned":
                     o.Unowned = value > 0;
@@ -157,6 +138,17 @@ namespace WeaponCore.Support
                 case "Neutrals":
                     o.Neutrals = value > 0;
                     break;
+            }
+
+            if (o.ManualControl || o.TargetPainter)
+            {
+                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
+                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+            }
+            else
+            {
+                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
             }
             comp.UpdateSettingsMP();
             comp.UpdateStateMP();
