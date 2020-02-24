@@ -55,6 +55,10 @@ namespace WeaponCore
                     }
                     GameLoaded = true;
 
+                    List<IHitInfo> tmpList = new List<IHitInfo>();
+
+                    MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
+
                     while (ChargingWeaponsToReload.Count > 0)
                         ComputeStorage(ChargingWeaponsToReload.Dequeue());
 
