@@ -29,9 +29,9 @@ namespace WeaponCore.Support
                 ["GetCoreStaticLaunchers"] = new Func<List<MyDefinitionId>>(GetCoreStaticLaunchers),
                 ["GetCoreTurrets"] = new Func<IList<MyDefinitionId>>(GetCoreTurrets),
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
-                ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
-                ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, bool>(WeaponReady),
+                ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
+                ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
@@ -50,9 +50,9 @@ namespace WeaponCore.Support
             _terminalPbApiMethods = new Dictionary<string, Delegate>()
             {
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
-                ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
-                ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, bool>(WeaponReady),
+                ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
+                ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
@@ -116,7 +116,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private static void FireOnce(IMyTerminalBlock weaponBlock)
+        private static void FireOnce(IMyTerminalBlock weaponBlock, bool allWeapons = true, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -134,7 +134,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private static void ToggleFire(IMyTerminalBlock weaponBlock, bool on)
+        private static void ToggleFire(IMyTerminalBlock weaponBlock, bool on, bool allWeapons = true, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -157,7 +157,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private static bool WeaponReady(IMyTerminalBlock weaponBlock)
+        private static bool WeaponReady(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
