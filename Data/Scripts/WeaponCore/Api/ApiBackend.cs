@@ -31,7 +31,7 @@ namespace WeaponCore.Support
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool>(WeaponReady),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
@@ -44,7 +44,7 @@ namespace WeaponCore.Support
                 ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower),
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
                 ["GetAllWeaponDefinitions"] = new Action<IList<byte[]>>(GetAllWeaponDefinitions),
-
+                ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
             };
 
             _terminalPbApiMethods = new Dictionary<string, Delegate>()
@@ -52,7 +52,7 @@ namespace WeaponCore.Support
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool>(WeaponReady),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
@@ -124,6 +124,8 @@ namespace WeaponCore.Support
                 if (comp.Platform.State != Ready) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
+                    if (!allWeapons && i != weaponId) continue;
+
                     var w = comp.Platform.Weapons[i];
                     
                     if (w.State.ManualShoot != ShootOff)
@@ -142,6 +144,8 @@ namespace WeaponCore.Support
                 if (comp.Platform.State != Ready) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
+                    if (!allWeapons && i != weaponId) continue;
+
                     var w = comp.Platform.Weapons[i];
 
                     if (!on && w.State.ManualShoot == ShootOn)
@@ -157,15 +161,35 @@ namespace WeaponCore.Support
             }
         }
 
-        private static bool WeaponReady(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true)
+        private static bool WeaponReady(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
             {
-                if (comp.Platform.State != Ready) return false;
-                return comp.State.Value.Online;
+                if (comp.Platform.State != Ready || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) return false;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    if (!anyWeaponReady && i != weaponId) continue;
+                    var w = comp.Platform.Weapons[i];
+                    if (w.ShotReady) return true;
+                }
             }
 
+            return false;
+        }
+
+        private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp))
+            {
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    collection.Add(w.System.WeaponName, w.WeaponId);
+                }
+                return true;
+            }
             return false;
         }
 

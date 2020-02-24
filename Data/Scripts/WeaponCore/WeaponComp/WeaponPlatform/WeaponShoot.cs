@@ -75,10 +75,10 @@ namespace WeaponCore.Platform
                     }
                 }
 
-                if (_shootTick > tick)
+                if (ShootTick > tick)
                     return;
 
-                _shootTick = tick + TicksPerShot;
+                ShootTick = tick + TicksPerShot;
 
                 if (!IsShooting) StartShooting();
 
@@ -92,7 +92,7 @@ namespace WeaponCore.Platform
                 else if (System.HasBurstDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     State.ShotsFired = 0;
-                    _shootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
+                    ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
                 }
 
                 if (Comp.Ai.VelocityUpdateTick != tick)
@@ -190,7 +190,7 @@ namespace WeaponCore.Platform
                                 vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
                             }
 
-                            Comp.Ai.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
+                            Comp.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
                         }
                         else
                         {
@@ -223,7 +223,7 @@ namespace WeaponCore.Platform
                             p.State = Projectile.ProjectileState.Start;
                             p.Info.PrimeEntity = System.PrimeModel ? System.PrimeEntityPool.Get() : null;
                             p.Info.TriggerEntity = System.TriggerModel ? session.TriggerEntityPool.Get() : null;
-                            Comp.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
+                            Comp.Session.Projectiles.ActiveProjetiles.Add(p);
 
                             if (targetable)
                             {
@@ -311,7 +311,7 @@ namespace WeaponCore.Platform
                     if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
                     if (IsShooting) StopShooting();
 
-                    _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
+                    ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
                 else if (System.BurstMode && System.AlwaysFireFullBurst && State.CurrentAmmo > 0)
                     FinishBurst = (State.CurrentAmmo > 0 || System.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;

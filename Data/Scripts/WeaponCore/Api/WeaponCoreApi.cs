@@ -15,9 +15,9 @@ namespace WeaponCore.Support
         private Func<IList<MyDefinitionId>> _getAllCoreStaticLaunchers;
         private Func<IList<MyDefinitionId>> _getAllCoreTurrets;
         private Action<IMyEntity, IMyEntity, int> _setTargetEntity;
-        private Action<IMyTerminalBlock> _fireWeaponOnce;
-        private Action<IMyTerminalBlock, bool> _toggleWeaponFire;
-        private Func<IMyTerminalBlock, bool> _isWeaponReadyToFire;
+        private Action<IMyTerminalBlock, bool, int> _fireWeaponOnce;
+        private Action<IMyTerminalBlock, bool, bool, int> _toggleWeaponFire;
+        private Func<IMyTerminalBlock, int, bool, bool, bool> _isWeaponReadyToFire;
         private Func<IMyTerminalBlock, float> _getMaxWeaponRange;
         private Func<IMyTerminalBlock, IList<IList<string>>> _getTurretTargetTypes;
         private Action<IMyTerminalBlock, IList<IList<string>>> _setTurretTargetTypes;
@@ -30,6 +30,7 @@ namespace WeaponCore.Support
         private Func<MyDefinitionId, float> _maxPowerConsumption;
         private Action<IMyTerminalBlock> _disablePowerRequirements;
         private Action<IList<byte[]>> _getAllWeaponDefinitions;
+        private Func<IMyTerminalBlock, IDictionary<string, int>, bool> _getBlockWeaponMap;
 
         private const long Channel = 67549756549;
         private readonly List<byte[]> _byteArrays = new List<byte[]>();
@@ -78,9 +79,9 @@ namespace WeaponCore.Support
             _getAllCoreStaticLaunchers = (Func<IList<MyDefinitionId>>)delegates["GetCoreStaticLaunchers"];
             _getAllCoreTurrets = (Func<IList<MyDefinitionId>>)delegates["GetCoreTurrets"];
             _setTargetEntity = (Action<IMyEntity, IMyEntity, int>)delegates["SetTargetEntity"];
-            _fireWeaponOnce = (Action<IMyTerminalBlock>)delegates["FireOnce"];
-            _toggleWeaponFire = (Action<IMyTerminalBlock, bool>)delegates["ToggleFire"];
-            _isWeaponReadyToFire = (Func<IMyTerminalBlock, bool>)delegates["WeaponReady"];
+            _fireWeaponOnce = (Action<IMyTerminalBlock, bool, int>)delegates["FireOnce"];
+            _toggleWeaponFire = (Action<IMyTerminalBlock, bool, bool, int>)delegates["ToggleFire"];
+            _isWeaponReadyToFire = (Func<IMyTerminalBlock, int, bool, bool, bool>)delegates["WeaponReady"];
             _getMaxWeaponRange = (Func<IMyTerminalBlock, float>)delegates["GetMaxRange"];
             _getTurretTargetTypes = (Func<IMyTerminalBlock, IList<IList<string>>>)delegates["GetTurretTargetTypes"];
             _setTurretTargetingRange = (Action <IMyTerminalBlock, float>)delegates["SetTurretRange"];
@@ -93,6 +94,7 @@ namespace WeaponCore.Support
             _maxPowerConsumption = (Func<MyDefinitionId, float>)delegates["MaxPower"];
             _disablePowerRequirements = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
             _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
+            _getBlockWeaponMap = (Func<IMyTerminalBlock, IDictionary<string,int>, bool>)delegates["GetBlockWeaponMap"];
             if (getWeaponDefinitions)
             {
                 GetAllWeaponDefinitions(_byteArrays);
@@ -102,14 +104,13 @@ namespace WeaponCore.Support
                 }
             }
         }
-
         public void GetAllWeaponDefinitions(IList<byte[]> collection) => _getAllWeaponDefinitions?.Invoke(collection);
         public IList<MyDefinitionId> GetAllCoreWeapons() => _getAllCoreWeapons?.Invoke();
         public IList<MyDefinitionId> GetAllCoreStaticLaunchers() => _getAllCoreStaticLaunchers?.Invoke();
         public IList<MyDefinitionId> GetAllCoreTurrets() => _getAllCoreTurrets?.Invoke();
         public IList<IList<string>> GetTurretTargetTypes(IMyTerminalBlock weapon) => _getTurretTargetTypes?.Invoke(weapon);
         public IList<IMyEntity> GetTargetedEntity(IMyTerminalBlock weapon) => _getTargetedEntity?.Invoke(weapon);
-        public bool IsWeaponReadyToFire(IMyTerminalBlock weapon) => _isWeaponReadyToFire?.Invoke(weapon) ?? false;
+        public bool IsWeaponReadyToFire(IMyTerminalBlock weapon, int weaponId = 0, bool anyWeaponReady = true, bool shootReady = false) => _isWeaponReadyToFire?.Invoke(weapon, weaponId, anyWeaponReady, shootReady) ?? false;
         public float GetMaxWeaponRange(IMyTerminalBlock weapon) => _getMaxWeaponRange?.Invoke(weapon) ?? 0f;
         public float GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon) ?? 0f;
         public float CurrentPowerConsumption(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
@@ -117,10 +118,11 @@ namespace WeaponCore.Support
         public void DisablePowerRequirements(IMyTerminalBlock weapon) => _disablePowerRequirements?.Invoke(weapon);
         public void SetTurretTargetingRange(IMyTerminalBlock weapon, float range) => _setTurretTargetingRange?.Invoke(weapon, range);
         public void SetTargetEntity(IMyEntity shooter, IMyEntity target, int priority) => _setTargetEntity?.Invoke(shooter, target, priority);
-        public void FireWeaponOnce(IMyTerminalBlock weapon) => _fireWeaponOnce?.Invoke(weapon);
-        public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on) => _toggleWeaponFire?.Invoke(weapon, on);
+        public void FireWeaponOnce(IMyTerminalBlock weapon, bool allWeapons = true, int weaponId = 0) => _fireWeaponOnce?.Invoke(weapon, allWeapons, weaponId);
+        public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on, bool allWeapons, int weaponId = 0) => _toggleWeaponFire?.Invoke(weapon, on, allWeapons, weaponId);
         public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<IList<string>> threats) => _setTurretTargetTypes?.Invoke(weapon, threats);
         public bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId) => _isTargetAligned?.Invoke(weaponBlock, targetEnt, weaponId) ?? false;
         public Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId) => _getPredictedTargetPos?.Invoke(weaponBlock, targetEnt, weaponId) ?? null;
+        public bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection) => _getBlockWeaponMap?.Invoke(weaponBlock, collection) ?? false;
     }
 }
