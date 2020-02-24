@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
@@ -71,7 +73,7 @@ namespace WeaponCore
                     end = offetPosition + (AimDirection * ai.MaxTargetingRange);
                 }
             }
-
+            /*
             var up = s.ActiveCockPit.WorldMatrix.Up;
             var forward = s.ActiveCockPit.WorldMatrix.Forward;
             var centerPos = s.ActiveCockPit.PositionComp.WorldAABB.Center;
@@ -82,6 +84,7 @@ namespace WeaponCore
             //Log.Line($"{dist} - {sphere.Center} - {sphere.Radius}");
             var sphereEdge = new Vector3D(end + (dir * dist));
             MatrixD.CreateWorld(ref sphereEdge, ref forward, ref up, out AimMatrix);
+            */
             var foundTarget = false;
             var rayOnlyHitSelf = false;
             var rayHitSelf = false;

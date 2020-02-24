@@ -278,7 +278,7 @@ namespace WeaponCore.Support
             ShareMode = MyOwnershipShareModeEnum.None,
             DeformationRatio = 0,
             ShowOnHUD = false,
-            IsActive = true,
+            //IsActive = true,
             Name = null,
             CustomName = null,
         };

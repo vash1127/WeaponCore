@@ -95,6 +95,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
 
+        private bool _inSpyMode = false;
         public override void Simulate()
         {
             try
@@ -102,11 +103,21 @@ namespace WeaponCore
                 /*
                 if (TargetUi.DrawReticle)
                 {
-                    SpyCam.PositionComp.SetWorldMatrix(TargetUi.AimMatrix, SpyCam.CubeGrid, false, false);
+                    Log.Line($"set SpyCam matrix: {SpyCam.IsActive} - {TargetUi.AimMatrix.Translation} - {TargetUi.AimMatrix.Forward}");
+                    _inSpyMode = true;
+                    var matrix2 = ActiveControlBlock.PositionComp.WorldMatrix;
+                    matrix2.Translation += matrix2.Forward * 50;
+                    SpyCam.PositionComp.SetWorldMatrix(matrix2, SpyCam.CubeGrid, false, false);
                     SpyCam.RequestSetView();
                 }
-                else MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Entity, MyAPIGateway.Session.CameraController.Entity);
-                */
+                else if (_inSpyMode)
+                {
+
+                    Log.Line("leave spy");
+                    MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Entity, (IMyEntity) ActiveControlBlock ?? MyAPIGateway.Session.Player.Character);
+                    _inSpyMode = false;
+                }
+                *
                 if (!DedicatedServer)
                 {
                     EntityControlUpdate();
@@ -200,7 +211,6 @@ namespace WeaponCore
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.InSpyCam) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();

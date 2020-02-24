@@ -82,7 +82,7 @@ namespace WeaponCore
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
-                InSpyCam = MyAPIGateway.Session.CameraController == _session.SpyCam;
+                //InSpyCam = _session.Session.CameraController == _session.SpyCam;
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();

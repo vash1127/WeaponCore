@@ -64,7 +64,7 @@ namespace WeaponCore
                 }
                 else if (!FirstLoop)
                 {
-                    //Spawn.SpawnCamera("SpyCam", out SpyCam);
+                    Spawn.SpawnCamera("SpyCam", out SpyCam);
                     FirstLoop = true;
                     foreach (var t in AllDefinitions)
                     {

@@ -203,7 +203,6 @@ namespace WeaponCore
         internal bool TargetArmed;
         internal bool InGridAiBlock;
         internal bool IsCreative;
-
         internal enum AnimationType
         {
             Movement,
