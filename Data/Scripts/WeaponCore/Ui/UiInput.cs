@@ -28,6 +28,7 @@ namespace WeaponCore
         internal bool UiKeyWasPressed;
         internal bool PlayerCamera;
         internal bool FirstPersonView;
+        internal bool InSpyCam;
         private readonly Session _session;
         internal readonly MouseState ClientMouseState;
 
@@ -95,7 +96,7 @@ namespace WeaponCore
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
-
+                //InSpyCam = _session.Session.CameraController == _session.SpyCam;
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();

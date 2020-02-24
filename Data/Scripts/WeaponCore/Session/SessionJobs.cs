@@ -125,6 +125,8 @@ namespace WeaponCore
                     db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                     db.ShieldNear = db.ShieldNearTmp;
                     db.BlockCount = db.MyGrid.BlocksCount;
+                    db.Concealed = ((uint)db.MyGrid.Flags & 4) > 0;
+
                     if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
 
                     db.FirstRun = false;

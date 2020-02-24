@@ -1,4 +1,5 @@
-﻿using Sandbox.Definitions;
+﻿using Sandbox.Common.ObjectBuilders.Definitions;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using VRage.Game.GUI.TextPanel;
@@ -184,6 +185,42 @@ namespace WeaponCore.Support
             return null;
         }
 
+        internal static MyEntity SpawnCamera(string name, out MyCameraBlock camera)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(name))
+                {
+                    camera = null;
+                    return null;
+                }
+                PrefabCamera.SubtypeName = name;
+                PrefabBuilder.CubeBlocks.Clear(); // need no leftovers from previous spawns
+                PrefabBuilder.CubeBlocks.Add(PrefabCamera);
+                MyEntities.RemapObjectBuilder(PrefabBuilder);
+                var ent = MyEntities.CreateFromObjectBuilder(PrefabBuilder, false);
+                ent.Render.CastShadows = false;
+                ent.Render.Visible = false;
+                ent.IsPreview = true;
+                ent.Save = false;
+                ent.SyncFlag = false;
+                ent.NeedsWorldMatrix = false;
+                ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+                ent.Render.RemoveRenderObjects();
+                MyEntities.Add(ent, false);
+                var cameraSlim = ((IMyCubeGrid)ent).GetCubeBlock(Vector3I.Zero);
+                var gId = MyResourceDistributorComponent.ElectricityId;
+                camera = (MyCameraBlock)cameraSlim.FatBlock;
+                camera.ResourceSink.SetInputFromDistributor(gId, 0, true);
+                camera.RefreshModels(null, null);
+                return ent;
+            }
+            catch (Exception ex) { Log.Line($"Exception in SpawnPrefab: {ex}"); }
+
+            camera = null;
+            return null;
+        }
+
         private static SerializableVector3 PrefabVector0 = new SerializableVector3(0, 0, 0);
         private static SerializableVector3I PrefabVectorI0 = new SerializableVector3I(0, 0, 0);
         private static SerializableBlockOrientation PrefabOrientation = new SerializableBlockOrientation(Base6Directions.Direction.Forward, Base6Directions.Direction.Up);
@@ -214,8 +251,8 @@ namespace WeaponCore.Support
             YMirroxPlane = null,
             ZMirroxPlane = null,
             PersistentFlags = MyPersistentEntityFlags2.InScene,
-            Name = "HelmetMod",
-            DisplayName = "HelmetMod",
+            Name = "SpamCamGrid",
+            DisplayName = "SpamCamGrid",
             CreatePhysics = false,
             PositionAndOrientation = new MyPositionAndOrientation(Vector3D.Zero, Vector3D.Forward, Vector3D.Up),
             CubeBlocks = new List<MyObjectBuilder_CubeBlock>(),
@@ -231,6 +268,19 @@ namespace WeaponCore.Support
             ShowOnHUD = false,
             //ShowText = ShowTextOnScreenFlag.PUBLIC, // HACK not whitelisted anymore...
             FontSize = DISPLAY_FONT_SIZE,
+        };
+
+        private static MyObjectBuilder_CameraBlock PrefabCamera = new MyObjectBuilder_CameraBlock()
+        {
+            EntityId = 1,
+            Min = PrefabVectorI0,
+            BlockOrientation = PrefabOrientation,
+            ShareMode = MyOwnershipShareModeEnum.None,
+            DeformationRatio = 0,
+            ShowOnHUD = false,
+            //IsActive = true,
+            Name = null,
+            CustomName = null,
         };
     }
 }

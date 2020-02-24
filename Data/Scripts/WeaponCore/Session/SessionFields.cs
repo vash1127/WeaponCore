@@ -10,6 +10,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.Utils;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
@@ -127,7 +128,7 @@ namespace WeaponCore
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
         internal MyCubeBlock ActiveControlBlock;
-
+        internal MyCameraBlock SpyCam;
         internal MyEntity ControlledEntity;
         //internal MyObjectBuilder_ShipController ControlledOB;
         internal Projectiles.Projectiles Projectiles;

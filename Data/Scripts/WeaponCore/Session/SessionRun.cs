@@ -3,11 +3,15 @@ using System.Collections;
 using Sandbox.Engine.Networking;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Input;
+using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -93,10 +97,62 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
 
+        private bool _inSpyMode = false;
         public override void Simulate()
         {
             try
             {
+                /*
+                if (TargetUi.DrawReticle)
+                {
+                    var playerController = MyAPIGateway.Session.ControlledObject;
+                    if (playerController == null)
+                    {
+                        Log.Line($"player controller null");
+                        return;
+                    }
+                    var controllerTopMost = playerController.Entity.GetTopMostParent();
+                    if (controllerTopMost == null)
+                    {
+                        Log.Line($"controller topmost null");
+                        return;
+                    }
+                    var velocity = controllerTopMost.Physics.LinearVelocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+                    var rotation = playerController.LastRotationIndicator;
+
+                    if (!Vector3D.IsZero(velocity, 1e-4) || !Vector3D.IsZero(rotation, 1e-4))
+                    {
+                        Log.Line($"set SpyCam matrix: {SpyCam.IsActive} - {TargetUi.AimMatrix.Translation} - {TargetUi.AimMatrix.Forward} - {velocity.Length()} - {rotation}");
+                        var playerPosition = controllerTopMost.PositionComp.WorldAABB.Center;
+                        var rotationMultiplier = 0.0025f * 1.04f;
+                        MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorFixed, controllerTopMost);
+                        var roll = MathHelper.Clamp(rotation.Z, -0.02f, 0.02f);
+                        var vec2 = new Vector2(rotation.X, rotation.Y) * rotationMultiplier;
+
+                        var matrix = MySpectator.Static.GetViewMatrix();
+                        matrix.Translation -= Vector3D.TransformNormal(velocity, matrix);
+                        var quat = Quaternion.CreateFromYawPitchRoll(vec2.Y, vec2.X, roll);
+                        MatrixD.Transform(ref matrix, ref quat, out matrix);
+
+                        matrix = MatrixD.Invert(matrix);
+                        matrix.Translation = playerPosition + Vector3D.TransformNormal(Vector3D.Backward * 10, matrix);
+                        MySpectator.Static.SetViewMatrix(MatrixD.Invert(ref matrix));
+                    }
+
+                    _inSpyMode = true;
+                    //var matrix2 = ActiveControlBlock.PositionComp.WorldMatrix;
+                    //matrix2.Translation += matrix2.Forward * 50;
+                    //SpyCam.PositionComp.SetWorldMatrix(matrix2, SpyCam.CubeGrid, false, false);
+                    //SpyCam.RequestSetView();
+                }
+                else if (_inSpyMode)
+                {
+
+                    Log.Line("leave spy");
+                    MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Entity, (IMyEntity) ActiveControlBlock ?? MyAPIGateway.Session.Player.Character);
+                    _inSpyMode = false;
+                }
+                */
                 if (!DedicatedServer)
                 {
                     EntityControlUpdate();
@@ -189,8 +245,7 @@ namespace WeaponCore
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-
-                if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.InSpyCam) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();
                     TargetUi.DrawTargetUi();
@@ -266,6 +321,7 @@ namespace WeaponCore
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);
 
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
+
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
                 MyEntities.OnEntityCreate -= OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;

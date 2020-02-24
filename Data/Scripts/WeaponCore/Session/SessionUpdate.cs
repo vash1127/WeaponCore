@@ -5,6 +5,7 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
+using VRage.ModAPI;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
@@ -29,7 +30,7 @@ namespace WeaponCore
                 using (gridAi.MyGrid.Pin())
                 {
 
-                    if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose)
+                    if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                         continue;
 
                     var readyToUpdate = Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete;
@@ -310,7 +311,7 @@ namespace WeaponCore
                     var comp = w.Comp;
                     var gridAi = comp.Ai;
 
-                    if (comp == null || w == null || comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
+                    if (comp == null || w == null || gridAi == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
                         if (ChargingWeaponsCheck.Contains(w))
@@ -414,9 +415,8 @@ namespace WeaponCore
                 {
 
                     var comp = w.Comp;
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
-                    {
-
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) {
+                        
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         continue;
@@ -469,7 +469,8 @@ namespace WeaponCore
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
 
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     {
 
                         ShootingWeapons.RemoveAtFast(i);
