@@ -380,10 +380,7 @@ namespace WeaponCore.Platform
         }
 
         public void StartReload(bool reset = false)
-        {
-            if (Comp.Session.DedicatedServer)
-                Log.Line($"Reloading");
-            
+        {            
             if (reset) State.Reloading = false;
 
             if (State.Reloading) return;
