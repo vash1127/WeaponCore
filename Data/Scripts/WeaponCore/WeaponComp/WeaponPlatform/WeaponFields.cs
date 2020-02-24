@@ -25,7 +25,6 @@ namespace WeaponCore.Platform
         private int _nextVirtual;
         private int _fakeHeatTick;
         private uint _ticksUntilShoot;
-        private uint _shootTick;
         private uint _posChangedTick = 1;
         private uint _azimuthSubpartUpdateTick;
         private uint _prefiredTick;
@@ -34,6 +33,7 @@ namespace WeaponCore.Platform
         private bool _heatLoopRunning;
         internal bool PreFired;
         internal bool FinishBurst;
+        internal uint ShootTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
         internal int LoadId;
@@ -156,6 +156,18 @@ namespace WeaponCore.Platform
         internal bool AzimuthOnBase;
         internal bool ReturingHome;
         internal bool IsHome;
+
+        internal bool ShotReady
+        {
+            get
+            {
+                var reloading = (!System.EnergyAmmo || System.MustCharge) && (Reloading || OutOfAmmo);
+                var canShoot = !Comp.Overheated && !reloading && !System.DesignatorWeapon;
+                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (ShootDelayTick <= Comp.Session.Tick);
+                return shotReady;
+            }
+        }
+
         public enum TerminalActionState
         {
             ShootOn,

@@ -374,40 +374,5 @@ namespace WeaponCore
                 else TargetArmed = false;
             }
         }
-
-        /*
-        private void RemoveAction(long entityId, string typeId, string subtypeId, int page, int slot)
-        {
-            if (entityId != 0)
-            {
-                var myDefinitionId = MyVisualScriptLogicProvider.GetDefinitionId(typeId, subtypeId);
-                if ((ReplaceVanilla && VanillaIds.ContainsKey(myDefinitionId)) || WeaponPlatforms.ContainsKey(myDefinitionId.SubtypeId))
-                {
-                    try
-                    {
-                        MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
-                        MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
-                    }
-                    catch (Exception e)
-                    {
-                        FutureEvents.Schedule((object o) =>
-                        {
-                        //player is sitting in cockpit on game load and has an action to be removed
-                        try
-                            {
-                                MyVisualScriptLogicProvider.SetToolbarPage(page, Session.Player.IdentityId);
-                                MyVisualScriptLogicProvider.ClearToolbarSlot(slot, Session.Player.IdentityId);
-                            }
-                            catch (Exception e2)
-                            {
-                                Log.Line($"error in action removal: {e2}");
-                            }
-                        }, null, 10);
-                    }
-                }
-            }
-        }
-        */
-
     }
 }
