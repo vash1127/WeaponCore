@@ -88,7 +88,15 @@ namespace WeaponCore.Support
 
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
-                        Platform.Weapons[i].UpdatePivotPos();
+                        var w = Platform.Weapons[i];
+                        w.UpdatePivotPos();
+
+                        if (Session.IsClient)
+                        {
+                            var target = WeaponValues.Targets[w.WeaponId];
+                            if (target.State != Target.Targets.Expired)
+                                target.SyncTarget(w.Target);
+                        }
 
                         /*weapon.Set = Set.Value.Weapons[i];
                         weapon.State = State.Value.Weapons[i];

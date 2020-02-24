@@ -464,7 +464,7 @@ namespace WeaponCore.Support
                                 ai.Session.ClosestRayCasts++;
                                 bestTest = MyAPIGateway.Physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
 
-                                if (hit.HitEntity != ai.MyGrid || hit == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
+                                if (hit == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()) || (hit.HitEntity != ai.MyGrid))
                                     notSelfHit = true;
                             }
                         }
