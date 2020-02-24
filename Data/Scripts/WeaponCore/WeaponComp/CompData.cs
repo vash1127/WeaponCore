@@ -64,6 +64,10 @@ namespace WeaponCore
                 for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponStateValues();
                 Value.CurrentPlayerControl = new PlayerControl();
             }
+
+            for(int i = 0; i < Comp.Platform.Weapons.Length; i++)
+                Comp.Platform.Weapons[i].State = Value.Weapons[i];
+
             return loadedSomething;
         }
 

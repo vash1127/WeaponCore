@@ -436,6 +436,8 @@ namespace WeaponCore.Support
                 var cube = i < top5Count ? top5[index] : cubes[index];
 
                 var grid = cube.CubeGrid;
+                if (grid == null || grid.Physics == null || !grid.Physics.Enabled || grid.PositionComp == null) continue;
+
                 if (cube.MarkedForClose || checkPower && !cube.IsWorking || !(cube is IMyTerminalBlock) || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;

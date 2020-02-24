@@ -5,6 +5,7 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using static WeaponCore.Platform.Weapon;
 
 namespace WeaponCore
 {
@@ -261,7 +262,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
         }
 
-        private void SyncWeapon(Weapon weapon, WeaponTimings timings, ref WeaponSyncValues weaponData)
+        internal void SyncWeapon(Weapon weapon, WeaponTimings timings, ref WeaponSyncValues weaponData, bool setState = true)
         {
             var comp = weapon.Comp;
             var cState = comp.State.Value;
@@ -270,29 +271,51 @@ namespace WeaponCore
 
             var wasReloading = wState.Reloading;
 
-            comp.CurrentHeat -= weapon.State.Heat;
-            cState.CurrentCharge -= weapon.State.CurrentCharge;
+            if (setState)
+            {
+                comp.CurrentHeat -= weapon.State.Heat;
+                cState.CurrentCharge -= weapon.State.CurrentCharge;
 
-            weaponData.SetState(wState);
 
-            comp.CurrentHeat += weapon.State.Heat;
-            cState.CurrentCharge += weapon.State.CurrentCharge;
+                weaponData.SetState(wState);
+
+                comp.CurrentHeat += weapon.State.Heat;
+                cState.CurrentCharge += weapon.State.CurrentCharge;                
+            }
 
             comp.WeaponValues.Timings[weapon.WeaponId] = timings;
             weapon.Timings = timings;
 
-            Log.Line($"MustCharge: {weapon.System.MustCharge} wasReloading: {wasReloading} CurrentAmmo: {weapon.State.CurrentAmmo} CurrentMags: {weapon.State.CurrentMags} Reloading: {weapon.State.Reloading}");
+            var hasMags = weapon.State.CurrentMags > 0;
+            var hasAmmo = weapon.State.CurrentAmmo > 0;
 
-            if (!weapon.System.MustCharge && !wasReloading && weapon.State.CurrentAmmo <= 0 && weapon.State.CurrentMags > 0)
+            var chargeFullReload = weapon.System.MustCharge && !wasReloading && !weapon.State.Reloading && !hasAmmo && (hasMags || !weapon.System.EnergyAmmo);
+            var regularFullReload = !weapon.System.MustCharge && !wasReloading && !weapon.State.Reloading && !hasAmmo && hasMags;
+
+            var chargeContinueReloading = weapon.System.MustCharge && !weapon.State.Reloading && wasReloading;
+            var regularContinueReloading = !weapon.System.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Reloading && wasReloading) || (weapon.State.Reloading && !wasReloading)) ;
+
+            if (chargeFullReload || regularFullReload)
                 weapon.StartReload();
-            else if(!weapon.System.MustCharge && wasReloading && !weapon.State.Reloading && weapon.State.CurrentAmmo > 0)
-                weapon.CancelableReloadAction -= weapon.Reloaded;
+
+            else if (chargeContinueReloading || regularContinueReloading)
+            {
+                weapon.CancelableReloadAction += weapon.Reloaded;
+                if (weapon.Timings.ReloadedTick > 0)
+                    comp.Session.FutureEvents.Schedule(weapon.CancelableReloadAction, null, weapon.Timings.ReloadedTick);
+                else
+                    weapon.Reloaded();
+            }
+            else if (wasReloading && !weapon.State.Reloading && hasAmmo)
+            {
+                if(!weapon.System.MustCharge)
+                    weapon.CancelableReloadAction -= weapon.Reloaded;
+
+                weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
+            }
+
             else if (weapon.System.MustCharge && weapon.State.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
                 weapon.ChargeReload();
-            else if (weapon.System.MustCharge && !weapon.State.Reloading && wasReloading)
-                weapon.Reloaded();
-            else if (weapon.System.MustCharge && !wasReloading && (weapon.State.CurrentMags > 0 || !weapon.System.EnergyAmmo))
-                weapon.StartReload();
 
             if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
             {

@@ -88,17 +88,17 @@ namespace WeaponCore.Support
 
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
-                        var weapon = Platform.Weapons[i];
+                        Platform.Weapons[i].UpdatePivotPos();
 
-                        weapon.Set = Set.Value.Weapons[i];
+                        /*weapon.Set = Set.Value.Weapons[i];
                         weapon.State = State.Value.Weapons[i];
                         weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
 
-                        weapon.UpdatePivotPos();
-                        weapon.Timings = WeaponValues.Timings[weapon.WeaponId];
+                        weapon
 
-                        if (Session.MpActive && Session.IsClient)
+                        /*if (Session.MpActive && Session.IsClient)
                         {
+                            
                             var target = WeaponValues.Targets[weapon.WeaponId];
                             if (target.State != Target.Targets.Expired)
                                 target.SyncTarget(weapon.Target);
@@ -111,7 +111,7 @@ namespace WeaponCore.Support
                                 var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
                                 weapon.Comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
                             }
-                        }
+                        }*/
 
                     }
 

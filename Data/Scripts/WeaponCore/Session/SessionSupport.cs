@@ -12,6 +12,7 @@ using VRage.Game;
 using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
+using Sandbox.Engine.Physics;
 
 namespace WeaponCore
 {

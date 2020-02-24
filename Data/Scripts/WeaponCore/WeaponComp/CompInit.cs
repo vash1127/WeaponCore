@@ -54,12 +54,21 @@ namespace WeaponCore.Support
 
                 Set.LoadSettings();
                 Set.SettingsInit();
-                WeaponValues.Load(this, Session.MPTargetSync);
                 UpdateSettings(Set.Value);
 
                 Set.Value.Overrides.TargetPainter = false;
                 Set.Value.Overrides.ManualControl = false;
                 State.Value.PlayerIdInTerminal = -1;
+
+                for (int i = 0; i < Platform.Weapons.Length; i++)
+                {
+                    var weapon = Platform.Weapons[i];
+
+                    weapon.Set = Set.Value.Weapons[i];
+                    weapon.State = State.Value.Weapons[i];
+                    weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                }
+                WeaponValues.Load(this, Session.MPTargetSync);
 
                 /*if (isServer)
                 {

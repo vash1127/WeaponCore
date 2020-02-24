@@ -428,6 +428,7 @@ namespace WeaponCore.Platform
                 {
                     CancelableReloadAction += Reloaded;
                     Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+                    Timings.ReloadedTick = (uint)System.ReloadTime + Comp.Session.Tick;
                 }
 
 
@@ -465,11 +466,13 @@ namespace WeaponCore.Platform
                 State.CurrentAmmo = System.EnergyMagSize;
                 Comp.State.Value.CurrentCharge = System.EnergyMagSize;
                 State.CurrentCharge = System.EnergyMagSize;
-                
+
 
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
             }
+            else
+                CancelableReloadAction -= Reloaded;
 
             EventTriggerStateChanged(EventTriggers.Reloading, false);
 

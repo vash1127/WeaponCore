@@ -103,7 +103,7 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                 }
-                if (GameLoaded)
+                if (Loaded)
                 {
                     DsUtil.Start("ai");
                     AiLoop();

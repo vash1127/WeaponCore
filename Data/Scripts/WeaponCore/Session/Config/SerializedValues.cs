@@ -66,6 +66,7 @@ namespace WeaponCore
         [ProtoMember(8)] public bool Overheated;
         [ProtoMember(9)] public bool Reloading;
         [ProtoMember(10)] public bool Charging;
+
     }
 
     [ProtoContract]
@@ -122,6 +123,7 @@ namespace WeaponCore
         [ProtoMember(5)] public uint ShootDelayTick;
         [ProtoMember(6)] public uint WeaponReadyTick;
         [ProtoMember(7)] public uint LastHeatUpdateTick;
+        [ProtoMember(8)] public uint ReloadedTick;
 
         public uint Offset = 4;
 
@@ -138,6 +140,7 @@ namespace WeaponCore
                 ShootDelayTick = ShootDelayTick > tick ? ShootDelayTick >= offset ? ShootDelayTick - offset : 0 : 0,
                 WeaponReadyTick = WeaponReadyTick > tick ? WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0 : 0,
                 LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset >= 0 ? (tick - LastHeatUpdateTick) - offset : 0,
+                ReloadedTick = ReloadedTick > tick ? ReloadedTick > offset ? ReloadedTick - offset : 0 : 0,
             };
 
         }
@@ -152,6 +155,7 @@ namespace WeaponCore
                 OffDelay = OffDelay > 0 ? OffDelay + tick : 0,
                 ShootDelayTick = ShootDelayTick > 0 ? ShootDelayTick + tick : 0,
                 WeaponReadyTick = WeaponReadyTick > 0 ? WeaponReadyTick + tick : 0,
+                ReloadedTick = ReloadedTick,
             };
         }
     }
@@ -190,23 +194,20 @@ namespace WeaponCore
         {
             string rawData;
             byte[] base64;
-            if (comp.Session.MpActive && comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(id, out rawData))
+            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(id, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
                 comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
 
                 var timings = comp.WeaponValues.Timings;
-                var tick = comp.Session.Tick;
 
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    var wid = comp.Platform.Weapons[i].WeaponId;
+                    var w = comp.Platform.Weapons[i];
+                    var values = new WeaponSyncValues();
+                    var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
 
-                    timings[wid].AnimationDelayTick = timings[wid].AnimationDelayTick > 0 ? timings[wid].AnimationDelayTick + tick : 0;
-                    timings[wid].ChargeUntilTick = timings[wid].ChargeUntilTick > 0 ? timings[wid].ChargeUntilTick + tick : 0;
-                    timings[wid].OffDelay = timings[wid].OffDelay > 0 ? timings[wid].OffDelay + tick : 0;
-                    timings[wid].WeaponReadyTick = timings[wid].WeaponReadyTick > 0 ? timings[wid].WeaponReadyTick + tick : 0;
-                    timings[wid].ShootDelayTick = timings[wid].ShootDelayTick > 0 ? timings[wid].ShootDelayTick + tick : 0;
+                    comp.Session.SyncWeapon(w, wTiming, ref values, false);
                 }
 
             }
@@ -217,8 +218,10 @@ namespace WeaponCore
                 comp.WeaponValues.Timings = new WeaponTimings[comp.Platform.Weapons.Length];
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    comp.WeaponValues.Targets[i] = new TransferTarget();
-                    comp.WeaponValues.Timings[i] = new WeaponTimings();
+                    var w = comp.Platform.Weapons[i];
+
+                    comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
+                    w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
                 }
             }
         }
