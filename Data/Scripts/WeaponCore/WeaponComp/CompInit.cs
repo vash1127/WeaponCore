@@ -175,11 +175,6 @@ namespace WeaponCore.Support
                 else
                     Session.ComputeStorage(weapon);
             }
-            else if (weapon.System.MustCharge)
-                if (!Session.GameLoaded)
-                    Session.ChargingWeaponsToReload.Enqueue(weapon);
-                else
-                    Session.ComputeStorage(weapon);
 
             /*if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {

@@ -60,7 +60,10 @@ namespace WeaponCore
                     MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
 
                     while (ChargingWeaponsToReload.Count > 0)
-                        ComputeStorage(ChargingWeaponsToReload.Dequeue());
+                    {
+                        var w = ChargingWeaponsToReload.Dequeue();
+                        w.StartReload();
+                    }
 
                     foreach (var myEntity in MyEntities.GetEntities())
                     {
