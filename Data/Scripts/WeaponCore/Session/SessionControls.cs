@@ -170,7 +170,7 @@ namespace WeaponCore
                     if (cState.ClickShoot)
                     {
                         w.State.ManualShoot = ShootOff;
-                        cState.CurrentPlayerControl.PlayerId = -1;
+                        cState.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
                         cState.CurrentPlayerControl.CurrentControlType = ControlType.None;
                     }
                     else
