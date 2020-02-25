@@ -160,11 +160,7 @@ namespace WeaponCore.Support
 
         public void StopAllAv()
         {
-            if (Platform?.State != MyWeaponPlatform.PlatformState.Ready)
-            {
-                Log.Line($"{BlockInventory != null} - {Platform != null} - {State != null} - {BaseType}");
-                return;
-            }
+            if (Platform?.State != MyWeaponPlatform.PlatformState.Ready) return;
             StopAllSounds();
             StopAllGraphics();
         }
