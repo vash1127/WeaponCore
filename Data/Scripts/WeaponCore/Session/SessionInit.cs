@@ -26,7 +26,8 @@ namespace WeaponCore
             else
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
 
-            if (!DedicatedServer && IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
+            if (HandlesInput) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
+            else PlayerMouseStates.Add(0, UiInput.ClientMouseState);
 
             MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
@@ -47,7 +48,6 @@ namespace WeaponCore
                 SyncBufferedDistSqr = (SyncDist + 500) * (SyncDist + 500);
             }
 
-            if (HandlesInput) PlayerMouseStates.Add(Session.Player.IdentityId, UiInput.ClientMouseState);
 
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
