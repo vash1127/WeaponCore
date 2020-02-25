@@ -42,20 +42,22 @@ namespace WeaponCore
         {
             if (Block.Storage == null) return false;
 
-            byte[] base64;
             CompStateValues loadedState = null;
             string rawData;
             bool loadedSomething = false;
 
             if (Block.Storage.TryGetValue(Comp.Session.LogicStateGuid, out rawData))
             {
-                base64 = Convert.FromBase64String(rawData);
+                var base64 = Convert.FromBase64String(rawData);
                 loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompStateValues>(base64);
             }
 
             if (loadedState != null)
             {
                 Value = loadedState;
+                if (loadedState.CurrentPlayerControl == null) 
+                    Value.CurrentPlayerControl = new PlayerControl();
+
                 loadedSomething = true;
             }
             else

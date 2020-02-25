@@ -77,6 +77,11 @@ namespace WeaponCore
                             var overRides = comp.Set.Value.Overrides;
 
                             var compCurPlayer = comp.State.Value.CurrentPlayerControl;
+                            if (!PlayerMouseStates.ContainsKey(compCurPlayer.PlayerId))
+                            {
+                                Log.Line($"{compCurPlayer.PlayerId}");
+                                continue;
+                            }
                             var sms = PlayerMouseStates[compCurPlayer.PlayerId];
                             var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
                             var leftClick = sms.MouseButtonLeft && currentControl;

@@ -162,11 +162,6 @@ namespace WeaponCore
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                /*if (comp.ClickShootAction == null || comp.shootAction == null)
-                {
-                    comp.ClickShootAction = action;
-                    comp.shootAction = (IMyTerminalAction)MyAPIGateway.TerminalActionsHelper.GetActionWithName("Shoot", typeof(T));
-                }*/
                 var cState = comp.State.Value;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
@@ -187,7 +182,7 @@ namespace WeaponCore
                 }
 
                 cState.ClickShoot = !cState.ClickShoot;
-                cState.ShootOn = cState.ClickShoot ? false : cState.ShootOn;
+                cState.ShootOn = !cState.ClickShoot && cState.ShootOn;
                 comp.UpdateStateMP();
             };
 
