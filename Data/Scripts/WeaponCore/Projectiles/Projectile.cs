@@ -268,7 +268,7 @@ namespace WeaponCore.Projectiles
             else Velocity = StartSpeed + AccelVelocity;
 
             TravelMagnitude = Velocity * StepConst;
-            FieldTime = Info.System.Values.Ammo.Trajectory.FieldTime;
+            FieldTime = Info.System.Ewar || Info.System.IsMine ? Info.System.Values.Ammo.Trajectory.FieldTime : 0;
 
             State = !Info.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
             if (Info.System.AmmoParticle && EnableAv && !Info.System.IsBeamWeapon)
