@@ -904,7 +904,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
                 MatrixD matrix;
-                if (ModelState == EntityState.Exists)
+                if (ModelState == EntityState.Exists && Info.AvShot.PrimeEntity != null)
                 {
                     matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrix.Up);
                     if (Info.IsShrapnel) MatrixD.Rescale(ref matrix, 0.5f);
@@ -931,7 +931,6 @@ namespace WeaponCore.Projectiles
                     ParticleStopped = false;
                     ParticleLateStart = false;
                 }
-
             }
             catch (Exception ex) { Log.Line($"Exception in PlayAmmoParticle: {ex} AmmoEffect:{AmmoEffect != null} - info:{Info != null} - AvShot:{Info?.AvShot != null} - Ai:{Info?.Ai != null} - Session:{Info?.Ai?.Session != null} - System:{Info?.System != null} - Model:{ModelState == EntityState.Exists} - PrimeEntity:{Info?.PrimeEntity != null}"); }
         }
