@@ -77,17 +77,10 @@ namespace WeaponCore
                             var overRides = comp.Set.Value.Overrides;
 
                             var compCurPlayer = comp.State.Value.CurrentPlayerControl;
-
-                            MouseState sms;
-                            var leftClick = false;
-                            var rightClick = false;
-                            if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms))
-                            {
-                                var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
-
-                                leftClick = sms.MouseButtonLeft && currentControl;
-                                rightClick = sms.MouseButtonRight && currentControl;
-                            }
+                            var sms = PlayerMouseStates[compCurPlayer.PlayerId];
+                            var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+                            var leftClick = sms.MouseButtonLeft && currentControl;
+                            var rightClick = sms.MouseButtonRight && currentControl;
 
                             comp.WasControlled = comp.UserControlled;
                             comp.TrackReticle = (overRides.TargetPainter || overRides.ManualControl);
