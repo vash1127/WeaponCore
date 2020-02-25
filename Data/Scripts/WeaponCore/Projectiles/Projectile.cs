@@ -892,42 +892,48 @@ namespace WeaponCore.Projectiles
 
         internal void PlayAmmoParticle()
         {
-            if (Info.Age == 0 && !ParticleLateStart)
+            try
             {
-                TestSphere.Center = Position;
-                if (!Info.Ai.Session.Camera.IsInFrustum(ref TestSphere))
+                if (Info.Age == 0 && !ParticleLateStart)
                 {
-                    ParticleLateStart = true;
-                    return;
+                    TestSphere.Center = Position;
+                    if (!Info.Ai.Session.Camera.IsInFrustum(ref TestSphere))
+                    {
+                        ParticleLateStart = true;
+                        return;
+                    }
                 }
-            }
-            MatrixD matrix;
-            if (ModelState == EntityState.Exists)
-            {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrix.Up);
-                if (Info.IsShrapnel) MatrixD.Rescale(ref matrix, 0.5f);
-                var offVec = Position + Vector3D.Rotate(Info.System.Values.Graphics.Particles.Ammo.Offset, matrix);
-                matrix.Translation = offVec;
-                Info.AvShot.PrimeMatrix = matrix;
-            }
-            else
-            {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, Info.OriginUp);
-                var offVec = Position + Vector3D.Rotate(Info.System.Values.Graphics.Particles.Ammo.Offset, matrix);
-                matrix.Translation = offVec;
-            }
+                MatrixD matrix;
+                if (ModelState == EntityState.Exists)
+                {
+                    matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrix.Up);
+                    if (Info.IsShrapnel) MatrixD.Rescale(ref matrix, 0.5f);
+                    var offVec = Position + Vector3D.Rotate(Info.System.Values.Graphics.Particles.Ammo.Offset, matrix);
+                    matrix.Translation = offVec;
+                    Info.AvShot.PrimeMatrix = matrix;
+                }
+                else
+                {
+                    matrix = MatrixD.CreateWorld(Position, AccelDir, Info.OriginUp);
+                    var offVec = Position + Vector3D.Rotate(Info.System.Values.Graphics.Particles.Ammo.Offset, matrix);
+                    matrix.Translation = offVec;
+                }
 
-            MyParticlesManager.TryCreateParticleEffect(Info.System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
-            if (AmmoEffect == null) return;
-            AmmoEffect.DistanceMax = Info.System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
-            AmmoEffect.UserColorMultiplier = Info.System.Values.Graphics.Particles.Ammo.Color;
-            var scaler = !Info.IsShrapnel ? 1 : 0.5f;
+                if (MyParticlesManager.TryCreateParticleEffect(Info.System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect))
+                {
+                    AmmoEffect.DistanceMax = Info.System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
+                    AmmoEffect.UserColorMultiplier = Info.System.Values.Graphics.Particles.Ammo.Color;
+                    var scaler = !Info.IsShrapnel ? 1 : 0.5f;
 
-            AmmoEffect.UserRadiusMultiplier = Info.System.Values.Graphics.Particles.Ammo.Extras.Scale * scaler;
-            AmmoEffect.UserEmitterScale = 1 * scaler;
-            if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
-            ParticleStopped = false;
-            ParticleLateStart = false;
+                    AmmoEffect.UserRadiusMultiplier = Info.System.Values.Graphics.Particles.Ammo.Extras.Scale * scaler;
+                    AmmoEffect.UserEmitterScale = 1 * scaler;
+                    if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
+                    ParticleStopped = false;
+                    ParticleLateStart = false;
+                }
+
+            }
+            catch (Exception ex) { Log.Line($"Exception in PlayAmmoParticle: {ex} info:{Info != null} - AvShot:{Info?.AvShot != null} - Ai:{Info?.Ai != null} - Session:{Info?.Ai?.Session == null} - System:{Info?.System != null} - Model:{ModelState == EntityState.Exists} - PrimeEntity:{Info?.PrimeEntity != null}"); }
         }
 
         internal void PlayHitParticle()
