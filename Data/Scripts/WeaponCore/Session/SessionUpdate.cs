@@ -57,7 +57,6 @@ namespace WeaponCore
                     ///
                     for (int i = 0; i < gridAi.Weapons.Count; i++)
                     {
-
                         var comp = gridAi.Weapons[i];
                         using (comp.MyCube.Pin())
                         {
@@ -227,16 +226,17 @@ namespace WeaponCore
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
                                 var compCurPlayer = comp.State.Value.CurrentPlayerControl;
+                                Log.Line($"test3");
 
                                 MouseState sms;
                                 PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
-
                                 //ui click handling for multiplayer support - toolbar only so far
-                                var leftClick = !DedicatedServer ? UiInput.ClientMouseState.MouseButtonLeft : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonLeft;
+                                var leftClick = HandlesInput ? UiInput.ClientMouseState.MouseButtonLeft : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonLeft;
 
-                                var rightClick = !DedicatedServer ? UiInput.ClientMouseState.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
+                                var rightClick = HandlesInput ? UiInput.ClientMouseState.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+                                Log.Line($"test4");
 
                                 if (canShoot && (validShootStates || manualShot || w.FinishBurst))
                                 {
