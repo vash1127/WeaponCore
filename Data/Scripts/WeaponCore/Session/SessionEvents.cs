@@ -175,7 +175,6 @@ namespace WeaponCore
                 if (Players.TryRemove(l, out removedPlayer))
                 {
                     long playerId;
-                    MouseState ms;
                     SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
                     PlayerMouseStates.Remove(playerId);
 
