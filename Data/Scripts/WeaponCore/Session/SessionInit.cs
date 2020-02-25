@@ -65,13 +65,6 @@ namespace WeaponCore
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
 
-            if (HandlesInput)
-            {
-                PlayerConnected(Session.Player.IdentityId);
-                PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
-            }
-            PlayerMouseStates.Add(-1, new MouseState());
-
             foreach (var x in WeaponDefinitions)
             {
                 var ae = x.Ammo.AreaEffect;

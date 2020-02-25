@@ -72,6 +72,13 @@ namespace WeaponCore
                             RemoveCoreToolbarWeapons(grid);
                     }
 
+                    if (HandlesInput)
+                    {
+                        PlayerConnected(Session.Player.IdentityId);
+                        PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
+                    }
+                    PlayerMouseStates.Add(-1, new MouseState());
+
                 }
                 else if (!FirstLoop)
                 {
