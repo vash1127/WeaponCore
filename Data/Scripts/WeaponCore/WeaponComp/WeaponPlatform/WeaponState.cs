@@ -397,7 +397,7 @@ namespace WeaponCore.Platform
             if (IsShooting)
                 StopShooting();
 
-            if ((State.CurrentMags == 0 && !System.MustCharge && !Comp.Session.IsCreative))
+            if ((State.CurrentMags == 0 && !System.EnergyAmmo && !Comp.Session.IsCreative))
             {
                 if (!OutOfAmmo)
                 {
