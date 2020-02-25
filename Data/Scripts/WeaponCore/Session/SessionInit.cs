@@ -26,8 +26,12 @@ namespace WeaponCore
             else
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
 
-            if (HandlesInput) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
-            PlayerMouseStates.Add(-1, new MouseState());
+            if (HandlesInput)
+            {
+                PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
+                PlayerMouseStates[MyAPIGateway.Session.Player.IdentityId] =  UiInput.ClientMouseState;
+            }
+            PlayerMouseStates[-1] = new MouseState();
             MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
 
