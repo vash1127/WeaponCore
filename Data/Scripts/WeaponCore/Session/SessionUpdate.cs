@@ -77,11 +77,6 @@ namespace WeaponCore
                             var overRides = comp.Set.Value.Overrides;
 
                             var compCurPlayer = comp.State.Value.CurrentPlayerControl;
-                            if (!PlayerMouseStates.ContainsKey(compCurPlayer.PlayerId))
-                            {
-                                Log.Line($"{compCurPlayer.PlayerId}");
-                                continue;
-                            }
                             var sms = PlayerMouseStates[compCurPlayer.PlayerId];
                             var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
                             var leftClick = sms.MouseButtonLeft && currentControl;
@@ -94,9 +89,6 @@ namespace WeaponCore
                             var uiTargeting = !DedicatedServer ? TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId) : comp.TrackReticle && gridAi.ControllingPlayers.ContainsKey(comp.State.Value.CurrentPlayerControl.PlayerId);
 
                             comp.TrackReticle = comp.TrackReticle && uiTargeting; //&& uiTargeting;
-
-                            //if (Tick60 && DedicatedServer)
-                            //Log.Line($"comp.TrackReticle: {comp.TrackReticle}");                    
 
                             var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;
