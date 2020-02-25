@@ -29,7 +29,7 @@ namespace WeaponCore
 
         internal void SendPacketToServer(Packet packet)
         {
-            if (!MpActive) return;
+            if (!IsClient) return;
 
             byte[] bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
 
