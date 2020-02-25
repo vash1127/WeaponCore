@@ -80,12 +80,12 @@ namespace WeaponCore
 
                             var leftClick = false;
                             var rightClick = false;
-                            if (IsServer || compCurPlayer.PlayerId == Session.Player.IdentityId)
+                            MouseState mouseState;
+                            if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out mouseState))
                             {
-                                var sms = PlayerMouseStates[compCurPlayer.PlayerId];
                                 var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
-                                leftClick = sms.MouseButtonLeft && currentControl;
-                                rightClick = sms.MouseButtonRight && currentControl;
+                                leftClick = mouseState.MouseButtonLeft && currentControl;
+                                rightClick = mouseState.MouseButtonRight && currentControl;
                             }
 
                             comp.WasControlled = comp.UserControlled;

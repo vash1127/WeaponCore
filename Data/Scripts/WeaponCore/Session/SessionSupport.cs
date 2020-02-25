@@ -154,6 +154,10 @@ namespace WeaponCore
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
                 PlayerMouseStates[id] = new MouseState();
+
+                if (MpActive && IsServer)
+                    PacketizeToClientsInRange(null, new LookupUpdatePacket { EntityId = id, SenderId = player.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = true});
+
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
             }

@@ -20,7 +20,7 @@ namespace WeaponCore
                 foreach (var p in Players.Values)
                 {
                     var id = p.SteamUserId;
-                    if (id != packet.SenderId && Vector3D.DistanceSquared(p.GetPosition(), block.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr)
+                    if (id != packet.SenderId && (Vector3D.DistanceSquared(p.GetPosition(), block.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr) || block == null)
                         MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, p.SteamUserId);
                 }
             }
@@ -137,6 +137,54 @@ namespace WeaponCore
                                 SyncWeapon(weapon, timings, ref weaponData);
                             }
                                 break;
+
+                        case PacketType.PlayerIdUpdate:
+                            {
+                                var updatePacket = packet as LookupUpdatePacket;
+
+                                if (updatePacket == null) return;
+                                if (updatePacket.Data) //update/add
+                                {
+                                    SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
+                                    MouseState ms;
+                                    if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
+                                        PlayerMouseStates[updatePacket.EntityId] = new MouseState();
+                                }
+                                else //remove
+                                {
+                                    long player;
+                                    SteamToPlayer.TryRemove(updatePacket.SenderId, out player);
+                                    PlayerMouseStates.Remove(player);
+                                }
+                                break;
+                            }
+                        case PacketType.ClientMouseEvent:
+                            var mousePacket = packet as MouseInputPacket;
+                            long playerId;
+                            if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                                PlayerMouseStates[playerId] = mousePacket.Data;
+
+                            break;
+                        case PacketType.ActiveControlUpdate:
+                            {
+                                var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+                                var grid = block?.CubeGrid as MyCubeGrid;
+                                var updatePacket = packet as LookupUpdatePacket;
+
+                                if (block == null || grid == null || updatePacket == null) return;
+                                GridAi trackingAi;
+                                if (updatePacket.Data) //update/add
+                                {
+                                    if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                                        trackingAi.ControllingPlayers[playerId] = block;
+                                }
+                                else //remove
+                                {
+                                    if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                                        trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
+                                }
+                                break;
+                            }
                     }
                 }
             }
@@ -197,7 +245,10 @@ namespace WeaponCore
                     case PacketType.ClientMouseEvent:
                         var mousePacket = packet as MouseInputPacket;
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                        {
                             PlayerMouseStates[playerId] = mousePacket.Data;
+                            PacketizeToClientsInRange(null, mousePacket);
+                        }
 
                         break;
 
@@ -218,6 +269,8 @@ namespace WeaponCore
                             if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                                 trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
                         }
+
+                        PacketizeToClientsInRange(block, updatePacket);
                         break;
                     case PacketType.TargetUpdate:
                         {

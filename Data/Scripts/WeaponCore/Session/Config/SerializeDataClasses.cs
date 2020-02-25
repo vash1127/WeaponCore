@@ -19,6 +19,7 @@ namespace WeaponCore
         ClientMouseEvent,
         ActiveControlUpdate,
         WeaponSync,
+        PlayerIdUpdate,
     }
 
     [ProtoContract]
