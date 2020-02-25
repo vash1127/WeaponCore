@@ -52,7 +52,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
-        internal Dictionary<long, MouseState> PlayerMouseStates = new Dictionary<long, MouseState>();
+        internal readonly Dictionary<long, MouseState> PlayerMouseStates = new Dictionary<long, MouseState>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
@@ -212,7 +212,7 @@ namespace WeaponCore
         internal bool InGridAiBlock;
         internal bool IsCreative;
         internal bool IsClient;
-
+        internal bool HandlesInput;
         internal enum AnimationType
         {
             Movement,

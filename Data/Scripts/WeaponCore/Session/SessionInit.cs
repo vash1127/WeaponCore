@@ -19,9 +19,8 @@ namespace WeaponCore
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
             IsCreative = MyAPIGateway.Session.CreativeMode;
-
             IsClient = !IsServer && !DedicatedServer && MpActive;
-
+            HandlesInput = IsClient || IsServer && !DedicatedServer;
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
             else

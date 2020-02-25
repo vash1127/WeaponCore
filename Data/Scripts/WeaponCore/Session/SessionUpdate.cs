@@ -57,7 +57,6 @@ namespace WeaponCore
                     ///
                     for (int i = 0; i < gridAi.Weapons.Count; i++)
                     {
-
                         var comp = gridAi.Weapons[i];
                         using (comp.MyCube.Pin())
                         {
@@ -76,6 +75,15 @@ namespace WeaponCore
                                 comp.TerminalRefresh();
 
                             var overRides = comp.Set.Value.Overrides;
+
+                            var compCurPlayer = comp.State.Value.CurrentPlayerControl;
+                            MouseState sms;
+                            PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
+                            //ui click handling for multiplayer support - toolbar only so far
+                            var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+                            var currentIsLocal = IsServer && !DedicatedServer && compCurPlayer.PlayerId == Session.Player.IdentityId;
+                            var leftClick = (HandlesInput ? UiInput.ClientMouseState.MouseButtonLeft && currentIsLocal : sms != null && sms.MouseButtonLeft) && currentControl;
+                            var rightClick = (HandlesInput ? UiInput.ClientMouseState.MouseButtonRight && currentIsLocal : sms != null && sms.MouseButtonRight) && currentControl;
 
                             comp.WasControlled = comp.UserControlled;
                             comp.TrackReticle = (overRides.TargetPainter || overRides.ManualControl);
@@ -240,7 +248,6 @@ namespace WeaponCore
                                 }
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
-
                                 if (canShoot && (validShootStates || manualShot || w.FinishBurst))
                                 {
 
