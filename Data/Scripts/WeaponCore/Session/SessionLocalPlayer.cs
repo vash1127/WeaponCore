@@ -130,15 +130,15 @@ namespace WeaponCore
                         if (gridAi.WeaponBase.TryGetValue(cube, out comp))
                         {
                             GunnerBlackList = true;
-                            GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, MyAPIGateway.Session.Player.IdentityId);
+                            GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, Session.Player.IdentityId);
                             comp.State.Value.PlayerIdInTerminal = -3;
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.Player.IdentityId, false);
                             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.Player.IdentityId, false);
                             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Session.Player.IdentityId, false);
                         }
                     }
                 }
@@ -148,11 +148,11 @@ namespace WeaponCore
                     {
                         GunnerBlackList = false;
                         var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.Player.IdentityId, true);
                         var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.Player.IdentityId, true);
                         var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Session.Player.IdentityId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         GridAi gridAi;
                         if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))
