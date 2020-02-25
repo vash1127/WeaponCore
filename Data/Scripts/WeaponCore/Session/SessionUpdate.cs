@@ -231,9 +231,8 @@ namespace WeaponCore
                                 MouseState sms;
                                 PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
                                 //ui click handling for multiplayer support - toolbar only so far
-                                var leftClick = HandlesInput ? UiInput.ClientMouseState.MouseButtonLeft : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonLeft;
-
-                                var rightClick = HandlesInput ? UiInput.ClientMouseState.MouseButtonRight : gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId) && sms != null && sms.MouseButtonRight;
+                                var leftClick = (HandlesInput ? UiInput.ClientMouseState.MouseButtonLeft : sms != null && sms.MouseButtonLeft) && gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+                                var rightClick = (HandlesInput ? UiInput.ClientMouseState.MouseButtonRight : sms != null && sms.MouseButtonRight) && gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 Log.Line($"test4");
