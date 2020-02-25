@@ -933,7 +933,7 @@ namespace WeaponCore.Projectiles
                 }
 
             }
-            catch (Exception ex) { Log.Line($"Exception in PlayAmmoParticle: {ex} info:{Info != null} - AvShot:{Info?.AvShot != null} - Ai:{Info?.Ai != null} - Session:{Info?.Ai?.Session == null} - System:{Info?.System != null} - Model:{ModelState == EntityState.Exists} - PrimeEntity:{Info?.PrimeEntity != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in PlayAmmoParticle: {ex} AmmoEffect:{AmmoEffect != null} - info:{Info != null} - AvShot:{Info?.AvShot != null} - Ai:{Info?.Ai != null} - Session:{Info?.Ai?.Session != null} - System:{Info?.System != null} - Model:{ModelState == EntityState.Exists} - PrimeEntity:{Info?.PrimeEntity != null}"); }
         }
 
         internal void PlayHitParticle()
