@@ -245,12 +245,7 @@ namespace WeaponCore
 
         public Session()
         {
-            if (!DedicatedServer)
-            {
-                UiInput = new UiInput(this);
-                PlayerMouseStates.Add(Session.Player.IdentityId, UiInput.ClientMouseState);
-            }
-
+            UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
             WheelUi = new Wheel(this);
             DsUtil = new DSUtils(this);
