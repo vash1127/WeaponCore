@@ -178,6 +178,8 @@ namespace WeaponCore
                     SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
                     PlayerMouseStates.Remove(playerId);
 
+                    PacketizeToClientsInRange(null, new LookupUpdatePacket { EntityId = playerId, SenderId = removedPlayer.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = false });
+
                     if (removedPlayer.SteamUserId == AuthorSteamId)
                     {
                         AuthorPlayerId = 0;
