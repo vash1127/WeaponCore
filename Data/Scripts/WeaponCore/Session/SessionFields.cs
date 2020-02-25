@@ -52,7 +52,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
-        internal ConcurrentDictionary<long, MouseState> PlayerMouseStates = new ConcurrentDictionary<long, MouseState>();
+        internal Dictionary<long, MouseState> PlayerMouseStates = new Dictionary<long, MouseState>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
@@ -139,7 +139,6 @@ namespace WeaponCore
         internal DSUtils DsUtil;
         internal DSUtils DsUtil2;
         internal UiInput UiInput;
-        internal MouseState ServerInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
 
@@ -248,8 +247,8 @@ namespace WeaponCore
         {
             if (!DedicatedServer)
             {
-                ServerInput = new MouseState();
-                UiInput = new UiInput(this);                
+                UiInput = new UiInput(this);
+                PlayerMouseStates.Add(Session.Player.IdentityId, UiInput.ClientMouseState);
             }
 
             TargetUi = new TargetUi(this);
