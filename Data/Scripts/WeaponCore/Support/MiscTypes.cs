@@ -11,7 +11,6 @@ using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore.Support
 {
-    [ProtoContract]
     internal class Target
     {
         internal Targets State = Targets.Expired;
