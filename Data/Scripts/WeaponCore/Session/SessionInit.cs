@@ -25,15 +25,12 @@ namespace WeaponCore
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
             else
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
-
-            if (HandlesInput)
+            
+            if (IsServer)
             {
-                PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
-                PlayerMouseStates[MyAPIGateway.Session.Player.IdentityId] =  UiInput.ClientMouseState;
+                MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
+                MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
             }
-            PlayerMouseStates[-1] = new MouseState();
-            MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
-            MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
 
             var env = MyDefinitionManager.Static.EnvironmentDefinition;
             if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
@@ -67,6 +64,13 @@ namespace WeaponCore
             Inited = true;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
+
+            if (HandlesInput)
+            {
+                PlayerConnected(Session.Player.IdentityId);
+                PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
+            }
+            PlayerMouseStates.Add(-1, new MouseState());
 
             foreach (var x in WeaponDefinitions)
             {
