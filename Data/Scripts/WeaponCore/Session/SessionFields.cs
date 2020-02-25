@@ -139,7 +139,6 @@ namespace WeaponCore
         internal DSUtils DsUtil;
         internal DSUtils DsUtil2;
         internal UiInput UiInput;
-        internal MouseState ServerInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
 
@@ -248,8 +247,8 @@ namespace WeaponCore
         {
             if (!DedicatedServer)
             {
-                ServerInput = new MouseState();
-                UiInput = new UiInput(this);                
+                UiInput = new UiInput(this);
+                PlayerMouseStates.Add(Session.Player.IdentityId, UiInput.ClientMouseState);
             }
 
             TargetUi = new TargetUi(this);

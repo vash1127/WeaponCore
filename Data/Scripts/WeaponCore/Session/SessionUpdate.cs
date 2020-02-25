@@ -77,13 +77,17 @@ namespace WeaponCore
                             var overRides = comp.Set.Value.Overrides;
 
                             var compCurPlayer = comp.State.Value.CurrentPlayerControl;
+
                             MouseState sms;
-                            PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms);
-                            //ui click handling for multiplayer support - toolbar only so far
-                            var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
-                            var currentIsLocal = IsServer && !DedicatedServer && compCurPlayer.PlayerId == Session.Player.IdentityId;
-                            var leftClick = (HandlesInput ? UiInput.ClientMouseState.MouseButtonLeft && currentIsLocal : sms != null && sms.MouseButtonLeft) && currentControl;
-                            var rightClick = (HandlesInput ? UiInput.ClientMouseState.MouseButtonRight && currentIsLocal : sms != null && sms.MouseButtonRight) && currentControl;
+                            var leftClick = false;
+                            var rightClick = false;
+                            if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out sms))
+                            {
+                                var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+
+                                leftClick = sms.MouseButtonLeft && currentControl;
+                                rightClick = sms.MouseButtonRight && currentControl;
+                            }
 
                             comp.WasControlled = comp.UserControlled;
                             comp.TrackReticle = (overRides.TargetPainter || overRides.ManualControl);
