@@ -91,7 +91,9 @@ namespace WeaponCore
                         var packetCount = reports.Value.Count;
                         Log.Line($"[{typeStr}] packets:{packetCount} - dataTransfer:{dataTransfer} - validPackets:{validPackets} - invalidPackets:{invalidPackets} - server:{serverReceivers} - client:{clientReceivers} - none:{noneReceivers}");
                     }
-                    Reporter.ReportData.Clear();
+
+                    foreach (var list in Reporter.ReportData.Values)
+                        list.Clear();
                 }
 
                 if (Tick180)
