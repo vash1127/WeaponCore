@@ -19,7 +19,7 @@ namespace WeaponCore.Support
         internal volatile bool Scanning;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
-
+        
         internal readonly Focus Focus = new Focus(2);
         internal readonly FakeTarget DummyTarget = new FakeTarget();
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
@@ -60,6 +60,7 @@ namespace WeaponCore.Support
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
+        //internal GridAIValues AIValues = new GridAIValues();
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal uint CreatedTick;
@@ -148,6 +149,11 @@ namespace WeaponCore.Support
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
+
+            if (session.IsClient)
+                session.SendPacketToServer(new Packet { EntityId = grid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.ActiveControlRequestUpdate });
+
+            //AIValues.Load(this);
         }
     }
 }

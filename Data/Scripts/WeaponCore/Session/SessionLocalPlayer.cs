@@ -31,7 +31,12 @@ namespace WeaponCore
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
 
                 if (oldBlock != ActiveControlBlock)
-                    SendPacketToServer(new LookupUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
+                {
+                    if (IsClient)
+                        SendPacketToServer(new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
+                    else if (MpActive)
+                        PacketizeToClientsInRange(activeBlock, new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
+                }
                 
                 /*
                 if (!TrackingAi.FadeOut && TargetUi.DrawReticle && reticlelastOnSelf <= 1 && TargetUi.ReticleAgeOnSelf > 120)
@@ -55,7 +60,11 @@ namespace WeaponCore
                     MyCubeBlock oldBlock;
                     if (TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock))
                     {
-                        SendPacketToServer(new LookupUpdatePacket { EntityId = oldBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = false });
+                        if(IsClient)
+                            SendPacketToServer(new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = false });
+                        else if (MpActive)
+                            PacketizeToClientsInRange(oldBlock, new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
+
                         TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
                     }
                 }

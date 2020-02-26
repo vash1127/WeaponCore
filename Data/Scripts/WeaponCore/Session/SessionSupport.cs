@@ -46,14 +46,11 @@ namespace WeaponCore
                 if (FirstLoop)
                 {
                     if (!MiscLoaded)
-                    {
                         MiscLoaded = true;
-                        if (!IsServer)
-                            PlayerConnected(Session.Player.IdentityId);
-                    }
+                
 
-                    KeenFuckery();
-                    GameLoaded = true;
+                    GameLoaded = true;                   
+
                 }
                 else if (!FirstLoop)
                 {
@@ -72,39 +69,11 @@ namespace WeaponCore
                 }
             }
 
+            if (!PlayersLoaded && KeenFuckery())
+                PlayersLoaded = true;
+
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
-        }
-
-        internal void KeenFuckery()
-        {
-            try
-            {
-                List<IHitInfo> tmpList = new List<IHitInfo>();
-
-                MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
-
-                while (ChargingWeaponsToReload.Count > 0)
-                {
-                    var w = ChargingWeaponsToReload.Dequeue();
-                    w.StartReload();
-                }
-
-                foreach (var myEntity in MyEntities.GetEntities())
-                {
-                    var grid = myEntity as MyCubeGrid;
-                    if (grid != null)
-                        RemoveCoreToolbarWeapons(grid);
-                }
-
-                if (HandlesInput)
-                {
-                    PlayerConnected(Session.Player.IdentityId);
-                    PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
-                }
-                PlayerMouseStates.Add(-1, new MouseState());
-            }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientMouseState != null}"); }
         }
 
         internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
@@ -162,11 +131,53 @@ namespace WeaponCore
                 PlayerMouseStates[id] = new MouseState();
 
                 if (MpActive && IsServer)
-                    PacketizeToClientsInRange(null, new LookupUpdatePacket { EntityId = id, SenderId = player.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = true});
+                    PacketizeToClientsInRange(null, new DictionaryUpdatePacket { EntityId = id, SenderId = player.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = true});
 
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
             }
+            return false;
+        }
+
+        internal bool KeenFuckery()
+        {
+            try
+            {
+                if (Session?.Player == null) return false;
+
+                List<IHitInfo> tmpList = new List<IHitInfo>();
+
+                MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
+
+                while (ChargingWeaponsToReload.Count > 0)
+                {
+                    var w = ChargingWeaponsToReload.Dequeue();
+                    w.StartReload();
+                }
+
+                foreach (var myEntity in MyEntities.GetEntities())
+                {
+                    var grid = myEntity as MyCubeGrid;
+                    if (grid != null)
+                        RemoveCoreToolbarWeapons(grid);
+                }
+
+                if (HandlesInput)
+                {
+                    List<IMyPlayer> players = new List<IMyPlayer>();
+                    MyAPIGateway.Multiplayer.Players.GetPlayers(players);
+
+                    for (int i = 0; i < players.Count; i++)
+                        PlayerConnected(players[i].IdentityId);
+
+                    PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
+                }
+                PlayerMouseStates[-1] = new MouseState();
+
+                return true;
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientMouseState != null}"); }
+
             return false;
         }
 

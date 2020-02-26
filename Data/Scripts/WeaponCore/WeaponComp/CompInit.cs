@@ -68,7 +68,7 @@ namespace WeaponCore.Support
                     weapon.State = State.Value.Weapons[i];
                     weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
                 }
-                WeaponValues.Load(this, Session.MPTargetSync);
+                WeaponValues.Load(this);
 
                 /*if (isServer)
                 {

@@ -260,7 +260,7 @@ namespace WeaponCore.Support
                     State.SaveState();
                     Set.SaveSettings();
                     if(_mpActive)
-                        WeaponValues.Save(this, Session.MPTargetSync);
+                        WeaponValues.Save(this, Session.MPTargetSyncGuid);
                 }
             }
             return false;

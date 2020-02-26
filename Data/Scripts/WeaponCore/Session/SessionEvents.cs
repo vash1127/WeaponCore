@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
@@ -162,6 +163,28 @@ namespace WeaponCore
             {
                 if (Players.ContainsKey(id)) return;
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
+
+                /*
+                if (!IsClient && MpActive)
+                {                    
+                    var playerControllList = new List<PlayerToBlock>();
+                    foreach (var ai in GridTargetingAIs)
+                    {
+                        foreach(var playerBlockPair in ai.Value.AIValues.ControllingPlayers)
+                            playerControllList.Add(new PlayerToBlock { playerId = playerBlockPair.Key, EntityId = playerBlockPair.Value.EntityId });
+                    }
+                    var packet = new COntrollingSyncPacket {
+                        EntityId = -1,
+                        SenderId = 0,
+                        PType = PacketType.ActiveControlFullUpdate,
+                        Data = new ControllingPlayersSync {
+                            PlayersToControlledBlock = playerControllList.ToArray()
+                        }
+                    };
+
+                    var bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
+                    MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, Players[id].SteamUserId);
+                }*/
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
         }
@@ -178,7 +201,7 @@ namespace WeaponCore
                     SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
                     PlayerMouseStates.Remove(playerId);
 
-                    PacketizeToClientsInRange(null, new LookupUpdatePacket { EntityId = playerId, SenderId = removedPlayer.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = false });
+                    PacketizeToClientsInRange(null, new DictionaryUpdatePacket { EntityId = playerId, SenderId = removedPlayer.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = false });
 
                     if (removedPlayer.SteamUserId == AuthorSteamId)
                     {
