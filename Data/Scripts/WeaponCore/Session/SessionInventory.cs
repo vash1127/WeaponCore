@@ -30,8 +30,14 @@ namespace WeaponCore
 
                 var state = weapon.State;
 
-               if (oldMags != weapon.State.CurrentMags)
-                    comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
+                if (oldMags != weapon.State.CurrentMags) {
+                    //if (weapon.State.CurrentMags > 0 && oldMags > 0)
+                    //{
+                        //comp.Session.WeaponMagsToUpdate.Enqueue(weapon);
+                    //}
+                    //else
+                        comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags }, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
+                }
             }
 
             var hasMags = weapon.State.CurrentMags > 0;

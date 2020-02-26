@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
+using VRage;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
@@ -97,6 +98,21 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal ControllingPlayersSync Data;
         public COntrollingSyncPacket() { }
+    }
+
+    [ProtoContract]
+    public class CurrentMagsPacket : Packet
+    {
+        [ProtoMember(1)] internal CompCurrentMags[] Data;
+        public CurrentMagsPacket() { }
+    }
+
+    [ProtoContract]
+    public struct CompCurrentMags
+    {
+        [ProtoMember(1)] internal long EntityId;
+        [ProtoMember(2)] internal MyFixedPoint[] CurrentMags;
+        
     }
 
     [ProtoContract]

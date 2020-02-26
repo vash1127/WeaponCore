@@ -518,5 +518,14 @@ namespace WeaponCore
             }
             ShootingWeapons.Clear();
         }
+
+        internal void UpdateMags()
+        {
+            Weapon weapon;
+            while (WeaponMagsToUpdate.TryDequeue(out weapon))
+            {
+
+            }
+        }
     }
 }

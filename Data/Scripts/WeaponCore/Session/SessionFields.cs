@@ -114,6 +114,9 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
         private readonly List<IMySlimBlock> _slimCache = new List<IMySlimBlock>();
+
+        internal readonly ConcurrentQueue<Weapon> WeaponMagsToUpdate = new ConcurrentQueue<Weapon>();
+        internal readonly Dictionary<long, List<CompCurrentMags>> MagUpdatesToSend = new Dictionary<long, List<CompCurrentMags>>();
         
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
