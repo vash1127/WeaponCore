@@ -30,12 +30,12 @@ namespace WeaponCore.Support
         }
 
         [ProtoContract]
-        internal class FakeTarget
+        public class FakeTarget
         {
-            [ProtoMember(1)] internal Vector3D Position;
-            [ProtoMember(2)] internal Vector3 LinearVelocity;
-            [ProtoMember(3)] internal Vector3 Acceleration;
-            [ProtoMember(4)] internal bool ClearTarget;
+            [ProtoMember(1)] public Vector3D Position;
+            [ProtoMember(2)] public Vector3 LinearVelocity;
+            [ProtoMember(3)] public Vector3 Acceleration;
+            [ProtoMember(4)] public bool ClearTarget;
 
             internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null)
             {

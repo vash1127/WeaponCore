@@ -99,7 +99,8 @@ namespace WeaponCore
         internal readonly BoundingFrustumD CameraFrustrum = new BoundingFrustumD();
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
-        internal readonly Guid MPTargetSync = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
+        internal readonly Guid MPTargetSyncGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
+        internal readonly Guid GridAiGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811504");
 
         internal readonly double VisDirToleranceCosine;
         internal readonly double AimDirToleranceCosine;
@@ -196,6 +197,7 @@ namespace WeaponCore
         internal bool DedicatedServer;
         internal bool FirstLoop;
         internal bool GameLoaded;
+        internal bool PlayersLoaded;
         internal bool MiscLoaded;
         internal bool Tick10;
         internal bool Tick20;

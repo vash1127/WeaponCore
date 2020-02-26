@@ -1,7 +1,7 @@
 ﻿using ProtoBuf;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game.Entity;
+using System.Collections.Generic;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
@@ -20,6 +20,8 @@ namespace WeaponCore
         ActiveControlUpdate,
         WeaponSync,
         PlayerIdUpdate,
+        ActiveControlFullUpdate,
+        ActiveControlRequestUpdate,
     }
 
     [ProtoContract]
@@ -27,8 +29,9 @@ namespace WeaponCore
     [ProtoInclude(5, typeof(SettingPacket))]
     [ProtoInclude(6, typeof(WeaponSyncPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
-    [ProtoInclude(8, typeof(LookupUpdatePacket))]
+    [ProtoInclude(8, typeof(DictionaryUpdatePacket))]
     [ProtoInclude(9, typeof(FakeTargetPacket))]
+    [ProtoInclude(10, typeof(COntrollingSyncPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -83,10 +86,17 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class LookupUpdatePacket : Packet
+    public class DictionaryUpdatePacket : Packet
     {
         [ProtoMember(1)] internal bool Data;
-        public LookupUpdatePacket() { }
+        public DictionaryUpdatePacket() { }
+    }
+
+    [ProtoContract]
+    public class COntrollingSyncPacket : Packet
+    {
+        [ProtoMember(1)] internal ControllingPlayersSync Data;
+        public COntrollingSyncPacket() { }
     }
 
     [ProtoContract]

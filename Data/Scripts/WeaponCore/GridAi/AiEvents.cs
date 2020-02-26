@@ -66,6 +66,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
         }
 
+
         private void FatBlockRemoved(MyCubeBlock myCubeBlock)
         {
             try

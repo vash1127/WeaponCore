@@ -81,9 +81,10 @@ namespace WeaponCore
                             var leftClick = false;
                             var rightClick = false;
                             MouseState mouseState;
+
+                            var currentControl = true;// gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
                             if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out mouseState))
-                            {
-                                var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+                            {                                
                                 leftClick = mouseState.MouseButtonLeft && currentControl;
                                 rightClick = mouseState.MouseButtonRight && currentControl;
                             }
@@ -92,7 +93,7 @@ namespace WeaponCore
                             comp.TrackReticle = (overRides.TargetPainter || overRides.ManualControl);
 
 
-                            var uiTargeting = !DedicatedServer ? TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId) : comp.TrackReticle && gridAi.ControllingPlayers.ContainsKey(comp.State.Value.CurrentPlayerControl.PlayerId);
+                            var uiTargeting = !DedicatedServer ? TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId) : comp.TrackReticle && currentControl;
 
                             comp.TrackReticle = comp.TrackReticle && uiTargeting; //&& uiTargeting;
 
@@ -235,6 +236,7 @@ namespace WeaponCore
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
                                 var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+
                                 if (canShoot && (validShootStates || manualShot || w.FinishBurst))
                                 {
 

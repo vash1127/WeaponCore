@@ -409,7 +409,8 @@ namespace WeaponCore
             if (scaledDamage < objHp) info.BaseDamagePool = 0;
             else info.BaseDamagePool -= objHp;
 
-            destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, sync, null, attackerId);
+            if(!IsClient)
+                destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, sync, null, attackerId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;

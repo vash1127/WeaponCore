@@ -20,8 +20,10 @@ namespace WeaponCore
                 foreach (var p in Players.Values)
                 {
                     var id = p.SteamUserId;
-                    if (id != packet.SenderId && (Vector3D.DistanceSquared(p.GetPosition(), block.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr) || block == null)
+                    if (id != packet.SenderId && (block == null || Vector3D.DistanceSquared(p.GetPosition(), block.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
+                    {
                         MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, p.SteamUserId);
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in PacketizeToClientsInRange: {ex}"); }
@@ -41,151 +43,167 @@ namespace WeaponCore
             try
             {
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+
+                if (packet == null) return;
+
                 var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                 var comp = ent?.Components.Get<WeaponComponent>();
-                if (ent != null)
+                
+                switch (packet.PType)
                 {
-                    switch (packet.PType)
-                    {
-                        case PacketType.CompStateUpdate:
-                            if (comp == null) return;
+                    case PacketType.CompStateUpdate:
+                        if (comp == null) return;
 
-                            var statePacket = packet as StatePacket;
-                            comp.State.Value = statePacket.Data;
+                        var statePacket = packet as StatePacket;
+                        comp.State.Value = statePacket.Data;
 
-                            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                        for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                        {
+                            var w = comp.Platform.Weapons[i];
+                            w.State = comp.State.Value.Weapons[w.WeaponId];
+                        }
+
+                        break;
+                    case PacketType.CompSettingsUpdate:
+                        if (comp == null) return;
+
+                        var setPacket = packet as SettingPacket;
+                        comp.Set.Value = setPacket.Data;
+
+                        for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                        {
+                            var w = comp.Platform.Weapons[i];
+                            w.Set = comp.Set.Value.Weapons[w.WeaponId];
+                        }
+
+                        break;
+                    case PacketType.TargetUpdate:
+                        {
+                            var targetPacket = packet as TargetPacket;
+
+                            if (comp != null && targetPacket != null && targetPacket.TargetData != null)
                             {
-                                var w = comp.Platform.Weapons[i];
-                                w.State = comp.State.Value.Weapons[w.WeaponId];
-                            }
-
-                            break;
-                        case PacketType.CompSettingsUpdate:
-                            if (comp == null) return;
-
-                            var setPacket = packet as SettingPacket;
-                            comp.Set.Value = setPacket.Data;
-
-                            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                            {
-                                var w = comp.Platform.Weapons[i];
-                                w.Set = comp.Set.Value.Weapons[w.WeaponId];
-                            }
-
-                            break;
-                        case PacketType.TargetUpdate:
-                            {
-                                var targetPacket = packet as TargetPacket;
-
-                                if (comp != null && targetPacket != null && targetPacket.TargetData != null)
-                                {
-                                    var syncTarget = targetPacket.TargetData;
-                                    var weaponData = targetPacket.WeaponData;
-                                    var wid = syncTarget.WeaponId;
-                                    var weapon = comp.Platform.Weapons[wid];
-                                    var timings = targetPacket.Timmings.SyncOffsetClient(Tick);
-
-                                    SyncWeapon(weapon, timings, ref weaponData);
-                                    syncTarget.SyncTarget(weapon.Target);
-                                }
-                                else
-                                {
-                                    var myGrid = ent as MyCubeGrid;
-                                    GridAi ai;
-                                    if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
-                                    {
-                                        var target = targetPacket.TargetData;
-                                        var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
-
-                                        if (targetGrid != null)
-                                        {
-                                            ai.Focus.AddFocus(targetGrid, ai);
-                                            PacketizeToClientsInRange(myGrid, packet);
-                                        }
-                                    }
-                                }
-
-                                break;
-                            }
-                        case PacketType.FakeTargetUpdate:
-                            {
-
-                                var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-                                var targetPacket = packet as FakeTargetPacket;
-
-                                GridAi ai;
-
-                                if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
-                                {
-                                    ai.DummyTarget.TransferFrom(targetPacket.Data);
-                                    PacketizeToClientsInRange(myGrid, packet);
-                                }
-
-                                break;
-                            }
-
-                        case PacketType.WeaponSync:
-                            var syncPacket = packet as WeaponSyncPacket;
-
-                            if (comp != null && syncPacket != null)
-                            {
-                                var weaponData = syncPacket.WeaponData;
-                                var wid = weaponData.WeaponId;
+                                var syncTarget = targetPacket.TargetData;
+                                var weaponData = targetPacket.WeaponData;
+                                var wid = syncTarget.WeaponId;
                                 var weapon = comp.Platform.Weapons[wid];
-                                var timings = syncPacket.Timmings.SyncOffsetClient(Tick);
+                                var timings = targetPacket.Timmings.SyncOffsetClient(Tick);
 
                                 SyncWeapon(weapon, timings, ref weaponData);
+                                syncTarget.SyncTarget(weapon.Target);
                             }
-                                break;
-
-                        case PacketType.PlayerIdUpdate:
+                            else
                             {
-                                var updatePacket = packet as LookupUpdatePacket;
+                                var myGrid = ent as MyCubeGrid;
+                                GridAi ai;
+                                if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                {
+                                    var target = targetPacket.TargetData;
+                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
 
-                                if (updatePacket == null) return;
-                                if (updatePacket.Data) //update/add
-                                {
-                                    SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
-                                    MouseState ms;
-                                    if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
-                                        PlayerMouseStates[updatePacket.EntityId] = new MouseState();
+                                    if (targetGrid != null)
+                                    {
+                                        ai.Focus.AddFocus(targetGrid, ai);
+                                        PacketizeToClientsInRange(myGrid, packet);
+                                    }
                                 }
-                                else //remove
-                                {
-                                    long player;
-                                    SteamToPlayer.TryRemove(updatePacket.SenderId, out player);
-                                    PlayerMouseStates.Remove(player);
-                                }
-                                break;
                             }
-                        case PacketType.ClientMouseEvent:
-                            var mousePacket = packet as MouseInputPacket;
-                            long playerId;
-                            if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                PlayerMouseStates[playerId] = mousePacket.Data;
 
                             break;
-                        case PacketType.ActiveControlUpdate:
-                            {
-                                var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-                                var grid = block?.CubeGrid as MyCubeGrid;
-                                var updatePacket = packet as LookupUpdatePacket;
+                        }
+                    case PacketType.FakeTargetUpdate:
+                        {
 
-                                if (block == null || grid == null || updatePacket == null) return;
-                                GridAi trackingAi;
-                                if (updatePacket.Data) //update/add
-                                {
-                                    if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                        trackingAi.ControllingPlayers[playerId] = block;
-                                }
-                                else //remove
-                                {
-                                    if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                        trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
-                                }
-                                break;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                            var targetPacket = packet as FakeTargetPacket;
+
+                            GridAi ai;
+
+                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                ai.DummyTarget.TransferFrom(targetPacket.Data);
+                                PacketizeToClientsInRange(myGrid, packet);
                             }
-                    }
+
+                            break;
+                        }
+
+                    case PacketType.WeaponSync:
+                        var syncPacket = packet as WeaponSyncPacket;
+
+                        if (comp != null && syncPacket != null)
+                        {
+                            var weaponData = syncPacket.WeaponData;
+                            var wid = weaponData.WeaponId;
+                            var weapon = comp.Platform.Weapons[wid];
+                            var timings = syncPacket.Timmings.SyncOffsetClient(Tick);
+
+                            SyncWeapon(weapon, timings, ref weaponData);
+                        }
+                            break;
+
+                    case PacketType.PlayerIdUpdate:
+                        {
+                            var updatePacket = packet as DictionaryUpdatePacket;
+
+                            if (updatePacket == null) return;
+                            if (updatePacket.Data) //update/add
+                            {
+                                SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
+                                MouseState ms;
+                                if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
+                                    PlayerMouseStates[updatePacket.EntityId] = new MouseState();
+                            }
+                            else //remove
+                            {
+                                long player;
+                                SteamToPlayer.TryRemove(updatePacket.SenderId, out player);
+                                PlayerMouseStates.Remove(player);
+                            }
+                            break;
+                        }
+                    case PacketType.ClientMouseEvent:
+                        var mousePacket = packet as MouseInputPacket;
+                        long playerId;
+                        if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                            PlayerMouseStates[playerId] = mousePacket.Data;
+
+                        break;
+                    case PacketType.ActiveControlUpdate:
+                        {
+                            
+                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+                            var dPacket = packet as DictionaryUpdatePacket;
+
+                            if (dPacket == null || block == null) return;
+
+                            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
+
+                            UpdateActiveControlDictionary(block, playerId, dPacket.Data);
+                            
+                            break;
+                        }
+                    case PacketType.ActiveControlFullUpdate:
+                        {
+                            try
+                            {
+                                var csPacket = packet as COntrollingSyncPacket;
+
+                                if (csPacket == null) return;
+
+                                for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
+                                {
+                                    var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
+
+                                    var block = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
+
+                                    UpdateActiveControlDictionary(block, playerBlock.playerId, true);
+                                }
+                            }
+                            catch (Exception e) { Log.Line($"error in control update"); }
+
+            break;
+                        }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
@@ -196,6 +214,8 @@ namespace WeaponCore
             try
             {
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+
+                if (packet == null) return;
                 MyEntity ent; // not inited here to avoid extras calls unless needed
                 WeaponComponent comp; // not inited here to avoid extras calls unless needed
                 long playerId = 0;
@@ -253,25 +273,19 @@ namespace WeaponCore
                         break;
 
                     case PacketType.ActiveControlUpdate:
-                        var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-                        var grid = block?.CubeGrid as MyCubeGrid;
-                        var updatePacket = packet as LookupUpdatePacket;
-
-                        if (block == null || grid == null || updatePacket == null) return;
-                        GridAi trackingAi;
-                        if (updatePacket.Data) //update/add
                         {
-                            if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                trackingAi.ControllingPlayers[playerId] = block;
-                        }
-                        else //remove
-                        {
-                            if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                                trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
-                        }
+                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+                            var dPacket = packet as DictionaryUpdatePacket;
 
-                        PacketizeToClientsInRange(block, updatePacket);
-                        break;
+                            if (dPacket == null) return;
+
+                            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
+
+                            UpdateActiveControlDictionary(block, playerId, dPacket.Data);
+
+                            PacketizeToClientsInRange(block, dPacket);
+                            break;
+                        }
                     case PacketType.TargetUpdate:
                         {
 
@@ -308,6 +322,39 @@ namespace WeaponCore
                                 PacketizeToClientsInRange(myGrid, packet);
                             }
 
+                            break;
+                        }
+                    case PacketType.ActiveControlRequestUpdate:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                            GridAi ai;
+
+                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var c = 0;
+                                var PlayerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Count];
+                                foreach (var playerBlockPair in ai.ControllingPlayers)
+                                {
+                                    PlayerToBlocks[c] = new PlayerToBlock { playerId = playerBlockPair.Key, EntityId = playerBlockPair.Value.EntityId };
+                                    c++;
+                                }
+
+                                var syncPacket = new COntrollingSyncPacket
+                                {
+                                    EntityId = -1,
+                                    SenderId = 0,
+                                    PType = PacketType.ActiveControlFullUpdate,
+                                    Data = new ControllingPlayersSync
+                                    {
+                                        PlayersToControlledBlock = PlayerToBlocks
+                                    }
+                                };
+                                
+
+                                var bytes = MyAPIGateway.Utilities.SerializeToBinary(syncPacket);
+                                MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, packet.SenderId);
+
+                            }
                             break;
                         }
                 }
@@ -375,6 +422,24 @@ namespace WeaponCore
                 weapon.HeatLoopRunning = true;
                 var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
                 comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
+            }
+        }
+
+        public void UpdateActiveControlDictionary(MyCubeBlock block, long playerId, bool updateAdd)
+        {            
+            var grid = block?.CubeGrid as MyCubeGrid;
+
+            if (block == null || grid == null) return;
+            GridAi trackingAi;
+            if (updateAdd) //update/add
+            {
+                if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && Players.ContainsKey(playerId))
+                    trackingAi.ControllingPlayers[playerId] = block;
+            }
+            else //remove
+            {
+                if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && Players.ContainsKey(playerId))
+                    trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
             }
         }
 

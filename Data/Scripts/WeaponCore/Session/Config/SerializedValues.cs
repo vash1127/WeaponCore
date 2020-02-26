@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using ProtoBuf;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
+using VRage.Game.Components;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
+using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore
@@ -185,16 +189,16 @@ namespace WeaponCore
                 sv.Timings[wid] = timings.SyncOffsetServer(comp.Session.Tick);
             }
 
-            var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
+            var binary = MyAPIGateway.Utilities.SerializeToBinary(sv);
             comp.MyCube.Storage[id] = Convert.ToBase64String(binary);
 
         }
 
-        public static void Load(WeaponComponent comp, Guid id)
+        public static void Load(WeaponComponent comp)
         {
             string rawData;
             byte[] base64;
-            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(id, out rawData))
+            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(comp.Session.MPTargetSyncGuid, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
                 comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
@@ -228,6 +232,73 @@ namespace WeaponCore
         public WeaponValues() { }
     }
 
+    /*
+    [ProtoContract]
+    public class GridAIValues
+    {
+        [ProtoMember(1)] public FakeTarget DummyTarget = new FakeTarget();
+        [ProtoMember(2)] public PlayerToBlock[] ControllingPlayersStorage = new PlayerToBlock[0];
+
+        public Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
+
+        Session _session;
+        MyCubeGrid grid;
+
+        public GridAIValues() { }
+
+        public void Save()
+        {
+            if (_session.IsClient || !_session.MpActive) return;
+
+            var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
+
+            if (grid.Storage != null)
+                grid.Storage[_session.GridAiGuid] = Convert.ToBase64String(binary);
+            else
+            {
+                grid.Storage = new MyModStorageComponent();
+                grid.Storage[_session.GridAiGuid] = Convert.ToBase64String(binary);
+            }
+        }
+
+        public void Load(GridAi ai)
+        {
+            
+            _session = ai.Session;
+
+            string rawData;
+            byte[] base64;
+            if (_session.IsClient && grid.Storage != null && grid.Storage.TryGetValue(_session.GridAiGuid, out rawData))
+            {
+                base64 = Convert.FromBase64String(rawData);
+                ai.AIValues = MyAPIGateway.Utilities.SerializeFromBinary<GridAIValues>(base64);
+
+                for (int i = 0; i < ControllingPlayersStorage.Length; i++)
+                {
+                    var playerBlock = ControllingPlayersStorage[i];
+
+                    var block = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
+                    if (block == null) continue;
+
+
+                    Log.Line($"Player: {playerBlock.playerId} EntityID: {playerBlock.EntityId}");
+
+                    ControllingPlayers.Add(playerBlock.playerId, block);
+                }
+
+            }
+            else
+            {
+                if(grid.Storage == null)
+                    grid.Storage = new MyModStorageComponent();
+
+                grid.Storage
+
+                ai.AIValues = new GridAIValues();
+            }
+        }
+    }*/
+
     [ProtoContract]
     public class CompGroupOverrides
     {
@@ -243,5 +314,18 @@ namespace WeaponCore
         [ProtoMember(10)] public bool Meteors;
         [ProtoMember(11)] public bool Biologicals;
         [ProtoMember(12)] public bool Projectiles;
+    }
+
+    [ProtoContract]
+    public struct ControllingPlayersSync
+    {
+        [ProtoMember (1)] public PlayerToBlock[] PlayersToControlledBlock;
+    }
+
+    [ProtoContract]
+    public struct PlayerToBlock
+    {
+        [ProtoMember(1)] public long playerId;
+        [ProtoMember(2)] public long EntityId;
     }
 }
