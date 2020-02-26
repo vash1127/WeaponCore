@@ -39,16 +39,31 @@ namespace WeaponCore
             }
             LCount++;
             if (LCount == 129)
-            {
                 LCount = 0;
 
-            }
             if (!GameLoaded)
             {
                 if (FirstLoop)
                 {
                     if (!MiscLoaded)
                         MiscLoaded = true;
+                }
+                else if (!FirstLoop)
+                {
+                    Spawn.SpawnCamera("SpyCam", out SpyCam);
+                    FirstLoop = true;
+                    foreach (var t in AllDefinitions)
+                    {
+                        var name = t.Id.SubtypeName;
+                        var contains = name.Contains("BlockArmor");
+                        if (contains)
+                        {
+                            AllArmorBaseDefinitions.Add(t);
+                            if (name.Contains("HeavyBlockArmor")) HeavyArmorBaseDefinitions.Add(t);
+                        }
+                    }
+                }
+            }
 
                     GameLoaded = true;                   
 
