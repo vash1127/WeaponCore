@@ -280,8 +280,10 @@ namespace WeaponCore
                     case PacketType.TargetUpdate:
                         {
 
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
                             var targetPacket = packet as TargetPacket;
+                            if (targetPacket == null) return;
+
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             GridAi ai;
 
@@ -301,12 +303,12 @@ namespace WeaponCore
                         }
                     case PacketType.FakeTargetUpdate:
                         {
+                            var targetPacket = packet as FakeTargetPacket;
+                            if (targetPacket == null) return;
 
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-                            var targetPacket = packet as FakeTargetPacket;
 
                             GridAi ai;
-
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
@@ -325,7 +327,6 @@ namespace WeaponCore
             var comp = weapon.Comp;
             var cState = comp.State.Value;
             var wState = weapon.State;
-
 
             var wasReloading = wState.Reloading;
 
