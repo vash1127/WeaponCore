@@ -66,6 +66,7 @@ namespace WeaponCore
                             w.State = comp.State.Value.Weapons[w.WeaponId];
                         }
 
+                        report.PacketValid = true;
                         break;
                     case PacketType.CompSettingsUpdate:
                         Reporter.ReportData[packet.PType].Add(report);
@@ -81,6 +82,7 @@ namespace WeaponCore
                             w.Set = comp.Set.Value.Weapons[w.WeaponId];
                         }
 
+                        report.PacketValid = true;
                         break;
                     case PacketType.TargetUpdate:
                         {
@@ -99,6 +101,8 @@ namespace WeaponCore
 
                                 SyncWeapon(weapon, timings, ref weaponData);
                                 syncTarget.SyncTarget(weapon.Target);
+
+                                report.PacketValid = true;
                             }
                             else
                             {
@@ -113,6 +117,8 @@ namespace WeaponCore
                                     {
                                         ai.Focus.AddFocus(targetGrid, ai);
                                         PacketizeToClientsInRange(myGrid, packet);
+
+                                        report.PacketValid = true;
                                     }
                                 }
                             }
@@ -134,6 +140,8 @@ namespace WeaponCore
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
                                 PacketizeToClientsInRange(myGrid, packet);
+
+                                report.PacketValid = true;
                             }
 
                             break;
@@ -152,6 +160,8 @@ namespace WeaponCore
                             var timings = syncPacket.Timmings.SyncOffsetClient(Tick);
 
                             SyncWeapon(weapon, timings, ref weaponData);
+
+                            report.PacketValid = true;
                         }
                         break;
 
@@ -167,13 +177,19 @@ namespace WeaponCore
                                 SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
                                 MouseState ms;
                                 if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
+                                {
                                     PlayerMouseStates[updatePacket.EntityId] = new MouseState();
+
+                                    report.PacketValid = true;
+                                }
                             }
                             else //remove
                             {
                                 long player;
                                 SteamToPlayer.TryRemove(updatePacket.SenderId, out player);
                                 PlayerMouseStates.Remove(player);
+
+                                report.PacketValid = true;
                             }
                             break;
                         }
@@ -185,7 +201,11 @@ namespace WeaponCore
 
                         long playerId;
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                        {
                             PlayerMouseStates[playerId] = mousePacket.Data;
+
+                            report.PacketValid = true;
+                        }
 
                         break;
                     case PacketType.ActiveControlUpdate:
@@ -201,6 +221,7 @@ namespace WeaponCore
 
                             UpdateActiveControlDictionary(block, playerId, dPacket.Data);
 
+                            report.PacketValid = true;
                             break;
                         }
                     case PacketType.ActiveControlFullUpdate:
@@ -223,6 +244,7 @@ namespace WeaponCore
                             }
                             catch (Exception e) { Log.Line($"error in control update"); }
 
+                            report.PacketValid = true;
                             break;
                         }
                     default:
@@ -272,6 +294,8 @@ namespace WeaponCore
                                 w.State = comp.State.Value.Weapons[w.WeaponId];
                             }
                             PacketizeToClientsInRange(ent, packet);
+
+                            report.PacketValid = true;
                         }
                         break;
 
@@ -294,6 +318,8 @@ namespace WeaponCore
                                 w.Set = comp.Set.Value.Weapons[w.WeaponId];
                             }
                             PacketizeToClientsInRange(ent, packet);
+
+                            report.PacketValid = true;
                         }
                         break;
 
@@ -307,6 +333,8 @@ namespace WeaponCore
                         {
                             PlayerMouseStates[playerId] = mousePacket.Data;
                             PacketizeToClientsInRange(null, mousePacket);
+
+                            report.PacketValid = true;
                         }
 
                         break;
@@ -326,6 +354,8 @@ namespace WeaponCore
                             UpdateActiveControlDictionary(block, playerId, dPacket.Data);
 
                             PacketizeToClientsInRange(block, dPacket);
+
+                            report.PacketValid = true;
                             break;
                         }
                     case PacketType.TargetUpdate:
@@ -347,6 +377,8 @@ namespace WeaponCore
                                 {
                                     ai.Focus.AddFocus(targetGrid, ai);
                                     PacketizeToClientsInRange(myGrid, packet);
+
+                                    report.PacketValid = true;
                                 }
                             }
 
@@ -366,6 +398,8 @@ namespace WeaponCore
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
                                 PacketizeToClientsInRange(myGrid, packet);
+
+                                report.PacketValid = true;
                             }
 
                             break;
@@ -402,6 +436,7 @@ namespace WeaponCore
                                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(syncPacket);
                                 MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, packet.SenderId);
 
+                                report.PacketValid = true;
                             }
                             break;
                         }
