@@ -90,6 +90,23 @@ namespace WeaponCore.Support
         }
     }
 
+    public class NetworkReporter
+    {
+        public Dictionary<PacketType, List<Report>> ReportData = new Dictionary<PacketType, List<Report>>();
+
+        public NetworkReporter()
+        {
+            foreach (var suit in (PacketType[])Enum.GetValues(typeof(PacketType)))
+                ReportData.Add(suit, new List<Report>());
+        }
+
+        public struct Report
+        {
+
+        }
+
+    }
+
     public class DsUniqueListFastRemove<T>
     {
         private List<T> _list;
