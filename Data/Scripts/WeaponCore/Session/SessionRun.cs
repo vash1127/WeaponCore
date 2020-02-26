@@ -176,8 +176,6 @@ namespace WeaponCore
                     DsUtil.Start("shoot");
                     if (ShootingWeapons.Count > 0) ShootWeapons();
                     DsUtil.Complete("shoot", true);
-
-                    if (MpActive && WeaponMagsToUpdate.Count > 0) UpdateMags();
                 }
                 if (!WheelUi.WheelActive && !InMenu)
                 {
