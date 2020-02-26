@@ -63,7 +63,37 @@ namespace WeaponCore
 
                 if (CompReAdds.Count > 0)
                     ChangeReAdds();
-                
+
+                if (Tick3600)
+                {
+                    foreach (var reports in Reporter.ReportData)
+                    {
+                        var typeStr = reports.Key.ToString();
+                        var reportList = reports.Value;
+                        int clientReceivers = 0;
+                        int serverReceivers = 0;
+                        int noneReceivers = 0;
+                        int validPackets = 0;
+                        int invalidPackets = 0;
+                        ulong dataTransfer = 0;
+                        foreach (var report in reportList)
+                        {
+                            if (report.PacketValid) validPackets++;
+                            else invalidPackets++;
+
+                            if (report.Receiver == NetworkReporter.Report.Received.None) noneReceivers++;
+                            else if (report.Receiver == NetworkReporter.Report.Received.Server) serverReceivers++;
+                            else clientReceivers++;
+
+                            dataTransfer += (uint)report.PacketSize;
+                            Reporter.ReportPool.Return(report);
+                        }
+                        var packetCount = reports.Value.Count;
+                        Log.Line($"[{typeStr}] packets: {packetCount} - dataTransfer:{dataTransfer} - validPackets:{validPackets} - invalidPackets:{invalidPackets} - server:{serverReceivers} - client:{clientReceivers} - none:{noneReceivers}");
+                    }
+                    Reporter.ReportData.Clear();
+                }
+
                 if (Tick180)
                 {
                     HighLoad = false;

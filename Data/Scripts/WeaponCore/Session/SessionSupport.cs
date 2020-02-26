@@ -29,6 +29,7 @@ namespace WeaponCore
             Tick300 = Tick % 300 == 0;
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
+            Tick3600 = Tick % 3600 == 0;
             if (Tick60) Av.ExplosionCounter = 0;
             if (++SCount == 60) SCount = 0;
             if (Count++ == 119)
