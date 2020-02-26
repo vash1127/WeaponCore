@@ -142,6 +142,7 @@ namespace WeaponCore
         internal UiInput UiInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
+        internal NetworkReporter Reporter = new NetworkReporter();
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
@@ -207,6 +208,7 @@ namespace WeaponCore
         internal bool Tick300;
         internal bool Tick600;
         internal bool Tick1800;
+        internal bool Tick3600;
         internal bool ShieldMod;
         internal bool ReplaceVanilla;
         internal bool ShieldApiLoaded;

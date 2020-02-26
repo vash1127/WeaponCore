@@ -93,6 +93,7 @@ namespace WeaponCore.Support
     public class NetworkReporter
     {
         public Dictionary<PacketType, List<Report>> ReportData = new Dictionary<PacketType, List<Report>>();
+        public readonly MyConcurrentPool<Report> ReportPool = new MyConcurrentPool<Report>(3600, reprot => reprot.Clean());
 
         public NetworkReporter()
         {
@@ -100,11 +101,26 @@ namespace WeaponCore.Support
                 ReportData.Add(suit, new List<Report>());
         }
 
-        public struct Report
+        public class Report
         {
+            public enum Received
+            {
+                None,
+                Server,
+                Client
+            }
 
+            public Received Receiver;
+            public bool PacketValid;
+            public int PacketSize;
+
+            public void Clean()
+            {
+                Receiver = Received.None;
+                PacketValid = false;
+                PacketSize = 0;
+            }
         }
-
     }
 
     public class DsUniqueListFastRemove<T>
