@@ -39,10 +39,8 @@ namespace WeaponCore
             }
             LCount++;
             if (LCount == 129)
-            {
                 LCount = 0;
 
-            }
             if (!GameLoaded)
             {
                 if (FirstLoop)
@@ -53,32 +51,9 @@ namespace WeaponCore
                         if (!IsServer)
                             PlayerConnected(Session.Player.IdentityId);
                     }
+
+                    KeenFuckery();
                     GameLoaded = true;
-
-                    List<IHitInfo> tmpList = new List<IHitInfo>();
-
-                    MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
-
-                    while (ChargingWeaponsToReload.Count > 0)
-                    {
-                        var w = ChargingWeaponsToReload.Dequeue();
-                        w.StartReload();
-                    }
-
-                    foreach (var myEntity in MyEntities.GetEntities())
-                    {
-                        var grid = myEntity as MyCubeGrid;
-                        if (grid != null)
-                            RemoveCoreToolbarWeapons(grid);
-                    }
-
-                    if (HandlesInput)
-                    {
-                        PlayerConnected(Session.Player.IdentityId);
-                        PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
-                    }
-                    PlayerMouseStates.Add(-1, new MouseState());
-
                 }
                 else if (!FirstLoop)
                 {
@@ -99,6 +74,37 @@ namespace WeaponCore
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
+        }
+
+        internal void KeenFuckery()
+        {
+            try
+            {
+                List<IHitInfo> tmpList = new List<IHitInfo>();
+
+                MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
+
+                while (ChargingWeaponsToReload.Count > 0)
+                {
+                    var w = ChargingWeaponsToReload.Dequeue();
+                    w.StartReload();
+                }
+
+                foreach (var myEntity in MyEntities.GetEntities())
+                {
+                    var grid = myEntity as MyCubeGrid;
+                    if (grid != null)
+                        RemoveCoreToolbarWeapons(grid);
+                }
+
+                if (HandlesInput)
+                {
+                    PlayerConnected(Session.Player.IdentityId);
+                    PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
+                }
+                PlayerMouseStates.Add(-1, new MouseState());
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientMouseState != null}"); }
         }
 
         internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)

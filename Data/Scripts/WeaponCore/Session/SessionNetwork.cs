@@ -48,11 +48,11 @@ namespace WeaponCore
                     switch (packet.PType)
                     {
                         case PacketType.CompStateUpdate:
-                            if (comp == null) return;
 
                             var statePacket = packet as StatePacket;
-                            comp.State.Value = statePacket.Data;
+                            if (statePacket?.Data == null || comp == null) return;
 
+                            comp.State.Value = statePacket.Data;
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                             {
                                 var w = comp.Platform.Weapons[i];
@@ -61,11 +61,11 @@ namespace WeaponCore
 
                             break;
                         case PacketType.CompSettingsUpdate:
-                            if (comp == null) return;
-
                             var setPacket = packet as SettingPacket;
-                            comp.Set.Value = setPacket.Data;
+                            if (setPacket?.Data == null || comp == null) return;
 
+
+                            comp.Set.Value = setPacket.Data;
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                             {
                                 var w = comp.Platform.Weapons[i];
@@ -76,8 +76,9 @@ namespace WeaponCore
                         case PacketType.TargetUpdate:
                             {
                                 var targetPacket = packet as TargetPacket;
+                                if (targetPacket?.TargetData == null) return;
 
-                                if (comp != null && targetPacket != null && targetPacket.TargetData != null)
+                                if (comp != null)
                                 {
                                     var syncTarget = targetPacket.TargetData;
                                     var weaponData = targetPacket.WeaponData;
@@ -109,12 +110,11 @@ namespace WeaponCore
                             }
                         case PacketType.FakeTargetUpdate:
                             {
-
-                                var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
                                 var targetPacket = packet as FakeTargetPacket;
+                                if (targetPacket == null) return;
+                                var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                                 GridAi ai;
-
                                 if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                                 {
                                     ai.DummyTarget.TransferFrom(targetPacket.Data);
@@ -127,7 +127,7 @@ namespace WeaponCore
                         case PacketType.WeaponSync:
                             var syncPacket = packet as WeaponSyncPacket;
 
-                            if (comp != null && syncPacket != null)
+                            if (syncPacket != null && comp != null)
                             {
                                 var weaponData = syncPacket.WeaponData;
                                 var wid = weaponData.WeaponId;
@@ -136,13 +136,13 @@ namespace WeaponCore
 
                                 SyncWeapon(weapon, timings, ref weaponData);
                             }
-                                break;
+                            break;
 
                         case PacketType.PlayerIdUpdate:
                             {
                                 var updatePacket = packet as LookupUpdatePacket;
-
                                 if (updatePacket == null) return;
+
                                 if (updatePacket.Data) //update/add
                                 {
                                     SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
@@ -160,6 +160,8 @@ namespace WeaponCore
                             }
                         case PacketType.ClientMouseEvent:
                             var mousePacket = packet as MouseInputPacket;
+                            if (mousePacket == null) return;
+
                             long playerId;
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                                 PlayerMouseStates[playerId] = mousePacket.Data;
@@ -167,11 +169,14 @@ namespace WeaponCore
                             break;
                         case PacketType.ActiveControlUpdate:
                             {
-                                var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-                                var grid = block?.CubeGrid as MyCubeGrid;
                                 var updatePacket = packet as LookupUpdatePacket;
+                                if (updatePacket == null) return;
 
-                                if (block == null || grid == null || updatePacket == null) return;
+                                var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+                                if (block?.CubeGrid == null) return;
+                                
+                                var grid = block.CubeGrid;
+
                                 GridAi trackingAi;
                                 if (updatePacket.Data) //update/add
                                 {
