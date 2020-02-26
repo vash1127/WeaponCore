@@ -89,7 +89,7 @@ namespace WeaponCore
                             Reporter.ReportPool.Return(report);
                         }
                         var packetCount = reports.Value.Count;
-                        Log.Line($"[{typeStr}] packets: {packetCount} - dataTransfer:{dataTransfer} - validPackets:{validPackets} - invalidPackets:{invalidPackets} - server:{serverReceivers} - client:{clientReceivers} - none:{noneReceivers}");
+                        Log.Line($"[{typeStr}] packets:{packetCount} - dataTransfer:{dataTransfer} - validPackets:{validPackets} - invalidPackets:{invalidPackets} - server:{serverReceivers} - client:{clientReceivers} - none:{noneReceivers}");
                     }
                     Reporter.ReportData.Clear();
                 }

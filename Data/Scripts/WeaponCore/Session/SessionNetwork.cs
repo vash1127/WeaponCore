@@ -248,7 +248,7 @@ namespace WeaponCore
                             break;
                         }
                     default:
-                        Reporter.ReportData[packet.PType].Add(report);
+                        Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;
 
                         break;
