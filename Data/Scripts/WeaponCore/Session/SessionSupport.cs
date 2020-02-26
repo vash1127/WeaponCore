@@ -48,7 +48,8 @@ namespace WeaponCore
                 {
                     if (!MiscLoaded)
                         MiscLoaded = true;
-                
+
+                    InitRayCast();
 
                     GameLoaded = true;                   
 
@@ -140,28 +141,31 @@ namespace WeaponCore
             return false;
         }
 
+        internal void InitRayCast()
+        {
+            List<IHitInfo> tmpList = new List<IHitInfo>();
+
+            MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
+
+            while (ChargingWeaponsToReload.Count > 0)
+            {
+                var w = ChargingWeaponsToReload.Dequeue();
+                w.StartReload();
+            }
+
+            foreach (var myEntity in MyEntities.GetEntities())
+            {
+                var grid = myEntity as MyCubeGrid;
+                if (grid != null)
+                    RemoveCoreToolbarWeapons(grid);
+            }
+        }
+
         internal bool KeenFuckery()
         {
             try
             {
                 if (Session?.Player == null) return false;
-
-                List<IHitInfo> tmpList = new List<IHitInfo>();
-
-                MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
-
-                while (ChargingWeaponsToReload.Count > 0)
-                {
-                    var w = ChargingWeaponsToReload.Dequeue();
-                    w.StartReload();
-                }
-
-                foreach (var myEntity in MyEntities.GetEntities())
-                {
-                    var grid = myEntity as MyCubeGrid;
-                    if (grid != null)
-                        RemoveCoreToolbarWeapons(grid);
-                }
 
                 if (HandlesInput)
                 {
