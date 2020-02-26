@@ -12,6 +12,7 @@ namespace WeaponCore
 
     public enum PacketType
     {
+        Invalid,
         CompStateUpdate,
         CompSettingsUpdate,
         TargetUpdate,

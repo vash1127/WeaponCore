@@ -141,7 +141,7 @@ namespace WeaponCore
         internal UiInput UiInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
-
+        internal NetworkReporter Reporter = new NetworkReporter();
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
