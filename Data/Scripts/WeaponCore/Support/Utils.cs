@@ -93,39 +93,17 @@ namespace WeaponCore.Support
     public class NetworkReporter
     {
         public Dictionary<PacketType, List<Report>> ReportData = new Dictionary<PacketType, List<Report>>();
-        public readonly MyConcurrentPool<Report> ReportPool;
 
         public NetworkReporter()
         {
-            ReportPool = new MyConcurrentPool<Report>(3600, report => report.Clean(ReportPool));
-
             foreach (var suit in (PacketType[])Enum.GetValues(typeof(PacketType)))
                 ReportData.Add(suit, new List<Report>());
         }
 
-        public class Report
+        public struct Report
         {
-            public enum Received
-            {
-                None,
-                Server,
-                Client
-            }
-
-            public Received Receiver;
-            public bool PacketValid;
-            public int PacketSize;
-
-            public void Clean(MyConcurrentPool<Report> reportPool)
-            {
-                Receiver = Received.None;
-                PacketValid = false;
-                PacketSize = 0;
-                reportPool.Return(this);
-            }
 
         }
-
 
     }
 
