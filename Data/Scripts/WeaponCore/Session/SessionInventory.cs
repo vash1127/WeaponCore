@@ -28,9 +28,7 @@ namespace WeaponCore
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-                var state = weapon.State;
-
-               if (oldMags != weapon.State.CurrentMags)
+                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.CurrentMags)
                 {
                     if ((oldMags > 0 && weapon.State.CurrentMags > 0) || weapon.LastSyncTick == weapon.Comp.Session.Tick)
                     {
@@ -54,7 +52,7 @@ namespace WeaponCore
                         weapon.LastSyncTick = weapon.Comp.Session.Tick;
                     }
                 }
-                    //comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
+                //comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
             }
 
             var hasMags = weapon.State.CurrentMags > 0;

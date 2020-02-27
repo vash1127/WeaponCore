@@ -573,7 +573,6 @@ namespace WeaponCore
             {
                 var w = _session.WeaponsToSync[i];
                 var ai = w.Comp.Ai;
-
                 //need to pool to reduce allocations
                 GridWeaponSyncPacket gridSync;
                 if (!_gridsToSync.ContainsKey(ai))
@@ -589,7 +588,6 @@ namespace WeaponCore
                 }
                 else gridSync = _gridsToSync[ai];
 
-                Log.Line($"create sync");
                 var weaponSync = new WeaponSync
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
