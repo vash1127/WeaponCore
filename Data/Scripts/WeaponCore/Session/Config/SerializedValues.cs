@@ -86,6 +86,23 @@ namespace WeaponCore
             Overrides = new CompGroupOverrides();
         }
 
+        public void Sync(CompSettingsValues syncFrom)
+        {
+            MId = syncFrom.MId;
+            Guidance = syncFrom.Guidance;
+            Overload = syncFrom.Overload;
+            Modes = syncFrom.Modes;
+            DpsModifier = syncFrom.DpsModifier;
+            RofModifier = syncFrom.RofModifier;            
+            Range = syncFrom.Range;
+            Inventory = syncFrom.Inventory;
+            Overrides = syncFrom.Overrides;
+
+            for (int i = 0; i < syncFrom.Weapons.Length; i++)
+                Weapons[i].Enable = syncFrom.Weapons[i].Enable;
+                
+        }
+
     }
 
     [ProtoContract]

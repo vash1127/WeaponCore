@@ -57,14 +57,8 @@ namespace WeaponCore
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null || comp == null) return;
 
-                        comp.Set.Value = setPacket.Data;
-
-                        for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                        {
-                            var w = comp.Platform.Weapons[i];
-                            w.Set = comp.Set.Value.Weapons[w.WeaponId];
-                        }
-
+                        comp.Set.Value.Sync(setPacket.Data);
+                        
                         report.PacketValid = true;
                         break;
                     case PacketType.TargetUpdate:
@@ -129,24 +123,6 @@ namespace WeaponCore
 
                             break;
                         }
-
-                    /*case PacketType.WeaponSync:
-                        Reporter.ReportData[packet.PType].Add(report);
-
-                        var syncPacket = packet as WeaponSyncPacket;
-
-                        if (comp != null && syncPacket != null)
-                        {
-                            var weaponData = syncPacket.WeaponData;
-                            var wid = weaponData.WeaponId;
-                            var weapon = comp.Platform.Weapons[wid];
-                            var timings = syncPacket.Timmings.SyncOffsetClient(Tick);
-
-                            SyncWeapon(weapon, timings, ref weaponData);
-
-                            report.PacketValid = true;
-                        }
-                        break;*/
 
                     case PacketType.PlayerIdUpdate:
                         {
@@ -262,13 +238,7 @@ namespace WeaponCore
 
                         if (statePacket.Data.MId > comp.State.Value.MId)
                         {
-                            comp.State.Value = statePacket.Data;
-
-                            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                            {
-                                var w = comp.Platform.Weapons[i];
-                                w.State = comp.State.Value.Weapons[w.WeaponId];
-                            }
+                            comp.State.Value.Sync(statePacket.Data);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = packet });
 
                             report.PacketValid = true;
@@ -286,12 +256,7 @@ namespace WeaponCore
 
                         if (setPacket.Data.MId > comp.Set.Value.MId)
                         {
-                            comp.Set.Value = setPacket.Data;
-                            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                            {
-                                var w = comp.Platform.Weapons[i];
-                                w.Set = comp.Set.Value.Weapons[w.WeaponId];
-                            }
+                            comp.Set.Value.Sync(setPacket.Data);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                             report.PacketValid = true;
