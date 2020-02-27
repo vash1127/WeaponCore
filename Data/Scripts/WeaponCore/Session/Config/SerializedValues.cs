@@ -33,6 +33,7 @@ namespace WeaponCore
         [ProtoMember(10)] public bool ClickShoot;
         [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
         [ProtoMember(12)] public float CurrentCharge;
+        [ProtoMember(13)] public int Version;
 
         public void Sync(CompStateValues syncFrom)
         {
@@ -80,6 +81,7 @@ namespace WeaponCore
         [ProtoMember(8)] public float Range = 100;
         [ProtoMember(9)] public MyObjectBuilder_Inventory Inventory = null;
         [ProtoMember(10)] public CompGroupOverrides Overrides;
+        [ProtoMember(11)] public int Version;
 
         public CompSettingsValues()
         {

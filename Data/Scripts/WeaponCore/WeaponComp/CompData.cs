@@ -51,12 +51,9 @@ namespace WeaponCore
                 loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompStateValues>(base64);
             }
 
-            if (loadedState != null)
+            if (loadedState != null && loadedState.Version == VersionControl)
             {
                 Value = loadedState;
-                if (loadedState.CurrentPlayerControl == null) 
-                    Value.CurrentPlayerControl = new PlayerControl();
-
                 loadedSomething = true;
             }
             else
@@ -146,7 +143,7 @@ namespace WeaponCore
                 loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<CompSettingsValues>(base64);
             }
 
-            if (loadedSettings?.Weapons != null)
+            if (loadedSettings?.Weapons != null && loadedSettings.Version == VersionControl)
             {
                 Value = loadedSettings;
                 loadedSomething = true;

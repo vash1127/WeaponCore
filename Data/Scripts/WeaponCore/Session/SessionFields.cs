@@ -30,6 +30,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
+        internal const int VersionControl = 1;
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;
