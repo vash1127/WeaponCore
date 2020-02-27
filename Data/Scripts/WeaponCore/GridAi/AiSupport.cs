@@ -798,29 +798,38 @@ namespace WeaponCore.Support
                     }
                 }
 
-                using (FakeShipController.CubeGrid?.Pin())
+                try
                 {
-                    if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
+                    using (FakeShipController.CubeGrid?.Pin())
                     {
-                        if (Weapons.Count > 0)
+                        if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
                         {
-                            FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
-                            PowerDistributor = FakeShipController.GridResourceDistributor;
-                            if (PowerDistributor == null)
-                                return;
+                            if (Weapons.Count > 0)
+                            {
+                                FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
+                                PowerDistributor = FakeShipController.GridResourceDistributor;
+                                if (PowerDistributor == null)
+                                    return;
+                            }
+                            else return;
                         }
-                        else return;
-                    }
 
-                    if (PowerDistributor == null)
-                    {
-                        Log.Line($"powerDist is null");
-                        return;
-                    }
+                        if (PowerDistributor == null)
+                        {
+                            Log.Line($"powerDist is null - check 1");
+                            return;
+                        }
 
-                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
-                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                        try
+                        {
+                            GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                            GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                        }
+                        catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
+                    }
                 }
+                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - unlikely null!"); }
+
 
                 GridAvailablePower = GridMaxPower - GridCurrentPower;
 
