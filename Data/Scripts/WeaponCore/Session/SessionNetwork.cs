@@ -21,11 +21,8 @@ namespace WeaponCore
                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
                 foreach (var p in Players.Values)
                 {
-                    var id = p.SteamUserId;
-                    if (id != packet.SenderId && (entity == null || Vector3D.DistanceSquared(p.GetPosition(), entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
-                    {
-                        MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, p.SteamUserId);
-                    }
+                    if (p.SteamUserId != packet.SenderId && (entity == null || Vector3D.DistanceSquared(p.GetPosition(), entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
+                        MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in PacketizeToClientsInRange: {ex}"); }
@@ -33,11 +30,7 @@ namespace WeaponCore
 
         internal void SendPacketToServer(Packet packet)
         {
-            if (!IsClient) return;
-
-            byte[] bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
-
-            MyAPIGateway.Multiplayer.SendMessageToServer(ServerPacketId, bytes);
+            MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, MyAPIGateway.Utilities.SerializeToBinary(packet), true);
         }
 
         private void ClientReceivedPacket(byte[] rawData)
@@ -559,9 +552,9 @@ namespace WeaponCore
                 });
             }
         }
-
-        internal void ProccessClientPackets()
+        internal void ProccessServerPacketsForClients()
         {
+            if (!IsServer) return;
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
@@ -570,8 +563,9 @@ namespace WeaponCore
             PacketsToClient.Clear();
         }
 
-        internal void ProccessServerPackets()
+        internal void ProccessClientPacketsForServer()
         {
+            if (!IsClient) return;
             for (int i = 0; i < PacketsToServer.Count; i++)
                 SendPacketToServer(PacketsToServer[i]);
 

@@ -153,8 +153,8 @@ namespace WeaponCore
 
                 if (MpActive && !HandlesInput)
                 {
-                    if (PacketsToClient.Count > 0) ProccessClientPackets();
-                    if (PacketsToServer.Count > 0) ProccessServerPackets();
+                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
+                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
                 }
 
                 DsUtil.Complete("network", true);
@@ -194,8 +194,8 @@ namespace WeaponCore
                 if (MpActive)
                 {
                     if (UiInput.MouseButtonPressed) MouseNetworkEvent();
-                    if (PacketsToClient.Count > 0) ProccessClientPackets();
-                    if (PacketsToServer.Count > 0) ProccessServerPackets();
+                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
+                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
                 }
             }
         }

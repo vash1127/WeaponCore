@@ -88,7 +88,6 @@ namespace WeaponCore
                         Data = Value
                     }
                 });
-                //Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new StatePacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
             }
             else if (Comp.Session.IsClient)
             { // client, send settings to server
@@ -98,7 +97,6 @@ namespace WeaponCore
                     SenderId = Comp.Session.MultiplayerId,
                     Data = Value
                 });
-                //Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });
             }
         }
         #endregion
