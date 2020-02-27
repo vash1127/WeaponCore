@@ -311,7 +311,7 @@ namespace WeaponCore
                     var comp = w.Comp;
                     var gridAi = comp.Ai;
 
-                    if (comp == null || w == null || gridAi == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
+                    if (comp == null || gridAi == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
                         if (ChargingWeaponsCheck.Contains(w))

@@ -54,6 +54,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ObjectPool.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\VersionControl.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\SupportClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiBlockGroups.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
