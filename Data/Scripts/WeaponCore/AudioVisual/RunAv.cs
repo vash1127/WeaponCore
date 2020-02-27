@@ -48,9 +48,9 @@ namespace WeaponCore.Support
 
         internal void Run()
         {
-            if (Session.Tick600) {
+            if (Session.Tick180) {
 
-                Log.LineShortDate($"(DRAWS) [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} [P] {Session.Projectiles.ActiveProjetiles.Count} [P-Pool] {Session.Projectiles.ProjectilePool.Count} [AvPool] {AvShotPool.Count} [AvBarrels] 1:{AvBarrels1.Count} 2:{AvBarrels2.Count} =-");
+                Log.LineShortDate($"(DRAWS) --------------- AvShots:[{AvShots.Count}] OnScreen:[{_onScreens}] Shrinks:[{_shrinks}] Glows:[{_glows}] Models:[{_models}] P:[{Session.Projectiles.ActiveProjetiles.Count}] P-Pool:[{Session.Projectiles.ProjectilePool.Count}] AvPool:[{AvShotPool.Count}] (AvBarrels 1:[{AvBarrels1.Count}] 2:[{AvBarrels2.Count}])");
                 _glows = 0;
                 _shrinks = 0;
             }

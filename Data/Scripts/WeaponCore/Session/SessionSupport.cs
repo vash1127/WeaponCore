@@ -120,8 +120,8 @@ namespace WeaponCore
             var ai = DsUtil.GetValue("ai");
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
-            Log.LineShortDate($"(CPU-T) <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET>{netTime.Median:0.0000}/{netTime.Min:0.0000}/{netTime.Max:0.0000}>");
-            Log.LineShortDate($"(STATS) AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]");
+            Log.LineShortDate($"(CPU-T) --- <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET>{netTime.Median:0.0000}/{netTime.Min:0.0000}/{netTime.Max:0.0000}>");
+            Log.LineShortDate($"(STATS) -------- AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]");
             TargetRequests = 0;
             TargetChecks = 0;
             BlockChecks = 0;
@@ -140,6 +140,7 @@ namespace WeaponCore
 
         internal void NetReport()
         {
+            Log.LineShortDate("");
             foreach (var reports in Reporter.ReportData)
             {
                 var typeStr = reports.Key.ToString();
@@ -165,6 +166,7 @@ namespace WeaponCore
                 var packetCount = reports.Value.Count;
                 Log.LineShortDate($"(NINFO) [{typeStr}] packets:{packetCount} - dataTransfer:{dataTransfer} - validPackets:{validPackets} - invalidPackets:{invalidPackets} - server:{serverReceivers} - client:{clientReceivers} - none:{noneReceivers}");
             }
+            Log.LineShortDate("");
 
             foreach (var list in Reporter.ReportData.Values)
                 list.Clear();
