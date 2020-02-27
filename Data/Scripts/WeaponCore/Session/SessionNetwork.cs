@@ -134,11 +134,9 @@ namespace WeaponCore
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             GridAi ai;
-
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
-                                //PacketizeToClientsInRange(myGrid, packet);
 
                                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
 
@@ -287,7 +285,6 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[i];
                                 w.State = comp.State.Value.Weapons[w.WeaponId];
                             }
-                            //PacketizeToClientsInRange(ent, packet);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = packet });
 
                             report.PacketValid = true;
@@ -311,7 +308,6 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[i];
                                 w.Set = comp.Set.Value.Weapons[w.WeaponId];
                             }
-                            //PacketizeToClientsInRange(ent, packet);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                             report.PacketValid = true;
@@ -326,7 +322,6 @@ namespace WeaponCore
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                         {
                             PlayerMouseStates[playerId] = mousePacket.Data;
-                            //PacketizeToClientsInRange(null, mousePacket);
                             PacketsToClient.Add(new PacketInfo { Entity = null, Packet = mousePacket });
 
                             report.PacketValid = true;
@@ -346,7 +341,6 @@ namespace WeaponCore
 
                             UpdateActiveControlDictionary(block, playerId, dPacket.Data);
 
-                            //PacketizeToClientsInRange(block, dPacket);
                             PacketsToClient.Add(new PacketInfo { Entity = block, Packet = dPacket });
 
                             report.PacketValid = true;
@@ -367,7 +361,6 @@ namespace WeaponCore
                                 if (targetGrid != null)
                                 {
                                     ai.Focus.AddFocus(targetGrid, ai, true);
-                                    //PacketizeToClientsInRange(myGrid, targetPacket);
                                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                                     report.PacketValid = true;
                                 }
@@ -385,7 +378,6 @@ namespace WeaponCore
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
-                                //PacketizeToClientsInRange(myGrid, packet);
                                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                                 report.PacketValid = true;
                             }
@@ -527,7 +519,6 @@ namespace WeaponCore
                     PType = PacketType.ClientMouseEvent,
                     Data = UiInput.ClientMouseState
                 });
-                //_session.SendPacketToServer(new MouseInputPacket { EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
             }
             else if (MpActive && IsServer)
             {
