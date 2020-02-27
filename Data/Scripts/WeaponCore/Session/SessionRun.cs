@@ -236,7 +236,6 @@ namespace WeaponCore
                 MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
                 MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
                 ApiServer.Unload();
-                Proccessor.Stop();
 
                 PurgeAll();
 
