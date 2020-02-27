@@ -195,7 +195,6 @@ namespace WeaponCore
 
         internal float UiBkOpacity;
         internal float UiOpacity;
-        internal bool HighLoad;
         internal bool InMenu;
         internal bool GunnerBlackList;
         internal bool MpActive;

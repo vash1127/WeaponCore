@@ -110,7 +110,6 @@ namespace WeaponCore
 
         internal void ProfilePerformance()
         {
-            HighLoad = false;
             var netTime = DsUtil.GetValue("network");
             var projectileTime = DsUtil.GetValue("projectiles");
             var updateTime = DsUtil.GetValue("shoot");

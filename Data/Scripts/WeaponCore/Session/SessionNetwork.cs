@@ -545,6 +545,34 @@ namespace WeaponCore
             }
         }
 
+        internal void UpdateLocalAiNetworkEvent(MyCubeBlock controlBlock, bool active)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new DictionaryUpdatePacket
+                {
+                    EntityId = controlBlock.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ActiveControlUpdate,
+                    Data = active
+                });
+            }
+            else
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = controlBlock,
+                    Packet = new DictionaryUpdatePacket
+                    {
+                        EntityId = controlBlock.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.ActiveControlUpdate,
+                        Data = active
+                    }
+                });
+            }
+        }
+
         internal void ProccessClientPackets()
         {
             for (int i = 0; i < PacketsToClient.Count; i++)

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -30,34 +28,7 @@ namespace WeaponCore
                 TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
 
                 if (MpActive && !DedicatedServer && oldBlock != ActiveControlBlock)
-                {
-                    if (IsClient)
-                    {
-                        PacketsToServer.Add(new DictionaryUpdatePacket
-                            {
-                                EntityId = activeBlock.EntityId,
-                                SenderId = MultiplayerId,
-                                PType = PacketType.ActiveControlUpdate,
-                                Data = true
-                            });
-                        //SendPacketToServer(new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
-                    }
-                    else
-                    {
-                        PacketsToClient.Add(new PacketInfo
-                        {
-                            Entity = activeBlock,
-                            Packet = new DictionaryUpdatePacket
-                            {
-                                EntityId = activeBlock.EntityId,
-                                SenderId = 0,
-                                PType = PacketType.ActiveControlUpdate,
-                                Data = true
-                            }
-                        });
-                        //PacketizeToClientsInRange(activeBlock, new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
-                    }
-                }
+                    UpdateLocalAiNetworkEvent(activeBlock, true);
             }
             else
             {
@@ -67,35 +38,8 @@ namespace WeaponCore
 
                     MyCubeBlock oldBlock;
                     if (MpActive && !DedicatedServer && TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock))
-                    {
-                        if (IsClient)
-                        {
-                            PacketsToServer.Add(new DictionaryUpdatePacket {
-                                    EntityId = oldBlock.EntityId,
-                                    SenderId = MultiplayerId,
-                                    PType = PacketType.ActiveControlUpdate,
-                                    Data = false
-                                });
-                            //SendPacketToServer(new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = false });
-                        }
-                        else
-                        {
-                            PacketsToClient.Add(new PacketInfo
-                            {
-                                Entity = oldBlock,
-                                Packet = new DictionaryUpdatePacket
-                                {
-                                    EntityId = oldBlock.EntityId,
-                                    SenderId = 0,
-                                    PType = PacketType.ActiveControlUpdate,
-                                    Data = false
-                                }
-                            });
-                        }
+                        UpdateLocalAiNetworkEvent(oldBlock, false);
 
-                        //PacketizeToClientsInRange(oldBlock, new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
-
-                    }
                     TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
                 }
 
