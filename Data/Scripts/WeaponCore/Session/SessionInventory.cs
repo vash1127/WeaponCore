@@ -28,29 +28,20 @@ namespace WeaponCore
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.CurrentMags)
+                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.CurrentMags && (oldMags > 0 && weapon.State.CurrentMags > 0))
                 {
-                    if ((oldMags > 0 && weapon.State.CurrentMags > 0) || weapon.LastSyncTick == weapon.Comp.Session.Tick)
+                    comp.Session.PacketsToClient.Add(new PacketInfo
                     {
-                        comp.Session.PacketsToClient.Add(new PacketInfo
+                        Entity = comp.MyCube,
+                        Packet = new MagUpdatePacket
                         {
-                            Entity = comp.MyCube,
-                            Packet = new MagUpdatePacket
-                            {
-                                EntityId = comp.MyCube.EntityId,
-                                SenderId = 0,
-                                Mags = weapon.State.CurrentMags,
-                                PType = PacketType.MagUpdate,
-                                WeaponId = weapon.WeaponId
-                            }
-                        });
-                    }
-                    else
-                    {
-                        weapon.Comp.Session.WeaponsToSync.Add(weapon);
-                        weapon.Comp.Ai.NumSyncWeapons++;
-                        weapon.LastSyncTick = weapon.Comp.Session.Tick;
-                    }
+                            EntityId = comp.MyCube.EntityId,
+                            SenderId = 0,
+                            Mags = weapon.State.CurrentMags,
+                            PType = PacketType.MagUpdate,
+                            WeaponId = weapon.WeaponId
+                        }
+                    });
                 }
             }
 

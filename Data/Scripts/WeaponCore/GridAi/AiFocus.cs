@@ -46,7 +46,6 @@ namespace WeaponCore.Support
                         PType = PacketType.FocusUpdate,
                         Data = target.EntityId
                     });
-                //session.SendPacketToServer(new FocusSyncPacket { EntityId = ai.MyGrid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.FocusUpdate, Data = target.EntityId });
             }
         }
 

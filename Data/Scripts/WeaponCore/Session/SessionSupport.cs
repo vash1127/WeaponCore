@@ -163,7 +163,7 @@ namespace WeaponCore
                     Reporter.ReportPool.Return(report);
                 }
                 var packetCount = reports.Value.Count;
-                Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers}({IsClient})] unknownReceive:[{noneReceivers}({IsServer})]");
+                Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers} ({IsClient})] unknownReceive:[{noneReceivers} ({IsServer})]");
             }
             Log.LineShortDate("");
 
