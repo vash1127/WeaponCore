@@ -109,6 +109,9 @@ namespace WeaponCore
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
                 if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
 
+                if (MpActive && UiInput.MouseButtonPressed)
+                    MouseNetworkEvent();
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }

@@ -152,18 +152,6 @@ namespace WeaponCore.Support
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
-
-            if (session.IsClient)
-            {
-                session.PacketsToServer.Add(new Packet {
-                        EntityId = grid.EntityId,
-                        SenderId = session.MultiplayerId,
-                        PType = PacketType.ActiveControlRequestUpdate
-                    });
-                //session.SendPacketToServer(new Packet { EntityId = grid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.ActiveControlRequestUpdate });
-            }
-
-            //AIValues.Load(this);
         }
     }
 }

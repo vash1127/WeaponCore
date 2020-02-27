@@ -69,36 +69,6 @@ namespace WeaponCore
                     ClientMouseState.MouseButtonRight = false;
                 }
 
-                if (_session.MpActive && (MouseButtonLeftWasPressed != ClientMouseState.MouseButtonLeft ||
-                MouseButtonMiddleWasPressed != ClientMouseState.MouseButtonMiddle ||
-                MouseButtonRightWasPressed != ClientMouseState.MouseButtonRight))
-                {
-                    if (_session.IsClient)
-                    {
-                        _session.PacketsToServer.Add(new MouseInputPacket
-                            {
-                                EntityId = -1,
-                                SenderId = _session.MultiplayerId,
-                                PType = PacketType.ClientMouseEvent,
-                                Data = ClientMouseState
-                            });
-                        //_session.SendPacketToServer(new MouseInputPacket { EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
-                    }
-                    else if (_session.MpActive && _session.IsServer)
-                    {
-                        _session.PacketsToClient.Add(new PacketInfo
-                        {
-                            Entity = null,
-                            Packet = new MouseInputPacket
-                            {
-                                EntityId = -1,
-                                SenderId = _session.MultiplayerId,
-                                PType = PacketType.ClientMouseEvent,
-                                Data = ClientMouseState
-                            }
-                        });
-                    }
-                }
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
@@ -122,7 +92,6 @@ namespace WeaponCore
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
-                //InSpyCam = _session.Session.CameraController == _session.SpyCam;
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();

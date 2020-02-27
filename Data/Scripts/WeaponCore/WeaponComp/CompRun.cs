@@ -201,6 +201,17 @@ namespace WeaponCore.Support
                         if (cubeBlock is MyBatteryBlock || cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler || cubeBlock is IMyShipConnector)
                             Ai.FatBlockAdded(cubeBlock);
                     }
+
+
+                    if (Ai.Session.IsClient)
+                    {
+                        Ai.Session.PacketsToServer.Add(new Packet {
+                            EntityId = MyCube.EntityId,
+                            SenderId = Ai.Session.MultiplayerId,
+                            PType = PacketType.ActiveControlRequestUpdate
+                        });
+                        //session.SendPacketToServer(new Packet { EntityId = grid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.ActiveControlRequestUpdate });
+                    }
                 }
 
                 MaxRequiredPower = 0;

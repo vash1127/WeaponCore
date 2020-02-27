@@ -38,7 +38,7 @@ namespace WeaponCore.Support
                 }
             }
 
-            if (!session.DedicatedServer && !session.IsServer && !serverUpdate)
+            if (session.IsClient && !serverUpdate)
             {
                 session.PacketsToServer.Add(new FocusSyncPacket {
                         EntityId = ai.MyGrid.EntityId,

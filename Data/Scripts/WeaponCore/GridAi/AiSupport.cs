@@ -47,15 +47,18 @@ namespace WeaponCore.Support
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
 
-                ai.Session.PacketsToServer.Add(new FakeTargetPacket {
+                if (ai.Session.IsClient)
+                {
+                    ai.Session.PacketsToServer.Add(new FakeTargetPacket
+                    {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.FakeTargetUpdate,
                         Data = this,
                     });
 
-                //ai.Session.SendPacketToServer(new FakeTargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = ai.Session.MultiplayerId, PType = PacketType.FakeTargetUpdate, Data = this });
-
+                    //ai.Session.SendPacketToServer(new FakeTargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = ai.Session.MultiplayerId, PType = PacketType.FakeTargetUpdate, Data = this });
+                }
                 ClearTarget = false;
             }
 

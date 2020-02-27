@@ -516,6 +516,34 @@ namespace WeaponCore
             }
         }
 
+        internal void MouseNetworkEvent()
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new MouseInputPacket
+                {
+                    EntityId = -1,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ClientMouseEvent,
+                    Data = UiInput.ClientMouseState
+                });
+                //_session.SendPacketToServer(new MouseInputPacket { EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
+            }
+            else if (MpActive && IsServer)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = null,
+                    Packet = new MouseInputPacket
+                    {
+                        EntityId = -1,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ClientMouseEvent,
+                        Data = UiInput.ClientMouseState
+                    }
+                });
+            }
+        }
         internal void ProccessClientPackets()
         {
             for (int i = 0; i < PacketsToClient.Count; i++)
