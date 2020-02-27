@@ -545,64 +545,42 @@ namespace WeaponCore
 
     public class NetworkProccessor
     {
-        private Session _session;
-        private volatile bool _running;
-        private volatile bool _canSend;
-        private readonly Dictionary<GridAi, GridWeaponSyncPacket> GridsToSync = new Dictionary<GridAi, GridWeaponSyncPacket>();
+        private readonly Session _session;
+        private readonly Dictionary<GridAi, GridWeaponSyncPacket> _gridsToSync = new Dictionary<GridAi, GridWeaponSyncPacket>();
         private readonly List<PacketInfo> _packets = new List<PacketInfo>();
-        private List<Weapon> _weaponsToSync;
 
-        public bool Running
-        {
-            get
-            {
-                return _running;
-            }
-        } 
         
         public NetworkProccessor(Session session)
         {
             _session = session;
         }
 
-        public void Start(List<Weapon> syncWeapons)
-        {
-            _weaponsToSync = new List<Weapon>(syncWeapons);
-            MyAPIGateway.Parallel.Start(Proccess, AddPackets);
-        }
-
-        public void Stop()
-        {
-            _running = false;
-            GridsToSync.Clear();
-            _packets.Clear();
-        }
-
-        private void Proccess()
+        internal void Proccess()
         {
             ProccessTargetUpdates();
             ProccessGridWeaponPackets();
         }
 
-        private void AddPackets()
+        internal void AddPackets()
         {
             for(int i = 0; i < _packets.Count; i++)
                 _session.PacketsToClient.Add(_packets[i]);
-            
+
+            _packets.Clear();
         }
 
         private void ProccessTargetUpdates()
         {
-            for (int i = 0; i < _weaponsToSync.Count; i++)
+            for (int i = 0; i < _session.WeaponsToSync.Count; i++)
             {
-                var w = _weaponsToSync[i];
+                var w = _session.WeaponsToSync[i];
                 var ai = w.Comp.Ai;
 
                 //need to pool to reduce allocations
 
-                if (GridsToSync[ai] == null)
+                if (_gridsToSync[ai] == null)
                 {
-                    GridsToSync[ai] = new GridWeaponSyncPacket
+                    _gridsToSync[ai] = new GridWeaponSyncPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
@@ -611,7 +589,7 @@ namespace WeaponCore
                     };
                 }
 
-                GridsToSync[ai].TargetData[ai.CurrWeapon] = new WeaponSync
+                _gridsToSync[ai].TargetData[ai.CurrWeapon] = new WeaponSync
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
@@ -634,7 +612,7 @@ namespace WeaponCore
 
         private void ProccessGridWeaponPackets()
         {
-            foreach (var gridPacket in GridsToSync)
+            foreach (var gridPacket in _gridsToSync)
             {
                 var ai = gridPacket.Key;
                 ai.CurrWeapon = 0;
@@ -642,7 +620,7 @@ namespace WeaponCore
                 _packets.Add(new PacketInfo { Entity = ai.MyGrid, Packet = gridPacket.Value });
                 //_session.PacketizeToClientsInRange(ai.MyGrid, gridPacket.Value);                
             }
-            GridsToSync.Clear();
+            _gridsToSync.Clear();
         } 
     }
 }

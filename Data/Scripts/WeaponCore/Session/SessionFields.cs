@@ -158,6 +158,7 @@ namespace WeaponCore
         internal Task GridTask = new Task();
         internal Task DbTask = new Task();
         internal Task ITask = new Task();
+        internal Task NTask = new Task();
 
         internal string TriggerEntityModel;
         internal object InitObj = new object();

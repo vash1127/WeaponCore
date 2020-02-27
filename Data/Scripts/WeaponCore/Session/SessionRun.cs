@@ -98,7 +98,6 @@ namespace WeaponCore
                     if (ShootingWeapons.Count > 0) ShootWeapons();
                     DsUtil.Complete("shoot", true);
 
-                    if (WeaponsToSync.Count > 0) Proccessor.Start(WeaponsToSync);
                 }
 
                 if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
@@ -108,6 +107,8 @@ namespace WeaponCore
                         TargetSelection();
                 }
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
+                if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -131,6 +132,16 @@ namespace WeaponCore
                     TaskHasErrors(ref PTask, "PTask");
 
                 DsUtil.Complete("projectiles", true);
+
+                DsUtil.Start("network");
+                if (!NTask.IsComplete)
+                    NTask.Wait();
+
+                if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
+                    TaskHasErrors(ref NTask, "NTask");
+
+                Proccessor.AddPackets();
+                DsUtil.Complete("network", true);
 
                 if (_effectedCubes.Count > 0) 
                     ApplyGridEffect();
