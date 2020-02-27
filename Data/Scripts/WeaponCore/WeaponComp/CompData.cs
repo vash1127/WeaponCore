@@ -47,8 +47,15 @@ namespace WeaponCore
 
             if (Block.Storage.TryGetValue(Comp.Session.LogicStateGuid, out rawData))
             {
-                var base64 = Convert.FromBase64String(rawData);
-                loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompStateValues>(base64);
+                try
+                {
+                    var base64 = Convert.FromBase64String(rawData);
+                    loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompStateValues>(base64);
+                }
+                catch(Exception e)
+                {
+                    Log.Line("Invalid State Loaded, Re-init");
+                }
             }
 
             if (loadedState != null && loadedState.Version == VersionControl)
@@ -143,8 +150,15 @@ namespace WeaponCore
 
             if (Block.Storage.TryGetValue(Comp.Session.LogicSettingsGuid, out rawData))
             {
-                var base64 = Convert.FromBase64String(rawData);
-                loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<CompSettingsValues>(base64);
+                try
+                {
+                    var base64 = Convert.FromBase64String(rawData);
+                    loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<CompSettingsValues>(base64);
+                }
+                catch (Exception e)
+                {
+                    Log.Line("Invalid Stettings Loaded, Re-init");
+                }
             }
 
             if (loadedSettings?.Weapons != null && loadedSettings.Version == VersionControl)
