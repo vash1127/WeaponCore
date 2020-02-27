@@ -210,7 +210,6 @@ namespace WeaponCore.Support
                             SenderId = Ai.Session.MultiplayerId,
                             PType = PacketType.ActiveControlRequestUpdate
                         });
-                        //session.SendPacketToServer(new Packet { EntityId = grid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.ActiveControlRequestUpdate });
                     }
                 }
 
@@ -271,7 +270,7 @@ namespace WeaponCore.Support
                     State.SaveState();
                     Set.SaveSettings();
                     if(_mpActive)
-                        WeaponValues.Save(this, Session.MPTargetSyncGuid);
+                        WeaponValues.Save(this, Session.MpTargetSyncGuid);
                 }
             }
             return false;

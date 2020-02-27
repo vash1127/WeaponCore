@@ -87,7 +87,7 @@ namespace WeaponCore
                         break;
                     case PacketType.TargetUpdate:
                         {
-                            var targetPacket = packet as GridWeaponSyncPacket;
+                            var targetPacket = packet as GridWeaponPacket;
                             if (targetPacket?.TargetData == null || ent == null) return;
                             
                             for(int i = 0; i < targetPacket.TargetData.Count; i++)
@@ -111,11 +111,13 @@ namespace WeaponCore
                         }
                     case PacketType.FocusUpdate:
                         {
+                            var targetPacket = packet as FocusPacket;
+                            if (targetPacket == null) return;
+
                             var myGrid = ent as MyCubeGrid;
                             GridAi ai;
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                var targetPacket = packet as FocusSyncPacket;
                                 var targetGrid = MyEntities.GetEntityByIdOrDefault(targetPacket.Data) as MyCubeGrid;
 
                                 if (targetGrid != null)
@@ -172,10 +174,10 @@ namespace WeaponCore
                             if (updatePacket.Data) //update/add
                             {
                                 SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
-                                MouseState ms;
+                                MouseStatePacket ms;
                                 if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
                                 {
-                                    PlayerMouseStates[updatePacket.EntityId] = new MouseState();
+                                    PlayerMouseStates[updatePacket.EntityId] = new MouseStatePacket();
 
                                     report.PacketValid = true;
                                 }
@@ -222,7 +224,7 @@ namespace WeaponCore
                         {
                             try
                             {
-                                var csPacket = packet as ControllingSyncPacket;
+                                var csPacket = packet as ControllingPacket;
                                 if (csPacket?.Data == null) return;
 
                                 for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
@@ -231,7 +233,7 @@ namespace WeaponCore
 
                                     var block = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
 
-                                    UpdateActiveControlDictionary(block, playerBlock.playerId, true);
+                                    UpdateActiveControlDictionary(block, playerBlock.PlayerId, true);
                                 }
                             }
                             catch (Exception e) { Log.Line($"error in control update"); }
@@ -348,7 +350,7 @@ namespace WeaponCore
                         }
                     case PacketType.FocusUpdate:
                         {
-                            var targetPacket = packet as FocusSyncPacket;
+                            var targetPacket = packet as FocusPacket;
                             if (targetPacket == null) return;
 
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
@@ -395,11 +397,11 @@ namespace WeaponCore
                                 var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Count];
                                 foreach (var playerBlockPair in ai.ControllingPlayers)
                                 {
-                                    playerToBlocks[c] = new PlayerToBlock { playerId = playerBlockPair.Key, EntityId = playerBlockPair.Value.EntityId };
+                                    playerToBlocks[c] = new PlayerToBlock { PlayerId = playerBlockPair.Key, EntityId = playerBlockPair.Value.EntityId };
                                     c++;
                                 }
 
-                                var syncPacket = new ControllingSyncPacket
+                                var syncPacket = new ControllingPacket
                                 {
                                     EntityId = -1,
                                     SenderId = 0,
@@ -593,7 +595,7 @@ namespace WeaponCore
     public class NetworkProccessor
     {
         private readonly Session _session;
-        private readonly Dictionary<GridAi, GridWeaponSyncPacket> _gridsToSync = new Dictionary<GridAi, GridWeaponSyncPacket>();
+        private readonly Dictionary<GridAi, GridWeaponPacket> _gridsToSync = new Dictionary<GridAi, GridWeaponPacket>();
         private readonly List<PacketInfo> _packets = new List<PacketInfo>();
         
         public NetworkProccessor(Session session)
@@ -622,10 +624,10 @@ namespace WeaponCore
                 var w = _session.WeaponsToSync[i];
                 var ai = w.Comp.Ai;
                 //need to pool to reduce allocations
-                GridWeaponSyncPacket gridSync;
+                GridWeaponPacket gridSync;
                 if (!_gridsToSync.ContainsKey(ai))
                 {
-                    gridSync = new GridWeaponSyncPacket
+                    gridSync = new GridWeaponPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
@@ -636,7 +638,7 @@ namespace WeaponCore
                 }
                 else gridSync = _gridsToSync[ai];
 
-                var weaponSync = new WeaponSync
+                var weaponSync = new WeaponPacket
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
@@ -645,7 +647,7 @@ namespace WeaponCore
                     {
                         Charging = w.State.Charging,
                         CurrentAmmo = w.State.CurrentAmmo,
-                        currentMags = w.State.CurrentMags,
+                        CurrentMags = w.State.CurrentMags,
                         CurrentCharge = w.State.CurrentCharge,
                         Heat = w.State.Heat,
                         Overheated = w.State.Overheated,

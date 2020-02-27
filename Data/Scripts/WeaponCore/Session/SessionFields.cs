@@ -48,11 +48,12 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128);
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
         internal readonly MyConcurrentPool<GridAi> GridAiPool = new MyConcurrentPool<GridAi>(128, ai => ai.CleanUp());
-        internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
+        
+        internal readonly Dictionary<PacketType, MyConcurrentPool<Packet>> PacketPools = new Dictionary<PacketType, MyConcurrentPool<Packet>>();
 
+        internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
-        internal readonly Dictionary<long, MouseState> PlayerMouseStates = new Dictionary<long, MouseState>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
@@ -75,6 +76,8 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
+        internal readonly Dictionary<long, MouseStatePacket> PlayerMouseStates = new Dictionary<long, MouseStatePacket>();
+
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
 
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -102,7 +105,7 @@ namespace WeaponCore
         internal readonly BoundingFrustumD CameraFrustrum = new BoundingFrustumD();
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
-        internal readonly Guid MPTargetSyncGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
+        internal readonly Guid MpTargetSyncGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
         internal readonly Guid GridAiGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811504");
 
         internal readonly double VisDirToleranceCosine;
@@ -112,11 +115,10 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
-        private readonly Dictionary<IMySlimBlock, float> _SlimHealthClient = new Dictionary<IMySlimBlock, float>();
+        private readonly Dictionary<IMySlimBlock, float> _slimHealthClient = new Dictionary<IMySlimBlock, float>();
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
-        private readonly List<IMySlimBlock> _slimCache = new List<IMySlimBlock>();
         
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
@@ -134,7 +136,6 @@ namespace WeaponCore
         internal MyCubeBlock ActiveControlBlock;
         internal MyCameraBlock SpyCam;
         internal MyEntity ControlledEntity;
-        //internal MyObjectBuilder_ShipController ControlledOB;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
 
@@ -236,7 +237,6 @@ namespace WeaponCore
         private int _shortLoadCounter = 1;
         private uint _lastDrawTick;
         private bool _paused;
-        private bool _renderCached;
 
         class HackEqualityComparer : System.Collections.IEqualityComparer
         {
@@ -263,12 +263,15 @@ namespace WeaponCore
             ApiServer = new ApiServer(this);
             Projectiles = new Projectiles.Projectiles(this);
             Proccessor = new NetworkProccessor(this);
-            
+
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
             HeatEmissives = CreateHeatEmissive();
 
             LoadVanillaData();
+
+            foreach (var suit in (PacketType[])Enum.GetValues(typeof(PacketType)))
+                PacketPools.Add(suit, new MyConcurrentPool<Packet>(128, packet => packet.CleanUp()));
         }
     }
 }

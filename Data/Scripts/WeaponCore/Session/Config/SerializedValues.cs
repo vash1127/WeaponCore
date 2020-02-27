@@ -47,7 +47,7 @@ namespace WeaponCore
         [ProtoMember(6)] public float RofModifier = 1;
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
         [ProtoMember(8)] public float Range = 100;
-        [ProtoMember(9)] internal MyObjectBuilder_Inventory Inventory = null;
+        [ProtoMember(9)] public MyObjectBuilder_Inventory Inventory = null;
         [ProtoMember(10)] public CompGroupOverrides Overrides;
 
         public CompSettingsValues()
@@ -83,13 +83,13 @@ namespace WeaponCore
         [ProtoMember(5)] public bool Reloading;
         [ProtoMember(6)] public bool Charging;
         [ProtoMember(7)] public int WeaponId;
-        [ProtoMember(8)] public MyFixedPoint currentMags;
+        [ProtoMember(8)] public MyFixedPoint CurrentMags;
 
         public void SetState (WeaponStateValues wState)
         {
             wState.Heat = Heat;
             wState.CurrentAmmo = CurrentAmmo;
-            wState.CurrentMags = currentMags;
+            wState.CurrentMags = CurrentMags;
             wState.CurrentCharge = CurrentCharge;
             wState.Overheated = Overheated;
             wState.Reloading = Reloading;
@@ -167,18 +167,16 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponValues
     {
-        [ProtoMember(1)] public TransferTarget[] Targets;
+        [ProtoMember(1)] public TransferTargetPacket[] Targets;
         [ProtoMember(2)] public WeaponTimings[] Timings;
 
         public void Save(WeaponComponent comp, Guid id)
         {
             if (!comp.Session.MpActive) return;
 
-            if (comp.MyCube == null || comp.MyCube.Storage == null) return;
+            if (comp.MyCube?.Storage == null) return;
 
-            var sv = new WeaponValues();
-            sv.Targets = Targets;
-            sv.Timings = new WeaponTimings[comp.Platform.Weapons.Length];
+            var sv = new WeaponValues {Targets = Targets, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -197,10 +195,9 @@ namespace WeaponCore
         public static void Load(WeaponComponent comp)
         {
             string rawData;
-            byte[] base64;
-            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(comp.Session.MPTargetSyncGuid, out rawData))
+            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(comp.Session.MpTargetSyncGuid, out rawData))
             {
-                base64 = Convert.FromBase64String(rawData);
+                var base64 = Convert.FromBase64String(rawData);
                 comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
 
                 var timings = comp.WeaponValues.Timings;
@@ -217,14 +214,16 @@ namespace WeaponCore
             }
             else
             {
-                comp.WeaponValues = new WeaponValues();
-                comp.WeaponValues.Targets = new TransferTarget[comp.Platform.Weapons.Length];
-                comp.WeaponValues.Timings = new WeaponTimings[comp.Platform.Weapons.Length];
+                comp.WeaponValues = new WeaponValues
+                {
+                    Targets = new TransferTargetPacket[comp.Platform.Weapons.Length],
+                    Timings = new WeaponTimings[comp.Platform.Weapons.Length]
+                };
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
 
-                    comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
+                    comp.WeaponValues.Targets[w.WeaponId] = new TransferTargetPacket();
                     w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
                 }
             }
@@ -325,7 +324,7 @@ namespace WeaponCore
     [ProtoContract]
     public struct PlayerToBlock
     {
-        [ProtoMember(1)] public long playerId;
+        [ProtoMember(1)] public long PlayerId;
         [ProtoMember(2)] public long EntityId;
     }
 }

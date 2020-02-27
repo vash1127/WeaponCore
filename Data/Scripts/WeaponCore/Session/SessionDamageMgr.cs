@@ -217,8 +217,8 @@ namespace WeaponCore
                         if (IsClient)
                         {
                             _destroyedSlimsClient.Add(rootBlock);
-                            if (_SlimHealthClient.ContainsKey(rootBlock))
-                                _SlimHealthClient.Remove(rootBlock);
+                            if (_slimHealthClient.ContainsKey(rootBlock))
+                                _slimHealthClient.Remove(rootBlock);
                         }
                         continue;
                     }
@@ -237,7 +237,7 @@ namespace WeaponCore
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? _slimsSortedList[j].Slim : rootBlock;
-                    var blockHp = !IsClient ? block.Integrity : _SlimHealthClient.ContainsKey(block) ? _SlimHealthClient[block] : block.Integrity;
+                    var blockHp = !IsClient ? block.Integrity : _slimHealthClient.ContainsKey(block) ? _slimHealthClient[block] : block.Integrity;
                     float damageScale = 1;
 
                     if (system.DamageScaling)
@@ -300,8 +300,8 @@ namespace WeaponCore
                             if (IsClient)
                             {
                                 _destroyedSlimsClient.Add(block);
-                                if (_SlimHealthClient.ContainsKey(block))
-                                    _SlimHealthClient.Remove(block);
+                                if (_slimHealthClient.ContainsKey(block))
+                                    _slimHealthClient.Remove(block);
                             }
                             damagePool -= blockHp;
                         }
@@ -315,8 +315,8 @@ namespace WeaponCore
                             if (IsClient)
                             {
                                 _destroyedSlimsClient.Add(block);
-                                if (_SlimHealthClient.ContainsKey(block))
-                                    _SlimHealthClient.Remove(block);
+                                if (_slimHealthClient.ContainsKey(block))
+                                    _slimHealthClient.Remove(block);
                             }
                         }
                     }
@@ -325,13 +325,13 @@ namespace WeaponCore
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
                     else
                     {
-                        var hasBlock = _SlimHealthClient.ContainsKey(block);
-                        if (hasBlock && _SlimHealthClient[block] - scaledDamage > 0)
-                            _SlimHealthClient[block] -= scaledDamage;
+                        var hasBlock = _slimHealthClient.ContainsKey(block);
+                        if (hasBlock && _slimHealthClient[block] - scaledDamage > 0)
+                            _slimHealthClient[block] -= scaledDamage;
                         else if (hasBlock)
-                            _SlimHealthClient.Remove(block);
+                            _slimHealthClient.Remove(block);
                         else if (block.Integrity - scaledDamage > 0)
-                            _SlimHealthClient[block] = blockHp - scaledDamage;
+                            _slimHealthClient[block] = blockHp - scaledDamage;
                     }
 
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;

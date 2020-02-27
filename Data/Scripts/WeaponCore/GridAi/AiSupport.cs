@@ -52,7 +52,6 @@ namespace WeaponCore.Support
                         Data = this,
                     });
 
-                    //ai.Session.SendPacketToServer(new FakeTargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = ai.Session.MultiplayerId, PType = PacketType.FakeTargetUpdate, Data = this });
                 }
                 ClearTarget = false;
             }

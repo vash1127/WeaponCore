@@ -40,7 +40,7 @@ namespace WeaponCore.Support
 
             if (session.IsClient && !serverUpdate)
             {
-                session.PacketsToServer.Add(new FocusSyncPacket {
+                session.PacketsToServer.Add(new FocusPacket {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = session.MultiplayerId,
                         PType = PacketType.FocusUpdate,

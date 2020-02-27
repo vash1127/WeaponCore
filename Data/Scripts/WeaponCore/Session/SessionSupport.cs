@@ -193,7 +193,7 @@ namespace WeaponCore
             {
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
-                PlayerMouseStates[id] = new MouseState();
+                PlayerMouseStates[id] = new MouseStatePacket();
 
                 if (MpActive && IsServer)
                     PacketizeToClientsInRange(null, new DictionaryUpdatePacket { EntityId = id, SenderId = player.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = true}); //threaded
@@ -240,7 +240,7 @@ namespace WeaponCore
 
                     PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
                 }
-                PlayerMouseStates[-1] = new MouseState();
+                PlayerMouseStates[-1] = new MouseStatePacket();
 
                 return true;
             }

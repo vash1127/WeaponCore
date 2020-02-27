@@ -1,11 +1,7 @@
 ﻿using System.Collections.Generic;
-using Sandbox.Game;
-using ProtoBuf;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.TargetingDefinition;
 
@@ -62,7 +58,7 @@ namespace WeaponCore.Support
             if (reset) Reset(resetTick);
         }
 
-        internal void SyncTarget(TransferTarget target, int weaponId)
+        internal void SyncTarget(TransferTargetPacket target, int weaponId)
         {
             target.EntityId = Entity?.EntityId ?? -1;
             target.IsProjectile = IsProjectile;

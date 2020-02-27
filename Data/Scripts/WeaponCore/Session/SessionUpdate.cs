@@ -80,9 +80,10 @@ namespace WeaponCore
 
                             var leftClick = false;
                             var rightClick = false;
-                            MouseState mouseState;
 
                             var currentControl = true;// gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+
+                            MouseStatePacket mouseState;
                             if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out mouseState))
                             {                                
                                 leftClick = mouseState.MouseButtonLeft && currentControl;

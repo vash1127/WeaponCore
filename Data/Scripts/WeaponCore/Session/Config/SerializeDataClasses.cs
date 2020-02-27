@@ -14,16 +14,16 @@ namespace WeaponCore
     public enum PacketType
     {
         Invalid,
+        ActiveControlRequestUpdate,
         CompStateUpdate,
         CompSettingsUpdate,
         TargetUpdate,
+        WeaponPacket,
         FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
-        WeaponSync,
         PlayerIdUpdate,
         ActiveControlFullUpdate,
-        ActiveControlRequestUpdate,
         FocusUpdate,
         MagUpdate,
     }
@@ -31,18 +31,97 @@ namespace WeaponCore
     [ProtoContract]
     [ProtoInclude(4, typeof(StatePacket))]
     [ProtoInclude(5, typeof(SettingPacket))]
-    [ProtoInclude(6, typeof(GridWeaponSyncPacket))]
+    [ProtoInclude(6, typeof(GridWeaponPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
     [ProtoInclude(8, typeof(DictionaryUpdatePacket))]
     [ProtoInclude(9, typeof(FakeTargetPacket))]
-    [ProtoInclude(10, typeof(ControllingSyncPacket))]
-    [ProtoInclude(11, typeof(FocusSyncPacket))]
-    [ProtoInclude(12, typeof(MagUpdate))]
+    [ProtoInclude(10, typeof(ControllingPacket))]
+    [ProtoInclude(11, typeof(FocusPacket))]
+    [ProtoInclude(12, typeof(MagUpdatePacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
         [ProtoMember(2)] internal ulong SenderId;
-        [ProtoMember(3)] internal PacketType PType;        
+        [ProtoMember(3)] internal PacketType PType;
+
+        public void CleanUp()
+        {
+            EntityId = 0;
+            SenderId = 0;
+            switch (PType)
+            {
+                case PacketType.Invalid:
+                {
+                    break;
+                }
+                case PacketType.ActiveControlRequestUpdate:
+                {
+                    break;
+                }
+                case PacketType.CompStateUpdate:
+                {
+                    ((StatePacket) this).Data = null;
+                    break;
+                }
+                case PacketType.CompSettingsUpdate:
+                {
+                    ((SettingPacket) this).Data = null;
+                    break;
+                }
+                case PacketType.TargetUpdate:
+                {
+                    var gridSync = (GridWeaponPacket) this;
+                    for (int i = 0; i < gridSync.TargetData.Count; i++)
+                    {
+                        var weaponSync = gridSync.TargetData[i];
+                        weaponSync.TargetData = null;
+                        weaponSync.Timmings = null;
+                        weaponSync.CompEntityId = 0;
+                        weaponSync.WeaponData = new WeaponSyncValues();
+                    }
+                    gridSync.TargetData.Clear();
+                    break;
+                }
+                case PacketType.FakeTargetUpdate:
+                {
+                    ((FakeTargetPacket)this).Data = null;
+                    break;
+                }
+                case PacketType.ClientMouseEvent:
+                {
+                    ((MouseInputPacket)this).Data = null;
+                    break;
+                }
+                case PacketType.ActiveControlUpdate:
+                {
+                    ((DictionaryUpdatePacket)this).Data = false;
+                    break;
+                }
+                case PacketType.PlayerIdUpdate:
+                {
+                    ((DictionaryUpdatePacket) this).Data = false;
+                    break;
+                }
+                case PacketType.ActiveControlFullUpdate:
+                {
+                    ((ControllingPacket)this).Data = new ControllingPlayersSync();
+                    break;
+                }
+                case PacketType.FocusUpdate:
+                {
+                    ((FocusPacket) this).Data = 0;
+                    break;
+                }
+                case PacketType.MagUpdate:
+                {
+                    var magPacket = (MagUpdatePacket)this;
+                    magPacket.Mags = new MyFixedPoint();
+                    magPacket.WeaponId = 0;
+                    break;
+                }
+            }
+            PType = PacketType.Invalid;
+        }
     }
 
     [ProtoContract]
@@ -61,18 +140,21 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class GridWeaponSyncPacket : Packet
+    public class GridWeaponPacket : Packet
     {
-        [ProtoMember(1)] internal List<WeaponSync> TargetData = new List<WeaponSync>();
-        public GridWeaponSyncPacket() { }
+        [ProtoMember(1)] internal List<WeaponPacket> TargetData = new List<WeaponPacket>();
+        public GridWeaponPacket() { }
     }
 
     [ProtoContract]
-    public class MagUpdate : Packet
+    public class WeaponPacket
     {
-        [ProtoMember(1)] internal MyFixedPoint Mags;
-        [ProtoMember(2)] internal int WeaponId;
-        public MagUpdate() { }
+        [ProtoMember(1)] internal TransferTargetPacket TargetData = null;
+        [ProtoMember(2)] internal long CompEntityId;
+        [ProtoMember(3)] internal WeaponSyncValues WeaponData;
+        [ProtoMember(4)] internal WeaponTimings Timmings = null;
+
+        public WeaponPacket() { }
     }
 
     [ProtoContract]
@@ -82,11 +164,27 @@ namespace WeaponCore
         public FakeTargetPacket() { }
     }
 
+
     [ProtoContract]
     public class MouseInputPacket : Packet
     {
-        [ProtoMember(1)] internal MouseState Data = null;
+        [ProtoMember(1)] internal MouseStatePacket Data = null;
         public MouseInputPacket() { }
+    }
+
+    [ProtoContract]
+    public class ControllingPacket : Packet
+    {
+        [ProtoMember(1)] internal ControllingPlayersSync Data;
+        public ControllingPacket() { }
+    }
+
+    [ProtoContract]
+    public class MagUpdatePacket : Packet
+    {
+        [ProtoMember(1)] internal MyFixedPoint Mags;
+        [ProtoMember(2)] internal int WeaponId;
+        public MagUpdatePacket() { }
     }
 
     [ProtoContract]
@@ -97,32 +195,14 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ControllingSyncPacket : Packet
-    {
-        [ProtoMember(1)] internal ControllingPlayersSync Data;
-        public ControllingSyncPacket() { }
-    }
-
-    [ProtoContract]
-    public class FocusSyncPacket : Packet
+    public class FocusPacket : Packet
     {
         [ProtoMember(1)] internal long Data;
-        public FocusSyncPacket() { }
+        public FocusPacket() { }
     }
 
     [ProtoContract]
-    public class WeaponSync
-    {
-        [ProtoMember(1)] internal TransferTarget TargetData = null;
-        [ProtoMember(2)] internal long CompEntityId;
-        [ProtoMember(3)] internal WeaponSyncValues WeaponData;
-        [ProtoMember(4)] internal WeaponTimings Timmings = null;
-
-        public WeaponSync() { }
-    }
-
-    [ProtoContract]
-    internal class MouseState
+    internal class MouseStatePacket
     {
         [ProtoMember(1)] internal bool MouseButtonLeft;
         [ProtoMember(2)] internal bool MouseButtonMiddle;
@@ -130,7 +210,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class TransferTarget
+    public class TransferTargetPacket
     {
         [ProtoMember(1)] internal long EntityId;
         [ProtoMember(2)] internal bool IsProjectile;
@@ -155,7 +235,7 @@ namespace WeaponCore
             target.State = State;
         }
 
-        public TransferTarget()
+        public TransferTargetPacket()
         {
         }
     }
