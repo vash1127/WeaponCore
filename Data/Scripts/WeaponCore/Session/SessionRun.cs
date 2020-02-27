@@ -1,18 +1,10 @@
 using System;
-using System.Collections;
-using Sandbox.Engine.Networking;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Input;
-using VRage.ModAPI;
-using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
