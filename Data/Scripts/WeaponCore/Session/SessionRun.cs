@@ -124,73 +124,23 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 FutureEvents.Tick(Tick);
-                if (UiInput.PlayerCamera && !InMenu) WheelUi.UpdatePosition();
+
+                if (!DedicatedServer && UiInput.PlayerCamera && !InMenu) WheelUi.UpdatePosition();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
 
-        private bool _inSpyMode = false;
         public override void Simulate()
         {
             try
             {
-                /*
-                if (TargetUi.DrawReticle)
-                {
-                    var playerController = MyAPIGateway.Session.ControlledObject;
-                    if (playerController == null)
-                    {
-                        Log.Line($"player controller null");
-                        return;
-                    }
-                    var controllerTopMost = playerController.Entity.GetTopMostParent();
-                    if (controllerTopMost == null)
-                    {
-                        Log.Line($"controller topmost null");
-                        return;
-                    }
-                    var velocity = controllerTopMost.Physics.LinearVelocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-                    var rotation = playerController.LastRotationIndicator;
-
-                    if (!Vector3D.IsZero(velocity, 1e-4) || !Vector3D.IsZero(rotation, 1e-4))
-                    {
-                        Log.Line($"set SpyCam matrix: {SpyCam.IsActive} - {TargetUi.AimMatrix.Translation} - {TargetUi.AimMatrix.Forward} - {velocity.Length()} - {rotation}");
-                        var playerPosition = controllerTopMost.PositionComp.WorldAABB.Center;
-                        var rotationMultiplier = 0.0025f * 1.04f;
-                        MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorFixed, controllerTopMost);
-                        var roll = MathHelper.Clamp(rotation.Z, -0.02f, 0.02f);
-                        var vec2 = new Vector2(rotation.X, rotation.Y) * rotationMultiplier;
-
-                        var matrix = MySpectator.Static.GetViewMatrix();
-                        matrix.Translation -= Vector3D.TransformNormal(velocity, matrix);
-                        var quat = Quaternion.CreateFromYawPitchRoll(vec2.Y, vec2.X, roll);
-                        MatrixD.Transform(ref matrix, ref quat, out matrix);
-
-                        matrix = MatrixD.Invert(matrix);
-                        matrix.Translation = playerPosition + Vector3D.TransformNormal(Vector3D.Backward * 10, matrix);
-                        MySpectator.Static.SetViewMatrix(MatrixD.Invert(ref matrix));
-                    }
-
-                    _inSpyMode = true;
-                    //var matrix2 = ActiveControlBlock.PositionComp.WorldMatrix;
-                    //matrix2.Translation += matrix2.Forward * 50;
-                    //SpyCam.PositionComp.SetWorldMatrix(matrix2, SpyCam.CubeGrid, false, false);
-                    //SpyCam.RequestSetView();
-                }
-                else if (_inSpyMode)
-                {
-
-                    Log.Line("leave spy");
-                    MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.Entity, (IMyEntity) ActiveControlBlock ?? MyAPIGateway.Session.Player.Character);
-                    _inSpyMode = false;
-                }
-                */
                 if (!DedicatedServer)
                 {
                     EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                 }
+
                 if (GameLoaded)
                 {
                     DsUtil.Start("ai");
@@ -209,7 +159,8 @@ namespace WeaponCore
                     if (ShootingWeapons.Count > 0) ShootWeapons();
                     DsUtil.Complete("shoot", true);
                 }
-                if (!WheelUi.WheelActive && !InMenu)
+
+                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
                 {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
@@ -225,7 +176,7 @@ namespace WeaponCore
             try
             {
                 if (Placer != null) UpdatePlacer();
-                ProcessAnimations();
+                if (!DedicatedServer) ProcessAnimations();
 
                 DsUtil.Start("projectiles");
 
@@ -271,7 +222,7 @@ namespace WeaponCore
         {
             try
             {
-                if (_lastDrawTick == Tick || _paused)return;
+                if (DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
                 CameraMatrix = Session.Camera.WorldMatrix;
@@ -320,25 +271,6 @@ namespace WeaponCore
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
-                /*
-                var list = Static.GetAllSessionPreloadObjectBuilders();
-                var comparer = new HackEqualityComparer();
-                for (int i = 0; i < list.Count; i++)
-                {
-                    var tuple = (IStructuralEquatable)list[i];
-                    if (tuple != null)
-                    {
-                        tuple.GetHashCode(comparer);
-                        var hacked = comparer.Def;
-                        if (hacked?.CubeBlocks != null)
-                        {
-                            foreach (var cube in hacked.Definitions)
-                            {
-                            }
-                        }
-                    }
-                }
-                */
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
@@ -361,7 +293,6 @@ namespace WeaponCore
 
                 MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
                 MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-                //MyVisualScriptLogicProvider.ToolbarItemChanged -= RemoveAction;
                 ApiServer.Unload();
 
                 PurgeAll();
