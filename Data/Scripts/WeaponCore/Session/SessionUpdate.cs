@@ -448,7 +448,6 @@ namespace WeaponCore
                             AcquireTargets.RemoveAtFast(i);
                             if (aquired && MpActive)
                             {
-                                Log.Line("test");
                                 w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
                                 WeaponsToSync.Add(w);
                                 w.Comp.Ai.NumSyncWeapons++;

@@ -120,9 +120,6 @@ namespace WeaponCore
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer) ProcessAnimations();
 
-                if (PacketsToClient.Count > 0) ProccessClientPackets();
-                if (PacketsToServer.Count > 0) ProccessServerPackets();
-
                 DsUtil.Start("projectiles");
 
                 if (!PTask.IsComplete)
@@ -132,16 +129,6 @@ namespace WeaponCore
                     TaskHasErrors(ref PTask, "PTask");
 
                 DsUtil.Complete("projectiles", true);
-
-                DsUtil.Start("network");
-                if (!NTask.IsComplete)
-                    NTask.Wait();
-
-                if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
-                    TaskHasErrors(ref NTask, "NTask");
-
-                Proccessor.AddPackets();
-                DsUtil.Complete("network", true);
 
                 if (_effectedCubes.Count > 0) 
                     ApplyGridEffect();
@@ -155,6 +142,28 @@ namespace WeaponCore
                 DsUtil.Start("damage");
                 if (Hits.Count > 0) ProcessHits();
                 DsUtil.Complete("damage", true);
+
+                DsUtil.Start("network");
+                if (!NTask.IsComplete)
+                    NTask.Wait();
+
+                if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
+                    TaskHasErrors(ref NTask, "NTask");
+
+                Proccessor.AddPackets();
+
+                if (PacketsToClient.Count > 0)
+                {
+                    Log.Line("client packets");
+                    ProccessClientPackets();
+                }
+
+                if (PacketsToServer.Count > 0)
+                {
+                    Log.Line($"server packets");
+                    ProccessServerPackets();
+                }
+                DsUtil.Complete("network", true);
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
