@@ -82,53 +82,57 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if (Comp == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.MyCube.Closed || Target == null) return;
-
-            if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
+            if (Comp == null || State == null || Target == null || Comp.MyCube == null || Comp.TurretBase == null) return;
+            using (Comp.MyCube.Pin())
             {
-                ReturingHome = false;
-                return;
-            }
-            Target.ExpiredTick = 0;
+                if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            var userControlled = o != null && (bool)o;
-            if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret)
-            {
-                Azimuth = Comp.TurretBase.Azimuth;
-                Elevation = Comp.TurretBase.Elevation;
-            }
-            else if (!userControlled)
-            {
-                var azStep = System.AzStep;
-                var elStep = System.ElStep;
+                if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
+                {
+                    ReturingHome = false;
+                    return;
+                }
+                Target.ExpiredTick = 0;
 
-                var oldAz = Azimuth;
-                var oldEl = Elevation;
+                var userControlled = o != null && (bool)o;
+                if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret)
+                {
+                    Azimuth = Comp.TurretBase.Azimuth;
+                    Elevation = Comp.TurretBase.Elevation;
+                }
+                else if (!userControlled)
+                {
+                    var azStep = System.AzStep;
+                    var elStep = System.ElStep;
 
-                if (oldAz > 0)
-                    Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
-                else if (oldAz < 0)
-                    Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
+                    var oldAz = Azimuth;
+                    var oldEl = Elevation;
 
-                if (oldEl > 0)
-                    Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
-                else if (oldEl < 0)
-                    Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
+                    if (oldAz > 0)
+                        Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
+                    else if (oldAz < 0)
+                        Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
+
+                    if (oldEl > 0)
+                        Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
+                    else if (oldEl < 0)
+                        Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
 
-                AimBarrel(oldAz - Azimuth, oldEl - Elevation);
-            }
+                    AimBarrel(oldAz - Azimuth, oldEl - Elevation);
+                }
 
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
-            {
-                ReturingHome = true;
-                IsHome = false;
-                Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
-            }
-            else
-            {
-                IsHome = true;
-                ReturingHome = false;
+                if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
+                {
+                    ReturingHome = true;
+                    IsHome = false;
+                    Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
+                }
+                else
+                {
+                    IsHome = true;
+                    ReturingHome = false;
+                }
             }
         }
 
