@@ -154,13 +154,13 @@ namespace WeaponCore
 
                 if (PacketsToClient.Count > 0)
                 {
-                    Log.Line("client packets");
+                    Log.Line($"client packets: {PacketsToClient.Count}");
                     ProccessClientPackets();
                 }
 
                 if (PacketsToServer.Count > 0)
                 {
-                    Log.Line($"server packets");
+                    Log.Line($"server packets: {PacketsToServer.Count}");
                     ProccessServerPackets();
                 }
                 DsUtil.Complete("network", true);
