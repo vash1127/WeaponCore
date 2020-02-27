@@ -1,5 +1,4 @@
-﻿using SpaceEngineers.Game.ModAPI;
-using WeaponCore.Support;
+﻿using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.BlockType;
 
 namespace WeaponCore
@@ -8,7 +7,7 @@ namespace WeaponCore
     using Sandbox.Game.Entities;
     using Sandbox.Game.EntityComponents;
     using Sandbox.ModAPI;
-    using static WeaponCore.Session;
+    using static Session;
 
     public class CompState
     {
@@ -102,10 +101,8 @@ namespace WeaponCore
     public class CompSettings
     {
         public CompSettingsValues Value;
-        public CompSettingsValues LastValue;
         public readonly WeaponComponent Comp;
         public readonly MyCubeBlock Block;
-        public uint LastUpdateTick;
 
         public CompSettings(WeaponComponent comp)
         {
@@ -125,7 +122,7 @@ namespace WeaponCore
 
         public void SaveSettings(bool createStorage = false)
         {
-            if (Block == null || Block.Storage == null) return;
+            if (Block?.Storage == null) return;
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
             Comp.MyCube.Storage[Comp.Session.LogicSettingsGuid] = Convert.ToBase64String(binary);
@@ -134,18 +131,16 @@ namespace WeaponCore
 
         public bool LoadSettings()
         {
-            if (Block == null || Block.Storage == null) return false;
+            if (Block?.Storage == null) return false;
             string rawData;
             bool loadedSomething = false;
-            byte[] base64;
             CompSettingsValues loadedSettings = null;
 
 
             if (Block.Storage.TryGetValue(Comp.Session.LogicSettingsGuid, out rawData))
             {
-                base64 = Convert.FromBase64String(rawData);
+                var base64 = Convert.FromBase64String(rawData);
                 loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<CompSettingsValues>(base64);
-                
             }
 
             if (loadedSettings?.Weapons != null && loadedSettings.Version == VersionControl)
@@ -178,7 +173,6 @@ namespace WeaponCore
                     }
                 });
             }
-            //Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
             else if (Comp.Session.IsClient)// client, send settings to server
             {
                 Comp.Session.PacketsToServer.Add(new SettingPacket {
@@ -187,7 +181,6 @@ namespace WeaponCore
                     SenderId = Comp.Session.MultiplayerId,
                     Data = Value
                 });
-                //Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });
             }
         }
         #endregion

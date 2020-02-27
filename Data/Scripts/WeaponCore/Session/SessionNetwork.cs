@@ -28,11 +28,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in PacketizeToClientsInRange: {ex}"); }
         }
 
-        internal void SendPacketToServer(Packet packet)
-        {
-            MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, MyAPIGateway.Utilities.SerializeToBinary(packet), true);
-        }
-
         private void ClientReceivedPacket(byte[] rawData)
         {
             try
@@ -519,20 +514,35 @@ namespace WeaponCore
         }
         internal void ProccessServerPacketsForClients()
         {
-            if (!IsServer) return;
+            if (!IsServer)
+            {
+                Log.Line($"trying to process server packets on a non-server");
+                return;
+            }
+
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
-                PacketizeToClientsInRange(packetInfo.Entity, packetInfo.Packet);
+                var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
+                foreach (var p in Players.Values)
+                {
+                    if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || Vector3D.DistanceSquared(p.GetPosition(), packetInfo.Entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
+                        MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
+                }
             }
             PacketsToClient.Clear();
         }
 
         internal void ProccessClientPacketsForServer()
         {
-            if (!IsClient) return;
+            if (!IsClient)
+            {
+                Log.Line($"trying to process client packets on a non-client");
+                return;
+            }
+
             for (int i = 0; i < PacketsToServer.Count; i++)
-                SendPacketToServer(PacketsToServer[i]);
+                MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, MyAPIGateway.Utilities.SerializeToBinary(PacketsToServer[i]), true);
 
             PacketsToServer.Clear();
         }
