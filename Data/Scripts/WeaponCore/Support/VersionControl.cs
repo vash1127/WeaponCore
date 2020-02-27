@@ -5,6 +5,7 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
 {
     internal static class VersionControl
     {
+        /*
         public static void PrepConfigFile(Session session)
         {
             const int Version = 1;
@@ -76,5 +77,6 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
             cfg.Flush();
             cfg.Close();
         }
+        */
     }
 }
