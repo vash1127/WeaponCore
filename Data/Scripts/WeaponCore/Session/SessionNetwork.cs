@@ -579,6 +579,7 @@ namespace WeaponCore
                 GridWeaponSyncPacket gridSync;
                 if (!_gridsToSync.ContainsKey(ai))
                 {
+                    Log.Line("not found");
                     gridSync = new GridWeaponSyncPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
@@ -588,8 +589,12 @@ namespace WeaponCore
                     };
                     _gridsToSync[ai] = gridSync;
                 }
-                else gridSync = _gridsToSync[ai];
-
+                else
+                {
+                    Log.Line("found");
+                    gridSync = _gridsToSync[ai];
+                }
+                Log.Line($"create sync");
                 var weaponSync = new WeaponSync
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
@@ -610,6 +615,7 @@ namespace WeaponCore
                 gridSync.TargetData.Add(weaponSync);
                 ai.CurrWeapon++;
             }
+            _session.WeaponsToSync.Clear();
         }
 
         private void ProccessGridWeaponPackets()
