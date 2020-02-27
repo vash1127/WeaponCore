@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Sandbox.ModAPI;
 using WeaponCore.Support;
-namespace WeaponCore.Data.Scripts.WeaponCore.Support
+namespace WeaponCore.Support
 {
     internal static class VersionControl
     {
@@ -18,7 +18,7 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
                 var unPackCfg = MyAPIGateway.Utilities.ReadFileInGlobalStorage("WeaponCore.cfg");
                 var unPackedData = MyAPIGateway.Utilities.SerializeFromXML<DefenseShieldsEnforcement>(unPackCfg.ReadToEnd());
 
-                if (unPackedData.Version == Version && !invalidValue) return;
+                if (unPackedData.Version == Version) return;
 
                 session.Enforced.Debug = !unPackedData.Debug.Equals(-1) ? unPackedData.Debug : Debug;
                 session.Enforced.DisableWeaponGridLimits = !unPackedData.DisableWeaponGridLimits.Equals(-1) ? unPackedData.DisableWeaponGridLimits : DisableWeaponGridLimits;

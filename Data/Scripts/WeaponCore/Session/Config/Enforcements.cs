@@ -1,11 +1,25 @@
 ﻿using System;
-using Sandbox.Game.EntityComponents;
-using Sandbox.ModAPI;
-using WeaponCore.Support;
+using System.ComponentModel;
+using ProtoBuf;
 namespace WeaponCore.Data.Scripts.WeaponCore.Session.Config
 {
     internal class Enforcements
     {
+        internal CoresEnforcement Enforcement;
+
+        internal Enforcements()
+        {
+
+        }
+
+        [ProtoContract]
+        public class CoresEnforcement
+        {
+            [ProtoMember(1), DefaultValue(-1)] public int Debug = -1;
+            [ProtoMember(2), DefaultValue(-1)] public int Version = -1;
+            [ProtoMember(3)] public bool DisableWeaponGridLimits;
+        }
+
         /*
         public static void SaveEnforcement(IMyFunctionalBlock shield, CoreEnforcement enforce, bool createStorage = false)
         {
