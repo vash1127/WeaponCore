@@ -61,13 +61,7 @@ namespace WeaponCore
                         var statePacket = packet as StatePacket;
                         if (statePacket?.Data == null || comp == null) return;
 
-                        comp.State.Value = statePacket.Data;
-
-                        for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                        {
-                            var w = comp.Platform.Weapons[i];
-                            w.State = comp.State.Value.Weapons[w.WeaponId];
-                        }
+                        comp.State.Value.Sync(statePacket.Data);
 
                         report.PacketValid = true;
                         break;
