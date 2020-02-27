@@ -14,7 +14,7 @@ namespace WeaponCore
     public partial class Session
     {
         #region Network sync
-        internal void PacketizeToClientsInRange(MyEntity block, Packet packet)
+        internal void PacketizeToClientsInRange(MyEntity entity, Packet packet)
         {
             try
             {
@@ -22,7 +22,7 @@ namespace WeaponCore
                 foreach (var p in Players.Values)
                 {
                     var id = p.SteamUserId;
-                    if (id != packet.SenderId && (block == null || Vector3D.DistanceSquared(p.GetPosition(), block.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
+                    if (id != packet.SenderId && (entity == null || Vector3D.DistanceSquared(p.GetPosition(), entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
                     {
                         MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, p.SteamUserId);
                     }
@@ -500,7 +500,7 @@ namespace WeaponCore
 
         public void UpdateActiveControlDictionary(MyCubeBlock block, long playerId, bool updateAdd)
         {
-            var grid = block?.CubeGrid as MyCubeGrid;
+            var grid = block?.CubeGrid;
 
             if (block == null || grid == null) return;
             GridAi trackingAi;
@@ -518,21 +518,20 @@ namespace WeaponCore
 
         internal void ProccessClientPackets()
         {
-            for (int i = PacketsToClient.Count - 1; i >= 0; i--)
+            for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
                 PacketizeToClientsInRange(packetInfo.Entity, packetInfo.Packet);
-                PacketsToClient.RemoveAtFast(i);
             }
+            PacketsToClient.Clear();
         }
 
         internal void ProccessServerPackets()
         {
-            for (int i = PacketsToServer.Count - 1; i >= 0; i--)
-            {
+            for (int i = 0; i < PacketsToServer.Count; i++)
                 SendPacketToServer(PacketsToServer[i]);
-                PacketsToServer.RemoveAtFast(i);
-            }
+
+            PacketsToServer.Clear();
         }
 
         internal struct PacketInfo
@@ -562,7 +561,7 @@ namespace WeaponCore
 
         internal void AddPackets()
         {
-            for(int i = 0; i < _packets.Count; i++)
+            for (int i = 0; i < _packets.Count; i++)
                 _session.PacketsToClient.Add(_packets[i]);
 
             _packets.Clear();
@@ -579,7 +578,6 @@ namespace WeaponCore
                 GridWeaponSyncPacket gridSync;
                 if (!_gridsToSync.ContainsKey(ai))
                 {
-                    Log.Line("not found");
                     gridSync = new GridWeaponSyncPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
@@ -589,11 +587,8 @@ namespace WeaponCore
                     };
                     _gridsToSync[ai] = gridSync;
                 }
-                else
-                {
-                    Log.Line("found");
-                    gridSync = _gridsToSync[ai];
-                }
+                else gridSync = _gridsToSync[ai];
+
                 Log.Line($"create sync");
                 var weaponSync = new WeaponSync
                 {
@@ -626,7 +621,6 @@ namespace WeaponCore
                 ai.CurrWeapon = 0;
                 ai.NumSyncWeapons = 0;
                 _packets.Add(new PacketInfo { Entity = ai.MyGrid, Packet = gridPacket.Value });
-                //_session.PacketizeToClientsInRange(ai.MyGrid, gridPacket.Value);                
             }
             _gridsToSync.Clear();
         } 
