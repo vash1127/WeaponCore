@@ -14,13 +14,13 @@ namespace WeaponCore
     {
         private void BeforeStartInit()
         {
-
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
             IsCreative = MyAPIGateway.Session.CreativeMode;
             IsClient = !IsServer && !DedicatedServer && MpActive;
-            HandlesInput = IsClient || IsServer && !DedicatedServer;
+            HandlesInput = !IsServer || IsServer && !DedicatedServer;
+
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
             else

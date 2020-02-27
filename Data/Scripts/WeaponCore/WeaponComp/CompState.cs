@@ -1,5 +1,4 @@
 ﻿using System;
-using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using WeaponCore.Platform;
 
@@ -19,23 +18,19 @@ namespace WeaponCore.Support
                     Status = Start.Started;
                     break;
             }
-
             UpdateNetworkState();
         }
 
-        private bool Startup()
+        private void Startup()
         {
             IsWorking = MyCube.IsWorking;
             IsFunctional = MyCube.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
-            
 
             if(MyCube != null)
                 if (FunctionalBlock.Enabled) { FunctionalBlock.Enabled = false; FunctionalBlock.Enabled = true; }
-
             
             Status = Start.Started;
-            return true;
         }
 
         internal void SubpartClosed(MyEntity ent)
@@ -77,53 +72,10 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void UpdateState(CompStateValues newState)
-        {
-            if (newState.MId > State.Value.MId)
-            {
-                if (!_isServer)
-                {
-
-                    //if (State.Value.Message) BroadcastMessage();
-                }
-                State.Value = newState;
-                _clientNotReady = false;
-            }
-        }
-
-        private void UpdateSettings()
-        {
-            if (Session.Tick % 33 == 0)
-            {
-                if (SettingsUpdated)
-                {
-
-                    SettingsUpdated = false;
-                    Set.SaveSettings();
-                    if (_isServer)
-                    {
-                        UpdateNetworkState();
-                    }
-                }
-            }
-            else if (Session.Tick % 34 == 0)
-            {
-                if (ClientUiUpdate)
-                {
-                    ClientUiUpdate = false;
-                    if (!_isServer) Set.NetworkUpdate();
-                }
-            }
-        }
-
         internal void UpdateNetworkState()
         {
             if (Session.MpActive)
-            {
                 State.NetworkUpdate();
-            }
-
-            //if (!_isDedicated && State.Value.Message) BroadcastMessage();
 
             State.Value.Message = false;
             State.SaveState();

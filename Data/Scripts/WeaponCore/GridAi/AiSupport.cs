@@ -2,22 +2,17 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ProtoBuf;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
-using Sandbox.Graphics.GUI;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Session;
 using static WeaponCore.Support.TargetingDefinition;
 namespace WeaponCore.Support
 {
@@ -68,11 +63,6 @@ namespace WeaponCore.Support
                 LinearVelocity = target.LinearVelocity;
                 Acceleration = target.Acceleration;
                 ClearTarget = target.ClearTarget;
-            }
-
-            internal void Clear()
-            {
-                ClearTarget = true;
             }
 
             internal FakeTarget() { }

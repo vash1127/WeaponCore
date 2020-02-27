@@ -108,10 +108,6 @@ namespace WeaponCore
                 }
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
                 if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
-
-                if (MpActive && UiInput.MouseButtonPressed)
-                    MouseNetworkEvent();
-
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -155,17 +151,12 @@ namespace WeaponCore
 
                 Proccessor.AddPackets();
 
-                if (PacketsToClient.Count > 0)
+                if (MpActive && !HandlesInput)
                 {
-                    Log.Line($"client packets: {PacketsToClient.Count}");
-                    ProccessClientPackets();
+                    if (PacketsToClient.Count > 0) ProccessClientPackets();
+                    if (PacketsToServer.Count > 0) ProccessServerPackets();
                 }
 
-                if (PacketsToServer.Count > 0)
-                {
-                    Log.Line($"server packets: {PacketsToServer.Count}");
-                    ProccessServerPackets();
-                }
                 DsUtil.Complete("network", true);
 
             }
@@ -197,8 +188,16 @@ namespace WeaponCore
 
         public override void HandleInput()
         {
-            if(!DedicatedServer)
+            if (HandlesInput)
+            {
                 UiInput.UpdateInputState();
+                if (MpActive)
+                {
+                    if (UiInput.MouseButtonPressed) MouseNetworkEvent();
+                    if (PacketsToClient.Count > 0) ProccessClientPackets();
+                    if (PacketsToServer.Count > 0) ProccessServerPackets();
+                }
+            }
         }
 
         public override void LoadData()

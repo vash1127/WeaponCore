@@ -19,28 +19,6 @@ namespace WeaponCore.Support
             MyCube.ResourceSink.Update();
         }
 
-        /*private bool EntityAlive()
-        {
-            if (Ai.MyGrid?.Physics == null) return false;
-            //if (!_firstSync && _readyToSync) SaveAndSendAll();
-
-            if (!_allInited && !PostInit()) return false;
-
-            if (ClientUiUpdate || SettingsUpdated) UpdateSettings();
-            return true;
-        }*/
-
-        private bool PostInit()
-        {
-            if (!_isServer && _clientNotReady) return false;
-            if (_isServer && !IsFunctional) return false;
-
-            if (_mpActive && _isServer) State.NetworkUpdate();
-
-            _allInited = true;
-            return true;
-        }
-
         private void StorageSetup()
         {
             try
@@ -175,11 +153,6 @@ namespace WeaponCore.Support
                 else
                     Session.ComputeStorage(weapon);
             }
-
-            /*if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
-            {
-                Ai.ManualComps++;
-            }*/
         }
 
         private void InventoryInit()

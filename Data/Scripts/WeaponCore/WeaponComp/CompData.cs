@@ -15,7 +15,6 @@ namespace WeaponCore
         public CompStateValues Value;
         public readonly WeaponComponent Comp;
         public readonly MyCubeBlock Block;
-        public uint LastUpdateTick;
 
         public CompState(WeaponComponent comp)
         {
@@ -78,7 +77,7 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Comp.Session.MpActive && (Comp.Session.IsServer || Comp.Session.DedicatedServer))
+            if (Comp.Session.MpActive && Comp.Session.IsServer)
             {
                 Comp.Session.PacketsToClient.Add(new PacketInfo {
                     Entity = Comp.MyCube,
@@ -172,7 +171,7 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Comp.Session.MpActive && (Comp.Session.IsServer || Comp.Session.DedicatedServer))
+            if (Comp.Session.MpActive && Comp.Session.IsServer)
             {
                 Comp.Session.PacketsToClient.Add(new PacketInfo {
                     Entity = Comp.MyCube,
@@ -185,7 +184,7 @@ namespace WeaponCore
                 });
             }
             //Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
-            else // client, send settings to server
+            else if (Comp.Session.IsClient)// client, send settings to server
             {
                 Comp.Session.PacketsToServer.Add(new SettingPacket {
                     EntityId = Block.EntityId,
