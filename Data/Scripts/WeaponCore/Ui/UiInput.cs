@@ -32,12 +32,12 @@ namespace WeaponCore
         internal bool FirstPersonView;
         internal bool InSpyCam;
         private readonly Session _session;
-        internal readonly MouseStatePacket ClientMouseState;
+        internal readonly MouseStateData ClientMouseState;
 
         internal UiInput(Session session)
         {
             _session = session;
-            ClientMouseState = new MouseStatePacket();
+            ClientMouseState = new MouseStateData();
         }
 
         internal void UpdateInputState()

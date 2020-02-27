@@ -127,8 +127,8 @@ namespace WeaponCore.Platform
 
                     if (!System.EnergyAmmo || System.IsHybrid || System.MustCharge)
                     {
-                        if (State.CurrentAmmo == 0) break;
-                        State.CurrentAmmo--;
+                        if (State.Sync.CurrentAmmo == 0) break;
+                        State.Sync.CurrentAmmo--;
                     }
 
                     if (System.HasBackKickForce && !Comp.Ai.IsStatic)
@@ -273,9 +273,9 @@ namespace WeaponCore.Platform
                            HeatLoopRunning = true;
                         }
 
-                        State.Heat += HeatPShot;
+                        State.Sync.Heat += HeatPShot;
                         Comp.CurrentHeat += HeatPShot;
-                        if (State.Heat >= System.MaxHeat)
+                        if (State.Sync.Heat >= System.MaxHeat)
                         {
                             if (!Comp.Session.IsClient && Comp.Set.Value.Overload > 1)
                             {
@@ -283,7 +283,7 @@ namespace WeaponCore.Platform
                                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                             }
                             EventTriggerStateChanged(EventTriggers.Overheated, true);
-                            State.Overheated = true;
+                            State.Sync.Overheated = true;
                             StopShooting();
                             break;
                         }
@@ -299,7 +299,7 @@ namespace WeaponCore.Platform
                 if(IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (System.BurstMode && (State.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                if (System.BurstMode && (State.Sync.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     uint delay = 0;
                     FinishBurst = false;
@@ -313,10 +313,10 @@ namespace WeaponCore.Platform
 
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
-                else if (System.BurstMode && System.AlwaysFireFullBurst && State.CurrentAmmo > 0)
-                    FinishBurst = (State.CurrentAmmo > 0 || System.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
+                else if (System.BurstMode && System.AlwaysFireFullBurst && State.Sync.CurrentAmmo > 0)
+                    FinishBurst = (State.Sync.CurrentAmmo > 0 || System.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
 
-                else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0 && !State.Reloading)
+                else if ((!System.EnergyAmmo || System.MustCharge) && State.Sync.CurrentAmmo == 0 && !State.Sync.Reloading)
                     StartReload();
                 
 

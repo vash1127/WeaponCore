@@ -76,7 +76,7 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
-        internal readonly Dictionary<long, MouseStatePacket> PlayerMouseStates = new Dictionary<long, MouseStatePacket>();
+        internal readonly Dictionary<long, MouseStateData> PlayerMouseStates = new Dictionary<long, MouseStateData>();
 
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
 

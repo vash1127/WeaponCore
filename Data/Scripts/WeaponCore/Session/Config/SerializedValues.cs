@@ -34,6 +34,37 @@ namespace WeaponCore
         [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
         [ProtoMember(12)] public float CurrentCharge;
 
+        public void Sync(CompStateValues syncFrom)
+        {
+            MId = syncFrom.MId;
+            PowerLevel = syncFrom.PowerLevel;
+            Online = syncFrom.Online;
+            Overload = syncFrom.Overload;
+            Message = syncFrom.Message;
+            Heat = syncFrom.Heat;
+            PlayerIdInTerminal = syncFrom.PlayerIdInTerminal;
+            ShootOn = syncFrom.ShootOn;
+            ClickShoot = syncFrom.ClickShoot;
+            CurrentPlayerControl = syncFrom.CurrentPlayerControl;
+            CurrentCharge = syncFrom.CurrentCharge;
+
+
+            for(int i = 0; i < syncFrom.Weapons.Length; i++)
+            {
+                Weapons[i].ShotsFired = syncFrom.Weapons[i].ShotsFired;
+                Weapons[i].ManualShoot = syncFrom.Weapons[i].ManualShoot;
+                Weapons[i].SingleShotCounter = syncFrom.Weapons[i].SingleShotCounter;
+
+                Weapons[i].Sync.Charging = syncFrom.Weapons[i].Sync.Charging;
+                Weapons[i].Sync.CurrentAmmo = syncFrom.Weapons[i].Sync.CurrentAmmo;
+                Weapons[i].Sync.CurrentCharge = syncFrom.Weapons[i].Sync.CurrentCharge;
+                Weapons[i].Sync.CurrentMags = syncFrom.Weapons[i].Sync.CurrentMags;
+                Weapons[i].Sync.Heat = syncFrom.Weapons[i].Sync.Heat;
+                Weapons[i].Sync.Overheated = syncFrom.Weapons[i].Sync.Overheated;
+                Weapons[i].Sync.Reloading = syncFrom.Weapons[i].Sync.Reloading;
+                Weapons[i].Sync.WeaponId = syncFrom.Weapons[i].Sync.WeaponId;
+            }
+        }
     }
 
     [ProtoContract]
@@ -60,21 +91,15 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponStateValues
     {
-        [ProtoMember(1)] public float Heat;
-        [ProtoMember(2)] public int CurrentAmmo;
-        [ProtoMember(3)] public MyFixedPoint CurrentMags;
-        [ProtoMember(4)] public int ShotsFired;
-        [ProtoMember(5)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
-        [ProtoMember(6)] public int SingleShotCounter;
-        [ProtoMember(7)] public float CurrentCharge;
-        [ProtoMember(8)] public bool Overheated;
-        [ProtoMember(9)] public bool Reloading;
-        [ProtoMember(10)] public bool Charging;
+        [ProtoMember(1)] public int ShotsFired;
+        [ProtoMember(2)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
+        [ProtoMember(3)] public int SingleShotCounter;
+        [ProtoMember(4)] public WeaponSyncValues Sync;
 
     }
 
     [ProtoContract]
-    public struct WeaponSyncValues
+    public class WeaponSyncValues
     {
         [ProtoMember(1)] public float Heat;
         [ProtoMember(2)] public int CurrentAmmo;
@@ -85,15 +110,15 @@ namespace WeaponCore
         [ProtoMember(7)] public int WeaponId;
         [ProtoMember(8)] public MyFixedPoint CurrentMags;
 
-        public void SetState (WeaponStateValues wState)
+        public void SetState (WeaponSyncValues sync)
         {
-            wState.Heat = Heat;
-            wState.CurrentAmmo = CurrentAmmo;
-            wState.CurrentMags = CurrentMags;
-            wState.CurrentCharge = CurrentCharge;
-            wState.Overheated = Overheated;
-            wState.Reloading = Reloading;
-            wState.Charging = Charging;
+            sync.Heat = Heat;
+            sync.CurrentAmmo = CurrentAmmo;
+            sync.CurrentMags = CurrentMags;
+            sync.CurrentCharge = CurrentCharge;
+            sync.Overheated = Overheated;
+            sync.Reloading = Reloading;
+            sync.Charging = Charging;
         }
     }
 
@@ -167,7 +192,7 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponValues
     {
-        [ProtoMember(1)] public TransferTargetPacket[] Targets;
+        [ProtoMember(1)] public TransferTarget[] Targets;
         [ProtoMember(2)] public WeaponTimings[] Timings;
 
         public void Save(WeaponComponent comp, Guid id)
@@ -216,14 +241,14 @@ namespace WeaponCore
             {
                 comp.WeaponValues = new WeaponValues
                 {
-                    Targets = new TransferTargetPacket[comp.Platform.Weapons.Length],
+                    Targets = new TransferTarget[comp.Platform.Weapons.Length],
                     Timings = new WeaponTimings[comp.Platform.Weapons.Length]
                 };
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
 
-                    comp.WeaponValues.Targets[w.WeaponId] = new TransferTargetPacket();
+                    comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
                     w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
                 }
             }

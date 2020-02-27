@@ -196,7 +196,7 @@ namespace WeaponCore.Platform
         {
             try
             {
-                var currentHeat = State.Heat;
+                var currentHeat = State.Sync.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
                 var set = currentHeat - LastHeat > 0.001 || currentHeat - LastHeat < 0.001;
 
@@ -226,11 +226,11 @@ namespace WeaponCore.Platform
                     LastHeat = currentHeat;
                 }
 
-                if (set && System.DegRof && State.Heat >= (System.MaxHeat * .8))
+                if (set && System.DegRof && State.Sync.Heat >= (System.MaxHeat * .8))
                 {
                     var systemRate = System.RateOfFire * Comp.Set.Value.RofModifier;
                     var barrelRate = System.BarrelSpinRate * Comp.Set.Value.RofModifier;
-                    var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
+                    var heatModifier = MathHelper.Lerp(1f, .25f, State.Sync.Heat / System.MaxHeat);
 
                     systemRate *= heatModifier;
 
@@ -257,16 +257,16 @@ namespace WeaponCore.Platform
                 if (_fakeHeatTick * 30 == 60)
                 {
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
-                    State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
+                    State.Sync.Heat = State.Sync.Heat >= HsRate ? State.Sync.Heat - HsRate : 0;
 
-                    if (State.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
+                    if (State.Sync.Overheated && State.Sync.Heat <= (System.MaxHeat * System.WepCoolDown))
                     {
                         //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         if (CurLgstAnimPlaying != null)
                             Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
                         
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
-                        State.Overheated = false;
+                        State.Sync.Overheated = false;
                     }
 
                     _fakeHeatTick = -1;
@@ -274,7 +274,7 @@ namespace WeaponCore.Platform
 
                 //Log.Line($"currentHeat :{currentHeat} _fakeHeatTick: {_fakeHeatTick}");
 
-                if (State.Heat > 0)
+                if (State.Sync.Heat > 0)
                 {
                     _fakeHeatTick++;
                     Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);

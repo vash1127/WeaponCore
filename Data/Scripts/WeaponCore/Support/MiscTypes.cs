@@ -58,7 +58,7 @@ namespace WeaponCore.Support
             if (reset) Reset(resetTick);
         }
 
-        internal void SyncTarget(TransferTargetPacket target, int weaponId)
+        internal void SyncTarget(TransferTarget target, int weaponId)
         {
             target.EntityId = Entity?.EntityId ?? -1;
             target.IsProjectile = IsProjectile;

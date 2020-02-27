@@ -88,11 +88,11 @@ namespace WeaponCore
                     case PacketType.TargetUpdate:
                         {
                             var targetPacket = packet as GridWeaponPacket;
-                            if (targetPacket?.TargetData == null || ent == null) return;
+                            if (targetPacket?.Data == null || ent == null) return;
                             
-                            for(int i = 0; i < targetPacket.TargetData.Count; i++)
+                            for(int i = 0; i < targetPacket.Data.Count; i++)
                             {
-                                var weaponData = targetPacket.TargetData[i];
+                                var weaponData = targetPacket.Data[i];
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                                 comp = block?.Components.Get<WeaponComponent>();
 
@@ -102,7 +102,7 @@ namespace WeaponCore
                                 var timings = weaponData.Timmings.SyncOffsetClient(Tick);
                                 var syncTarget = weaponData.TargetData;
 
-                                SyncWeapon(weapon, timings, ref weaponData.WeaponData);
+                                SyncWeapon(weapon, timings, ref weaponData.SyncData);
                                 syncTarget.SyncTarget(weapon.Target);
                             }
 
@@ -174,10 +174,10 @@ namespace WeaponCore
                             if (updatePacket.Data) //update/add
                             {
                                 SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
-                                MouseStatePacket ms;
+                                MouseStateData ms;
                                 if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
                                 {
-                                    PlayerMouseStates[updatePacket.EntityId] = new MouseStatePacket();
+                                    PlayerMouseStates[updatePacket.EntityId] = new MouseStateData();
 
                                     report.PacketValid = true;
                                 }
@@ -436,31 +436,31 @@ namespace WeaponCore
             var cState = comp.State.Value;
             var wState = weapon.State;
 
-            var wasReloading = wState.Reloading;
+            var wasReloading = wState.Sync.Reloading;
 
             if (setState)
             {
-                comp.CurrentHeat -= weapon.State.Heat;
-                cState.CurrentCharge -= weapon.State.CurrentCharge;
+                comp.CurrentHeat -= weapon.State.Sync.Heat;
+                cState.CurrentCharge -= weapon.State.Sync.CurrentCharge;
 
 
-                weaponData.SetState(wState);
+                weaponData.SetState(wState.Sync);
 
-                comp.CurrentHeat += weapon.State.Heat;
-                cState.CurrentCharge += weapon.State.CurrentCharge;
+                comp.CurrentHeat += weapon.State.Sync.Heat;
+                cState.CurrentCharge += weapon.State.Sync.CurrentCharge;
             }
 
             comp.WeaponValues.Timings[weapon.WeaponId] = timings;
             weapon.Timings = timings;
 
-            var hasMags = weapon.State.CurrentMags > 0;
-            var hasAmmo = weapon.State.CurrentAmmo > 0;
+            var hasMags = weapon.State.Sync.CurrentMags > 0;
+            var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
-            var chargeFullReload = weapon.System.MustCharge && !wasReloading && !weapon.State.Reloading && !hasAmmo && (hasMags || !weapon.System.EnergyAmmo);
-            var regularFullReload = !weapon.System.MustCharge && !wasReloading && !weapon.State.Reloading && !hasAmmo && hasMags;
+            var chargeFullReload = weapon.System.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || !weapon.System.EnergyAmmo);
+            var regularFullReload = !weapon.System.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
 
-            var chargeContinueReloading = weapon.System.MustCharge && !weapon.State.Reloading && wasReloading;
-            var regularContinueReloading = !weapon.System.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Reloading && wasReloading) || (weapon.State.Reloading && !wasReloading));
+            var chargeContinueReloading = weapon.System.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
+            var regularContinueReloading = !weapon.System.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
 
             if (chargeFullReload || regularFullReload)
                 weapon.StartReload();
@@ -473,7 +473,7 @@ namespace WeaponCore
                 else
                     weapon.Reloaded();
             }
-            else if (wasReloading && !weapon.State.Reloading && hasAmmo)
+            else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
             {
                 if (!weapon.System.MustCharge)
                     weapon.CancelableReloadAction -= weapon.Reloaded;
@@ -481,10 +481,10 @@ namespace WeaponCore
                 weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
             }
 
-            else if (weapon.System.MustCharge && weapon.State.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
+            else if (weapon.System.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
                 weapon.ChargeReload();
 
-            if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
+            if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)
             {
                 weapon.HeatLoopRunning = true;
                 var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
@@ -632,30 +632,20 @@ namespace WeaponCore
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
                         PType = PacketType.TargetUpdate,
-                        TargetData = {Capacity = ai.NumSyncWeapons},
+                        Data = {Capacity = ai.NumSyncWeapons},
                     };
                     _gridsToSync[ai] = gridSync;
                 }
                 else gridSync = _gridsToSync[ai];
 
-                var weaponSync = new WeaponPacket
+                var weaponSync = new WeaponData
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
                     Timmings = w.Timings.SyncOffsetServer(_session.Tick),
-                    WeaponData = new WeaponSyncValues
-                    {
-                        Charging = w.State.Charging,
-                        CurrentAmmo = w.State.CurrentAmmo,
-                        CurrentMags = w.State.CurrentMags,
-                        CurrentCharge = w.State.CurrentCharge,
-                        Heat = w.State.Heat,
-                        Overheated = w.State.Overheated,
-                        Reloading = w.State.Reloading,
-                        WeaponId = w.WeaponId,
-                    }
+                    SyncData = w.State.Sync,
                 };
-                gridSync.TargetData.Add(weaponSync);
+                gridSync.Data.Add(weaponSync);
                 ai.CurrWeapon++;
             }
             _session.WeaponsToSync.Clear();

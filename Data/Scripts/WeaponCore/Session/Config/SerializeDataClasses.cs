@@ -28,6 +28,7 @@ namespace WeaponCore
         MagUpdate,
     }
 
+    #region packets
     [ProtoContract]
     [ProtoInclude(4, typeof(StatePacket))]
     [ProtoInclude(5, typeof(SettingPacket))]
@@ -44,82 +45,10 @@ namespace WeaponCore
         [ProtoMember(2)] internal ulong SenderId;
         [ProtoMember(3)] internal PacketType PType;
 
-        public void CleanUp()
+        virtual public void CleanUp()
         {
             EntityId = 0;
             SenderId = 0;
-            switch (PType)
-            {
-                case PacketType.Invalid:
-                {
-                    break;
-                }
-                case PacketType.ActiveControlRequestUpdate:
-                {
-                    break;
-                }
-                case PacketType.CompStateUpdate:
-                {
-                    ((StatePacket) this).Data = null;
-                    break;
-                }
-                case PacketType.CompSettingsUpdate:
-                {
-                    ((SettingPacket) this).Data = null;
-                    break;
-                }
-                case PacketType.TargetUpdate:
-                {
-                    var gridSync = (GridWeaponPacket) this;
-                    for (int i = 0; i < gridSync.TargetData.Count; i++)
-                    {
-                        var weaponSync = gridSync.TargetData[i];
-                        weaponSync.TargetData = null;
-                        weaponSync.Timmings = null;
-                        weaponSync.CompEntityId = 0;
-                        weaponSync.WeaponData = new WeaponSyncValues();
-                    }
-                    gridSync.TargetData.Clear();
-                    break;
-                }
-                case PacketType.FakeTargetUpdate:
-                {
-                    ((FakeTargetPacket)this).Data = null;
-                    break;
-                }
-                case PacketType.ClientMouseEvent:
-                {
-                    ((MouseInputPacket)this).Data = null;
-                    break;
-                }
-                case PacketType.ActiveControlUpdate:
-                {
-                    ((DictionaryUpdatePacket)this).Data = false;
-                    break;
-                }
-                case PacketType.PlayerIdUpdate:
-                {
-                    ((DictionaryUpdatePacket) this).Data = false;
-                    break;
-                }
-                case PacketType.ActiveControlFullUpdate:
-                {
-                    ((ControllingPacket)this).Data = new ControllingPlayersSync();
-                    break;
-                }
-                case PacketType.FocusUpdate:
-                {
-                    ((FocusPacket) this).Data = 0;
-                    break;
-                }
-                case PacketType.MagUpdate:
-                {
-                    var magPacket = (MagUpdatePacket)this;
-                    magPacket.Mags = new MyFixedPoint();
-                    magPacket.WeaponId = 0;
-                    break;
-                }
-            }
             PType = PacketType.Invalid;
         }
     }
@@ -130,6 +59,12 @@ namespace WeaponCore
         [ProtoMember(1)] internal CompStateValues Data = null;
 
         public StatePacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
     }
 
     [ProtoContract]
@@ -137,24 +72,25 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal CompSettingsValues Data = null;
         public SettingPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
     }
 
     [ProtoContract]
     public class GridWeaponPacket : Packet
     {
-        [ProtoMember(1)] internal List<WeaponPacket> TargetData = new List<WeaponPacket>();
+        [ProtoMember(1)] internal List<WeaponData> Data = new List<WeaponData>();
         public GridWeaponPacket() { }
-    }
 
-    [ProtoContract]
-    public class WeaponPacket
-    {
-        [ProtoMember(1)] internal TransferTargetPacket TargetData = null;
-        [ProtoMember(2)] internal long CompEntityId;
-        [ProtoMember(3)] internal WeaponSyncValues WeaponData;
-        [ProtoMember(4)] internal WeaponTimings Timmings = null;
-
-        public WeaponPacket() { }
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
     }
 
     [ProtoContract]
@@ -162,14 +98,26 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal FakeTarget Data = null;
         public FakeTargetPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
     }
 
 
     [ProtoContract]
     public class MouseInputPacket : Packet
     {
-        [ProtoMember(1)] internal MouseStatePacket Data = null;
+        [ProtoMember(1)] internal MouseStateData Data = null;
         public MouseInputPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
     }
 
     [ProtoContract]
@@ -177,6 +125,12 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal ControllingPlayersSync Data;
         public ControllingPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = new ControllingPlayersSync();
+        }
     }
 
     [ProtoContract]
@@ -185,6 +139,13 @@ namespace WeaponCore
         [ProtoMember(1)] internal MyFixedPoint Mags;
         [ProtoMember(2)] internal int WeaponId;
         public MagUpdatePacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Mags = 0;
+            WeaponId = 0;
+        }
     }
 
     [ProtoContract]
@@ -192,6 +153,12 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal bool Data;
         public DictionaryUpdatePacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = false;
+        }
     }
 
     [ProtoContract]
@@ -199,10 +166,30 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal long Data;
         public FocusPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = 0;
+        }
+    }
+    #endregion
+
+    #region packet Data
+
+    [ProtoContract]
+    public class WeaponData
+    {
+        [ProtoMember(1)] internal TransferTarget TargetData = null;
+        [ProtoMember(2)] internal long CompEntityId;
+        [ProtoMember(3)] internal WeaponSyncValues SyncData;
+        [ProtoMember(4)] internal WeaponTimings Timmings = null;
+
+        public WeaponData() { }
     }
 
     [ProtoContract]
-    internal class MouseStatePacket
+    internal class MouseStateData
     {
         [ProtoMember(1)] internal bool MouseButtonLeft;
         [ProtoMember(2)] internal bool MouseButtonMiddle;
@@ -210,7 +197,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class TransferTargetPacket
+    public class TransferTarget
     {
         [ProtoMember(1)] internal long EntityId;
         [ProtoMember(2)] internal bool IsProjectile;
@@ -235,92 +222,9 @@ namespace WeaponCore
             target.State = State;
         }
 
-        public TransferTargetPacket()
+        public TransferTarget()
         {
         }
     }
-
-   
-
-    /*[ProtoInclude(3, typeof(DataCompState))]
-    [ProtoContract]
-    public abstract class PacketBase
-    {
-        [ProtoMember(1)] public ulong SenderId;
-
-        [ProtoMember(2)] public long EntityId;
-
-        private MyEntity _ent;
-
-        public MyEntity Entity
-        {
-            get
-            {
-                if (EntityId == 0) return null;
-
-                if (_ent == null) _ent = MyEntities.GetEntityById(EntityId, true);
-
-                if (_ent == null || _ent.MarkedForClose) return null;
-                return _ent;
-            }
-        }
-
-        public PacketBase(long entityId = 0)
-        {
-            SenderId = MyAPIGateway.Multiplayer.MyId;
-            EntityId = entityId;
-        }
-
-        public abstract bool Received(bool isServer);
-    }
-    
-    [ProtoContract]
-    public class DataCompState : PacketBase
-    {
-        public DataCompState()
-        {
-        } // Empty constructor required for deserialization
-
-        [ProtoMember(1)] public CompStateValues State = null;
-
-        public DataCompState(long entityId, CompStateValues state) : base(entityId)
-        {
-            State = state;
-        }
-
-        public override bool Received(bool isServer)
-        {
-            if (!isServer)
-            {
-                if (Entity == null) return false;
-                var comp = Entity.Components.Get<WeaponComponent>();
-                comp?.UpdateState(State);
-                return false;
-            }
-            return true;
-        }
-    }
-
-    [ProtoContract]
-    public class DataCompSettings : PacketBase
-    {
-        public DataCompSettings()
-        {
-        } // Empty constructor required for deserialization
-
-        [ProtoMember(1)] public CompSettingsValues Settings = null;
-
-        public DataCompSettings(long entityId, CompSettingsValues settings) : base(entityId)
-        {
-            Settings = settings;
-        }
-
-        public override bool Received(bool isServer)
-        {
-            if (Entity == null) return false;
-            var comp = Entity.Components.Get<WeaponComponent>();
-            comp?.UpdateSettings(Settings);
-            return isServer;
-        }
-    }*/
+    #endregion
 }

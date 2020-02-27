@@ -17,18 +17,18 @@ namespace WeaponCore
             {
                 if (!comp.MyCube.HasInventory) return;
 
-                var oldMags = weapon.State.CurrentMags;
+                var oldMags = weapon.State.Sync.CurrentMags;
                 var def = weapon.System.AmmoDefId;
                 var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
-                weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
+                weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
 
-                weapon.CurrentAmmoVolume = (float)weapon.State.CurrentMags * weapon.System.MagVolume;
+                weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.System.MagVolume;
 
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.CurrentMags && (oldMags > 0 && weapon.State.CurrentMags > 0))
+                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.Sync.CurrentMags && (oldMags > 0 && weapon.State.Sync.CurrentMags > 0))
                 {
                     comp.Session.PacketsToClient.Add(new PacketInfo
                     {
@@ -37,7 +37,7 @@ namespace WeaponCore
                         {
                             EntityId = comp.MyCube.EntityId,
                             SenderId = 0,
-                            Mags = weapon.State.CurrentMags,
+                            Mags = weapon.State.Sync.CurrentMags,
                             PType = PacketType.MagUpdate,
                             WeaponId = weapon.WeaponId
                         }
@@ -45,11 +45,11 @@ namespace WeaponCore
                 }
             }
 
-            var hasMags = weapon.State.CurrentMags > 0;
+            var hasMags = weapon.State.Sync.CurrentMags > 0;
             var chargeReload = weapon.System.MustCharge && (weapon.System.EnergyAmmo || hasMags);
             var standardReload = !weapon.System.MustCharge && !weapon.System.EnergyAmmo && hasMags;
 
-            if (weapon.State.CurrentAmmo == 0 && (comp.Session.IsCreative || chargeReload || standardReload))
+            if (weapon.State.Sync.CurrentAmmo == 0 && (comp.Session.IsCreative || chargeReload || standardReload))
                 weapon.StartReload();
         }
 

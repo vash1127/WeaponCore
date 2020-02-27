@@ -164,9 +164,9 @@ namespace WeaponCore.Platform
         {
             get
             {
-                var reloading = (!System.EnergyAmmo || System.MustCharge) && (State.Reloading || OutOfAmmo);
-                var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && !State.Charging && (ShootTick <= Comp.Session.Tick) && (Timings.ShootDelayTick <= Comp.Session.Tick);
+                var reloading = (!System.EnergyAmmo || System.MustCharge) && (State.Sync.Reloading || OutOfAmmo);
+                var canShoot = !State.Sync.Overheated && !reloading && !System.DesignatorWeapon;
+                var shotReady = canShoot && !State.Sync.Charging && (ShootTick <= Comp.Session.Tick) && (Timings.ShootDelayTick <= Comp.Session.Tick);
                 return shotReady;
             }
         }

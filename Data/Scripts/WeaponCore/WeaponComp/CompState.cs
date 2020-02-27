@@ -54,7 +54,7 @@ namespace WeaponCore.Support
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
 
-                            if (w.State.CurrentAmmo == 0)
+                            if (w.State.Sync.CurrentAmmo == 0)
                                 w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                         }
                     }

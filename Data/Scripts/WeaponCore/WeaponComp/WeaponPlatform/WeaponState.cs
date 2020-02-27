@@ -339,11 +339,11 @@ namespace WeaponCore.Platform
 
                     if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (System.MustCharge && State.CurrentAmmo != 0)
+                    else if (System.MustCharge && State.Sync.CurrentAmmo != 0)
                     {
-                        State.CurrentAmmo = 0;
-                        Comp.State.Value.CurrentCharge -= State.CurrentCharge;
-                        State.CurrentCharge = 0;
+                        State.Sync.CurrentAmmo = 0;
+                        Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+                        State.Sync.CurrentCharge = 0;
                     }
 
                 }
@@ -381,12 +381,12 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {            
-            if (reset) State.Reloading = false;
+            if (reset) State.Sync.Reloading = false;
 
-            if (State.Reloading) return;
+            if (State.Sync.Reloading) return;
 
             FinishBurst = false;
-            State.Reloading = true;
+            State.Sync.Reloading = true;
 
             if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
@@ -397,14 +397,14 @@ namespace WeaponCore.Platform
             if (IsShooting)
                 StopShooting();
 
-            if ((State.CurrentMags == 0 && !System.EnergyAmmo && !Comp.Session.IsCreative))
+            if ((State.Sync.CurrentMags == 0 && !System.EnergyAmmo && !Comp.Session.IsCreative))
             {
                 if (!OutOfAmmo)
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
                     OutOfAmmo = true;
                 }
-                State.Reloading = false;
+                State.Sync.Reloading = false;
             }
             else
             {
@@ -442,9 +442,9 @@ namespace WeaponCore.Platform
             var syncCharge = Timings.ChargeUntilTick > 0;
             if (!syncCharge)
             {
-                var currDif = Comp.State.Value.CurrentCharge - State.CurrentCharge;
+                var currDif = Comp.State.Value.CurrentCharge - State.Sync.CurrentCharge;
                 Comp.State.Value.CurrentCharge = currDif > 0 ? currDif : 0;
-                State.CurrentCharge = 0;
+                State.Sync.CurrentCharge = 0;
             }
 
             Comp.Session.ChargingWeapons.Add(this);
@@ -458,13 +458,13 @@ namespace WeaponCore.Platform
 
         internal void Reloaded(object o = null)
         {
-            State.Reloading = false;
+            State.Sync.Reloading = false;
 
             if (System.MustCharge)
             {
-                State.CurrentAmmo = System.EnergyMagSize;
+                State.Sync.CurrentAmmo = System.EnergyMagSize;
                 Comp.State.Value.CurrentCharge = System.EnergyMagSize;
-                State.CurrentCharge = System.EnergyMagSize;
+                State.Sync.CurrentCharge = System.EnergyMagSize;
 
 
                 Timings.ChargeUntilTick = 0;
@@ -479,9 +479,9 @@ namespace WeaponCore.Platform
             if (!System.HasBurstDelay)
                 State.ShotsFired = 0;
 
-            if (!System.EnergyAmmo && State.CurrentMags > 0 || Comp.Session.IsCreative)
+            if (!System.EnergyAmmo && State.Sync.CurrentMags > 0 || Comp.Session.IsCreative)
             {
-                State.CurrentAmmo = System.MagazineDef.Capacity;
+                State.Sync.CurrentAmmo = System.MagazineDef.Capacity;
                 if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
                    Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
             }
