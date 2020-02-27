@@ -7,6 +7,7 @@ namespace WeaponCore.Support
     {
         public static void PrepConfigFile(Session session)
         {
+            return;
             const int version = 1;
             const int debug = 0;
             const int disableWeaponGridLimits = 0;
