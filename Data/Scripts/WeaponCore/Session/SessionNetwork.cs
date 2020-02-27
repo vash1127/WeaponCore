@@ -577,18 +577,18 @@ namespace WeaponCore
 
                 //need to pool to reduce allocations
                 GridWeaponSyncPacket gridSync;
-                if (!_gridsToSync.TryGetValue(ai, out gridSync))
+                if (!_gridsToSync.ContainsKey(ai))
                 {
                     gridSync = new GridWeaponSyncPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
                         PType = PacketType.TargetUpdate,
-                        TargetData = { Capacity = ai.NumSyncWeapons },
+                        TargetData = {Capacity = ai.NumSyncWeapons},
                     };
                     _gridsToSync[ai] = gridSync;
                 }
-
+                else gridSync = _gridsToSync[ai];
 
                 var weaponSync = new WeaponSync
                 {
