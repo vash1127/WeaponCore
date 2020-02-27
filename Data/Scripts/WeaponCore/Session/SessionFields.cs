@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -10,9 +9,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.Utils;
 using VRage.ModAPI;
-using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -141,15 +138,16 @@ namespace WeaponCore
         internal ApiBackend Api;
 
         internal ShieldApi SApi = new ShieldApi();
+        internal NetworkReporter Reporter = new NetworkReporter();
         internal RunAv Av;
         internal DSUtils DsUtil;
         internal DSUtils DsUtil2;
         internal UiInput UiInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
-        internal NetworkReporter Reporter = new NetworkReporter();
+        internal Enforcements Enforced;
         internal NetworkProccessor Proccessor;
-        //internal CoreEnforcement Enforced = new CoreEnforcement();
+
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;

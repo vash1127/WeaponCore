@@ -1,15 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
 using ProtoBuf;
-namespace WeaponCore.Data.Scripts.WeaponCore.Session.Config
+namespace WeaponCore.Support
 {
     internal class Enforcements
     {
+        internal VersionControl VersionControl;
         internal CoresEnforcement Enforcement;
 
-        internal Enforcements()
+        internal Enforcements(Session session)
         {
-
+            VersionControl = new VersionControl();
+            Enforcement = new CoresEnforcement();
+            VersionControl.PrepConfigFile(session);
         }
 
         [ProtoContract]
@@ -17,7 +20,7 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Session.Config
         {
             [ProtoMember(1), DefaultValue(-1)] public int Debug = -1;
             [ProtoMember(2), DefaultValue(-1)] public int Version = -1;
-            [ProtoMember(3)] public bool DisableWeaponGridLimits;
+            [ProtoMember(3), DefaultValue(-1)] public int DisableWeaponGridLimits = -1;
         }
 
         /*

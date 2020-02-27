@@ -3,57 +3,39 @@ using Sandbox.ModAPI;
 using WeaponCore.Support;
 namespace WeaponCore.Support
 {
-    internal static class VersionControl
+    internal class VersionControl
     {
-        /*
         public static void PrepConfigFile(Session session)
         {
-            const int Version = 1;
-            const int Debug = 0;
-            const bool DisableWeaponGridLimits = false;
+            const int version = 1;
+            const int debug = 0;
+            const int disableWeaponGridLimits = 0;
 
             var dsCfgExists = MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg");
             if (dsCfgExists)
             {
                 var unPackCfg = MyAPIGateway.Utilities.ReadFileInGlobalStorage("WeaponCore.cfg");
-                var unPackedData = MyAPIGateway.Utilities.SerializeFromXML<DefenseShieldsEnforcement>(unPackCfg.ReadToEnd());
+                var unPackedData = MyAPIGateway.Utilities.SerializeFromXML<Enforcements>(unPackCfg.ReadToEnd());
 
-                if (unPackedData.Version == Version) return;
+                if (unPackedData.Enforcement.Version == version) return;
 
-                session.Enforced.Debug = !unPackedData.Debug.Equals(-1) ? unPackedData.Debug : Debug;
-                session.Enforced.DisableWeaponGridLimits = !unPackedData.DisableWeaponGridLimits.Equals(-1) ? unPackedData.DisableWeaponGridLimits : DisableWeaponGridLimits;
-                if (unPackedData.Version < 1)
+                session.Enforced.Enforcement.Debug = !unPackedData.Enforcement.Debug.Equals(-1) ? unPackedData.Enforcement.Debug : debug;
+                session.Enforced.Enforcement.DisableWeaponGridLimits = !unPackedData.Enforcement.DisableWeaponGridLimits.Equals(-1) ? unPackedData.Enforcement.DisableWeaponGridLimits : disableWeaponGridLimits;
+                if (unPackedData.Enforcement.Version < 1)
                 {
-                    session.Enforced.HeatScaler = 0.0065f;
-                    session.Enforced.BaseScaler = 10;
                 }
-                session.Enforced.Version = Version;
+                session.Enforced.Enforcement.Version = version;
                 UpdateConfigFile(session, unPackCfg);
             }
             else
             {
-                session.Enforced.Version = Version;
-                session.Enforced.Debug = Debug;
+                session.Enforced.Enforcement.Version = version;
+                session.Enforced.Enforcement.Debug = debug;
 
                 WriteNewConfigFile(session);
 
                 Log.Line($"wrote new config file - file exists: {MyAPIGateway.Utilities.FileExistsInGlobalStorage("DefenseShields.cfg")}");
             }
-        }
-
-        public static void ReadConfigFile(Session session)
-        {
-            var dsCfgExists = MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg");
-
-            if (session.Enforced.Debug == 3) Log.Line($"Reading config, file exists? {dsCfgExists}");
-
-            if (!dsCfgExists) return;
-
-            var cfg = MyAPIGateway.Utilities.ReadFileInGlobalStorage("WeaponCore.cfg");
-            var data = MyAPIGateway.Utilities.SerializeFromXML<DefenseShieldsEnforcement>(cfg.ReadToEnd());
-            session.Enforced = data;
-
-            if (session.Enforced.Debug == 3) Log.Line($"Writing settings to mod:\n{data}");
         }
 
         private static void UpdateConfigFile(Session session, TextReader unPackCfg)
@@ -62,7 +44,7 @@ namespace WeaponCore.Support
             unPackCfg.Dispose();
             MyAPIGateway.Utilities.DeleteFileInGlobalStorage("WeaponCore.cfg");
             var newCfg = MyAPIGateway.Utilities.WriteFileInGlobalStorage("WeaponCore.cfg");
-            var newData = MyAPIGateway.Utilities.SerializeToXML(Session.Enforced);
+            var newData = MyAPIGateway.Utilities.SerializeToXML(session.Enforced);
             newCfg.Write(newData);
             newCfg.Flush();
             newCfg.Close();
@@ -77,6 +59,5 @@ namespace WeaponCore.Support
             cfg.Flush();
             cfg.Close();
         }
-        */
     }
 }

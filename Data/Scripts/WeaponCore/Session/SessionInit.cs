@@ -56,6 +56,12 @@ namespace WeaponCore
             CheckDirtyGrids();
 
             ApiServer.Load();
+
+            if (!IsClient) Enforced = new Enforcements(this);
+            else
+            {
+                //Client enforcement request
+            }
         }
 
         internal void Init()
