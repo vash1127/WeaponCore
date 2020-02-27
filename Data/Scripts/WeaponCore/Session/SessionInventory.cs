@@ -51,6 +51,7 @@ namespace WeaponCore
                     {
                         weapon.Comp.Session.WeaponsToSync.Add(weapon);
                         weapon.Comp.Ai.NumSyncWeapons++;
+                        weapon.LastSyncTick = weapon.Comp.Session.Tick;
                     }
                 }
                     //comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });

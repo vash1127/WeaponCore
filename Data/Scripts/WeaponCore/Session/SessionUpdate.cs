@@ -452,6 +452,7 @@ namespace WeaponCore
                                 w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
                                 WeaponsToSync.Add(w);
                                 w.Comp.Ai.NumSyncWeapons++;
+                                w.LastSyncTick = w.Comp.Session.Tick;
                             }
                         }
                     }
