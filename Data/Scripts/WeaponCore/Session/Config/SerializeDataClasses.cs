@@ -63,7 +63,7 @@ namespace WeaponCore
     [ProtoContract]
     public class GridWeaponSyncPacket : Packet
     {
-        [ProtoMember(1)] internal WeaponSync[] TargetData = null;
+        [ProtoMember(1)] internal List<WeaponSync> TargetData = new List<WeaponSync>();
         public GridWeaponSyncPacket() { }
     }
 

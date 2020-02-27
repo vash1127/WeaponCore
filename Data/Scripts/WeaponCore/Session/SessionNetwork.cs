@@ -90,7 +90,7 @@ namespace WeaponCore
                             var targetPacket = packet as GridWeaponSyncPacket;
                             if (targetPacket?.TargetData == null || ent == null) return;
                             
-                            for(int i = 0; i < targetPacket.TargetData.Length; i++)
+                            for(int i = 0; i < targetPacket.TargetData.Count; i++)
                             {
                                 var weaponData = targetPacket.TargetData[i];
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
@@ -106,7 +106,7 @@ namespace WeaponCore
                                 syncTarget.SyncTarget(weapon.Target);
                             }
 
-                                report.PacketValid = true;
+                            report.PacketValid = true;
                             break;
                         }
                     case PacketType.FocusUpdate:
@@ -548,7 +548,6 @@ namespace WeaponCore
         private readonly Session _session;
         private readonly Dictionary<GridAi, GridWeaponSyncPacket> _gridsToSync = new Dictionary<GridAi, GridWeaponSyncPacket>();
         private readonly List<PacketInfo> _packets = new List<PacketInfo>();
-
         
         public NetworkProccessor(Session session)
         {
@@ -578,18 +577,19 @@ namespace WeaponCore
 
                 //need to pool to reduce allocations
 
-                if (_gridsToSync[ai] == null)
+                var gridSyncPacket = _gridsToSync[ai];
+                if (gridSyncPacket == null)
                 {
-                    _gridsToSync[ai] = new GridWeaponSyncPacket
+                    gridSyncPacket = new GridWeaponSyncPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
                         PType = PacketType.TargetUpdate,
-                        TargetData = new WeaponSync[ai.NumSyncWeapons],
+                        TargetData = {Capacity = ai.NumSyncWeapons},
                     };
                 }
 
-                _gridsToSync[ai].TargetData[ai.CurrWeapon] = new WeaponSync
+                var weaponSync = new WeaponSync
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
@@ -606,6 +606,7 @@ namespace WeaponCore
                         WeaponId = w.WeaponId,
                     }
                 };
+                gridSyncPacket.TargetData.Add(weaponSync);
                 ai.CurrWeapon++;
             }
         }
