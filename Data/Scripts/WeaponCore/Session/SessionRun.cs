@@ -188,24 +188,8 @@ namespace WeaponCore
 
                 DsUtil.Complete("projectiles", true);
 
-                if (_effectedCubes.Count > 0) ApplyEffect();
-                if (Tick60)
-                {
-                    foreach (var ge in _gridEffects)
-                    {
-                        foreach (var v in ge.Value)
-                        {
-                            GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                            ComputeEffects(v.Value.System, ge.Key, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
-                            _tmpEffectCubes.Clear();
-                            v.Value.Clean();
-                            GridEffectPool.Return(v.Value);
-                        }
-                        ge.Value.Clear();
-                        GridEffectsPool.Return(ge.Value);
-                    }
-                    _gridEffects.Clear();
-                }
+                if (_effectedCubes.Count > 0) ApplyGridEffect();
+                if (Tick60) GridEffects();
 
                 if (GridTask.IsComplete)
                     CheckDirtyGrids();
