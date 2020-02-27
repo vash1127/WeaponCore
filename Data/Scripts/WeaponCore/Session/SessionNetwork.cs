@@ -576,18 +576,19 @@ namespace WeaponCore
                 var ai = w.Comp.Ai;
 
                 //need to pool to reduce allocations
-
-                var gridSyncPacket = _gridsToSync[ai];
-                if (gridSyncPacket == null)
+                GridWeaponSyncPacket gridSync;
+                if (!_gridsToSync.TryGetValue(ai, out gridSync))
                 {
-                    gridSyncPacket = new GridWeaponSyncPacket
+                    gridSync = new GridWeaponSyncPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
                         PType = PacketType.TargetUpdate,
-                        TargetData = {Capacity = ai.NumSyncWeapons},
+                        TargetData = { Capacity = ai.NumSyncWeapons },
                     };
+                    _gridsToSync[ai] = gridSync;
                 }
+
 
                 var weaponSync = new WeaponSync
                 {
@@ -606,7 +607,7 @@ namespace WeaponCore
                         WeaponId = w.WeaponId,
                     }
                 };
-                gridSyncPacket.TargetData.Add(weaponSync);
+                gridSync.TargetData.Add(weaponSync);
                 ai.CurrWeapon++;
             }
         }
