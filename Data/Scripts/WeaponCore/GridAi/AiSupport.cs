@@ -17,6 +17,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
+using static WeaponCore.Session;
 using static WeaponCore.Support.TargetingDefinition;
 namespace WeaponCore.Support
 {
@@ -46,7 +47,14 @@ namespace WeaponCore.Support
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
 
-                ai.Session.SendPacketToServer(new FakeTargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = ai.Session.MultiplayerId, PType = PacketType.FakeTargetUpdate, Data = this });
+                ai.Session.PacketsToServer.Add(new FakeTargetPacket {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = ai.Session.MultiplayerId,
+                        PType = PacketType.FakeTargetUpdate,
+                        Data = this,
+                    });
+
+                //ai.Session.SendPacketToServer(new FakeTargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = ai.Session.MultiplayerId, PType = PacketType.FakeTargetUpdate, Data = this });
 
                 ClearTarget = false;
             }

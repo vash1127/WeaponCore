@@ -31,7 +31,29 @@ namespace WeaponCore
                 var state = weapon.State;
 
                if (oldMags != weapon.State.CurrentMags)
-                    comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
+                {
+                    if ((oldMags > 0 && weapon.State.CurrentMags > 0) || weapon.LastSyncTick == weapon.Comp.Session.Tick)
+                    {
+                        comp.Session.PacketsToClient.Add(new PacketInfo
+                        {
+                            Entity = comp.MyCube,
+                            Packet = new MagUpdate
+                            {
+                                EntityId = comp.MyCube.EntityId,
+                                SenderId = 0,
+                                Mags = weapon.State.CurrentMags,
+                                PType = PacketType.MagUpdate,
+                                WeaponId = weapon.WeaponId
+                            }
+                        });
+                    }
+                    else
+                    {
+                        weapon.Comp.Session.WeaponsToSync.Add(weapon);
+                        weapon.Comp.Ai.NumSyncWeapons++;
+                    }
+                }
+                    //comp.Session.PacketizeToClientsInRange(comp.MyCube, new WeaponSyncPacket { EntityId = comp.MyCube.EntityId, SenderId = 0, PType = PacketType.WeaponSync, WeaponData = new WeaponSyncValues { CurrentAmmo = state.CurrentAmmo, CurrentCharge = state.CurrentCharge, Heat = state.Heat, Overheated = state.Overheated, Reloading = state.Reloading, Charging = state.Charging, WeaponId = weapon.WeaponId, currentMags = state.CurrentMags}, Timmings = weapon.Timings.SyncOffsetServer(comp.Session.Tick) });
             }
 
             var hasMags = weapon.State.CurrentMags > 0;

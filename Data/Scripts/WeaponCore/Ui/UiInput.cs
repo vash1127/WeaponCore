@@ -2,6 +2,8 @@
 using Sandbox.ModAPI;
 using VRage.Input;
 using WeaponCore.Support;
+using static WeaponCore.Session;
+
 namespace WeaponCore
 {
     internal class UiInput
@@ -72,10 +74,29 @@ namespace WeaponCore
                 MouseButtonRightWasPressed != ClientMouseState.MouseButtonRight))
                 {
                     if (_session.IsClient)
-                        _session.SendPacketToServer(new MouseInputPacket { EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
+                    {
+                        _session.PacketsToServer.Add(new MouseInputPacket
+                            {
+                                EntityId = -1,
+                                SenderId = _session.MultiplayerId,
+                                PType = PacketType.ClientMouseEvent,
+                                Data = ClientMouseState
+                            });
+                        //_session.SendPacketToServer(new MouseInputPacket { EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
+                    }
                     else if (_session.MpActive && _session.IsServer)
                     {
-                        _session.PacketizeToClientsInRange(null, new MouseInputPacket { EntityId = -1, SenderId = _session.MultiplayerId, PType = PacketType.ClientMouseEvent, Data = ClientMouseState });
+                        _session.PacketsToClient.Add(new PacketInfo
+                        {
+                            Entity = null,
+                            Packet = new MouseInputPacket
+                            {
+                                EntityId = -1,
+                                SenderId = _session.MultiplayerId,
+                                PType = PacketType.ClientMouseEvent,
+                                Data = ClientMouseState
+                            }
+                        });
                     }
                 }
 

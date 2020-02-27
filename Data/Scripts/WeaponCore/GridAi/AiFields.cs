@@ -11,6 +11,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
+using static WeaponCore.Session;
 
 namespace WeaponCore.Support
 {
@@ -90,6 +91,8 @@ namespace WeaponCore.Support
         internal uint LastPowerUpdateTick;
         internal int SourceCount;
         internal int BlockCount;
+        internal int NumSyncWeapons;
+        internal int CurrWeapon;
         internal long MyOwner;
         internal bool PointDefense;
         internal bool SupressMouseShoot;
@@ -151,7 +154,14 @@ namespace WeaponCore.Support
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
 
             if (session.IsClient)
-                session.SendPacketToServer(new Packet { EntityId = grid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.ActiveControlRequestUpdate });
+            {
+                session.PacketsToServer.Add(new Packet {
+                        EntityId = grid.EntityId,
+                        SenderId = session.MultiplayerId,
+                        PType = PacketType.ActiveControlRequestUpdate
+                    });
+                //session.SendPacketToServer(new Packet { EntityId = grid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.ActiveControlRequestUpdate });
+            }
 
             //AIValues.Load(this);
         }

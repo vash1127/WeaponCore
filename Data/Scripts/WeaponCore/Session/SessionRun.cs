@@ -208,6 +208,8 @@ namespace WeaponCore
                     DsUtil.Start("shoot");
                     if (ShootingWeapons.Count > 0) ShootWeapons();
                     DsUtil.Complete("shoot", true);
+
+                    if (WeaponsToSync.Count > 0) Proccessor.Start(WeaponsToSync);
                 }
                 if (!WheelUi.WheelActive && !InMenu)
                 {
@@ -226,6 +228,9 @@ namespace WeaponCore
             {
                 if (Placer != null) UpdatePlacer();
                 ProcessAnimations();
+
+                if (PacketsToClient.Count > 0) ProccessClientPackets();
+                if (PacketsToServer.Count > 0) ProccessServerPackets();
 
                 DsUtil.Start("projectiles");
 
@@ -363,6 +368,7 @@ namespace WeaponCore
                 MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
                 //MyVisualScriptLogicProvider.ToolbarItemChanged -= RemoveAction;
                 ApiServer.Unload();
+                Proccessor.Stop();
 
                 PurgeAll();
 

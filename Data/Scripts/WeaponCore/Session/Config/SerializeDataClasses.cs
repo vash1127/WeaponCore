@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
+using VRage;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
@@ -23,16 +24,20 @@ namespace WeaponCore
         PlayerIdUpdate,
         ActiveControlFullUpdate,
         ActiveControlRequestUpdate,
+        FocusUpdate,
+        MagUpdate,
     }
 
     [ProtoContract]
     [ProtoInclude(4, typeof(StatePacket))]
     [ProtoInclude(5, typeof(SettingPacket))]
-    [ProtoInclude(6, typeof(WeaponSyncPacket))]
+    [ProtoInclude(6, typeof(GridWeaponSyncPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
     [ProtoInclude(8, typeof(DictionaryUpdatePacket))]
     [ProtoInclude(9, typeof(FakeTargetPacket))]
-    [ProtoInclude(10, typeof(COntrollingSyncPacket))]
+    [ProtoInclude(10, typeof(ControllingSyncPacket))]
+    [ProtoInclude(11, typeof(FocusSyncPacket))]
+    [ProtoInclude(12, typeof(MagUpdate))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -56,20 +61,18 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    [ProtoInclude(10, typeof(TargetPacket))]
-    public class WeaponSyncPacket : Packet
+    public class GridWeaponSyncPacket : Packet
     {
-        [ProtoMember(2)] internal WeaponSyncValues WeaponData;
-        [ProtoMember(3)] internal WeaponTimings Timmings = null;
-
-        public WeaponSyncPacket() { }
+        [ProtoMember(1)] internal WeaponSync[] TargetData = null;
+        public GridWeaponSyncPacket() { }
     }
 
     [ProtoContract]
-    public class TargetPacket : WeaponSyncPacket
+    public class MagUpdate : Packet
     {
-        [ProtoMember(1)] internal TransferTarget TargetData = null;
-        public TargetPacket() { }
+        [ProtoMember(1)] internal MyFixedPoint Mags;
+        [ProtoMember(2)] internal int WeaponId;
+        public MagUpdate() { }
     }
 
     [ProtoContract]
@@ -94,10 +97,28 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class COntrollingSyncPacket : Packet
+    public class ControllingSyncPacket : Packet
     {
         [ProtoMember(1)] internal ControllingPlayersSync Data;
-        public COntrollingSyncPacket() { }
+        public ControllingSyncPacket() { }
+    }
+
+    [ProtoContract]
+    public class FocusSyncPacket : Packet
+    {
+        [ProtoMember(1)] internal long Data;
+        public FocusSyncPacket() { }
+    }
+
+    [ProtoContract]
+    public class WeaponSync
+    {
+        [ProtoMember(1)] internal TransferTarget TargetData = null;
+        [ProtoMember(2)] internal long CompEntityId;
+        [ProtoMember(3)] internal WeaponSyncValues WeaponData;
+        [ProtoMember(4)] internal WeaponTimings Timmings = null;
+
+        public WeaponSync() { }
     }
 
     [ProtoContract]

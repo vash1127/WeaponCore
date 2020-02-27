@@ -8,6 +8,7 @@ namespace WeaponCore
     using Sandbox.Game.Entities;
     using Sandbox.Game.EntityComponents;
     using Sandbox.ModAPI;
+    using static WeaponCore.Session;
 
     public class CompState
     {
@@ -77,10 +78,29 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
-                    Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new StatePacket {EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value});
-            else // client, send settings to server
-                Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value});
+            if (Comp.Session.MpActive && (Comp.Session.IsServer || Comp.Session.DedicatedServer))
+            {
+                Comp.Session.PacketsToClient.Add(new PacketInfo {
+                    Entity = Comp.MyCube,
+                    Packet = new StatePacket {
+                        EntityId = Block.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.CompStateUpdate,
+                        Data = Value
+                    }
+                });
+                //Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new StatePacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
+            }
+            else if (Comp.Session.IsClient)
+            { // client, send settings to server
+                Comp.Session.PacketsToServer.Add(new StatePacket {
+                    EntityId = Block.EntityId,
+                    PType = PacketType.CompStateUpdate,
+                    SenderId = Comp.Session.MultiplayerId,
+                    Data = Value
+                });
+                //Comp.Session.SendPacketToServer(new StatePacket { EntityId = Block.EntityId, PType = PacketType.CompStateUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });
+            }
         }
         #endregion
     }
@@ -152,11 +172,28 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Comp.Session.IsServer || Comp.Session.DedicatedServer)
-                Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
+            if (Comp.Session.MpActive && (Comp.Session.IsServer || Comp.Session.DedicatedServer))
+            {
+                Comp.Session.PacketsToClient.Add(new PacketInfo {
+                    Entity = Comp.MyCube,
+                    Packet = new SettingPacket {
+                        EntityId = Block.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.CompStateUpdate,
+                        Data = Value
+                    }
+                });
+            }
+            //Comp.Session.PacketizeToClientsInRange(Comp.MyCube, new SettingPacket { EntityId = Block.EntityId, SenderId = 0, PType = PacketType.CompStateUpdate, Data = Value });
             else // client, send settings to server
             {
-                Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });
+                Comp.Session.PacketsToServer.Add(new SettingPacket {
+                    EntityId = Block.EntityId,
+                    PType = PacketType.CompSettingsUpdate,
+                    SenderId = Comp.Session.MultiplayerId,
+                    Data = Value
+                });
+                //Comp.Session.SendPacketToServer(new SettingPacket { EntityId = Block.EntityId, PType = PacketType.CompSettingsUpdate, SenderId = Comp.Session.MultiplayerId, Data = Value });
             }
         }
         #endregion

@@ -1,4 +1,5 @@
 ﻿using VRage.Game.Entity;
+using static WeaponCore.Session;
 using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore.Support
@@ -22,7 +23,7 @@ namespace WeaponCore.Support
         internal int ActiveId;
         internal bool HasFocus;
 
-        internal void AddFocus(MyEntity target, GridAi ai)
+        internal void AddFocus(MyEntity target, GridAi ai, bool serverUpdate = false)
         {
             var session = ai.Session;
             Target[ActiveId] = target;
@@ -37,8 +38,16 @@ namespace WeaponCore.Support
                 }
             }
 
-            if(!session.DedicatedServer && !session.IsServer)
-                session.SendPacketToServer(new TargetPacket { EntityId = ai.MyGrid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.TargetUpdate, TargetData = new TransferTarget { EntityId = target.EntityId } });
+            if (!session.DedicatedServer && !session.IsServer && !serverUpdate)
+            {
+                session.PacketsToServer.Add(new FocusSyncPacket {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = session.MultiplayerId,
+                        PType = PacketType.FocusUpdate,
+                        Data = target.EntityId
+                    });
+                //session.SendPacketToServer(new FocusSyncPacket { EntityId = ai.MyGrid.EntityId, SenderId = session.MultiplayerId, PType = PacketType.FocusUpdate, Data = target.EntityId });
+            }
         }
 
         internal bool ReassignTarget(MyEntity target, int focusId, GridAi ai)

@@ -36,6 +36,7 @@ namespace WeaponCore.Platform
         internal bool FinishBurst;
         internal uint ShootTick;
         internal uint TicksPerShot;
+        internal uint LastSyncTick;
         internal double TimePerShot;
         internal int LoadId;
         internal int ShortLoadId;

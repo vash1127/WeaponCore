@@ -33,9 +33,29 @@ namespace WeaponCore
                 if (oldBlock != ActiveControlBlock)
                 {
                     if (IsClient)
-                        SendPacketToServer(new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
+                    {
+                        PacketsToServer.Add(new DictionaryUpdatePacket
+                            {
+                                EntityId = activeBlock.EntityId,
+                                SenderId = MultiplayerId,
+                                PType = PacketType.ActiveControlUpdate,
+                                Data = true
+                            });
+                        //SendPacketToServer(new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = true });
+                    }
                     else if (MpActive)
-                        PacketizeToClientsInRange(activeBlock, new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
+                        PacketsToClient.Add(new PacketInfo
+                        {
+                            Entity = activeBlock,
+                            Packet = new DictionaryUpdatePacket
+                            {
+                                EntityId = activeBlock.EntityId,
+                                SenderId = 0,
+                                PType = PacketType.ActiveControlUpdate,
+                                Data = true
+                            }
+                        });
+                    //PacketizeToClientsInRange(activeBlock, new DictionaryUpdatePacket { EntityId = activeBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
                 }
                 
                 /*
@@ -60,10 +80,32 @@ namespace WeaponCore
                     MyCubeBlock oldBlock;
                     if (TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock))
                     {
-                        if(IsClient)
-                            SendPacketToServer(new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = false });
+                        if (IsClient)
+                        {
+                            PacketsToServer.Add(new DictionaryUpdatePacket {
+                                    EntityId = oldBlock.EntityId,
+                                    SenderId = MultiplayerId,
+                                    PType = PacketType.ActiveControlUpdate,
+                                    Data = false
+                                });
+                            //SendPacketToServer(new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = MultiplayerId, PType = PacketType.ActiveControlUpdate, Data = false });
+                        }
                         else if (MpActive)
-                            PacketizeToClientsInRange(oldBlock, new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
+                        {
+                            PacketsToClient.Add(new PacketInfo
+                            {
+                                Entity = oldBlock,
+                                Packet = new DictionaryUpdatePacket
+                                {
+                                    EntityId = oldBlock.EntityId,
+                                    SenderId = 0,
+                                    PType = PacketType.ActiveControlUpdate,
+                                    Data = false
+                                }
+                            });
+                        }
+
+                        //PacketizeToClientsInRange(oldBlock, new DictionaryUpdatePacket { EntityId = oldBlock.EntityId, SenderId = 0, PType = PacketType.ActiveControlUpdate, Data = true });
 
                         TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
                     }

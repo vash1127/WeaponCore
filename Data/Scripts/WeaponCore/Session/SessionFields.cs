@@ -92,6 +92,9 @@ namespace WeaponCore
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
+        internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
+        internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
+        internal readonly List<Weapon> WeaponsToSync = new List<Weapon>(128);
         internal readonly Queue<Weapon> ChargingWeaponsToReload = new Queue<Weapon>();
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
@@ -143,6 +146,7 @@ namespace WeaponCore
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
         internal NetworkReporter Reporter = new NetworkReporter();
+        internal NetworkProccessor Proccessor;
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
@@ -258,6 +262,7 @@ namespace WeaponCore
             Api = new ApiBackend(this);
             ApiServer = new ApiServer(this);
             Projectiles = new Projectiles.Projectiles(this);
+            Proccessor = new NetworkProccessor(this);
             
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

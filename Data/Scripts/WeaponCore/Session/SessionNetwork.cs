@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
@@ -6,6 +7,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
+using static WeaponCore.Session;
 
 namespace WeaponCore
 {
@@ -51,10 +53,11 @@ namespace WeaponCore
                 var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                 var comp = ent?.Components.Get<WeaponComponent>();
 
+                Reporter.ReportData[packet.PType].Add(report);
+
                 switch (packet.PType)
                 {
-                    case PacketType.CompStateUpdate:
-                        Reporter.ReportData[packet.PType].Add(report);
+                    case PacketType.CompStateUpdate:                        
                         var statePacket = packet as StatePacket;
                         if (statePacket?.Data == null || comp == null) return;
 
@@ -69,8 +72,6 @@ namespace WeaponCore
                         report.PacketValid = true;
                         break;
                     case PacketType.CompSettingsUpdate:
-                        Reporter.ReportData[packet.PType].Add(report);
-
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null || comp == null) return;
 
@@ -86,49 +87,47 @@ namespace WeaponCore
                         break;
                     case PacketType.TargetUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
-                            var targetPacket = packet as TargetPacket;
-                            if (targetPacket?.TargetData == null) return;
-
-                            if (comp != null)
+                            var targetPacket = packet as GridWeaponSyncPacket;
+                            if (targetPacket?.TargetData == null || ent == null) return;
+                            
+                            for(int i = 0; i < targetPacket.TargetData.Length; i++)
                             {
-                                var syncTarget = targetPacket.TargetData;
-                                var weaponData = targetPacket.WeaponData;
-                                var wid = syncTarget.WeaponId;
-                                var weapon = comp.Platform.Weapons[wid];
-                                var timings = targetPacket.Timmings.SyncOffsetClient(Tick);
+                                var weaponData = targetPacket.TargetData[i];
+                                var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
+                                comp = block?.Components.Get<WeaponComponent>();
 
-                                SyncWeapon(weapon, timings, ref weaponData);
+                                if (comp == null) continue;
+
+                                var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
+                                var timings = weaponData.Timmings.SyncOffsetClient(Tick);
+                                var syncTarget = weaponData.TargetData;
+
+                                SyncWeapon(weapon, timings, ref weaponData.WeaponData);
                                 syncTarget.SyncTarget(weapon.Target);
+                            }
 
                                 report.PacketValid = true;
-                            }
-                            else
+                            break;
+                        }
+                    case PacketType.FocusUpdate:
+                        {
+                            var myGrid = ent as MyCubeGrid;
+                            GridAi ai;
+                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                var myGrid = ent as MyCubeGrid;
-                                GridAi ai;
-                                if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                var targetPacket = packet as FocusSyncPacket;
+                                var targetGrid = MyEntities.GetEntityByIdOrDefault(targetPacket.Data) as MyCubeGrid;
+
+                                if (targetGrid != null)
                                 {
-                                    var target = targetPacket.TargetData;
-                                    var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
-
-                                    if (targetGrid != null)
-                                    {
-                                        ai.Focus.AddFocus(targetGrid, ai);
-                                        PacketizeToClientsInRange(myGrid, packet);
-
-                                        report.PacketValid = true;
-                                    }
+                                    ai.Focus.AddFocus(targetGrid, ai, true);
+                                    report.PacketValid = true;
                                 }
                             }
-
                             break;
                         }
                     case PacketType.FakeTargetUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
                             var targetPacket = packet as FakeTargetPacket;
                             if (targetPacket?.Data == null) return;
 
@@ -139,7 +138,9 @@ namespace WeaponCore
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
-                                PacketizeToClientsInRange(myGrid, packet);
+                                //PacketizeToClientsInRange(myGrid, packet);
+
+                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
 
                                 report.PacketValid = true;
                             }
@@ -147,7 +148,7 @@ namespace WeaponCore
                             break;
                         }
 
-                    case PacketType.WeaponSync:
+                    /*case PacketType.WeaponSync:
                         Reporter.ReportData[packet.PType].Add(report);
 
                         var syncPacket = packet as WeaponSyncPacket;
@@ -163,12 +164,10 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
-                        break;
+                        break;*/
 
                     case PacketType.PlayerIdUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
                             var updatePacket = packet as DictionaryUpdatePacket;
                             if (updatePacket == null) return;
 
@@ -194,8 +193,6 @@ namespace WeaponCore
                             break;
                         }
                     case PacketType.ClientMouseEvent:
-                        Reporter.ReportData[packet.PType].Add(report);
-
                         var mousePacket = packet as MouseInputPacket;
                         if (mousePacket?.Data == null) return;
 
@@ -210,7 +207,6 @@ namespace WeaponCore
                         break;
                     case PacketType.ActiveControlUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
                             var dPacket = packet as DictionaryUpdatePacket;
                             if (dPacket?.Data == null) return;
 
@@ -226,11 +222,9 @@ namespace WeaponCore
                         }
                     case PacketType.ActiveControlFullUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
                             try
                             {
-                                var csPacket = packet as COntrollingSyncPacket;
+                                var csPacket = packet as ControllingSyncPacket;
                                 if (csPacket?.Data == null) return;
 
                                 for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
@@ -268,6 +262,8 @@ namespace WeaponCore
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
                 if (packet == null) return;
 
+                Reporter.ReportData[packet.PType].Add(report);
+
                 MyEntity ent; // not inited here to avoid extras calls unless needed
                 WeaponComponent comp; // not inited here to avoid extras calls unless needed
                 long playerId = 0;
@@ -275,8 +271,6 @@ namespace WeaponCore
                 switch (packet.PType)
                 {
                     case PacketType.CompStateUpdate:
-                        Reporter.ReportData[packet.PType].Add(report);
-
                         var statePacket = packet as StatePacket;
                         if (statePacket?.Data == null) return;
 
@@ -293,14 +287,14 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[i];
                                 w.State = comp.State.Value.Weapons[w.WeaponId];
                             }
-                            PacketizeToClientsInRange(ent, packet);
+                            //PacketizeToClientsInRange(ent, packet);
+                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = packet });
 
                             report.PacketValid = true;
                         }
                         break;
 
                     case PacketType.CompSettingsUpdate:
-                        Reporter.ReportData[packet.PType].Add(report);
 
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null) return;
@@ -317,14 +311,14 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[i];
                                 w.Set = comp.Set.Value.Weapons[w.WeaponId];
                             }
-                            PacketizeToClientsInRange(ent, packet);
+                            //PacketizeToClientsInRange(ent, packet);
+                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                             report.PacketValid = true;
                         }
                         break;
 
                     case PacketType.ClientMouseEvent:
-                        Reporter.ReportData[packet.PType].Add(report);
 
                         var mousePacket = packet as MouseInputPacket;
                         if (mousePacket?.Data == null) return;
@@ -332,7 +326,8 @@ namespace WeaponCore
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                         {
                             PlayerMouseStates[playerId] = mousePacket.Data;
-                            PacketizeToClientsInRange(null, mousePacket);
+                            //PacketizeToClientsInRange(null, mousePacket);
+                            PacketsToClient.Add(new PacketInfo { Entity = null, Packet = mousePacket });
 
                             report.PacketValid = true;
                         }
@@ -341,8 +336,6 @@ namespace WeaponCore
 
                     case PacketType.ActiveControlUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-                            
                             var dPacket = packet as DictionaryUpdatePacket;
                             if (dPacket?.Data == null) return;
 
@@ -353,41 +346,36 @@ namespace WeaponCore
 
                             UpdateActiveControlDictionary(block, playerId, dPacket.Data);
 
-                            PacketizeToClientsInRange(block, dPacket);
+                            //PacketizeToClientsInRange(block, dPacket);
+                            PacketsToClient.Add(new PacketInfo { Entity = block, Packet = dPacket });
 
                             report.PacketValid = true;
                             break;
                         }
-                    case PacketType.TargetUpdate:
+                    case PacketType.FocusUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
-                            var targetPacket = packet as TargetPacket;
-                            if (targetPacket?.TargetData == null) return;
+                            var targetPacket = packet as FocusSyncPacket;
+                            if (targetPacket == null) return;
 
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
+                            
                             GridAi ai;
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                var target = targetPacket.TargetData;
-                                var targetGrid = MyEntities.GetEntityByIdOrDefault(target.EntityId) as MyCubeGrid;
+                                var targetGrid = MyEntities.GetEntityByIdOrDefault(targetPacket.Data) as MyCubeGrid;
 
                                 if (targetGrid != null)
                                 {
-                                    ai.Focus.AddFocus(targetGrid, ai);
-                                    PacketizeToClientsInRange(myGrid, packet);
-
+                                    ai.Focus.AddFocus(targetGrid, ai, true);
+                                    //PacketizeToClientsInRange(myGrid, targetPacket);
+                                    PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                                     report.PacketValid = true;
                                 }
                             }
-
                             break;
                         }
                     case PacketType.FakeTargetUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
                             var targetPacket = packet as FakeTargetPacket;
                             if (targetPacket?.Data == null) return;
 
@@ -397,8 +385,8 @@ namespace WeaponCore
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
-                                PacketizeToClientsInRange(myGrid, packet);
-
+                                //PacketizeToClientsInRange(myGrid, packet);
+                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                                 report.PacketValid = true;
                             }
 
@@ -406,8 +394,6 @@ namespace WeaponCore
                         }
                     case PacketType.ActiveControlRequestUpdate:
                         {
-                            Reporter.ReportData[packet.PType].Add(report);
-
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
                             GridAi ai;
 
@@ -421,7 +407,7 @@ namespace WeaponCore
                                     c++;
                                 }
 
-                                var syncPacket = new COntrollingSyncPacket
+                                var syncPacket = new ControllingSyncPacket
                                 {
                                     EntityId = -1,
                                     SenderId = 0,
@@ -530,6 +516,133 @@ namespace WeaponCore
             }
         }
 
+        internal void ProccessClientPackets()
+        {
+            for (int i = PacketsToClient.Count - 1; i >= 0; i--)
+            {
+                var packetInfo = PacketsToClient[i];
+                PacketizeToClientsInRange(packetInfo.Entity, packetInfo.Packet);
+                PacketsToClient.RemoveAtFast(i);
+            }
+        }
+
+        internal void ProccessServerPackets()
+        {
+            for (int i = PacketsToServer.Count - 1; i >= 0; i--)
+            {
+                SendPacketToServer(PacketsToServer[i]);
+                PacketsToServer.RemoveAtFast(i);
+            }
+        }
+
+        internal struct PacketInfo
+        {
+            internal MyEntity Entity;
+            internal Packet Packet;
+        }
         #endregion
+    }
+
+    public class NetworkProccessor
+    {
+        private Session _session;
+        private volatile bool _running;
+        private volatile bool _canSend;
+        private readonly Dictionary<GridAi, GridWeaponSyncPacket> GridsToSync = new Dictionary<GridAi, GridWeaponSyncPacket>();
+        private readonly List<PacketInfo> _packets = new List<PacketInfo>();
+        private List<Weapon> _weaponsToSync;
+
+        public bool Running
+        {
+            get
+            {
+                return _running;
+            }
+        } 
+        
+        public NetworkProccessor(Session session)
+        {
+            _session = session;
+        }
+
+        public void Start(List<Weapon> syncWeapons)
+        {
+            _weaponsToSync = new List<Weapon>(syncWeapons);
+            MyAPIGateway.Parallel.Start(Proccess, AddPackets);
+        }
+
+        public void Stop()
+        {
+            _running = false;
+            GridsToSync.Clear();
+            _packets.Clear();
+        }
+
+        private void Proccess()
+        {
+            ProccessTargetUpdates();
+            ProccessGridWeaponPackets();
+        }
+
+        private void AddPackets()
+        {
+            for(int i = 0; i < _packets.Count; i++)
+                _session.PacketsToClient.Add(_packets[i]);
+            
+        }
+
+        private void ProccessTargetUpdates()
+        {
+            for (int i = 0; i < _weaponsToSync.Count; i++)
+            {
+                var w = _weaponsToSync[i];
+                var ai = w.Comp.Ai;
+
+                //need to pool to reduce allocations
+
+                if (GridsToSync[ai] == null)
+                {
+                    GridsToSync[ai] = new GridWeaponSyncPacket
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.TargetUpdate,
+                        TargetData = new WeaponSync[ai.NumSyncWeapons],
+                    };
+                }
+
+                GridsToSync[ai].TargetData[ai.CurrWeapon] = new WeaponSync
+                {
+                    CompEntityId = w.Comp.MyCube.EntityId,
+                    TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
+                    Timmings = w.Timings.SyncOffsetServer(_session.Tick),
+                    WeaponData = new WeaponSyncValues
+                    {
+                        Charging = w.State.Charging,
+                        CurrentAmmo = w.State.CurrentAmmo,
+                        currentMags = w.State.CurrentMags,
+                        CurrentCharge = w.State.CurrentCharge,
+                        Heat = w.State.Heat,
+                        Overheated = w.State.Overheated,
+                        Reloading = w.State.Reloading,
+                        WeaponId = w.WeaponId,
+                    }
+                };
+                ai.CurrWeapon++;
+            }
+        }
+
+        private void ProccessGridWeaponPackets()
+        {
+            foreach (var gridPacket in GridsToSync)
+            {
+                var ai = gridPacket.Key;
+                ai.CurrWeapon = 0;
+                ai.NumSyncWeapons = 0;
+                _packets.Add(new PacketInfo { Entity = ai.MyGrid, Packet = gridPacket.Value });
+                //_session.PacketizeToClientsInRange(ai.MyGrid, gridPacket.Value);                
+            }
+            GridsToSync.Clear();
+        } 
     }
 }
