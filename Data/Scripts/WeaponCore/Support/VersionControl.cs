@@ -24,8 +24,6 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
                 session.Enforced.DisableWeaponGridLimits = !unPackedData.DisableWeaponGridLimits.Equals(-1) ? unPackedData.DisableWeaponGridLimits : DisableWeaponGridLimits;
                 if (unPackedData.Version < 1)
                 {
-                    session.Enforced.CapScaler = 0.5f;
-                    session.Enforced.HpsEfficiency = 0.5f;
                     session.Enforced.HeatScaler = 0.0065f;
                     session.Enforced.BaseScaler = 10;
                 }
@@ -79,6 +77,6 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
             cfg.Flush();
             cfg.Close();
         }
-    */
+        */
     }
 }

@@ -149,6 +149,7 @@ namespace WeaponCore
         internal TargetUi TargetUi;
         internal NetworkReporter Reporter = new NetworkReporter();
         internal NetworkProccessor Proccessor;
+        //internal CoreEnforcement Enforced = new CoreEnforcement();
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
