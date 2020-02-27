@@ -547,7 +547,6 @@ namespace WeaponCore
 
         internal void ProccessClientPackets()
         {
-            Log.Line($"Processing {PacketsToClient.Count} client packets");
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
@@ -558,7 +557,6 @@ namespace WeaponCore
 
         internal void ProccessServerPackets()
         {
-            Log.Line($"Processing {PacketsToServer.Count} server packets");
             for (int i = 0; i < PacketsToServer.Count; i++)
                 SendPacketToServer(PacketsToServer[i]);
 
