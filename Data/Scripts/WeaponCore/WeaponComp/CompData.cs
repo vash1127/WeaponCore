@@ -59,7 +59,11 @@ namespace WeaponCore
             else
             {
                 Value = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length] };
-                for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponStateValues();
+                for (int i = 0; i < Value.Weapons.Length; i++)
+                {
+                    Value.Weapons[i] = new WeaponStateValues();
+                    Value.Weapons[i].Sync = new WeaponSyncValues();
+                }
                 Value.CurrentPlayerControl = new PlayerControl();
             }
 
