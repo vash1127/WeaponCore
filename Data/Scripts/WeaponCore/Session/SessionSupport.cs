@@ -108,6 +108,66 @@ namespace WeaponCore
             }
         }
 
+        internal void ProfilePerformance()
+        {
+            HighLoad = false;
+            var projectileTime = DsUtil.GetValue("projectiles");
+            var updateTime = DsUtil.GetValue("shoot");
+            var damageTime = DsUtil.GetValue("damage");
+            var drawTime = DsUtil.GetValue("draw");
+            var db = DsUtil.GetValue("db");
+            var ai = DsUtil.GetValue("ai");
+            var charge = DsUtil.GetValue("charge");
+            var acquire = DsUtil.GetValue("acquire");
+            Log.LineShortDate($"<Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]");
+            TargetRequests = 0;
+            TargetChecks = 0;
+            BlockChecks = 0;
+            CanShoot = 0;
+            ClosestRayCasts = 0;
+            RandomRayCasts = 0;
+            TopRayCasts = 0;
+            TargetTransfers = 0;
+            TargetSets = 0;
+            TargetResets = 0;
+            AmmoMoveTriggered = 0;
+            AmmoPulls = 0;
+            Load = 0d;
+            DsUtil.Clean();
+        }
+
+        internal void NetReport()
+        {
+            foreach (var reports in Reporter.ReportData)
+            {
+                var typeStr = reports.Key.ToString();
+                var reportList = reports.Value;
+                int clientReceivers = 0;
+                int serverReceivers = 0;
+                int noneReceivers = 0;
+                int validPackets = 0;
+                int invalidPackets = 0;
+                ulong dataTransfer = 0;
+                foreach (var report in reportList)
+                {
+                    if (report.PacketValid) validPackets++;
+                    else invalidPackets++;
+
+                    if (report.Receiver == NetworkReporter.Report.Received.None) noneReceivers++;
+                    else if (report.Receiver == NetworkReporter.Report.Received.Server) serverReceivers++;
+                    else clientReceivers++;
+
+                    dataTransfer += (uint)report.PacketSize;
+                    Reporter.ReportPool.Return(report);
+                }
+                var packetCount = reports.Value.Count;
+                Log.Line($"[{typeStr}] packets:{packetCount} - dataTransfer:{dataTransfer} - validPackets:{validPackets} - invalidPackets:{invalidPackets} - server:{serverReceivers} - client:{clientReceivers} - none:{noneReceivers}");
+            }
+
+            foreach (var list in Reporter.ReportData.Values)
+                list.Clear();
+        }
+
         internal int ShortLoadAssigner()
         {
             if (_shortLoadCounter + 1 > 59) _shortLoadCounter = 0;
