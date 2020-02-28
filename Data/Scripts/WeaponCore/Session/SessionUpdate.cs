@@ -93,12 +93,12 @@ namespace WeaponCore
                             comp.WasControlled = comp.UserControlled;
 
                             if (HandlesInput) {
-                                var wasTrackReticle = comp.TrackReticle;
+                                comp.WasTrackReticle = comp.TrackReticle;
                                 var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == Session.Player.IdentityId;
 
                                 comp.TrackReticle = comp.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId));
 
-                                if (comp.TrackReticle != wasTrackReticle && isControllingPlayer)
+                                if (comp.TrackReticle != comp.WasTrackReticle && isControllingPlayer)
                                 {
                                     if (IsServer && MpActive)
                                         PacketsToClient.Add(new PacketInfo {
