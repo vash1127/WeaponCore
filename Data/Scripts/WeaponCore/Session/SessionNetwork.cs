@@ -391,6 +391,8 @@ namespace WeaponCore
                             else
                                 comp.TrackReticle = false;
 
+                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
+
                             report.PacketValid = true;
                             break;
                         }
