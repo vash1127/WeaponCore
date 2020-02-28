@@ -269,7 +269,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); return false; }
         }
 
-        public void ReproccessClientRecievedPackets()
+        public void ReproccessClientErrorPackets()
         {
             for(int i = ClientSideErrorPktList.Count - 1; i >= 0; i--)
             {
