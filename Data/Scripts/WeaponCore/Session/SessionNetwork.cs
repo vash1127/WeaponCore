@@ -197,11 +197,34 @@ namespace WeaponCore
                         report.PacketValid = true;
                         break;
 
+                    case PacketType.OverRidesUpdate:
+                        var overRidesPacket = packet as OverRidesPacket;
+
+                        if (comp == null || overRidesPacket == null) return;
+
+                        comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                        comp.Set.Value.MId = overRidesPacket.MId;
+
+                        break;
+
+                    case PacketType.PlayerControlUpdate:
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        comp = ent?.Components.Get<WeaponComponent>();
+                        var cPlayerPacket = packet as ControllingPlayerPacket;
+
+                        if (comp == null || cPlayerPacket == null) return;
+
+                        comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
+                        comp.Set.Value.MId = cPlayerPacket.MId;
+                        
+                        break;
+
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;
 
                         break;
+
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
@@ -385,6 +408,32 @@ namespace WeaponCore
                             report.PacketValid = true;
                             break;
                         }
+                    case PacketType.OverRidesUpdate:
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        comp = ent?.Components.Get<WeaponComponent>();
+                        var overRidesPacket = packet as OverRidesPacket;
+
+                        if (comp == null || overRidesPacket == null || comp.Set.Value.MId <= overRidesPacket.MId) return;
+
+                        comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                        comp.Set.Value.MId = overRidesPacket.MId;
+
+                        PacketsToClient.Add(new PacketInfo {Entity = comp.MyCube, Packet = overRidesPacket });
+                        break;
+
+                    case PacketType.PlayerControlUpdate:
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        comp = ent?.Components.Get<WeaponComponent>();
+                        var cPlayerPacket = packet as ControllingPlayerPacket;
+
+                        if (comp == null || cPlayerPacket == null || comp.Set.Value.MId <= cPlayerPacket.MId) return;
+
+                        comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
+                        comp.Set.Value.MId = cPlayerPacket.MId;
+
+                        PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
+                        break;
+
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;

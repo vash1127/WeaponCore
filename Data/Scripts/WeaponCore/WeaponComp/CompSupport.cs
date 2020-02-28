@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
+using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
 {
@@ -49,6 +50,73 @@ namespace WeaponCore.Support
         {
             if (Session.MpActive)
                 Set.NetworkUpdate();
+        }
+
+        internal void SendOverRides()
+        {
+            if (Session.MpActive)
+            {
+                Set.Value.MId++;
+                if (Session.IsClient)
+                {
+                    Session.PacketsToServer.Add(new OverRidesPacket
+                    {
+                        EntityId = MyCube.EntityId,
+                        SenderId = Session.MultiplayerId,
+                        MId = Set.Value.MId,
+                        PType = PacketType.OverRidesUpdate,
+                        Data = Set.Value.Overrides,
+                    });
+                }
+                else
+                {
+                    Session.PacketsToClient.Add(new PacketInfo {
+                        Entity = MyCube,
+                        Packet = new OverRidesPacket
+                        {
+                            EntityId = MyCube.EntityId,
+                            SenderId = 0,
+                            MId = Set.Value.MId,
+                            PType = PacketType.OverRidesUpdate,
+                            Data = Set.Value.Overrides,
+                        }
+                    });
+                }
+            }
+        }
+
+        internal void SendControlingPlayer()
+        {
+            if (Session.MpActive)
+            {
+                Set.Value.MId++;
+                if (Session.IsClient)
+                {
+                    Session.PacketsToServer.Add(new ControllingPlayerPacket
+                    {
+                        EntityId = MyCube.EntityId,
+                        SenderId = Session.MultiplayerId,
+                        MId = Set.Value.MId,
+                        PType = PacketType.PlayerControlUpdate,
+                        Data = State.Value.CurrentPlayerControl,
+                    });
+                }
+                else
+                {
+                    Session.PacketsToClient.Add(new PacketInfo
+                    {
+                        Entity = MyCube,
+                        Packet = new ControllingPlayerPacket
+                        {
+                            EntityId = MyCube.EntityId,
+                            SenderId = 0,
+                            MId = Set.Value.MId,
+                            PType = PacketType.PlayerControlUpdate,
+                            Data = State.Value.CurrentPlayerControl,
+                        }
+                    });
+                }
+            }
         }
 
         internal void RemoveComp()

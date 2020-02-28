@@ -91,8 +91,8 @@ namespace WeaponCore.Support
                     comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
                 }
 
-                comp.UpdateSettingsMP();
-                comp.UpdateStateMP();
+                comp.SendOverRides();
+                comp.SendControlingPlayer();
             }
         }
 
@@ -150,8 +150,8 @@ namespace WeaponCore.Support
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                 comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
             }
-            comp.UpdateSettingsMP();
-            comp.UpdateStateMP();
+            comp.SendOverRides();
+            comp.SendControlingPlayer();
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)

@@ -146,6 +146,14 @@ namespace WeaponCore
     {
         [ProtoMember(1), DefaultValue(-1)] public long PlayerId = -1;
         [ProtoMember(2)] public ControlType CurrentControlType;
+
+        public PlayerControl() { }
+
+        public void Sync(PlayerControl syncFrom)
+        {
+            PlayerId = syncFrom.PlayerId;
+            CurrentControlType = syncFrom.CurrentControlType;
+        }
     }
     
     public enum ControlType
@@ -357,6 +365,24 @@ namespace WeaponCore
         [ProtoMember(10)] public bool Meteors;
         [ProtoMember(11)] public bool Biologicals;
         [ProtoMember(12)] public bool Projectiles;
+
+        public CompGroupOverrides() { }
+
+        public void Sync(CompGroupOverrides syncFrom)
+        {
+            Activate = syncFrom.Activate;
+            Neutrals = syncFrom.Neutrals;
+            Unowned = syncFrom.Unowned;
+            Friendly = syncFrom.Friendly;
+            TargetPainter = syncFrom.TargetPainter;
+            ManualControl = syncFrom.ManualControl;
+            FocusTargets = syncFrom.FocusTargets;
+            FocusSubSystem = syncFrom.FocusSubSystem;
+            SubSystem = syncFrom.SubSystem;
+            Meteors = syncFrom.Meteors;
+            Biologicals = syncFrom.Biologicals;
+            Projectiles = syncFrom.Projectiles;
+        }
     }
 
     [ProtoContract]

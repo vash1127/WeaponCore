@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game;
+using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage;
 using VRage.Game.ModAPI;
@@ -12,13 +13,12 @@ namespace WeaponCore
         internal static void ComputeStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
+            var def = weapon.System.AmmoDefId;
 
             if (!comp.Session.IsClient)
             {
                 if (!comp.MyCube.HasInventory) return;
-
-                var oldMags = weapon.State.Sync.CurrentMags;
-                var def = weapon.System.AmmoDefId;
+                
                 var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
                 weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
@@ -27,22 +27,14 @@ namespace WeaponCore
 
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-
-                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.Sync.CurrentMags)
+                
+            }
+            else
+            {
+                comp.Session.MTask = MyAPIGateway.Parallel.Start(() => 
                 {
-                    comp.Session.PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = comp.MyCube,
-                        Packet = new MagUpdatePacket
-                        {
-                            EntityId = comp.MyCube.EntityId,
-                            SenderId = 0,
-                            Mags = weapon.State.Sync.CurrentMags,
-                            PType = PacketType.MagUpdate,
-                            WeaponId = weapon.WeaponId
-                        }
-                    });
-                }
+                    weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);
+                });
             }
 
             var hasMags = weapon.State.Sync.CurrentMags > 0;

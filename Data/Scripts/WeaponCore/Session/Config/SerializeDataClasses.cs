@@ -27,6 +27,8 @@ namespace WeaponCore
         FocusUpdate,
         MagUpdate,
         ReticleUpdate,
+        OverRidesUpdate,
+        PlayerControlUpdate
     }
 
     #region packets
@@ -40,6 +42,7 @@ namespace WeaponCore
     [ProtoInclude(10, typeof(ControllingPacket))]
     [ProtoInclude(11, typeof(FocusPacket))]
     [ProtoInclude(12, typeof(MagUpdatePacket))]
+    [ProtoInclude(13, typeof(OverRidesPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -172,6 +175,36 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class OverRidesPacket : Packet
+    {
+        [ProtoMember(1)] internal CompGroupOverrides Data = null;
+        [ProtoMember(2)] internal uint MId;
+
+        public OverRidesPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class ControllingPlayerPacket : Packet
+    {
+        [ProtoMember(1)] internal PlayerControl Data = null;
+        [ProtoMember(2)] internal uint MId;
+
+        public ControllingPlayerPacket() { }
+
+        override public void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
         }
     }
     #endregion
