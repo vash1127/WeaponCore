@@ -68,7 +68,6 @@ namespace WeaponCore.Support
             {
                 if (!MyCube.MarkedForClose && Entity != null) 
                 {
-
                     _isServer = Session.IsServer;
                     _isDedicated = Session.DedicatedServer;
                     _mpActive = Session.MpActive;
@@ -97,30 +96,6 @@ namespace WeaponCore.Support
                             if (target.State != Target.Targets.Expired)
                                 target.SyncTarget(w.Target);
                         }
-
-                        /*weapon.Set = Set.Value.Weapons[i];
-                        weapon.State = State.Value.Weapons[i];
-                        weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
-
-                        weapon
-
-                        /*if (Session.MpActive && Session.IsClient)
-                        {
-                            
-                            var target = WeaponValues.Targets[weapon.WeaponId];
-                            if (target.State != Target.Targets.Expired)
-                                target.SyncTarget(weapon.Target);
-
-                            if (weapon.State.CurrentAmmo <= 0 && (!weapon.System.EnergyAmmo || weapon.System.MustCharge))
-                                weapon.StartReload();
-
-                            if (weapon.State.Heat > 0 && !weapon.HeatLoopRunning)
-                            {
-                                var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
-                                weapon.Comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
-                            }
-                        }*/
-
                     }
 
                     if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });

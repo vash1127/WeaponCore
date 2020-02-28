@@ -28,7 +28,7 @@ namespace WeaponCore
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.Sync.CurrentMags && (oldMags > 0 && weapon.State.Sync.CurrentMags > 0))
+                if (comp.Session.MpActive && comp.Session.IsServer && oldMags != weapon.State.Sync.CurrentMags)
                 {
                     comp.Session.PacketsToClient.Add(new PacketInfo
                     {

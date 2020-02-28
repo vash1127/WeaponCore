@@ -148,6 +148,7 @@ namespace WeaponCore.Support
                 weapon.State.Sync.CurrentCharge = 0;
                 weapon.State.Sync.CurrentAmmo = 0;
                 weapon.State.Sync.Reloading = false;
+
                 if (!Session.GameLoaded)
                     Session.ChargingWeaponsToReload.Enqueue(weapon);
                 else
