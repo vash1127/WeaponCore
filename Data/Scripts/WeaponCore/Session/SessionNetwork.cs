@@ -75,10 +75,15 @@ namespace WeaponCore
                                 if (comp == null) continue;
 
                                 var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
-                                var timings = weaponData.Timmings.SyncOffsetClient(Tick);
+                                
                                 var syncTarget = weaponData.TargetData;
 
-                                SyncWeapon(weapon, timings, ref weaponData.SyncData);
+                                if (weaponData.Timmings != null && weaponData.SyncData != null)
+                                {
+                                    var timings = weaponData.Timmings.SyncOffsetClient(Tick);
+                                    SyncWeapon(weapon, timings, ref weaponData.SyncData);
+                                }
+
                                 syncTarget.SyncTarget(weapon.Target);
                             }
 
@@ -672,9 +677,17 @@ namespace WeaponCore
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
-                    Timmings = w.Timings.SyncOffsetServer(_session.Tick),
-                    SyncData = w.State.Sync,
+                    Timmings = null,
+                    SyncData = null
                 };
+
+                if(_session.Tick - w.LastSyncTick > 20)
+                {
+                    weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
+                    weaponSync.SyncData = w.State.Sync;
+                    w.LastSyncTick = _session.Tick;
+                }
+
                 gridSync.Data.Add(weaponSync);
                 ai.CurrWeapon++;
             }
