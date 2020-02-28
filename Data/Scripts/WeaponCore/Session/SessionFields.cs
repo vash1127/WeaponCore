@@ -46,7 +46,8 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128);
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
         internal readonly MyConcurrentPool<GridAi> GridAiPool = new MyConcurrentPool<GridAi>(128, ai => ai.CleanUp());
-        
+        internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
+
         internal readonly Dictionary<PacketType, MyConcurrentPool<Packet>> PacketPools = new Dictionary<PacketType, MyConcurrentPool<Packet>>();
 
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());

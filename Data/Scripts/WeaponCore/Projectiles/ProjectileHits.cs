@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -440,13 +441,15 @@ namespace WeaponCore.Projectiles
             }
             else
             {
-                foreach (IMySlimBlock block in grid.GetBlocks())
-                {
-                    if (block.IsDestroyed) continue;
-                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                        continue;
-                    blocks.Add(block);
-                }
+                //usage:
+                //var dict = (Dictionary<Vector3I, IMySlimBlock>)GetHackDict((IMySlimBlock) null);
+                var tmpList = ai.Session.SlimPool.Get();
+                Session.GetBlocksInsideSphereFast(grid, ref sphere, true, tmpList);
+
+                for (int i = 0; i < tmpList.Count; i++)
+                    blocks.Add(tmpList[i]);
+
+                ai.Session.SlimPool.Return(tmpList);
             }
 
             blocks.Sort((a, b) =>
@@ -456,6 +459,8 @@ namespace WeaponCore.Projectiles
                 return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
             });
         }
+        public static object GetHackDict<TVal>(TVal valueType) => new Dictionary<Vector3I, TVal>();
+
         /*
         private static void PrefetchVoxelPhysicsIfNeeded(Projectile p)
         {

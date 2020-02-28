@@ -730,6 +730,47 @@ namespace WeaponCore
                 _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
         }
 
+        public static void GetBlocksInsideSphereFast(MyCubeGrid grid, ref BoundingSphereD sphere, bool checkDestroyed, List<IMySlimBlock> blocks)
+        {
+            var radius = sphere.Radius;
+            radius *= grid.GridSizeR;
+            var center = grid.WorldToGridInteger(sphere.Center);
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            double radiusSq = radius * radius;
+            int radiusCeil = (int)Math.Ceiling(radius);
+            int i, j, k;
+            Vector3I max2 = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
+            Vector3I min2 = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
+            for (i = min2.X; i <= max2.X; ++i)
+            {
+                for (j = min2.Y; j <= max2.Y; ++j)
+                {
+                    for (k = min2.Z; k <= max2.Z; ++k)
+                    {
+                        if (i * i + j * j + k * k < radiusSq)
+                        {
+                            MyCube cube;
+                            var vector3I = center + new Vector3I(i, j, k);
+
+                            if (grid.TryGetCube(vector3I, out cube))
+                            {
+                                var slim = (IMySlimBlock)cube.CubeBlock;
+                                if (slim.Position == vector3I)
+                                {
+                                    if (checkDestroyed && slim.IsDestroyed)
+                                        continue;
+
+                                    blocks.Add(slim);
+
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         public void GetBlocksInsideSphereBrute(MyCubeGrid grid, Vector3I center, ref BoundingSphereD sphere, bool sorted)
         {
             if (grid.PositionComp == null) return;
@@ -757,6 +798,90 @@ namespace WeaponCore
             }
             if (sorted)
                 _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
+        }
+
+
+
+        public static void GetExistingCubes(MyCubeGrid grid, Vector3I min, Vector3I max, Dictionary<Vector3I, IMySlimBlock> resultSet)
+        {
+            resultSet.Clear();
+            Vector3I result1 = Vector3I.Floor((min - Vector3I.One) / 2f);
+            Vector3I result2 = Vector3I.Ceiling((max - Vector3I.One) / 2f);
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            Vector3I.Max(ref result1, ref gridMin, out result1);
+            Vector3I.Min(ref result2, ref gridMax, out result2);
+            Vector3I key;
+            for (key.X = result1.X; key.X <= result2.X; ++key.X)
+            {
+                for (key.Y = result1.Y; key.Y <= result2.Y; ++key.Y)
+                {
+                    for (key.Z = result1.Z; key.Z <= result2.Z; ++key.Z)
+                    {
+                        MyCube myCube;
+                        if (grid.TryGetCube(key, out myCube))
+                        {
+                            resultSet[key] = myCube.CubeBlock;
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void GetExistingCubes(MyCubeGrid grid, Vector3I min, Vector3I max, List<IMySlimBlock> resultSet)
+        {
+            resultSet.Clear();
+            Vector3I result1 = Vector3I.Floor((min - Vector3I.One) / 2f);
+            Vector3I result2 = Vector3I.Ceiling((max - Vector3I.One) / 2f);
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            Vector3I.Max(ref result1, ref gridMin, out result1);
+            Vector3I.Min(ref result2, ref gridMax, out result2);
+            Vector3I key;
+            for (key.X = result1.X; key.X <= result2.X; ++key.X)
+            {
+                for (key.Y = result1.Y; key.Y <= result2.Y; ++key.Y)
+                {
+                    for (key.Z = result1.Z; key.Z <= result2.Z; ++key.Z)
+                    {
+                        MyCube myCube;
+                        if (grid.TryGetCube(key, out myCube))
+                        {
+                            resultSet.Add(myCube.CubeBlock);
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void GetExistingCubes(MyCubeGrid grid, Vector3I min, Vector3I max, BoundingSphere localSphere, bool checkDestroyed, List<IMySlimBlock> resultSet)
+        {
+            resultSet.Clear();
+            Vector3I result1 = Vector3I.Floor((min - Vector3I.One) / 2f);
+            Vector3I result2 = Vector3I.Ceiling((max - Vector3I.One) / 2f);
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            Vector3I.Max(ref result1, ref gridMin, out result1);
+            Vector3I.Min(ref result2, ref gridMax, out result2);
+            Vector3I key;
+            for (key.X = result1.X; key.X <= result2.X; ++key.X)
+            {
+                for (key.Y = result1.Y; key.Y <= result2.Y; ++key.Y)
+                {
+                    for (key.Z = result1.Z; key.Z <= result2.Z; ++key.Z)
+                    {
+                        MyCube myCube;
+                        if (grid.TryGetCube(key, out myCube))
+                        {
+                            var block = (IMySlimBlock)myCube.CubeBlock;
+                            if (checkDestroyed && block.IsDestroyed || !new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                                continue;
+
+                            resultSet.Add(block);
+                        }
+                    }
+                }
+            }
         }
     }
 }
