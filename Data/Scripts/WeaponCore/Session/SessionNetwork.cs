@@ -191,7 +191,7 @@ namespace WeaponCore
                                     UpdateActiveControlDictionary(block, playerBlock.PlayerId, true);
                                 }
                             }
-                            catch (Exception e) { Log.Line($"error in control update"); }
+                            catch (Exception e) { Log.Line($"error in control update: {e}"); }
 
                             report.PacketValid = true;
                             break;
