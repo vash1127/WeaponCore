@@ -171,24 +171,14 @@ namespace WeaponCore
 
                                             if (!w.TrackTarget)
                                             {
-
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
-                                                {
                                                     w.Target.Reset(Tick);
-
-                                                }
                                             }
                                             else if (!Weapon.TargetAligned(w, w.Target, out targetPos))
-                                            {
                                                 w.Target.Reset(Tick);
-
-                                            }
                                         }
                                         else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
-                                        {
                                             w.Target.Reset(Tick);
-
-                                        }
                                     }
                                 }
 
@@ -343,15 +333,7 @@ namespace WeaponCore
                     if (w.Timings.ChargeUntilTick <= Tick || !w.State.Sync.Reloading)
                     {
                         if (w.State.Sync.Reloading)
-                        {
                             w.Reloaded();
-                            /*w.State.CurrentAmmo = w.System.MagazineDef.Capacity;
-                            comp.State.Value.CurrentCharge = w.System.EnergyMagSize;
-                            w.State.CurrentCharge = w.System.EnergyMagSize;
-                            w.State.Reloading = false;
-                            w.Timings.ChargeUntilTick = 0;
-                            w.Timings.ChargeDelayTicks = 0;*/
-                        }
 
                         if (w.DrawingPower)
                             w.StopPowerDraw();
