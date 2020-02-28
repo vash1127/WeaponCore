@@ -284,7 +284,8 @@ namespace WeaponCore
 
                     switch (erroredPacket.PType)
                     {
-
+                        default:
+                            break;
                     }
                 }
 
