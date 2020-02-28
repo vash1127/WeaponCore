@@ -196,7 +196,7 @@ namespace WeaponCore
                 PlayerMouseStates[id] = new MouseStateData();
 
                 if (MpActive && IsServer)
-                    PacketizeToClientsInRange(null, new DictionaryUpdatePacket { EntityId = id, SenderId = player.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = true}); //threaded
+                    PacketizeToClientsInRange(null, new BoolUpdatePacket { EntityId = id, SenderId = player.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = true}); //threaded
 
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;

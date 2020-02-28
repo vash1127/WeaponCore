@@ -33,7 +33,7 @@ namespace WeaponCore.Support
             [ProtoMember(3)] public Vector3 Acceleration;
             [ProtoMember(4)] public bool ClearTarget;
 
-            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null)
+            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, bool fromServer = false)
             {
                 Position = hitPos;
                 if (ent != null)
@@ -42,26 +42,18 @@ namespace WeaponCore.Support
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
 
-                if (ai.Session.IsClient)
+                if (ai.Session.IsClient && !fromServer)
                 {
                     ai.Session.PacketsToServer.Add(new FakeTargetPacket
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.FakeTargetUpdate,
-                        Data = this,
+                        Data = hitPos,
                     });
 
                 }
                 ClearTarget = false;
-            }
-
-            internal void TransferFrom(FakeTarget target)
-            {
-                Position = target.Position;
-                LinearVelocity = target.LinearVelocity;
-                Acceleration = target.Acceleration;
-                ClearTarget = target.ClearTarget;
             }
 
             internal FakeTarget() { }

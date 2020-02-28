@@ -12,6 +12,8 @@ namespace WeaponCore
         internal void DrawTargetUi()
         {
             var s = _session;
+            if (!s.HandlesInput) return;
+            
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
             if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();

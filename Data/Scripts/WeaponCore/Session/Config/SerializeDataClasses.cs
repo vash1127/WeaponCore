@@ -26,6 +26,7 @@ namespace WeaponCore
         ActiveControlFullUpdate,
         FocusUpdate,
         MagUpdate,
+        ReticleUpdate,
     }
 
     #region packets
@@ -34,7 +35,7 @@ namespace WeaponCore
     [ProtoInclude(5, typeof(SettingPacket))]
     [ProtoInclude(6, typeof(GridWeaponPacket))]
     [ProtoInclude(7, typeof(MouseInputPacket))]
-    [ProtoInclude(8, typeof(DictionaryUpdatePacket))]
+    [ProtoInclude(8, typeof(BoolUpdatePacket))]
     [ProtoInclude(9, typeof(FakeTargetPacket))]
     [ProtoInclude(10, typeof(ControllingPacket))]
     [ProtoInclude(11, typeof(FocusPacket))]
@@ -96,13 +97,13 @@ namespace WeaponCore
     [ProtoContract]
     public class FakeTargetPacket : Packet
     {
-        [ProtoMember(1)] internal FakeTarget Data = null;
+        [ProtoMember(1)] internal Vector3 Data = Vector3.Zero;
         public FakeTargetPacket() { }
 
         override public void CleanUp()
         {
             base.CleanUp();
-            Data = null;
+            Data = Vector3.Zero;
         }
     }
 
@@ -149,10 +150,10 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class DictionaryUpdatePacket : Packet
+    public class BoolUpdatePacket : Packet
     {
         [ProtoMember(1)] internal bool Data;
-        public DictionaryUpdatePacket() { }
+        public BoolUpdatePacket() { }
 
         override public void CleanUp()
         {

@@ -114,7 +114,7 @@ namespace WeaponCore
                             GridAi ai;
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                ai.DummyTarget.TransferFrom(targetPacket.Data);
+                                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                                 report.PacketValid = true;
                             }
 
@@ -123,7 +123,7 @@ namespace WeaponCore
 
                     case PacketType.PlayerIdUpdate:
                         {
-                            var updatePacket = packet as DictionaryUpdatePacket;
+                            var updatePacket = packet as BoolUpdatePacket;
                             if (updatePacket == null) return;
 
                             if (updatePacket.Data) //update/add
@@ -162,7 +162,7 @@ namespace WeaponCore
                         break;
                     case PacketType.ActiveControlUpdate:
                         {
-                            var dPacket = packet as DictionaryUpdatePacket;
+                            var dPacket = packet as BoolUpdatePacket;
                             if (dPacket?.Data == null) return;
 
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
@@ -196,6 +196,20 @@ namespace WeaponCore
                             report.PacketValid = true;
                             break;
                         }
+                    case PacketType.ReticleUpdate:
+
+                        var reticlePacket = packet as BoolUpdatePacket;
+
+                        if (reticlePacket == null || comp == null) return;
+
+                        if (reticlePacket.Data)
+                            comp.OtherPlayerTrackingReticle = true;
+                        else
+                            comp.OtherPlayerTrackingReticle = false;
+
+                        report.PacketValid = true;
+                        break;
+
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;
@@ -277,7 +291,7 @@ namespace WeaponCore
 
                     case PacketType.ActiveControlUpdate:
                         {
-                            var dPacket = packet as DictionaryUpdatePacket;
+                            var dPacket = packet as BoolUpdatePacket;
                             if (dPacket?.Data == null) return;
 
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
@@ -323,7 +337,7 @@ namespace WeaponCore
                             GridAi ai;
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                ai.DummyTarget.TransferFrom(targetPacket.Data);
+                                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                                 report.PacketValid = true;
                             }
@@ -362,6 +376,22 @@ namespace WeaponCore
 
                                 report.PacketValid = true;
                             }
+                            break;
+                        }
+                    case PacketType.ReticleUpdate:
+                        {
+                            var reticlePacket = packet as BoolUpdatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (reticlePacket == null || comp == null) return;
+
+                            if (reticlePacket.Data)
+                                comp.TrackReticle = true;
+                            else
+                                comp.TrackReticle = false;
+
+                            report.PacketValid = true;
                             break;
                         }
                     default:
@@ -486,7 +516,7 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new DictionaryUpdatePacket
+                PacketsToServer.Add(new BoolUpdatePacket
                 {
                     EntityId = controlBlock.EntityId,
                     SenderId = MultiplayerId,
@@ -499,7 +529,7 @@ namespace WeaponCore
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = controlBlock,
-                    Packet = new DictionaryUpdatePacket
+                    Packet = new BoolUpdatePacket
                     {
                         EntityId = controlBlock.EntityId,
                         SenderId = 0,

@@ -202,7 +202,7 @@ namespace WeaponCore
                     PlayerMouseStates.Remove(playerId);
 
                     //thread?
-                    PacketizeToClientsInRange(null, new DictionaryUpdatePacket { EntityId = playerId, SenderId = removedPlayer.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = false });
+                    PacketizeToClientsInRange(null, new BoolUpdatePacket { EntityId = playerId, SenderId = removedPlayer.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = false });
 
                     if (removedPlayer.SteamUserId == AuthorSteamId)
                     {
