@@ -28,7 +28,8 @@ namespace WeaponCore
         MagUpdate,
         ReticleUpdate,
         OverRidesUpdate,
-        PlayerControlUpdate
+        PlayerControlUpdate,
+        TargetExpireUpdate,
     }
 
     #region packets
@@ -43,17 +44,38 @@ namespace WeaponCore
     [ProtoInclude(11, typeof(FocusPacket))]
     [ProtoInclude(12, typeof(MagUpdatePacket))]
     [ProtoInclude(13, typeof(OverRidesPacket))]
+    [ProtoInclude(14, typeof(ControllingPlayerPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
         [ProtoMember(2)] internal ulong SenderId;
         [ProtoMember(3)] internal PacketType PType;
 
-        virtual public void CleanUp()
+        public virtual void CleanUp()
         {
             EntityId = 0;
             SenderId = 0;
             PType = PacketType.Invalid;
+        }
+
+        //can override in other packet
+        public virtual bool Equals<T>(T other)
+        {
+            var packet = other as Packet;
+            return Equals(EntityId, packet.EntityId) && Equals(SenderId, packet.SenderId) && Equals(PType, packet.PType);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (EntityId + (int)PType + (long)SenderId).GetHashCode();
         }
     }
 
@@ -64,7 +86,7 @@ namespace WeaponCore
 
         public StatePacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = null;
@@ -77,7 +99,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal CompSettingsValues Data = null;
         public SettingPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = null;
@@ -90,7 +112,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal List<WeaponData> Data = new List<WeaponData>();
         public GridWeaponPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = null;
@@ -103,7 +125,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal Vector3 Data = Vector3.Zero;
         public FakeTargetPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = Vector3.Zero;
@@ -117,7 +139,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal MouseStateData Data = null;
         public MouseInputPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = null;
@@ -130,7 +152,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal ControllingPlayersSync Data;
         public ControllingPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = new ControllingPlayersSync();
@@ -144,7 +166,7 @@ namespace WeaponCore
         [ProtoMember(2)] internal int WeaponId;
         public MagUpdatePacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Mags = 0;
@@ -158,7 +180,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal bool Data;
         public BoolUpdatePacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = false;
@@ -171,7 +193,7 @@ namespace WeaponCore
         [ProtoMember(1)] internal long Data;
         public FocusPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = 0;
@@ -186,7 +208,7 @@ namespace WeaponCore
 
         public OverRidesPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = null;
@@ -201,7 +223,7 @@ namespace WeaponCore
 
         public ControllingPlayerPacket() { }
 
-        override public void CleanUp()
+        public override void CleanUp()
         {
             base.CleanUp();
             Data = null;
@@ -234,26 +256,45 @@ namespace WeaponCore
     public class TransferTarget
     {
         [ProtoMember(1)] internal long EntityId;
-        [ProtoMember(2)] internal bool IsProjectile;
-        [ProtoMember(3)] internal bool IsFakeTarget;
-        [ProtoMember(4)] internal Vector3D TargetPos;
-        [ProtoMember(5)] internal double HitShortDist;
-        [ProtoMember(6)] internal double OrigDistance;
-        [ProtoMember(7)] internal long TopEntityId;
-        [ProtoMember(8)] internal Targets State = Targets.Expired;
-        [ProtoMember(9)] internal int WeaponId;
+        [ProtoMember(2)] internal Vector3 TargetPos;
+        [ProtoMember(3)] internal float HitShortDist;
+        [ProtoMember(4)] internal float OrigDistance;
+        [ProtoMember(5)] internal long TopEntityId;
+        [ProtoMember(6)] internal TargetInfo Info = TargetInfo.Expired;
+        [ProtoMember(7)] internal int WeaponId;
+
+        public enum TargetInfo
+        {
+            IsEntity,
+            IsProjectile,
+            IsFakeTarget,
+            Expired
+        }
 
         internal void SyncTarget(Target target)
         {
             var entity = MyEntities.GetEntityByIdOrDefault(EntityId);
             target.Entity = entity;
-            target.IsProjectile = IsProjectile;
-            target.IsFakeTarget = IsFakeTarget;
             target.TargetPos = TargetPos;
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
-            target.State = State;
+
+            
+            if (Info == TargetInfo.IsProjectile)
+            {
+                target.IsProjectile = true;
+                target.State = Targets.Acquired;
+            }
+            else if (Info == TargetInfo.IsFakeTarget)
+            {
+                target.IsFakeTarget = true;
+                target.State = Targets.Acquired;
+            }
+            else if (Info != TargetInfo.IsEntity)
+                target.State = Targets.Acquired;
+            else
+                target.State = Targets.Expired;
         }
 
         public TransferTarget()

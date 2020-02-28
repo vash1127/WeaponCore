@@ -93,7 +93,7 @@ namespace WeaponCore.Support
                         if (Session.IsClient)
                         {
                             var target = WeaponValues.Targets[w.WeaponId];
-                            if (target.State != Target.Targets.Expired)
+                            if (target.Info != TransferTarget.TargetInfo.Expired)
                                 target.SyncTarget(w.Target);
                         }
                     }

@@ -61,14 +61,22 @@ namespace WeaponCore.Support
         internal void SyncTarget(TransferTarget target, int weaponId)
         {
             target.EntityId = Entity?.EntityId ?? -1;
-            target.IsProjectile = IsProjectile;
-            target.IsFakeTarget = IsFakeTarget;
             target.TargetPos = TargetPos;
-            target.HitShortDist = HitShortDist;
-            target.OrigDistance = OrigDistance;
+            target.HitShortDist = (float)HitShortDist;
+            target.OrigDistance = (float)OrigDistance;
             target.TopEntityId = TopEntityId;
             target.WeaponId = weaponId;
-            target.State = State;
+
+            if (IsProjectile)
+                target.Info = TransferTarget.TargetInfo.IsProjectile;
+            else if (IsFakeTarget)
+                target.Info = TransferTarget.TargetInfo.IsFakeTarget;
+            else if (State == Targets.Acquired)
+                target.Info = TransferTarget.TargetInfo.IsEntity;
+
+            if (State == Targets.Expired)
+                target.Info = TransferTarget.TargetInfo.Expired;
+
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)

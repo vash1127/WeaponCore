@@ -136,7 +136,7 @@ namespace WeaponCore
                                     {
                                         if (!IsClient)
                                             w.Target.Reset(Tick, !comp.TrackReticle); //testing, ent is null on client load
-                                        else if (comp.WeaponValues.Targets[w.WeaponId].State == Targets.Acquired)
+                                        else if (comp.WeaponValues.Targets[w.WeaponId].Info != TransferTarget.TargetInfo.Expired)
                                                 comp.WeaponValues.Targets[w.WeaponId].SyncTarget(w.Target);
 
                                     }
@@ -191,7 +191,21 @@ namespace WeaponCore
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
                                     if (w.Target.State == Targets.Expired)
-                                        w.Comp.WeaponValues.Targets[w.WeaponId].State = Targets.Expired;
+                                        w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
+
+                                    if (MpActive && IsServer)
+                                    {
+                                        PacketsToClient.Add(new PacketInfo
+                                        {
+                                            Entity = w.Comp.MyCube,
+                                            Packet = new Packet
+                                            {
+                                                EntityId = comp.MyCube.EntityId,
+                                                SenderId = (ulong)w.WeaponId,
+                                                PType = PacketType.TargetExpireUpdate,
+                                            }
+                                        });
+                                    }
                                 }
 
                                 ///

@@ -30,24 +30,32 @@ namespace WeaponCore
 
         private void ClientReceivedPacket(byte[] rawData)
         {
+            var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+            if (packet == null) return;
+
+            ProccessClientPacket(packet, rawData.Length);
+        }
+
+        private bool ProccessClientPacket(Packet packet, int packetSize, bool retry = false)
+        {
             try
             {
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Client;
-                report.PacketSize = rawData.Length;
+                report.PacketSize = packetSize;
 
-                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                if (packet == null) return;
                 var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                 var comp = ent?.Components.Get<WeaponComponent>();
 
-                Reporter.ReportData[packet.PType].Add(report);
+                if (!retry) Reporter.ReportData[packet.PType].Add(report);
+
+                var invalidType = false;
 
                 switch (packet.PType)
                 {
                     case PacketType.CompStateUpdate:                        
                         var statePacket = packet as StatePacket;
-                        if (statePacket?.Data == null || comp == null) return;
+                        if (statePacket?.Data == null || comp == null) return false;
 
                         comp.State.Value.Sync(statePacket.Data);
 
@@ -55,7 +63,7 @@ namespace WeaponCore
                         break;
                     case PacketType.CompSettingsUpdate:
                         var setPacket = packet as SettingPacket;
-                        if (setPacket?.Data == null || comp == null) return;
+                        if (setPacket?.Data == null || comp == null) return false;
 
                         comp.Set.Value.Sync(setPacket.Data);
                         
@@ -64,7 +72,7 @@ namespace WeaponCore
                     case PacketType.TargetUpdate:
                         {
                             var targetPacket = packet as GridWeaponPacket;
-                            if (targetPacket?.Data == null || ent == null) return;
+                            if (targetPacket?.Data == null || ent == null) return false;
                             
                             for(int i = 0; i < targetPacket.Data.Count; i++)
                             {
@@ -93,7 +101,7 @@ namespace WeaponCore
                     case PacketType.FocusUpdate:
                         {
                             var targetPacket = packet as FocusPacket;
-                            if (targetPacket == null) return;
+                            if (targetPacket == null) return false;
 
                             var myGrid = ent as MyCubeGrid;
                             GridAi ai;
@@ -112,7 +120,7 @@ namespace WeaponCore
                     case PacketType.FakeTargetUpdate:
                         {
                             var targetPacket = packet as FakeTargetPacket;
-                            if (targetPacket?.Data == null) return;
+                            if (targetPacket?.Data == null) return false;
 
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
@@ -129,7 +137,7 @@ namespace WeaponCore
                     case PacketType.PlayerIdUpdate:
                         {
                             var updatePacket = packet as BoolUpdatePacket;
-                            if (updatePacket == null) return;
+                            if (updatePacket == null) return false;
 
                             if (updatePacket.Data)
                                 PlayerConnected(updatePacket.EntityId);
@@ -141,7 +149,7 @@ namespace WeaponCore
                         }
                     case PacketType.ClientMouseEvent:
                         var mousePacket = packet as MouseInputPacket;
-                        if (mousePacket?.Data == null) return;
+                        if (mousePacket?.Data == null) return false;
 
                         long playerId;
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -155,10 +163,10 @@ namespace WeaponCore
                     case PacketType.ActiveControlUpdate:
                         {
                             var dPacket = packet as BoolUpdatePacket;
-                            if (dPacket?.Data == null) return;
+                            if (dPacket?.Data == null) return false;
 
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-                            if (block == null) return;
+                            if (block == null) return false;
 
                             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
 
@@ -172,7 +180,7 @@ namespace WeaponCore
                             try
                             {
                                 var csPacket = packet as ControllingPacket;
-                                if (csPacket?.Data == null) return;
+                                if (csPacket?.Data == null) return false;
 
                                 for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
                                 {
@@ -192,7 +200,7 @@ namespace WeaponCore
 
                         var reticlePacket = packet as BoolUpdatePacket;
 
-                        if (reticlePacket == null || comp == null) return;
+                        if (reticlePacket == null || comp == null) return false;
 
                         if (reticlePacket.Data)
                             comp.OtherPlayerTrackingReticle = true;
@@ -205,7 +213,7 @@ namespace WeaponCore
                     case PacketType.OverRidesUpdate:
                         var overRidesPacket = packet as OverRidesPacket;
 
-                        if (comp == null || overRidesPacket == null) return;
+                        if (comp == null || overRidesPacket == null) return false;
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
@@ -217,22 +225,76 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
-                        if (comp == null || cPlayerPacket == null) return;
+                        if (comp == null || cPlayerPacket == null) return false;
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
                         
                         break;
 
-                    default:
-                        Reporter.ReportData[PacketType.Invalid].Add(report);
-                        report.PacketValid = false;
+                    case PacketType.TargetExpireUpdate:
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        comp = ent?.Components.Get<WeaponComponent>(); 
+
+                        if (comp == null) return false;
+                        //saving on extra field with new packet type
+                        comp.Platform.Weapons[(int)packet.SenderId].Target.Reset(Tick);
 
                         break;
 
+                    default:
+                        if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
+                        invalidType = true;
+                        report.PacketValid = false;
+
+                        break;
                 }
+
+                if (!report.PacketValid && !invalidType && !retry)
+                {
+                    var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
+
+                    if (!ClientSideErrorPktList.Contains(errorPacket))
+                        ClientSideErrorPktList.Add(errorPacket);
+                    else
+                    {
+                        //this only works because hashcode override in ErrorPacket
+                        ClientSideErrorPktList.Remove(errorPacket);
+                        ClientSideErrorPktList.Add(errorPacket);
+                    }
+                }
+
+                return report.PacketValid;
             }
-            catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); return false; }
+        }
+
+        public void ReproccessClientRecievedPackets()
+        {
+            for(int i = ClientSideErrorPktList.Count - 1; i >= 0; i--)
+            {
+                var erroredPacket = ClientSideErrorPktList[i];
+                if (erroredPacket.MaxAttempts == 0)
+                {
+                    //set packet retry variables, based on type
+                    /*
+                     * erroredPacket.MaxAttempts = 0;
+                     * erroredPacket.RetryAttempt = 0;
+                    */
+
+                    switch (erroredPacket.PType)
+                    {
+
+                    }
+                }
+
+                //proccess packet logic
+
+                //ProccessClientPacket(erroredPacket.Packet, 0, true);
+                //erroredPacket.RetryAttempt++;
+
+                ClientSideErrorPktList.Remove(erroredPacket);
+            }
         }
 
         private void ServerReceivedPacket(byte[] rawData)
@@ -623,6 +685,33 @@ namespace WeaponCore
         {
             internal MyEntity Entity;
             internal Packet Packet;
+        }
+
+        internal class ErrorPacket
+        {
+            internal uint RecievedTick;
+            internal int RetryAttempt;
+            internal int MaxAttempts;
+            internal PacketType PType;
+            internal Packet Packet;
+
+            public virtual bool Equals(ErrorPacket other)
+            {
+                return Packet.Equals(other.Packet);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != GetType()) return false;
+                return Equals(obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return Packet.GetHashCode();
+            }
         }
         #endregion
     }
