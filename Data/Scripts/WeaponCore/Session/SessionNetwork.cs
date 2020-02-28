@@ -115,9 +115,6 @@ namespace WeaponCore
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.TransferFrom(targetPacket.Data);
-
-                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
-
                                 report.PacketValid = true;
                             }
 
