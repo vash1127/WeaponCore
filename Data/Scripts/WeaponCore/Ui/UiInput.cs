@@ -14,6 +14,7 @@ namespace WeaponCore
         internal bool LeftMouseReleased;
         internal bool RightMouseReleased;
         internal bool MouseButtonPressed;
+        internal bool MouseButtonWasPressed;
         internal bool MouseButtonLeftWasPressed;
         internal bool MouseButtonMiddleWasPressed;
         internal bool MouseButtonRightWasPressed;
@@ -50,6 +51,7 @@ namespace WeaponCore
 
             if (s.InGridAiBlock && !s.InMenu)
             {
+                MouseButtonWasPressed = MouseButtonPressed;
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
 
                 MouseButtonLeftWasPressed = ClientMouseState.MouseButtonLeft;

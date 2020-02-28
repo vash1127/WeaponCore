@@ -9,6 +9,8 @@ using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Session;
+
 namespace WeaponCore
 {
     internal partial class TargetUi
@@ -248,6 +250,41 @@ namespace WeaponCore
             else hitPos = Vector3D.Zero;
 
             return closestEnt != null;
+        }
+
+        internal void SetCompTrackReticle(WeaponComponent comp)
+        {
+            comp.WasTrackReticle = comp.TrackReticle;
+            var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == _session.Session.Player.IdentityId;
+
+            var overRides = comp.Set.Value.Overrides;
+
+            comp.TrackReticle = comp.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && DrawReticle && !_session.InMenu && comp.Ai.ControllingPlayers.ContainsKey(_session.Session.Player.IdentityId));
+
+            if (comp.TrackReticle != comp.WasTrackReticle && isControllingPlayer)
+            {
+                if (_session.IsServer && _session.MpActive)
+                    _session.PacketsToClient.Add(new PacketInfo
+                    {
+                        Entity = comp.MyCube,
+                        Packet = new BoolUpdatePacket
+                        {
+                            EntityId = comp.MyCube.EntityId,
+                            PType = PacketType.ReticleUpdate,
+                            Data = comp.TrackReticle
+                        }
+                    });
+                else if (_session.IsClient)
+                {
+                    _session.PacketsToServer.Add(new BoolUpdatePacket
+                    {
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = _session.MultiplayerId,
+                        PType = PacketType.ReticleUpdate,
+                        Data = comp.TrackReticle
+                    });
+                }
+            }
         }
     }
 }

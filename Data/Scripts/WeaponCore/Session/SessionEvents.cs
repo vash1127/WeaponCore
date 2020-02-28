@@ -164,27 +164,20 @@ namespace WeaponCore
                 if (Players.ContainsKey(id)) return;
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
 
-                /*
-                if (!IsClient && MpActive)
-                {                    
-                    var playerControllList = new List<PlayerToBlock>();
-                    foreach (var ai in GridTargetingAIs)
+                if (IsServer && MpActive)
+                {
+                    PacketsToClient.Add(new PacketInfo
                     {
-                        foreach(var playerBlockPair in ai.Value.AIValues.ControllingPlayers)
-                            playerControllList.Add(new PlayerToBlock { playerId = playerBlockPair.Key, EntityId = playerBlockPair.Value.EntityId });
-                    }
-                    var packet = new COntrollingSyncPacket {
-                        EntityId = -1,
-                        SenderId = 0,
-                        PType = PacketType.ActiveControlFullUpdate,
-                        Data = new ControllingPlayersSync {
-                            PlayersToControlledBlock = playerControllList.ToArray()
+                        Entity = null,
+                        Packet = new BoolUpdatePacket
+                        {
+                            EntityId = id,
+                            SenderId = Players[id].SteamUserId,
+                            PType = PacketType.PlayerIdUpdate,
+                            Data = true
                         }
-                    };
-
-                    var bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
-                    MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, Players[id].SteamUserId);
-                }*/
+                    });
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
         }
@@ -201,8 +194,20 @@ namespace WeaponCore
                     SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
                     PlayerMouseStates.Remove(playerId);
 
-                    //thread?
-                    PacketizeToClientsInRange(null, new BoolUpdatePacket { EntityId = playerId, SenderId = removedPlayer.SteamUserId, PType = PacketType.PlayerIdUpdate, Data = false });
+                    if (IsServer && MpActive)
+                    {
+                        PacketsToClient.Add(new PacketInfo
+                        {
+                            Entity = null,
+                            Packet = new BoolUpdatePacket
+                            {
+                                EntityId = playerId,
+                                SenderId = removedPlayer.SteamUserId,
+                                PType = PacketType.PlayerIdUpdate,
+                                Data = false
+                            }
+                        });
+                    }
 
                     if (removedPlayer.SteamUserId == AuthorSteamId)
                     {

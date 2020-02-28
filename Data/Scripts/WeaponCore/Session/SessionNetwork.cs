@@ -126,25 +126,12 @@ namespace WeaponCore
                             var updatePacket = packet as BoolUpdatePacket;
                             if (updatePacket == null) return;
 
-                            if (updatePacket.Data) //update/add
-                            {
-                                SteamToPlayer[updatePacket.SenderId] = updatePacket.EntityId;
-                                MouseStateData ms;
-                                if (!PlayerMouseStates.TryGetValue(updatePacket.EntityId, out ms))
-                                {
-                                    PlayerMouseStates[updatePacket.EntityId] = new MouseStateData();
-
-                                    report.PacketValid = true;
-                                }
-                            }
+                            if (updatePacket.Data)
+                                PlayerConnected(updatePacket.EntityId);
                             else //remove
-                            {
-                                long player;
-                                SteamToPlayer.TryRemove(updatePacket.SenderId, out player);
-                                PlayerMouseStates.Remove(player);
+                                PlayerDisconnected(updatePacket.EntityId);
 
-                                report.PacketValid = true;
-                            }
+                            report.PacketValid = true;
                             break;
                         }
                     case PacketType.ClientMouseEvent:
@@ -277,12 +264,14 @@ namespace WeaponCore
                     case PacketType.ClientMouseEvent:
 
                         var mousePacket = packet as MouseInputPacket;
-                        if (mousePacket?.Data == null) return;
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+
+                        if (mousePacket?.Data == null || ent == null) return;
 
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                         {
                             PlayerMouseStates[playerId] = mousePacket.Data;
-                            PacketsToClient.Add(new PacketInfo { Entity = null, Packet = mousePacket });
+                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = mousePacket });
 
                             report.PacketValid = true;
                         }
@@ -486,13 +475,13 @@ namespace WeaponCore
             }
         }
 
-        internal void MouseNetworkEvent()
+        internal void MouseNetworkEvent(MyEntity entity)
         {
             if (IsClient)
             {
                 PacketsToServer.Add(new MouseInputPacket
                 {
-                    EntityId = -1,
+                    EntityId = entity.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ClientMouseEvent,
                     Data = UiInput.ClientMouseState
@@ -502,10 +491,10 @@ namespace WeaponCore
             {
                 PacketsToClient.Add(new PacketInfo
                 {
-                    Entity = null,
+                    Entity = entity,
                     Packet = new MouseInputPacket
                     {
-                        EntityId = -1,
+                        EntityId = entity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ClientMouseEvent,
                         Data = UiInput.ClientMouseState

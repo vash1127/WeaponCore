@@ -92,36 +92,8 @@ namespace WeaponCore
                             
                             comp.WasControlled = comp.UserControlled;
 
-                            if (HandlesInput) {
-                                comp.WasTrackReticle = comp.TrackReticle;
-                                var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == Session.Player.IdentityId;
-
-                                comp.TrackReticle = comp.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && TargetUi.DrawReticle && !InMenu && gridAi.ControllingPlayers.ContainsKey(Session.Player.IdentityId));
-
-                                if (comp.TrackReticle != comp.WasTrackReticle && isControllingPlayer)
-                                {
-                                    if (IsServer && MpActive)
-                                        PacketsToClient.Add(new PacketInfo {
-                                            Entity = comp.MyCube,
-                                            Packet = new BoolUpdatePacket
-                                            {
-                                                EntityId = comp.MyCube.EntityId,
-                                                PType = PacketType.ReticleUpdate,
-                                                Data = comp.TrackReticle
-                                            }
-                                        });
-                                    else if (IsClient)
-                                    {
-                                        PacketsToServer.Add(new BoolUpdatePacket
-                                            {
-                                                EntityId = comp.MyCube.EntityId,
-                                                SenderId = MultiplayerId,
-                                                PType = PacketType.ReticleUpdate,
-                                                Data = comp.TrackReticle
-                                            });
-                                    }
-                                }
-                            }
+                            if (HandlesInput)
+                                TargetUi.SetCompTrackReticle(comp);
 
                                 var id = comp.State.Value.PlayerIdInTerminal;
                             comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;

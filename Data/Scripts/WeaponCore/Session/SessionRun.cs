@@ -193,7 +193,7 @@ namespace WeaponCore
                 UiInput.UpdateInputState();
                 if (MpActive)
                 {
-                    if (UiInput.MouseButtonPressed) MouseNetworkEvent();
+                    if (UiInput.MouseButtonPressed != UiInput.MouseButtonWasPressed && ActiveControlBlock != null) MouseNetworkEvent(ActiveControlBlock);
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
                 }
