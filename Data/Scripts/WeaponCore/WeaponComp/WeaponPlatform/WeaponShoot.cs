@@ -102,7 +102,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                if (Comp.TerminalControlled == None && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29))
+                if (!Comp.Session.IsClient && Comp.TerminalControlled == None && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29))
                     ShootRayCheck();
 
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
