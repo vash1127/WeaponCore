@@ -78,7 +78,11 @@ namespace WeaponCore
 
         private void GridAddedToScene(MyEntity myEntity)
         {
-            NewGrids.Enqueue(myEntity as MyCubeGrid);
+            try
+            {
+                NewGrids.Enqueue(myEntity as MyCubeGrid);
+            }
+            catch (Exception ex) { Log.Line($"Exception in GridAddedToScene: {ex}"); }
         }
 
         private void AddGridToMap()
@@ -127,26 +131,42 @@ namespace WeaponCore
 
         private void ToFatMap(MyCubeBlock myCubeBlock)
         {
-            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
-            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
-            DirtyGrids.Add(myCubeBlock.CubeGrid);
+            try
+            {
+                GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
+                GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
+                DirtyGrids.Add(myCubeBlock.CubeGrid);
+            }
+            catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex}"); }
         }
 
         private void FromFatMap(MyCubeBlock myCubeBlock)
         {
-            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
-            DirtyGrids.Add(myCubeBlock.CubeGrid);
+            try
+            {
+                GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
+                DirtyGrids.Add(myCubeBlock.CubeGrid);
+            }
+            catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex}"); }
         }
 
         private void MenuOpened(object obj)
         {
-            PlayerControlAcquired(ControlledEntity);
-            InMenu = true;
+            try
+            {
+                PlayerControlAcquired(ControlledEntity);
+                InMenu = true;
+            }
+            catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}"); }
         }
 
         private void MenuClosed(object obj)
         {
-            InMenu = false;
+            try
+            {
+                InMenu = false;
+            }
+            catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}"); }
         }
 
         private void PlayerControlAcquired(MyEntity lastEnt)

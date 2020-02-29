@@ -30,10 +30,14 @@ namespace WeaponCore
 
         private void ClientReceivedPacket(byte[] rawData)
         {
-            var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-            if (packet == null) return;
+            try
+            {
+                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+                if (packet == null) return;
 
-            ProccessClientPacket(packet, rawData.Length);
+                ProccessClientPacket(packet, rawData.Length);
+            }
+            catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
 
         private bool ProccessClientPacket(Packet packet, int packetSize, bool retry = false)
