@@ -32,7 +32,6 @@ namespace WeaponCore
         {
             try
             {
-                return;
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
                 if (packet == null) return;
 
@@ -75,7 +74,7 @@ namespace WeaponCore
                         report.PacketValid = true;
                         break;
                     case PacketType.TargetUpdate:
-                        {
+                    {
                             var targetPacket = packet as GridWeaponPacket;
                             if (targetPacket?.Data == null || ent == null) return false;
                             
@@ -257,6 +256,7 @@ namespace WeaponCore
 
                 if (!report.PacketValid && !invalidType && !retry)
                 {
+                    return false;
                     var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
 
                     if (!ClientSideErrorPktList.Contains(errorPacket))
