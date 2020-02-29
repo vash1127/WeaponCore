@@ -28,17 +28,10 @@ namespace WeaponCore
 
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-                
+
             }
             else
                 comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
-
-            var hasMags = weapon.State.Sync.CurrentMags > 0;
-            var chargeReload = weapon.System.MustCharge && (weapon.System.EnergyAmmo || hasMags);
-            var standardReload = !weapon.System.MustCharge && !weapon.System.EnergyAmmo && hasMags;
-
-            if (weapon.State.Sync.CurrentAmmo == 0 && (comp.Session.IsCreative || chargeReload || standardReload))
-                weapon.StartReload();
         }
 
         internal void AmmoPull() {

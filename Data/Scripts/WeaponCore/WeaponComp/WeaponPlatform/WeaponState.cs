@@ -456,9 +456,21 @@ namespace WeaponCore.Platform
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
         }
 
+
+        internal void CheckReload()
+        {
+            var hasMags = State.Sync.CurrentMags > 0;
+            var chargeReload = System.MustCharge && (System.EnergyAmmo || hasMags);
+            var standardReload = !System.MustCharge && !System.EnergyAmmo && hasMags;
+
+            if (State.Sync.CurrentAmmo == 0 && (Comp.Session.IsCreative || chargeReload || standardReload))
+                StartReload();
+        }
+
         internal void GetAmmoClient()
         {
             State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.AmmoDefId);
+            CheckReload();
         }
 
         internal void Reloaded(object o = null)
