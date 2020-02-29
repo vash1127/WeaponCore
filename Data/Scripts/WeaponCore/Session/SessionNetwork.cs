@@ -244,6 +244,7 @@ namespace WeaponCore
                         //saving on extra field with new packet type
                         comp.Platform.Weapons[(int)packet.SenderId].Target.Reset(Tick);
 
+                        report.PacketValid = true;
                         break;
 
                     default:
@@ -711,7 +712,7 @@ namespace WeaponCore
                 if (ReferenceEquals(null, obj)) return false;
                 if (ReferenceEquals(this, obj)) return true;
                 if (obj.GetType() != GetType()) return false;
-                return Equals(obj);
+                return Equals((ErrorPacket)obj);
             }
 
             public override int GetHashCode()

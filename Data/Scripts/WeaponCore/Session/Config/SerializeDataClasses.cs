@@ -59,10 +59,9 @@ namespace WeaponCore
         }
 
         //can override in other packet
-        public virtual bool Equals<T>(T other)
+        protected bool Equals(Packet other)
         {
-            var packet = other as Packet;
-            return Equals(EntityId, packet.EntityId) && Equals(SenderId, packet.SenderId) && Equals(PType, packet.PType);
+            return Equals(EntityId, other.EntityId) && Equals(SenderId, other.SenderId) && Equals(PType, other.PType);
         }
 
         public override bool Equals(object obj)
@@ -70,7 +69,7 @@ namespace WeaponCore
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals(obj);
+            return Equals((Packet)obj);
         }
 
         public override int GetHashCode()
