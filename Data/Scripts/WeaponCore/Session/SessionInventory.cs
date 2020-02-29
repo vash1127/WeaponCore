@@ -31,10 +31,10 @@ namespace WeaponCore
             }
             else
             {
-                comp.Session.MTask = MyAPIGateway.Parallel.Start(() => 
+                /*comp.Session.MTask = MyAPIGateway.Parallel.Start(() => 
                 {
                     weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);
-                });
+                });*/
             }
 
             var hasMags = weapon.State.Sync.CurrentMags > 0;

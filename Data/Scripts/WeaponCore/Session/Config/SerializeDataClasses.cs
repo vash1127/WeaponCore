@@ -280,7 +280,9 @@ namespace WeaponCore
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
 
-            
+            target.IsProjectile = false;
+            target.IsFakeTarget = false;
+
             if (Info == TargetInfo.IsProjectile)
             {
                 target.IsProjectile = true;
@@ -291,7 +293,7 @@ namespace WeaponCore
                 target.IsFakeTarget = true;
                 target.State = Targets.Acquired;
             }
-            else if (Info != TargetInfo.IsEntity)
+            else if (Info == TargetInfo.IsEntity)
                 target.State = Targets.Acquired;
             else
                 target.State = Targets.Expired;

@@ -193,7 +193,7 @@ namespace WeaponCore
                                     if (w.Target.State == Targets.Expired)
                                         w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
-                                    if (MpActive && IsServer)
+                                    if (targetLost && MpActive && IsServer)
                                     {
                                         PacketsToClient.Add(new PacketInfo
                                         {
@@ -445,7 +445,6 @@ namespace WeaponCore
                                 w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
                                 WeaponsToSync.Add(w);
                                 w.Comp.Ai.NumSyncWeapons++;
-                                w.LastSyncTick = w.Comp.Session.Tick;
                             }
                         }
                     }

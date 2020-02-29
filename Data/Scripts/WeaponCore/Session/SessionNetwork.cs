@@ -770,8 +770,8 @@ namespace WeaponCore
                     Timmings = null,
                     SyncData = null
                 };
-
-                if(_session.Tick - w.LastSyncTick > 20)
+                
+                if (_session.Tick - w.LastSyncTick > 20)
                 {
                     weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
                     weaponSync.SyncData = w.State.Sync;
