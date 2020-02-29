@@ -29,6 +29,8 @@ namespace WeaponCore
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
+                weapon.CheckReload();
+
             }
             else
                 comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
