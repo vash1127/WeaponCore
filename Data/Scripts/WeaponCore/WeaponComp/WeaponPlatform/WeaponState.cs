@@ -456,6 +456,11 @@ namespace WeaponCore.Platform
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
         }
 
+        internal void GetAmmoClient()
+        {
+            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.AmmoDefId);
+        }
+
         internal void Reloaded(object o = null)
         {
             State.Sync.Reloading = false;

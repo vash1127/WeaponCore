@@ -149,6 +149,13 @@ namespace WeaponCore
                 if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
                     TaskHasErrors(ref NTask, "NTask");
 
+                if (!MTask.IsComplete)
+                    MTask.Wait();
+
+                if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
+                    TaskHasErrors(ref MTask, "MTask");
+
+
                 Proccessor.AddPackets();
 
                 if (MpActive && !HandlesInput)

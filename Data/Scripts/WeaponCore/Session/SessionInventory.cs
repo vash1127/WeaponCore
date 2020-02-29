@@ -13,12 +13,13 @@ namespace WeaponCore
         internal static void ComputeStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
-            var def = weapon.System.AmmoDefId;
+            
 
             if (!comp.Session.IsClient)
             {
                 if (!comp.MyCube.HasInventory) return;
-                
+
+                var def = weapon.System.AmmoDefId;
                 var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
                 weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
@@ -30,12 +31,7 @@ namespace WeaponCore
                 
             }
             else
-            {
-                /*comp.Session.MTask = MyAPIGateway.Parallel.Start(() => 
-                {
-                    weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);
-                });*/
-            }
+                comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
 
             var hasMags = weapon.State.Sync.CurrentMags > 0;
             var chargeReload = weapon.System.MustCharge && (weapon.System.EnergyAmmo || hasMags);
