@@ -380,6 +380,8 @@ namespace WeaponCore
 
         private void DamageDestObj(HitEntity hitEnt, ProInfo info)
         {
+            info.BaseDamagePool = 0;
+            return;
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as IMyDestroyableObject;
             var system = info.System;
