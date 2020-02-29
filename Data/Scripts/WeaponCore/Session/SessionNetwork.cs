@@ -221,7 +221,7 @@ namespace WeaponCore
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
-
+                        report.PacketValid = true;
                         break;
 
                     case PacketType.PlayerControlUpdate:
@@ -233,7 +233,8 @@ namespace WeaponCore
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
-                        
+                        report.PacketValid = true;
+
                         break;
 
                     case PacketType.TargetExpireUpdate:
@@ -491,6 +492,7 @@ namespace WeaponCore
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
+                        report.PacketValid = true;
 
                         PacketsToClient.Add(new PacketInfo {Entity = comp.MyCube, Packet = overRidesPacket });
                         break;
@@ -504,6 +506,7 @@ namespace WeaponCore
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
+                        report.PacketValid = true;
 
                         PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
                         break;
