@@ -125,11 +125,8 @@ namespace WeaponCore.Platform
                         muzzle.LastUpdateTick = tick;
                     }
 
-                    Log.Line($"State.Sync.CurrentAmmo: {State.Sync.CurrentAmmo}");
-
                     if (!System.EnergyAmmo || System.IsHybrid || System.MustCharge)
                     {
-                        Log.Line($"State.Sync.CurrentAmmo: {State.Sync.CurrentAmmo}");
                         if (State.Sync.CurrentAmmo == 0) break;
                         State.Sync.CurrentAmmo--;
                     }
