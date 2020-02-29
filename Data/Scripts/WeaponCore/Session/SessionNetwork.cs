@@ -32,6 +32,7 @@ namespace WeaponCore
         {
             try
             {
+                return;
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
                 if (packet == null) return;
 
