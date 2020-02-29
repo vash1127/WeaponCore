@@ -288,7 +288,7 @@ namespace WeaponCore.Support
 
             hasBurst = !burstMode && Values.HardPoint.Loading.ShotsInBurst > 0 && Values.HardPoint.Loading.DelayAfterBurst > 0;
 
-            if (MustCharge)
+            if (mustCharge)
             {
                 var ewar = (int)Values.Ammo.AreaEffect.AreaEffect > 3;
                 var shotEnergyCost = ewar ? Values.HardPoint.EnergyCost * AreaEffectDamage : Values.HardPoint.EnergyCost * BaseDamage;

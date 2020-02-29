@@ -483,7 +483,6 @@ namespace WeaponCore.Platform
                 Comp.State.Value.CurrentCharge = System.EnergyMagSize;
                 State.Sync.CurrentCharge = System.EnergyMagSize;
 
-
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
             }
@@ -496,7 +495,7 @@ namespace WeaponCore.Platform
             if (!System.HasBurstDelay)
                 State.ShotsFired = 0;
 
-            if (!System.EnergyAmmo && State.Sync.CurrentMags > 0 || Comp.Session.IsCreative)
+            if (!System.EnergyAmmo && (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative))
             {
                 State.Sync.CurrentAmmo = System.MagazineDef.Capacity;
                 if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
