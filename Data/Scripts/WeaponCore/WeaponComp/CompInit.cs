@@ -47,8 +47,7 @@ namespace WeaponCore.Support
                     weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDef;
                 }
 
-                if (Session.MpActive && MyCube?.Storage != null)
-                    WeaponValues.Load(this);
+                WeaponValues.Load(this);
 
                 
                 /*if (isServer)
