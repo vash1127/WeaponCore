@@ -6,7 +6,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using static WeaponCore.Platform.MyWeaponPlatform.PlatformState;
 using WeaponCore.Platform;
@@ -203,7 +203,7 @@ namespace WeaponCore.Support
                 var maxTrajectory = 0f;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
+                    var curMax = comp.Platform.Weapons[i].ActiveAmmoDef.Const.MaxTrajectory;
                     if (curMax > maxTrajectory)
                         maxTrajectory = (float)curMax;
                 }
@@ -352,6 +352,7 @@ namespace WeaponCore.Support
                 {
                     var system = systems.Value;
 
+                    /*
                     if (!system.EnergyAmmo && !system.IsHybrid)
                         power += 0.001f;
                     else
@@ -361,6 +362,7 @@ namespace WeaponCore.Support
 
                         power += ((shotEnergyCost * (system.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * system.Values.HardPoint.Loading.BarrelsPerShot) * system.Values.HardPoint.Loading.TrajectilesPerBarrel;
                     }
+                    */
 
                 }
             }

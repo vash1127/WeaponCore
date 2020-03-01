@@ -224,8 +224,8 @@ namespace WeaponCore.Support
                         av.FakeExplosion = false;
                         if (ExplosionReady)
                         {
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
                         }
                     }
                 }   
@@ -425,8 +425,8 @@ namespace WeaponCore.Support
                     av.FakeExplosion = false;
                     if (ExplosionReady) {
                         
-                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
-                        else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
+                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
+                        else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
                     }
                 }
 

@@ -12,7 +12,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore
 {

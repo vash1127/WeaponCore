@@ -1,6 +1,7 @@
 ﻿using System;
 using VRage.Game.Entity;
 using WeaponCore.Platform;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -52,10 +53,10 @@ namespace WeaponCore.Support
                             w.Azimuth = 0;
                             w.Elevation = 0;
                             if (!FunctionalBlock.Enabled)
-                                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                                w.EventTriggerStateChanged(EventTriggers.TurnOff, true);
 
                             if (w.State.Sync.CurrentAmmo == 0)
-                                w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                                w.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
                         }
                     }
                 }
