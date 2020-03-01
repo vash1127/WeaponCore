@@ -9,6 +9,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
+using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
@@ -37,7 +38,7 @@ namespace WeaponCore
 
             var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
             GetAndSortBlocksInSphere(info.System, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
-            ComputeEffects(info.System, grid, info.AmmoDef, info.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
+            ComputeEffects(grid, info.AmmoDef, info.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
             if (depletable) info.BaseHealthPool -= healthPool;
         }
 
@@ -94,7 +95,7 @@ namespace WeaponCore
         }
 
 
-        private void ComputeEffects(WeaponSystem system, MyCubeGrid grid, WeaponDefinition.AmmoDef ammoDef, float damagePool, float healthPool, long attackerId, List<IMySlimBlock> blocks)
+        private void ComputeEffects(MyCubeGrid grid, AmmoDef ammoDef, float damagePool, float healthPool, long attackerId, List<IMySlimBlock> blocks)
         {
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var eWarInfo = ammoDef.AreaEffect.EwarFields;
@@ -117,7 +118,7 @@ namespace WeaponCore
                 float damageScale = 1;
                 var tmpDamagePool = damagePool;
 
-                if (system.DamageScaling)
+                if (ammoDef.Const.DamageScaling)
                 {
                     var d = ammoDef.DamageScales;
                     if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity) continue;
@@ -126,7 +127,7 @@ namespace WeaponCore
                     else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
 
                     MyDefinitionBase blockDef = null;
-                    if (system.ArmorScaling)
+                    if (ammoDef.Const.ArmorScaling)
                     {
                         blockDef = block.BlockDefinition;
                         var isArmor = AllArmorBaseDefinitions.Contains(blockDef);
@@ -140,11 +141,11 @@ namespace WeaponCore
                             else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
                         }
                     }
-                    if (system.CustomDamageScales)
+                    if (ammoDef.Const.CustomDamageScales)
                     {
                         if (blockDef == null) blockDef = block.BlockDefinition;
                         float modifier;
-                        var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
+                        var found = ammoDef.Const.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
 
                         if (found) damageScale *= modifier;
                         else if (ammoDef.DamageScales.Custom.IgnoreAllOthers) continue;
@@ -221,7 +222,7 @@ namespace WeaponCore
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    ComputeEffects(v.Value.System, ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
+                    ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     v.Value.Clean();
                     GridEffectPool.Return(v.Value);

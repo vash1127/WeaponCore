@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using ParallelTasks;
-using Sandbox.ModAPI;
-using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.PartAnimation;
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths, out string[] heatingSubpartNames)
+        internal void CreateAnimationSets(AnimationDef animations, WeaponSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames)
         {
 
             var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();

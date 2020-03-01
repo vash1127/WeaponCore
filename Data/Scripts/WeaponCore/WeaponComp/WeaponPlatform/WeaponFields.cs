@@ -9,6 +9,8 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+
 namespace WeaponCore.Platform
 {
 
@@ -152,12 +154,14 @@ namespace WeaponCore.Platform
         internal bool AzimuthOnBase;
         internal bool ReturingHome;
         internal bool IsHome;
-
+        internal bool CanUseEnergyAmmo;
+        internal bool CanUseHybridAmmo;
+        internal bool CanUseBeams;
         internal bool ShotReady
         {
             get
             {
-                var reloading = (!System.EnergyAmmo || System.MustCharge) && (State.Sync.Reloading || OutOfAmmo);
+                var reloading = (!ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.MustCharge) && (State.Sync.Reloading || OutOfAmmo);
                 var canShoot = !State.Sync.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !State.Sync.Charging && (ShootTick <= Comp.Session.Tick) && (Timings.ShootDelayTick <= Comp.Session.Tick);
                 return shotReady;
@@ -170,22 +174,6 @@ namespace WeaponCore.Platform
             ShootOff,
             ShootOnce,
             ShootClick,
-        }
-
-        public enum EventTriggers
-        {
-            Reloading,
-            Firing,
-            Tracking,
-            Overheated,
-            TurnOn,
-            TurnOff,
-            BurstReload,
-            OutOfAmmo,
-            PreFire,
-            EmptyOnGameLoad,
-            StopFiring,
-            StopTracking
         }
 
         public class Muzzle
@@ -240,7 +228,17 @@ namespace WeaponCore.Platform
             else
                 _numModelBarrels = System.Barrels.Length;
 
-            comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;
+
+            bool hitParticle = false;
+            foreach (var ammoDef in System.WeaponAmmo.Values)
+            {
+                if (ammoDef.Const.EnergyAmmo) CanUseEnergyAmmo = true;
+                if (ammoDef.Const.IsHybrid) CanUseHybridAmmo = true;
+                if (ammoDef.Const.IsBeamWeapon) CanUseBeams = true;
+                if (ammoDef.Const.HitParticle) hitParticle = true;
+            }
+
+            comp.HasEnergyWeapon = comp.HasEnergyWeapon || CanUseEnergyAmmo || CanUseHybridAmmo;
 
             AvCapable = System.HasBarrelShootAv && !Comp.Session.DedicatedServer;
 
@@ -276,7 +274,7 @@ namespace WeaponCore.Platform
             {
                 if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
                 if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
-                if (System.HitParticle && System.IsBeamWeapon) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                if (hitParticle && CanUseBeams) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
             WeaponId = weaponId;

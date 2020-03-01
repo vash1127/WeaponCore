@@ -169,26 +169,26 @@ namespace WeaponCore.Projectiles
                     var up = MatrixD.Identity.Up;
                     MatrixD matrix;
                     MatrixD.CreateWorld(ref p.Position, ref p.VisualDir, ref up, out matrix);
-                    if (p.Info.System.PrimeModel)
+                    if (p.Info.AmmoDef.Const.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
-                    if (p.Info.System.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize)
+                    if (p.Info.AmmoDef.Const.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize)
                         p.Info.TriggerMatrix = matrix;
 
-                    if (p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle && p.Info.System.PrimeModel)
+                    if (p.EnableAv && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticle && p.Info.AmmoDef.Const.PrimeModel)
                     {
                         var offVec = p.Position + Vector3D.Rotate(p.Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, p.Info.AvShot.PrimeMatrix);
                         p.AmmoEffect.WorldMatrix = p.Info.AvShot.PrimeMatrix;
                         p.AmmoEffect.SetTranslation(offVec);
                     }
                 }
-                else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle)
+                else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticle)
                     p.AmmoEffect.Velocity = p.Velocity;
 
                 if (p.DynamicGuidance)
                 {
                     if (p.PruningProxyId != -1)
                     {
-                        var sphere = new BoundingSphereD(p.Position, p.Info.System.AreaEffectSize);
+                        var sphere = new BoundingSphereD(p.Position, p.Info.AmmoDef.Const.AreaEffectSize);
                         BoundingBoxD result;
                         BoundingBoxD.CreateFromSphere(ref sphere, out result);
                         Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, p.Velocity);
@@ -197,7 +197,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
-                    if (!p.SmartsOn && p.Info.Age > p.Info.System.TargetLossTime)
+                    if (!p.SmartsOn && p.Info.Age > p.Info.AmmoDef.Const.TargetLossTime)
                     {
                         p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                     }
@@ -207,7 +207,7 @@ namespace WeaponCore.Projectiles
                         if (p.FieldTime > 0)
                         {
                             p.FieldTime--;
-                            if (p.Info.System.IsMine && !p.MineSeeking && !p.MineActivated)
+                            if (p.Info.AmmoDef.Const.IsMine && !p.MineSeeking && !p.MineActivated)
                             {
                                 if (p.EnableAv) p.Info.AvShot.Cloaked = p.Info.AmmoDef.Trajectory.Mines.Cloak;
                                 p.MineSeeking = true;
@@ -216,7 +216,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
                 else p.AtMaxRange = true;
-                if (p.Info.System.Ewar)
+                if (p.Info.AmmoDef.Const.Ewar)
                     p.RunEwar();
 
                 p.Active = true;
@@ -230,9 +230,9 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
-                var triggerRange = p.Info.System.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.System.EwarTriggerRange : 0;
+                var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
-                var beam = useEwarSphere ? new LineD(p.Position + (-p.Direction * p.Info.System.EwarTriggerRange), p.Position + (p.Direction * p.Info.System.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
+                var beam = useEwarSphere ? new LineD(p.Position + (-p.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
                     var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
@@ -251,7 +251,7 @@ namespace WeaponCore.Projectiles
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
-                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine, ref beam);
+                                    ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref beam);
 
                         checkList.Clear();
                         CheckPool.Return(checkList);
@@ -271,7 +271,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.Info.EwarActive) {
                         p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                        var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
+                        var currentRadius = p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.AmmoDef.Const.AreaEffectSize;
                         if (p.PruneSphere.Radius < currentRadius) {
                             p.PruneSphere.Center = p.Position;
                             p.PruneSphere.Radius = currentRadius;
@@ -284,23 +284,23 @@ namespace WeaponCore.Projectiles
 
                     sphere = true;
                 }
-                else if (p.Info.System.CollisionIsLine)
+                else if (p.Info.AmmoDef.Const.CollisionIsLine)
                 {
                     p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = p.Info.System.CollisionSize;
-                    if (p.Info.System.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
+                    p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
+                    if (p.Info.AmmoDef.Const.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
                         line = true;
                 }
                 else
                 {
                     p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                    if (p.PruneSphere.Radius < p.Info.System.CollisionSize)
+                    if (p.PruneSphere.Radius < p.Info.AmmoDef.Const.CollisionSize)
                     {
                         p.PruneSphere.Center = p.Position;
-                        p.PruneSphere.Radius = p.Info.System.CollisionSize;
+                        p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
                     }
 
-                    if (!((p.Info.System.SelfDamage || p.TerminalControlled) && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
+                    if (!((p.Info.AmmoDef.Const.SelfDamage || p.TerminalControlled) && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                         sphere = true;
                 }
 
@@ -364,17 +364,17 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle)
+                if (p.Info.AmmoDef.Const.DrawLine || p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle)
                 {
 
                     if (p.State == ProjectileState.OneAndDone)
                     {
                         p.Info.AvShot.Update(p.Info, 0, p.MaxTrajectory, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
-                    else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
+                    else if (p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine)
                     {
                         if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
-                        else p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
+                        else p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.AmmoDef.Const.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else
                     {
@@ -396,12 +396,12 @@ namespace WeaponCore.Projectiles
                 if (p.Info.AvShot.OnScreen == Screen.None && p.ModelState == EntityState.Exists)
                     p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir, null, false, true);
 
-                if (p.Info.System.AmmoParticle)
+                if (p.Info.AmmoDef.Const.AmmoParticle)
                 {
                     p.TestSphere.Center = p.Position;
                     if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
-                        if (!p.Info.System.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.System.AmmoParticleShrinks)
+                        if (!p.Info.AmmoDef.Const.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticleShrinks)
                             p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
 
                         if ((p.ParticleStopped || p.ParticleLateStart))

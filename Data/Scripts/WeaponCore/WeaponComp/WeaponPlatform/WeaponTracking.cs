@@ -1,11 +1,10 @@
 ﻿using System;
-using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.HardPointDefinition;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
 
 namespace WeaponCore.Platform
@@ -19,7 +18,7 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
-            if (prediction != Prediction.Off && !weapon.System.IsBeamWeapon && weapon.System.DesiredProjectileSpeed > 0)
+            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel);
             else
                 targetPos = targetCenter;
@@ -73,7 +72,7 @@ namespace WeaponCore.Platform
             var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
             var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
-            if (prediction != Prediction.Off && !weapon.System.IsBeamWeapon && weapon.System.DesiredProjectileSpeed > 0)
+            if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0)
                 targetPos = weapon.GetPredictedTargetPosition(obb.Center, targetLinVel, targetAccel);
             else
                 targetPos = obb.Center;
@@ -109,7 +108,7 @@ namespace WeaponCore.Platform
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
                     if (weapon.Comp.Debug)
-                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.System.MaxTrajectory));
+                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.Const.MaxTrajectory));
                 }
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
@@ -123,8 +122,9 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
 
             var targetCenter = weapon.Comp.TrackReticle ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var needsPrediction = weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0);
 
-            if (weapon.System.NeedsPrediction)
+            if (needsPrediction)
             {
                 if (weapon.Comp.TrackReticle)
                 {
@@ -174,8 +174,8 @@ namespace WeaponCore.Platform
             var system = weapon.System;
 
             var targetCenter = weapon.Comp.TrackReticle ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
-
-            if (weapon.System.NeedsPrediction)
+            var needsPrediction = weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0);
+            if (needsPrediction)
             {
                 if (weapon.Comp.TrackReticle)
                 {
@@ -299,7 +299,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
-            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
+            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.Const.DesiredProjectileSpeed, 0, ActiveAmmoDef.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
             return predictedPos;
         }
 

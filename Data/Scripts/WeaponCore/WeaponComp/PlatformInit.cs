@@ -161,7 +161,7 @@ namespace WeaponCore.Platform
                 };
 
                 //UI elements
-                comp.HasGuidanceToggle = comp.HasGuidanceToggle || (system.Values.HardPoint.Ui.ToggleGuidance && system.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None);
+                comp.HasGuidanceToggle = comp.HasGuidanceToggle || system.Values.HardPoint.Ui.ToggleGuidance;
 
                 comp.HasDamageSlider = comp.HasDamageSlider || (!system.MustCharge && system.Values.HardPoint.Ui.DamageModifier && system.EnergyAmmo || system.IsHybrid);
 
@@ -169,22 +169,22 @@ namespace WeaponCore.Platform
 
                 comp.CanOverload = comp.CanOverload || (system.Values.HardPoint.Ui.EnableOverload && system.IsBeamWeapon && !system.MustCharge);
 
-                comp.HasTurret = comp.HasTurret || (system.Values.HardPoint.Block.TurretAttached);
+                comp.HasTurret = comp.HasTurret || (system.Values.HardPoint.Ai.TurretAttached);
 
                 comp.HasChargeWeapon = comp.HasChargeWeapon || system.MustCharge;
 
                 var weapon = Weapons[i];
                 
-                if (!comp.Debug && weapon.System.Values.HardPoint.Block.Debug)
+                if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
                     comp.Debug = true;
 
-                if (weapon.System.Values.HardPoint.Block.TurretController)
+                if (weapon.System.Values.HardPoint.Ai.TurretController)
                 {
-                    if (weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
+                    if (weapon.System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingWeapon == null)
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
-                        RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
+                        RotationSound.Init(weapon.System.Values.HardPoint.Audio.HardPointRotationSound, false);
                 }
             }
             CompileTurret(comp);

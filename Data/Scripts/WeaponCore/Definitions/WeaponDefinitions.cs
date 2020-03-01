@@ -9,7 +9,7 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal ModelAssignmentsDef Assignments;
         [ProtoMember(2)] internal TargetingDef Targeting;
-        [ProtoMember(3)] internal AnimationDefinition Animations;
+        [ProtoMember(3)] internal AnimationDef Animations;
         [ProtoMember(4)] internal HardPointDef HardPoint;
         [ProtoMember(5)] internal AmmoDef[] Ammos;
         [ProtoMember(6)] internal string ModPath;
@@ -28,13 +28,6 @@ namespace WeaponCore.Support
                 [ProtoMember(3)] internal string MuzzlePartId;
                 [ProtoMember(4)] internal string AzimuthPartId;
                 [ProtoMember(5)] internal string ElevationPartId;
-            }
-
-            [ProtoContract]
-            public struct BarrelDef
-            {
-                [ProtoMember(1)] internal string BarrelId;
-                [ProtoMember(2)] internal string[] AmmoRounds;
             }
         }
 
@@ -74,7 +67,7 @@ namespace WeaponCore.Support
         }
 
         [ProtoContract]
-        public struct AnimationDefinition
+        public struct AnimationDef
         {
             [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
             [ProtoMember(2)] internal WeaponEmissive[] Emissives;
@@ -168,19 +161,17 @@ namespace WeaponCore.Support
             }
 
             [ProtoMember(1)] internal string WeaponName;
-            [ProtoMember(2)] internal bool Hybrid;
-            [ProtoMember(3)] internal int DelayCeaseFire;
-            [ProtoMember(4)] internal float DeviateShotAngle;
-            [ProtoMember(5)] internal float EnergyCost;
-            [ProtoMember(6)] internal double AimingTolerance;
-            [ProtoMember(7)] internal Prediction AimLeadingPrediction;
-            [ProtoMember(8)] internal LoadingDef Loading;
-            [ProtoMember(9)] internal AiDef Ai;
-            [ProtoMember(10)] internal HardwareDef HardWare;
-            [ProtoMember(11)] internal UiDef Ui;
-            [ProtoMember(12)] internal HardPointAudioDef Audio;
-            [ProtoMember(13)] internal HardPointParticleDef Graphics;
-            [ProtoMember(14)] internal OtherDef Other;
+            [ProtoMember(2)] internal int DelayCeaseFire;
+            [ProtoMember(3)] internal float DeviateShotAngle;
+            [ProtoMember(4)] internal double AimingTolerance;
+            [ProtoMember(5)] internal Prediction AimLeadingPrediction;
+            [ProtoMember(6)] internal LoadingDef Loading;
+            [ProtoMember(7)] internal AiDef Ai;
+            [ProtoMember(8)] internal HardwareDef HardWare;
+            [ProtoMember(9)] internal UiDef Ui;
+            [ProtoMember(10)] internal HardPointAudioDef Audio;
+            [ProtoMember(11)] internal HardPointParticleDef Graphics;
+            [ProtoMember(12)] internal OtherDef Other;
 
             [ProtoContract]
             public struct LoadingDef
@@ -270,20 +261,23 @@ namespace WeaponCore.Support
         {
             [ProtoMember(1)] internal string AmmoMagazine;
             [ProtoMember(2)] internal string AmmoRound;
-            [ProtoMember(3)] internal float BaseDamage;
-            [ProtoMember(4)] internal float Mass;
-            [ProtoMember(5)] internal float Health;
-            [ProtoMember(6)] internal float BackKickForce;
-            [ProtoMember(7)] internal DamageScaleDef DamageScales;
-            [ProtoMember(8)] internal ShapeDef Shape;
-            [ProtoMember(9)] internal ObjectsHitDef ObjectsHit;
-            [ProtoMember(10)] internal TrajectoryDef Trajectory;
-            [ProtoMember(11)] internal AreaDamageDef AreaEffect;
-            [ProtoMember(12)] internal BeamDef Beams;
-            [ProtoMember(13)] internal ShrapnelDef Shrapnel;
-            [ProtoMember(14)] internal GraphicDef AmmoGraphics;
-            [ProtoMember(15)] internal AmmoAudioDef AmmoAudio;
-
+            [ProtoMember(3)] internal bool HybridRound;
+            [ProtoMember(4)] internal float EnergyCost;
+            [ProtoMember(5)] internal float BaseDamage;
+            [ProtoMember(6)] internal float Mass;
+            [ProtoMember(7)] internal float Health;
+            [ProtoMember(8)] internal float BackKickForce;
+            [ProtoMember(9)] internal DamageScaleDef DamageScales;
+            [ProtoMember(10)] internal ShapeDef Shape;
+            [ProtoMember(11)] internal ObjectsHitDef ObjectsHit;
+            [ProtoMember(12)] internal TrajectoryDef Trajectory;
+            [ProtoMember(13)] internal AreaDamageDef AreaEffect;
+            [ProtoMember(14)] internal BeamDef Beams;
+            [ProtoMember(15)] internal ShrapnelDef Shrapnel;
+            [ProtoMember(16)] internal GraphicDef AmmoGraphics;
+            [ProtoMember(17)] internal AmmoAudioDef AmmoAudio;
+            
+            internal AmmoConstants Const;
 
             [ProtoContract]
             public struct DamageScaleDef
@@ -558,6 +552,7 @@ namespace WeaponCore.Support
                     [ProtoMember(4)] internal double TrackingDelay;
                     [ProtoMember(5)] internal int MaxChaseTime;
                     [ProtoMember(6)] internal bool OverideTarget;
+                    [ProtoMember(7)] internal int MaxTargets;
                 }
 
                 [ProtoContract]

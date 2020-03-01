@@ -54,10 +54,11 @@ namespace WeaponCore.Support
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
         {
             System = system;
             Ai = ai;
+            AmmoDef = ammodef;
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;
             Target.Entity = target.Entity;
@@ -76,7 +77,7 @@ namespace WeaponCore.Support
 
             if (PrimeEntity != null)
             {
-                System.PrimeEntityPool.Return(PrimeEntity);
+                AmmoDef.Const.PrimeEntityPool.Return(PrimeEntity);
                 PrimeEntity = null;
             }
 
