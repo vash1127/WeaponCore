@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -120,5 +121,12 @@ namespace WeaponCore.Support
             }
             TargetLock = false;
         }
+    }
+
+    public struct WeaponAmmoTypes
+    {
+        public MyDefinitionId AmmoDefinitionId;
+        public WeaponDefinition.AmmoDef AmmoDef;
+        public string AmmoName;
     }
 }

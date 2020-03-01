@@ -30,7 +30,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
         public readonly WeaponDefinition Values;
-        public readonly Dictionary<MyDefinitionId, AmmoDef> WeaponAmmo;
+        public readonly WeaponAmmoTypes[] WeaponAmmoTypes;
 
         public readonly Session Session;
 
@@ -119,7 +119,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, Dictionary<MyDefinitionId, AmmoDef> weaponAmmo, int weaponId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -131,8 +131,7 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponId = weaponId;
             WeaponName = weaponName;
-            WeaponAmmo = weaponAmmo;
-
+            WeaponAmmoTypes = weaponAmmoTypes;
             MaxAmmoVolume = Values.HardPoint.HardWare.InventorySize;
             CeaseFireDelay = values.HardPoint.DelayCeaseFire;
             DelayCeaseFire = CeaseFireDelay > 0;
@@ -151,14 +150,14 @@ namespace WeaponCore.Support
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HardPointSoundSetup(out WeaponReloadSound, out HardPointRotationSound, out BarrelRotationSound, out NoAmmoSound, out PreFireSound, out HardPointAvMaxDistSqr, out FiringSound);
-            HardPointSoundDistMaxSqr(WeaponAmmo, out FiringSoundDistSqr, out ReloadSoundDistSqr, out BarrelSoundDistSqr, out HardPointSoundDistSqr, out NoAmmoSoundDistSqr, out HardPointAvMaxDistSqr);
+            HardPointSoundDistMaxSqr(WeaponAmmoTypes, out FiringSoundDistSqr, out ReloadSoundDistSqr, out BarrelSoundDistSqr, out HardPointSoundDistSqr, out NoAmmoSoundDistSqr, out HardPointAvMaxDistSqr);
             
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts);
 
-            foreach (var ammo in WeaponAmmo)
-                ammo.Value.Const = new AmmoConstants(ammo, Values, Session, this);
+            foreach (var ammo in WeaponAmmoTypes)
+                ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this);
         }
 
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
@@ -299,7 +298,7 @@ namespace WeaponCore.Support
                 hardPointAvMaxDistSqr = Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance * Values.HardPoint.Graphics.Barrel2.Extras.MaxDistance;
         }
 
-        private void HardPointSoundDistMaxSqr(Dictionary<MyDefinitionId, AmmoDef> weaponAmmo, out float firingSoundDistSqr, out float reloadSoundDistSqr, out float barrelSoundDistSqr, out float hardPointSoundDistSqr, out float noAmmoSoundDistSqr, out float hardPointAvMaxDistSqr)
+        private void HardPointSoundDistMaxSqr(WeaponAmmoTypes[] weaponAmmo, out float firingSoundDistSqr, out float reloadSoundDistSqr, out float barrelSoundDistSqr, out float hardPointSoundDistSqr, out float noAmmoSoundDistSqr, out float hardPointAvMaxDistSqr)
         {
             var fireSound = string.Concat(Arc, Values.HardPoint.Audio.FiringSound);
             var reloadSound = string.Concat(Arc, Values.HardPoint.Audio.ReloadSound);
@@ -352,88 +351,11 @@ namespace WeaponCore.Support
             }
 
             if (firingSoundDistSqr <= 0)
-                foreach (var ammo in weaponAmmo.Values)
-                    if (ammo.Trajectory.MaxTrajectory * ammo.Trajectory.MaxTrajectory > firingSoundDistSqr)
-                        firingSoundDistSqr = ammo.Trajectory.MaxTrajectory * ammo.Trajectory.MaxTrajectory;
+                foreach (var ammoType in weaponAmmo)
+                    if (ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory > firingSoundDistSqr)
+                        firingSoundDistSqr = ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory;
         }
 
-    }
-
-    public class WeaponStructure
-    {
-        public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
-        //public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
-        public readonly Dictionary<int, int> HashToId;
-
-        public readonly MyStringHash[] MuzzlePartNames;
-        public readonly bool MultiParts;
-        public readonly int GridWeaponCap;
-        public readonly Session Session;
-
-        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
-        {
-            Session = session;
-            var map = tDef.Value;
-            var numOfParts = wDefList.Count;
-            MultiParts = numOfParts > 1;
-            var muzzlePartNames = new MyStringHash[numOfParts];
-            var azimuthPartNames = new MyStringHash[numOfParts];
-            var elevationPartNames = new MyStringHash[numOfParts];
-            var mapIndex = 0;
-            WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
-            //AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
-            HashToId = new Dictionary<int, int>();
-
-            var gridWeaponCap = 0;
-            foreach (var w in map)
-            {
-                var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Key);
-                var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
-                var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
-
-                muzzlePartNames[mapIndex] = myMuzzleNameHash;
-
-                var typeName = w.Value.Item1;
-                var weaponDef = new WeaponDefinition();
-
-                foreach (var weapon in wDefList)
-                    if (weapon.HardPoint.WeaponName == typeName) weaponDef = weapon;
-
-                var cap = weaponDef.HardPoint.Other.GridWeaponCap;
-                if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
-                else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
-
-                weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
-
-                var weaponAmmo = new Dictionary<MyDefinitionId, AmmoDef>(MyDefinitionId.Comparer);
-                foreach (var ammo in weaponDef.Ammos)
-                {
-                    var ammoDefId = new MyDefinitionId();
-                    var ammoEnergy = ammo.AmmoMagazine == string.Empty || ammo.AmmoMagazine == "Energy";
-                    foreach (var def in Session.AllDefinitions)
-                    {
-                        if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine) ammoDefId = def.Id;
-                    }
-                    Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
-                    weaponAmmo.Add(ammoDefId, ammo);
-                }
-
-                var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
-                HashToId.Add(weaponId, mapIndex);
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponId));
-                /*
-                if (!ammoEnergy)
-                {
-                    if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
-                    AmmoToWeaponIds[ammoDefId].Add(mapIndex);
-                }
-                */
-                mapIndex++;
-            }
-
-            GridWeaponCap = gridWeaponCap;
-            MuzzlePartNames = muzzlePartNames;
-        }
     }
 
     public class AmmoConstants
@@ -524,65 +446,65 @@ namespace WeaponCore.Support
         public readonly double CollisionSize;
         public readonly double SmartsDelayDistSqr;
 
-        public AmmoConstants(KeyValuePair<MyDefinitionId, AmmoDef> ammo, WeaponDefinition wDef, Session session, WeaponSystem system)
+        public AmmoConstants(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system)
         {
-            MyInventory.GetItemVolumeAndMass(ammo.Key, out MagMass, out MagVolume);
+            MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
 
-            MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.Key);
-            TracerMaterial = MyStringId.GetOrCompute(ammo.Value.AmmoGraphics.Lines.TracerMaterial);
-            TrailMaterial = MyStringId.GetOrCompute(ammo.Value.AmmoGraphics.Lines.Trail.Material);
+            MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
+            TracerMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial);
+            TrailMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material);
 
-            if (ammo.Key.SubtypeName != "Energy") AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.Key.SubtypeName) };
+            if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
 
-            IsMine = ammo.Value.Trajectory.Guidance == DetectFixed || ammo.Value.Trajectory.Guidance == DetectSmart || ammo.Value.Trajectory.Guidance == DetectTravelTo;
-            IsField = ammo.Value.Trajectory.FieldTime > 0;
-            IsHybrid = ammo.Value.HybridRound;
+            IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
+            IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
+            IsHybrid = ammo.AmmoDef.HybridRound;
 
-            AmmoParticle = ammo.Value.AmmoGraphics.Particles.Ammo.Name != string.Empty;
-            AmmoParticleShrinks = ammo.Value.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
-            HitParticleShrinks = ammo.Value.AmmoGraphics.Particles.Hit.ShrinkByDistance;
+            AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
+            AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
+            HitParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Hit.ShrinkByDistance;
 
-            HitParticle = ammo.Value.AmmoGraphics.Particles.Hit.Name != string.Empty;
+            HitParticle = ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name != string.Empty;
 
-            DrawLine = ammo.Value.AmmoGraphics.Lines.Tracer.Enable;
-            LineColorVariance = ammo.Value.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.Value.AmmoGraphics.Lines.ColorVariance.End > 0;
-            LineWidthVariance = ammo.Value.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.Value.AmmoGraphics.Lines.WidthVariance.End > 0;
-            SpeedVariance = ammo.Value.Trajectory.SpeedVariance.Start > 0 || ammo.Value.Trajectory.SpeedVariance.End > 0;
-            RangeVariance = ammo.Value.Trajectory.RangeVariance.Start > 0 || ammo.Value.Trajectory.RangeVariance.End > 0;
-            TrailWidth = ammo.Value.AmmoGraphics.Lines.Trail.CustomWidth > 0 ? ammo.Value.AmmoGraphics.Lines.Trail.CustomWidth : ammo.Value.AmmoGraphics.Lines.Tracer.Width;
-            TargetOffSet = ammo.Value.Trajectory.Smarts.Inaccuracy > 0;
+            DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
+            LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
+            LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;
+            SpeedVariance = ammo.AmmoDef.Trajectory.SpeedVariance.Start > 0 || ammo.AmmoDef.Trajectory.SpeedVariance.End > 0;
+            RangeVariance = ammo.AmmoDef.Trajectory.RangeVariance.Start > 0 || ammo.AmmoDef.Trajectory.RangeVariance.End > 0;
+            TrailWidth = ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth > 0 ? ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth : ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Width;
+            TargetOffSet = ammo.AmmoDef.Trajectory.Smarts.Inaccuracy > 0;
 
-            TargetLossTime = ammo.Value.Trajectory.TargetLossTime > 0 ? ammo.Value.Trajectory.TargetLossTime : int.MaxValue;
-            MaxObjectsHit = ammo.Value.ObjectsHit.MaxObjectsHit > 0 ? ammo.Value.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            BaseDamage = ammo.Value.BaseDamage;
-            MaxTargets = ammo.Value.Trajectory.Smarts.MaxTargets;
-            TargetLossDegree = ammo.Value.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.Value.Trajectory.TargetLossDegree)) : 0;
+            TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
+            MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
+            BaseDamage = ammo.AmmoDef.BaseDamage;
+            MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
+            TargetLossDegree = ammo.AmmoDef.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(ammo.AmmoDef.Trajectory.TargetLossDegree)) : 0;
 
-            ShieldModifier = ammo.Value.DamageScales.Shields.Modifier > 0 ? ammo.Value.DamageScales.Shields.Modifier : 1;
-            ShieldBypassMod = ammo.Value.DamageScales.Shields.BypassModifier > 0 && ammo.Value.DamageScales.Shields.BypassModifier < 1 ? ammo.Value.DamageScales.Shields.BypassModifier : 1;
-            AmmoSkipAccel = ammo.Value.Trajectory.AccelPerSec <= 0;
+            ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
+            ShieldBypassMod = ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier < 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 1;
+            AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
 
 
-            MaxTrajectory = ammo.Value.Trajectory.MaxTrajectory;
+            MaxTrajectory = ammo.AmmoDef.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
-            HasBackKickForce = ammo.Value.BackKickForce > 0;
+            HasBackKickForce = ammo.AmmoDef.BackKickForce > 0;
 
-            MaxLateralThrust = MathHelperD.Clamp(ammo.Value.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
+            MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
             
-            Fields(ammo.Value, out PulseInterval, out PulseChance, out Pulse);
-            AreaEffects(ammo.Value, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
+            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse);
+            AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
 
-            DamageScales(ammo.Value, out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
-            Beams(ammo.Value, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
-            CollisionShape(ammo.Value, out CollisionIsLine, out CollisionSize, out TracerLength);
-            SmartsDelayDistSqr = (CollisionSize * ammo.Value.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.Value.Trajectory.Smarts.TrackingDelay);
-            PrimeEntityPool = Models(ammo.Value, wDef, out PrimeModel, out TriggerModel, out ModelPath);
+            DamageScales(ammo.AmmoDef, out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
+            Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
+            CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
+            SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
+            PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay);
-            Sound(ammo.Value, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
+            Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
 
 
-            DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.Value.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-            Trail = ammo.Value.AmmoGraphics.Lines.Trail.Enable;
+            DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+            Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
 
         }
 
@@ -673,9 +595,9 @@ namespace WeaponCore.Support
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
         }
 
-        private void Energy(KeyValuePair<MyDefinitionId, AmmoDef> ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst)
+        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst)
         {
-            energyAmmo = ammoPair.Key.SubtypeId.String == "Energy";
+            energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String != "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
             burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
 
@@ -683,8 +605,8 @@ namespace WeaponCore.Support
 
             if (mustCharge)
             {
-                var ewar = (int)ammoPair.Value.AreaEffect.AreaEffect > 3;
-                var shotEnergyCost = ewar ? ammoPair.Value.EnergyCost * AreaEffectDamage : ammoPair.Value.EnergyCost * BaseDamage;
+                var ewar = (int)ammoPair.AmmoDef.AreaEffect.AreaEffect > 3;
+                var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
                 var requiredPower = (((shotEnergyCost * ((system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel);
 
                 energyMagSize = (int)(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
@@ -742,6 +664,85 @@ namespace WeaponCore.Support
             myEntity.InScene = false;
             myEntity.Render.RemoveRenderObjects();
         }
-
     }
+
+
+    public class WeaponStructure
+    {
+        public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
+        //public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
+        public readonly Dictionary<int, int> HashToId;
+
+        public readonly MyStringHash[] MuzzlePartNames;
+        public readonly bool MultiParts;
+        public readonly int GridWeaponCap;
+        public readonly Session Session;
+
+        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
+        {
+            Session = session;
+            var map = tDef.Value;
+            var numOfParts = wDefList.Count;
+            MultiParts = numOfParts > 1;
+            var muzzlePartNames = new MyStringHash[numOfParts];
+            var azimuthPartNames = new MyStringHash[numOfParts];
+            var elevationPartNames = new MyStringHash[numOfParts];
+            var mapIndex = 0;
+            WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
+            //AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
+            HashToId = new Dictionary<int, int>();
+
+            var gridWeaponCap = 0;
+            foreach (var w in map)
+            {
+                var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Key);
+                var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
+                var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
+
+                muzzlePartNames[mapIndex] = myMuzzleNameHash;
+
+                var typeName = w.Value.Item1;
+                var weaponDef = new WeaponDefinition();
+
+                foreach (var weapon in wDefList)
+                    if (weapon.HardPoint.WeaponName == typeName) weaponDef = weapon;
+
+                var cap = weaponDef.HardPoint.Other.GridWeaponCap;
+                if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
+                else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
+
+                weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
+
+                var weaponAmmo = new WeaponAmmoTypes[weaponDef.Ammos.Length];
+                for (int i = 0; i < weaponDef.Ammos.Length; i++)
+                {
+                    var ammo = weaponDef.Ammos[i];
+                    var ammoDefId = new MyDefinitionId();
+                    var ammoEnergy = ammo.AmmoMagazine == string.Empty || ammo.AmmoMagazine == "Energy";
+                    foreach (var def in Session.AllDefinitions)
+                    {
+                        if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine) ammoDefId = def.Id;
+                    }
+                    Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
+                    weaponAmmo[i] = new WeaponAmmoTypes {AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound};
+                }
+
+                var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
+                HashToId.Add(weaponId, mapIndex);
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponId));
+                /*
+                if (!ammoEnergy)
+                {
+                    if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
+                    AmmoToWeaponIds[ammoDefId].Add(mapIndex);
+                }
+                */
+                mapIndex++;
+            }
+
+            GridWeaponCap = gridWeaponCap;
+            MuzzlePartNames = muzzlePartNames;
+        }
+    }
+
 }
