@@ -158,7 +158,7 @@ namespace WeaponCore
     
     public enum ControlType
     {
-        UI,
+        Ui,
         Toolbar,
         None
     }
@@ -167,6 +167,7 @@ namespace WeaponCore
     public class WeaponSettingsValues
     {
         [ProtoMember(1)] public bool Enable = true;
+        [ProtoMember(2)] public int AmmoTypeId;
     }
 
     [ProtoContract]
@@ -195,7 +196,7 @@ namespace WeaponCore
                 OffDelay = OffDelay > tick ? OffDelay >= offset ? OffDelay - offset : 0 : 0,
                 ShootDelayTick = ShootDelayTick > tick ? ShootDelayTick >= offset ? ShootDelayTick - offset : 0 : 0,
                 WeaponReadyTick = WeaponReadyTick > tick ? WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0 : 0,
-                LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset >= 0 ? (tick - LastHeatUpdateTick) - offset : 0,
+                LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset,
                 ReloadedTick = ReloadedTick > tick ? ReloadedTick > offset ? ReloadedTick - offset : 0 : 0,
             };
 
@@ -224,9 +225,6 @@ namespace WeaponCore
 
         public void Save(WeaponComponent comp, Guid id)
         {
-            if (!comp.Session.MpActive) return;
-
-            if (comp.MyCube?.Storage == null) return;
 
             var sv = new WeaponValues {Targets = Targets, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
 

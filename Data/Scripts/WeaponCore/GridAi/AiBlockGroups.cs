@@ -83,7 +83,7 @@ namespace WeaponCore.Support
                 if (o.ManualControl || o.TargetPainter)
                 {
                     comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                    comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+                    comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.Ui;
                 }
                 else
                 {
@@ -143,7 +143,7 @@ namespace WeaponCore.Support
             if (o.ManualControl || o.TargetPainter)
             {
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.UI;
+                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.Ui;
             }
             else
             {

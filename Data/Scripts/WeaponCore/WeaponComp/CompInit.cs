@@ -1,10 +1,8 @@
 ﻿using System;
 using Sandbox.Definitions;
 using Sandbox.Game;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage.Game.Components;
-using VRage.Utils;
+using VRage.Game;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -45,9 +43,13 @@ namespace WeaponCore.Support
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
                     weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmo[new MyDefinitionId()];
                 }
-                WeaponValues.Load(this);
 
+                if (Session.MpActive && MyCube?.Storage != null)
+                    WeaponValues.Load(this);
+
+                
                 /*if (isServer)
                 {
                     foreach (var w in State.Value.Weapons)
@@ -64,6 +66,9 @@ namespace WeaponCore.Support
             MaxHeat += weapon.System.MaxHeat;
             weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
             weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Set.Value.RofModifier);
+            HeatSinkRate += weapon.HsRate;
+            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
+
             if (weapon.System.EnergyAmmo)
                 weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DpsModifier;
             else
@@ -80,19 +85,20 @@ namespace WeaponCore.Support
 
             weapon.UpdateShotEnergy();
             weapon.UpdateRequiredPower();
-            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
             var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
 
             if (weapon.BaseDamage > weapon.System.BaseDamage)
                 mulitplier *= mulitplier;
 
             weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
+            HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
+
             weapon.AreaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
             weapon.DetonateDmg = weapon.System.DetonationDamage * mulitplier;
 
-            //MaxRequiredPower -= weapon.RequiredPower;
             weapon.RequiredPower *= mulitplier;
             MaxRequiredPower += weapon.System.MustCharge ? weapon.System.EnergyMagSize : weapon.RequiredPower;
+            weapon.UseablePower = weapon.RequiredPower;
 
             weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
             weapon.TimePerShot = (3600d / weapon.RateOfFire);
@@ -114,11 +120,8 @@ namespace WeaponCore.Support
                                         : 1);
             }
 
-            weapon.UseablePower = weapon.RequiredPower;
-            HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
             OptimalDps += weapon.Dps;
 
-            HeatSinkRate += weapon.HsRate;
 
             //range slider fix
             maxTrajectory = 0;
@@ -137,7 +140,7 @@ namespace WeaponCore.Support
                 Session.ComputeStorage(weapon);
 
             if (!weapon.System.MustCharge && weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
-                weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                weapon.EventTriggerStateChanged(WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers.EmptyOnGameLoad, true);
 
             else if ((!Session.IsClient || !Session.MpActive) && weapon.System.MustCharge && ((weapon.System.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.System.EnergyMagSize) || (!weapon.System.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.System.MagazineDef.Capacity)))
             {
