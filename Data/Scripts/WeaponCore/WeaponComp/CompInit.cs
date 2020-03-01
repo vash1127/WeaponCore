@@ -130,17 +130,16 @@ namespace WeaponCore.Support
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
 
+            if (weapon.System.MustCharge)
+                State.Value.CurrentCharge += weapon.State.Sync.CurrentCharge;
+
             if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
                 Session.ComputeStorage(weapon);
 
-            if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading && !weapon.System.MustCharge)
+            if (!weapon.System.MustCharge && weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
                 weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-            else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && weapon.State.Sync.CurrentAmmo == weapon.System.MagazineDef.Capacity) || weapon.State.Sync.CurrentAmmo == weapon.System.EnergyMagSize))
-            {
-                weapon.State.Sync.CurrentCharge = weapon.System.EnergyMagSize;
-                State.Value.CurrentCharge += weapon.System.EnergyMagSize;
-            }
-            else if ((!Session.IsClient || !Session.MpActive) && weapon.System.MustCharge)
+
+            else if ((!Session.IsClient || !Session.MpActive) && weapon.System.MustCharge && ((weapon.System.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.System.EnergyMagSize) || (!weapon.System.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.System.MagazineDef.Capacity)))
             {
                 if (weapon.State.Sync.CurrentCharge > 0)
                     State.Value.CurrentCharge -= weapon.State.Sync.CurrentCharge;
