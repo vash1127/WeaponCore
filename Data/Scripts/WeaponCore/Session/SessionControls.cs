@@ -358,7 +358,18 @@ namespace WeaponCore
 
                 comp.UpdateStateMP();
             };
-            action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
+            action0.Writer = (b, t) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
+                {
+                    t.Append("0");
+                    return;
+                }
+
+                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef);
+            };
             action0.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
