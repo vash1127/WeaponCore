@@ -287,6 +287,8 @@ namespace WeaponCore.Support
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
                 frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
+                frag.PrimeEntity = p.Info.PrimeEntity;
+                frag.TriggerEntity = p.Info.TriggerEntity;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
@@ -326,6 +328,8 @@ namespace WeaponCore.Support
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
                 p.Info.AmmoDef = frag.AmmoDef;
+                p.Info.PrimeEntity = frag.AmmoDef.Const.PrimeModel ? frag.AmmoDef.Const.PrimeEntityPool.Get() : null;
+                p.Info.TriggerEntity = frag.AmmoDef.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                 p.Info.Target.Entity = frag.Target;
                 p.Info.Target.FiringCube = frag.FiringCube;
                 p.Info.Overrides = frag.Overrides;
@@ -355,6 +359,8 @@ namespace WeaponCore.Support
         public WeaponSystem System;
         public GridAi Ai;
         public AmmoDef AmmoDef;
+        public MyEntity PrimeEntity;
+        public MyEntity TriggerEntity;
         public MyEntity Target;
         public MyCubeBlock FiringCube;
         public CompGroupOverrides Overrides;

@@ -289,7 +289,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.Init(Info, StepPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
             }
-            Log.Line($"test16");
+            Log.Line($"test16: {Info.AmmoDef.Const.PrimeModel} - {Info.AmmoDef.Const.TriggerModel} - {Info.AvShot.TriggerEntity == null} - {Info.AvShot.PrimeEntity == null}");
 
             if (!Info.AmmoDef.Const.PrimeModel && !Info.AmmoDef.Const.TriggerModel) ModelState = EntityState.None;
             else
