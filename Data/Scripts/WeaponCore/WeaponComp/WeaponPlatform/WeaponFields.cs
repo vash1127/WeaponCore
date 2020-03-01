@@ -156,6 +156,7 @@ namespace WeaponCore.Platform
         internal bool IsHome;
         internal bool CanUseEnergyAmmo;
         internal bool CanUseHybridAmmo;
+        internal bool CanUseChargeAmmo;
         internal bool CanUseBeams;
         internal bool ShotReady
         {
@@ -234,6 +235,7 @@ namespace WeaponCore.Platform
             {
                 if (ammoDef.Const.EnergyAmmo) CanUseEnergyAmmo = true;
                 if (ammoDef.Const.IsHybrid) CanUseHybridAmmo = true;
+                if (ammoDef.Const.MustCharge) CanUseChargeAmmo = true;
                 if (ammoDef.Const.IsBeamWeapon) CanUseBeams = true;
                 if (ammoDef.Const.HitParticle) hitParticle = true;
             }

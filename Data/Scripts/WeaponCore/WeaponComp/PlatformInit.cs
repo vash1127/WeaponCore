@@ -160,21 +160,9 @@ namespace WeaponCore.Platform
                     AiOnlyWeapon = comp.BaseType != Turret || (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2")
                 };
 
-                //UI elements
-                comp.HasGuidanceToggle = comp.HasGuidanceToggle || system.Values.HardPoint.Ui.ToggleGuidance;
-
-                comp.HasDamageSlider = comp.HasDamageSlider || (!system.MustCharge && system.Values.HardPoint.Ui.DamageModifier && system.EnergyAmmo || system.IsHybrid);
-
-                comp.HasRofSlider = comp.HasRofSlider || (system.Values.HardPoint.Ui.RateOfFire && !system.MustCharge);
-
-                comp.CanOverload = comp.CanOverload || (system.Values.HardPoint.Ui.EnableOverload && system.IsBeamWeapon && !system.MustCharge);
-
-                comp.HasTurret = comp.HasTurret || (system.Values.HardPoint.Ai.TurretAttached);
-
-                comp.HasChargeWeapon = comp.HasChargeWeapon || system.MustCharge;
-
                 var weapon = Weapons[i];
-                
+                SetupUi(weapon);
+
                 if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
                     comp.Debug = true;
 
@@ -527,6 +515,17 @@ namespace WeaponCore.Platform
             }
             Parts.Clean(comp.Entity as MyEntity);
             comp.Status = Stopped;
+        }
+
+        internal void SetupUi(Weapon w)
+        {
+            //UI elements
+            w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || w.System.Values.HardPoint.Ui.ToggleGuidance;
+            w.Comp.HasDamageSlider = w.Comp.HasDamageSlider || (!w.CanUseChargeAmmo && w.System.Values.HardPoint.Ui.DamageModifier && w.CanUseEnergyAmmo || w.CanUseHybridAmmo);
+            w.Comp.HasRofSlider = w.Comp.HasRofSlider || (w.System.Values.HardPoint.Ui.RateOfFire && !w.CanUseChargeAmmo);
+            w.Comp.CanOverload = w.Comp.CanOverload || (w.System.Values.HardPoint.Ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
+            w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
+            w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
         }
     }
 }

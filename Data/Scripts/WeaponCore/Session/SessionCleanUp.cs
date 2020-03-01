@@ -1,5 +1,4 @@
-﻿using Sandbox.ModAPI;
-using WeaponCore.Support;
+﻿using WeaponCore.Support;
 
 namespace WeaponCore
 {

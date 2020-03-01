@@ -13,7 +13,6 @@ using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
-using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
 {
     public struct RadiatedBlock
