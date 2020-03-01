@@ -37,7 +37,7 @@ namespace WeaponCore
             if (healthPool <= 0) return;
 
             var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
-            GetAndSortBlocksInSphere(info.System, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
+            GetAndSortBlocksInSphere(info.AmmoDef, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
             ComputeEffects(grid, info.AmmoDef, info.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
             if (depletable) info.BaseHealthPool -= healthPool;
         }
