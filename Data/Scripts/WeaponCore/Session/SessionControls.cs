@@ -144,7 +144,10 @@ namespace WeaponCore
                                 wepIDs.Add(wepId);
                             else
                                 continue;
+
                             CreateShootActionSet<T>(wepName, wepId);
+                            if (ws.Value.WeaponAmmoTypes.Length > 1)
+                                CreateCycleAmmoOptions<T>(wepName, wepId);
                         }
                     }
                 }
@@ -334,7 +337,54 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
 
-        internal static bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
+        internal static void CreateCycleAmmoOptions<T>(string name, int id) where T : IMyTerminalBlock
+        {
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_CycleAmmo");
+            action0.Icon = @"Textures\GUI\Cycle.dds";
+            action0.Name = new StringBuilder($"{name} Cycle Ammo");
+            action0.Action = delegate (IMyTerminalBlock blk)
+            {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+
+                var w = comp.Platform.Weapons[weaponId];
+
+                var nextDef = w.Set.AmmoTypeId + 1 > w.System.WeaponAmmoTypes.Length - 1 ? 0 : w.Set.AmmoTypeId + 1;
+
+                w.ActiveAmmoDef = w.System.WeaponAmmoTypes[nextDef].AmmoDef;
+
+                comp.Session.FutureEvents.Schedule(WepUi.SetWeaponDPS, w, 0);
+
+                comp.UpdateStateMP();
+            };
+            action0.Writer = (b, t) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
+                {
+                    t.Append("0");
+                    return;
+                }
+
+                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef);
+            };
+            action0.Enabled = (b) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
+
+                return comp.Platform.Weapons[weaponId].System.WeaponId == id;
+            };
+
+            action0.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
+        }
+
+            internal static bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
