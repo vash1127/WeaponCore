@@ -3,7 +3,7 @@ using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore.Support
 {

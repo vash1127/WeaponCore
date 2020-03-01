@@ -1,6 +1,6 @@
 ﻿using VRage.Game.Entity;
 using static WeaponCore.Session;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore.Support
 {
