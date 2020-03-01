@@ -111,9 +111,8 @@ namespace WeaponCore.Projectiles
             var cameraStart = Info.Ai.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Info.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = Info.AmmoDef.Shrapnel.Fragments > 0;
-            var noSAv = Info.IsShrapnel && Info.AmmoDef.Shrapnel.NoAudioVisual;
             var probability = Info.AmmoDef.AmmoGraphics.VisualProbability;
-            EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && !noSAv && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+            EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
 
@@ -145,7 +144,7 @@ namespace WeaponCore.Projectiles
             Info.DistanceTraveled = 0;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
 
-            Guidance = !(Info.AmmoDef.Shrapnel.NoGuidance && Info.IsShrapnel) ? Info.AmmoDef.Trajectory.Guidance : GuidanceType.None;
+            Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
 
@@ -204,16 +203,6 @@ namespace WeaponCore.Projectiles
             Info.ObjectsHit = 0;
             Info.BaseHealthPool = Info.AmmoDef.Health;
             TracerLength = Info.AmmoDef.Const.TracerLength;
-
-            if (Info.IsShrapnel)
-            {
-                var shrapnel = Info.AmmoDef.Shrapnel;
-                Info.BaseDamagePool = shrapnel.BaseDamage;
-                Info.DetonationDamage = Info.AmmoDef.Shrapnel.AreaEffect ? Info.AmmoDef.AreaEffect.Detonation.DetonationDamage : 0;
-                Info.AreaEffectDamage = Info.AmmoDef.Shrapnel.AreaEffect ? Info.AmmoDef.AreaEffect.AreaEffectDamage : 0;
-                MaxTrajectory = shrapnel.MaxTrajectory;
-                TracerLength = TracerLength / shrapnel.Fragments >= 1 ? TracerLength / shrapnel.Fragments : 1;
-            }
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
 
@@ -274,7 +263,7 @@ namespace WeaponCore.Projectiles
             State = !Info.AmmoDef.Const.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
             if (Info.AmmoDef.Const.AmmoParticle && EnableAv && !Info.AmmoDef.Const.IsBeamWeapon)
             {
-                BaseAmmoParticleScale = !Info.IsShrapnel ? 1 : 0.5f;
+                BaseAmmoParticleScale = 1f;
                 PlayAmmoParticle();
             }
 
@@ -285,7 +274,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
             }
 
-            if (!Info.AmmoDef.Const.PrimeModel && !Info.AmmoDef.Const.TriggerModel || Info.IsShrapnel) ModelState = EntityState.None;
+            if (!Info.AmmoDef.Const.PrimeModel && !Info.AmmoDef.Const.TriggerModel) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
@@ -908,7 +897,6 @@ namespace WeaponCore.Projectiles
                 if (ModelState == EntityState.Exists && Info.AvShot.PrimeEntity != null)
                 {
                     matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrix.Up);
-                    if (Info.IsShrapnel) MatrixD.Rescale(ref matrix, 0.5f);
                     var offVec = Position + Vector3D.Rotate(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                     matrix.Translation = offVec;
                     Info.AvShot.PrimeMatrix = matrix;
@@ -924,7 +912,7 @@ namespace WeaponCore.Projectiles
                 {
                     AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;
-                    var scaler = !Info.IsShrapnel ? 1 : 0.5f;
+                    var scaler = 1;
 
                     AmmoEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale * scaler;
                     AmmoEffect.UserEmitterScale = 1 * scaler;

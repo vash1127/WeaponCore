@@ -31,7 +31,7 @@ namespace WeaponCore
             {
                 var p = Hits[x];
                 var info = p.Info;
-                var maxObjects = info.System.MaxObjectsHit;
+                var maxObjects = info.AmmoDef.Const.MaxObjectsHit;
                 var phantom = info.AmmoDef.BaseDamage <= 0;
                 var pInvalid = (int) p.State > 3;
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
@@ -95,7 +95,7 @@ namespace WeaponCore
             info.ObjectsHit++;
 
             var damageScale = 1;
-            if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
+            if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
             var energy = damageType == ShieldDef.ShieldType.Energy;
             var heal = damageType == ShieldDef.ShieldType.Heal;
@@ -104,8 +104,8 @@ namespace WeaponCore
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd;
 
-            var scaledDamage = (((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier) * info.System.ShieldBypassMod;
-            var detonateDamage = detonateOnEnd && !shieldByPass ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * system.ShieldModifier : 0;
+            var scaledDamage = (((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod;
+            var detonateDamage = detonateOnEnd && !shieldByPass ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
@@ -127,7 +127,7 @@ namespace WeaponCore
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;
                     else 
-                        info.BaseDamagePool *= info.System.ShieldBypassMod;
+                        info.BaseDamagePool *= info.AmmoDef.Const.ShieldBypassMod;
                 }
                 else if (objHp > 0) info.BaseDamagePool -= (float)scaledDamage - objHp;
                 else info.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
@@ -159,9 +159,9 @@ namespace WeaponCore
             _destroyedSlimsClient.Clear();
             //grid.Physics.Gravity = (Vector3D.Normalize(hitEnt.Beam.From - grid.Physics.CenterOfMassWorld) * 10);
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-            var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
-            var detonateRadius = largeGrid ? system.DetonateRadiusLarge : system.DetonateRadiusSmall;
-            var maxObjects = t.System.MaxObjectsHit;
+            var areaRadius = largeGrid ? t.AmmoDef.Const.AreaRadiusLarge : t.AmmoDef.Const.AreaRadiusSmall;
+            var detonateRadius = largeGrid ? t.AmmoDef.Const.DetonateRadiusLarge : t.AmmoDef.Const.DetonateRadiusSmall;
+            var maxObjects = t.AmmoDef.Const.MaxObjectsHit;
             var areaEffect = t.AmmoDef.AreaEffect.AreaEffect;
             var explosive = areaEffect == AreaEffectType.Explosive;
             var radiant = areaEffect == AreaEffectType.Radiant;
@@ -173,6 +173,7 @@ namespace WeaponCore
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
+            /*
             if (t.IsShrapnel)
             {
                 var shrapnel = t.AmmoDef.Shrapnel;
@@ -182,7 +183,7 @@ namespace WeaponCore
                 areaRadius = ModRadius(areaRadius, largeGrid);
                 detonateRadius = ModRadius(detonateRadius, largeGrid);
             }
-
+            */
             var hasAreaDmg = areaEffectDmg > 0;
             var radiantCascade = radiant && !detonateOnEnd;
             var primeDamage = !radiantCascade || !hasAreaDmg;
@@ -190,7 +191,7 @@ namespace WeaponCore
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
 
             var damagePool = t.BaseDamagePool;
-            if (system.VirtualBeams)
+            if (t.AmmoDef.Const.VirtualBeams)
             {
                 var hits = t.WeaponCache.Hits;
                 damagePool *= hits;
@@ -243,7 +244,7 @@ namespace WeaponCore
                     var blockHp = !IsClient ? block.Integrity : _slimHealthClient.ContainsKey(block) ? _slimHealthClient[block] : block.Integrity;
                     float damageScale = 1;
 
-                    if (system.DamageScaling)
+                    if (t.AmmoDef.Const.DamageScaling)
                     {
                         var d = t.AmmoDef.DamageScales;
                         if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
@@ -257,7 +258,7 @@ namespace WeaponCore
                         else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
 
                         MyDefinitionBase blockDef = null;
-                        if (system.ArmorScaling)
+                        if (t.AmmoDef.Const.ArmorScaling)
                         {
                             blockDef = block.BlockDefinition;
                             var isArmor = AllArmorBaseDefinitions.Contains(blockDef);
@@ -271,11 +272,11 @@ namespace WeaponCore
                                 else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
                             }
                         }
-                        if (system.CustomDamageScales)
+                        if (t.AmmoDef.Const.CustomDamageScales)
                         {
                             if (blockDef == null) blockDef = block.BlockDefinition;
                             float modifier;
-                            var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
+                            var found = t.AmmoDef.Const.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
 
                             if (found) damageScale *= modifier;
                             else if (t.AmmoDef.DamageScales.Custom.IgnoreAllOthers) continue;
@@ -342,8 +343,8 @@ namespace WeaponCore
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
                         var rootPos = grid.GridIntegerToWorld(rootBlock.Position);
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg, areaRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, system, true);
-                        if (detonateOnEnd && theEnd) SUtils.CreateMissileExplosion(this, detonateDmg, detonateRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, system, true);
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg, areaRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if (detonateOnEnd && theEnd) SUtils.CreateMissileExplosion(this, detonateDmg, detonateRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
@@ -404,7 +405,7 @@ namespace WeaponCore
 
             var character = hitEnt.Entity as IMyCharacter;
             float damageScale = 1;
-            if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
+            if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             if (character != null && info.AmmoDef.DamageScales.Characters >= 0)
                 damageScale *= info.AmmoDef.DamageScales.Characters;
 
@@ -433,7 +434,7 @@ namespace WeaponCore
             if (integrityCheck && objHp > attacker.AmmoDef.DamageScales.MaxIntegrity) return;
 
             float damageScale = 1;
-            if (system.VirtualBeams) damageScale *= attacker.WeaponCache.Hits;
+            if (attacker.AmmoDef.Const.VirtualBeams) damageScale *= attacker.WeaponCache.Hits;
 
             var scaledDamage = attacker.BaseDamagePool * damageScale;
 
@@ -474,7 +475,7 @@ namespace WeaponCore
             var system = info.System;
             if (destObj == null || entity == null || !hitEnt.HitPos.HasValue) return;
             var shieldHeal = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal;
-            if (!system.VoxelDamage || shieldHeal)
+            if (!info.AmmoDef.Const.VoxelDamage || shieldHeal)
             {
                 info.BaseDamagePool = 0;
                 return;
@@ -482,11 +483,11 @@ namespace WeaponCore
 
             using (destObj.Pin())
             {
-                var detonateOnEnd = system.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.AmmoDef.AreaEffect.AreaEffect != Radiant;
+                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.AmmoDef.AreaEffect.AreaEffect != Radiant;
 
                 info.ObjectsHit++;
                 float damageScale = 1;
-                if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
+                if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
 
                 var scaledDamage = info.BaseDamagePool * damageScale;
                 var oRadius = info.AmmoDef.AreaEffect.AreaEffectRadius;
