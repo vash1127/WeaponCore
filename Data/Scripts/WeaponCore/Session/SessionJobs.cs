@@ -170,7 +170,7 @@ namespace WeaponCore
                 newTypeMap[Power] = ConcurrentListPool.Get();
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
-                ConcurrentDictionary<WeaponDefinition.TargetingDef, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
+                ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
                 FatMap fatMap;
                 if (GridToFatMap.TryGetValue(grid, out fatMap))
