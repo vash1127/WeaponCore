@@ -338,13 +338,15 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
 
-                    if ((ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.IsHybrid) && !ActiveAmmoDef.Const.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
+                    if (!System.MustCharge && (System.EnergyAmmo || System.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (ActiveAmmoDef.Const.MustCharge && State.Sync.CurrentAmmo != 0)
+                    else if (System.MustCharge)
                     {
                         State.Sync.CurrentAmmo = 0;
                         Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
                         State.Sync.CurrentCharge = 0;
+                        if (Comp.State.Value.Online)
+                            StartReload();
                     }
 
                 }

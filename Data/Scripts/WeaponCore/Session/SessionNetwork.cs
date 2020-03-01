@@ -56,13 +56,13 @@ namespace WeaponCore
 
                 if (!retry) Reporter.ReportData[packet.PType].Add(report);
 
-                var invalidType = false;
+                //var invalidType = false;
 
                 switch (packet.PType)
                 {
                     case PacketType.CompStateUpdate:                        
                         var statePacket = packet as StatePacket;
-                        if (statePacket?.Data == null || comp == null) return false;
+                        if (statePacket?.Data == null || comp == null) break;
 
                         comp.State.Value.Sync(statePacket.Data);
 
@@ -70,7 +70,7 @@ namespace WeaponCore
                         break;
                     case PacketType.CompSettingsUpdate:
                         var setPacket = packet as SettingPacket;
-                        if (setPacket?.Data == null || comp == null) return false;
+                        if (setPacket?.Data == null || comp == null) break;
 
                         comp.Set.Value.Sync(setPacket.Data);
                         
@@ -79,7 +79,7 @@ namespace WeaponCore
                     case PacketType.TargetUpdate:
                     {
                             var targetPacket = packet as GridWeaponPacket;
-                            if (targetPacket?.Data == null || ent == null) return false;
+                            if (targetPacket?.Data == null || ent == null) break;
                             
                             for(int i = 0; i < targetPacket.Data.Count; i++)
                             {
@@ -87,7 +87,7 @@ namespace WeaponCore
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                                 comp = block?.Components.Get<WeaponComponent>();
 
-                                if (comp == null) continue;
+                                if (comp == null) continue;//possible retry condition
 
                                 var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
                                 
@@ -108,7 +108,7 @@ namespace WeaponCore
                     case PacketType.FocusUpdate:
                         {
                             var targetPacket = packet as FocusPacket;
-                            if (targetPacket == null) return false;
+                            if (targetPacket == null) break;
 
                             var myGrid = ent as MyCubeGrid;
                             GridAi ai;
@@ -127,7 +127,7 @@ namespace WeaponCore
                     case PacketType.FakeTargetUpdate:
                         {
                             var targetPacket = packet as FakeTargetPacket;
-                            if (targetPacket?.Data == null) return false;
+                            if (targetPacket?.Data == null) break;
 
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
@@ -144,7 +144,7 @@ namespace WeaponCore
                     case PacketType.PlayerIdUpdate:
                         {
                             var updatePacket = packet as BoolUpdatePacket;
-                            if (updatePacket == null) return false;
+                            if (updatePacket == null) break;
 
                             if (updatePacket.Data)
                                 PlayerConnected(updatePacket.EntityId);
@@ -156,7 +156,7 @@ namespace WeaponCore
                         }
                     case PacketType.ClientMouseEvent:
                         var mousePacket = packet as MouseInputPacket;
-                        if (mousePacket?.Data == null) return false;
+                        if (mousePacket?.Data == null) break;
 
                         long playerId;
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -170,7 +170,7 @@ namespace WeaponCore
                     case PacketType.ActiveControlUpdate:
                         {
                             var dPacket = packet as BoolUpdatePacket;
-                            if (dPacket?.Data == null) return false;
+                            if (dPacket?.Data == null) break;
 
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
                             if (block == null) return false;
@@ -187,7 +187,7 @@ namespace WeaponCore
                             try
                             {
                                 var csPacket = packet as ControllingPacket;
-                                if (csPacket?.Data == null) return false;
+                                if (csPacket?.Data == null) break;
 
                                 for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
                                 {
@@ -207,7 +207,7 @@ namespace WeaponCore
 
                         var reticlePacket = packet as BoolUpdatePacket;
 
-                        if (reticlePacket == null || comp == null) return false;
+                        if (reticlePacket == null || comp == null) break;
 
                         if (reticlePacket.Data)
                             comp.OtherPlayerTrackingReticle = true;
@@ -220,11 +220,11 @@ namespace WeaponCore
                     case PacketType.OverRidesUpdate:
                         var overRidesPacket = packet as OverRidesPacket;
 
-                        if (comp == null || overRidesPacket == null) return false;
+                        if (comp == null || overRidesPacket == null) break;
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
-
+                        report.PacketValid = true;
                         break;
 
                     case PacketType.PlayerControlUpdate:
@@ -232,34 +232,36 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
-                        if (comp == null || cPlayerPacket == null) return false;
+                        if (comp == null || cPlayerPacket == null) break;
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
-                        
+                        report.PacketValid = true;
+
                         break;
 
                     case PacketType.TargetExpireUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>(); 
 
-                        if (comp == null) return false;
+                        if (comp == null) break;
                         //saving on extra field with new packet type
                         comp.Platform.Weapons[(int)packet.SenderId].Target.Reset(Tick);
 
+                        report.PacketValid = true;
                         break;
 
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
-                        invalidType = true;
+                        //invalidType = true;
                         report.PacketValid = false;
 
                         break;
                 }
 
-                if (!report.PacketValid && !invalidType && !retry)
+                /*if (!report.PacketValid && !invalidType && !retry)
                 {
-                    return false;
+                    
                     var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
 
                     if (!ClientSideErrorPktList.Contains(errorPacket))
@@ -270,7 +272,7 @@ namespace WeaponCore
                         ClientSideErrorPktList.Remove(errorPacket);
                         ClientSideErrorPktList.Add(errorPacket);
                     }
-                }
+                }*/
 
                 return report.PacketValid;
             }
@@ -493,6 +495,7 @@ namespace WeaponCore
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
+                        report.PacketValid = true;
 
                         PacketsToClient.Add(new PacketInfo {Entity = comp.MyCube, Packet = overRidesPacket });
                         break;
@@ -506,6 +509,7 @@ namespace WeaponCore
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
+                        report.PacketValid = true;
 
                         PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
                         break;
@@ -714,7 +718,7 @@ namespace WeaponCore
                 if (ReferenceEquals(null, obj)) return false;
                 if (ReferenceEquals(this, obj)) return true;
                 if (obj.GetType() != GetType()) return false;
-                return Equals(obj);
+                return Equals((ErrorPacket)obj);
             }
 
             public override int GetHashCode()

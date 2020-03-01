@@ -140,12 +140,12 @@ namespace WeaponCore
                                                 comp.WeaponValues.Targets[w.WeaponId].SyncTarget(w.Target);
 
                                     }
-                                    else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
+                                    else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                     {
                                         w.Target.Reset(Tick);
 
                                     }
-                                    else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
+                                    else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                     {
                                         w.Target.Reset(Tick);
 
@@ -163,7 +163,7 @@ namespace WeaponCore
                                     {
                                         w.UpdatePivotPos();
                                         Vector3D targetPos;
-                                        if (w.IsTurret)
+                                        if (!IsClient && w.IsTurret)
                                         {
 
                                             if (!w.TrackTarget)
@@ -174,7 +174,7 @@ namespace WeaponCore
                                             else if (!Weapon.TargetAligned(w, w.Target, out targetPos))
                                                 w.Target.Reset(Tick);
                                         }
-                                        else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
+                                        else if (!IsClient && w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
                                             w.Target.Reset(Tick);
                                     }
                                 }

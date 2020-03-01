@@ -146,53 +146,6 @@ namespace WeaponCore.Control
                         };
                         break;
 
-                    /*case "ShootOnce":
-                        ((IMyTerminalControlButton)c).Action = blk =>
-                        {
-                            var comp = blk?.Components?.Get<WeaponComponent>();
-                            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                            
-                            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                            {
-                                if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
-                                comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-                            }
-
-                        };
-                        break;*/
-
-                    /*case "Shoot":
-                        ((IMyTerminalControlOnOffSwitch)c).Setter = (blk, on) =>
-                        {
-                            var comp = blk?.Components?.Get<WeaponComponent>();
-                            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                            {
-                                var w = comp.Platform.Weapons[j];
-
-                                if (!on && w.State.ManualShoot == ShootOn)
-                                {
-                                    w.State.ManualShoot = ShootOff;
-                                    if (w.IsShooting)
-                                        w.StopShooting();
-                                    else if(w.DrawingPower && !w.System.MustCharge)
-                                        w.StopPowerDraw();
-
-                                    if (w.System.MustCharge)
-                                    {
-                                        if (w.State.CurrentAmmo != w.System.EnergyMagSize)
-                                            w.State.CurrentAmmo = 0;
-                                    }
-
-                                }
-                                else if (on && w.State.ManualShoot != ShootOff)
-                                    w.State.ManualShoot = ShootOn;
-                                else if (on)
-                                    w.State.ManualShoot = ShootOn;
-                            }
-                        };
-                        break;*/
-
                     case "OnOff":
                         ((IMyTerminalControlOnOffSwitch)c).Setter += OnOffAnimations;
                         break;
@@ -247,8 +200,7 @@ namespace WeaponCore.Control
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-            if (!On) comp.State.Value.CurrentCharge = 0;
+            
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
@@ -277,7 +229,7 @@ namespace WeaponCore.Control
                         w.State.Sync.CurrentAmmo = 0;
                         w.State.Sync.Reloading = false;
                     }
-                    comp.State.Value.CurrentCharge += w.State.Sync.CurrentCharge;
+                    //comp.State.Value.CurrentCharge += w.State.Sync.CurrentCharge;
 
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))
