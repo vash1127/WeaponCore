@@ -249,6 +249,7 @@ namespace WeaponCore.Support
                 [ProtoMember(4)] internal bool MuzzleCheck;
                 [ProtoMember(5)] internal bool Debug;
             }
+            [ProtoContract]
             public struct HardPointParticleDef
             {
                 [ProtoMember(1)] internal ParticleDef Barrel1;

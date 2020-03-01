@@ -225,6 +225,9 @@ namespace WeaponCore
 
         public void Save(WeaponComponent comp, Guid id)
         {
+            if (!comp.Session.MpActive) return;
+
+            if (comp.MyCube?.Storage == null) return;
 
             var sv = new WeaponValues {Targets = Targets, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
 

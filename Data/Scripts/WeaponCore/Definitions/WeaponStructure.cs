@@ -377,7 +377,7 @@ namespace WeaponCore.Support
         public readonly int PulseInterval;
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
-
+        public readonly int ShrapnelId;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -505,7 +505,13 @@ namespace WeaponCore.Support
 
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
-
+            
+            for (int i = 0; i < wDef.Ammos.Length; i++)
+            {
+                var ammoType = wDef.Ammos[i];
+                if (ammoType.AmmoRound.Equals(ammo.AmmoDef.Shrapnel.AmmoRound))
+                    ShrapnelId = i;
+            }
         }
 
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse)

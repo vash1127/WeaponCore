@@ -286,6 +286,7 @@ namespace WeaponCore.Support
 
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
+                frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
@@ -324,6 +325,7 @@ namespace WeaponCore.Support
                 var p = frag.Ai.Session.Projectiles.ProjectilePool.Count > 0 ? frag.Ai.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
+                p.Info.AmmoDef = frag.AmmoDef;
                 p.Info.Target.Entity = frag.Target;
                 p.Info.Target.FiringCube = frag.FiringCube;
                 p.Info.Overrides = frag.Overrides;
@@ -352,6 +354,7 @@ namespace WeaponCore.Support
     {
         public WeaponSystem System;
         public GridAi Ai;
+        public AmmoDef AmmoDef;
         public MyEntity Target;
         public MyCubeBlock FiringCube;
         public CompGroupOverrides Overrides;

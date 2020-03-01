@@ -105,6 +105,7 @@ namespace WeaponCore.Projectiles
 
         internal void Start()
         {
+            Log.Line($"test1");
             Position = Info.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
@@ -115,6 +116,7 @@ namespace WeaponCore.Projectiles
             EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
+            Log.Line($"test2");
 
             Hit = new Hit();
             LastHitPos = null;
@@ -143,10 +145,12 @@ namespace WeaponCore.Projectiles
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
+            Log.Line($"test3");
 
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
+            Log.Line($"test4");
 
             if (Guidance == GuidanceType.Smart && DynamicGuidance)
             {
@@ -158,6 +162,7 @@ namespace WeaponCore.Projectiles
                 MaxChaseAge = int.MaxValue;
                 SmartsOn = false;
             }
+            Log.Line($"test5");
 
             if (Info.Target.IsProjectile)
             {
@@ -167,6 +172,7 @@ namespace WeaponCore.Projectiles
             else if (Info.Target.Entity != null) OriginTargetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = !Vector3D.IsZero(OriginTargetPos);
+            Log.Line($"test6");
 
             if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && LockedTarget)
             {
@@ -179,6 +185,7 @@ namespace WeaponCore.Projectiles
                 OffsetSqr = 0;
             }
             PrevTargetOffset = Vector3D.Zero;
+            Log.Line($"test7");
 
             if (Info.AmmoDef.Const.SpeedVariance && !Info.AmmoDef.Const.IsBeamWeapon)
             {
@@ -188,6 +195,7 @@ namespace WeaponCore.Projectiles
                 DesiredSpeed = Info.AmmoDef.Const.DesiredProjectileSpeed + speedVariance;
             }
             else DesiredSpeed = Info.AmmoDef.Const.DesiredProjectileSpeed;
+            Log.Line($"test8");
 
             if (Info.AmmoDef.Const.RangeVariance)
             {
@@ -196,6 +204,7 @@ namespace WeaponCore.Projectiles
                 MaxTrajectory = Info.AmmoDef.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
             }
             else MaxTrajectory = Info.AmmoDef.Trajectory.MaxTrajectory;
+            Log.Line($"test9");
 
             if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Direction * MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
@@ -209,6 +218,7 @@ namespace WeaponCore.Projectiles
             if (!Info.IsShrapnel) StartSpeed = Info.ShooterVel;
 
             MoveToAndActivate = LockedTarget && !Info.AmmoDef.Const.IsBeamWeapon && Guidance == GuidanceType.TravelTo;
+            Log.Line($"test10");
 
             if (MoveToAndActivate)
             {
@@ -219,6 +229,7 @@ namespace WeaponCore.Projectiles
 
             PickTarget = LockedTarget && Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
             if (PickTarget || LockedTarget) NewTargets++;
+            Log.Line($"test11");
 
             var staticIsInRange = (Info.Ai.ClosestStaticSqr * 0.5) < MaxTrajectorySqr;
 
@@ -229,6 +240,7 @@ namespace WeaponCore.Projectiles
             if (!DynamicGuidance && staticIsInRange)
                 StaticEntCheck();
             else if (Info.Ai.PlanetSurfaceInRange) LinePlanetCheck = true;
+            Log.Line($"test12");
 
             if (EnableAv)
             {
@@ -239,6 +251,8 @@ namespace WeaponCore.Projectiles
                 }
                 FakeExplosion = HitParticleActive && Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive;
             }
+            Log.Line($"test13");
+
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
@@ -256,6 +270,7 @@ namespace WeaponCore.Projectiles
                 VelocityLengthSqr = MaxSpeed * MaxSpeed;
             }
             else Velocity = StartSpeed + AccelVelocity;
+            Log.Line($"test14");
 
             TravelMagnitude = Velocity * StepConst;
             FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
@@ -266,6 +281,7 @@ namespace WeaponCore.Projectiles
                 BaseAmmoParticleScale = 1f;
                 PlayAmmoParticle();
             }
+            Log.Line($"test15");
 
             if (EnableAv)
             {
@@ -273,6 +289,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.Init(Info, StepPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
             }
+            Log.Line($"test16");
 
             if (!Info.AmmoDef.Const.PrimeModel && !Info.AmmoDef.Const.TriggerModel) ModelState = EntityState.None;
             else
@@ -291,6 +308,7 @@ namespace WeaponCore.Projectiles
                     //ModelSphereLast.Radius = largestSize * 2;
                 }
             }
+            Log.Line($"test17");
         }
 
         internal void StaticEntCheck()
