@@ -71,13 +71,10 @@ namespace WeaponCore.Support
 
                 if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
-                    if (!av.System.OffsetEffect)
+                    if (!av.AmmoDef.Const.OffsetEffect)
                     {
-                        //DsDebugDraw.DrawSingleVec(av.TracerBack, 15f, Color.Blue);
-                        //DsDebugDraw.DrawSingleVec(av.TracerFront, 15f, Color.Red);
-
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                            MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, av.Color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                     }
                     else
                     {
@@ -101,7 +98,7 @@ namespace WeaponCore.Support
                             Vector3 dir = (toBeam - fromBeam);
                             var length = dir.Length();
                             var normDir = dir / length;
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, fromBeam, normDir, length, (float)av.TracerWidth);
+                            MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, av.Color, fromBeam, normDir, length, (float)av.TracerWidth);
 
                             if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
                         }
@@ -122,8 +119,8 @@ namespace WeaponCore.Support
 
                 if (av.Trail != AvShot.TrailState.Off)
                 {
-                    var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
-                    var widthScaler = !av.System.Values.Graphics.Line.Trail.UseColorFade;
+                    var steps = av.AmmoDef.AmmoGraphics.Lines.Trail.DecayTime;
+                    var widthScaler = !av.AmmoDef.AmmoGraphics.Lines.Trail.UseColorFade;
                     var remove = false;
                     for (int j = glowCnt - 1; j >= 0; j--)
                     {
@@ -135,13 +132,13 @@ namespace WeaponCore.Support
                         if (av.OnScreen != AvShot.Screen.None)
                         {
                             var reduction = (av.GlowShrinkSize * glow.Step);
-                            var width = widthScaler ? (av.System.TrailWidth - reduction) * av.TrailScaler : av.System.TrailWidth * av.TrailScaler;
-                            var color = av.System.Values.Graphics.Line.Trail.Color;
+                            var width = widthScaler ? (av.AmmoDef.Const.TrailWidth - reduction) * av.TrailScaler : av.AmmoDef.Const.TrailWidth * av.TrailScaler;
+                            var color = av.AmmoDef.AmmoGraphics.Lines.Trail.Color;
 
                             if (!widthScaler)
                                 color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
                             
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
+                            MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
                         }
 
                         if (++glow.Step >= steps)
@@ -195,7 +192,7 @@ namespace WeaponCore.Support
                         {
                             double distSqr;
                             Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
-                            if (distSqr <= av.System.AmmoTravelSoundDistSqr)
+                            if (distSqr <= av.AmmoDef.Const.AmmoTravelSoundDistSqr)
                             {
                                 av.AmmoSoundStart();
                             }
@@ -227,8 +224,8 @@ namespace WeaponCore.Support
                         av.FakeExplosion = false;
                         if (ExplosionReady)
                         {
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
-                            else SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
                         }
                     }
                 }   
@@ -248,10 +245,10 @@ namespace WeaponCore.Support
             var s = av.TracerShrinks.Dequeue();
             if (av.LastTick != Session.Tick) {
 
-                if (!av.System.OffsetEffect) {
+                if (!av.AmmoDef.Const.OffsetEffect) {
 
                     if (av.OnScreen != AvShot.Screen.None)
-                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
+                        MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
                 }
                 else if (av.OnScreen != AvShot.Screen.None)
                     av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
@@ -300,7 +297,7 @@ namespace WeaponCore.Support
 
                 if (entityExists && !weapon.StopBarrelAv) {
 
-                    var particles = weapon.System.Values.Graphics.Particles;
+                    var particles = weapon.System.Values.HardPoint.Graphics;
                     if (weapon.BarrelEffects1[muzzle.MuzzleId] == null && ticksAgo <= 0) {
 
                         var matrix1 = matrix;
@@ -371,7 +368,7 @@ namespace WeaponCore.Support
 
                 if (entityExists && !weapon.StopBarrelAv) {
 
-                    var particles = weapon.System.Values.Graphics.Particles;
+                    var particles = weapon.System.Values.HardPoint.Graphics;
                     if (weapon.BarrelEffects2[muzzle.MuzzleId] == null && ticksAgo <= 0) {
 
                         var matrix1 = matrix;
@@ -428,8 +425,8 @@ namespace WeaponCore.Support
                     av.FakeExplosion = false;
                     if (ExplosionReady) {
                         
-                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
-                        else SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
+                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
+                        else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
                     }
                 }
 

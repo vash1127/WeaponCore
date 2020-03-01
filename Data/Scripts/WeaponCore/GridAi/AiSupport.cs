@@ -13,7 +13,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 namespace WeaponCore.Support
 {
     public partial class GridAi

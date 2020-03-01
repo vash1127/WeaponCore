@@ -13,6 +13,7 @@ namespace WeaponCore.Support
     internal class AvShot
     {
         internal WeaponSystem System;
+        internal WeaponDefinition.AmmoDef AmmoDef;
         internal GridAi Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
@@ -124,15 +125,16 @@ namespace WeaponCore.Support
         internal void Init(ProInfo info, double firstStepSize, double maxSpeed)
         {
             System = info.System;
+            AmmoDef = info.AmmoDef;
             Ai = info.Ai;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
-            Model = (info.System.PrimeModel || info.System.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
+            Model = (info.AmmoDef.Const.PrimeModel || info.AmmoDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
             PrimeEntity = info.PrimeEntity;
             TriggerEntity = info.TriggerEntity;
             Origin = info.Origin;
-            Offset = System.OffsetEffect;
-            MaxTracerLength = System.TracerLength;
+            Offset = AmmoDef.Const.OffsetEffect;
+            MaxTracerLength = AmmoDef.Const.TracerLength;
             MuzzleId = info.MuzzleId;
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
@@ -140,24 +142,24 @@ namespace WeaponCore.Support
             ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
             ShrinkInited = false;
-            if (System.DrawLine) Tracer = !System.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
+            if (AmmoDef.Const.DrawLine) Tracer = !AmmoDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 
-            if (System.Trail)
+            if (AmmoDef.Const.Trail)
             {
-                MaxGlowLength = MathHelperD.Clamp(System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize, 0.1f, System.MaxTrajectory);
-                Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
-                GlowShrinkSize = !System.Values.Graphics.Line.Trail.UseColorFade ? System.TrailWidth / System.Values.Graphics.Line.Trail.DecayTime : 1f / System.Values.Graphics.Line.Trail.DecayTime;
+                MaxGlowLength = MathHelperD.Clamp(AmmoDef.AmmoGraphics.Lines.Trail.DecayTime * MaxStepSize, 0.1f, AmmoDef.Const.MaxTrajectory);
+                Trail = AmmoDef.AmmoGraphics.Lines.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
+                GlowShrinkSize = !AmmoDef.AmmoGraphics.Lines.Trail.UseColorFade ? AmmoDef.Const.TrailWidth / AmmoDef.AmmoGraphics.Lines.Trail.DecayTime : 1f / AmmoDef.AmmoGraphics.Lines.Trail.DecayTime;
                 Back = Trail == TrailState.Back;
             }
             else Trail = TrailState.Off;
-            TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.System.MaxTrajectory);
+            TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.AmmoDef.Const.MaxTrajectory);
             Ai.Session.Av.AvStart.Add(this);
         }
 
         internal void Update(ProInfo info, double stepSize, double visualLength, ref Vector3D tracerFront, ref Vector3D direction, ref Vector3D pointDir, double? shortStepSize = null, bool saveHit = false, bool modelOnly = false)
         {
-            var lineEffect = System.Trail || System.DrawLine;
+            var lineEffect = AmmoDef.Const.Trail || AmmoDef.Const.DrawLine;
 
             ++LifeTime;
             LastTick = Ai.Session.Tick;
@@ -174,12 +176,12 @@ namespace WeaponCore.Support
             if (modelOnly) {
                 ModelSphereCurrent.Center = TracerFront;
                 if (Triggered)
-                    ModelSphereCurrent.Radius = info.TriggerGrowthSteps < System.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : System.AreaEffectSize;
+                    ModelSphereCurrent.Radius = info.TriggerGrowthSteps < AmmoDef.Const.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : AmmoDef.Const.AreaEffectSize;
 
                 if (Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
                     OnScreen = Screen.ModelOnly;
             }
-            else if (lineEffect || Model == ModelState.None && System.AmmoParticle) {
+            else if (lineEffect || Model == ModelState.None && AmmoDef.Const.AmmoParticle) {
 
 
                 var rayTracer = new RayD(TracerBack, PointDir);
@@ -193,13 +195,13 @@ namespace WeaponCore.Support
 
                 if (dist != null && dist <= VisualLength)
                     OnScreen = Screen.Tracer;
-                else if (System.Trail) {
+                else if (AmmoDef.Const.Trail) {
                     Ai.Session.CameraFrustrum.Intersects(ref rayTrail, out dist);
                     if (dist != null && dist <= ShortEstTravel + ShortStepSize)
                         OnScreen = Screen.Trail;
                 }
 
-                if (OnScreen != Screen.None && !TrailActivated && System.Trail) TrailActivated = true;
+                if (OnScreen != Screen.None && !TrailActivated && AmmoDef.Const.Trail) TrailActivated = true;
                 
                 if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
 
@@ -207,7 +209,7 @@ namespace WeaponCore.Support
                 {
                     ModelSphereCurrent.Center = TracerFront;
                     if (Triggered)
-                        ModelSphereCurrent.Radius = info.TriggerGrowthSteps < System.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : System.AreaEffectSize;
+                        ModelSphereCurrent.Radius = info.TriggerGrowthSteps < AmmoDef.Const.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : AmmoDef.Const.AreaEffectSize;
 
                     if (OnScreen == Screen.None && Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
                         OnScreen = Screen.ModelOnly;
@@ -224,9 +226,9 @@ namespace WeaponCore.Support
                     HitVelocity = Hit.Projectile.Velocity;
                 Hitting = !ShrinkInited;
             }
-            LastStep = Hitting || MyUtils.IsZero(System.MaxTrajectory - ShortEstTravel, 1E-01F);
+            LastStep = Hitting || MyUtils.IsZero(AmmoDef.Const.MaxTrajectory - ShortEstTravel, 1E-01F);
 
-            if (System.IsBeamWeapon || !saveHit && MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)) {
+            if (AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)) {
                 Tracer = TracerState.Full;
             }
             else if (Tracer != TracerState.Off && VisualLength <= 0) {
@@ -248,14 +250,14 @@ namespace WeaponCore.Support
             if (Tracer != TracerState.Off && lineOnScreen) {
                 if (Tracer == TracerState.Shrink && !ShrinkInited)
                     Shrink();
-                else if (System.IsBeamWeapon && Hitting && System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
+                else if (AmmoDef.Const.IsBeamWeapon && Hitting && AmmoDef.Const.HitParticle && !(MuzzleId != 0 && (AmmoDef.Const.ConvergeBeams || AmmoDef.Const.OneHitParticle)))
                 {
                     ContainmentType containment;
                     Ai.Session.CameraFrustrum.Contains(ref Hit.HitPos, out containment);
                     if (containment != ContainmentType.Disjoint) RunBeam();
                 }
 
-                if (System.OffsetEffect)
+                if (AmmoDef.Const.OffsetEffect)
                     PrepOffsetEffect(TracerFront, PointDir, VisualLength);
             }
 
@@ -299,7 +301,7 @@ namespace WeaponCore.Support
                 backPos = Back && !extStart ? TracerBack : TracerFront + -futureStep;
             }
 
-            if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
+            if (glowCount <= AmmoDef.AmmoGraphics.Lines.Trail.DecayTime)
             {
                 var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
                 
@@ -337,20 +339,20 @@ namespace WeaponCore.Support
                 {
                     if (shrunk.Value.Reduced < 0.1) continue;
 
-                    var color = System.Values.Graphics.Line.Tracer.Color;
-                    if (System.LineColorVariance)
+                    var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
+                    if (AmmoDef.Const.LineColorVariance)
                     {
-                        var cv = System.Values.Graphics.Line.ColorVariance;
+                        var cv = AmmoDef.AmmoGraphics.Lines.ColorVariance;
                         var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                         color.X *= randomValue;
                         color.Y *= randomValue;
                         color.Z *= randomValue;
                     }
 
-                    var width = System.Values.Graphics.Line.Tracer.Width;
-                    if (System.LineWidthVariance)
+                    var width = AmmoDef.AmmoGraphics.Lines.Tracer.Width;
+                    if (AmmoDef.Const.LineWidthVariance)
                     {
-                        var wv = System.Values.Graphics.Line.WidthVariance;
+                        var wv = AmmoDef.AmmoGraphics.Lines.WidthVariance;
                         var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                         width += randomValue;
                     }
@@ -386,24 +388,24 @@ namespace WeaponCore.Support
 
         internal void LineVariableEffects()
         {
-            var color = System.Values.Graphics.Line.Tracer.Color;
-            if (System.LineColorVariance)
+            var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
+            if (AmmoDef.Const.LineColorVariance)
             {
-                var cv = System.Values.Graphics.Line.ColorVariance;
+                var cv = AmmoDef.AmmoGraphics.Lines.ColorVariance;
                 var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                 color.X *= randomValue;
                 color.Y *= randomValue;
                 color.Z *= randomValue;
             }
             Color = color;
-            var tracerWidth = System.Values.Graphics.Line.Tracer.Width;
-            var trailWidth = System.TrailWidth;
-            if (System.LineWidthVariance)
+            var tracerWidth = AmmoDef.AmmoGraphics.Lines.Tracer.Width;
+            var trailWidth = AmmoDef.Const.TrailWidth;
+            if (AmmoDef.Const.LineWidthVariance)
             {
-                var wv = System.Values.Graphics.Line.WidthVariance;
+                var wv = AmmoDef.AmmoGraphics.Lines.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 tracerWidth += randomValue;
-                if (System.Values.Graphics.Line.Trail.UseWidthVariance)
+                if (AmmoDef.AmmoGraphics.Lines.Trail.UseWidthVariance)
                     trailWidth += randomValue;
             }
 
@@ -411,9 +413,9 @@ namespace WeaponCore.Support
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref Ai.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Ai.Session.CameraMatrix.Translation);
 
-            if (System.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
+            if (AmmoDef.Const.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
             {
-                target = TracerFront + (-Direction * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, System.MaxTrajectory * 0.5)));
+                target = TracerFront + (-Direction * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, AmmoDef.Const.MaxTrajectory * 0.5)));
                 ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref Ai.Session.CameraPos);
                 DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Ai.Session.CameraMatrix.Translation);
             }
@@ -447,19 +449,19 @@ namespace WeaponCore.Support
                     MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
                     if (effect == null)
                     {
-                        MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect);
+                        MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect);
                         if (effect == null)
                         {
                             weapon.HitEffects[MuzzleId] = null;
                             return;
                         }
 
-                        effect.DistanceMax = System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                        effect.DurationMax = System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                        effect.UserColorMultiplier = System.Values.Graphics.Particles.Hit.Color;
-                        effect.Loop = System.Values.Graphics.Particles.Hit.Extras.Loop;
-                        effect.UserRadiusMultiplier = System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
-                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
+                        effect.DistanceMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
+                        effect.DurationMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
+                        effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                        effect.Loop = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Loop;
+                        effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
+                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                         effect.UserEmitterScale = (float)scale;
                     }
                     else if (effect.IsEmittingStopped)
@@ -483,9 +485,9 @@ namespace WeaponCore.Support
             var startPos = tracerStart + -(direction * tracerLength);
             MatrixD.CreateWorld(ref startPos, ref direction, ref up, out OffsetMatrix);
             TracerLengthSqr = tracerLength * tracerLength;
-            var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
-            var minLength = System.Values.Graphics.Line.OffsetEffect.MinLength;
-            var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, tracerLength);
+            var maxOffset = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
+            var minLength = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MinLength;
+            var maxLength = MathHelperD.Clamp(AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxLength, 0, tracerLength);
 
             double currentForwardDistance = 0;
             while (currentForwardDistance <= tracerLength)
@@ -504,11 +506,11 @@ namespace WeaponCore.Support
             var up = MatrixD.Identity.Up;
             var startPos = pos + -(direction * tracerLength);
             MatrixD.CreateWorld(ref startPos, ref direction, ref up, out matrix);
-            var offsetMaterial = System.TracerMaterial;
+            var offsetMaterial = AmmoDef.Const.TracerMaterial;
             var tracerLengthSqr = tracerLength * tracerLength;
-            var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
-            var minLength = System.Values.Graphics.Line.OffsetEffect.MinLength;
-            var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, tracerLength);
+            var maxOffset = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
+            var minLength = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MinLength;
+            var maxLength = MathHelperD.Clamp(AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxLength, 0, tracerLength);
 
             double currentForwardDistance = 0;
 
@@ -550,25 +552,25 @@ namespace WeaponCore.Support
         {
             FiringSoundState = System.FiringSound;
 
-            if (!System.IsBeamWeapon && System.AmmoTravelSound)
+            if (!AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.AmmoTravelSound)
             {
                 HasTravelSound = true;
-                TravelSound.Init(System.Values.Audio.Ammo.TravelSound, false);
+                TravelSound.Init(AmmoDef.AmmoAudio.TravelSound, false);
             }
             else HasTravelSound = false;
 
-            if (System.HitSound)
+            if (AmmoDef.Const.HitSound)
             {
-                var hitSoundChance = System.Values.Audio.Ammo.HitPlayChance;
+                var hitSoundChance = AmmoDef.AmmoAudio.HitPlayChance;
                 HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
                 if (HitSoundActive)
-                    HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
+                    HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
             }
 
             if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
             {
                 StartSoundActived = true;
-                FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
+                FireSound.Init(System.Values.HardPoint.Audio.FiringSound, false);
                 FireEmitter.SetPosition(Origin);
                 FireEmitter.Entity = FiringWeapon.MyCube;
             }
@@ -585,7 +587,7 @@ namespace WeaponCore.Support
         internal void ResetHit()
         {
             ShrinkInited = false;
-            TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, System.MaxTrajectory);
+            TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, AmmoDef.Const.MaxTrajectory);
         }
 
         internal void Close()
@@ -632,6 +634,7 @@ namespace WeaponCore.Support
             PrimeEntity = null;
             TriggerEntity = null;
             Ai = null;
+            AmmoDef = null;
             System = null;
         }
     }

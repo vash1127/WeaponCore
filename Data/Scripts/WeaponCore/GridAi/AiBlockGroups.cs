@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore.Support
 {
     internal class GroupInfo
@@ -45,7 +45,7 @@ namespace WeaponCore.Support
                             if (!o.Activate) ClearTargets(comp);
                             break;
                         case "SubSystems":
-                            o.SubSystem = (TargetingDefinition.BlockTypes)setting.Value;
+                            o.SubSystem = (TargetingDef.BlockTypes)setting.Value;
                             break;
                         case "FocusSubSystem":
                             o.FocusSubSystem = setting.Value > 0;
@@ -106,7 +106,7 @@ namespace WeaponCore.Support
                     if (!o.Activate) ClearTargets(comp);
                     break;
                 case "SubSystems":
-                    o.SubSystem = (TargetingDefinition.BlockTypes)value;
+                    o.SubSystem = (TargetingDef.BlockTypes)value;
                     break;
                 case "FocusSubSystem":
                     o.FocusSubSystem = value > 0;
