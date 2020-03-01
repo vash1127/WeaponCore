@@ -29,6 +29,18 @@ namespace WeaponCore
                 var controllableGun = cube as IMyUserControllableGun;
                 if (sorter != null || turret != null || controllableGun != null)
                 {
+                    foreach (var weaponPlatform in WeaponPlatforms)
+                    {
+                        Log.Line($"weaponPlatform:{weaponPlatform.Key.String}");
+                        foreach (var weaponsystem in weaponPlatform.Value.WeaponSystems)
+                        {
+                            Log.Line($"weaponSystem: {weaponsystem.Key.String}");
+                            foreach (var ammoTypes in weaponsystem.Value.WeaponAmmoTypes)
+                            {
+                                Log.Line($"ammoType:{ammoTypes.AmmoDefinitionId.SubtypeId.String}");
+                            }
+                        }
+                    }
                     if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
                     lock (InitObj)

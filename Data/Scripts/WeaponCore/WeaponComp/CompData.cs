@@ -125,7 +125,13 @@ namespace WeaponCore
         {
             var maxTrajectory = 0f;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-                if (maxTrajectory < Comp.Platform.Weapons[i].ActiveAmmoDef.Const.MaxTrajectory) maxTrajectory = (float)Comp.Platform.Weapons[i].ActiveAmmoDef.Const.MaxTrajectory;
+            {
+                var weapon = Comp.Platform.Weapons[i];
+                if (weapon.ActiveAmmoDef == null)
+                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[0].AmmoDef;
+
+                if (maxTrajectory < weapon.ActiveAmmoDef.Const.MaxTrajectory) maxTrajectory = (float)weapon.ActiveAmmoDef.Const.MaxTrajectory;
+            }
 
             //TODO change this
             Value.Range =  Comp.BaseType != Turret ? maxTrajectory : Comp.TurretBase.Range;
