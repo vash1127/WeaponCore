@@ -70,12 +70,8 @@ namespace WeaponCore
             foreach (var structure in WeaponPlatforms.Values)
             {
                 foreach (var system in structure.WeaponSystems)
-                {
-                    foreach (var ammo in system.Value.WeaponAmmo.Values)
-                        ammo.Const.PrimeEntityPool?.Clean();
-                    
-                    system.Value.WeaponAmmo.Clear();
-                }
+                    foreach (var ammo in system.Value.WeaponAmmoTypes)
+                        ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
 
                 structure.WeaponSystems.Clear();
                 //structure.AmmoToWeaponIds.Clear();

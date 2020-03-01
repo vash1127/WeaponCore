@@ -472,7 +472,7 @@ namespace WeaponCore.Platform
 
         internal void GetAmmoClient()
         {
-            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.AmmoDefId);
+            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
             CheckReload();
         }
 
@@ -502,7 +502,7 @@ namespace WeaponCore.Platform
             {
                 State.Sync.CurrentAmmo = ActiveAmmoDef.Const.MagazineDef.Capacity;
                 if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
-                   Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
+                   Comp.BlockInventory.RemoveItemsOfType(1, System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
             }
         }
 

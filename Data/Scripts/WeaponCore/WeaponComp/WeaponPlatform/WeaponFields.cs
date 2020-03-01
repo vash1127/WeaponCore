@@ -231,13 +231,14 @@ namespace WeaponCore.Platform
 
 
             bool hitParticle = false;
-            foreach (var ammoDef in System.WeaponAmmo.Values)
+            foreach (var ammoType in System.WeaponAmmoTypes)
             {
-                if (ammoDef.Const.EnergyAmmo) CanUseEnergyAmmo = true;
-                if (ammoDef.Const.IsHybrid) CanUseHybridAmmo = true;
-                if (ammoDef.Const.MustCharge) CanUseChargeAmmo = true;
-                if (ammoDef.Const.IsBeamWeapon) CanUseBeams = true;
-                if (ammoDef.Const.HitParticle) hitParticle = true;
+                var c = ammoType.AmmoDef.Const;
+                if (c.EnergyAmmo) CanUseEnergyAmmo = true;
+                if (c.IsHybrid) CanUseHybridAmmo = true;
+                if (c.MustCharge) CanUseChargeAmmo = true;
+                if (c.IsBeamWeapon) CanUseBeams = true;
+                if (c.HitParticle) hitParticle = true;
             }
 
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || CanUseEnergyAmmo || CanUseHybridAmmo;
