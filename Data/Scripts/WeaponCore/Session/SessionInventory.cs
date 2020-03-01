@@ -20,7 +20,7 @@ namespace WeaponCore
             {
                 if (!comp.MyCube.HasInventory) return;
 
-                var def = weapon.System.WeaponAmmo.FirstOrDefault().Key; //fix me
+                var def = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDefinitionId;
                 var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
                 weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
@@ -46,7 +46,7 @@ namespace WeaponCore
                 using (weapon.Comp.MyCube.Pin())
                 {
                     if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) continue;
-                    var def = weapon.System.WeaponAmmo.FirstOrDefault().Key;//fix me
+                    var def = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDefinitionId;
                     float itemMass;
                     float itemVolume;
 
@@ -102,7 +102,7 @@ namespace WeaponCore
                 var weapon = weaponAmmoToPull.Item1;
                 if (!weapon.Comp.InventoryInited) continue;
                 var inventoriesToPull = weaponAmmoToPull.Item2;
-                var def = weapon.System.WeaponAmmo.FirstOrDefault().Key;//fix me
+                var def = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDefinitionId;
                 var magItem = weapon.ActiveAmmoDef.Const.AmmoItem;
 
                 weapon.Comp.IgnoreInvChange = true;
