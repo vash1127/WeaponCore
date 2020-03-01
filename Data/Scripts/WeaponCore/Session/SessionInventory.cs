@@ -25,7 +25,7 @@ namespace WeaponCore
 
                 weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
 
-                weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.System.MagVolume;
+                weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.Const.MagVolume;
 
                 if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                     weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
@@ -103,7 +103,7 @@ namespace WeaponCore
                 if (!weapon.Comp.InventoryInited) continue;
                 var inventoriesToPull = weaponAmmoToPull.Item2;
                 var def = weapon.System.WeaponAmmo.FirstOrDefault().Key;//fix me
-                var magItem = weapon.System.AmmoItem;
+                var magItem = weapon.ActiveAmmoDef.Const.AmmoItem;
 
                 weapon.Comp.IgnoreInvChange = true;
 

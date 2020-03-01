@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 using System;
 
@@ -25,7 +26,7 @@ namespace WeaponCore.Platform
                 var session = Comp.Session;
                 var tick = session.Tick;
                 var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-                var targetable = ActiveAmmoDef.Health > 0 && !System.IsBeamWeapon;
+                var targetable = ActiveAmmoDef.Health > 0 && !ActiveAmmoDef.Const.IsBeamWeapon;
 
                 if (_ticksUntilShoot++ < System.DelayToFire)
                 {
@@ -87,12 +88,12 @@ namespace WeaponCore.Platform
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
-                if (System.BurstMode && ++State.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
+                if (ActiveAmmoDef.Const.BurstMode && ++State.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     State.ShotsFired = 1;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
-                else if (System.HasBurstDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                else if (ActiveAmmoDef.Const.HasBurstDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     State.ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
@@ -111,7 +112,7 @@ namespace WeaponCore.Platform
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
 
                 Projectile vProjectile = null;
-                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
+                if (ActiveAmmoDef.Const.VirtualBeams) vProjectile = CreateVirtualProjectile();
 
                 for (int i = 0; i < bps; i++)
                 {
@@ -128,13 +129,13 @@ namespace WeaponCore.Platform
                         muzzle.LastUpdateTick = tick;
                     }
 
-                    if (!System.EnergyAmmo || System.IsHybrid || System.MustCharge)
+                    if (!ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.IsHybrid || ActiveAmmoDef.Const.MustCharge)
                     {
                         if (State.Sync.CurrentAmmo == 0) break;
                         State.Sync.CurrentAmmo--;
                     }
 
-                    if (System.HasBackKickForce && !Comp.Ai.IsStatic)
+                    if (ActiveAmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic)
                         Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     if (PlayTurretAv)
@@ -169,22 +170,22 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        if (System.VirtualBeams && j == 0)
+                        if (ActiveAmmoDef.Const.VirtualBeams && j == 0)
                         {
                             MyEntity primeE = null;
                             MyEntity triggerE = null;
 
-                            if (System.PrimeModel)
-                                primeE = System.PrimeEntityPool.Get();
+                            if (ActiveAmmoDef.Const.PrimeModel)
+                                primeE = ActiveAmmoDef.Const.PrimeEntityPool.Get();
 
-                            if (System.TriggerModel)
+                            if (ActiveAmmoDef.Const.TriggerModel)
                                 triggerE = session.TriggerEntityPool.Get();
 
                             var info = session.Projectiles.VirtInfoPool.Get();
-                            info.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
+                            info.InitVirtual(System, Comp.Ai, ActiveAmmoDef, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.Av.AvShotPool.Get() });
 
-                            if (!System.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
+                            if (!ActiveAmmoDef.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
                             else if (i == _nextVirtual)
                             {
 
@@ -225,8 +226,8 @@ namespace WeaponCore.Platform
                             p.PredictedTargetPos = Target.TargetPos;
                             p.Direction = muzzle.DeviatedDir;
                             p.State = Projectile.ProjectileState.Start;
-                            p.Info.PrimeEntity = System.PrimeModel ? System.PrimeEntityPool.Get() : null;
-                            p.Info.TriggerEntity = System.TriggerModel ? session.TriggerEntityPool.Get() : null;
+                            p.Info.PrimeEntity = ActiveAmmoDef.Const.PrimeModel ? ActiveAmmoDef.Const.PrimeEntityPool.Get() : null;
+                            p.Info.TriggerEntity = ActiveAmmoDef.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                             Comp.Session.Projectiles.ActiveProjetiles.Add(p);
 
                             if (targetable)
@@ -247,7 +248,7 @@ namespace WeaponCore.Platform
                                             {
                                                 var deltaPos = targetSphere.Center - MyPivotPos;
                                                 var deltaVel = targetAi.GridVel - Comp.Ai.GridVel;
-                                                var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, System.DesiredProjectileSpeed);
+                                                var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, ActiveAmmoDef.Const.DesiredProjectileSpeed);
                                                 var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
                                                 targetSphere.Center = predictedPos;
                                             }
@@ -301,7 +302,7 @@ namespace WeaponCore.Platform
                 if(IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (System.BurstMode && (State.Sync.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                if (ActiveAmmoDef.Const.BurstMode && (State.Sync.CurrentAmmo > 0 || (ActiveAmmoDef.Const.EnergyAmmo && !ActiveAmmoDef.Const.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     uint delay = 0;
                     FinishBurst = false;
@@ -315,10 +316,10 @@ namespace WeaponCore.Platform
 
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
-                else if (System.BurstMode && System.AlwaysFireFullBurst && State.Sync.CurrentAmmo > 0)
-                    FinishBurst = (State.Sync.CurrentAmmo > 0 || System.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
+                else if (ActiveAmmoDef.Const.BurstMode && System.AlwaysFireFullBurst && State.Sync.CurrentAmmo > 0)
+                    FinishBurst = (State.Sync.CurrentAmmo > 0 || ActiveAmmoDef.Const.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
 
-                else if ((!System.EnergyAmmo || System.MustCharge) && State.Sync.CurrentAmmo == 0 && !State.Sync.Reloading)
+                else if ((!ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.MustCharge) && State.Sync.CurrentAmmo == 0 && !State.Sync.Reloading)
                     StartReload();
                 
 

@@ -9,7 +9,7 @@ using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
-
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
 namespace WeaponCore.Control
 {
     public static class TerminalHelpers
@@ -223,7 +223,7 @@ namespace WeaponCore.Control
                     }
                     w.StopShooting();
 
-                    if (w.System.MustCharge && ((w.System.IsHybrid && w.State.Sync.CurrentAmmo != w.System.MagazineDef.Capacity) || (!w.System.IsHybrid && w.State.Sync.CurrentAmmo != w.System.EnergyMagSize)))
+                    if (w.ActiveAmmoDef.Const.MustCharge && ((w.ActiveAmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.Const.MagazineDef.Capacity) || (!w.ActiveAmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.Const.EnergyMagSize)))
                     {
                         w.State.Sync.CurrentCharge = 0;
                         w.State.Sync.CurrentAmmo = 0;
@@ -232,32 +232,32 @@ namespace WeaponCore.Control
                     //comp.State.Value.CurrentCharge += w.State.Sync.CurrentCharge;
 
                     uint delay;
-                    if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))
+                    if (w.System.WeaponAnimationLengths.TryGetValue(TurnOff, out delay))
                         w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = comp.Session.Tick + delay + w.Timings.OffDelay;
                 }
                 else
                 {
                     w.Timings.OffDelay = 0;
                     uint delay;
-                    if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
+                    if (w.System.WeaponAnimationLengths.TryGetValue(TurnOn, out delay))
                         w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
 
-                    if (!w.System.EnergyAmmo || w.System.MustCharge)
+                    if (!w.ActiveAmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.Const.MustCharge)
                         Session.ComputeStorage(w);
                 }
 
                 
-                if (w.Timings.AnimationDelayTick < comp.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
+                if (w.Timings.AnimationDelayTick < comp.Session.Tick || w.LastEvent == TurnOn || w.LastEvent == TurnOff)
                 {
-                    w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
-                    w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+                    w.EventTriggerStateChanged(TurnOn, On);
+                    w.EventTriggerStateChanged(TurnOff, !On);
                 }
                 else
                 {
                     comp.Session.FutureEvents.Schedule(o => 
                         {
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+                            w.EventTriggerStateChanged(TurnOn, On);
+                            w.EventTriggerStateChanged(TurnOff, !On);
                         }, 
                         null, 
                         w.Timings.AnimationDelayTick - comp.Session.Tick
