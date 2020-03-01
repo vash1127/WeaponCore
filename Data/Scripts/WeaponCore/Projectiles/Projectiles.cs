@@ -176,7 +176,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle && p.Info.System.PrimeModel)
                     {
-                        var offVec = p.Position + Vector3D.Rotate(p.Info.System.Values.Graphics.Particles.Ammo.Offset, p.Info.AvShot.PrimeMatrix);
+                        var offVec = p.Position + Vector3D.Rotate(p.Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, p.Info.AvShot.PrimeMatrix);
                         p.AmmoEffect.WorldMatrix = p.Info.AvShot.PrimeMatrix;
                         p.AmmoEffect.SetTranslation(offVec);
                     }
@@ -209,7 +209,7 @@ namespace WeaponCore.Projectiles
                             p.FieldTime--;
                             if (p.Info.System.IsMine && !p.MineSeeking && !p.MineActivated)
                             {
-                                if (p.EnableAv) p.Info.AvShot.Cloaked = p.Info.System.Values.Ammo.Trajectory.Mines.Cloak;
+                                if (p.EnableAv) p.Info.AvShot.Cloaked = p.Info.AmmoDef.Trajectory.Mines.Cloak;
                                 p.MineSeeking = true;
                             }
                         }
@@ -235,7 +235,7 @@ namespace WeaponCore.Projectiles
                 var beam = useEwarSphere ? new LineD(p.Position + (-p.Direction * p.Info.System.EwarTriggerRange), p.Position + (p.Direction * p.Info.System.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
-                    var dInfo = p.Info.System.Values.Ammo.AreaEffect.Detonation;
+                    var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
 
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = dInfo.DetonationRadius;
@@ -402,7 +402,7 @@ namespace WeaponCore.Projectiles
                     if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
                         if (!p.Info.System.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.System.AmmoParticleShrinks)
-                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
+                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
 
                         if ((p.ParticleStopped || p.ParticleLateStart))
                             p.PlayAmmoParticle();

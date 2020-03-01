@@ -11,14 +11,14 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal TargetingDef Targeting;
         [ProtoMember(3)] internal AnimationDefinition Animations;
         [ProtoMember(4)] internal HardPointDef HardPoint;
-        [ProtoMember(5)] internal AmmoDef[] Ammo;
+        [ProtoMember(5)] internal AmmoDef[] Ammos;
         [ProtoMember(6)] internal string ModPath;
 
         [ProtoContract]
         public struct ModelAssignmentsDef
         {
             [ProtoMember(1)] internal MountPointDef[] MountPoints;
-            [ProtoMember(2)] internal BarrelDef[] Barrels;
+            [ProtoMember(2)] internal string[] Barrels;
 
             [ProtoContract]
             public struct MountPointDef
@@ -266,7 +266,7 @@ namespace WeaponCore.Support
         }
 
         [ProtoContract]
-        public struct AmmoDef
+        public class AmmoDef
         {
             [ProtoMember(1)] internal string AmmoMagazine;
             [ProtoMember(2)] internal string AmmoRound;

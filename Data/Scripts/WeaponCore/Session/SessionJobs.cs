@@ -6,8 +6,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using WeaponCore.Support;
-using static WeaponCore.Support.TargetingDefinition;
-using static WeaponCore.Support.TargetingDefinition.BlockTypes;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 
 namespace WeaponCore
 {
@@ -22,7 +21,7 @@ namespace WeaponCore
     internal struct DeferedTypeCleaning
     {
         internal uint RequestTick;
-        internal ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
+        internal ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
     }
 
     public partial class Session
@@ -154,8 +153,6 @@ namespace WeaponCore
 
         private void UpdateGrids()
         {
-            //Log.Line($"[UpdateGrids] DirtTmp:{DirtyGridsTmp.Count} - Dirt:{DirtyGrids.Count}");
-            //DsUtil2.Start("UpdateGrids");
             DeferedUpBlockTypeCleanUp();
 
             DirtyGridsTmp.Clear();
@@ -173,7 +170,7 @@ namespace WeaponCore
                 newTypeMap[Power] = ConcurrentListPool.Get();
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
-                ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
+                ConcurrentDictionary<WeaponDefinition.TargetingDef, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
                 FatMap fatMap;
                 if (GridToFatMap.TryGetValue(grid, out fatMap))
@@ -214,7 +211,7 @@ namespace WeaponCore
                     fatMap.Trash = terminals == 0;
                     var gridBlocks = grid.BlocksCount;
                     if (gridBlocks > fatMap.MostBlocks) fatMap.MostBlocks = gridBlocks;
-                    ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
+                    ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {
                         GridToBlockTypeMap[grid] = newTypeMap;

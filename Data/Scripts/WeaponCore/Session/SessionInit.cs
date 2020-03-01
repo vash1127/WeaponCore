@@ -72,34 +72,37 @@ namespace WeaponCore
 
             foreach (var x in WeaponDefinitions)
             {
-                var ae = x.Ammo.AreaEffect;
-                var areaRadius = ae.AreaEffectRadius;
-                var detonateRadius = ae.Detonation.DetonationRadius;
-                var fragments = x.Ammo.Shrapnel.Fragments > 0 ? x.Ammo.Shrapnel.Fragments : 1;
-                if (areaRadius > 0)
+                foreach (var ammo in x.Ammos)
                 {
-                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius, true)))
-                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius, true));
-                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, true)))
-                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius / fragments, true));
+                    var ae = ammo.AreaEffect;
+                    var areaRadius = ae.AreaEffectRadius;
+                    var detonateRadius = ae.Detonation.DetonationRadius;
+                    var fragments = ammo.Shrapnel.Fragments > 0 ? ammo.Shrapnel.Fragments : 1;
+                    if (areaRadius > 0)
+                    {
+                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius, true)))
+                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius, true));
+                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, true)))
+                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius / fragments, true));
 
-                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius, false)))
-                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius, false));
-                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, false)))
-                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius / fragments, false));
+                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius, false)))
+                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius, false));
+                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, false)))
+                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius / fragments, false));
 
-                }
-                if (detonateRadius > 0)
-                {
-                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius, true)))
-                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius, true));
-                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, true)))
-                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius / fragments, true));
+                    }
+                    if (detonateRadius > 0)
+                    {
+                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius, true)))
+                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius, true));
+                        if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, true)))
+                            GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius / fragments, true));
 
-                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius, false)))
-                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius, false));
-                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, false)))
-                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
+                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius, false)))
+                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius, false));
+                        if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, false)))
+                            GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
+                    }
                 }
             }
             foreach (var weaponDef in WeaponDefinitions)
@@ -111,7 +114,7 @@ namespace WeaponCore
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
 
-                    var extraInfo = new MyTuple<string, string, string> { Item1 = weaponDef.HardPoint.WeaponId, Item2 = azimuthPartId, Item3 = elevationPartId};
+                    var extraInfo = new MyTuple<string, string, string> { Item1 = weaponDef.HardPoint.WeaponName, Item2 = azimuthPartId, Item3 = elevationPartId};
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
@@ -122,13 +125,13 @@ namespace WeaponCore
                                 var gunDef = def as MyLargeTurretBaseDefinition;
                                 if (gunDef != null)
                                 {
-                                    var blockDefs = weaponDef.HardPoint.Block;
+                                    var blockDefs = weaponDef.HardPoint.HardWare;
                                     gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
                                     gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
                                     gunDef.MinElevationDegrees = blockDefs.MinElevation;
                                     gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
-                                    gunDef.RotationSpeed = (float)blockDefs.RotateRate;
-                                    gunDef.ElevationSpeed = (float)blockDefs.ElevateRate;
+                                    gunDef.RotationSpeed = blockDefs.RotateRate;
+                                    gunDef.ElevationSpeed = blockDefs.ElevateRate;
                                     gunDef.AiEnabled = false;
                                 }
 
@@ -159,7 +162,7 @@ namespace WeaponCore
                 var hasTurret = false;
                 foreach (var wepDef in weapons)
                 {
-                    if (wepDef.HardPoint.Block.TurretAttached)
+                    if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
                 }
 

@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.Target;
+using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore.Platform
 {
 
@@ -81,6 +81,7 @@ namespace WeaponCore.Platform
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
+        internal AmmoDef ActiveAmmoDef;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -102,24 +103,16 @@ namespace WeaponCore.Platform
         internal float AreaEffectDmg;
         internal float DetonateDmg;
         internal float LastHeat;
-        //internal float CurrentCharge;
         internal uint CeaseFireDelayTick = int.MaxValue;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
-        //internal uint ChargeDelayTicks;
-        //internal uint ChargeUntilTick;
-        //internal uint AnimationDelayTick;
-        //internal uint OffDelay;
         internal uint LastMuzzleCheck;
-        //internal uint ShootDelayTick;
-        //internal uint WeaponReadyTick; //needed to prevent tracking while on animations are running
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;
         internal int HsRate;
         internal int EnergyPriority;
         internal int LastBlockCount;
-        //internal int SingleShotCounter;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
         internal double Azimuth;
@@ -255,28 +248,28 @@ namespace WeaponCore.Platform
             {
                 FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
-                FiringSound.Init(System.Values.Audio.HardPoint.FiringSound);
+                FiringSound.Init(System.Values.HardPoint.Audio.FiringSound);
             }
 
             if (AvCapable && system.PreFireSound)
             {
                 PreFiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 PreFiringSound = new MySoundPair();
-                PreFiringSound.Init(System.Values.Audio.HardPoint.PreFiringSound);
+                PreFiringSound.Init(System.Values.HardPoint.Audio.PreFiringSound);
             }
 
             if (AvCapable && system.WeaponReloadSound)
             {
                 ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 ReloadSound = new MySoundPair();
-                ReloadSound.Init(System.Values.Audio.HardPoint.ReloadSound);
+                ReloadSound.Init(System.Values.HardPoint.Audio.ReloadSound);
             }
 
             if (AvCapable && system.BarrelRotationSound)
             {
                 RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 RotateSound = new MySoundPair();
-                RotateSound.Init(System.Values.Audio.HardPoint.BarrelRotationSound);
+                RotateSound.Init(System.Values.HardPoint.Audio.BarrelRotationSound);
             }
 
             if (AvCapable)
@@ -288,19 +281,19 @@ namespace WeaponCore.Platform
 
             WeaponId = weaponId;
             PrimaryWeaponGroup = WeaponId % 2 == 0;
-            IsTurret = System.Values.HardPoint.Block.TurretAttached;
-            TurretMode = System.Values.HardPoint.Block.TurretController;
-            TrackTarget = System.Values.HardPoint.Block.TrackTargets;
+            IsTurret = System.Values.HardPoint.Ai.TurretAttached;
+            TurretMode = System.Values.HardPoint.Ai.TurretController;
+            TrackTarget = System.Values.HardPoint.Ai.TrackTargets;
             
-            if (System.Values.HardPoint.Block.TurretController)
+            if (System.Values.HardPoint.Ai.TurretController)
             {
                 AiEnabled = true;
-                AimOffset = System.Values.HardPoint.Block.Offset;
-                FixedOffset = System.Values.HardPoint.Block.FixedOffset;
+                AimOffset = System.Values.HardPoint.HardWare.Offset;
+                FixedOffset = System.Values.HardPoint.HardWare.FixedOffset;
             }
 
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
-            EnergyPriority = System.Values.HardPoint.EnergyPriority;
+            EnergyPriority = System.Values.HardPoint.Other.EnergyPriority;
             var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);

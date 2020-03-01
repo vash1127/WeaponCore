@@ -9,10 +9,13 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+
 using System;
 
 namespace WeaponCore.Platform
 {
+
     public partial class Weapon
     {
         internal void Shoot() // Inlined due to keens mod profiler
@@ -22,7 +25,7 @@ namespace WeaponCore.Platform
                 var session = Comp.Session;
                 var tick = session.Tick;
                 var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-                var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
+                var targetable = ActiveAmmoDef.Health > 0 && !System.IsBeamWeapon;
 
                 if (_ticksUntilShoot++ < System.DelayToFire)
                 {
@@ -102,7 +105,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                if (!Comp.Session.IsClient && Comp.TerminalControlled == None && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.MuzzleCheck && tick - LastMuzzleCheck > 29))
+                if (!Comp.Session.IsClient && Comp.TerminalControlled == None && ActiveAmmoDef.Trajectory.Guidance == GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.Other.MuzzleCheck && tick - LastMuzzleCheck > 29))
                     ShootRayCheck();
 
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -132,21 +135,21 @@ namespace WeaponCore.Platform
                     }
 
                     if (System.HasBackKickForce && !Comp.Ai.IsStatic)
-                        Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
+                        Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     if (PlayTurretAv)
                     {
                         if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping)
                         {
                             muzzle.LastAv1Tick = tick;
-                            muzzle.Av1Looping = System.Values.Graphics.Particles.Barrel1.Extras.Loop;
+                            muzzle.Av1Looping = System.Values.HardPoint.Graphics.Barrel1.Extras.Loop;
                             session.Av.AvBarrels1.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
                         }
 
                         if (System.BarrelEffect2 && tick - muzzle.LastAv2Tick > System.Barrel2AvTicks && !muzzle.Av2Looping)
                         {
                             muzzle.LastAv2Tick = tick;
-                            muzzle.Av2Looping = System.Values.Graphics.Particles.Barrel2.Extras.Loop;
+                            muzzle.Av2Looping = System.Values.HardPoint.Graphics.Barrel2.Extras.Loop;
                             session.Av.AvBarrels2.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
                         }
                     }
@@ -198,6 +201,7 @@ namespace WeaponCore.Platform
                             p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
                             p.Info.System = System;
                             p.Info.Ai = Comp.Ai;
+                            p.Info.AmmoDef = ActiveAmmoDef;
                             p.Info.Overrides = Comp.Set.Value.Overrides;
                             p.Info.Target.Entity = Target.Entity;
                             p.Info.Target.Projectile = Target.Projectile;
@@ -230,7 +234,7 @@ namespace WeaponCore.Platform
                                 for (int t = 0; t < targetAiCnt; t++)
                                 {
                                     var targetAi = Comp.Ai.TargetAis[t];
-                                    var addProjectile = System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None && targetAi.PointDefense;
+                                    var addProjectile = ActiveAmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                                     if (!addProjectile && targetAi.PointDefense)
                                     {
                                         if (Vector3.Dot(p.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
@@ -337,6 +341,7 @@ namespace WeaponCore.Platform
             p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
+            p.Info.AmmoDef = ActiveAmmoDef;
             p.Info.Overrides = Comp.Set.Value.Overrides;
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
@@ -371,7 +376,7 @@ namespace WeaponCore.Platform
         {
             var tick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-            if (System.Values.HardPoint.MuzzleCheck)
+            if (System.Values.HardPoint.Other.MuzzleCheck)
             {
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())

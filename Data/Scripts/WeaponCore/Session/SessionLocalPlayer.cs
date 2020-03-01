@@ -9,6 +9,8 @@ using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 namespace WeaponCore
 {
     public partial class Session
@@ -227,12 +229,12 @@ namespace WeaponCore
 
                 TargetInfo info;
                 if (!ai.Targets.TryGetValue(entity, out info)) return;
-                ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
+                ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
                 
                 if (info.IsGrid && GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {
 
                     ConcurrentCachingList<MyCubeBlock> fatList;
-                    if (typeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out fatList))
+                    if (typeDict.TryGetValue(WeaponDefinition.TargetingDef.BlockTypes.Offense, out fatList))
                         TargetArmed = fatList.Count > 0;
                     else TargetArmed = false;
                 }

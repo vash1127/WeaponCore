@@ -74,7 +74,7 @@ namespace WeaponCore
                     system.Value.PrimeEntityPool?.Clean();
 
                 structure.WeaponSystems.Clear();
-                structure.AmmoToWeaponIds.Clear();
+                //structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
 

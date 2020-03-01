@@ -13,7 +13,7 @@ using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-
+using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore.Support
 {
     internal class ProInfo
@@ -27,6 +27,7 @@ namespace WeaponCore.Support
         internal MyEntity TriggerEntity;
         internal CompGroupOverrides Overrides;
         internal WeaponFrameCache WeaponCache;
+        internal AmmoDef AmmoDef;
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
@@ -87,6 +88,7 @@ namespace WeaponCore.Support
             AvShot = null;
             System = null;
             Ai = null;
+            AmmoDef = null;
             WeaponCache = null;
             LastHitShield = false;
             IsShrapnel = false;
@@ -280,7 +282,7 @@ namespace WeaponCore.Support
         internal List<Fragment> Sharpnel = new List<Fragment>();
         internal void Init(Projectile p, MyConcurrentPool<Fragment> fragPool)
         {
-            for (int i = 0; i < p.Info.System.Values.Ammo.Shrapnel.Fragments; i++)
+            for (int i = 0; i < p.Info.AmmoDef.Shrapnel.Fragments; i++)
             {
                 var frag = fragPool.Get();
 
@@ -298,26 +300,8 @@ namespace WeaponCore.Support
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 var dirMatrix = Matrix.CreateFromDir(p.Direction);
-                var shape = p.Info.System.Values.Ammo.Shrapnel.Shape;
-                float neg;
-                float pos;
-                switch (shape)
-                {
-                    case Shrapnel.ShrapnelShape.Cone:
-                        neg = 0;
-                        pos = 15;
-                        break;
-                    case Shrapnel.ShrapnelShape.HalfMoon:
-                        neg = 90;
-                        pos = 90;
-                        break;
-                    default:
-                        neg = 180;
-                        pos = 180;
-                        break;
-                }
-                var negValue = MathHelper.ToRadians(neg);
-                var posValue = MathHelper.ToRadians(pos);
+                var negValue = MathHelper.ToRadians(p.Info.AmmoDef.Shrapnel.BackwardDegrees);
+                var posValue = MathHelper.ToRadians(p.Info.AmmoDef.Shrapnel.ForwardDegrees);
                 var randomFloat1 = MyUtils.GetRandomFloat(-negValue, posValue);
                 var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
 

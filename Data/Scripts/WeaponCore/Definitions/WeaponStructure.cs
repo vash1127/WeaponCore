@@ -2,21 +2,35 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Definitions;
-using Sandbox.Engine.Analytics;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI.Ingame;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
-
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.ModelAssignmentsDef;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef.Prediction;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.Threat;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.ShapeDef.Shapes;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.GraphicDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef.ShieldDef.ShieldType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.GraphicDef.LineDef;
 namespace WeaponCore.Support
 {
     public class WeaponSystem
@@ -27,7 +41,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
         public readonly WeaponDefinition Values;
-        public readonly MyDefinitionId AmmoDefId;
+        public readonly Dictionary<MyDefinitionId, AmmoDef> WeaponAmmo;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly MyStringId TracerMaterial;
         public readonly MyStringId TrailMaterial;
@@ -40,7 +54,7 @@ namespace WeaponCore.Support
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
         public readonly MyPhysicalInventoryItem AmmoItem;
-        public readonly AreaDamage.AreaEffectType AreaEffect;
+        public readonly AreaEffectType AreaEffect;
         public readonly string WeaponName;
         public readonly string ModelPath;
         public readonly string[] Barrels;
@@ -152,7 +166,7 @@ namespace WeaponCore.Support
         public readonly float ShieldBypassMod;
         public readonly float MagMass;
         public readonly float MagVolume;
-        public readonly HardPointDefinition.Prediction Prediction;
+        public readonly Prediction Prediction;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -187,7 +201,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId, int weaponId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, Dictionary<MyDefinitionId, AmmoDef> weaponAmmo, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -199,9 +213,13 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponId = weaponId;
             WeaponName = weaponName;
-            AmmoDefId = ammoDefId;
+            WeaponAmmo = weaponAmmo;
 
-            MyInventory.GetItemVolumeAndMass(AmmoDefId, out MagMass, out MagVolume);
+            foreach (var ammo in weaponAmmo)
+            {
+                MyInventory.GetItemVolumeAndMass(ammo.Key, out MagMass, out MagVolume);
+
+            }
 
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
@@ -613,7 +631,7 @@ namespace WeaponCore.Support
     public class WeaponStructure
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
-        public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
+        //public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
         public readonly Dictionary<int, int> HashToId;
 
         public readonly MyStringHash[] MuzzlePartNames;
@@ -632,7 +650,7 @@ namespace WeaponCore.Support
             var elevationPartNames = new MyStringHash[numOfParts];
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
-            AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
+            //AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
             HashToId = new Dictionary<int, int>();
 
             var gridWeaponCap = 0;
@@ -648,42 +666,38 @@ namespace WeaponCore.Support
                 var weaponDef = new WeaponDefinition();
 
                 foreach (var weapon in wDefList)
-                    if (weapon.HardPoint.WeaponId == typeName) weaponDef = weapon;
+                    if (weapon.HardPoint.WeaponName == typeName) weaponDef = weapon;
 
-                var ammoDefId = new MyDefinitionId();
-                var ammoBlank = weaponDef.HardPoint.AmmoMagazineId == string.Empty || weaponDef.HardPoint.AmmoMagazineId == "Blank";
-                foreach (var def in Session.AllDefinitions)
-                {
-                    if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.HardPoint.AmmoMagazineId) ammoDefId = def.Id;
-                }
-
-                var cap = weaponDef.HardPoint.GridWeaponCap;
+                var cap = weaponDef.HardPoint.Other.GridWeaponCap;
                 if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
                 else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
 
-                Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
+                var weaponAmmo = new Dictionary<MyDefinitionId, AmmoDef>(MyDefinitionId.Comparer);
+                foreach (var ammo in weaponDef.Ammos)
+                {
+                    var ammoDefId = new MyDefinitionId();
+                    var ammoBlank = ammo.AmmoMagazine == string.Empty || ammo.AmmoMagazine == "Blank";
+                    foreach (var def in Session.AllDefinitions)
+                    {
+                        if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == ammo.AmmoMagazine) ammoDefId = def.Id;
+                    }
+                    Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
+                    weaponAmmo.Add(ammoDefId, ammo);
+                }
 
                 var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponId, mapIndex);
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId, weaponId));
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponId));
+                /*
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
                     AmmoToWeaponIds[ammoDefId].Add(mapIndex);
                 }
-
+                */
                 mapIndex++;
-                /*
-                  if (weaponDef.AmmoDef.RealisticDamage)
-                  {
-                      weaponDef.HasKineticEffect = weaponDef.AmmoDef.Mass > 0 && weaponDef.AmmoDef.DesiredSpeed > 0;
-                      weaponDef.HasThermalEffect = weaponDef.AmmoDef.ThermalDamage > 0;
-                      var kinetic = ((weaponDef.AmmoDef.Mass / 2) * (weaponDef.AmmoDef.DesiredSpeed * weaponDef.AmmoDef.DesiredSpeed) / 1000) * weaponDef.KeenScaler;
-                      weaponDef.ComputedBaseDamage = kinetic + weaponDef.AmmoDef.ThermalDamage;
-                  }
-                  */
             }
 
             GridWeaponCap = gridWeaponCap;
