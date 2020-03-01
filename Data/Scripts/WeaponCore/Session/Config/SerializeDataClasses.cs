@@ -74,7 +74,7 @@ namespace WeaponCore
 
         public override int GetHashCode()
         {
-            return (EntityId + (int)PType + (long)SenderId).GetHashCode();
+            return EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode();
         }
     }
 
