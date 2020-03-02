@@ -6,10 +6,7 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
-using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
