@@ -384,7 +384,6 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {
-            Log.Line($"{Timings == null} - {System == null} - {ActiveAmmoDef == null} - {CancelableReloadAction == null} - {ReloadEmitter == null}");
             if (reset) State.Sync.Reloading = false;
 
             if (State.Sync.Reloading) return;
