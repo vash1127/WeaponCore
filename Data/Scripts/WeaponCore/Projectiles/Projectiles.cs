@@ -208,10 +208,12 @@ namespace WeaponCore.Projectiles
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
-                    if (!p.SmartsOn && p.Info.Age > p.Info.AmmoDef.Const.TargetLossTime)
+                    if (!p.SmartsOn && p.Info.Age > p.Info.AmmoDef.Const.MaxLifeTime)
                     {
                         p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
+                        p.EarlyEnd = true;
                     }
+
                     if (p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)
                     {
                         p.AtMaxRange = true;

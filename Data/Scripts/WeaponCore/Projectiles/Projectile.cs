@@ -92,8 +92,9 @@ namespace WeaponCore.Projectiles
         internal bool FakeExplosion;
         internal bool AtMaxRange;
         internal bool ShieldBypassed;
-        internal readonly ProInfo Info = new ProInfo();
         internal bool TerminalControlled;
+        internal bool EarlyEnd;
+        internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -397,10 +398,9 @@ namespace WeaponCore.Projectiles
 
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
-            var endPos = hit ? Hit.HitPos : Position + -Direction * (Info.DistanceTraveled - MaxTrajectory);  
+            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Direction * (Info.DistanceTraveled - MaxTrajectory) : Position;  
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
             var avSize = useCollisionSize ? Info.AmmoDef.Const.CollisionSize : TracerLength;
-
             double remainingTracer;
             double stepSizeToHit;
             if (Info.AmmoDef.Const.IsBeamWeapon)
@@ -425,7 +425,7 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-
+            Log.Line($"test: {stepSize} - {remainingTracer} - {stepSizeToHit} - {endPos.Length()} - {AtMaxRange}");
             Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
         }
 
@@ -628,10 +628,10 @@ namespace WeaponCore.Projectiles
                 else
                 {
                     PrevTargetPos = PredictedTargetPos;
+
                     if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime)
-                    {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
-                    }
+
                     if (Info.Age - LastOffsetTime > 300)
                     {
                         double dist;

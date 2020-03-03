@@ -373,6 +373,7 @@ namespace WeaponCore.Support
 
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
+        public readonly int MaxLifeTime;
         public readonly int MaxTargets;
         public readonly int PulseInterval;
         public readonly int PulseChance;
@@ -477,6 +478,7 @@ namespace WeaponCore.Support
             TargetOffSet = ammo.AmmoDef.Trajectory.Smarts.Inaccuracy > 0;
 
             TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
+            MaxLifeTime = ammo.AmmoDef.Trajectory.MaxLifeTime > 0 ? ammo.AmmoDef.Trajectory.MaxLifeTime : int.MaxValue;
             MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BaseDamage = ammo.AmmoDef.BaseDamage;
             MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
