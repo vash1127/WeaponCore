@@ -127,8 +127,14 @@ namespace WeaponCore
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
             {
                 var weapon = Comp.Platform.Weapons[i];
-                if (weapon.ActiveAmmoDef == null)
-                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[0].AmmoDef;
+                if (weapon.ActiveAmmoDef == null) {
+                    var ammoDef = weapon.System.WeaponAmmoTypes[0].AmmoDef;
+                    if (!ammoDef.Const.IsTurretSelectable) {
+                        Log.Line($"Your first ammoType cannot be a shrapnel with HardPointUsable set to false, I am crashing now Dave.");
+                        return;
+                    }
+                    weapon.ActiveAmmoDef = ammoDef;
+                }
 
                 if (maxTrajectory < weapon.ActiveAmmoDef.Const.MaxTrajectory) maxTrajectory = (float)weapon.ActiveAmmoDef.Const.MaxTrajectory;
             }
