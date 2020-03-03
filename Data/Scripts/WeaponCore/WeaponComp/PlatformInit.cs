@@ -1,14 +1,12 @@
 ﻿using Sandbox.Game.Entities;
 using System;
-using VRage;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
+using System.Collections.Generic;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
-using Sandbox.ModAPI;
-using System.Collections.Generic;
 
 namespace WeaponCore.Platform
 {
@@ -144,18 +142,14 @@ namespace WeaponCore.Platform
                 MyEntity elevationPart = null;
                 if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
                 {
-                    Log.Line($"Invalid elevationPartName, I am crashing now Dave.");
+                    Log.Line($"Invalid elevationPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
 
                 foreach (var triggerSet in wepAnimationSet)
-                {
                     for(int j = 0; j < triggerSet.Value.Length; j++)
-                    {
                         comp.AllAnimations.Add(triggerSet.Value[j]);
-                    }
-                }
 
                 Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, wepAnimationSet)
                 {
@@ -210,8 +204,7 @@ namespace WeaponCore.Platform
 
                     weapon.MuzzlePart.Entity = muzzlePart;
 
-                    weapon.HeatingParts = new List<MyEntity>();
-                    weapon.HeatingParts.Add(weapon.MuzzlePart.Entity);
+                    weapon.HeatingParts = new List<MyEntity> {weapon.MuzzlePart.Entity};
 
                     if (muzzlePartName != "None")
                     {
@@ -365,17 +358,6 @@ namespace WeaponCore.Platform
                     c++;
                 }
             }
-            /*foreach (var part in Parts.NameToEntity)
-            {
-                comp.SubpartStatesQuickList.Add(part.Value);
-                comp.SubpartStates[part.Value] = MatrixD.Zero;
-
-                var index = comp.SubpartStatesQuickList.Count - 1;
-                var name = part.Key;
-
-                comp.SubpartNameToIndex[name] = index;
-                comp.SubpartIndexToName[index] = name;
-            }*/
         }
 
         internal void ResetTurret(WeaponComponent comp)
@@ -491,24 +473,15 @@ namespace WeaponCore.Platform
                 }
                 c++;
             }
-            /*foreach (var part in Parts.NameToEntity)
-            {
-                var index = comp.SubpartNameToIndex[part.Key];
-                var matrix = comp.SubpartStatesQuickList[index];
-                //comp.sub
-            }*/
         }
 
         internal void ResetParts(WeaponComponent comp)
         {
-            //comp.SavePartStates();
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
             
-            //CompileTurret(comp, true);
             ResetTurret(comp);
 
-            //comp.RestorePartStates();
             comp.Status = Started;
         }
 
