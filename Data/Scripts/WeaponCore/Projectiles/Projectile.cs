@@ -425,7 +425,6 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Log.Line($"test: {stepSize} - {remainingTracer} - {stepSizeToHit} - {endPos.Length()} - {AtMaxRange}");
             Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
         }
 
