@@ -133,8 +133,8 @@ namespace WeaponCore.Support
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
 
-            if (weapon.ActiveAmmoDef.Const.MustCharge)
-                State.Value.CurrentCharge += weapon.State.Sync.CurrentCharge;
+            if (!weapon.Comp.Session.IsClient)
+                weapon.State.Sync.Reloading = false;
 
             if (!weapon.ActiveAmmoDef.Const.EnergyAmmo && !weapon.ActiveAmmoDef.Const.MustCharge)
                 Session.ComputeStorage(weapon);

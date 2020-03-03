@@ -69,7 +69,7 @@ namespace WeaponCore
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null || comp == null) break;
 
-                        comp.Set.Value.Sync(setPacket.Data);
+                        comp.Set.Value.Sync(comp, setPacket.Data);
                         
                         report.PacketValid = true;
                         break;
@@ -239,11 +239,13 @@ namespace WeaponCore
 
                     case PacketType.TargetExpireUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                        comp = ent?.Components.Get<WeaponComponent>(); 
+                        comp = ent?.Components.Get<WeaponComponent>();
+
+                        var idPacket = packet as WeaponIdPacket;
 
                         if (comp == null) break;
                         //saving on extra field with new packet type
-                        comp.Platform.Weapons[(int)packet.SenderId].Target.Reset(Tick);
+                        comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick);
 
                         report.PacketValid = true;
                         break;
@@ -352,7 +354,7 @@ namespace WeaponCore
 
                         if (setPacket.Data.MId > comp.Set.Value.MId)
                         {
-                            comp.Set.Value.Sync(setPacket.Data);
+                            comp.Set.Value.Sync(comp, setPacket.Data);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                             report.PacketValid = true;

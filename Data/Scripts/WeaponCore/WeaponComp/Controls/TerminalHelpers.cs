@@ -173,7 +173,7 @@ namespace WeaponCore.Control
                         return comp != null && comp.HasGuidanceToggle;
                     });
                 
-                AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps,
+                AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDpsFromTerminal,
                     (block, i) =>
                     {
                         var comp = block?.Components?.Get<WeaponComponent>();
