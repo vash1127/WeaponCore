@@ -48,6 +48,7 @@ namespace WeaponCore.Support
         internal bool DetonateFakeExp;
         internal bool LastStep;
         internal bool Dirty;
+        internal bool IsShrapnel;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -127,6 +128,7 @@ namespace WeaponCore.Support
             System = info.System;
             AmmoDef = info.AmmoDef;
             Ai = info.Ai;
+            IsShrapnel = info.IsShrapnel;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
             Model = (info.AmmoDef.Const.PrimeModel || info.AmmoDef.Const.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
@@ -567,7 +569,7 @@ namespace WeaponCore.Support
                     HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
             }
 
-            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
+            if (!IsShrapnel && FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
             {
                 StartSoundActived = true;
                 FireSound.Init(System.Values.HardPoint.Audio.FiringSound, false);
@@ -615,6 +617,7 @@ namespace WeaponCore.Support
             HitSoundActive = false;
             HitSoundActived = false;
             StartSoundActived = false;
+            IsShrapnel = false;
             HasTravelSound = false;
             FakeExplosion = false;
             Triggered = false;
