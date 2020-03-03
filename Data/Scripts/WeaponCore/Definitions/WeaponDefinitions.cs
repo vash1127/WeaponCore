@@ -268,16 +268,17 @@ namespace WeaponCore.Support
             [ProtoMember(6)] internal float Mass;
             [ProtoMember(7)] internal float Health;
             [ProtoMember(8)] internal float BackKickForce;
-            [ProtoMember(9)] internal DamageScaleDef DamageScales;
-            [ProtoMember(10)] internal ShapeDef Shape;
-            [ProtoMember(11)] internal ObjectsHitDef ObjectsHit;
-            [ProtoMember(12)] internal TrajectoryDef Trajectory;
-            [ProtoMember(13)] internal AreaDamageDef AreaEffect;
-            [ProtoMember(14)] internal BeamDef Beams;
-            [ProtoMember(15)] internal ShrapnelDef Shrapnel;
-            [ProtoMember(16)] internal GraphicDef AmmoGraphics;
-            [ProtoMember(17)] internal AmmoAudioDef AmmoAudio;
-            
+            [ProtoMember(9)] internal bool HardPointUsable;
+            [ProtoMember(10)] internal DamageScaleDef DamageScales;
+            [ProtoMember(11)] internal ShapeDef Shape;
+            [ProtoMember(12)] internal ObjectsHitDef ObjectsHit;
+            [ProtoMember(13)] internal TrajectoryDef Trajectory;
+            [ProtoMember(14)] internal AreaDamageDef AreaEffect;
+            [ProtoMember(15)] internal BeamDef Beams;
+            [ProtoMember(16)] internal ShrapnelDef Shrapnel;
+            [ProtoMember(17)] internal GraphicDef AmmoGraphics;
+            [ProtoMember(18)] internal AmmoAudioDef AmmoAudio;
+
             internal AmmoConstants Const;
 
             [ProtoContract]
@@ -437,7 +438,6 @@ namespace WeaponCore.Support
                 [ProtoMember(2)] internal int Fragments;
                 [ProtoMember(3)] internal float ForwardDegrees;
                 [ProtoMember(4)] internal float BackwardDegrees;
-                [ProtoMember(5)] internal bool HardPointUsable;
             }
 
 
