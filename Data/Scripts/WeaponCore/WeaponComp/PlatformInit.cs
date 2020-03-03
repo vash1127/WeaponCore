@@ -361,17 +361,6 @@ namespace WeaponCore.Platform
                     c++;
                 }
             }
-            /*foreach (var part in Parts.NameToEntity)
-            {
-                comp.SubpartStatesQuickList.Add(part.Value);
-                comp.SubpartStates[part.Value] = MatrixD.Zero;
-
-                var index = comp.SubpartStatesQuickList.Count - 1;
-                var name = part.Key;
-
-                comp.SubpartNameToIndex[name] = index;
-                comp.SubpartIndexToName[index] = name;
-            }*/
         }
 
         internal void ResetTurret(WeaponComponent comp)
@@ -487,24 +476,15 @@ namespace WeaponCore.Platform
                 }
                 c++;
             }
-            /*foreach (var part in Parts.NameToEntity)
-            {
-                var index = comp.SubpartNameToIndex[part.Key];
-                var matrix = comp.SubpartStatesQuickList[index];
-                //comp.sub
-            }*/
         }
 
         internal void ResetParts(WeaponComponent comp)
         {
-            //comp.SavePartStates();
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
             
-            //CompileTurret(comp, true);
             ResetTurret(comp);
 
-            //comp.RestorePartStates();
             comp.Status = Started;
         }
 
