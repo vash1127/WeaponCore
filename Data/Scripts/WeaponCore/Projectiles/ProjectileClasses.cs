@@ -310,7 +310,18 @@ namespace WeaponCore.Support
                     MyMath.FastCos(randomFloat1)), dirMatrix);
 
                 frag.Direction = shrapnelDir;
-                if (frag.AmmoDef.Const.PrimeModel || frag.AmmoDef.Const.TriggerModel) p.Info.Ai.Session.FragmentsNeedingEntities.Add(frag);
+
+                frag.PrimeEntity = null;
+                frag.TriggerEntity = null;
+                if (frag.AmmoDef.Const.PrimeModel && frag.AmmoDef.Const.PrimeEntityPool.Count > 0)
+                    frag.PrimeEntity = frag.AmmoDef.Const.PrimeEntityPool.Get();
+
+                if (frag.AmmoDef.Const.TriggerModel && p.Info.Ai.Session.TriggerEntityPool.Count > 0)
+                    frag.TriggerEntity = p.Info.Ai.Session.TriggerEntityPool.Get();
+
+                if (frag.AmmoDef.Const.PrimeModel && frag.PrimeEntity == null || frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) 
+                    p.Info.Ai.Session.FragmentsNeedingEntities.Add(frag);
+
                 Sharpnel.Add(frag);
             }
         }

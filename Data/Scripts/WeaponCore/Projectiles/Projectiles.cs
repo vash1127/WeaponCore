@@ -81,9 +81,10 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Session.FragmentsNeedingEntities.Count; i++)
             {
                 var frag = Session.FragmentsNeedingEntities[i];
-                frag.PrimeEntity = frag.AmmoDef.Const.PrimeModel ? frag.AmmoDef.Const.PrimeEntityPool.Get() : null;
-                frag.TriggerEntity =  frag.AmmoDef.Const.TriggerModel ? Session.TriggerEntityPool.Get() : null;
+                if (frag.AmmoDef.Const.PrimeModel && frag.PrimeEntity == null) frag.PrimeEntity = frag.AmmoDef.Const.PrimeEntityPool.Get();
+                if (frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) frag.TriggerEntity =  Session.TriggerEntityPool.Get();
             }
+            Log.Line($"{Session.FragmentsNeedingEntities.Count}");
             Session.FragmentsNeedingEntities.Clear();
         }
 
