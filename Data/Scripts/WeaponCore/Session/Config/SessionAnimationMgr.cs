@@ -558,24 +558,18 @@ namespace WeaponCore
                         var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
 
 
-
-                        if (partCenter != null)
+                        for (int j = 0; j < rotations.Length; j++)
                         {
-                            for (int j = 0; j < rotations.Length; j++)
-                            {
-                                if (rotations[j] != Matrix.Zero)
-                                    rotations[j] = Matrix.CreateTranslation(-partCenter) * rotations[j] *
-                                                   Matrix.CreateTranslation(partCenter);
-                            }
+                            if (rotations[j] != Matrix.Zero)
+                                rotations[j] = Matrix.CreateTranslation(-partCenter) * rotations[j] * Matrix.CreateTranslation(partCenter);
+                        }
 
-                            for (int j = 0; j < rotCenters.Length; j++)
+                        for (int j = 0; j < rotCenters.Length; j++)
+                        {
+                            if (rotCenters[j] != Matrix.Zero && rotCenterNames != null)
                             {
-                                if (rotCenters[j] != Matrix.Zero && rotCenterNames != null)
-                                {
-                                    var dummyCenter = GetPartLocation(rotCenterNames[j], subpart.Model);
-                                    if (dummyCenter != null)
-                                        rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyCenter)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyCenter));
-                                }
+                                var dummyCenter = GetPartLocation(rotCenterNames[j], subpart.Model);
+                                rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyCenter)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyCenter));
                             }
                         }
 
@@ -590,38 +584,34 @@ namespace WeaponCore
 
                 foreach (var animationKv in allAnimationSet)
                 {
-                    var set = animationKv.Value;
                     system.WeaponAnimationSet[animationKv.Key] = new PartAnimation[animationKv.Value.Length];
                     animationKv.Value.CopyTo(system.WeaponAnimationSet[animationKv.Key], 0);
                 }
 
                 system.AnimationsInited = true;
-                //Log.Line("Initing Animations");
                 return allAnimationSet;
             }
-            else
+
+            var returnAnimations = new Dictionary<EventTriggers, PartAnimation[]>();
+            foreach (var animationKv in system.WeaponAnimationSet)
             {
-                var returnAnimations = new Dictionary<EventTriggers, PartAnimation[]>();
-                foreach (var animationKv in system.WeaponAnimationSet)
+                returnAnimations[animationKv.Key] = new PartAnimation[animationKv.Value.Length];
+                for (int i = 0; i < animationKv.Value.Length; i++)
                 {
-                    returnAnimations[animationKv.Key] = new PartAnimation[animationKv.Value.Length];
-                    for (int i = 0; i < animationKv.Value.Length; i++)
+                    var animation = animationKv.Value[i];
+                    MyEntity part;
+                    parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
+                    var subpart = part as MyEntitySubpart;
+                    if (subpart == null) continue;
+                    returnAnimations[animationKv.Key][i] = new PartAnimation(animation)
                     {
-                        var animation = animationKv.Value[i];
-                        MyEntity part;
-                        parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
-                        var subpart = part as MyEntitySubpart;
-                        if (subpart == null) continue;
-                        returnAnimations[animationKv.Key][i] = new PartAnimation(animation)
-                        {
-                            Part = subpart,
-                            MainEnt = parts.Entity,
-                        };
-                    }
+                        Part = subpart,
+                        MainEnt = parts.Entity,
+                    };
                 }
-                //Log.Line("Copying Animations");
-                return returnAnimations;
             }
+            //Log.Line("Copying Animations");
+            return returnAnimations;
         }
 
         internal Matrix CreateRotation(double x, double y, double z)

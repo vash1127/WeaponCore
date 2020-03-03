@@ -103,9 +103,7 @@ namespace WeaponCore.Platform
                 var muzzlePartHash = Structure.MuzzlePartNames[i];
                 var barrelCount = Structure.WeaponSystems[muzzlePartHash].Barrels.Length;                
 
-                MyEntity muzzlePartEntity = null;
                 WeaponSystem system;
-
                 if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system))
                 {
                     Log.Line($"Invalid weapon system, I am crashing now Dave.");
@@ -118,6 +116,7 @@ namespace WeaponCore.Platform
                 var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
 
+                MyEntity muzzlePartEntity;
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
                     Log.Line($"Invalid barrelPart, I am crashing now Dave.");
@@ -135,9 +134,20 @@ namespace WeaponCore.Platform
                 var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                 MyEntity azimuthPart = null;
+                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
+                {
+                    Log.Line($"Invalid azimuthPart, I am crashing now Dave.");
+                    State = PlatformState.Invalid;
+                    return State;
+                }
+
                 MyEntity elevationPart = null;
-                Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart);
-                Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart);
+                if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
+                {
+                    Log.Line($"Invalid elevationPartName, I am crashing now Dave.");
+                    State = PlatformState.Invalid;
+                    return State;
+                }
 
                 foreach (var triggerSet in wepAnimationSet)
                 {
