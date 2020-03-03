@@ -196,11 +196,12 @@ namespace WeaponCore
                                         PacketsToClient.Add(new PacketInfo
                                         {
                                             Entity = w.Comp.MyCube,
-                                            Packet = new Packet
+                                            Packet = new WeaponIdPacket
                                             {
                                                 EntityId = comp.MyCube.EntityId,
-                                                SenderId = (ulong)w.WeaponId,
+                                                SenderId = 0,
                                                 PType = PacketType.TargetExpireUpdate,
+                                                WeaponId = w.WeaponId,
                                             }
                                         });
                                     }

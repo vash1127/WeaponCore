@@ -88,21 +88,39 @@ namespace WeaponCore
             Overrides = new CompGroupOverrides();
         }
 
-        public void Sync(CompSettingsValues syncFrom)
+        public void Sync(WeaponComponent comp, CompSettingsValues syncFrom)
         {
             MId = syncFrom.MId;
             Guidance = syncFrom.Guidance;
-            Overload = syncFrom.Overload;
             Modes = syncFrom.Modes;
-            DpsModifier = syncFrom.DpsModifier;
-            RofModifier = syncFrom.RofModifier;            
+            
             Range = syncFrom.Range;
             Inventory = syncFrom.Inventory;
             Overrides = syncFrom.Overrides;
 
+            var updateDPS = false;
+
+            if (Overload != syncFrom.Overload || RofModifier != syncFrom.RofModifier || DpsModifier != syncFrom.DpsModifier)
+            {
+                Overload = syncFrom.Overload;
+                RofModifier = syncFrom.RofModifier;
+                updateDPS = true;
+            }
+
+
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
+            {
                 Weapons[i].Enable = syncFrom.Weapons[i].Enable;
-                
+
+                if(Weapons[i].AmmoTypeId != syncFrom.Weapons[i].AmmoTypeId)
+                    updateDPS = true;
+
+                Weapons[i].AmmoTypeId = syncFrom.Weapons[i].AmmoTypeId;
+            }
+
+            if(updateDPS)
+                WepUi.SetDps(comp, syncFrom.DpsModifier, true);
+
         }
 
     }

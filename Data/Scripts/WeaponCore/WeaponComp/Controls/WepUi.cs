@@ -32,9 +32,16 @@ namespace WeaponCore
             return comp.Set.Value.DpsModifier;
         }
 
-        internal static void SetDps(IMyTerminalBlock block, float newValue)
+        internal static void SetDpsFromTerminal(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            SetDps(comp, newValue);
+        }
+
+            internal static void SetDps(WeaponComponent comp, float newValue, bool isNetworkUpdate = false)
+        {
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.DpsModifier = newValue;
 
@@ -45,6 +52,9 @@ namespace WeaponCore
 
                 comp.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
             }
+
+            if(!isNetworkUpdate && comp.Session.IsClient)
+                comp.UpdateSettingsMP();
 
             comp.Ai.UpdatePowerSources = true;
             comp.SettingsUpdated = true;
@@ -155,7 +165,7 @@ namespace WeaponCore
                 w.RateOfFire = newRate;
 
             }
-            SetDps(block, comp.Set.Value.DpsModifier);
+            SetDps(comp, comp.Set.Value.DpsModifier);
         }
 
         internal static bool GetOverload(IMyTerminalBlock block)
@@ -178,7 +188,7 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 if(comp.Platform.Weapons[i].ActiveAmmoDef.Const.IsBeamWeapon && !comp.Platform.Weapons[i].ActiveAmmoDef.Const.MustCharge)
-                    SetDps(block, comp.Set.Value.DpsModifier);
+                    SetDps(comp, comp.Set.Value.DpsModifier);
             }
         }
 

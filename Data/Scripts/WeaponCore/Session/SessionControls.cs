@@ -340,7 +340,7 @@ namespace WeaponCore
         internal static void CreateCycleAmmoOptions<T>(string name, int id) where T : IMyTerminalBlock
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_CycleAmmo");
-            action0.Icon = @"Textures\GUI\Cycle.dds";
+            action0.Icon = "\\Textures\\GUI\\Cycle.dds";
             action0.Name = new StringBuilder($"{name} Cycle Ammo");
             action0.Action = delegate (IMyTerminalBlock blk)
             {
@@ -350,13 +350,22 @@ namespace WeaponCore
 
                 var w = comp.Platform.Weapons[weaponId];
 
-                var nextDef = w.Set.AmmoTypeId + 1 > w.System.WeaponAmmoTypes.Length - 1 ? 0 : w.Set.AmmoTypeId + 1;
+                var next = w.Set.AmmoTypeId + 1;
 
-                w.ActiveAmmoDef = w.System.WeaponAmmoTypes[nextDef].AmmoDef;
+                while (true)
+                {
+                    var currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
+                    if (currDef == w.ActiveAmmoDef || currDef.Const.IsTurretSelectable)
+                    {
+                        w.ActiveAmmoDef = currDef;
+                        w.Set.AmmoTypeId = next;
+                        break;
+                    }
 
-                comp.Session.FutureEvents.Schedule(WepUi.SetWeaponDPS, w, 0);
+                    next = next + 1 % w.System.WeaponAmmoTypes.Length;
+                }
 
-                comp.UpdateStateMP();
+                WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
             };
             action0.Writer = (b, t) =>
             {

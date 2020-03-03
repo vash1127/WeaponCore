@@ -45,6 +45,7 @@ namespace WeaponCore
     [ProtoInclude(12, typeof(MagUpdatePacket))]
     [ProtoInclude(13, typeof(OverRidesPacket))]
     [ProtoInclude(14, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(15, typeof(WeaponIdPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -226,6 +227,20 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class WeaponIdPacket : Packet
+    {
+        [ProtoMember(1)] internal int WeaponId = -1;
+
+        public WeaponIdPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            WeaponId = -1;
         }
     }
     #endregion
