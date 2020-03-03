@@ -287,8 +287,6 @@ namespace WeaponCore.Support
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
                 frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
-                frag.PrimeEntity = p.Info.PrimeEntity;
-                frag.TriggerEntity = p.Info.TriggerEntity;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
@@ -312,7 +310,7 @@ namespace WeaponCore.Support
                     MyMath.FastCos(randomFloat1)), dirMatrix);
 
                 frag.Direction = shrapnelDir;
-
+                if (frag.AmmoDef.Const.PrimeModel || frag.AmmoDef.Const.TriggerModel) p.Info.Ai.Session.FragmentsNeedingEntities.Add(frag);
                 Sharpnel.Add(frag);
             }
         }
@@ -328,8 +326,8 @@ namespace WeaponCore.Support
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
                 p.Info.AmmoDef = frag.AmmoDef;
-                p.Info.PrimeEntity = frag.AmmoDef.Const.PrimeModel ? frag.AmmoDef.Const.PrimeEntityPool.Get() : null;
-                p.Info.TriggerEntity = frag.AmmoDef.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
+                p.Info.PrimeEntity = frag.PrimeEntity;
+                p.Info.TriggerEntity = frag.TriggerEntity;
                 p.Info.Target.Entity = frag.Target;
                 p.Info.Target.FiringCube = frag.FiringCube;
                 p.Info.Overrides = frag.Overrides;

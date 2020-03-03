@@ -76,6 +76,17 @@ namespace WeaponCore.Projectiles
             CleanUp.Clear();
         }
 
+        internal void PrepFragmentEntities()
+        {
+            for (int i = 0; i < Session.FragmentsNeedingEntities.Count; i++)
+            {
+                var frag = Session.FragmentsNeedingEntities[i];
+                frag.PrimeEntity = frag.AmmoDef.Const.PrimeModel ? frag.AmmoDef.Const.PrimeEntityPool.Get() : null;
+                frag.TriggerEntity =  frag.AmmoDef.Const.TriggerModel ? Session.TriggerEntityPool.Get() : null;
+            }
+            Session.FragmentsNeedingEntities.Clear();
+        }
+
         private void SpawnFragments()
         {
             for (int j = 0; j < ShrapnelToSpawn.Count; j++)
