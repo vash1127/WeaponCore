@@ -110,7 +110,7 @@ namespace WeaponCore.Projectiles
             VisualDir = Direction;
             var cameraStart = Info.Ai.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Info.Origin, out DistanceFromCameraSqr);
-            GenerateShrapnel = Info.AmmoDef.Shrapnel.Fragments > 0;
+            GenerateShrapnel = Info.AmmoDef.Const.ShrapnelId > -1;
             var probability = Info.AmmoDef.AmmoGraphics.VisualProbability;
             EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
@@ -1006,7 +1006,7 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose()
         {
-            if (!Info.IsShrapnel && GenerateShrapnel)
+            if (GenerateShrapnel)
                 SpawnShrapnel();
             else Info.IsShrapnel = false;
 

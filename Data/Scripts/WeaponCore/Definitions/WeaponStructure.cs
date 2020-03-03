@@ -377,7 +377,7 @@ namespace WeaponCore.Support
         public readonly int PulseInterval;
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
-        public readonly int ShrapnelId;
+        public readonly int ShrapnelId = -1;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
