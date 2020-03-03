@@ -418,7 +418,7 @@ namespace WeaponCore.Support
         public readonly bool HitSound;
         public readonly bool AmmoTravelSound;
         public readonly bool IsHybrid;
-
+        public readonly bool IsTurretSelectable;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -460,6 +460,7 @@ namespace WeaponCore.Support
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
             IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
             IsHybrid = ammo.AmmoDef.HybridRound;
+            IsTurretSelectable = (ammo.AmmoDef.Shrapnel.AmmoRound == string.Empty || ammo.AmmoDef.Shrapnel.Fragments == 0) || ammo.AmmoDef.Shrapnel.HardPointUsable; 
 
             AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;

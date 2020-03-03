@@ -139,7 +139,7 @@ namespace WeaponCore
 
         internal void NetReport()
         {
-            Log.LineShortDate("");
+            Log.LineShortDate("(NINFO)");
             foreach (var reports in Reporter.ReportData)
             {
                 var typeStr = reports.Key.ToString();
@@ -165,7 +165,7 @@ namespace WeaponCore
                 var packetCount = reports.Value.Count;
                 if (packetCount > 0) Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers} ({IsClient})] unknownReceive:[{noneReceivers} ({IsServer})]");
             }
-            Log.LineShortDate("");
+            Log.LineShortDate("(NINFO)");
 
             foreach (var list in Reporter.ReportData.Values)
                 list.Clear();
