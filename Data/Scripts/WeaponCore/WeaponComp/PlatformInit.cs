@@ -33,6 +33,11 @@ namespace WeaponCore.Platform
 
         internal void Setup(WeaponComponent comp)
         {
+            if (!comp.Session.WeaponPlatforms.ContainsKey(comp.SubtypeHash))
+            {
+                Log.Line($"Your block subTypeId was not found in platform setup, I am crashing now Dave.");
+                return;
+            }
             Structure = comp.Session.WeaponPlatforms[comp.SubtypeHash];
             Comp = comp;
 
@@ -55,7 +60,7 @@ namespace WeaponCore.Platform
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
                 State = PlatformState.Invalid;
-                Log.Line("closed, init platform invalid");
+                Log.Line("closed, init platform invalid, I am crashing now Dave.");
                 return State;
             }
 
@@ -78,22 +83,12 @@ namespace WeaponCore.Platform
                 else
                 {
                     State = PlatformState.Invalid;
-                    Log.Line("init platform invalid");
+                    Log.Line("init platform invalid, I am crashing now Dave.");
                     return State;
                 }
             }
             else
-            {
-                if (comp.BaseType == Turret && comp.TurretBase.AIEnabled)
-                {
-                    Log.Line($"ai is enabled in SBC! WEAPON DISABELED for: {comp.MyCube.BlockDefinition.Id.SubtypeName}");
-                    State = PlatformState.Invalid;
-                    WeaponComponent removed;
-                    if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        return State;
-                }
                 State = PlatformState.Valid;
-            } 
 
             Parts.Entity = comp.Entity as MyEntity;
 
@@ -105,25 +100,27 @@ namespace WeaponCore.Platform
             Parts.CheckSubparts();
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
             {
-                var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;                
+                var muzzlePartHash = Structure.MuzzlePartNames[i];
+                var barrelCount = Structure.WeaponSystems[muzzlePartHash].Barrels.Length;                
 
                 MyEntity muzzlePartEntity = null;
                 WeaponSystem system;
 
-                if (!Structure.WeaponSystems.TryGetValue(Structure.MuzzlePartNames[i], out system))
+                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system))
                 {
+                    Log.Line($"Invalid weapon system, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
 
-                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
+                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
 
-                var muzzlePartName = Structure.MuzzlePartNames[i].String != "Designator" ? Structure.MuzzlePartNames[i].String : system.ElevationPartName.String;
+                var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
 
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
-                    Log.Line($"Invalid barrelPart!!!!!!!!!!!!!!!!!");
+                    Log.Line($"Invalid barrelPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }

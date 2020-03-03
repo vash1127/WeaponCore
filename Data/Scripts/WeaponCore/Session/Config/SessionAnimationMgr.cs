@@ -531,12 +531,12 @@ namespace WeaponCore
             return rate;
         }
 
-        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, Dictionary<EventTriggers, PartAnimation[]> systemAnimations, RecursiveSubparts parts)
+        internal Dictionary<EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, RecursiveSubparts parts)
         {
             if (!system.AnimationsInited)
             {
                 var allAnimationSet = new Dictionary<EventTriggers, PartAnimation[]>();
-                foreach (var animationSet in systemAnimations)
+                foreach (var animationSet in system.WeaponAnimationSet)
                 {
                     allAnimationSet[animationSet.Key] =  new PartAnimation[animationSet.Value.Length];
 
