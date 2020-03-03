@@ -112,8 +112,13 @@ namespace WeaponCore
             {
                 Weapons[i].Enable = syncFrom.Weapons[i].Enable;
 
-                if(Weapons[i].AmmoTypeId != syncFrom.Weapons[i].AmmoTypeId)
+                if (Weapons[i].AmmoTypeId != syncFrom.Weapons[i].AmmoTypeId)
+                {
                     updateDPS = true;
+                    var w = comp.Platform.Weapons[i];
+
+                    w.ActiveAmmoDef = w.System.WeaponAmmoTypes[syncFrom.Weapons[i].AmmoTypeId].AmmoDef;
+                }
 
                 Weapons[i].AmmoTypeId = syncFrom.Weapons[i].AmmoTypeId;
             }
