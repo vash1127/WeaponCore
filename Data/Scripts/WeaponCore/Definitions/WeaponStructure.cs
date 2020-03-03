@@ -456,6 +456,7 @@ namespace WeaponCore.Support
 
             if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
 
+
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
             IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
             IsHybrid = ammo.AmmoDef.HybridRound;
@@ -603,7 +604,7 @@ namespace WeaponCore.Support
 
         private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst)
         {
-            energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String != "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
+            energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
             burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
 
@@ -620,6 +621,7 @@ namespace WeaponCore.Support
             }
 
             energyMagSize = 0;
+
         }
 
         private void Sound(AmmoDef ammoDef, Session session, out bool hitSound, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)
@@ -729,6 +731,7 @@ namespace WeaponCore.Support
                     {
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine) ammoDefId = def.Id;
                     }
+
                     Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
                     weaponAmmo[i] = new WeaponAmmoTypes {AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound};
                 }
