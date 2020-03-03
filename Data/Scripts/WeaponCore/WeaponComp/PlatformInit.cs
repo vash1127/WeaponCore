@@ -142,7 +142,7 @@ namespace WeaponCore.Platform
                 }
 
                 MyEntity elevationPart = null;
-                if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
+                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
                 {
                     Log.Line($"Invalid elevationPartName, I am crashing now Dave.");
                     State = PlatformState.Invalid;
