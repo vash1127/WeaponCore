@@ -150,12 +150,8 @@ namespace WeaponCore.Platform
                 }
 
                 foreach (var triggerSet in wepAnimationSet)
-                {
                     for(int j = 0; j < triggerSet.Value.Length; j++)
-                    {
                         comp.AllAnimations.Add(triggerSet.Value[j]);
-                    }
-                }
 
                 Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, wepAnimationSet)
                 {
