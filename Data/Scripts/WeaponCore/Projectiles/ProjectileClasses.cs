@@ -298,7 +298,7 @@ namespace WeaponCore.Support
                 frag.Seed = p.Info.Seed;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
-                var dirMatrix = Matrix.CreateFromDir(p.Direction);
+                var dirMatrix = p.Info.AmmoDef.Shrapnel.ForwardDegrees > 0 ? Matrix.CreateFromDir(p.Direction) : Matrix.CreateFromDir(-p.Direction);
                 var negValue = MathHelper.ToRadians(p.Info.AmmoDef.Shrapnel.BackwardDegrees);
                 var posValue = MathHelper.ToRadians(p.Info.AmmoDef.Shrapnel.ForwardDegrees);
                 var randomFloat1 = MyUtils.GetRandomFloat(-negValue, posValue);
