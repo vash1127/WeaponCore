@@ -43,7 +43,6 @@ namespace WeaponCore
 
                     if (skip || hitMax || outOfPew)
                     {
-                        Log.Line($"{info.IsShrapnel} - {skip} - {hitMax} - {outOfPew}");
                         if (hitMax || outOfPew || pInvalid)
                         {
                             p.State = Projectile.ProjectileState.Depleted;
@@ -169,18 +168,6 @@ namespace WeaponCore
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
-            if (t.IsShrapnel)
-            {
-                Log.Line($"isShrapnel");
-                /*
-                var shrapnel = t.AmmoDef.Shrapnel;
-                areaEffectDmg = areaEffectDmg > 0 ? areaEffectDmg / shrapnel.Fragments : 0;
-                detonateDmg = detonateDmg > 0 ? detonateDmg / shrapnel.Fragments : 0;
-                hitMass = hitMass > 0 ? hitMass / shrapnel.Fragments : 0;
-                areaRadius = ModRadius(areaRadius, largeGrid);
-                detonateRadius = ModRadius(detonateRadius, largeGrid);
-                */
-            }
             var hasAreaDmg = areaEffectDmg > 0;
             var radiantCascade = radiant && !detonateOnEnd;
             var primeDamage = !radiantCascade || !hasAreaDmg;
