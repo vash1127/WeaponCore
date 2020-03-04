@@ -28,21 +28,27 @@ namespace WeaponCore.Platform
 
                     if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
                     {
+                        var azMatrix = AzimuthPart.Entity.PositionComp.LocalMatrix;
+
                         if (absAzChange >= System.AzStep)
                         {
+                            
+
                             if (rAz)
-                                AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.RevFullRotationStep;
+                                azMatrix *= AzimuthPart.RevFullRotationStep;
                             else
-                                AzimuthPart.Entity.PositionComp.LocalMatrix *= AzimuthPart.FullRotationStep;
+                                azMatrix *= AzimuthPart.FullRotationStep;
                         }
                         else
                         {
-                            AzimuthPart.Entity.PositionComp.LocalMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
+                            azMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
                         }
+
+                        AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azMatrix, null, true);
                     }
                 }
 
-                if (moveEl)
+                if (moveEl && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly))
                 {
                     bool rEl = false;
                     double absElChange;
@@ -54,20 +60,21 @@ namespace WeaponCore.Platform
                     else
                         absElChange = elevationChange;
 
-                    if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
+                    var elMatrix = ElevationPart.Entity.PositionComp.LocalMatrix;
+
+                    if (absElChange >= System.ElStep)
                     {
-                        if (absElChange >= System.ElStep)
-                        {
-                            if (rEl)
-                                ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.RevFullRotationStep;
-                            else
-                                ElevationPart.Entity.PositionComp.LocalMatrix *= ElevationPart.FullRotationStep;
-                        }
+                        if (rEl)
+                            elMatrix *= ElevationPart.RevFullRotationStep;
                         else
-                        {
-                            ElevationPart.Entity.PositionComp.LocalMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
-                        }
+                            elMatrix *= ElevationPart.FullRotationStep;
                     }
+                    else
+                    {
+                        elMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
+                    }
+
+                    ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elMatrix, null, true);
                 }
             }
             else
@@ -292,7 +299,8 @@ namespace WeaponCore.Platform
 
         internal void SpinBarrel(bool spinDown = false)
         {
-            MuzzlePart.Entity.PositionComp.LocalMatrix *= BarrelRotationPerShot[BarrelRate];
+            var matrix = MuzzlePart.Entity.PositionComp.LocalMatrix * BarrelRotationPerShot[BarrelRate];
+            MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
                 RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);

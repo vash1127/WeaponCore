@@ -169,43 +169,6 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }
 
-        internal void SavePartStates()
-        {
-            ResettingSubparts = true;
-            for(int i = 0; i < SubpartStatesQuickList.Count; i++)
-            {
-                var part = SubpartStatesQuickList[i];
-                SubpartStates[part] =  part.PositionComp.LocalMatrix;
-                Log.Line($"Saved matrix {i}: {part.PositionComp.LocalMatrix}");
-            }
-        }
-
-        /*internal void RestorePartStates(object o = null)
-        {
-            for (int i = 0; i < AllAnimations.Count; i++)
-            {
-                if (AllAnimations[i].Paused)
-                    AllAnimations[i].Paused = false;
-            }
-
-            for (int i = 0; i < SubpartStatesQuickList.Count; i++)
-            {
-                if (!Session.VanillaSubpartNames.Contains(SubpartIndexToName[i]) || BaseType != BlockType.Turret)
-                {
-                    var part = SubpartStatesQuickList[i];
-                    part.PositionComp.LocalMatrix = SubpartStates[part];
-                    Log.Line($"loaded matrix {i}: {part.PositionComp.LocalMatrix}");
-                }
-            }
-
-            if(BaseType == BlockType.Turret)
-            {
-                //TurretBase.Elevation = (float)Elevation;
-                //TurretBase.Azimuth = (float)Azimuth;
-            }
-            ResettingSubparts = false;
-        }*/
-
         public void StopAllSounds()
         {
             foreach (var w in Platform.Weapons)

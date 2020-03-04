@@ -374,43 +374,7 @@ namespace WeaponCore
                                             if (remaining > 0)
                                                 vectorCount++;
                                         }
-                                    }/*
-                                    else
-                                    {
-                                        moveSet.Add(Matrix.Zero);
-
-                                        if (move.MovementType == RelMove.MoveType.Linear)
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
-
-                                        for (int j = 0; j < move.TicksToMove; j++)
-                                        {
-                                            var progress = 0f;
-                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
-                                                progress = 1;
-                                            else
-                                                progress = (float)j / (move.TicksToMove - 1);
-
-                                            WeaponEmissive emissive;
-                                            if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                            {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                            }
-                                            else
-                                            {
-                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
-                                                currentEmissivePart.Add(-1);
-                                            }
-
-                                            emissiveIdSet.Add(id + moveIndexer.Count);
-
-                                            if(move.MovementType != RelMove.MoveType.Linear)
-                                                CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
-
-                                            moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
-                                        }
-                                    }*/
-
+                                    }
                                 }
                                 else
                                 {
@@ -453,6 +417,8 @@ namespace WeaponCore
 
                                         if (move.MovementType != RelMove.MoveType.Linear)
                                             CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+
+                                        //Log.Line($"type: {type}");
 
                                         moveIndexer.Add(new[]
                                             {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
@@ -640,15 +606,25 @@ namespace WeaponCore
         internal void CreateRotationSets(RelMove move, double progress, ref int type, ref List<string> rotCenterNameSet, ref List<Matrix> rotCenterSet, ref List<Matrix> rotationSet)
         {
             type = 6;
+            var fullProgress = 1 - progress < 0.001;
+
             if (!String.IsNullOrEmpty(move.CenterEmpty) &&
                                     (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
                                      move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
                                      move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
             {
-                rotCenterNameSet.Add(move.CenterEmpty);
-                rotCenterSet.Add(CreateRotation(MathHelper.Lerp(0, move.RotAroundCenter.x / move.TicksToMove, progress),
-                    MathHelper.Lerp(0, move.RotAroundCenter.y / move.TicksToMove, progress),
-                    MathHelper.Lerp(0, move.RotAroundCenter.z / move.TicksToMove, progress)));
+                rotCenterNameSet.Add(move.CenterEmpty);                
+
+                var xPerTick = move.RotAroundCenter.x / move.TicksToMove;
+                var newX = fullProgress ? MathHelper.Lerp(0, move.RotAroundCenter.x / move.TicksToMove, progress) : xPerTick;
+
+                var yPerTick = move.RotAroundCenter.y / move.TicksToMove;
+                var newY = fullProgress ? MathHelper.Lerp(0, move.RotAroundCenter.y / move.TicksToMove, progress) : yPerTick;
+
+                var zPerTick = move.RotAroundCenter.z / move.TicksToMove;
+                var newZ = fullProgress ? MathHelper.Lerp(0, move.RotAroundCenter.z / move.TicksToMove, progress) : zPerTick;
+
+                rotCenterSet.Add(CreateRotation(newX, newY, newZ));
 
                 type = 0;
             }
@@ -661,7 +637,17 @@ namespace WeaponCore
             if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
                 move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
             {
-                rotationSet.Add(CreateRotation(MathHelper.Lerp(0, move.Rotation.x / move.TicksToMove, progress), MathHelper.Lerp(0, move.Rotation.y / move.TicksToMove, progress), MathHelper.Lerp(0, move.Rotation.z / move.TicksToMove,progress)));
+                var xPerTick = move.Rotation.x / move.TicksToMove;
+                var newX = fullProgress ? MathHelper.Lerp(0, move.Rotation.x / move.TicksToMove, progress) : xPerTick;
+
+                var yPerTick = move.Rotation.y / move.TicksToMove;
+                var newY = fullProgress ? MathHelper.Lerp(0, move.Rotation.y / move.TicksToMove, progress) : yPerTick;
+
+                var zPerTick = move.Rotation.z / move.TicksToMove;
+                var newZ = fullProgress ? MathHelper.Lerp(0, move.Rotation.z / move.TicksToMove, progress) : zPerTick;
+
+                rotationSet.Add(CreateRotation(newX, newY, newZ));
+
                 type = 0;
             }
             else
@@ -765,11 +751,11 @@ namespace WeaponCore
             for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
-                
-                //if (animation.Paused) continue;
 
-                if (animation != null && animation.MainEnt != null && !animation.MainEnt.MarkedForClose && animation.Part != null && animation.StartTick <= Tick)
+                if (animation != null && animation.MainEnt != null && !animation.MainEnt.MarkedForClose && animation.Part != null)
                 {
+                    if (animation.StartTick > Tick) continue;
+
                     if (animation.MovesPivotPos || animation.CanPlay)
                     {
                         var localMatrix = animation.Part.PositionComp.LocalMatrix;
@@ -803,7 +789,8 @@ namespace WeaponCore
                                 animation.Reverse = true;
                             }
                         }
-                       
+
+                        //Log.Line($"animation: {animation.SubpartId} has rotation: {rotation != Matrix.Zero} animationType: {animationType}");
 
                         if (rotation != Matrix.Zero)
                             localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
@@ -814,23 +801,24 @@ namespace WeaponCore
                         if (animationType == AnimationType.Movement)
                         {
                             animation.Part.PositionComp.SetLocalMatrix(ref localMatrix,
-                                animation.MainEnt, true);
+                                null, true);
                         }
                         else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
                         {
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
                             var matrix = animation.Part.PositionComp.LocalMatrix;
+
                             //animation.Part.OnClose += testing;
                             animation.Part.Render.AddRenderObjects();
-                            
-                            animation.Part.PositionComp.LocalMatrix = matrix;
+
+                            animation.Part.PositionComp.SetLocalMatrix(ref matrix, null, true);
                         }
                         else if (!DedicatedServer && (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade))
                         {
                             animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
                             var matrix = animation.Part.PositionComp.LocalMatrix;
                             animation.Part.Render.RemoveRenderObjects();
-                            animation.Part.PositionComp.LocalMatrix = matrix;
+                            animation.Part.PositionComp.SetLocalMatrix(ref matrix, null, true);
                         }
                         
 
