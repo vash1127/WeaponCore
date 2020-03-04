@@ -12,9 +12,11 @@ namespace WeaponCore.Support
             switch (Status)
             {
                 case Start.Starting:
+                    Log.Line("HealthCheck Starting");
                     Startup();
                     break;
                 case Start.ReInit:
+                    Log.Line("HealthCheck Reinit");
                     Platform.ResetParts(this);
                     Status = Start.Started;
                     break;
