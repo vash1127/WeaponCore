@@ -460,10 +460,10 @@ namespace WeaponCore
                 }
             }
 
-            foreach (var animationsKV in allAnimationSet)
+            foreach (var animationsKv in allAnimationSet)
             {
-                weaponAnimationSets[animationsKV.Key] = new PartAnimation[animationsKV.Value.Count];
-                animationsKV.Value.CopyTo(weaponAnimationSets[animationsKV.Key], 0);
+                weaponAnimationSets[animationsKv.Key] = new PartAnimation[animationsKv.Value.Count];
+                animationsKv.Value.CopyTo(weaponAnimationSets[animationsKv.Key], 0);
             }
 
         }
