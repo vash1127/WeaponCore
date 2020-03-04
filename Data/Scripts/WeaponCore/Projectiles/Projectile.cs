@@ -387,7 +387,7 @@ namespace WeaponCore.Projectiles
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
                 if (add) Info.Ai.Session.Hits.Add(this);
-                CreateFakeBeams();
+                if (EnableAv) CreateFakeBeams();
             }
 
             if (EnableAv)
@@ -1033,8 +1033,9 @@ namespace WeaponCore.Projectiles
             {
                 if (Info.AmmoDef.Const.VirtualBeams)
                 {
-                    for (int i = 0; i < VrPros.Count; i++)
-                        VrPros[i].VisualShot.End(Position);
+                    if (EnableAv)
+                        for (int i = 0; i < VrPros.Count; i++)
+                            VrPros[i].VisualShot.End(Position);
                 }
             }
         }
