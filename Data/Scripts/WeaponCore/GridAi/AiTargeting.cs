@@ -10,8 +10,11 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.TargetingDefinition.BlockTypes;
-
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -30,7 +33,7 @@ namespace WeaponCore.Support
                 w.AimCone.ConeTip = w.MyPivotPos;
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
                 var shootProjectile = pCount > 0 && w.System.TrackProjectile;
-                var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
+                var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
                 var onlyCheckProjectile = w.ProjectilesNear && !w.TargetChanged && w.Comp.Session.Count != w.LoadId && !attemptReset;
 
                 if (!projectilesFirst && w.System.TrackOther && !onlyCheckProjectile) AcquireOther(w, out targetType, attemptReset, targetGrid);
@@ -43,7 +46,7 @@ namespace WeaponCore.Support
                 if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(predictedPos);
-                    if (w.System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None || !w.MuzzleHitSelf())
+                    if (w.ActiveAmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
             }
@@ -206,7 +209,7 @@ namespace WeaponCore.Support
                         session.CanShoot++;
                         if (!w.AiEnabled)
                         {
-                            var newCenter = w.System.NeedsPrediction ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
+                            var newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0) ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
@@ -231,7 +234,7 @@ namespace WeaponCore.Support
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                    if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
+                    if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
                         double rayDist;
                         Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
@@ -264,7 +267,7 @@ namespace WeaponCore.Support
                 {
                     var bt = focusSubSystem ? w.Comp.Set.Value.Overrides.SubSystem : blockType;
 
-                    ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
+                    ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
                     if (bt != Any && blockTypeMap != null && blockTypeMap[bt].Count > 0)
                     {
@@ -363,7 +366,7 @@ namespace WeaponCore.Support
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
-                    if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
+                    if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                         notSelfHit = true;
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase ||
@@ -447,7 +450,7 @@ namespace WeaponCore.Support
                     var bestTest = false;
                     if (best)
                     {
-                        if (w != null && !(!w.IsTurret && system.Values.Ammo.Trajectory.Smarts.OverideTarget))
+                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.Trajectory.Smarts.OverideTarget))
                         {
                             ai.Session.CanShoot++;
                             var castRay = false;
@@ -462,7 +465,7 @@ namespace WeaponCore.Support
                                 ai.Session.ClosestRayCasts++;
                                 bestTest = MyAPIGateway.Physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
 
-                                if (hit == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()) || (hit.HitEntity != ai.MyGrid))
+                                if (hit == null && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()) || (hit.HitEntity != ai.MyGrid))
                                     notSelfHit = true;
                             }
                         }
@@ -623,7 +626,7 @@ namespace WeaponCore.Support
                     {
                         IHitInfo hitInfo;
                         physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
-                        if (hitInfo?.HitEntity == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
+                        if (hitInfo?.HitEntity == null && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                         {
                             double hitDist;
                             Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);

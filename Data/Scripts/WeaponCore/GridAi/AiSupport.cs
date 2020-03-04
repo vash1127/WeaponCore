@@ -13,7 +13,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -891,7 +891,7 @@ namespace WeaponCore.Support
                 for(int j = 0; j < Weapons[i].Platform.Weapons.Length; j++)
                 {
                     var w = Weapons[i].Platform.Weapons[j];
-                    if (w.System.AmmoDefId == magId)
+                    if (w.System.WeaponAmmoTypes[w.Set.AmmoTypeId].AmmoDefinitionId == magId)
                         Session.ComputeStorage(w);
                 }
             }

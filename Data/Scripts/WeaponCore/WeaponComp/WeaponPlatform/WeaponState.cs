@@ -6,7 +6,8 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -252,7 +253,7 @@ namespace WeaponCore.Platform
 
         internal void UpdateRequiredPower()
         {
-            if (System.EnergyAmmo || System.IsHybrid)
+            if (ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.IsHybrid)
             {
                 var rofPerSecond = RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND;
                 RequiredPower = ((ShotEnergyCost * (rofPerSecond * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
@@ -263,8 +264,8 @@ namespace WeaponCore.Platform
 
         internal void UpdateShotEnergy()
         {
-            var ewar = (int)System.Values.Ammo.AreaEffect.AreaEffect > 3;
-            ShotEnergyCost = ewar ? System.Values.HardPoint.EnergyCost * AreaEffectDmg : System.Values.HardPoint.EnergyCost * BaseDamage;
+            var ewar = (int)ActiveAmmoDef.AreaEffect.AreaEffect > 3;
+            ShotEnergyCost = ewar ? ActiveAmmoDef.EnergyCost * AreaEffectDmg : ActiveAmmoDef.EnergyCost * BaseDamage;
         }
 
         internal void UpdateBarrelRotation()
@@ -280,7 +281,7 @@ namespace WeaponCore.Platform
                 var multi = (float)(i + 1) / loopCnt;
                 var angle = MathHelper.ToRadians(steps * multi);
 
-                switch (System.Values.HardPoint.RotateBarrelAxis)
+                switch (System.Values.HardPoint.Other.RotateBarrelAxis)
                 {
 
                     case 1:
@@ -304,7 +305,7 @@ namespace WeaponCore.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
+                if ((ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.IsHybrid) && !ActiveAmmoDef.Const.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
                     DrawPower();
 
             }
@@ -337,9 +338,9 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
 
-                    if (!System.MustCharge && (System.EnergyAmmo || System.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
+                    if (!ActiveAmmoDef.Const.MustCharge && (ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (System.MustCharge)
+                    else if (ActiveAmmoDef.Const.MustCharge)
                     {
                         State.Sync.CurrentAmmo = 0;
                         Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
@@ -382,7 +383,7 @@ namespace WeaponCore.Platform
         }
 
         public void StartReload(bool reset = false)
-        {            
+        {
             if (reset) State.Sync.Reloading = false;
 
             if (State.Sync.Reloading) return;
@@ -399,7 +400,7 @@ namespace WeaponCore.Platform
             if (IsShooting)
                 StopShooting();
 
-            if ((State.Sync.CurrentMags == 0 && !System.EnergyAmmo && !Comp.Session.IsCreative))
+            if ((State.Sync.CurrentMags == 0 && !ActiveAmmoDef.Const.EnergyAmmo && !Comp.Session.IsCreative))
             {
                 if (!OutOfAmmo)
                 {
@@ -423,9 +424,9 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (System.MustCharge && !Comp.Session.ChargingWeaponsCheck.Contains(this))
+                if (ActiveAmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsCheck.Contains(this))
                     ChargeReload();
-                else if (!System.MustCharge)
+                else if (!ActiveAmmoDef.Const.MustCharge)
                 {
                     CancelableReloadAction += Reloaded;
                     Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
@@ -462,8 +463,8 @@ namespace WeaponCore.Platform
         internal void CheckReload()
         {
             var hasMags = State.Sync.CurrentMags > 0;
-            var chargeReload = System.MustCharge && (System.EnergyAmmo || hasMags);
-            var standardReload = !System.MustCharge && !System.EnergyAmmo && hasMags;
+            var chargeReload = ActiveAmmoDef.Const.MustCharge && (ActiveAmmoDef.Const.EnergyAmmo || hasMags);
+            var standardReload = !ActiveAmmoDef.Const.MustCharge && !ActiveAmmoDef.Const.EnergyAmmo && hasMags;
 
             if (State.Sync.CurrentAmmo == 0 && (Comp.Session.IsCreative || chargeReload || standardReload))
                 StartReload();
@@ -471,7 +472,7 @@ namespace WeaponCore.Platform
 
         internal void GetAmmoClient()
         {
-            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.AmmoDefId);
+            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
             CheckReload();
         }
 
@@ -479,11 +480,11 @@ namespace WeaponCore.Platform
         {
             State.Sync.Reloading = false;
 
-            if (System.MustCharge)
+            if (ActiveAmmoDef.Const.MustCharge)
             {
-                State.Sync.CurrentAmmo = System.EnergyMagSize;
-                Comp.State.Value.CurrentCharge = System.EnergyMagSize;
-                State.Sync.CurrentCharge = System.EnergyMagSize;
+                State.Sync.CurrentAmmo = ActiveAmmoDef.Const.EnergyMagSize;
+                Comp.State.Value.CurrentCharge = ActiveAmmoDef.Const.EnergyMagSize;
+                State.Sync.CurrentCharge = ActiveAmmoDef.Const.EnergyMagSize;
 
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
@@ -494,14 +495,14 @@ namespace WeaponCore.Platform
             EventTriggerStateChanged(EventTriggers.Reloading, false);
 
 
-            if (!System.HasBurstDelay)
+            if (!ActiveAmmoDef.Const.HasBurstDelay)
                 State.ShotsFired = 0;
 
-            if (!System.EnergyAmmo && (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative))
+            if (!ActiveAmmoDef.Const.EnergyAmmo && (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative))
             {
-                State.Sync.CurrentAmmo = System.MagazineDef.Capacity;
+                State.Sync.CurrentAmmo = ActiveAmmoDef.Const.MagazineDef.Capacity;
                 if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
-                   Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
+                   Comp.BlockInventory.RemoveItemsOfType(1, System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
             }
         }
 

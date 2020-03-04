@@ -3,14 +3,12 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
-using Sandbox.Game.Entities;
 using VRage.Game;
-using VRage.ModAPI;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
-using System;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
 {
@@ -188,8 +186,8 @@ namespace WeaponCore
 
                                 if (w.TargetChanged)
                                 {
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
+                                    w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.State == Targets.Acquired);
+                                    w.EventTriggerStateChanged(EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
                                     if (w.Target.State == Targets.Expired)
                                         w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
@@ -198,11 +196,12 @@ namespace WeaponCore
                                         PacketsToClient.Add(new PacketInfo
                                         {
                                             Entity = w.Comp.MyCube,
-                                            Packet = new Packet
+                                            Packet = new WeaponIdPacket
                                             {
                                                 EntityId = comp.MyCube.EntityId,
-                                                SenderId = (ulong)w.WeaponId,
+                                                SenderId = 0,
                                                 PType = PacketType.TargetExpireUpdate,
+                                                WeaponId = w.WeaponId,
                                             }
                                         });
                                     }
@@ -232,7 +231,7 @@ namespace WeaponCore
                                 ///
                                 /// 
                                 w.AiShooting = (w.Target.TargetLock || w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay) && !comp.UserControlled;
-                                var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.State.Sync.Reloading || w.OutOfAmmo);
+                                var reloading = (!w.ActiveAmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.Const.MustCharge) && (w.State.Sync.Reloading || w.OutOfAmmo);
                                 var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
@@ -242,7 +241,7 @@ namespace WeaponCore
                                 if (canShoot && (validShootStates || manualShot || w.FinishBurst))
                                 {
 
-                                    if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge)
+                                    if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.Const.MustCharge)
                                     {
 
                                         if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)
@@ -259,7 +258,7 @@ namespace WeaponCore
                                     if (w.Timings.ChargeDelayTicks == 0 || w.Timings.ChargeUntilTick <= Tick)
                                     {
 
-                                        if (!w.RequestedPower && !w.System.MustCharge)
+                                        if (!w.RequestedPower && !w.ActiveAmmoDef.Const.MustCharge)
                                         {
                                             gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
@@ -267,7 +266,7 @@ namespace WeaponCore
 
                                         ShootingWeapons.Add(w);
                                     }
-                                    else if (w.Timings.ChargeUntilTick > Tick && !w.System.MustCharge)
+                                    else if (w.Timings.ChargeUntilTick > Tick && !w.ActiveAmmoDef.Const.MustCharge)
                                     {
                                         w.State.Sync.Charging = true;
                                         w.StopShooting(false, false);
@@ -328,7 +327,7 @@ namespace WeaponCore
 
                     if (Tick60 && w.DrawingPower)
                     {
-                        if ((cState.CurrentCharge + w.UseablePower) < w.System.EnergyMagSize)
+                        if ((cState.CurrentCharge + w.UseablePower) < w.ActiveAmmoDef.Const.EnergyMagSize)
                         {
                             wState.Sync.CurrentCharge += w.UseablePower;
                             cState.CurrentCharge += w.UseablePower;
@@ -336,8 +335,8 @@ namespace WeaponCore
                         }
                         else
                         {
-                            w.Comp.State.Value.CurrentCharge += (w.System.EnergyMagSize - wState.Sync.CurrentCharge);
-                            wState.Sync.CurrentCharge = w.System.EnergyMagSize;
+                            w.Comp.State.Value.CurrentCharge += (w.ActiveAmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge);
+                            wState.Sync.CurrentCharge = w.ActiveAmmoDef.Const.EnergyMagSize;
                         }
                     }
 
@@ -385,7 +384,7 @@ namespace WeaponCore
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        w.Timings.ChargeDelayTicks = (uint)(((w.System.EnergyMagSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                        w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                         w.Timings.ChargeUntilTick = w.Timings.ChargeDelayTicks + Tick;
 
                         if (!w.DrawingPower)
@@ -468,7 +467,7 @@ namespace WeaponCore
                         continue;
                     }
                     //TODO add logic for power priority
-                    if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge)
+                    if (w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.Const.MustCharge)
                     {
 
                         if (w.Timings.ChargeDelayTicks == 0)
@@ -493,7 +492,7 @@ namespace WeaponCore
                             w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.System.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
+                    else if (!w.ActiveAmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
                     {
 
                         w.OldUseablePower = w.UseablePower;

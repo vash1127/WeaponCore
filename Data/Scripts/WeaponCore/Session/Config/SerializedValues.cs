@@ -12,7 +12,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.TargetingDefinition;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore
 {
@@ -88,21 +88,44 @@ namespace WeaponCore
             Overrides = new CompGroupOverrides();
         }
 
-        public void Sync(CompSettingsValues syncFrom)
+        public void Sync(WeaponComponent comp, CompSettingsValues syncFrom)
         {
             MId = syncFrom.MId;
             Guidance = syncFrom.Guidance;
-            Overload = syncFrom.Overload;
             Modes = syncFrom.Modes;
-            DpsModifier = syncFrom.DpsModifier;
-            RofModifier = syncFrom.RofModifier;            
+            
             Range = syncFrom.Range;
             Inventory = syncFrom.Inventory;
             Overrides = syncFrom.Overrides;
 
+            var updateDPS = false;
+
+            if (Overload != syncFrom.Overload || RofModifier != syncFrom.RofModifier || DpsModifier != syncFrom.DpsModifier)
+            {
+                Overload = syncFrom.Overload;
+                RofModifier = syncFrom.RofModifier;
+                updateDPS = true;
+            }
+
+
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
+            {
                 Weapons[i].Enable = syncFrom.Weapons[i].Enable;
-                
+
+                if (Weapons[i].AmmoTypeId != syncFrom.Weapons[i].AmmoTypeId)
+                {
+                    updateDPS = true;
+                    var w = comp.Platform.Weapons[i];
+
+                    w.ActiveAmmoDef = w.System.WeaponAmmoTypes[syncFrom.Weapons[i].AmmoTypeId].AmmoDef;
+                }
+
+                Weapons[i].AmmoTypeId = syncFrom.Weapons[i].AmmoTypeId;
+            }
+
+            if(updateDPS)
+                WepUi.SetDps(comp, syncFrom.DpsModifier, true);
+
         }
 
     }
@@ -158,7 +181,7 @@ namespace WeaponCore
     
     public enum ControlType
     {
-        UI,
+        Ui,
         Toolbar,
         None
     }
@@ -167,6 +190,7 @@ namespace WeaponCore
     public class WeaponSettingsValues
     {
         [ProtoMember(1)] public bool Enable = true;
+        [ProtoMember(2)] public int AmmoTypeId;
     }
 
     [ProtoContract]
@@ -195,7 +219,7 @@ namespace WeaponCore
                 OffDelay = OffDelay > tick ? OffDelay >= offset ? OffDelay - offset : 0 : 0,
                 ShootDelayTick = ShootDelayTick > tick ? ShootDelayTick >= offset ? ShootDelayTick - offset : 0 : 0,
                 WeaponReadyTick = WeaponReadyTick > tick ? WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0 : 0,
-                LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset >= 0 ? (tick - LastHeatUpdateTick) - offset : 0,
+                LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset,
                 ReloadedTick = ReloadedTick > tick ? ReloadedTick > offset ? ReloadedTick - offset : 0 : 0,
             };
 

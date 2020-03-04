@@ -6,8 +6,8 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
 {
@@ -69,7 +69,7 @@ namespace WeaponCore
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null || comp == null) break;
 
-                        comp.Set.Value.Sync(setPacket.Data);
+                        comp.Set.Value.Sync(comp, setPacket.Data);
                         
                         report.PacketValid = true;
                         break;
@@ -239,11 +239,13 @@ namespace WeaponCore
 
                     case PacketType.TargetExpireUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                        comp = ent?.Components.Get<WeaponComponent>(); 
+                        comp = ent?.Components.Get<WeaponComponent>();
+
+                        var idPacket = packet as WeaponIdPacket;
 
                         if (comp == null) break;
                         //saving on extra field with new packet type
-                        comp.Platform.Weapons[(int)packet.SenderId].Target.Reset(Tick);
+                        comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick);
 
                         report.PacketValid = true;
                         break;
@@ -352,7 +354,7 @@ namespace WeaponCore
 
                         if (setPacket.Data.MId > comp.Set.Value.MId)
                         {
-                            comp.Set.Value.Sync(setPacket.Data);
+                            comp.Set.Value.Sync(comp, setPacket.Data);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                             report.PacketValid = true;
@@ -547,11 +549,11 @@ namespace WeaponCore
             var hasMags = weapon.State.Sync.CurrentMags > 0;
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
-            var chargeFullReload = weapon.System.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || !weapon.System.EnergyAmmo);
-            var regularFullReload = !weapon.System.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
+            var chargeFullReload = weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || !weapon.ActiveAmmoDef.Const.EnergyAmmo);
+            var regularFullReload = !weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
 
-            var chargeContinueReloading = weapon.System.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
-            var regularContinueReloading = !weapon.System.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
+            var chargeContinueReloading = weapon.ActiveAmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
+            var regularContinueReloading = !weapon.ActiveAmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
 
             if (chargeFullReload || regularFullReload)
                 weapon.StartReload();
@@ -566,13 +568,13 @@ namespace WeaponCore
             }
             else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
             {
-                if (!weapon.System.MustCharge)
+                if (!weapon.ActiveAmmoDef.Const.MustCharge)
                     weapon.CancelableReloadAction -= weapon.Reloaded;
 
                 weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
             }
 
-            else if (weapon.System.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
+            else if (weapon.ActiveAmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
                 weapon.ChargeReload();
 
             if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)

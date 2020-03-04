@@ -65,11 +65,8 @@ namespace WeaponCore.Support
         internal float HeatSinkRate;
         internal float SinkPower;
         internal float MaxRequiredPower;
-        //internal float CurrentCharge;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
-        //internal double Azimuth;
-        //internal double Elevation;
 
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
@@ -87,19 +84,14 @@ namespace WeaponCore.Support
         internal bool CanOverload;
         internal bool HasTurret;
         internal bool HasChargeWeapon;
-        //internal bool TargetPainter;
-        //internal bool ManualControl;
         internal bool WasControlled;
         internal bool TrackReticle;
         internal bool WasTrackReticle;
         internal bool OtherPlayerTrackingReticle;
         internal bool UserControlled;
-        //internal bool Overheated;
         internal bool Debug;
         internal bool UnlimitedPower;
         internal bool Registered;
-        //internal bool ShootOn;
-        //internal bool ClickShoot;
         internal bool ResettingSubparts;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

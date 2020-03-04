@@ -184,9 +184,9 @@ namespace WeaponCore.Support
             return new Vector3D?((Vector3D)zero);
         }
 
-        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponSystem weaponSystem, bool forceNoDraw = false)
+        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, bool forceNoDraw = false)
         {
-            var af = weaponSystem.Values.Ammo.AreaEffect;
+            var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;
             var playSound = !eInfo.NoSound && !forceNoDraw;
             var sphere = new BoundingSphereD(position, radius);
@@ -223,9 +223,9 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, WeaponSystem weaponSystem)
+        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, WeaponDefinition.AmmoDef ammoDef)
         {
-            var af = weaponSystem.Values.Ammo.AreaEffect;
+            var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;
             if (radius > 10) radius = 10;
             var sphere = new BoundingSphereD(position, radius);

@@ -56,7 +56,7 @@ namespace WeaponCore
                 if (CompReAdds.Count > 0)
                     ChangeReAdds();
 
-                if (Tick3600) 
+                if (Tick3600 && MpActive) 
                     NetReport();
 
                 if (Tick180) 
@@ -106,6 +106,10 @@ namespace WeaponCore
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
                 }
+
+                if (FragmentsNeedingEntities.Count > 0)
+                    Projectiles.PrepFragmentEntities();
+
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
                 if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
             }

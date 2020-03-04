@@ -1,14 +1,12 @@
 ﻿using Sandbox.Game.Entities;
 using System;
-using VRage;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
+using System.Collections.Generic;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
-using Sandbox.ModAPI;
-using System.Collections.Generic;
 
 namespace WeaponCore.Platform
 {
@@ -33,6 +31,11 @@ namespace WeaponCore.Platform
 
         internal void Setup(WeaponComponent comp)
         {
+            if (!comp.Session.WeaponPlatforms.ContainsKey(comp.SubtypeHash))
+            {
+                Log.Line($"Your block subTypeId was not found in platform setup, I am crashing now Dave.");
+                return;
+            }
             Structure = comp.Session.WeaponPlatforms[comp.SubtypeHash];
             Comp = comp;
 
@@ -55,7 +58,7 @@ namespace WeaponCore.Platform
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
                 State = PlatformState.Invalid;
-                Log.Line("closed, init platform invalid");
+                Log.Line("closed, init platform invalid, I am crashing now Dave.");
                 return State;
             }
 
@@ -78,22 +81,12 @@ namespace WeaponCore.Platform
                 else
                 {
                     State = PlatformState.Invalid;
-                    Log.Line("init platform invalid");
+                    Log.Line("init platform invalid, I am crashing now Dave.");
                     return State;
                 }
             }
             else
-            {
-                if (comp.BaseType == Turret && comp.TurretBase.AIEnabled)
-                {
-                    Log.Line($"ai is enabled in SBC! WEAPON DISABELED for: {comp.MyCube.BlockDefinition.Id.SubtypeName}");
-                    State = PlatformState.Invalid;
-                    WeaponComponent removed;
-                    if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        return State;
-                }
                 State = PlatformState.Valid;
-            } 
 
             Parts.Entity = comp.Entity as MyEntity;
 
@@ -105,25 +98,26 @@ namespace WeaponCore.Platform
             Parts.CheckSubparts();
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
             {
-                var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;                
+                var muzzlePartHash = Structure.MuzzlePartNames[i];
+                var barrelCount = Structure.WeaponSystems[muzzlePartHash].Barrels.Length;                
 
-                MyEntity muzzlePartEntity = null;
                 WeaponSystem system;
-
-                if (!Structure.WeaponSystems.TryGetValue(Structure.MuzzlePartNames[i], out system))
+                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system))
                 {
+                    Log.Line($"Invalid weapon system, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
 
-                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
+                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
 
-                var muzzlePartName = Structure.MuzzlePartNames[i].String != "Designator" ? Structure.MuzzlePartNames[i].String : system.ElevationPartName.String;
+                var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
 
+                MyEntity muzzlePartEntity;
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
-                    Log.Line($"Invalid barrelPart!!!!!!!!!!!!!!!!!");
+                    Log.Line($"Invalid barrelPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
@@ -138,17 +132,24 @@ namespace WeaponCore.Platform
                 var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                 MyEntity azimuthPart = null;
+                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
+                {
+                    Log.Line($"Invalid azimuthPart, I am crashing now Dave.");
+                    State = PlatformState.Invalid;
+                    return State;
+                }
+
                 MyEntity elevationPart = null;
-                Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart);
-                Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart);
+                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
+                {
+                    Log.Line($"Invalid elevationPart, I am crashing now Dave.");
+                    State = PlatformState.Invalid;
+                    return State;
+                }
 
                 foreach (var triggerSet in wepAnimationSet)
-                {
                     for(int j = 0; j < triggerSet.Value.Length; j++)
-                    {
                         comp.AllAnimations.Add(triggerSet.Value[j]);
-                    }
-                }
 
                 Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, wepAnimationSet)
                 {
@@ -160,31 +161,19 @@ namespace WeaponCore.Platform
                     AiOnlyWeapon = comp.BaseType != Turret || (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2")
                 };
 
-                //UI elements
-                comp.HasGuidanceToggle = comp.HasGuidanceToggle || (system.Values.HardPoint.Ui.ToggleGuidance && system.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None);
-
-                comp.HasDamageSlider = comp.HasDamageSlider || (!system.MustCharge && system.Values.HardPoint.Ui.DamageModifier && system.EnergyAmmo || system.IsHybrid);
-
-                comp.HasRofSlider = comp.HasRofSlider || (system.Values.HardPoint.Ui.RateOfFire && !system.MustCharge);
-
-                comp.CanOverload = comp.CanOverload || (system.Values.HardPoint.Ui.EnableOverload && system.IsBeamWeapon && !system.MustCharge);
-
-                comp.HasTurret = comp.HasTurret || (system.Values.HardPoint.Block.TurretAttached);
-
-                comp.HasChargeWeapon = comp.HasChargeWeapon || system.MustCharge;
-
                 var weapon = Weapons[i];
-                
-                if (!comp.Debug && weapon.System.Values.HardPoint.Block.Debug)
+                SetupUi(weapon);
+
+                if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
                     comp.Debug = true;
 
-                if (weapon.System.Values.HardPoint.Block.TurretController)
+                if (weapon.System.Values.HardPoint.Ai.TurretController)
                 {
-                    if (weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
+                    if (weapon.System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingWeapon == null)
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
-                        RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
+                        RotationSound.Init(weapon.System.Values.HardPoint.Audio.HardPointRotationSound, false);
                 }
             }
             CompileTurret(comp);
@@ -215,8 +204,7 @@ namespace WeaponCore.Platform
 
                     weapon.MuzzlePart.Entity = muzzlePart;
 
-                    weapon.HeatingParts = new List<MyEntity>();
-                    weapon.HeatingParts.Add(weapon.MuzzlePart.Entity);
+                    weapon.HeatingParts = new List<MyEntity> {weapon.MuzzlePart.Entity};
 
                     if (muzzlePartName != "None")
                     {
@@ -370,17 +358,6 @@ namespace WeaponCore.Platform
                     c++;
                 }
             }
-            /*foreach (var part in Parts.NameToEntity)
-            {
-                comp.SubpartStatesQuickList.Add(part.Value);
-                comp.SubpartStates[part.Value] = MatrixD.Zero;
-
-                var index = comp.SubpartStatesQuickList.Count - 1;
-                var name = part.Key;
-
-                comp.SubpartNameToIndex[name] = index;
-                comp.SubpartIndexToName[index] = name;
-            }*/
         }
 
         internal void ResetTurret(WeaponComponent comp)
@@ -496,24 +473,15 @@ namespace WeaponCore.Platform
                 }
                 c++;
             }
-            /*foreach (var part in Parts.NameToEntity)
-            {
-                var index = comp.SubpartNameToIndex[part.Key];
-                var matrix = comp.SubpartStatesQuickList[index];
-                //comp.sub
-            }*/
         }
 
         internal void ResetParts(WeaponComponent comp)
         {
-            //comp.SavePartStates();
             Parts.Clean(comp.Entity as MyEntity);
             Parts.CheckSubparts();
             
-            //CompileTurret(comp, true);
             ResetTurret(comp);
 
-            //comp.RestorePartStates();
             comp.Status = Started;
         }
 
@@ -527,6 +495,17 @@ namespace WeaponCore.Platform
             }
             Parts.Clean(comp.Entity as MyEntity);
             comp.Status = Stopped;
+        }
+
+        internal void SetupUi(Weapon w)
+        {
+            //UI elements
+            w.Comp.HasGuidanceToggle = w.Comp.HasGuidanceToggle || w.System.Values.HardPoint.Ui.ToggleGuidance;
+            w.Comp.HasDamageSlider = w.Comp.HasDamageSlider || (!w.CanUseChargeAmmo && w.System.Values.HardPoint.Ui.DamageModifier && w.CanUseEnergyAmmo || w.CanUseHybridAmmo);
+            w.Comp.HasRofSlider = w.Comp.HasRofSlider || (w.System.Values.HardPoint.Ui.RateOfFire && !w.CanUseChargeAmmo);
+            w.Comp.CanOverload = w.Comp.CanOverload || (w.System.Values.HardPoint.Ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
+            w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
+            w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
         }
     }
 }

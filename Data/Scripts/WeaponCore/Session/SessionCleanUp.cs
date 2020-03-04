@@ -1,5 +1,4 @@
-﻿using Sandbox.ModAPI;
-using WeaponCore.Support;
+﻿using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -71,10 +70,11 @@ namespace WeaponCore
             foreach (var structure in WeaponPlatforms.Values)
             {
                 foreach (var system in structure.WeaponSystems)
-                    system.Value.PrimeEntityPool?.Clean();
+                    foreach (var ammo in system.Value.WeaponAmmoTypes)
+                        ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
 
                 structure.WeaponSystems.Clear();
-                structure.AmmoToWeaponIds.Clear();
+                //structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
 

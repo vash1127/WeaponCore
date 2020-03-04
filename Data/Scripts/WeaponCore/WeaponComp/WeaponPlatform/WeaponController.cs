@@ -2,6 +2,7 @@
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.TerminalControl;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {

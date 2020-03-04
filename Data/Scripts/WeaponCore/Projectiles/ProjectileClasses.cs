@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
-using Sandbox.Engine.Physics;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -13,7 +10,7 @@ using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-
+using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore.Support
 {
     internal class ProInfo
@@ -27,6 +24,7 @@ namespace WeaponCore.Support
         internal MyEntity TriggerEntity;
         internal CompGroupOverrides Overrides;
         internal WeaponFrameCache WeaponCache;
+        internal AmmoDef AmmoDef;
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
@@ -53,10 +51,11 @@ namespace WeaponCore.Support
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
         {
             System = system;
             Ai = ai;
+            AmmoDef = ammodef;
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;
             Target.Entity = target.Entity;
@@ -75,7 +74,7 @@ namespace WeaponCore.Support
 
             if (PrimeEntity != null)
             {
-                System.PrimeEntityPool.Return(PrimeEntity);
+                AmmoDef.Const.PrimeEntityPool.Return(PrimeEntity);
                 PrimeEntity = null;
             }
 
@@ -87,6 +86,7 @@ namespace WeaponCore.Support
             AvShot = null;
             System = null;
             Ai = null;
+            AmmoDef = null;
             WeaponCache = null;
             LastHitShield = false;
             IsShrapnel = false;
@@ -280,12 +280,13 @@ namespace WeaponCore.Support
         internal List<Fragment> Sharpnel = new List<Fragment>();
         internal void Init(Projectile p, MyConcurrentPool<Fragment> fragPool)
         {
-            for (int i = 0; i < p.Info.System.Values.Ammo.Shrapnel.Fragments; i++)
+            for (int i = 0; i < p.Info.AmmoDef.Shrapnel.Fragments; i++)
             {
                 var frag = fragPool.Get();
 
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
+                frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
@@ -298,35 +299,30 @@ namespace WeaponCore.Support
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 var dirMatrix = Matrix.CreateFromDir(p.Direction);
-                var shape = p.Info.System.Values.Ammo.Shrapnel.Shape;
-                float neg;
-                float pos;
-                switch (shape)
-                {
-                    case Shrapnel.ShrapnelShape.Cone:
-                        neg = 0;
-                        pos = 15;
-                        break;
-                    case Shrapnel.ShrapnelShape.HalfMoon:
-                        neg = 90;
-                        pos = 90;
-                        break;
-                    default:
-                        neg = 180;
-                        pos = 180;
-                        break;
-                }
-                var negValue = MathHelper.ToRadians(neg);
-                var posValue = MathHelper.ToRadians(pos);
-                var randomFloat1 = MyUtils.GetRandomFloat(-negValue, posValue);
+                var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.ForwardDegrees, 0, 360));
+                posValue *= 0.5f;
+                var randomFloat1 = MathHelper.ToRadians(MyUtils.GetRandomFloat(0.0f, posValue));
                 var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
 
-                var shrapnelDir = Vector3.TransformNormal(-new Vector3(
+                var mutli = p.Info.AmmoDef.Shrapnel.Reverse ? -1 : 1;
+
+                var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(
                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
                     MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
                     MyMath.FastCos(randomFloat1)), dirMatrix);
 
                 frag.Direction = shrapnelDir;
+
+                frag.PrimeEntity = null;
+                frag.TriggerEntity = null;
+                if (frag.AmmoDef.Const.PrimeModel && frag.AmmoDef.Const.PrimeEntityPool.Count > 0)
+                    frag.PrimeEntity = frag.AmmoDef.Const.PrimeEntityPool.Get();
+
+                if (frag.AmmoDef.Const.TriggerModel && p.Info.Ai.Session.TriggerEntityPool.Count > 0)
+                    frag.TriggerEntity = p.Info.Ai.Session.TriggerEntityPool.Get();
+
+                if (frag.AmmoDef.Const.PrimeModel && frag.PrimeEntity == null || frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) 
+                    p.Info.Ai.Session.FragmentsNeedingEntities.Add(frag);
 
                 Sharpnel.Add(frag);
             }
@@ -342,6 +338,9 @@ namespace WeaponCore.Support
                 var p = frag.Ai.Session.Projectiles.ProjectilePool.Count > 0 ? frag.Ai.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
+                p.Info.AmmoDef = frag.AmmoDef;
+                p.Info.PrimeEntity = frag.PrimeEntity;
+                p.Info.TriggerEntity = frag.TriggerEntity;
                 p.Info.Target.Entity = frag.Target;
                 p.Info.Target.FiringCube = frag.FiringCube;
                 p.Info.Overrides = frag.Overrides;
@@ -370,6 +369,9 @@ namespace WeaponCore.Support
     {
         public WeaponSystem System;
         public GridAi Ai;
+        public AmmoDef AmmoDef;
+        public MyEntity PrimeEntity;
+        public MyEntity TriggerEntity;
         public MyEntity Target;
         public MyCubeBlock FiringCube;
         public CompGroupOverrides Overrides;

@@ -1,12 +1,11 @@
 ﻿using System;
 using Sandbox.Definitions;
 using Sandbox.Game;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage.Game.Components;
-using VRage.Utils;
+using VRage.Game;
 using WeaponCore.Platform;
-
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 namespace WeaponCore.Support
 {
     public partial class WeaponComponent
@@ -45,9 +44,12 @@ namespace WeaponCore.Support
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
                     weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDef;
                 }
+
                 WeaponValues.Load(this);
 
+                
                 /*if (isServer)
                 {
                     foreach (var w in State.Value.Weapons)
@@ -64,12 +66,15 @@ namespace WeaponCore.Support
             MaxHeat += weapon.System.MaxHeat;
             weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
             weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Set.Value.RofModifier);
-            if (weapon.System.EnergyAmmo)
-                weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DpsModifier;
-            else
-                weapon.BaseDamage = weapon.System.BaseDamage;
+            HeatSinkRate += weapon.HsRate;
+            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
 
-            if (weapon.System.IsBeamWeapon)
+            if (weapon.ActiveAmmoDef.Const.EnergyAmmo)
+                weapon.BaseDamage = weapon.ActiveAmmoDef.Const.BaseDamage * Set.Value.DpsModifier;
+            else
+                weapon.BaseDamage = weapon.ActiveAmmoDef.Const.BaseDamage;
+
+            if (weapon.ActiveAmmoDef.Const.IsBeamWeapon)
                 weapon.BaseDamage *= Set.Value.Overload;
 
             if (weapon.BaseDamage < 0)
@@ -80,66 +85,64 @@ namespace WeaponCore.Support
 
             weapon.UpdateShotEnergy();
             weapon.UpdateRequiredPower();
-            if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
-            var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
+            var mulitplier = (weapon.ActiveAmmoDef.Const.EnergyAmmo && weapon.ActiveAmmoDef.Const.BaseDamage > 0) ? weapon.BaseDamage / weapon.ActiveAmmoDef.Const.BaseDamage : 1;
 
-            if (weapon.BaseDamage > weapon.System.BaseDamage)
+            if (weapon.BaseDamage > weapon.ActiveAmmoDef.Const.BaseDamage)
                 mulitplier *= mulitplier;
 
             weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
-            weapon.AreaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
-            weapon.DetonateDmg = weapon.System.DetonationDamage * mulitplier;
+            HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
 
-            //MaxRequiredPower -= weapon.RequiredPower;
+            weapon.AreaEffectDmg = weapon.ActiveAmmoDef.Const.AreaEffectDamage * mulitplier;
+            weapon.DetonateDmg = weapon.ActiveAmmoDef.Const.DetonationDamage * mulitplier;
+
             weapon.RequiredPower *= mulitplier;
-            MaxRequiredPower += weapon.System.MustCharge ? weapon.System.EnergyMagSize : weapon.RequiredPower;
+            MaxRequiredPower += weapon.ActiveAmmoDef.Const.MustCharge ? weapon.ActiveAmmoDef.Const.EnergyMagSize : weapon.RequiredPower;
+            weapon.UseablePower = weapon.RequiredPower;
 
             weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
             weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
             weapon.Dps = (60f / weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
-            if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
+            if (weapon.ActiveAmmoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled)
             {
-                if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    weapon.Dps += (weapon.DetonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                        ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
-                                        weapon.System.Values.Ammo.Trajectory.DesiredSpeed
+                if (weapon.ActiveAmmoDef.AreaEffect.Detonation.DetonateOnEnd)
+                    weapon.Dps += (weapon.DetonateDmg / 2) * (weapon.ActiveAmmoDef.Trajectory.DesiredSpeed > 0
+                                        ? weapon.ActiveAmmoDef.Trajectory.AccelPerSec /
+                                        weapon.ActiveAmmoDef.Trajectory.DesiredSpeed
                                         : 1);
                 else
                     weapon.Dps += (weapon.AreaEffectDmg / 2) *
-                                    (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                        ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
-                                        weapon.System.Values.Ammo.Trajectory.DesiredSpeed
+                                    (weapon.ActiveAmmoDef.Trajectory.DesiredSpeed > 0
+                                        ? weapon.ActiveAmmoDef.Trajectory.AccelPerSec /
+                                        weapon.ActiveAmmoDef.Trajectory.DesiredSpeed
                                         : 1);
             }
 
-            weapon.UseablePower = weapon.RequiredPower;
-            HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
             OptimalDps += weapon.Dps;
 
-            HeatSinkRate += weapon.HsRate;
 
             //range slider fix
             maxTrajectory = 0;
             if (ob != null && ob.MaxRangeMeters > maxTrajectory)
                 maxTrajectory = ob.MaxRangeMeters;
-            else if (weapon.System.MaxTrajectory > maxTrajectory)
-                maxTrajectory = weapon.System.MaxTrajectory;
+            else if (weapon.ActiveAmmoDef.Const.MaxTrajectory > maxTrajectory)
+                maxTrajectory = weapon.ActiveAmmoDef.Const.MaxTrajectory;
 
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
 
-            if (weapon.System.MustCharge)
-                State.Value.CurrentCharge += weapon.State.Sync.CurrentCharge;
+            if (!weapon.Comp.Session.IsClient)
+                weapon.State.Sync.Reloading = false;
 
-            if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
+            if (!weapon.ActiveAmmoDef.Const.EnergyAmmo && !weapon.ActiveAmmoDef.Const.MustCharge)
                 Session.ComputeStorage(weapon);
 
-            if (!weapon.System.MustCharge && weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
-                weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+            if (!weapon.ActiveAmmoDef.Const.MustCharge && weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
+                weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
 
-            else if ((!Session.IsClient || !Session.MpActive) && weapon.System.MustCharge && ((weapon.System.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.System.EnergyMagSize) || (!weapon.System.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.System.MagazineDef.Capacity)))
+            else if ((!Session.IsClient || !Session.MpActive) && weapon.ActiveAmmoDef.Const.MustCharge && ((weapon.ActiveAmmoDef.Const.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.ActiveAmmoDef.Const.EnergyMagSize) || (!weapon.ActiveAmmoDef.Const.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.ActiveAmmoDef.Const.MagazineDef.Capacity)))
             {
                 if (weapon.State.Sync.CurrentCharge > 0)
                     State.Value.CurrentCharge -= weapon.State.Sync.CurrentCharge;
@@ -176,7 +179,7 @@ namespace WeaponCore.Support
 
                 foreach (var w in Platform.Weapons)
                 {
-                    var magId = w.System.MagazineDef.Id;
+                    var magId = w.ActiveAmmoDef.Const.MagazineDef.Id;
                     BlockInventory.Constraint.Add(magId);
                 }
                 BlockInventory.Refresh();

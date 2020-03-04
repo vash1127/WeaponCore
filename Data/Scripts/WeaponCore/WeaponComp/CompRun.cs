@@ -7,6 +7,8 @@ using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+
 namespace WeaponCore.Support
 {
     public partial class WeaponComponent : MyEntityComponentBase
@@ -217,7 +219,7 @@ namespace WeaponCore.Support
                 
                 if (!FunctionalBlock.Enabled)
                     for (int i = 0; i < Platform.Weapons.Length; i++)
-                        Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                        Platform.Weapons[i].EventTriggerStateChanged(EventTriggers.TurnOff, true);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
