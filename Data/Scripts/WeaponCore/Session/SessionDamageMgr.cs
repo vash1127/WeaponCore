@@ -11,7 +11,6 @@ using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
-using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 namespace WeaponCore
 {
@@ -44,6 +43,7 @@ namespace WeaponCore
 
                     if (skip || hitMax || outOfPew)
                     {
+                        Log.Line($"{info.IsShrapnel} - {skip} - {hitMax} - {outOfPew}");
                         if (hitMax || outOfPew || pInvalid)
                         {
                             p.State = Projectile.ProjectileState.Depleted;
@@ -89,7 +89,6 @@ namespace WeaponCore
         private void DamageShield(HitEntity hitEnt, ProInfo info)
         {
             var shield = hitEnt.Entity as IMyTerminalBlock;
-            var system = info.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             info.ObjectsHit++;
 
@@ -141,8 +140,6 @@ namespace WeaponCore
         private void DamageGrid(HitEntity hitEnt, ProInfo t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-            var system = t.System;
-
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
                 hitEnt.Blocks?.Clear();
@@ -172,17 +169,18 @@ namespace WeaponCore
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
-            /*
             if (t.IsShrapnel)
             {
+                Log.Line($"isShrapnel");
+                /*
                 var shrapnel = t.AmmoDef.Shrapnel;
                 areaEffectDmg = areaEffectDmg > 0 ? areaEffectDmg / shrapnel.Fragments : 0;
                 detonateDmg = detonateDmg > 0 ? detonateDmg / shrapnel.Fragments : 0;
                 hitMass = hitMass > 0 ? hitMass / shrapnel.Fragments : 0;
                 areaRadius = ModRadius(areaRadius, largeGrid);
                 detonateRadius = ModRadius(detonateRadius, largeGrid);
+                */
             }
-            */
             var hasAreaDmg = areaEffectDmg > 0;
             var radiantCascade = radiant && !detonateOnEnd;
             var primeDamage = !radiantCascade || !hasAreaDmg;
@@ -385,7 +383,6 @@ namespace WeaponCore
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as IMyDestroyableObject;
-            var system = info.System;
 
             if (destObj == null || entity == null) return;
             var shieldHeal = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal;
@@ -421,10 +418,9 @@ namespace WeaponCore
             }
         }
 
-        private void DamageProjectile(HitEntity hitEnt, ProInfo attacker)
+        private static void DamageProjectile(HitEntity hitEnt, ProInfo attacker)
         {
             var pTarget = hitEnt.Projectile;
-            var system = attacker.System;
             if (pTarget == null) return;
 
             attacker.ObjectsHit++;
@@ -471,7 +467,6 @@ namespace WeaponCore
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
-            var system = info.System;
             if (destObj == null || entity == null || !hitEnt.HitPos.HasValue) return;
             var shieldHeal = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal;
             if (!info.AmmoDef.Const.VoxelDamage || shieldHeal)
@@ -482,7 +477,7 @@ namespace WeaponCore
 
             using (destObj.Pin())
             {
-                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.AmmoDef.AreaEffect.AreaEffect != Radiant;
+                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Radiant;
 
                 info.ObjectsHit++;
                 float damageScale = 1;
