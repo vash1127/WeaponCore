@@ -502,7 +502,7 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
-                        if (comp == null || cPlayerPacket == null || comp.Set.Value.MId <= cPlayerPacket.MId) return;
+                        if (comp == null || cPlayerPacket == null || comp.Set.Value.MId >= cPlayerPacket.MId) return;
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
