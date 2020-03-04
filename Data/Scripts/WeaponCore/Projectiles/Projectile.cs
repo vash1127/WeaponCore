@@ -387,7 +387,7 @@ namespace WeaponCore.Projectiles
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
                 if (add) Info.Ai.Session.Hits.Add(this);
-                CreateFakeBeams();
+                if (EnableAv) CreateFakeBeams();
             }
 
             if (EnableAv)
