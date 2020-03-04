@@ -490,7 +490,7 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var overRidesPacket = packet as OverRidesPacket;
 
-                        if (comp == null || overRidesPacket == null || comp.Set.Value.MId <= overRidesPacket.MId) return;
+                        if (comp == null || overRidesPacket == null || comp.Set.Value.MId >= overRidesPacket.MId) return;
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
@@ -504,7 +504,7 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
-                        if (comp == null || cPlayerPacket == null || comp.Set.Value.MId <= cPlayerPacket.MId) return;
+                        if (comp == null || cPlayerPacket == null || comp.Set.Value.MId >= cPlayerPacket.MId) return;
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
