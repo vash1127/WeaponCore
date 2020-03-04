@@ -490,7 +490,7 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var overRidesPacket = packet as OverRidesPacket;
 
-                        if (comp == null || overRidesPacket == null || comp.Set.Value.MId <= overRidesPacket.MId) return;
+                        if (comp == null || overRidesPacket == null || comp.Set.Value.MId >= overRidesPacket.MId) return;
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
