@@ -43,6 +43,7 @@ namespace WeaponCore
 
                     if (skip || hitMax || outOfPew)
                     {
+                        Log.Line($"{info.IsShrapnel} - {skip} - {hitMax} - {outOfPew}");
                         if (hitMax || outOfPew || pInvalid)
                         {
                             p.State = Projectile.ProjectileState.Depleted;

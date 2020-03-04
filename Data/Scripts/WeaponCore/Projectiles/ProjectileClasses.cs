@@ -351,7 +351,7 @@ namespace WeaponCore.Support
                 p.Info.Origin = frag.Origin;
                 p.Info.OriginUp = frag.OriginUp;
                 p.Info.Seed = frag.Seed;
-                p.Info.BaseHealthPool = frag.AmmoDef.BaseDamage;
+                p.Info.BaseDamagePool = frag.AmmoDef.BaseDamage;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
 
