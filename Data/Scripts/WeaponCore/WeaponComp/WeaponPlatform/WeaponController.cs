@@ -90,7 +90,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if (Comp == null || State == null || Target == null || Comp.MyCube == null || Comp.TurretBase == null) return;
+            if (Comp == null || State == null || Target == null || Comp.MyCube == null) return;
             using (Comp.MyCube.Pin())
             {
                 if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
@@ -103,7 +103,7 @@ namespace WeaponCore.Platform
                 Target.ExpiredTick = 0;
 
                 var userControlled = o != null && (bool)o;
-                if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret)
+                if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
                 {
                     Azimuth = Comp.TurretBase.Azimuth;
                     Elevation = Comp.TurretBase.Elevation;
