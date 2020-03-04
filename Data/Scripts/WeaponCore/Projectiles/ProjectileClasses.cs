@@ -299,12 +299,14 @@ namespace WeaponCore.Support
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 var dirMatrix = Matrix.CreateFromDir(p.Direction);
-                var negValue = MathHelper.ToRadians(p.Info.AmmoDef.Shrapnel.BackwardDegrees);
-                var posValue = MathHelper.ToRadians(p.Info.AmmoDef.Shrapnel.ForwardDegrees);
-                var randomFloat1 = MyUtils.GetRandomFloat(-negValue, posValue);
+                var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.ForwardDegrees, 0, 360));
+                posValue *= 0.5f;
+                var randomFloat1 = MathHelper.ToRadians(MyUtils.GetRandomFloat(0.0f, posValue));
                 var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
 
-                var shrapnelDir = Vector3.TransformNormal(-new Vector3(
+                var mutli = p.Info.AmmoDef.Shrapnel.Reverse ? -1 : 1;
+
+                var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(
                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
                     MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
                     MyMath.FastCos(randomFloat1)), dirMatrix);
