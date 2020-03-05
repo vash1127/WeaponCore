@@ -352,8 +352,8 @@ namespace WeaponCore
                     var w = comp.Platform.Weapons[weaponId];
 
 
-                    var size = w.System.WeaponAmmoTypes.Length;
-                    var next = (w.Set.AmmoTypeId + 1) % size;
+                    var availAmmo = w.System.WeaponAmmoTypes.Length;
+                    var next = (w.Set.AmmoTypeId + 1) % availAmmo;
                     var currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
 
                     while (currDef != w.ActiveAmmoDef)
@@ -366,7 +366,7 @@ namespace WeaponCore
                             break;
                         }
                         
-                        next = (next + 1) % size;
+                        next = (next + 1) % availAmmo;
                         currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
                     }
 
