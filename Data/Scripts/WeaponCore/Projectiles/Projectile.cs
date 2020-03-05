@@ -66,7 +66,7 @@ namespace WeaponCore.Projectiles
         internal int LastOffsetTime;
         internal int PruningProxyId = -1;
         internal int CachedId;
-        internal int MaxChaseAge;
+        internal int MaxChaseTime;
         internal int NewTargets;
         internal bool PickTarget;
         internal bool EnableAv;
@@ -152,11 +152,11 @@ namespace WeaponCore.Projectiles
             if (Guidance == GuidanceType.Smart && DynamicGuidance)
             {
                 SmartsOn = true;
-                MaxChaseAge = Info.AmmoDef.Trajectory.Smarts.MaxChaseTime;
+                MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
             }
             else
             {
-                MaxChaseAge = int.MaxValue;
+                MaxChaseTime = int.MaxValue;
                 SmartsOn = false;
             }
 
@@ -538,7 +538,7 @@ namespace WeaponCore.Projectiles
             if (Guidance == GuidanceType.DetectSmart)
             {
                 SmartsOn = true;
-                MaxChaseAge = Info.AmmoDef.Trajectory.Smarts.MaxChaseTime;
+                MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
                 if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && LockedTarget)
                 {
                     OffSetTarget();
@@ -572,7 +572,7 @@ namespace WeaponCore.Projectiles
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr))
             {
                 var fake = Info.Target.IsFakeTarget;
-                var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseAge;
+                var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
                 var isZombie = !fake && !Info.AmmoDef.Const.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)

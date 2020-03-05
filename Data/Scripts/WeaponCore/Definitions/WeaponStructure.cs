@@ -379,6 +379,7 @@ namespace WeaponCore.Support
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
         public readonly int ShrapnelId = -1;
+        public readonly int MaxChaseTime;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -479,6 +480,7 @@ namespace WeaponCore.Support
 
             TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
             MaxLifeTime = ammo.AmmoDef.Trajectory.MaxLifeTime > 0 ? ammo.AmmoDef.Trajectory.MaxLifeTime : int.MaxValue;
+            MaxChaseTime = ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
             MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BaseDamage = ammo.AmmoDef.BaseDamage;
             MaxTargets = ammo.AmmoDef.Trajectory.Smarts.MaxTargets;
