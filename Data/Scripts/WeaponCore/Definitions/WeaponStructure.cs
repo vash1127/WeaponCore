@@ -421,6 +421,7 @@ namespace WeaponCore.Support
         public readonly bool AmmoTravelSound;
         public readonly bool IsHybrid;
         public readonly bool IsTurretSelectable;
+        public readonly bool CanZombie;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -479,6 +480,8 @@ namespace WeaponCore.Support
             TargetOffSet = ammo.AmmoDef.Trajectory.Smarts.Inaccuracy > 0;
 
             TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
+            CanZombie = TargetLossTime > 0 && TargetLossTime != int.MaxValue && !IsMine;
+
             MaxLifeTime = ammo.AmmoDef.Trajectory.MaxLifeTime > 0 ? ammo.AmmoDef.Trajectory.MaxLifeTime : int.MaxValue;
             MaxChaseTime = ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
             MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;

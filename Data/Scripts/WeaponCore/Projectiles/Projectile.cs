@@ -574,7 +574,7 @@ namespace WeaponCore.Projectiles
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
-                var isZombie = !fake && !Info.AmmoDef.Const.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
+                var isZombie = Info.AmmoDef.Const.CanZombie && !fake && ZombieLifeTime % 30 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0)
@@ -611,13 +611,13 @@ namespace WeaponCore.Projectiles
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
 
-                    if (Info.AmmoDef.Const.TargetLossDegree > 0 && Info.Ai.Session.Tick60)
+                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Info.Ai.Session.Tick20)
                     {
                         if (!MyUtils.IsZero(tVel, 1E-02F))
                         {
                             var targetDir = Vector3D.Normalize(tVel);
                             var refDir = Vector3D.Normalize(Position - targetPos);
-                            if (!fake && !MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
                                 PickTarget = true;
                         }
                     }
