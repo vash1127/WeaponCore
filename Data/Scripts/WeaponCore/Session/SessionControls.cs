@@ -347,25 +347,35 @@ namespace WeaponCore
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
-
-                var w = comp.Platform.Weapons[weaponId];
-
-                var next = w.Set.AmmoTypeId + 1;
-
-                while (true)
+                try
                 {
+                    var w = comp.Platform.Weapons[weaponId];
+
+
+                    var size = w.System.WeaponAmmoTypes.Length;
+                    var next = (w.Set.AmmoTypeId + 1) % size;
                     var currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
-                    if (currDef == w.ActiveAmmoDef || currDef.Const.IsTurretSelectable)
+
+                    while (currDef != w.ActiveAmmoDef)
                     {
-                        w.ActiveAmmoDef = currDef;
-                        w.Set.AmmoTypeId = next;
-                        break;
+
+                        if (currDef.Const.IsTurretSelectable)
+                        {
+                            w.ActiveAmmoDef = currDef;
+                            w.Set.AmmoTypeId = next;
+                            break;
+                        }
+
+                        next = (next + 1) % size;
+                        currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
                     }
 
-                    next = next + 1 % w.System.WeaponAmmoTypes.Length;
+                    WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
                 }
-
-                WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
+                catch (Exception e)
+                {
+                    Log.Line($"Broke the Unbreakable, its dead Jim: {e}");
+                }
             };
             action0.Writer = (b, t) =>
             {
