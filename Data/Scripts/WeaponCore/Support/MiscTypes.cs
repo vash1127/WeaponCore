@@ -128,5 +128,6 @@ namespace WeaponCore.Support
         public MyDefinitionId AmmoDefinitionId;
         public WeaponDefinition.AmmoDef AmmoDef;
         public string AmmoName;
+        public bool IsShrapnel;
     }
 }

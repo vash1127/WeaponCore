@@ -147,7 +147,7 @@ namespace WeaponCore
 
                             CreateShootActionSet<T>(wepName, wepId);
                             if (ws.Value.WeaponAmmoTypes.Length > 1)
-                                CreateCycleAmmoOptions<T>(wepName, wepId);
+                                CreateCycleAmmoOptions<T>(wepName, wepId, session.ModPath());
                         }
                     }
                 }
@@ -337,10 +337,10 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
 
-        internal static void CreateCycleAmmoOptions<T>(string name, int id) where T : IMyTerminalBlock
+        internal static void CreateCycleAmmoOptions<T>(string name, int id, string path) where T : IMyTerminalBlock
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_CycleAmmo");
-            action0.Icon = "\\Textures\\GUI\\cycle.dds";
+            action0.Icon = path + @"\Textures\GUI\Icons\Actions\Cycle_Ammo.dds";
             action0.Name = new StringBuilder($"{name} Cycle Ammo");
             action0.Action = delegate (IMyTerminalBlock blk)
             {
@@ -365,7 +365,7 @@ namespace WeaponCore
                             w.Set.AmmoTypeId = next;
                             break;
                         }
-                        
+
                         next = (next + 1) % availAmmo;
                         currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
                     }
@@ -387,7 +387,7 @@ namespace WeaponCore
                     return;
                 }
 
-                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef);
+                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoRound);
             };
             action0.Enabled = (b) =>
             {

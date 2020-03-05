@@ -463,7 +463,7 @@ namespace WeaponCore.Support
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
             IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
             IsHybrid = ammo.AmmoDef.HybridRound;
-            IsTurretSelectable = ammo.AmmoDef.HardPointUsable; 
+            IsTurretSelectable = !ammo.IsShrapnel || ammo.AmmoDef.HardPointUsable; 
 
             AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
@@ -729,6 +729,15 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
 
+                var shrapnelNames = new HashSet<string>();
+                for (int i = 0; i < weaponDef.Ammos.Length; i++)
+                {
+                    var ammo = weaponDef.Ammos[i];
+                    if (!shrapnelNames.Contains(ammo.Shrapnel.AmmoRound) && !String.IsNullOrEmpty(ammo.Shrapnel.AmmoRound))
+                        shrapnelNames.Add(ammo.Shrapnel.AmmoRound);
+                }
+                    
+
                 var weaponAmmo = new WeaponAmmoTypes[weaponDef.Ammos.Length];
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
@@ -741,7 +750,7 @@ namespace WeaponCore.Support
                     }
 
                     Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
-                    weaponAmmo[i] = new WeaponAmmoTypes {AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound};
+                    weaponAmmo[i] = new WeaponAmmoTypes {AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
                 var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
