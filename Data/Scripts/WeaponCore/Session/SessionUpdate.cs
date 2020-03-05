@@ -7,7 +7,6 @@ using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
-using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
@@ -79,7 +78,7 @@ namespace WeaponCore
                             var leftClick = false;
                             var rightClick = false;
 
-                            var currentControl = true;// gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
+                            var currentControl = gridAi.ControllingPlayers.ContainsKey(compCurPlayer.PlayerId);
 
                             MouseStateData mouseState;
                             if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out mouseState))
@@ -93,10 +92,7 @@ namespace WeaponCore
                             if (HandlesInput)
                                 TargetUi.SetCompTrackReticle(comp);
 
-                                var id = comp.State.Value.PlayerIdInTerminal;
-                            comp.TerminalControlled = id == -1 ? None : id == -2 ? ApiControl : id == -3 ? CameraControl : ToolBarControl;
-
-                            comp.UserControlled = comp.TrackReticle || comp.TerminalControlled == CameraControl;
+                            comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
 
                             ///
                             /// Weapon update section
@@ -181,7 +177,7 @@ namespace WeaponCore
                                 w.TargetChanged = targetAcquired || targetLost;
                                 w.ProjectilesNear = w.TrackProjectiles && w.Target.State != Targets.Acquired && (w.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
 
-                                if (comp.TerminalControlled == CameraControl && UiInput.MouseButtonPressed)
+                                if (compCurPlayer.ControlType == ControlType.Camera && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
 
                                 if (w.TargetChanged)
@@ -211,7 +207,7 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
                                 w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
-                                if ((DedicatedServer || IsServer) && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && comp.TerminalControlled == None)
+                                if ((DedicatedServer || IsServer) && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
@@ -236,7 +232,7 @@ namespace WeaponCore
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
 
-                                var manualShot = (comp.TerminalControlled == CameraControl || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+                                var manualShot = (compCurPlayer.ControlType == ControlType.Camera || overRides.ManualControl && comp.TrackReticle || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
 
                                 if (canShoot && (validShootStates || manualShot || w.FinishBurst))
                                 {

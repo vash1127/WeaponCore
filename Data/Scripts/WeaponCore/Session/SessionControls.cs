@@ -174,13 +174,13 @@ namespace WeaponCore
                     {
                         w.State.ManualShoot = ShootOff;
                         cState.CurrentPlayerControl.PlayerId = -1;
-                        cState.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                        cState.CurrentPlayerControl.ControlType = ControlType.None;
                     }
                     else
                     {
                         w.State.ManualShoot = ShootClick;
                         cState.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                        cState.CurrentPlayerControl.CurrentControlType = ControlType.Toolbar;
+                        cState.CurrentPlayerControl.ControlType = ControlType.Toolbar;
                     }
                 }
 

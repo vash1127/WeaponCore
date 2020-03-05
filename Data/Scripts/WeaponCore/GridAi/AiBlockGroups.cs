@@ -83,12 +83,12 @@ namespace WeaponCore.Support
                 if (o.ManualControl || o.TargetPainter)
                 {
                     comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                    comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.Ui;
+                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
                 }
                 else
                 {
                     comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                    comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                 }
 
                 comp.SendOverRides();
@@ -143,12 +143,12 @@ namespace WeaponCore.Support
             if (o.ManualControl || o.TargetPainter)
             {
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.Session.Player.IdentityId;
-                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.Ui;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
             }
             else
             {
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                comp.State.Value.CurrentPlayerControl.CurrentControlType = ControlType.None;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
             comp.SendOverRides();
             comp.SendControlingPlayer();

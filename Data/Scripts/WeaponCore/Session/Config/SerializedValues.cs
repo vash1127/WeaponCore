@@ -28,7 +28,6 @@ namespace WeaponCore
         [ProtoMember(5)] public bool Message;
         [ProtoMember(6)] public int Heat;
         [ProtoMember(7)] public WeaponStateValues[] Weapons;
-        [ProtoMember(8), DefaultValue(-1)] public long PlayerIdInTerminal = -1;
         [ProtoMember(9)] public bool ShootOn;
         [ProtoMember(10)] public bool ClickShoot;
         [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
@@ -43,7 +42,6 @@ namespace WeaponCore
             Overload = syncFrom.Overload;
             Message = syncFrom.Message;
             Heat = syncFrom.Heat;
-            PlayerIdInTerminal = syncFrom.PlayerIdInTerminal;
             ShootOn = syncFrom.ShootOn;
             ClickShoot = syncFrom.ClickShoot;
             CurrentPlayerControl = syncFrom.CurrentPlayerControl;
@@ -168,14 +166,14 @@ namespace WeaponCore
     public class PlayerControl
     {
         [ProtoMember(1), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(2)] public ControlType CurrentControlType;
+        [ProtoMember(2)] public ControlType ControlType;
 
         public PlayerControl() { }
 
         public void Sync(PlayerControl syncFrom)
         {
             PlayerId = syncFrom.PlayerId;
-            CurrentControlType = syncFrom.CurrentControlType;
+            ControlType = syncFrom.ControlType;
         }
     }
     
@@ -183,6 +181,7 @@ namespace WeaponCore
     {
         Ui,
         Toolbar,
+        Camera,
         None
     }
 

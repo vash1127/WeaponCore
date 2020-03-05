@@ -35,7 +35,6 @@ namespace WeaponCore.Support
 
                 Set.Value.Overrides.TargetPainter = false;
                 Set.Value.Overrides.ManualControl = false;
-                State.Value.PlayerIdInTerminal = -1;
 
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {

@@ -8,7 +8,6 @@ using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-using static WeaponCore.Support.WeaponComponent.TerminalControl;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -106,7 +105,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                if (!Comp.Session.IsClient && Comp.TerminalControlled == None && ActiveAmmoDef.Trajectory.Guidance == GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.Other.MuzzleCheck && tick - LastMuzzleCheck > 29))
+                if (!Comp.Session.IsClient && Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None && ActiveAmmoDef.Trajectory.Guidance == GuidanceType.None && (!Casting && tick - Comp.LastRayCastTick > 29 || System.Values.HardPoint.Other.MuzzleCheck && tick - LastMuzzleCheck > 29))
                     ShootRayCheck();
 
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -219,7 +218,7 @@ namespace WeaponCore.Platform
                             p.Info.WeaponCache.VirutalId = -1;
                             p.Info.Seed = Comp.Seed;
 
-                            p.TerminalControlled = Comp.TerminalControlled == CameraControl;
+                            p.TerminalControlled = Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None;
                             p.Info.ShooterVel = Comp.Ai.GridVel;
                             p.Info.Origin = muzzle.Position;
                             p.Info.OriginUp = MyPivotUp;
@@ -363,7 +362,7 @@ namespace WeaponCore.Platform
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
 
-            p.TerminalControlled = Comp.TerminalControlled == CameraControl;
+            p.TerminalControlled = Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera;
             p.Info.ShooterVel = Comp.Ai.GridVel;
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;

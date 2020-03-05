@@ -75,7 +75,8 @@ namespace WeaponCore
                         {
                             GunnerBlackList = true;
                             GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, Session.Player.IdentityId);
-                            comp.State.Value.PlayerIdInTerminal = -3;
+                            comp.State.Value.CurrentPlayerControl.PlayerId = Session.Player.IdentityId;
+                            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Camera;
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.Player.IdentityId, false);
@@ -83,6 +84,15 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.Player.IdentityId, false);
                             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Session.Player.IdentityId, false);
+
+                            if (IsClient)
+                                PacketsToServer.Add(new ControllingPlayerPacket {
+                                    EntityId = comp.MyCube.EntityId,
+                                    SenderId = MultiplayerId,
+                                    PType = PacketType.PlayerControlUpdate,
+                                    MId = ++comp.State.Value.MId,
+                                    Data = comp.State.Value.CurrentPlayerControl
+                                });
                         }
                     }
                 }
@@ -105,7 +115,8 @@ namespace WeaponCore
                             if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
                             {
                                 GridTargetingAIs[oldCube.CubeGrid].Gunners.Remove(comp);
-                                comp.State.Value.PlayerIdInTerminal = -1;
+                                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                                 ActiveControlBlock = null;
                             }
                         }
