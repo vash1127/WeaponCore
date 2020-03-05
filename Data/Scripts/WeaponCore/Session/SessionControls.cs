@@ -340,7 +340,7 @@ namespace WeaponCore
         internal static void CreateCycleAmmoOptions<T>(string name, int id) where T : IMyTerminalBlock
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_CycleAmmo");
-            action0.Icon = "\\Textures\\GUI\\Cycle.dds";
+            action0.Icon = "\\Textures\\GUI\\cycle.dds";
             action0.Name = new StringBuilder($"{name} Cycle Ammo");
             action0.Action = delegate (IMyTerminalBlock blk)
             {

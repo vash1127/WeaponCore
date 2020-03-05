@@ -166,7 +166,7 @@ namespace WeaponCore
     public class PlayerControl
     {
         [ProtoMember(1), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(2)] public ControlType ControlType;
+        [ProtoMember(2)] public ControlType ControlType = ControlType.None;
 
         public PlayerControl() { }
 
@@ -179,10 +179,10 @@ namespace WeaponCore
     
     public enum ControlType
     {
+        None,
         Ui,
         Toolbar,
-        Camera,
-        None
+        Camera        
     }
 
     [ProtoContract]
