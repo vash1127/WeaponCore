@@ -573,8 +573,7 @@ namespace WeaponCore.Projectiles
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
-                var isZombie = Info.AmmoDef.Const.CanZombie && !fake && ZombieLifeTime % 30 == 0;
-                //Log.Line($"{Info.System.WeaponName} - CaseAge:{Info.Age - ChaseAge} > MaxAge:{MaxChaseTime} - CanZombie:{Info.AmmoDef.Const.CanZombie} - ZombieTime: {ZombieLifeTime % 30 == 0} - PickTarget:{PickTarget} - validTarget:{validTarget}");
+                var isZombie = Info.AmmoDef.Const.CanZombie && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((PickTarget || gaveUpChase && validTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0)
