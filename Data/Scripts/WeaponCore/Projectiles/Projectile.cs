@@ -218,9 +218,8 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = LockedTarget && Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
+            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
             if (PickTarget || LockedTarget) NewTargets++;
-
             var staticIsInRange = (Info.Ai.ClosestStaticSqr * 0.5) < MaxTrajectorySqr;
 
             PruneQuery = DynamicGuidance && ((Info.Ai.ClosestPlanetSqr * 0.5) < MaxTrajectorySqr) || Info.Ai.StaticGridInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
@@ -575,7 +574,8 @@ namespace WeaponCore.Projectiles
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
                 var isZombie = Info.AmmoDef.Const.CanZombie && !fake && ZombieLifeTime % 30 == 0;
-                if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
+                //Log.Line($"{Info.System.WeaponName} - CaseAge:{Info.Age - ChaseAge} > MaxAge:{MaxChaseTime} - CanZombie:{Info.AmmoDef.Const.CanZombie} - ZombieTime: {ZombieLifeTime % 30 == 0} - PickTarget:{PickTarget} - validTarget:{validTarget}");
+                if ((PickTarget || gaveUpChase && validTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0)
                     {
