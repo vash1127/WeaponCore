@@ -752,7 +752,7 @@ namespace WeaponCore
             {
                 var animation = AnimationsToProcess[i];
 
-                if (animation != null && animation.MainEnt != null && !animation.MainEnt.MarkedForClose && animation.Part != null)
+                if (animation?.MainEnt != null && !animation.MainEnt.MarkedForClose && animation.Part != null)
                 {
                     if (animation.StartTick > Tick) continue;
 
@@ -767,17 +767,13 @@ namespace WeaponCore
 
                         animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
                         
-                        //Log.Line($"animationType: {animationType}");
-
                         if (animation.Reverse)
                         {
                             if (animationType == AnimationType.Movement) localMatrix.Translation = localMatrix.Translation - translation;
 
                             animation.Previous();
                             if (animation.Previous(false) == animation.NumberOfMoves - 1)
-                            {
                                 animation.Reverse = false;
-                            }
                         }
                         else
                         {
@@ -785,12 +781,9 @@ namespace WeaponCore
 
                             animation.Next();
                             if (animation.DoesReverse && animation.Next(false) == 0)
-                            {
                                 animation.Reverse = true;
-                            }
                         }
 
-                        //Log.Line($"animation: {animation.SubpartId} has rotation: {rotation != Matrix.Zero} animationType: {animationType}");
 
                         if (rotation != Matrix.Zero)
                             localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
@@ -841,9 +834,7 @@ namespace WeaponCore
                             {
 
                                 for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
-                                {
                                     animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[j], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
-                                }
                             }
                         }
                     }
@@ -853,17 +844,13 @@ namespace WeaponCore
                         {                            
                             animation.Previous();
                             if (animation.Previous(false) == animation.NumberOfMoves - 1)
-                            {
                                 animation.Reverse = false;
-                            }
                         }
                         else
                         {
                             animation.Next();
                             if (animation.DoesReverse && animation.Next(false) == 0)
-                            {
                                 animation.Reverse = true;
-                            }
                         }
                     }
 

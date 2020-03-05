@@ -33,7 +33,7 @@ namespace WeaponCore.Platform
         {
             if (!comp.Session.WeaponPlatforms.ContainsKey(comp.SubtypeHash))
             {
-                Log.Line($"Your block subTypeId was not found in platform setup, I am crashing now Dave.");
+                Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) was not found in platform setup, I am crashing now Dave.");
                 return;
             }
             Structure = comp.Session.WeaponPlatforms[comp.SubtypeHash];
