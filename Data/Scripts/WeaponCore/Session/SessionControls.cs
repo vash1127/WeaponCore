@@ -365,7 +365,7 @@ namespace WeaponCore
                             w.Set.AmmoTypeId = next;
                             break;
                         }
-
+                        
                         next = (next + 1) % size;
                         currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
                     }

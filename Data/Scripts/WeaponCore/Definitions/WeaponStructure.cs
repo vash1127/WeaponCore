@@ -463,7 +463,7 @@ namespace WeaponCore.Support
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
             IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
             IsHybrid = ammo.AmmoDef.HybridRound;
-            IsTurretSelectable = (ammo.AmmoDef.Shrapnel.AmmoRound == string.Empty || ammo.AmmoDef.Shrapnel.Fragments == 0) || ammo.AmmoDef.HardPointUsable; 
+            IsTurretSelectable = ammo.AmmoDef.HardPointUsable; 
 
             AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
