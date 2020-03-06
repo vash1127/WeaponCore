@@ -147,7 +147,7 @@ namespace WeaponCore
 
                             CreateShootActionSet<T>(wepName, wepId);
                             if (ws.Value.WeaponAmmoTypes.Length > 1)
-                                CreateCycleAmmoOptions<T>(wepName, wepId);
+                                CreateCycleAmmoOptions<T>(wepName, wepId, session.ModPath());
                         }
                     }
                 }
@@ -337,35 +337,45 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
 
-        internal static void CreateCycleAmmoOptions<T>(string name, int id) where T : IMyTerminalBlock
+        internal static void CreateCycleAmmoOptions<T>(string name, int id, string path) where T : IMyTerminalBlock
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_CycleAmmo");
-            action0.Icon = "\\Textures\\GUI\\cycle.dds";
+            action0.Icon = path + @"\Textures\GUI\Icons\Actions\Cycle_Ammo.dds";
             action0.Name = new StringBuilder($"{name} Cycle Ammo");
             action0.Action = delegate (IMyTerminalBlock blk)
             {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
-
-                var w = comp.Platform.Weapons[weaponId];
-
-                var next = w.Set.AmmoTypeId + 1;
-
-                while (true)
+                try
                 {
+                    var w = comp.Platform.Weapons[weaponId];
+
+
+                    var availAmmo = w.System.WeaponAmmoTypes.Length;
+                    var next = (w.Set.AmmoTypeId + 1) % availAmmo;
                     var currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
-                    if (currDef == w.ActiveAmmoDef || currDef.Const.IsTurretSelectable)
+
+                    while (currDef != w.ActiveAmmoDef)
                     {
-                        w.ActiveAmmoDef = currDef;
-                        w.Set.AmmoTypeId = next;
-                        break;
+
+                        if (currDef.Const.IsTurretSelectable)
+                        {
+                            w.ActiveAmmoDef = currDef;
+                            w.Set.AmmoTypeId = next;
+                            break;
+                        }
+
+                        next = (next + 1) % availAmmo;
+                        currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
                     }
 
-                    next = next + 1 % w.System.WeaponAmmoTypes.Length;
+                    WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
                 }
-
-                WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
+                catch (Exception e)
+                {
+                    Log.Line($"Broke the Unbreakable, its dead Jim: {e}");
+                }
             };
             action0.Writer = (b, t) =>
             {
@@ -377,7 +387,7 @@ namespace WeaponCore
                     return;
                 }
 
-                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef);
+                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoRound);
             };
             action0.Enabled = (b) =>
             {
