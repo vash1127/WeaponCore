@@ -925,7 +925,9 @@ namespace WeaponCore.Projectiles
 
         internal void PlayHitParticle()
         {
-            if (HitEffect != null) DisposeHitEffect(false);
+            if (HitEffect != null)
+                DisposeHitEffect(false);
+
             if (LastHitPos.HasValue)
             {
                 if (!Info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield && Info.LastHitShield)
@@ -943,7 +945,8 @@ namespace WeaponCore.Projectiles
                 var scaler = reScale < 1 ? reScale : 1;
 
                 HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0, BaseAmmoParticleScale) : 1;
+                var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
+
                 HitEffect.UserEmitterScale = scale * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
                 Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
