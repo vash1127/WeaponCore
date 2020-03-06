@@ -686,7 +686,6 @@ namespace WeaponCore.Support
     public class WeaponStructure
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
-        //public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
         public readonly Dictionary<int, int> HashToId;
 
         public readonly MyStringHash[] MuzzlePartNames;
@@ -701,11 +700,8 @@ namespace WeaponCore.Support
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             var muzzlePartNames = new MyStringHash[numOfParts];
-            var azimuthPartNames = new MyStringHash[numOfParts];
-            var elevationPartNames = new MyStringHash[numOfParts];
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
-            //AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
             HashToId = new Dictionary<int, int>();
 
             var gridWeaponCap = 0;
@@ -736,9 +732,7 @@ namespace WeaponCore.Support
                     var ammoDefId = new MyDefinitionId();
                     var ammoEnergy = ammo.AmmoMagazine == string.Empty || ammo.AmmoMagazine == "Energy";
                     foreach (var def in Session.AllDefinitions)
-                    {
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine) ammoDefId = def.Id;
-                    }
 
                     Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
                     weaponAmmo[i] = new WeaponAmmoTypes {AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound};
@@ -747,13 +741,6 @@ namespace WeaponCore.Support
                 var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponId, mapIndex);
                 WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponId));
-                /*
-                if (!ammoEnergy)
-                {
-                    if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
-                    AmmoToWeaponIds[ammoDefId].Add(mapIndex);
-                }
-                */
                 mapIndex++;
             }
 

@@ -53,8 +53,6 @@ namespace WeaponCore
 
                 if (!retry) Reporter.ReportData[packet.PType].Add(report);
 
-                //var invalidType = false;
-
                 switch (packet.PType)
                 {
                     case PacketType.CompStateUpdate:                        
@@ -243,7 +241,7 @@ namespace WeaponCore
 
                         var idPacket = packet as WeaponIdPacket;
 
-                        if (comp == null) break;
+                        if (comp == null || idPacket == null) break;
                         //saving on extra field with new packet type
                         comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick);
 
@@ -330,9 +328,14 @@ namespace WeaponCore
                         var statePacket = packet as StatePacket;
                         if (statePacket?.Data == null) return;
 
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
                         if (comp == null) return;
+                        if (ent.MarkedForClose)
+                        {
+                            report.EntityClosed = true;
+                            return;
+                        }
 
                         if (statePacket.Data.MId > comp.State.Value.MId)
                         {
@@ -348,9 +351,14 @@ namespace WeaponCore
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null) return;
 
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
                         if (comp == null) return;
+                        if (ent.MarkedForClose)
+                        {
+                            report.EntityClosed = true;
+                            return;
+                        }
 
                         if (setPacket.Data.MId > comp.Set.Value.MId)
                         {
@@ -364,9 +372,14 @@ namespace WeaponCore
                     case PacketType.ClientMouseEvent:
 
                         var mousePacket = packet as MouseInputPacket;
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
 
                         if (mousePacket?.Data == null || ent == null) return;
+                        if (ent.MarkedForClose)
+                        {
+                            report.EntityClosed = true;
+                            return;
+                        }
 
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                         {
@@ -383,8 +396,13 @@ namespace WeaponCore
                             var dPacket = packet as BoolUpdatePacket;
                             if (dPacket?.Data == null) return;
 
-                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeBlock;
                             if (block == null) return;
+                            if (block.MarkedForClose)
+                            {
+                                report.EntityClosed = true;
+                                return;
+                            }
 
                             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
 
@@ -400,12 +418,18 @@ namespace WeaponCore
                             var targetPacket = packet as FocusPacket;
                             if (targetPacket == null) return;
 
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-                            
-                            GridAi ai;
-                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            if (myGrid == null) return;
+                            if (myGrid.MarkedForClose)
                             {
-                                var targetGrid = MyEntities.GetEntityByIdOrDefault(targetPacket.Data) as MyCubeGrid;
+                                report.EntityClosed = true;
+                                return;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var targetGrid = MyEntities.GetEntityByIdOrDefault(targetPacket.Data, null, true) as MyCubeGrid;
 
                                 if (targetGrid != null)
                                 {
@@ -421,10 +445,16 @@ namespace WeaponCore
                             var targetPacket = packet as FakeTargetPacket;
                             if (targetPacket?.Data == null) return;
 
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            if (myGrid == null) return;
+                            if (myGrid.MarkedForClose)
+                            {
+                                report.EntityClosed = true;
+                                return;
+                            }
 
                             GridAi ai;
-                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
@@ -435,10 +465,16 @@ namespace WeaponCore
                         }
                     case PacketType.ActiveControlRequestUpdate:
                         {
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-                            GridAi ai;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            if (myGrid == null) return;
+                            if (myGrid.MarkedForClose)
+                            {
+                                report.EntityClosed = true;
+                                return;
+                            }
 
-                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 var c = 0;
                                 var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Count];
@@ -470,10 +506,15 @@ namespace WeaponCore
                     case PacketType.ReticleUpdate:
                         {
                             var reticlePacket = packet as BoolUpdatePacket;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (reticlePacket == null || comp == null) return;
+                            if (ent.MarkedForClose)
+                            {
+                                report.EntityClosed = true;
+                                return;
+                            }
 
                             if (reticlePacket.Data)
                                 comp.TrackReticle = true;
@@ -486,11 +527,16 @@ namespace WeaponCore
                             break;
                         }
                     case PacketType.OverRidesUpdate:
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
                         var overRidesPacket = packet as OverRidesPacket;
 
                         if (comp == null || overRidesPacket == null || comp.Set.Value.MId >= overRidesPacket.MId) return;
+                        if (ent.MarkedForClose)
+                        {
+                            report.EntityClosed = true;
+                            return;
+                        }
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
@@ -500,11 +546,16 @@ namespace WeaponCore
                         break;
 
                     case PacketType.PlayerControlUpdate:
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
                         if (comp == null || cPlayerPacket == null || comp.Set.Value.MId >= cPlayerPacket.MId) return;
+                        if (ent.MarkedForClose)
+                        {
+                            report.EntityClosed = true;
+                            return;
+                        }
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
