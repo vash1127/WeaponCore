@@ -101,13 +101,15 @@ namespace WeaponCore.Projectiles
                                 Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistToCenter);
                                 double mDistToCenter;
                                 Vector3D.DistanceSquared(ref p.Info.Origin, ref planetCenter, out mDistToCenter);
-                                if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter) check = true;
+
+                                var prevDistToSurfaceSqr = p.DistanceToSurfaceSqr;
+                                Vector3D.DistanceSquared(ref closestPos, ref p.Position, out p.DistanceToSurfaceSqr);
+
+                                if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter && prevDistToSurfaceSqr > p.DistanceToTravelSqr) check = true;
                                 if (check)
                                 {
                                     using (voxel.Pin())
-                                    {
                                         voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit);
-                                    }
                                 }
                             }
                         }

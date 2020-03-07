@@ -56,6 +56,7 @@ namespace WeaponCore.Projectiles
         internal double VisualStep;
         internal double DeadZone = 3;
         internal double MaxTrajectorySqr;
+        internal double DistanceToSurfaceSqr;
         internal float DesiredSpeed;
         internal float MaxTrajectory;
         internal float BaseAmmoParticleScale;
@@ -144,6 +145,7 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
+            DistanceToSurfaceSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
 
             Guidance = Info.AmmoDef.Trajectory.Guidance;
