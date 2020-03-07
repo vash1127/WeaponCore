@@ -102,7 +102,6 @@ namespace WeaponCore
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd;
 
             var scaledDamage = (((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod;
-            hitEnt.
             var detonateDamage = detonateOnEnd && !shieldByPass ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
