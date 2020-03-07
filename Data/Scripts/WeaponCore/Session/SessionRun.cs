@@ -207,6 +207,7 @@ namespace WeaponCore
                     if (UiInput.MouseButtonPressed != UiInput.MouseButtonWasPressed && ActiveControlBlock != null) MouseNetworkEvent(ActiveControlBlock);
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
+                    if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
                 }
             }
         }
@@ -228,7 +229,7 @@ namespace WeaponCore
                 foreach (var mod in Session.Mods)
                 {
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
-                    else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719 || mod.PublishedFileId == 2006751214) ReplaceVanilla = true;
+                    else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719 || mod.PublishedFileId == 2006751214 || mod.PublishedFileId == 2015560129) ReplaceVanilla = true;
                     else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
                         ReplaceVanilla = true;
                 }
