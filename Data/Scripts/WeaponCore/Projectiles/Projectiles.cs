@@ -153,10 +153,19 @@ namespace WeaponCore.Projectiles
                             p.VelocityLengthSqr = newVel.LengthSquared();
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                         }
+
+                        if (p.Info.AmmoDef.Const.FeelsGravity)
+                        {
+                            var totalGravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+                            newVel += (totalGravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
+                            Vector3D.Normalize(ref newVel, out p.Direction);
+                        }
+
                         p.Velocity = newVel;
+
                     }
                 }
-                
+
                 if (p.State == ProjectileState.OneAndDone)
                 {
                     p.LastPosition = p.Position;

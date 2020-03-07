@@ -399,6 +399,7 @@ namespace WeaponCore.Support
         public readonly bool OneHitParticle;
         public readonly bool DamageScaling;
         public readonly bool ArmorScaling;
+        public readonly bool FallOffScaling;
         public readonly bool CustomDamageScales;
         public readonly bool SpeedVariance;
         public readonly bool RangeVariance;
@@ -422,6 +423,7 @@ namespace WeaponCore.Support
         public readonly bool IsHybrid;
         public readonly bool IsTurretSelectable;
         public readonly bool CanZombie;
+        public readonly bool FeelsGravity;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -434,7 +436,6 @@ namespace WeaponCore.Support
         public readonly float HitSoundDistSqr;
         public readonly float AmmoTravelSoundDistSqr;
         public readonly float AmmoSoundMaxDistSqr;
-
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
@@ -492,7 +493,7 @@ namespace WeaponCore.Support
             ShieldModifier = ammo.AmmoDef.DamageScales.Shields.Modifier > 0 ? ammo.AmmoDef.DamageScales.Shields.Modifier : 1;
             ShieldBypassMod = ammo.AmmoDef.DamageScales.Shields.BypassModifier > 0 && ammo.AmmoDef.DamageScales.Shields.BypassModifier < 1 ? ammo.AmmoDef.DamageScales.Shields.BypassModifier : 1;
             AmmoSkipAccel = ammo.AmmoDef.Trajectory.AccelPerSec <= 0;
-
+            FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
             MaxTrajectory = ammo.AmmoDef.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
@@ -503,7 +504,7 @@ namespace WeaponCore.Support
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
 
-            DamageScales(ammo.AmmoDef, out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
+            DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
             Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
@@ -587,10 +588,11 @@ namespace WeaponCore.Support
             collisionSize = size;
         }
 
-        private void DamageScales(AmmoDef ammoDef, out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)
+        private void DamageScales(AmmoDef ammoDef, out bool damageScaling, out bool fallOffScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)
         {
             armorScaling = false;
             customDamageScales = false;
+            fallOffScaling = false;
             var d = ammoDef.DamageScales;
             customBlockDef = null;
             if (d.Custom.Types != null && d.Custom.Types.Length > 0)
@@ -604,8 +606,12 @@ namespace WeaponCore.Support
                         customDamageScales = customBlockDef.Count > 0;
                     }
             }
-            damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
-            if (damageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
+            damageScaling = d.FallOff.LossFactor > 0 || d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
+            if (damageScaling)
+            {
+                armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
+                fallOffScaling = d.FallOff.LossFactor > 0;
+            }
             selfDamage = ammoDef.DamageScales.SelfDamage && !IsBeamWeapon;
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
         }

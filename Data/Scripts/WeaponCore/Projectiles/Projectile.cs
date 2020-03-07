@@ -289,7 +289,6 @@ namespace WeaponCore.Projectiles
                     var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
 
                     Info.AvShot.ModelSphereCurrent.Radius = largestSize * 2;
-                    //ModelSphereLast.Radius = largestSize * 2;
                 }
             }
         }
@@ -567,6 +566,10 @@ namespace WeaponCore.Projectiles
 
         internal void RunSmart()
         {
+
+            if (Info.AmmoDef.Const.FeelsGravity)
+                Velocity += (MyParticlesManager.CalculateGravityInPoint(Position) * Info.AmmoDef.Trajectory.GravityMultiplier) * StepConst;
+
             Vector3D newVel;
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr))
             {
@@ -663,10 +666,17 @@ namespace WeaponCore.Projectiles
                 }
 
                 newVel = Velocity + (commandedAccel * StepConst);
+
                 AccelDir = commandedAccel / StepPerSec;
                 Vector3D.Normalize(ref Velocity, out Direction);
             }
-            else newVel = Velocity += (Direction * AccelLength);
+            else
+            {
+                if (Info.AmmoDef.Const.FeelsGravity)
+                    Vector3D.Normalize(ref Velocity, out Direction);
+
+                newVel = Velocity += (Direction * AccelLength);
+            }
             VelocityLengthSqr = newVel.LengthSquared();
 
             if (VelocityLengthSqr > MaxSpeedSqr) newVel = Direction * MaxSpeed;
