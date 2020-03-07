@@ -122,6 +122,14 @@ namespace WeaponCore.Projectiles
 
                 if (p.EnableAv) 
                     p.Info.AvShot.OnScreen = Screen.None;
+
+                if (p.FeelsGravity)
+                {
+                    var totalGravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+                    p.Velocity += (totalGravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
+                    Vector3D.Normalize(ref p.Velocity, out p.Direction);
+                }
+
                 if (p.AccelLength > 0 && !p.Info.TriggeredPulse)
                 {
                     if (p.SmartsOn) p.RunSmart();
@@ -154,15 +162,7 @@ namespace WeaponCore.Projectiles
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                         }
 
-                        if (p.Info.AmmoDef.Const.FeelsGravity)
-                        {
-                            var totalGravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
-                            newVel += (totalGravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
-                            Vector3D.Normalize(ref newVel, out p.Direction);
-                        }
-
                         p.Velocity = newVel;
-
                     }
                 }
 
