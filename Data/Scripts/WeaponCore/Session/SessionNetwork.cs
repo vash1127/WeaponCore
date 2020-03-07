@@ -53,7 +53,7 @@ namespace WeaponCore
 
                 if (!retry) Reporter.ReportData[packet.PType].Add(report);
 
-                //var invalidType = false;
+                var invalidType = false;
 
                 switch (packet.PType)
                 {
@@ -252,13 +252,13 @@ namespace WeaponCore
 
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
-                        //invalidType = true;
+                        invalidType = true;
                         report.PacketValid = false;
 
                         break;
                 }
 
-                /*if (!report.PacketValid && !invalidType && !retry)
+                if (!report.PacketValid && !invalidType && !retry)
                 {
                     
                     var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
@@ -271,7 +271,7 @@ namespace WeaponCore
                         ClientSideErrorPktList.Remove(errorPacket);
                         ClientSideErrorPktList.Add(errorPacket);
                     }
-                }*/
+                }
 
                 return report.PacketValid;
             }
@@ -709,11 +709,14 @@ namespace WeaponCore
 
             public virtual bool Equals(ErrorPacket other)
             {
+                if (Packet == null) return false;
+
                 return Packet.Equals(other.Packet);
             }
 
             public override bool Equals(object obj)
             {
+                if (Packet == null) return false;
                 if (ReferenceEquals(null, obj)) return false;
                 if (ReferenceEquals(this, obj)) return true;
                 if (obj.GetType() != GetType()) return false;
@@ -722,6 +725,8 @@ namespace WeaponCore
 
             public override int GetHashCode()
             {
+                if (Packet == null) return 0;
+
                 return Packet.GetHashCode();
             }
         }
