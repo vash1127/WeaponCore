@@ -56,6 +56,7 @@ namespace WeaponCore.Projectiles
         internal double VisualStep;
         internal double DeadZone = 3;
         internal double MaxTrajectorySqr;
+        internal double DistanceToSurfaceSqr;
         internal float DesiredSpeed;
         internal float MaxTrajectory;
         internal float BaseAmmoParticleScale;
@@ -94,6 +95,7 @@ namespace WeaponCore.Projectiles
         internal bool ShieldBypassed;
         internal bool TerminalControlled;
         internal bool EarlyEnd;
+        internal bool FeelsGravity;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -143,11 +145,13 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
+            DistanceToSurfaceSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
 
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
+            FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             if (Guidance == GuidanceType.Smart && DynamicGuidance)
             {
@@ -220,13 +224,15 @@ namespace WeaponCore.Projectiles
 
             PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
             if (PickTarget || LockedTarget) NewTargets++;
-            var staticIsInRange = (Info.Ai.ClosestStaticSqr * 0.5) < MaxTrajectorySqr;
 
-            PruneQuery = DynamicGuidance && ((Info.Ai.ClosestPlanetSqr * 0.5) < MaxTrajectorySqr) || Info.Ai.StaticGridInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
+            var pruneStaticCheck = Info.Ai.ClosestPlanetSqr * 0.5 < MaxTrajectorySqr || Info.Ai.StaticGridInRange;
+            PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            
             
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
-            if (!DynamicGuidance && staticIsInRange)
+            if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
                 StaticEntCheck();
             else if (Info.Ai.PlanetSurfaceInRange) LinePlanetCheck = true;
 
@@ -566,10 +572,6 @@ namespace WeaponCore.Projectiles
 
         internal void RunSmart()
         {
-
-            if (Info.AmmoDef.Const.FeelsGravity)
-                Velocity += (MyParticlesManager.CalculateGravityInPoint(Position) * Info.AmmoDef.Trajectory.GravityMultiplier) * StepConst;
-
             Vector3D newVel;
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr))
             {
@@ -671,12 +673,7 @@ namespace WeaponCore.Projectiles
                 Vector3D.Normalize(ref Velocity, out Direction);
             }
             else
-            {
-                if (Info.AmmoDef.Const.FeelsGravity)
-                    Vector3D.Normalize(ref Velocity, out Direction);
-
                 newVel = Velocity += (Direction * AccelLength);
-            }
             VelocityLengthSqr = newVel.LengthSquared();
 
             if (VelocityLengthSqr > MaxSpeedSqr) newVel = Direction * MaxSpeed;
