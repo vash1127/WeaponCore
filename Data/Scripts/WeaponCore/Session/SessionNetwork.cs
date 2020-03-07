@@ -53,11 +53,20 @@ namespace WeaponCore
 
                 if (!retry) Reporter.ReportData[packet.PType].Add(report);
 
+                var invalidType = false;
+
+                //TODO pool error packets for quicker checks if a valid packet should remove from list
+                var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
+
                 switch (packet.PType)
                 {
                     case PacketType.CompStateUpdate:                        
                         var statePacket = packet as StatePacket;
-                        if (statePacket?.Data == null || comp == null) break;
+                        if (statePacket?.Data == null || comp == null)
+                        {
+                            errorPacket.Error = $"Data is null: {statePacket?.Data == null} Comp is null: {comp == null}";
+                            break;
+                        }
 
                         comp.State.Value.Sync(statePacket.Data);
 
@@ -65,7 +74,11 @@ namespace WeaponCore
                         break;
                     case PacketType.CompSettingsUpdate:
                         var setPacket = packet as SettingPacket;
-                        if (setPacket?.Data == null || comp == null) break;
+                        if (setPacket?.Data == null || comp == null)
+                        {
+                            errorPacket.Error = $"Data is null: {setPacket?.Data == null} Comp is null: {comp == null}";
+                            break;
+                        }
 
                         comp.Set.Value.Sync(comp, setPacket.Data);
                         
@@ -74,7 +87,11 @@ namespace WeaponCore
                     case PacketType.TargetUpdate:
                     {
                             var targetPacket = packet as GridWeaponPacket;
-                            if (targetPacket?.Data == null || ent == null) break;
+                            if (targetPacket?.Data == null || ent == null) {
+                                errorPacket.Error = $"Data is null: {targetPacket?.Data == null} Comp is null: {ent == null}";
+
+                                break;
+                            }
                             
                             for(int i = 0; i < targetPacket.Data.Count; i++)
                             {
@@ -103,7 +120,11 @@ namespace WeaponCore
                     case PacketType.FocusUpdate:
                         {
                             var targetPacket = packet as FocusPacket;
-                            if (targetPacket == null) break;
+                            if (targetPacket == null)
+                            {
+                                errorPacket.Error = $"Packet is null: {targetPacket == null}";
+                                break;
+                            }
 
                             var myGrid = ent as MyCubeGrid;
                             GridAi ai;
@@ -116,13 +137,21 @@ namespace WeaponCore
                                     ai.Focus.AddFocus(targetGrid, ai, true);
                                     report.PacketValid = true;
                                 }
+                                else
+                                    errorPacket.Error = $"targetGrid is null";
                             }
+                            else
+                                errorPacket.Error = $"myGrid is null {myGrid == null} GridTargetingAIs Not Found";
                             break;
                         }
                     case PacketType.FakeTargetUpdate:
                         {
                             var targetPacket = packet as FakeTargetPacket;
-                            if (targetPacket?.Data == null) break;
+                            if (targetPacket?.Data == null)
+                            {
+                                errorPacket.Error = $"Data is null: {targetPacket?.Data == null}";
+                                break;
+                            }
 
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
@@ -132,6 +161,8 @@ namespace WeaponCore
                                 ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                                 report.PacketValid = true;
                             }
+                            else
+                                errorPacket.Error = $"myGrid is null {myGrid == null} GridTargetingAIs Not Found";
 
                             break;
                         }
@@ -139,7 +170,11 @@ namespace WeaponCore
                     case PacketType.PlayerIdUpdate:
                         {
                             var updatePacket = packet as BoolUpdatePacket;
-                            if (updatePacket == null) break;
+                            if (updatePacket == null)
+                            {
+                                errorPacket.Error = $"updatePacket is null {updatePacket == null}";
+                                break;
+                            }
 
                             if (updatePacket.Data)
                                 PlayerConnected(updatePacket.EntityId);
@@ -151,7 +186,11 @@ namespace WeaponCore
                         }
                     case PacketType.ClientMouseEvent:
                         var mousePacket = packet as MouseInputPacket;
-                        if (mousePacket?.Data == null) break;
+                        if (mousePacket?.Data == null)
+                        {
+                            errorPacket.Error = $"Data is null {mousePacket?.Data == null}";
+                            break;
+                        }
 
                         long playerId;
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -160,15 +199,21 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "No Player Mouse State Found";
 
                         break;
                     case PacketType.ActiveControlUpdate:
                         {
                             var dPacket = packet as BoolUpdatePacket;
-                            if (dPacket?.Data == null) break;
 
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-                            if (block == null) return false;
+
+                            if (block == null || dPacket?.Data == null)
+                            {
+                                errorPacket.Error = $"Data is null {dPacket?.Data == null} block is null {block == null}";
+                                break;
+                            }
 
                             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
 
@@ -182,7 +227,11 @@ namespace WeaponCore
                             try
                             {
                                 var csPacket = packet as ControllingPacket;
-                                if (csPacket?.Data == null) break;
+                                if (csPacket?.Data == null)
+                                {
+                                    errorPacket.Error = $"Data is null {csPacket?.Data == null}";
+                                    break;
+                                }
 
                                 for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
                                 {
@@ -193,7 +242,9 @@ namespace WeaponCore
                                     UpdateActiveControlDictionary(block, playerBlock.PlayerId, true);
                                 }
                             }
-                            catch (Exception e) { Log.Line($"error in control update: {e}"); }
+                            catch (Exception e) {
+                                errorPacket.Error = $" Error in Full Update {e}";
+                            }
 
                             report.PacketValid = true;
                             break;
@@ -202,7 +253,11 @@ namespace WeaponCore
 
                         var reticlePacket = packet as BoolUpdatePacket;
 
-                        if (reticlePacket == null || comp == null) break;
+                        if (reticlePacket == null || comp == null)
+                        {
+                            errorPacket.Error = $"reticlePacket is null {reticlePacket == null} Comp is null: {comp == null}";
+                            break;
+                        }
 
                         if (reticlePacket.Data)
                             comp.OtherPlayerTrackingReticle = true;
@@ -215,7 +270,11 @@ namespace WeaponCore
                     case PacketType.OverRidesUpdate:
                         var overRidesPacket = packet as OverRidesPacket;
 
-                        if (comp == null || overRidesPacket == null) break;
+                        if (comp == null || overRidesPacket == null)
+                        {
+                            errorPacket.Error = $"reticlePacket is null {overRidesPacket == null} Comp is null: {comp == null}";
+                            break;
+                        }
 
                         comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                         comp.Set.Value.MId = overRidesPacket.MId;
@@ -227,7 +286,11 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
-                        if (comp == null || cPlayerPacket == null) break;
+                        if (comp == null || cPlayerPacket == null)
+                        {
+                            errorPacket.Error = $"reticlePacket is null {cPlayerPacket == null} Comp is null: {comp == null}";
+                            break;
+                        }
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                         comp.Set.Value.MId = cPlayerPacket.MId;
@@ -241,7 +304,11 @@ namespace WeaponCore
 
                         var idPacket = packet as WeaponIdPacket;
 
-                        if (comp == null || idPacket == null) break;
+                        if (comp == null || idPacket == null)
+                        {
+                            errorPacket.Error = $"reticlePacket is null {idPacket == null} Comp is null: {comp == null}";
+                            break;
+                        }
                         //saving on extra field with new packet type
                         comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick);
 
@@ -250,26 +317,30 @@ namespace WeaponCore
 
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
-                        //invalidType = true;
+                        invalidType = true;
                         report.PacketValid = false;
 
                         break;
                 }
 
-                /*if (!report.PacketValid && !invalidType && !retry)
+                if (!report.PacketValid && !invalidType && !retry)
                 {
-                    
-                    var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
-
+                    Log.Line($"Invalid Packet: {packet.PType} Occured");
                     if (!ClientSideErrorPktList.Contains(errorPacket))
+                    {
                         ClientSideErrorPktList.Add(errorPacket);
+                        Log.Line($"Invalid Packet: {packet.PType} Entity: {packet.EntityId} Added");
+                    }
                     else
                     {
+                        Log.Line($"Invalid Packet: {packet.PType} Entity: {packet.EntityId} Replaced");
                         //this only works because hashcode override in ErrorPacket
                         ClientSideErrorPktList.Remove(errorPacket);
                         ClientSideErrorPktList.Add(errorPacket);
                     }
-                }*/
+                }
+                else if(report.PacketValid && ClientSideErrorPktList.Contains(errorPacket))
+                    ClientSideErrorPktList.Remove(errorPacket);
 
                 return report.PacketValid;
             }
@@ -284,24 +355,46 @@ namespace WeaponCore
                 if (erroredPacket.MaxAttempts == 0)
                 {
                     //set packet retry variables, based on type
-                    /*
-                     * erroredPacket.MaxAttempts = 0;
-                     * erroredPacket.RetryAttempt = 0;
-                    */
+                    //erroredPacket.MaxAttempts = 3;
+                    //erroredPacket.RetryAttempt = 0;                    
 
                     switch (erroredPacket.PType)
                     {
+                        case PacketType.TargetUpdate:
+                            erroredPacket.MaxAttempts = 3;
+                            erroredPacket.RetryDelayTicks = 10;                            
+                            break;
+
                         default:
+                            erroredPacket.MaxAttempts = 2;
+                            erroredPacket.RetryDelayTicks = 10;
                             break;
                     }
+
+                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
                 }
 
                 //proccess packet logic
 
-                //ProccessClientPacket(erroredPacket.Packet, 0, true);
-                //erroredPacket.RetryAttempt++;
+                if (erroredPacket.RetryTick > Tick) continue;
 
-                ClientSideErrorPktList.Remove(erroredPacket);
+                var success = ProccessClientPacket(erroredPacket.Packet, 0, true);
+                erroredPacket.RetryAttempt++;
+
+                if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
+                {
+                    if (!success)
+                        Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
+                    else
+                        Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Reproccessed Successfully, Error Cause: {erroredPacket.Error}");
+
+                    ClientSideErrorPktList.Remove(erroredPacket);
+                }
+                else
+                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+
+                if(erroredPacket.MaxAttempts == 0)
+                    ClientSideErrorPktList.Remove(erroredPacket);
             }
         }
 
@@ -753,18 +846,24 @@ namespace WeaponCore
         internal class ErrorPacket
         {
             internal uint RecievedTick;
+            internal uint RetryTick;
+            internal uint RetryDelayTicks;
             internal int RetryAttempt;
             internal int MaxAttempts;
+            internal string Error;
             internal PacketType PType;
             internal Packet Packet;
 
             public virtual bool Equals(ErrorPacket other)
             {
+                if (Packet == null) return false;
+
                 return Packet.Equals(other.Packet);
             }
 
             public override bool Equals(object obj)
             {
+                if (Packet == null) return false;
                 if (ReferenceEquals(null, obj)) return false;
                 if (ReferenceEquals(this, obj)) return true;
                 if (obj.GetType() != GetType()) return false;
@@ -773,6 +872,8 @@ namespace WeaponCore
 
             public override int GetHashCode()
             {
+                if (Packet == null) return 0;
+
                 return Packet.GetHashCode();
             }
         }

@@ -62,7 +62,7 @@ namespace WeaponCore
         //can override in other packet
         protected bool Equals(Packet other)
         {
-            return Equals(EntityId, other.EntityId) && Equals(SenderId, other.SenderId) && Equals(PType, other.PType);
+            return (EntityId.Equals(other.EntityId) && SenderId.Equals(other.SenderId) && PType.Equals(other.PType));
         }
 
         public override bool Equals(object obj)
@@ -75,7 +75,7 @@ namespace WeaponCore
 
         public override int GetHashCode()
         {
-            return EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode();
+            return (EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode());
         }
     }
 
