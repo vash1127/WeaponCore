@@ -105,7 +105,7 @@ namespace WeaponCore.Projectiles
                                 var prevDistToSurfaceSqr = p.DistanceToSurfaceSqr;
                                 Vector3D.DistanceSquared(ref closestPos, ref p.Position, out p.DistanceToSurfaceSqr);
 
-                                if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter && prevDistToSurfaceSqr > p.DistanceToTravelSqr) check = true;
+                                if (cDistToCenter > pDistToCenter || p.DistanceToSurfaceSqr <= (planetBeam.Length * planetBeam.Length) || pDistToCenter > mDistToCenter && prevDistToSurfaceSqr > p.DistanceToTravelSqr || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
                                 if (check)
                                 {
                                     using (voxel.Pin())
