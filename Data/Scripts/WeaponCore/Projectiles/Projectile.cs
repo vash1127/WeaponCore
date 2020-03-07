@@ -289,7 +289,6 @@ namespace WeaponCore.Projectiles
                     var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
 
                     Info.AvShot.ModelSphereCurrent.Radius = largestSize * 2;
-                    //ModelSphereLast.Radius = largestSize * 2;
                 }
             }
         }
@@ -567,6 +566,10 @@ namespace WeaponCore.Projectiles
 
         internal void RunSmart()
         {
+
+            if (Info.AmmoDef.Const.FeelsGravity)
+                Velocity += (MyParticlesManager.CalculateGravityInPoint(Position) * Info.AmmoDef.Trajectory.GravityMultiplier) * StepConst;
+
             Vector3D newVel;
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr))
             {
@@ -663,10 +666,17 @@ namespace WeaponCore.Projectiles
                 }
 
                 newVel = Velocity + (commandedAccel * StepConst);
+
                 AccelDir = commandedAccel / StepPerSec;
                 Vector3D.Normalize(ref Velocity, out Direction);
             }
-            else newVel = Velocity += (Direction * AccelLength);
+            else
+            {
+                if (Info.AmmoDef.Const.FeelsGravity)
+                    Vector3D.Normalize(ref Velocity, out Direction);
+
+                newVel = Velocity += (Direction * AccelLength);
+            }
             VelocityLengthSqr = newVel.LengthSquared();
 
             if (VelocityLengthSqr > MaxSpeedSqr) newVel = Direction * MaxSpeed;
@@ -925,7 +935,9 @@ namespace WeaponCore.Projectiles
 
         internal void PlayHitParticle()
         {
-            if (HitEffect != null) DisposeHitEffect(false);
+            if (HitEffect != null)
+                DisposeHitEffect(false);
+
             if (LastHitPos.HasValue)
             {
                 if (!Info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield && Info.LastHitShield)
@@ -943,7 +955,8 @@ namespace WeaponCore.Projectiles
                 var scaler = reScale < 1 ? reScale : 1;
 
                 HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0, BaseAmmoParticleScale) : 1;
+                var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
+
                 HitEffect.UserEmitterScale = scale * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
                 Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);

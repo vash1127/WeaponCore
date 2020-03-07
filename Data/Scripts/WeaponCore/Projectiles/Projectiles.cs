@@ -153,10 +153,19 @@ namespace WeaponCore.Projectiles
                             p.VelocityLengthSqr = newVel.LengthSquared();
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                         }
+
+                        if (p.Info.AmmoDef.Const.FeelsGravity)
+                        {
+                            var totalGravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+                            newVel += (totalGravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
+                            Vector3D.Normalize(ref newVel, out p.Direction);
+                        }
+
                         p.Velocity = newVel;
+
                     }
                 }
-                
+
                 if (p.State == ProjectileState.OneAndDone)
                 {
                     p.LastPosition = p.Position;
@@ -415,7 +424,7 @@ namespace WeaponCore.Projectiles
                     if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
                         if (!p.Info.AmmoDef.Const.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticleShrinks)
-                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
+                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, p.BaseAmmoParticleScale);
 
                         if ((p.ParticleStopped || p.ParticleLateStart))
                             p.PlayAmmoParticle();

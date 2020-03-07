@@ -291,7 +291,11 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null)
                 {
-                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
+                    if (hitEnt.Hit)
+                    {
+                        dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
+                        hitEnt.HitDist = dist;
+                    }
                     else
                     {
                         if (hitEnt.SphereCheck || info.EwarActive)
@@ -308,8 +312,10 @@ namespace WeaponCore.Projectiles
                             if (hitEnt.Blocks.Count > 0 || ewarActive)
                             {
                                 dist = 0;
+                                hitEnt.HitDist = dist;
                                 hitEnt.Hit = true;
                                 hitEnt.HitPos = hitPos;
+
                             }
                         }
                         else
@@ -347,6 +353,7 @@ namespace WeaponCore.Projectiles
                                     }
 
                                     dist = hitDist;
+                                    hitEnt.HitDist = dist;
                                     hitEnt.Hit = true;
                                     hitEnt.HitPos = hitPos;
                                     closestBlockFound = true;
@@ -359,6 +366,7 @@ namespace WeaponCore.Projectiles
                 {
                     hitEnt.Hit = true;
                     dist = hitEnt.HitDist.Value;
+                    hitEnt.HitDist = dist;
                 }
                 else if (ent is IMyDestroyableObject)
                 {
@@ -370,10 +378,9 @@ namespace WeaponCore.Projectiles
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
                             dist = 0;
+                            hitEnt.HitDist = dist;
                             hitEnt.Hit = true;
-                            var hitPos = !ewarActive
-                                ? hitEnt.PruneSphere.Center + (hitEnt.Intersection.Direction * hitEnt.PruneSphere.Radius)
-                                : hitEnt.PruneSphere.Center;
+                            var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Intersection.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
                             hitEnt.HitPos = hitPos;
                         }
                         else
@@ -385,6 +392,7 @@ namespace WeaponCore.Projectiles
                             {
                                 hitEnt.Hit = true;
                                 hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                                hitEnt.HitDist = dist;
                             }
                         }
                     }

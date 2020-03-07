@@ -293,6 +293,14 @@ namespace WeaponCore.Support
                 [ProtoMember(6)] internal ArmorDef Armor;
                 [ProtoMember(7)] internal CustomScalesDef Custom;
                 [ProtoMember(8)] internal ShieldDef Shields;
+                [ProtoMember(9)] internal FallOffDef FallOff;
+
+                [ProtoContract]
+                public struct FallOffDef
+                {
+                    [ProtoMember(1)] internal float Distance;
+                    [ProtoMember(2)] internal float LossFactor;
+                }
 
                 [ProtoContract]
                 public struct GridSizeDef
@@ -460,6 +468,8 @@ namespace WeaponCore.Support
                     OffenseField,
                     NavField,
                     DotField,
+                    PushField,
+                    PullField,
                 }
 
                 [ProtoMember(1)] internal double AreaEffectRadius;
@@ -546,7 +556,7 @@ namespace WeaponCore.Support
                 [ProtoMember(10)] internal GuidanceType Guidance;
                 [ProtoMember(11)] internal SmartsDef Smarts;
                 [ProtoMember(12)] internal MinesDef Mines;
-
+                [ProtoMember(13)] internal float GravityMultiplier;
 
                 [ProtoContract]
                 public struct SmartsDef

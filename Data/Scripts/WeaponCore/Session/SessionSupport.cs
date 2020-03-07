@@ -149,11 +149,14 @@ namespace WeaponCore
                 int noneReceivers = 0;
                 int validPackets = 0;
                 int invalidPackets = 0;
+                int closedEntities = 0;
                 ulong dataTransfer = 0;
                 foreach (var report in reportList)
                 {
                     if (report.PacketValid) validPackets++;
                     else invalidPackets++;
+
+                    if (report.EntityClosed) closedEntities++;
 
                     if (report.Receiver == NetworkReporter.Report.Received.None) noneReceivers++;
                     else if (report.Receiver == NetworkReporter.Report.Received.Server) serverReceivers++;
@@ -163,7 +166,7 @@ namespace WeaponCore
                     Reporter.ReportPool.Return(report);
                 }
                 var packetCount = reports.Value.Count;
-                if (packetCount > 0) Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers} ({IsClient})] unknownReceive:[{noneReceivers} ({IsServer})]");
+                if (packetCount > 0) Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] closedEntities:[{closedEntities}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers} ({IsClient})] unknownReceive:[{noneReceivers} ({IsServer})]");
             }
             Log.LineShortDate("(NINFO)");
 
