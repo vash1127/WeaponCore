@@ -102,7 +102,7 @@ namespace WeaponCore
             var stack = eWarInfo.StackDuration;
             var maxStack = eWarInfo.MaxStacks;
             var nextTick = Tick + 1;
-            var maxTick = stack ? (uint)(nextTick + (duration * maxStack)) : (uint)(nextTick + duration);
+            var maxTick = stack ? (uint)(nextTick + (duration * maxStack)) : nextTick + duration;
             var fieldType = ammoDef.AreaEffect.AreaEffect;
             var sync = MpActive && (DedicatedServer || IsServer);
             foreach (var block in blocks)
