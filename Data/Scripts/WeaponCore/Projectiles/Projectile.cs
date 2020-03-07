@@ -222,9 +222,11 @@ namespace WeaponCore.Projectiles
 
             PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
             if (PickTarget || LockedTarget) NewTargets++;
-            var staticIsInRange = (Info.Ai.ClosestStaticSqr * 0.5) < MaxTrajectorySqr;
 
-            PruneQuery = FeelsGravity || DynamicGuidance && ((Info.Ai.ClosestPlanetSqr * 0.5) < MaxTrajectorySqr) || Info.Ai.StaticGridInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
+            var pruneStaticCheck = Info.Ai.ClosestPlanetSqr * 0.5 < MaxTrajectorySqr || Info.Ai.StaticGridInRange;
+            PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            
             
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
