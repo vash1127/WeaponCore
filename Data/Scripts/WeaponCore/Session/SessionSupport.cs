@@ -230,6 +230,9 @@ namespace WeaponCore
             {
                 if (Session?.Player == null) return false;
 
+                MultiplayerId = MyAPIGateway.Multiplayer.MyId;
+                PlayerId = Session.Player.IdentityId;
+
                 if (HandlesInput)
                 {
                     List<IMyPlayer> players = new List<IMyPlayer>();

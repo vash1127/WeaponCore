@@ -255,11 +255,11 @@ namespace WeaponCore
         internal void SetCompTrackReticle(WeaponComponent comp)
         {
             comp.WasTrackReticle = comp.TrackReticle;
-            var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == _session.Session.Player.IdentityId;
+            var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == _session.PlayerId;
 
             var overRides = comp.Set.Value.Overrides;
 
-            comp.TrackReticle = comp.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && DrawReticle && !_session.InMenu && comp.Ai.ControllingPlayers.ContainsKey(_session.Session.Player.IdentityId));
+            comp.TrackReticle = comp.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && DrawReticle && !_session.InMenu && comp.Ai.ControllingPlayers.ContainsKey(_session.PlayerId));
 
             if (comp.TrackReticle != comp.WasTrackReticle && isControllingPlayer)
             {

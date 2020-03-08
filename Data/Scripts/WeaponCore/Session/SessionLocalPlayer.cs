@@ -26,8 +26,8 @@ namespace WeaponCore
             {
                 InGridAiBlock = true;
                 MyCubeBlock oldBlock;
-                TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock);
-                TrackingAi.ControllingPlayers[Session.Player.IdentityId] = ActiveControlBlock;
+                TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock);
+                TrackingAi.ControllingPlayers[PlayerId] = ActiveControlBlock;
 
                 if (MpActive && !DedicatedServer && oldBlock != ActiveControlBlock)
                     UpdateLocalAiNetworkEvent(activeBlock, true);
@@ -39,10 +39,10 @@ namespace WeaponCore
                     TrackingAi.Focus.IsFocused(TrackingAi);
 
                     MyCubeBlock oldBlock;
-                    if (MpActive && !DedicatedServer && TrackingAi.ControllingPlayers.TryGetValue(Session.Player.IdentityId, out oldBlock))
+                    if (MpActive && !DedicatedServer && TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock))
                         UpdateLocalAiNetworkEvent(oldBlock, false);
 
-                    TrackingAi.ControllingPlayers.Remove(Session.Player.IdentityId);
+                    TrackingAi.ControllingPlayers.Remove(PlayerId);
                 }
 
                 TrackingAi = null;
@@ -74,16 +74,16 @@ namespace WeaponCore
                         if (gridAi.WeaponBase.TryGetValue(cube, out comp))
                         {
                             GunnerBlackList = true;
-                            GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, Session.Player.IdentityId);
-                            comp.State.Value.CurrentPlayerControl.PlayerId = Session.Player.IdentityId;
+                            GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, PlayerId);
+                            comp.State.Value.CurrentPlayerControl.PlayerId = PlayerId;
                             comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Camera;
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.Player.IdentityId, false);
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, false);
                             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.Player.IdentityId, false);
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, PlayerId, false);
                             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Session.Player.IdentityId, false);
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, false);
 
                             if (IsClient)
                                 PacketsToServer.Add(new ControllingPlayerPacket {
@@ -102,11 +102,11 @@ namespace WeaponCore
                     {
                         GunnerBlackList = false;
                         var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.Player.IdentityId, true);
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, true);
                         var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.Player.IdentityId, true);
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, PlayerId, true);
                         var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Session.Player.IdentityId, true);
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         GridAi gridAi;
                         if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))

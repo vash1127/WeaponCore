@@ -108,11 +108,11 @@ namespace WeaponCore
             }
             Ai.SupressMouseShoot = true;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Ai.Session.PlayerId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Ai.Session.PlayerId, false);
             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Ai.Session.PlayerId, false);
         }
 
         internal void CloseWheel()
@@ -120,11 +120,11 @@ namespace WeaponCore
             WheelActive = false;
             Ai.SupressMouseShoot = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Ai.Session.PlayerId, true);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Ai.Session.PlayerId, true);
             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Ai.Session.PlayerId, true);
             Session.RemoveGps();
         }
         

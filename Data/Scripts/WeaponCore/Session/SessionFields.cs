@@ -188,6 +188,7 @@ namespace WeaponCore
 
         internal ulong AuthorSteamId = 76561197969691953;
         internal ulong MultiplayerId;
+        internal long PlayerId;
         internal long AuthorPlayerId;
         internal long LastTerminalId;
 
