@@ -94,7 +94,7 @@ namespace WeaponCore.Support
             return _session.WeaponCoreTurretBlockDefs.AsReadOnly();
         }
 
-        private bool ProjectilesLockedOn(IMyEntity victim)
+        internal bool ProjectilesLockedOn(IMyEntity victim)
         {
             var grid = victim.GetTopMostParent() as MyCubeGrid;
             GridAi gridAi;

@@ -24,6 +24,7 @@ namespace WeaponCore.Support
                 if (MyCube.Storage == null)
                     State.StorageInit();
 
+                State.LoadState();
                 Set.LoadSettings();
                 Set.SettingsInit();
                 UpdateSettings(Set.Value);
