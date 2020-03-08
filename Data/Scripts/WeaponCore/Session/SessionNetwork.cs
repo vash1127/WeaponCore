@@ -64,7 +64,7 @@ namespace WeaponCore
                         var statePacket = packet as StatePacket;
                         if (statePacket?.Data == null || comp == null)
                         {
-                            errorPacket.Error = $"Data is null: {statePacket?.Data == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"Data was null: {statePacket?.Data == null} Comp was null: {comp == null}";
                             break;
                         }
 
@@ -76,7 +76,7 @@ namespace WeaponCore
                         var setPacket = packet as SettingPacket;
                         if (setPacket?.Data == null || comp == null)
                         {
-                            errorPacket.Error = $"Data is null: {setPacket?.Data == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"Data was null: {setPacket?.Data == null} Comp was null: {comp == null}";
                             break;
                         }
 
@@ -88,7 +88,7 @@ namespace WeaponCore
                     {
                             var targetPacket = packet as GridWeaponPacket;
                             if (targetPacket?.Data == null || ent == null) {
-                                errorPacket.Error = $"Data is null: {targetPacket?.Data == null} Grid is null: {ent == null}";
+                                errorPacket.Error = $"Data was null: {targetPacket?.Data == null} Grid was null: {ent == null}";
 
                                 break;
                             }
@@ -122,7 +122,7 @@ namespace WeaponCore
                             var targetPacket = packet as FocusPacket;
                             if (targetPacket == null)
                             {
-                                errorPacket.Error = $"Packet is null: {targetPacket == null}";
+                                errorPacket.Error = $"Packet was null: {targetPacket == null}";
                                 break;
                             }
 
@@ -138,10 +138,10 @@ namespace WeaponCore
                                     report.PacketValid = true;
                                 }
                                 else
-                                    errorPacket.Error = $"targetGrid is null";
+                                    errorPacket.Error = $"targetGrid was null";
                             }
                             else
-                                errorPacket.Error = $"myGrid is null {myGrid == null} GridTargetingAIs Not Found";
+                                errorPacket.Error = $"myGrid was null {myGrid == null} GridTargetingAIs Not Found";
                             break;
                         }
                     case PacketType.FakeTargetUpdate:
@@ -149,7 +149,7 @@ namespace WeaponCore
                             var targetPacket = packet as FakeTargetPacket;
                             if (targetPacket?.Data == null)
                             {
-                                errorPacket.Error = $"Data is null: {targetPacket?.Data == null}";
+                                errorPacket.Error = $"Data was null: {targetPacket?.Data == null}";
                                 break;
                             }
 
@@ -162,7 +162,7 @@ namespace WeaponCore
                                 report.PacketValid = true;
                             }
                             else
-                                errorPacket.Error = $"myGrid is null {myGrid == null} GridTargetingAIs Not Found";
+                                errorPacket.Error = $"myGrid was null {myGrid == null} GridTargetingAIs Not Found";
 
                             break;
                         }
@@ -172,7 +172,7 @@ namespace WeaponCore
                             var updatePacket = packet as BoolUpdatePacket;
                             if (updatePacket == null)
                             {
-                                errorPacket.Error = $"updatePacket is null {updatePacket == null}";
+                                errorPacket.Error = $"updatePacket was null {updatePacket == null}";
                                 break;
                             }
 
@@ -188,7 +188,7 @@ namespace WeaponCore
                         var mousePacket = packet as MouseInputPacket;
                         if (mousePacket?.Data == null)
                         {
-                            errorPacket.Error = $"Data is null {mousePacket?.Data == null}";
+                            errorPacket.Error = $"Data was null {mousePacket?.Data == null}";
                             break;
                         }
 
@@ -211,7 +211,7 @@ namespace WeaponCore
 
                             if (block == null || dPacket?.Data == null)
                             {
-                                errorPacket.Error = $"Data is null {dPacket?.Data == null} block is null {block == null}";
+                                errorPacket.Error = $"Data was null {dPacket?.Data == null} block was null {block == null}";
                                 break;
                             }
 
@@ -229,7 +229,7 @@ namespace WeaponCore
                                 var csPacket = packet as ControllingPacket;
                                 if (csPacket?.Data == null)
                                 {
-                                    errorPacket.Error = $"Data is null {csPacket?.Data == null}";
+                                    errorPacket.Error = $"Data was null {csPacket?.Data == null}";
                                     break;
                                 }
 
@@ -255,7 +255,7 @@ namespace WeaponCore
 
                         if (reticlePacket == null || comp == null)
                         {
-                            errorPacket.Error = $"reticlePacket is null {reticlePacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"reticlePacket was null {reticlePacket == null} Comp was null: {comp == null}";
                             break;
                         }
 
@@ -272,7 +272,7 @@ namespace WeaponCore
 
                         if (comp == null || overRidesPacket == null)
                         {
-                            errorPacket.Error = $"overRidesPacket is null {overRidesPacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"overRidesPacket was null {overRidesPacket == null} Comp was null: {comp == null}";
                             break;
                         }
 
@@ -288,7 +288,7 @@ namespace WeaponCore
 
                         if (comp == null || cPlayerPacket == null)
                         {
-                            errorPacket.Error = $"cPlayerPacket is null {cPlayerPacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"cPlayerPacket was null {cPlayerPacket == null} Comp was null: {comp == null}";
                             break;
                         }
 
@@ -306,7 +306,7 @@ namespace WeaponCore
 
                         if (comp == null || idPacket == null)
                         {
-                            errorPacket.Error = $"idPacket is null {idPacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"idPacket was null {idPacket == null} Comp was null: {comp == null}";
                             break;
                         }
                         //saving on extra field with new packet type
