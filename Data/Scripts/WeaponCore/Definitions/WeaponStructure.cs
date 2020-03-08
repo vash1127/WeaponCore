@@ -606,11 +606,11 @@ namespace WeaponCore.Support
                         customDamageScales = customBlockDef.Count > 0;
                     }
             }
-            damageScaling = d.FallOff.LossFactor > 0 || d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
+            damageScaling = d.FallOff.MinMultipler > 0 || d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
             if (damageScaling)
             {
                 armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
-                fallOffScaling = d.FallOff.LossFactor > 0;
+                fallOffScaling = d.FallOff.MinMultipler > 0;
             }
             selfDamage = ammoDef.DamageScales.SelfDamage && !IsBeamWeapon;
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
