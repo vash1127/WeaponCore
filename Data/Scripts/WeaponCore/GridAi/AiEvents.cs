@@ -49,8 +49,9 @@ namespace WeaponCore.Support
                 {
 
                     MyInventory inventory;
-                    if (myCubeBlock.TryGetInventory(out inventory))
+                    if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Add(inventory))
                     {
+                        Log.Line($"Inventory Added");
                         inventory.InventoryContentChanged += CheckAmmoInventory;
                         foreach (var item in inventory.GetItems())
                         {
@@ -103,6 +104,7 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
+            Log.Line($"Amount Added: {amount}");
             var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
             if (ammoMag != null)
             {

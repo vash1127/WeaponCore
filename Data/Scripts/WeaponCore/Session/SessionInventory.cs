@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using System.Collections.Generic;
 using System.Linq;
 using VRage;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -39,6 +40,8 @@ namespace WeaponCore
 
         internal void AmmoPull() {
 
+            var cachedInv = new Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>();
+
             Weapon weapon;
             while (WeaponAmmoPullQueue.TryDequeue(out weapon))
             {
@@ -56,24 +59,29 @@ namespace WeaponCore
                     var weaponInventory = weapon.Comp.BlockInventory;
                     var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / itemVolume);
 
-                    var magsAdded = 0;
+                    if (magsNeeded == 0 && weapon.System.MaxAmmoVolume > itemVolume)
+                        magsNeeded = 1;
 
+                    var magsAdded = 0;
                     lock (weapon.Comp.Ai.AmmoInventories[def])
                     {
                         List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
 
+                        if(!cachedInv.ContainsKey(def))
+                            cachedInv[def] = weapon.Comp.Ai.AmmoInventories[def].ToDictionary(kvp => kvp.Key, kvp => kvp.Value, new InventoryCompare());
+
                         foreach (var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
                         {
-                            var magsAvailable = (int)currentInventory.Value;
                             var inventory = currentInventory.Key;
+                            var magsAvailable = (int)cachedInv[def][inventory];
 
                             if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                             {
                                 if (magsAvailable >= magsNeeded)
                                 {
                                     inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
-                                    magsNeeded = 0;
                                     magsAdded += magsNeeded;
+                                    magsNeeded = 0;                                    
                                 }
                                 else
                                 {
@@ -81,6 +89,8 @@ namespace WeaponCore
                                     magsNeeded -= magsAvailable;
                                     magsAdded += magsAvailable;
                                 }
+
+                                cachedInv[def][inventory] -= magsAdded;
                             }
                         }
                         weapon.CurrentAmmoVolume += magsAdded * itemVolume;
@@ -114,6 +124,21 @@ namespace WeaponCore
                     weapon.Comp.BlockInventory.Add(magItem, amt);
                 }
                 weapon.Comp.IgnoreInvChange = false;
+            }
+        }
+
+        internal class InventoryCompare : IEqualityComparer<MyInventory>
+        {
+            public bool Equals(MyInventory x, MyInventory y)
+            {
+                if (ReferenceEquals(x, y))
+                    return true;
+                else
+                    return false;
+            }
+            public int GetHashCode(MyInventory inventory)
+            {
+                return inventory.GetHashCode();
             }
         }
     }
