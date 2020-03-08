@@ -589,7 +589,7 @@ namespace WeaponCore
 
                             break;
                         }
-                    case PacketType.ActiveControlRequestUpdate:
+                    case PacketType.GridSyncRequestUpdate:
                         {
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
                             if (myGrid == null) return;
@@ -612,8 +612,8 @@ namespace WeaponCore
 
                                 var syncPacket = new ControllingPacket
                                 {
-                                    EntityId = -1,
-                                    SenderId = 0,
+                                    EntityId = packet.EntityId,
+                                    SenderId = packet.SenderId,
                                     PType = PacketType.ActiveControlFullUpdate,
                                     Data = new ControllingPlayersSync
                                     {
@@ -621,9 +621,49 @@ namespace WeaponCore
                                     }
                                 };
 
+                                PacketsToClient.Add(new PacketInfo {
+                                    Entity = myGrid,
+                                    Packet = syncPacket,
+                                    SingleClient = true,
+                                });
 
-                                var bytes = MyAPIGateway.Utilities.SerializeToBinary(syncPacket);
-                                MyAPIGateway.Multiplayer.SendMessageTo(ClientPacketId, bytes, packet.SenderId);
+                                var gridPacket = new GridWeaponPacket
+                                {
+                                    EntityId = packet.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.TargetUpdate,
+                                    Data = new List<WeaponData>()
+                                };
+
+                                List<WeaponComponent> comps = new List<WeaponComponent>(ai.WeaponBase.Values);
+
+                                for (int i = 0; i < comps.Count; i++)
+                                {
+                                    comp = comps[i];
+                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed) continue;
+
+                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                                    {
+                                        var w = comp.Platform.Weapons[j];
+                                        var weaponData = new WeaponData
+                                        {
+                                            CompEntityId = comp.MyCube.EntityId,
+                                            SyncData = w.State.Sync,
+                                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                                            TargetData = comp.WeaponValues.Targets[j],
+                                        };
+
+                                        gridPacket.Data.Add(weaponData);
+                                    }
+                                }
+
+                                if (gridPacket.Data.Count > 0)
+                                    PacketsToClient.Add(new PacketInfo
+                                    {
+                                        Entity = myGrid,
+                                        Packet = gridPacket,
+                                        SingleClient = true,
+                                    });
 
                                 report.PacketValid = true;
                             }

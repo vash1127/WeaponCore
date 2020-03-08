@@ -361,7 +361,7 @@ namespace WeaponCore
 
                         if (currDef.Const.IsTurretSelectable)
                         {
-                            w.ActiveAmmoDef = currDef;
+                            //w.ActiveAmmoDef = currDef;
                             w.Set.AmmoTypeId = next;
                             break;
                         }

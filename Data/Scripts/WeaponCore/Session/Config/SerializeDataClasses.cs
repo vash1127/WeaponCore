@@ -14,7 +14,7 @@ namespace WeaponCore
     public enum PacketType
     {
         Invalid,
-        ActiveControlRequestUpdate,
+        GridSyncRequestUpdate,
         CompStateUpdate,
         CompSettingsUpdate,
         TargetUpdate,

@@ -126,14 +126,9 @@ namespace WeaponCore
                                 if (w.Target.State == Targets.Acquired)
                                 {
 
-                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
-                                    {
-                                        if (!IsClient)
-                                            w.Target.Reset(Tick, !comp.TrackReticle); //testing, ent is null on client load
-                                        else if (comp.WeaponValues.Targets[w.WeaponId].Info != TransferTarget.TargetInfo.Expired)
-                                                comp.WeaponValues.Targets[w.WeaponId].SyncTarget(w.Target);
+                                    if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
+                                            w.Target.Reset(Tick, !comp.TrackReticle);
 
-                                    }
                                     else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                     {
                                         w.Target.Reset(Tick);

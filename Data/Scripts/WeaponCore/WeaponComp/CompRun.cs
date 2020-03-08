@@ -186,7 +186,7 @@ namespace WeaponCore.Support
                         Ai.Session.PacketsToServer.Add(new Packet {
                             EntityId = MyCube.EntityId,
                             SenderId = Ai.Session.MultiplayerId,
-                            PType = PacketType.ActiveControlRequestUpdate
+                            PType = PacketType.GridSyncRequestUpdate
                         });
                     }
                 }
