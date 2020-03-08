@@ -88,7 +88,7 @@ namespace WeaponCore
                     {
                             var targetPacket = packet as GridWeaponPacket;
                             if (targetPacket?.Data == null || ent == null) {
-                                errorPacket.Error = $"Data is null: {targetPacket?.Data == null} Comp is null: {ent == null}";
+                                errorPacket.Error = $"Data is null: {targetPacket?.Data == null} Grid is null: {ent == null}";
 
                                 break;
                             }
@@ -272,7 +272,7 @@ namespace WeaponCore
 
                         if (comp == null || overRidesPacket == null)
                         {
-                            errorPacket.Error = $"reticlePacket is null {overRidesPacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"overRidesPacket is null {overRidesPacket == null} Comp is null: {comp == null}";
                             break;
                         }
 
@@ -288,7 +288,7 @@ namespace WeaponCore
 
                         if (comp == null || cPlayerPacket == null)
                         {
-                            errorPacket.Error = $"reticlePacket is null {cPlayerPacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"cPlayerPacket is null {cPlayerPacket == null} Comp is null: {comp == null}";
                             break;
                         }
 
@@ -306,7 +306,7 @@ namespace WeaponCore
 
                         if (comp == null || idPacket == null)
                         {
-                            errorPacket.Error = $"reticlePacket is null {idPacket == null} Comp is null: {comp == null}";
+                            errorPacket.Error = $"idPacket is null {idPacket == null} Comp is null: {comp == null}";
                             break;
                         }
                         //saving on extra field with new packet type
@@ -377,9 +377,42 @@ namespace WeaponCore
                 //proccess packet logic
 
                 if (erroredPacket.RetryTick > Tick) continue;
-
-                var success = ProccessClientPacket(erroredPacket.Packet, 0, true);
                 erroredPacket.RetryAttempt++;
+
+                var success = false;
+
+                switch (erroredPacket.PType)
+                {
+                    case PacketType.TargetUpdate:
+                        var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
+                        if (ent == null) break;
+
+                        var packet = erroredPacket.Packet as GridWeaponPacket;
+                        if (packet == null)
+                        {
+                            erroredPacket.MaxAttempts = 0;
+                            break;
+                        }
+
+                        var compsToCheck = new HashSet<long>();
+                        for(int j = 0; j < packet.Data.Count; j++)
+                        {
+                            var block = MyEntities.GetEntityByIdOrDefault(packet.Data[j].CompEntityId);
+                            if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
+                                compsToCheck.Add(packet.Data[j].CompEntityId);
+                        }
+                        var compsArr = new long[compsToCheck.Count];
+                        compsToCheck.CopyTo(compsArr);
+
+                        PacketsToServer.Add(new RequestTargetsPacket { EntityId = erroredPacket.Packet.EntityId, SenderId = MultiplayerId, PType = PacketType.TargetUpdateRequest, Comps = compsArr });
+
+                        success = true;
+                        break;
+
+                    default:
+                        success = ProccessClientPacket(erroredPacket.Packet, 0, true);                        
+                        break;
+                }
 
                 if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
                 {
@@ -393,7 +426,7 @@ namespace WeaponCore
                 else
                     erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
 
-                if(erroredPacket.MaxAttempts == 0)
+                if (erroredPacket.MaxAttempts == 0)
                     ClientSideErrorPktList.Remove(erroredPacket);
             }
         }
@@ -657,6 +690,55 @@ namespace WeaponCore
                         PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
                         break;
 
+                    case PacketType.TargetUpdateRequest:
+                        {
+                            var targetRequestPacket = packet as RequestTargetsPacket;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+
+                            if (myGrid == null || targetRequestPacket == null) break;
+                            GridAi ai;
+                            if(GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var gridPacket = new GridWeaponPacket {
+                                    EntityId = packet.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.TargetUpdate,
+                                    Data = new List<WeaponData>()
+                                };
+
+                                for(int i = 0; i < targetRequestPacket.Comps.Length; i++)
+                                {
+                                    var compId = targetRequestPacket.Comps[i];
+                                    var compCube = MyEntities.GetEntityByIdOrDefault(compId, null, true) as MyCubeBlock;
+
+                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp)) continue;
+
+                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                                    {
+                                        var w = comp.Platform.Weapons[j];
+                                        var weaponData = new WeaponData
+                                        {
+                                            CompEntityId = compId,
+                                            SyncData = w.State.Sync,
+                                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                                            TargetData = comp.WeaponValues.Targets[j],
+                                        };
+
+                                        gridPacket.Data.Add(weaponData);
+                                    }                                        
+                                }
+
+                                if (gridPacket.Data.Count > 0)
+                                    PacketsToClient.Add(new PacketInfo {
+                                        Entity = myGrid,
+                                        Packet = gridPacket,
+                                        SingleClient = true,
+                                    });
+
+                                report.PacketValid = true;
+                            }
+                            break;
+                        }
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;
@@ -814,10 +896,17 @@ namespace WeaponCore
             {
                 var packetInfo = PacketsToClient[i];
                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
-                foreach (var p in Players.Values)
+
+                if (packetInfo.SingleClient)
+                    MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
+                else
                 {
-                    if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || Vector3D.DistanceSquared(p.GetPosition(), packetInfo.Entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
-                        MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
+                    foreach (var p in Players.Values)
+                    {
+
+                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || Vector3D.DistanceSquared(p.GetPosition(), packetInfo.Entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
+                            MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
+                    }
                 }
             }
             PacketsToClient.Clear();
@@ -841,6 +930,7 @@ namespace WeaponCore
         {
             internal MyEntity Entity;
             internal Packet Packet;
+            internal bool SingleClient;
         }
 
         internal class ErrorPacket

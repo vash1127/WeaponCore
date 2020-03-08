@@ -205,7 +205,9 @@ namespace WeaponCore.Support
                     
                     double weaponMaxRange;
                     DpsAndHeatInit(weapon, ob, out weaponMaxRange);
-                    maxTrajectory += weaponMaxRange;
+
+                    if(maxTrajectory < weaponMaxRange)
+                        maxTrajectory = weaponMaxRange;
                 }
 
                 if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {
