@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Text;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage;
-using VRage.Game;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support
@@ -58,9 +55,7 @@ namespace WeaponCore.Support
                     LastInventoryChangedTick = Session.Tick;
                 }
             }
-            catch (Exception ex)
-            {
-                Log.Line($"Exception in OnContentsChanged: {ex}");
+            catch (Exception ex) { Log.Line($"Exception in OnContentsChanged: {ex}");
             }
         }
 

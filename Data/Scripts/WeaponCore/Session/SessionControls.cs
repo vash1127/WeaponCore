@@ -186,7 +186,7 @@ namespace WeaponCore
 
                 cState.ClickShoot = !cState.ClickShoot;
                 cState.ShootOn = !cState.ClickShoot && cState.ShootOn;
-                comp.UpdateStateMP();
+                comp.UpdateStateMp();
             };
 
             action.Writer = (blk, sb) =>
@@ -226,7 +226,7 @@ namespace WeaponCore
                 else
                     w.State.ManualShoot = ShootOn;
 
-                comp.UpdateStateMP();
+                comp.UpdateStateMp();
             };
             action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
             action0.Enabled = (b) =>
@@ -252,7 +252,7 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
                 
                 comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOn;
-                comp.UpdateStateMP();
+                comp.UpdateStateMp();
 
             };
             action1.Writer = (b, t) => t.Append("On");
@@ -278,7 +278,7 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
 
                 var w = comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
-                comp.UpdateStateMP();
+                comp.UpdateStateMp();
 
             };
             action2.Writer = (b, t) => t.Append("Off");
@@ -314,7 +314,7 @@ namespace WeaponCore
                         var cState = comp.State.Value;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].SingleShotCounter++;
-                        comp.UpdateStateMP();
+                        comp.UpdateStateMp();
                     }
                 }
             };

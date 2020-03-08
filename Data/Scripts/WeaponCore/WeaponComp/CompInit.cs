@@ -2,7 +2,6 @@
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
-using VRage.Game;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
@@ -22,12 +21,8 @@ namespace WeaponCore.Support
         {
             try
             {
-                var isServer = MyAPIGateway.Multiplayer.IsServer;
-
                 if (MyCube.Storage == null)
                     State.StorageInit();
-
-                if (!State.LoadState() && !isServer) _clientNotReady = true;
 
                 Set.LoadSettings();
                 Set.SettingsInit();
@@ -47,15 +42,6 @@ namespace WeaponCore.Support
                 }
 
                 WeaponValues.Load(this);
-
-                
-                /*if (isServer)
-                {
-                    foreach (var w in State.Value.Weapons)
-                    {
-                        w.Heat = 0;
-                    }
-                }*/
             }
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{State == null}({State?.Value == null})[{State?.Value?.Weapons == null}] - SetNull:{Set == null}({Set?.Value == null})[{Set?.Value?.Weapons == null}] - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
