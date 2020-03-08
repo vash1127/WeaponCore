@@ -298,7 +298,16 @@ namespace WeaponCore.Platform
                 Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
-            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.Const.DesiredProjectileSpeed, 0, ActiveAmmoDef.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
+
+            var gravityMultiplier = 0f;
+            var gravityPoint = Vector3D.Zero;
+            if (ActiveAmmoDef.Const.FeelsGravity)
+            {
+                gravityMultiplier = ActiveAmmoDef.Trajectory.GravityMultiplier;
+                gravityPoint = MyParticlesManager.CalculateGravityInPoint(MyPivotPos);
+            }
+
+            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.Const.DesiredProjectileSpeed, 0, ActiveAmmoDef.Trajectory.AccelPerSec, gravityMultiplier, gravityPoint, System.Prediction != Prediction.Advanced);
             return predictedPos;
         }
 
