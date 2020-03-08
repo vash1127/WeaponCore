@@ -104,7 +104,6 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            Log.Line($"Amount Added: {amount}");
             var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
             if (ammoMag != null)
             {
