@@ -306,7 +306,6 @@ namespace WeaponCore.Platform
                 gravityMultiplier = ActiveAmmoDef.Trajectory.GravityMultiplier;
                 gravityPoint = MyParticlesManager.CalculateGravityInPoint(MyPivotPos);
             }
-
             var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.Const.DesiredProjectileSpeed, 0, ActiveAmmoDef.Trajectory.AccelPerSec, gravityMultiplier, gravityPoint, System.Prediction != Prediction.Advanced);
             return predictedPos;
         }
@@ -336,7 +335,6 @@ namespace WeaponCore.Platform
             double shooterVelScaleFactor = 1;
             bool projectileAccelerates = projectileAccMag > 1e-6;
             bool hasGravity = gravityMultiplier > 1e-6;
-
             if (projectileAccelerates)
             {
                 /*
@@ -367,7 +365,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                if (targetAcc.LengthSquared() < 1)
+                if (targetAcc.LengthSquared() < 1 && !hasGravity)
                     return estimatedImpactPoint;
 
                 if (Vector3D.IsZero(deltaPos)) aimDirectionNorm = Vector3D.Zero;
@@ -376,14 +374,16 @@ namespace WeaponCore.Platform
                 projectileVel += aimDirectionNorm * projectileMaxSpeed;
             }
 
-            double dt = Math.Max(MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, timeToIntercept / 600); // This can be a const somewhere
+            var count = projectileAccelerates ? 600 : 60;
+
+            double dt = Math.Max(MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, timeToIntercept / count); // This can be a const somewhere
             double dtSqr = dt * dt;
             Vector3D targetAccStep = targetAcc * dt;
             Vector3D projectileAccStep = aimDirectionNorm * projectileAccMag * dt;
             Vector3D gravityStep = gravity * gravityMultiplier * dt;
             Vector3D aimOffset = Vector3D.Zero; 
             double minDiff = double.MaxValue;
-            for (int i = 0; i < 600; ++i)
+            for (int i = 0; i < count; ++i)
             {
                 targetVel += targetAccStep;
 
