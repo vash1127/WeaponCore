@@ -51,7 +51,6 @@ namespace WeaponCore.Support
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Add(inventory))
                     {
-                        Log.Line($"Inventory Added");
                         inventory.InventoryContentChanged += CheckAmmoInventory;
                         foreach (var item in inventory.GetItems())
                         {
@@ -82,8 +81,9 @@ namespace WeaponCore.Support
                 else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
                 {
                     MyInventory inventory;
-                    if (myCubeBlock.TryGetInventory(out inventory))
+                    if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Contains(inventory))
                     {
+                        Inventories.Remove(inventory);
                         inventory.InventoryContentChanged -= CheckAmmoInventory;
                         foreach (var ammoInvetory in AmmoInventories)
                         {

@@ -724,6 +724,7 @@ namespace WeaponCore.Support
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             AmmoInventories.Clear();
+            Inventories.Clear();
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
             ControllingPlayers.Clear();
