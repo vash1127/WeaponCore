@@ -30,6 +30,7 @@ namespace WeaponCore
         OverRidesUpdate,
         PlayerControlUpdate,
         TargetExpireUpdate,
+        TargetUpdateRequest
     }
 
     #region packets
@@ -241,6 +242,20 @@ namespace WeaponCore
         {
             base.CleanUp();
             WeaponId = -1;
+        }
+    }
+
+    [ProtoContract]
+    public class RequestTargetsPacket : Packet
+    {
+        [ProtoMember(1)] internal long[] Comps;
+
+        public RequestTargetsPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Comps = new long[0];
         }
     }
     #endregion
