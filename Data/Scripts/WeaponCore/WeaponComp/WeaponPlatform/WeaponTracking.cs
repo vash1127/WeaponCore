@@ -307,7 +307,9 @@ namespace WeaponCore.Platform
                 gravityPoint = MyParticlesManager.CalculateGravityInPoint(MyPivotPos);
             }
             var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.Const.DesiredProjectileSpeed, 0, ActiveAmmoDef.Trajectory.AccelPerSec, gravityMultiplier, gravityPoint, System.Prediction != Prediction.Advanced);
-            DsDebugDraw.DrawSingleVec(predictedPos, 5f, Color.Red);
+            DsDebugDraw.DrawSingleVec(predictedPos, 10f, Color.Red);
+            DsDebugDraw.DrawSingleVec(targetPos, 10f, Color.Blue);
+
             return predictedPos;
         }
 
@@ -375,7 +377,7 @@ namespace WeaponCore.Platform
                 projectileVel += aimDirectionNorm * projectileMaxSpeed;
             }
 
-            var count = projectileAccelerates ? 600 : 600;
+            var count = projectileAccelerates ? 600 : 60;
 
             double dt = Math.Max(MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, timeToIntercept / count); // This can be a const somewhere
             double dtSqr = dt * dt;
