@@ -102,6 +102,7 @@ namespace WeaponCore
                     }
                 }
             }
+            cachedInv.Clear();
         }
 
         internal void MoveAmmo()
