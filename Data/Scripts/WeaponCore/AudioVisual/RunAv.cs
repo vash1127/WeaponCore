@@ -420,7 +420,7 @@ namespace WeaponCore.Support
             for (int i = AvEnd.Count - 1; i >= 0; i--) {
 
                 var av = AvEnd[i];
-                if (av.FakeExplosion && av.DetonateFakeExp) {
+                if (av.DetonateFakeExp) {
 
                     av.FakeExplosion = false;
                     if (ExplosionReady) {

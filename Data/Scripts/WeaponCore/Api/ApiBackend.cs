@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
@@ -32,10 +33,10 @@ namespace WeaponCore.Support
                 ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
-                ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
+                ["GetMaxRange"] = new Func<IMyTerminalBlock,int, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
-                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
+                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
                 ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
@@ -53,10 +54,10 @@ namespace WeaponCore.Support
                 ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
-                ["GetMaxRange"] = new Func<IMyTerminalBlock, float>(GetMaxRange),
+                ["GetMaxRange"] = new Func<IMyTerminalBlock, int, float>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
-                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
+                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
                 ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
                 ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
@@ -94,15 +95,34 @@ namespace WeaponCore.Support
             return _session.WeaponCoreTurretBlockDefs.AsReadOnly();
         }
 
-        internal bool ProjectilesLockedOn(IMyEntity victim)
+        private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp))
+            {
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    collection.Add(w.System.WeaponName, w.WeaponId);
+                }
+                return true;
+            }
+            return false;
+        }
+
+
+        internal MyTuple<bool, int, int> ProjectilesLockedOn(IMyEntity victim)
         {
             var grid = victim.GetTopMostParent() as MyCubeGrid;
             GridAi gridAi;
+            MyTuple<bool, int, int> tuple;
             if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
             {
-                return gridAi.LiveProjectile.Count > 0;
+                var count = gridAi.LiveProjectile.Count;
+                tuple = count > 0 ? new MyTuple<bool, int, int>(true, count, (int) (_session.Tick - gridAi.LiveProjectileTick)) : new MyTuple<bool, int, int>(false, 0, -1);
             }
-            return false;
+            else tuple = new MyTuple<bool, int, int>(false, 0, -1);
+            return tuple;
         }
 
         private void GetSortedThreats(IMyEntity shooter, IDictionary<IMyEntity, float> collection)
@@ -140,6 +160,22 @@ namespace WeaponCore.Support
                         GridAi.AcquireTarget(comp.Platform.Weapons[i], false, (MyEntity)target);
                 }
             }
+        }
+
+        private bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0)
+        {
+            var shootingGrid = shooter.GetTopMostParent() as MyCubeGrid;
+
+            if (shootingGrid != null)
+            {
+                GridAi ai;
+                if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
+                {
+                    ai.Focus.ReassignTarget((MyEntity)target, priority, ai);
+                    return true;
+                }
+            }
+            return false;
         }
 
         private void SetWeaponTarget(IMyTerminalBlock weaponBlock, IMyEntity target, int weaponId = 0)
@@ -214,37 +250,12 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
+        private static float GetMaxRange(IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
-            {
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var w = comp.Platform.Weapons[i];
-                    collection.Add(w.System.WeaponName, w.WeaponId);
-                }
-                return true;
-            }
-            return false;
-        }
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+                return (float)comp.Platform.Weapons[weaponId].ActiveAmmoDef.Const.MaxTrajectory;
 
-        private static float GetMaxRange(IMyTerminalBlock weaponBlock)
-        {
-            WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
-            {
-                if (comp.Platform.State != Ready) return 0f;
-
-                var maxTrajectory = 0f;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var curMax = comp.Platform.Weapons[i].ActiveAmmoDef.Const.MaxTrajectory;
-                    if (curMax > maxTrajectory)
-                        maxTrajectory = (float)curMax;
-                }
-                return maxTrajectory;
-            }
             return 0f;
         }
 
@@ -272,7 +283,7 @@ namespace WeaponCore.Support
 
         }
 
-        private static void SetTurretRange(IMyTerminalBlock weaponBlock, float range)
+        private static void SetBlockTrackingRange(IMyTerminalBlock weaponBlock, float range)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -281,10 +292,7 @@ namespace WeaponCore.Support
 
                 var maxTrajectory = GetMaxRange(weaponBlock);
 
-                if (range > maxTrajectory)
-                    comp.Set.Value.Range = maxTrajectory;
-                else
-                    comp.Set.Value.Range = range;
+                comp.Set.Value.Range = range > maxTrajectory ? maxTrajectory : range;
             }
         }
 
