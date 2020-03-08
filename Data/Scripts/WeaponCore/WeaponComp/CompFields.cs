@@ -2,11 +2,8 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Interfaces.Terminal;
-using System;
 using System.Collections.Generic;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -16,14 +13,6 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-        private int _count = -1;
-        private bool _allInited;
-        private bool _isServer;
-        private bool _isDedicated;
-        private bool _mpActive;
-        private bool _clientNotReady;
-        private bool _firstSync;
-
         internal volatile bool InventoryInited;
         internal volatile BlockType BaseType;
 
@@ -31,8 +20,6 @@ namespace WeaponCore.Support
         internal readonly IMySlimBlock Slim;
         internal readonly MyStringHash SubtypeHash;
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
-        internal readonly Dictionary<string, int> SubpartNameToIndex = new Dictionary<string, int>();
-        internal readonly Dictionary<int, string> SubpartIndexToName = new Dictionary<int, string>();
 
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
@@ -43,12 +30,13 @@ namespace WeaponCore.Support
         internal readonly CompState State;
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
-        internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
-
-        internal IMyTerminalAction shootAction;
-        internal IMyTerminalAction ClickShootAction;
 
         internal MatrixD CubeMatrix;
+        internal GridAi Ai;
+        internal Weapon TrackingWeapon;
+        internal MyWeaponPlatform Platform;
+        internal WeaponValues WeaponValues;
+
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
@@ -65,11 +53,6 @@ namespace WeaponCore.Support
         internal float MaxRequiredPower;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
-
-        internal GridAi Ai;
-        internal Weapon TrackingWeapon;
-        internal MyWeaponPlatform Platform;
-        internal WeaponValues WeaponValues;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;

@@ -54,7 +54,7 @@ namespace WeaponCore
             }
 
             if(!isNetworkUpdate && comp.Session.IsClient)
-                comp.UpdateSettingsMP();
+                comp.UpdateSettingsMp();
 
             comp.Ai.UpdatePowerSources = true;
             comp.SettingsUpdated = true;

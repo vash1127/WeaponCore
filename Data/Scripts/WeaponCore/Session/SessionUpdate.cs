@@ -93,7 +93,7 @@ namespace WeaponCore
                                 TargetUi.SetCompTrackReticle(comp);
 
                             comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
-
+                            //Log.Line($"{Api.ProjectilesLockedOn(comp.MyCube)}");
                             ///
                             /// Weapon update section
                             ///

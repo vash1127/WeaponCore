@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
-using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -70,9 +69,6 @@ namespace WeaponCore.Support
             {
                 if (!MyCube.MarkedForClose && Entity != null) 
                 {
-                    _isServer = Session.IsServer;
-                    _isDedicated = Session.DedicatedServer;
-                    _mpActive = Session.MpActive;
                     Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
                     Ai.FirstRun = true;
 
@@ -241,7 +237,7 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready) {
+            if (Session.IsServer && Platform.State == MyWeaponPlatform.PlatformState.Ready) {
 
                 Set.Value.Inventory = BlockInventory.GetObjectBuilder();
 
@@ -249,7 +245,7 @@ namespace WeaponCore.Support
 
                     State.SaveState();
                     Set.SaveSettings();
-                    if(_mpActive)
+                    if(Session.MpActive)
                         WeaponValues.Save(this, Session.MpTargetSyncGuid);
                 }
             }

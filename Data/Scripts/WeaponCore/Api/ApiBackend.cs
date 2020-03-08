@@ -72,6 +72,7 @@ namespace WeaponCore.Support
             pb.Getter = (b) => _terminalPbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
         }
+
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
             foreach (var wepDef in _session.WeaponDefinitions)
@@ -91,6 +92,31 @@ namespace WeaponCore.Support
         private IList<MyDefinitionId> GetCoreTurrets()
         {
             return _session.WeaponCoreTurretBlockDefs.AsReadOnly();
+        }
+
+        internal bool ProjectilesLockedOn(IMyEntity victim)
+        {
+            var grid = victim.GetTopMostParent() as MyCubeGrid;
+            GridAi gridAi;
+            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+            {
+                return gridAi.LiveProjectile.Count > 0;
+            }
+            return false;
+        }
+
+        private void GetSortedThreats(IMyEntity shooter, IDictionary<IMyEntity, float> collection)
+        {
+            var grid = shooter.GetTopMostParent() as MyCubeGrid;
+            GridAi gridAi;
+            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+            {
+                for (int i = 0; i < gridAi.SortedTargets.Count; i++)
+                {
+                    var targetInfo = gridAi.SortedTargets[i];
+                    collection.Add(targetInfo.Target, targetInfo.OffenseRating);
+                }
+            }
         }
 
         private void SetTargetEntity(IMyEntity shooter, IMyEntity target, int priority = 0)
@@ -113,6 +139,16 @@ namespace WeaponCore.Support
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                         GridAi.AcquireTarget(comp.Platform.Weapons[i], false, (MyEntity)target);
                 }
+            }
+        }
+
+        private void SetWeaponTarget(IMyTerminalBlock weaponBlock, IMyEntity target, int weaponId = 0)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp))
+            {
+                if (comp.Platform.State != Ready) return;
+                GridAi.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
             }
         }
 
@@ -292,6 +328,22 @@ namespace WeaponCore.Support
 
                 Vector3D targetPos;
                 return Weapon.TargetAligned(w, target, out targetPos);
+            }
+            return false;
+        }
+
+        private bool CanShootTarget(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp))
+            {
+                if (comp.Platform.State != Ready) return false;
+                var w = comp.Platform.Weapons[weaponId];
+                var topMost = targetEnt.GetTopMostParent();
+                var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
+                var targetAccel = topMost.Physics?.AngularAcceleration ?? Vector3.Zero;
+
+                return Weapon.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel);
             }
             return false;
         }

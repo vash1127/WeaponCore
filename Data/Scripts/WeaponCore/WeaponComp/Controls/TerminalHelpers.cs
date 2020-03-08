@@ -57,7 +57,7 @@ namespace WeaponCore.Control
 
                         cState.ClickShoot = false;
                         cState.ShootOn = false;
-                        comp.UpdateStateMP();
+                        comp.UpdateStateMp();
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -88,7 +88,7 @@ namespace WeaponCore.Control
 
                         cState.ShootOn = !cState.ShootOn;
                         cState.ClickShoot = cState.ShootOn ? false : cState.ClickShoot;
-                        comp.UpdateStateMP();
+                        comp.UpdateStateMp();
                     };
 
                     var oldWriter = a.Writer;

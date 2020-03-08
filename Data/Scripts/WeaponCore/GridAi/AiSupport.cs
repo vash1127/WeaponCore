@@ -879,7 +879,7 @@ namespace WeaponCore.Support
                 }
 
                 cState.ClickShoot = false;
-                comp.UpdateStateMP();
+                comp.UpdateStateMp();
             }
         }
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Sandbox.ModAPI;
-using VRage.Game.Entity;
-using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
@@ -23,30 +19,13 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void SaveAndSendAll()
-        {
-            _firstSync = true;
-            if (_isServer || _isDedicated)
-            {
-                Set.SaveSettings();
-                Set.NetworkUpdate();
-                State.SaveState();
-                State.NetworkUpdate();
-            }
-            else
-            {
-                Set.NetworkUpdate();
-                State.NetworkUpdate();
-            }
-        }
-
-        internal void UpdateStateMP()
+        internal void UpdateStateMp()
         {
             if(Session.MpActive)
                 State.NetworkUpdate();
         }
 
-        internal void UpdateSettingsMP()
+        internal void UpdateSettingsMp()
         {
             if (Session.MpActive)
                 Set.NetworkUpdate();
