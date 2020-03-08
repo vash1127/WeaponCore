@@ -178,6 +178,7 @@ namespace WeaponCore.Support
                         if (cubeBlock is MyBatteryBlock || cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler || cubeBlock is IMyShipConnector)
                             Ai.FatBlockAdded(cubeBlock);
                     }
+                    
 
 
                     if (Ai.Session.IsClient)
