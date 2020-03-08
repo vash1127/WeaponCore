@@ -743,6 +743,14 @@ namespace WeaponCore.Projectiles
                     }
                     EwaredProjectiles.Clear();
                     break;
+                case AreaEffectType.PushField:
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                        Info.EwarActive = true;
+                    break;
+                case AreaEffectType.PullField:
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                        Info.EwarActive = true;
+                    break;
                 case AreaEffectType.JumpNullField:
                     if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
@@ -766,11 +774,9 @@ namespace WeaponCore.Projectiles
                 case AreaEffectType.NavField:
                     if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
-
                     break;
                 case AreaEffectType.DotField:
-                    if (!Info.AmmoDef.Const.Pulse ||
-                        Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance) {
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance) {
                         Info.EwarActive = true;
                     }
                     break;

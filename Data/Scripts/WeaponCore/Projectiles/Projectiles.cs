@@ -385,6 +385,7 @@ namespace WeaponCore.Projectiles
                         p.VisualStep = 0;
                     }
                 }
+                else if (p.FeelsGravity) p.VisualDir = p.Direction;
 
                 if (p.Info.AmmoDef.Const.DrawLine || p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle)
                 {

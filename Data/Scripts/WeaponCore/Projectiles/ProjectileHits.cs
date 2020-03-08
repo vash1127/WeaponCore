@@ -18,6 +18,7 @@ namespace WeaponCore.Projectiles
         {
             var shieldByPass = p.Info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
+            var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
             var ai = p.Info.Ai;
             var found = false;
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
@@ -30,7 +31,7 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
-                if (ent is IMyCharacter && p.Info.EwarActive && p.Info.AmmoDef.Const.AreaEffect != DotField) continue;
+                if (ent is IMyCharacter && p.Info.EwarActive && !genericFields) continue;
                 if (grid != null && (!(p.Info.AmmoDef.Const.SelfDamage || p.TerminalControlled) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
 
                 if (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField && p.Info.AmmoDef.Const.AreaEffect == EmpField))
