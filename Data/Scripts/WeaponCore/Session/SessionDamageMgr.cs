@@ -92,7 +92,7 @@ namespace WeaponCore
             info.ObjectsHit++;
 
             var damageScale = 1;
-            var fallOff = info.AmmoDef.Const.FallOffScaling && hitEnt.HitDist.HasValue && hitEnt.HitDist.Value > info.AmmoDef.DamageScales.FallOff.Distance;
+            var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
             var energy = damageType == ShieldDef.ShieldType.Energy;
@@ -105,7 +105,7 @@ namespace WeaponCore
             var scaledDamage = (((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod;
             if (fallOff)
             {
-                var fallOffMultipler = MathHelperD.Clamp(1.0 - ((hitEnt.HitDist.Value - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+                var fallOffMultipler = MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
             
@@ -181,11 +181,11 @@ namespace WeaponCore
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
 
-            var fallOff = t.AmmoDef.Const.FallOffScaling && hitEnt.HitDist.HasValue && hitEnt.HitDist.Value > t.AmmoDef.DamageScales.FallOff.Distance;
+            var fallOff = t.AmmoDef.Const.FallOffScaling && t.DistanceTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
             if (fallOff)
-                fallOffMultipler = (float) MathHelperD.Clamp(1.0 - ((hitEnt.HitDist.Value - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
-
+                fallOffMultipler = (float) MathHelperD.Clamp(1.0 - ((t.DistanceTraveled - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+            
             var damagePool = t.BaseDamagePool;
             if (t.AmmoDef.Const.VirtualBeams)
             {
@@ -408,10 +408,10 @@ namespace WeaponCore
 
             var scaledDamage = info.BaseDamagePool * damageScale;
 
-            var fallOff = info.AmmoDef.Const.FallOffScaling && hitEnt.HitDist.HasValue && hitEnt.HitDist.Value > info.AmmoDef.DamageScales.FallOff.Distance;
+            var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
             if (fallOff)
             {
-                var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((hitEnt.HitDist.Value - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+                var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
 
@@ -442,10 +442,10 @@ namespace WeaponCore
 
             var scaledDamage = attacker.BaseDamagePool * damageScale;
 
-            var fallOff = attacker.AmmoDef.Const.FallOffScaling && hitEnt.HitDist.HasValue && hitEnt.HitDist.Value > attacker.AmmoDef.DamageScales.FallOff.Distance;
+            var fallOff = attacker.AmmoDef.Const.FallOffScaling && attacker.DistanceTraveled > attacker.AmmoDef.DamageScales.FallOff.Distance;
             if (fallOff)
             {
-                var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((hitEnt.HitDist.Value - attacker.AmmoDef.DamageScales.FallOff.Distance) / (attacker.AmmoDef.Const.MaxTrajectory - attacker.AmmoDef.DamageScales.FallOff.Distance)), attacker.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+                var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((attacker.DistanceTraveled - attacker.AmmoDef.DamageScales.FallOff.Distance) / (attacker.AmmoDef.Const.MaxTrajectory - attacker.AmmoDef.DamageScales.FallOff.Distance)), attacker.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
 
@@ -500,10 +500,10 @@ namespace WeaponCore
                 if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
 
                 var scaledDamage = info.BaseDamagePool * damageScale;
-                var fallOff = info.AmmoDef.Const.FallOffScaling && hitEnt.HitDist.HasValue && hitEnt.HitDist.Value > info.AmmoDef.DamageScales.FallOff.Distance;
+                var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
                 if (fallOff)
                 {
-                    var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((hitEnt.HitDist.Value - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+                    var fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                     scaledDamage *= fallOffMultipler;
                 }
 
