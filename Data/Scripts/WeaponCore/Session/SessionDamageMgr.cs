@@ -100,16 +100,16 @@ namespace WeaponCore
             var shieldByPass = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
 
             var areaEffect = info.AmmoDef.AreaEffect;
-            var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd;
-
-            var scaledDamage = (((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod;
+            var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
+            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f) : 0;
+            var scaledDamage = (((info.BaseDamagePool * damageScale) + areaDamage) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod;
             if (fallOff)
             {
                 var fallOffMultipler = MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
             
-            var detonateDamage = detonateOnEnd && !shieldByPass ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier : 0;
+            var detonateDamage = detonateOnEnd ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
@@ -159,7 +159,6 @@ namespace WeaponCore
 
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
-            //grid.Physics.Gravity = (Vector3D.Normalize(hitEnt.Beam.From - grid.Physics.CenterOfMassWorld) * 10);
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var areaRadius = largeGrid ? t.AmmoDef.Const.AreaRadiusLarge : t.AmmoDef.Const.AreaRadiusSmall;
             var detonateRadius = largeGrid ? t.AmmoDef.Const.DetonateRadiusLarge : t.AmmoDef.Const.DetonateRadiusSmall;
@@ -172,7 +171,7 @@ namespace WeaponCore
             var shieldBypass = t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var attackerId = shieldBypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
-            var areaEffectDmg = t.AreaEffectDamage;
+            var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
             var hasAreaDmg = areaEffectDmg > 0;
