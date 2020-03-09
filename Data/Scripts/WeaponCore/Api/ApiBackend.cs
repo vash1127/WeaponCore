@@ -18,7 +18,6 @@ namespace WeaponCore.Support
     {
         private readonly Session _session;
         internal readonly Dictionary<string, Delegate> ModApiMethods;
-        private readonly Dictionary<string, Delegate> _terminalPbApiMethods;
 
         internal ApiBackend(Session session)
         {
@@ -58,9 +57,8 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
-            var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCorePbAPI");
-            pb.Getter = (b) => _terminalPbApiMethods;
-            MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
+            var mod = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCoreAPI");
+            mod.Getter = (b) => ModApiMethods;
         }
 
         private void GetAllWeaponDefinitions(IList<byte[]> collection)

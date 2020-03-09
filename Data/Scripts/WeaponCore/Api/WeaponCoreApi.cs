@@ -26,7 +26,7 @@ namespace WeaponCore.Support
         private Action<IMyTerminalBlock, bool, int> _fireWeaponOnce;
         private Action<IMyTerminalBlock, bool, bool, int> _toggleWeaponFire;
         private Func<IMyTerminalBlock, int, bool, bool, bool> _isWeaponReadyToFire;
-        private Func<IMyTerminalBlock, float> _getMaxWeaponRange;
+        private Func<IMyTerminalBlock, int, float> _getMaxWeaponRange;
         private Func<IMyTerminalBlock, IList<string>, int, bool> _getTurretTargetTypes;
         private Action<IMyTerminalBlock, IList<string>, int> _setTurretTargetTypes;
         private Action<IMyTerminalBlock, float> _setBlockTrackingRange;
@@ -91,12 +91,12 @@ namespace WeaponCore.Support
             _getSortedThreats = (Action< IMyEntity, IDictionary<IMyEntity, float>>)delegates["GetSortedThreats"];
             _getAiFocus = (Func<IMyEntity, int, IMyEntity>)delegates["GetAiFocus"];
             _setAiFocus = (Func<IMyEntity, IMyEntity, int, bool>)delegates["SetAiFocus"];
-            _getWeaponTarget = (Func < IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>)delegates["GetWeaponTarget"];
+            _getWeaponTarget = (Func <IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>)delegates["GetWeaponTarget"];
             _setWeaponTarget = (Action<IMyTerminalBlock, IMyEntity, int>)delegates["SetWeaponTarget"];
             _fireWeaponOnce = (Action<IMyTerminalBlock, bool, int>)delegates["FireWeaponOnce"];
             _toggleWeaponFire = (Action<IMyTerminalBlock, bool, bool, int>)delegates["ToggleWeaponFire"];
             _isWeaponReadyToFire = (Func<IMyTerminalBlock, int, bool, bool, bool>)delegates["IsWeaponReadyToFire"];
-            _getMaxWeaponRange = (Func<IMyTerminalBlock, float>)delegates["GetMaxWeaponRange"];
+            _getMaxWeaponRange = (Func<IMyTerminalBlock, int, float>)delegates["GetMaxWeaponRange"];
             _getTurretTargetTypes = (Func<IMyTerminalBlock, IList<string>, int, bool>)delegates["GetTurretTargetTypes"];
             _setTurretTargetTypes = (Action<IMyTerminalBlock, IList<string>, int>)delegates["SetTurretTargetTypes"];
             _setBlockTrackingRange = (Action <IMyTerminalBlock, float>)delegates["SetBlockTrackingRange"];
@@ -108,7 +108,7 @@ namespace WeaponCore.Support
             _getMaxPower = (Func<MyDefinitionId, float>)delegates["GetMaxPower"];
             _disableRequiredPower = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
             _hasGridAi = (Func<IMyEntity, bool>)delegates["HasGridAi"];
-            _hasCoreWeapon = (Func<IMyEntity, bool>)delegates["HasCoreWeapon"];
+            _hasCoreWeapon = (Func<IMyTerminalBlock, bool>)delegates["HasCoreWeapon"];
             _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
             if (getWeaponDefinitions)
             {
@@ -133,7 +133,7 @@ namespace WeaponCore.Support
         public void FireWeaponOnce(IMyTerminalBlock weapon, bool allWeapons = true, int weaponId = 0) => _fireWeaponOnce?.Invoke(weapon, allWeapons, weaponId);
         public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on, bool allWeapons, int weaponId = 0) => _toggleWeaponFire?.Invoke(weapon, on, allWeapons, weaponId);
         public bool IsWeaponReadyToFire(IMyTerminalBlock weapon, int weaponId = 0, bool anyWeaponReady = true, bool shootReady = false) => _isWeaponReadyToFire?.Invoke(weapon, weaponId, anyWeaponReady, shootReady) ?? false;
-        public float GetMaxWeaponRange(IMyTerminalBlock weapon) => _getMaxWeaponRange?.Invoke(weapon) ?? 0f;
+        public float GetMaxWeaponRange(IMyTerminalBlock weapon, int weaponId) => _getMaxWeaponRange?.Invoke(weapon, weaponId) ?? 0f;
         public bool GetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) => _getTurretTargetTypes?.Invoke(weapon, collection, weaponId) ?? false;
         public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) => _setTurretTargetTypes?.Invoke(weapon, collection, weaponId);
         public void SetBlockTrackingRange(IMyTerminalBlock weapon, float range) => _setBlockTrackingRange?.Invoke(weapon, range);
@@ -144,7 +144,7 @@ namespace WeaponCore.Support
         public float GetCurrentPower(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
         public float GetMaxPower(MyDefinitionId weaponDef) => _getMaxPower?.Invoke(weaponDef) ?? 0f;
         public void DisableRequiredPower(IMyTerminalBlock weapon) => _disableRequiredPower?.Invoke(weapon);
-        public bool HasGridAi(IMyTerminalBlock weapon) => _hasGridAi?.Invoke(weapon) ?? false;
+        public bool HasGridAi(IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
         public bool HasCoreWeapon(IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
 
     }
