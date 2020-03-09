@@ -27,7 +27,7 @@ namespace WeaponCore.Support
             ModApiMethods = new Dictionary<string, Delegate>()
             {
                 ["GetAllWeaponDefinitions"] = new Action<IList<byte[]>>(GetAllWeaponDefinitions),
-                ["GetAllCoreWeapons"] = new Action<IList<MyDefinitionId>>(GetAllCoreWeapons),
+                ["GetCoreWeapons"] = new Action<IList<MyDefinitionId>>(GetCoreWeapons),
                 ["GetCoreStaticLaunchers"] = new Action<IList<MyDefinitionId>>(GetCoreStaticLaunchers),
                 ["GetCoreTurrets"] = new Action<IList<MyDefinitionId>>(GetCoreTurrets),
                 ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
@@ -37,19 +37,19 @@ namespace WeaponCore.Support
                 ["SetAiFocus"] = new Func<IMyEntity, IMyEntity, int, bool>(SetAiFocus),
                 ["GetWeaponTarget"] = new Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>(GetWeaponTarget),
                 ["SetWeaponTarget"] = new Action<IMyTerminalBlock, IMyEntity, int>(SetWeaponTarget),
-                ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
-                ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
-                ["GetMaxRange"] = new Func<IMyTerminalBlock,int, float>(GetMaxRange),
+                ["FireWeaponOnce"] = new Action<IMyTerminalBlock, bool, int>(FireWeaponOnce),
+                ["ToggleWeaponFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleWeaponFire),
+                ["IsWeaponReadyToFire"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(IsWeaponReadyToFire),
+                ["GetMaxWeaponRange"] = new Func<IMyTerminalBlock,int, float>(GetMaxWeaponRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<string>, int, bool>(GetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<string>, int>(SetTurretTargetTypes),
-                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
+                ["SetBlockTrackingRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
                 ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
                 ["CanShootTarget"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(CanShootTarget),
                 ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
-                ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
-                ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower),
+                ["GetCurrentPower"] = new Func<IMyTerminalBlock, float>(GetCurrentPower),
+                ["GetMaxPower"] = new Func<MyDefinitionId, float>(GetMaxPower),
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
                 ["HasGridAi"] = new Func<IMyEntity, bool>(HasGridAi),
                 ["HasCoreWeapon"] = new Func<IMyTerminalBlock, bool>(HasCoreWeapon),
@@ -69,7 +69,7 @@ namespace WeaponCore.Support
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 
-        private void GetAllCoreWeapons(IList<MyDefinitionId> collection)
+        private void GetCoreWeapons(IList<MyDefinitionId> collection)
         {
             foreach (var def in _session.WeaponCoreBlockDefs.Values)
                 collection.Add(def);
@@ -184,7 +184,7 @@ namespace WeaponCore.Support
                 GridAi.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
         }
 
-        private static void FireOnce(IMyTerminalBlock weaponBlock, bool allWeapons = true, int weaponId = 0)
+        private static void FireWeaponOnce(IMyTerminalBlock weaponBlock, bool allWeapons = true, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
@@ -203,7 +203,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private static void ToggleFire(IMyTerminalBlock weaponBlock, bool on, bool allWeapons = true, int weaponId = 0)
+        private static void ToggleWeaponFire(IMyTerminalBlock weaponBlock, bool on, bool allWeapons = true, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
@@ -227,7 +227,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private static bool WeaponReady(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
+        private static bool IsWeaponReadyToFire(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.State.Value.Online && comp.Set.Value.Overrides.Activate)
@@ -243,7 +243,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static float GetMaxRange(IMyTerminalBlock weaponBlock, int weaponId = 0)
+        private static float GetMaxWeaponRange(IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
@@ -275,7 +275,7 @@ namespace WeaponCore.Support
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                var maxTrajectory = GetMaxRange(weaponBlock);
+                var maxTrajectory = GetMaxWeaponRange(weaponBlock);
 
                 comp.Set.Value.Range = range > maxTrajectory ? maxTrajectory : range;
             }
@@ -341,7 +341,7 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private static float CurrentPower(IMyTerminalBlock weaponBlock)
+        private static float GetCurrentPower(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
@@ -350,7 +350,7 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private float MaxPower(MyDefinitionId weaponDef)
+        private float GetMaxPower(MyDefinitionId weaponDef)
         {
             float power = 0f;
             WeaponStructure weapons;
