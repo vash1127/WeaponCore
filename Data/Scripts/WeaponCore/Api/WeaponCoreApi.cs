@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                 MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
             }
             if (!IsReady)
-                MyAPIGateway.Utilities.SendModMessage(Channel, "ApiEndpointRequest");
+                MyAPIGateway.Utilities.SendModMessage(Channel, "WeaponCorePbAPI");
             return IsReady;
         }
 

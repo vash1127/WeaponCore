@@ -20,7 +20,7 @@ namespace WeaponCore.Support
 
         private void HandleMessage(object o)
         {
-            if ((o as string) == "ApiEndpointRequest")
+            if ((o as string) == "WeaponCorePbAPI")
                 MyAPIGateway.Utilities.SendModMessage(Channel, _session.Api.ModApiMethods);
         }
 
