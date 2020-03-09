@@ -18,7 +18,6 @@ namespace WeaponCore
 
             foreach (var aiPair in GridTargetingAIs)
             {
-
                 ///
                 /// GridAi update section
                 ///
@@ -303,12 +302,11 @@ namespace WeaponCore
             {
                 var w = ChargingWeapons[i];
                 using (w.Comp.MyCube.Pin())
-                using (w.Comp.Ai.MyGrid.Pin())
+                using (w.Comp.Ai?.MyGrid.Pin())
                 {
                     var comp = w.Comp;
                     var gridAi = comp.Ai;
-
-                    if (comp == null || gridAi == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
+                    if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
                         ChargingWeapons.RemoveAtFast(i);
                         if (ChargingWeaponsCheck.Contains(w))
@@ -397,14 +395,13 @@ namespace WeaponCore
         {
             for (int i = AcquireTargets.Count - 1; i >= 0; i--)
             {
-
                 var w = AcquireTargets[i];
                 using (w.Comp.MyCube.Pin())
-                using (w.Comp.Ai.MyGrid.Pin())
+                using (w.Comp.Ai?.MyGrid.Pin())
                 {
 
                     var comp = w.Comp;
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) {
+                    if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) {
                         
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
@@ -424,7 +421,10 @@ namespace WeaponCore
                         {
 
                             if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired)
-                                GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
+                            {
+                                var topMost = comp.TrackingWeapon.Target.Entity?.GetTopMostParent();
+                                GridAi.AcquireTarget(w, false, topMost);
+                            }
                             else
                                 GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                         }
@@ -455,7 +455,7 @@ namespace WeaponCore
 
                 var w = ShootingWeapons[i];
                 using (w.Comp.MyCube.Pin())
-                using (w.Comp.Ai.MyGrid.Pin())
+                using (w.Comp.Ai?.MyGrid.Pin())
                 {
                     if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     {
