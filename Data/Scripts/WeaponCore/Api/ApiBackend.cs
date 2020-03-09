@@ -80,19 +80,22 @@ namespace WeaponCore.Support
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 
-        private List<MyDefinitionId> GetAllCoreWeapons()
+        private void GetAllCoreWeapons(IList<MyDefinitionId> collection)
         {
-            return new List<MyDefinitionId>(_session.WeaponCoreBlockDefs.Values);
+            foreach (var def in _session.WeaponCoreBlockDefs.Values)
+                collection.Add(def);
         }
 
-        private List<MyDefinitionId> GetCoreStaticLaunchers()
+        private void GetCoreStaticLaunchers(IList<MyDefinitionId> collection)
         {
-            return _session.WeaponCoreFixedBlockDefs;
+            foreach (var def in _session.WeaponCoreFixedBlockDefs)
+                collection.Add(def);
         }
 
-        private IList<MyDefinitionId> GetCoreTurrets()
+        private void GetCoreTurrets(IList<MyDefinitionId> collection)
         {
-            return _session.WeaponCoreTurretBlockDefs.AsReadOnly();
+            foreach (var def in _session.WeaponCoreTurretBlockDefs)
+                collection.Add(def);
         }
 
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
@@ -111,7 +114,7 @@ namespace WeaponCore.Support
         }
 
 
-        internal MyTuple<bool, int, int> ProjectilesLockedOn(IMyEntity victim)
+        private MyTuple<bool, int, int> ProjectilesLockedOn(IMyEntity victim)
         {
             var grid = victim.GetTopMostParent() as MyCubeGrid;
             GridAi gridAi;
@@ -139,27 +142,17 @@ namespace WeaponCore.Support
             }
         }
 
-        private void SetTargetEntity(IMyEntity shooter, IMyEntity target, int priority = 0)
+        private IMyEntity GetAiFocus(IMyEntity shooter, int priority = 0)
         {
-            var shootingGrid = shooter as MyCubeGrid;
+            var shootingGrid = shooter.GetTopMostParent() as MyCubeGrid;
 
             if (shootingGrid != null)
             {
                 GridAi ai;
                 if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
-                    ai.Focus.ReassignTarget((MyEntity)target, priority, ai);
+                    return ai.Focus.Target[priority];
             }
-            else
-            {
-                WeaponComponent comp;
-                if(shooter.Components.TryGet(out comp))
-                {
-                    if (comp.Platform.State != Ready) return;
-
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                        GridAi.AcquireTarget(comp.Platform.Weapons[i], false, (MyEntity)target);
-                }
-            }
+            return null;
         }
 
         private bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0)
@@ -178,22 +171,35 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private void SetWeaponTarget(IMyTerminalBlock weaponBlock, IMyEntity target, int weaponId = 0)
+        private static MyTuple<bool, bool, bool, IMyEntity> GetWeaponTarget(IMyTerminalBlock weaponBlock, int weaponId = 0)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                if (comp.Platform.State != Ready) return;
-                GridAi.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
+                var weapon = comp.Platform.Weapons[weaponId];
+                if (weapon.Target.IsFakeTarget)
+                    return new MyTuple<bool, bool, bool, IMyEntity>(true, false, true, null);
+                if (weapon.Target.IsProjectile)
+                    return new MyTuple<bool, bool, bool, IMyEntity>(true, true, false, null);
+                return new MyTuple<bool, bool, bool, IMyEntity>(weapon.Target.Entity != null, false, false, weapon.Target.Entity);
             }
+
+            return new MyTuple<bool, bool, bool, IMyEntity>(false, false, false, null);
+        }
+
+
+        private static void SetWeaponTarget(IMyTerminalBlock weaponBlock, IMyEntity target, int weaponId = 0)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+                GridAi.AcquireTarget(comp.Platform.Weapons[weaponId], false, (MyEntity)target);
         }
 
         private static void FireOnce(IMyTerminalBlock weaponBlock, bool allWeapons = true, int weaponId = 0)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                if (comp.Platform.State != Ready) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (!allWeapons && i != weaponId) continue;
@@ -211,9 +217,8 @@ namespace WeaponCore.Support
         private static void ToggleFire(IMyTerminalBlock weaponBlock, bool on, bool allWeapons = true, int weaponId = 0)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                if (comp.Platform.State != Ready) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (!allWeapons && i != weaponId) continue;
@@ -236,9 +241,8 @@ namespace WeaponCore.Support
         private static bool WeaponReady(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.State.Value.Online && comp.Set.Value.Overrides.Activate)
             {
-                if (comp.Platform.State != Ready || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) return false;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (!anyWeaponReady && i != weaponId) continue;
@@ -259,26 +263,20 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private static IList<IList<string>> GetTurretTargetTypes(IMyTerminalBlock weaponBlock)
+        private static bool GetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<string> collection, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
             {
-                var compList = new List<IList<string>>();
-                foreach (var weapon in comp.Platform.Weapons)
-                {
-                    var list = new List<string>();
-                    var threats = weapon.System.Values.Targeting.Threats;
-                    for (int i = 0; i < threats.Length; i++) list.Add(threats[i].ToString());
-                    compList.Add(list);
-                }
-                return compList;
+                var weapon = comp.Platform.Weapons[weaponId];
+                var threats = weapon.System.Values.Targeting.Threats;
+                for (int i = 0; i < threats.Length; i++) collection.Add(threats[i].ToString());
+                return true;
             }
-
-            return new List<IList<string>>();
+            return false;
         }
 
-        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<IList<string>> threats)
+        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<string> collection, int weaponId = 0)
         {
 
         }
@@ -286,61 +284,30 @@ namespace WeaponCore.Support
         private static void SetBlockTrackingRange(IMyTerminalBlock weaponBlock, float range)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                if (comp.Platform.State != Ready) return;
-
                 var maxTrajectory = GetMaxRange(weaponBlock);
 
                 comp.Set.Value.Range = range > maxTrajectory ? maxTrajectory : range;
             }
         }
 
-        private static IList<IMyEntity> GetTargetedEntity(IMyTerminalBlock weaponBlock)
+        private static bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
-            IList<IMyEntity> targets = new List<IMyEntity>();
-            ICollection<IMyEntity> targetsCheck = new HashSet<IMyEntity>();
-
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-
-                if (comp.Platform.State != Ready) return null;
-
-                targets.Add(comp.Ai.Focus.Target[0]);
-                targetsCheck.Add(comp.Ai.Focus.Target[0]);
-
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var entity = comp.Platform.Weapons[i].Target.Entity;
-                    if (!comp.Platform.Weapons[i].Target.IsProjectile && !targetsCheck.Contains(entity))
-                    {
-                        targets.Add(entity);
-                        targetsCheck.Add(entity);
-                    }
-                }
-
-            }
-
-            return targets;
-        }
-
-        private bool IsTargetAligned(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
-        {
-            Target target = new Target((MyCubeBlock)weaponBlock) { Entity = (MyEntity)targetEnt };
-            WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
-            {
-                if (comp.Platform.State != Ready) return false;
                 var w = comp.Platform.Weapons[weaponId];
 
+                w.NewTarget.Entity = (MyEntity) targetEnt;
+
                 Vector3D targetPos;
-                return Weapon.TargetAligned(w, target, out targetPos);
+                return Weapon.TargetAligned(w, w.NewTarget, out targetPos);
             }
             return false;
         }
 
-        private bool CanShootTarget(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
+        private static bool CanShootTarget(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -356,17 +323,16 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
+        private static Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
-            Target target = new Target((MyCubeBlock)weaponBlock) { Entity = (MyEntity)targetEnt };
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                if (comp.Platform.State != Ready) return null;
                 var w = comp.Platform.Weapons[weaponId];
+                w.NewTarget.Entity = (MyEntity)targetEnt;
 
                 Vector3D targetPos;
-                Weapon.TargetAligned(w, target, out targetPos);
+                Weapon.TargetAligned(w, w.NewTarget, out targetPos);
                 return targetPos;
             }
             return null;
@@ -390,14 +356,8 @@ namespace WeaponCore.Support
         private static float CurrentPower(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
-            {
-
-                if (comp.Platform.State != Ready) return 0f;
-
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
                 return comp.SinkPower;
-
-            }
 
             return 0f;
         }
@@ -432,12 +392,20 @@ namespace WeaponCore.Support
         private static void DisableRequiredPower(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
-            {
-                if (comp.Platform.State != Ready) return;
-
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
                 comp.UnlimitedPower = true;
-            }
+        }
+
+        private bool HasGridAi(IMyEntity entity)
+        {
+            var grid = entity.GetTopMostParent() as MyCubeGrid;
+
+            return grid != null && _session.GridTargetingAIs.ContainsKey(grid);
+        }
+
+        private static bool HasCoreWeapon(IMyTerminalBlock weaponBlock)
+        {
+            return weaponBlock.Components.Has<WeaponComponent>();
         }
     }
 }
