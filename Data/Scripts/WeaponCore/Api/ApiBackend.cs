@@ -26,44 +26,33 @@ namespace WeaponCore.Support
 
             ModApiMethods = new Dictionary<string, Delegate>()
             {
-                ["GetAllCoreWeapons"] = new Func<List<MyDefinitionId>>(GetAllCoreWeapons),
-                ["GetCoreStaticLaunchers"] = new Func<List<MyDefinitionId>>(GetCoreStaticLaunchers),
-                ["GetCoreTurrets"] = new Func<IList<MyDefinitionId>>(GetCoreTurrets),
-                ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
+                ["GetAllWeaponDefinitions"] = new Action<IList<byte[]>>(GetAllWeaponDefinitions),
+                ["GetAllCoreWeapons"] = new Action<IList<MyDefinitionId>>(GetAllCoreWeapons),
+                ["GetCoreStaticLaunchers"] = new Action<IList<MyDefinitionId>>(GetCoreStaticLaunchers),
+                ["GetCoreTurrets"] = new Action<IList<MyDefinitionId>>(GetCoreTurrets),
+                ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
+                ["GetProjectilesLockedOn"] = new Func<IMyEntity, MyTuple<bool, int, int>>(GetProjectilesLockedOn),
+                ["GetSortedThreats"] = new Action<IMyEntity, IDictionary<IMyEntity, float>>(GetSortedThreats),
+                ["GetAiFocus"] = new Func<IMyEntity, int, IMyEntity>(GetAiFocus),
+                ["SetAiFocus"] = new Func<IMyEntity, IMyEntity, int, bool>(SetAiFocus),
+                ["GetWeaponTarget"] = new Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>(GetWeaponTarget),
+                ["SetWeaponTarget"] = new Action<IMyTerminalBlock, IMyEntity, int>(SetWeaponTarget),
                 ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock,int, float>(GetMaxRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<string>, int, bool>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<string>, int>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
-                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
+                ["CanShootTarget"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(CanShootTarget),
                 ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
                 ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
                 ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower),
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
-                ["GetAllWeaponDefinitions"] = new Action<IList<byte[]>>(GetAllWeaponDefinitions),
-                ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
-            };
-
-            _terminalPbApiMethods = new Dictionary<string, Delegate>()
-            {
-                ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
-                ["FireOnce"] = new Action<IMyTerminalBlock, bool, int>(FireOnce),
-                ["ToggleFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleFire),
-                ["WeaponReady"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(WeaponReady),
-                ["GetMaxRange"] = new Func<IMyTerminalBlock, int, float>(GetMaxRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<string>>>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<string>>>(SetTurretTargetTypes),
-                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
-                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
-                ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
-                ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
-                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
-                ["CurrentPower"] = new Func<IMyTerminalBlock, float>(CurrentPower),
-                ["MaxPower"] = new Func<MyDefinitionId, float>(MaxPower)
+                ["HasGridAi"] = new Func<IMyEntity, bool>(HasGridAi),
+                ["HasCoreWeapon"] = new Func<IMyTerminalBlock, bool>(HasCoreWeapon),
             };
         }
 
@@ -114,7 +103,7 @@ namespace WeaponCore.Support
         }
 
 
-        private MyTuple<bool, int, int> ProjectilesLockedOn(IMyEntity victim)
+        private MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim)
         {
             var grid = victim.GetTopMostParent() as MyCubeGrid;
             GridAi gridAi;
@@ -349,7 +338,6 @@ namespace WeaponCore.Support
                 return comp.State.Value.Heat / comp.MaxHeat;
 
             }
-
             return 0f;
         }
 
