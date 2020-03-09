@@ -111,9 +111,9 @@ namespace WeaponCore.Support
 
             //range slider fix
             maxTrajectory = 0;
-            if (ob != null && ob.MaxRangeMeters > maxTrajectory)
-                maxTrajectory = ob.MaxRangeMeters;
-            else if (weapon.ActiveAmmoDef.Const.MaxTrajectory > maxTrajectory)
+            //if (ob != null && ob.MaxRangeMeters > maxTrajectory)
+                //maxTrajectory = ob.MaxRangeMeters;
+            if (weapon.ActiveAmmoDef.Const.MaxTrajectory > maxTrajectory)
                 maxTrajectory = weapon.ActiveAmmoDef.Const.MaxTrajectory;
 
             if (weapon.TrackProjectiles)
