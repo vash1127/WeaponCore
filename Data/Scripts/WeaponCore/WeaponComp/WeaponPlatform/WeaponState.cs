@@ -513,6 +513,7 @@ namespace WeaponCore.Platform
 
             if (ent == null)
             {
+                Log.Line($"Recheck");
                 _entityReChecks++;
 
                 if (_entityReChecks > _entityAllowedReChecks)
@@ -525,6 +526,7 @@ namespace WeaponCore.Platform
                 return;
             }
 
+            Log.Line($"Recheck Success");
             Target.Reset(Comp.Session.Tick);
             Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
             TargetState = Target.Targets.Expired;
