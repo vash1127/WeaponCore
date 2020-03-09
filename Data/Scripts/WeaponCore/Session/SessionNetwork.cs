@@ -361,13 +361,13 @@ namespace WeaponCore
                     switch (erroredPacket.PType)
                     {
                         case PacketType.TargetUpdate:
-                            erroredPacket.MaxAttempts = 3;
-                            erroredPacket.RetryDelayTicks = 10;                            
+                            erroredPacket.MaxAttempts = 7;
+                            erroredPacket.RetryDelayTicks = 15;                            
                             break;
 
                         default:
-                            erroredPacket.MaxAttempts = 2;
-                            erroredPacket.RetryDelayTicks = 10;
+                            erroredPacket.MaxAttempts = 7;
+                            erroredPacket.RetryDelayTicks = 15;
                             break;
                     }
 
@@ -404,7 +404,12 @@ namespace WeaponCore
                         var compsArr = new long[compsToCheck.Count];
                         compsToCheck.CopyTo(compsArr);
 
-                        PacketsToServer.Add(new RequestTargetsPacket { EntityId = erroredPacket.Packet.EntityId, SenderId = MultiplayerId, PType = PacketType.TargetUpdateRequest, Comps = compsArr });
+                        PacketsToServer.Add(new RequestTargetsPacket {
+                            EntityId = erroredPacket.Packet.EntityId,
+                            SenderId = MultiplayerId,
+                            PType = PacketType.TargetUpdateRequest,
+                            Comps = compsArr
+                        });
 
                         success = true;
                         break;
@@ -964,6 +969,41 @@ namespace WeaponCore
                 MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, MyAPIGateway.Utilities.SerializeToBinary(PacketsToServer[i]), true);
 
             PacketsToServer.Clear();
+        }
+
+        internal void ProccessGridResyncRequests()
+        {
+            var gridCompsToCheck = new Dictionary<GridAi, HashSet<long>>();
+            
+            for (int i = 0; i < ClientGridResyncRequests.Count; i++)
+            {
+                var comp = ClientGridResyncRequests[i];
+
+                if (!gridCompsToCheck.ContainsKey(comp.Ai))
+                    gridCompsToCheck[comp.Ai] = new HashSet<long>();
+
+                gridCompsToCheck[comp.Ai].Add(comp.MyCube.EntityId);
+            }
+
+            ClientGridResyncRequests.Clear();
+
+            foreach (var GridComps in gridCompsToCheck)
+            { 
+
+                var packet = new RequestTargetsPacket
+                {
+                    EntityId = GridComps.Key.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.TargetUpdateRequest,
+                };
+
+                packet.Comps = new long[GridComps.Value.Count];
+                GridComps.Value.CopyTo(packet.Comps);
+
+                PacketsToServer.Add(packet);
+            }
+
+            gridCompsToCheck.Clear();
         }
 
         internal struct PacketInfo

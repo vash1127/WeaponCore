@@ -123,18 +123,18 @@ namespace WeaponCore
                                 var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
                                 w.TargetState = w.Target.State;
 
-                                if (w.Target.State == Targets.Acquired)
+                                if (!IsClient && w.Target.State == Targets.Acquired)
                                 {
 
-                                    if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
-                                            w.Target.Reset(Tick, !comp.TrackReticle);
+                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
+                                        w.Target.Reset(Tick, !comp.TrackReticle);
 
-                                    else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
+                                    else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                     {
                                         w.Target.Reset(Tick);
 
                                     }
-                                    else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
+                                    else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                     {
                                         w.Target.Reset(Tick);
 
@@ -152,7 +152,7 @@ namespace WeaponCore
                                     {
                                         w.UpdatePivotPos();
                                         Vector3D targetPos;
-                                        if (!IsClient && w.IsTurret)
+                                        if (w.IsTurret)
                                         {
 
                                             if (!w.TrackTarget)
@@ -163,10 +163,14 @@ namespace WeaponCore
                                             else if (!Weapon.TargetAligned(w, w.Target, out targetPos))
                                                 w.Target.Reset(Tick);
                                         }
-                                        else if (!IsClient && w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
+                                        else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
                                             w.Target.Reset(Tick);
                                     }
                                 }
+                                else if (IsClient && w.Target.State == Targets.Acquired && w.Target.Entity != null)
+                                    Weapon.TrackingTarget(w, w.Target);
+                                else if (IsClient && w.Target.State == Targets.Acquired && Tick60)
+                                    w.CheckEntity();
 
 
                                 w.TargetChanged = targetAcquired || targetLost;

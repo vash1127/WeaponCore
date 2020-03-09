@@ -180,7 +180,7 @@ namespace WeaponCore.Support
                     if (Ai.Session.IsClient)
                     {
                         Ai.Session.PacketsToServer.Add(new Packet {
-                            EntityId = MyCube.EntityId,
+                            EntityId = MyCube.CubeGrid.EntityId,
                             SenderId = Ai.Session.MultiplayerId,
                             PType = PacketType.GridSyncRequestUpdate
                         });
