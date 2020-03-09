@@ -507,31 +507,26 @@ namespace WeaponCore.Platform
             }
         }
 
-        public void CheckEntity()
+        public void QueueEntityCheck(long entId)
         {
-            var ent = MyEntities.GetEntityByIdOrDefault(Comp.WeaponValues.Targets[WeaponId].EntityId);
-
-            if (ent == null)
+            if(entId <= 0) //something broke
             {
-                Log.Line($"Recheck");
-                _entityReChecks++;
-
-                if (_entityReChecks > _entityAllowedReChecks)
-                {
-                    Target.Reset(Comp.Session.Tick);
-                    Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-                    TargetState = Target.Targets.Expired;
-                }
+                Log.Line($"Its dead, should not hit here");
+                Target.Reset(Comp.Session.Tick);
+                Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
+                TargetState = Target.Targets.Expired;
 
                 return;
             }
 
-            Log.Line($"Recheck Success");
+            if (!Comp.Session.ClientWeaponResyncs.ContainsKey(entId))
+                Comp.Session.ClientWeaponResyncs[entId] = new HashSet<WeaponComponent>();
+
+            Comp.Session.ClientWeaponResyncs[entId].Add(Comp);
+
             Target.Reset(Comp.Session.Tick);
             Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-            TargetState = Target.Targets.Expired;
-
-            Comp.Session.ClientGridResyncRequests.Add(Comp);
+            TargetState = Target.Targets.Expired;               
         }
 
         public void StartPreFiringSound()

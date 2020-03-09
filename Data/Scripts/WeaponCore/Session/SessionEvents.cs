@@ -20,6 +20,16 @@ namespace WeaponCore
                 var grid = myEntity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
 
+                var entId = myEntity.GetTopMostParent().EntityId;
+
+                HashSet<WeaponComponent> CompsTargeting;
+                if (IsClient && ClientWeaponResyncs.TryGetValue(entId, out CompsTargeting))
+                {
+                    ClientGridResyncRequests.AddRange(CompsTargeting);
+                    CompsTargeting.Clear();
+                    ClientWeaponResyncs.Remove(entId);
+                }
+
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
