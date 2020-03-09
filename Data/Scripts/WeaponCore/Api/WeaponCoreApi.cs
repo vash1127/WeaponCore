@@ -108,7 +108,7 @@ namespace WeaponCore.Support
             _getMaxPower = (Func<MyDefinitionId, float>)delegates["GetMaxPower"];
             _disableRequiredPower = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
             _hasGridAi = (Func<IMyEntity, bool>)delegates["HasGridAi"];
-            _hasCoreWeapon = (Func<IMyEntity, bool>)delegates["HasCoreWeapon"];
+            _hasCoreWeapon = (Func<IMyTerminalBlock, bool>)delegates["HasCoreWeapon"];
             _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
             if (getWeaponDefinitions)
             {
@@ -144,7 +144,7 @@ namespace WeaponCore.Support
         public float GetCurrentPower(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
         public float GetMaxPower(MyDefinitionId weaponDef) => _getMaxPower?.Invoke(weaponDef) ?? 0f;
         public void DisableRequiredPower(IMyTerminalBlock weapon) => _disableRequiredPower?.Invoke(weapon);
-        public bool HasGridAi(IMyTerminalBlock weapon) => _hasGridAi?.Invoke(weapon) ?? false;
+        public bool HasGridAi(IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
         public bool HasCoreWeapon(IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
 
     }
