@@ -509,6 +509,9 @@ namespace WeaponCore.Platform
 
         public void QueueEntityCheck(long entId)
         {
+
+            Log.Line($"Entity Added: {entId}");
+
             if(entId <= 0) //something broke
             {
                 Log.Line($"Its dead, should not hit here");

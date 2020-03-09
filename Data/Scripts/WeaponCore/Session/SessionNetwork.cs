@@ -964,18 +964,10 @@ namespace WeaponCore
                     MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
                 else
                 {
-                    long entityId = -1;
-
-                    if (packetInfo.Entity is MyCubeBlock)
-                        entityId = ((MyCubeBlock)packetInfo.Entity).CubeGrid.EntityId;
-                    else if (packetInfo.Entity is MyCubeGrid)
-                        entityId = ((MyCubeGrid)packetInfo.Entity).EntityId;
-                    else
-                        Log.Line($"packetInfo.Entity is null: {packetInfo.Entity == null}");//null is valid, if not null and it hits here something is wrong
+                    long entityId = packetInfo.Entity?.GetTopMostParent().EntityId ?? -1;
 
                     foreach (var p in Players.Values)
                     {
-
                         if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
                             MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
                     }

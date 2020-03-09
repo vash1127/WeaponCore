@@ -15,7 +15,6 @@ namespace WeaponCore
         {
             try
             {
-
                 if (!Inited) lock (InitObj) Init();
                 var grid = myEntity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
@@ -23,8 +22,13 @@ namespace WeaponCore
                 var entId = myEntity.GetTopMostParent().EntityId;
 
                 HashSet<WeaponComponent> CompsTargeting;
+
+                if (myEntity is MyCubeBlock || myEntity is MyCubeGrid)
+                    Log.Line($"entId: {entId}");
+
                 if (IsClient && ClientWeaponResyncs.TryGetValue(entId, out CompsTargeting))
                 {
+                    Log.Line($"Entity Created: {entId}");
                     ClientGridResyncRequests.AddRange(CompsTargeting);
                     CompsTargeting.Clear();
                     ClientWeaponResyncs.Remove(entId);

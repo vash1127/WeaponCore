@@ -169,7 +169,7 @@ namespace WeaponCore
                                 else if (IsClient && w.Target.State == Targets.Acquired && w.Target.Entity != null)
                                     Weapon.TrackingTarget(w, w.Target);
                                 else if (IsClient && w.Target.State == Targets.Acquired)
-                                    w.QueueEntityCheck(w.Target.TopEntityId);
+                                    w.QueueEntityCheck(comp.WeaponValues.Targets[w.WeaponId].EntityId);
 
 
                                 w.TargetChanged = targetAcquired || targetLost;
