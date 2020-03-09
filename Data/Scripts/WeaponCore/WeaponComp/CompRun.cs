@@ -92,7 +92,10 @@ namespace WeaponCore.Support
                         {
                             var target = WeaponValues.Targets[w.WeaponId];
                             if (target.Info != TransferTarget.TargetInfo.Expired)
+                            {
+                                w.TargetState = Target.Targets.Acquired;
                                 target.SyncTarget(w.Target);
+                            }
                         }
                     }
 

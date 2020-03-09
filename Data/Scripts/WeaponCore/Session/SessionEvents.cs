@@ -19,21 +19,6 @@ namespace WeaponCore
                 var grid = myEntity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
 
-                var entId = myEntity.GetTopMostParent().EntityId;
-
-                HashSet<WeaponComponent> CompsTargeting;
-
-                if (myEntity is MyCubeBlock || myEntity is MyCubeGrid)
-                    Log.Line($"entId: {entId}");
-
-                if (IsClient && ClientWeaponResyncs.TryGetValue(entId, out CompsTargeting))
-                {
-                    Log.Line($"Entity Created: {entId}");
-                    ClientGridResyncRequests.AddRange(CompsTargeting);
-                    CompsTargeting.Clear();
-                    ClientWeaponResyncs.Remove(entId);
-                }
-
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
@@ -89,6 +74,20 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
+        private void OnEntityAdded(MyEntity entity)
+        {
+            var entId = entity.GetTopMostParent().EntityId;
+
+            HashSet<WeaponComponent> CompsTargeting;
+            if (IsClient && ClientWeaponResyncs.TryGetValue(entId, out CompsTargeting))
+            {
+                Log.Line($"Entity Added To Scene: {entId} ClientGridResyncRequests: {ClientGridResyncRequests.Count}");
+                ClientGridResyncRequests.AddRange(CompsTargeting);
+                Log.Line($"ClientGridResyncRequests: {ClientGridResyncRequests.Count}");
+                CompsTargeting.Clear();
+                ClientWeaponResyncs.Remove(entId);
+            }
+        }
 
         private void GridAddedToScene(MyEntity myEntity)
         {

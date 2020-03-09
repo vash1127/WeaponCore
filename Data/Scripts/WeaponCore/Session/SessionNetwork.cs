@@ -99,7 +99,7 @@ namespace WeaponCore
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                                 comp = block?.Components.Get<WeaponComponent>();
 
-                                if (comp == null) continue;//possible retry condition
+                                if (comp == null) continue;
 
                                 var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
                                 
@@ -112,6 +112,7 @@ namespace WeaponCore
                                 }
 
                                 syncTarget.SyncTarget(weapon.Target);
+                                weapon.TargetState = weapon.Target.State;
                             }
 
                             report.PacketValid = true;
