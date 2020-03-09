@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI;
+﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using VRage.Game;
@@ -504,6 +505,31 @@ namespace WeaponCore.Platform
                 if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
                    Comp.BlockInventory.RemoveItemsOfType(1, System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
             }
+        }
+
+        public void CheckEntity()
+        {
+            var ent = MyEntities.GetEntityByIdOrDefault(Comp.WeaponValues.Targets[WeaponId].EntityId);
+
+            if (ent == null)
+            {
+                _entityReChecks++;
+
+                if (_entityReChecks > _entityAllowedReChecks)
+                {
+                    Target.Reset(Comp.Session.Tick);
+                    Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
+                    TargetState = Target.Targets.Expired;
+                }
+
+                return;
+            }
+
+            Target.Reset(Comp.Session.Tick);
+            Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
+            TargetState = Target.Targets.Expired;
+
+            Comp.Session.ClientGridResyncRequests.Add(Comp);
         }
 
         public void StartPreFiringSound()

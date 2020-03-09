@@ -14,7 +14,7 @@ namespace WeaponCore
     public enum PacketType
     {
         Invalid,
-        ActiveControlRequestUpdate,
+        GridSyncRequestUpdate,
         CompStateUpdate,
         CompSettingsUpdate,
         TargetUpdate,
@@ -47,6 +47,7 @@ namespace WeaponCore
     [ProtoInclude(13, typeof(OverRidesPacket))]
     [ProtoInclude(14, typeof(ControllingPlayerPacket))]
     [ProtoInclude(15, typeof(WeaponIdPacket))]
+    [ProtoInclude(16, typeof(RequestTargetsPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;

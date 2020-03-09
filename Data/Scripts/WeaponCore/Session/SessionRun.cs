@@ -205,6 +205,7 @@ namespace WeaponCore
                 if (MpActive)
                 {
                     if (UiInput.MouseButtonPressed != UiInput.MouseButtonWasPressed && ActiveControlBlock != null) MouseNetworkEvent(ActiveControlBlock);
+                    if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
                     if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
