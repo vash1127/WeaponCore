@@ -594,7 +594,7 @@ namespace WeaponCore
 
                             break;
                         }
-                    case PacketType.GridSyncRequestUpdate:
+                    case PacketType.GridSyncRequestUpdate://can be a large update, only call on stream sync
                         {
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
                             if (myGrid == null) return;
@@ -669,6 +669,11 @@ namespace WeaponCore
                                         Packet = gridPacket,
                                         SingleClient = true,
                                     });
+
+                                if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                                    PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
+
+                                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
 
                                 report.PacketValid = true;
                             }
@@ -784,6 +789,19 @@ namespace WeaponCore
                             }
                             break;
                         }
+
+                    case PacketType.ClientEntityClosed:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+
+                            if (PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                                PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
+
+                            if (myGrid == null) break;
+
+                        }
+                        break;
+
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;
@@ -946,10 +964,19 @@ namespace WeaponCore
                     MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
                 else
                 {
+                    long entityId = -1;
+
+                    if (packetInfo.Entity is MyCubeBlock)
+                        entityId = ((MyCubeBlock)packetInfo.Entity).CubeGrid.EntityId;
+                    else if (packetInfo.Entity is MyCubeGrid)
+                        entityId = ((MyCubeGrid)packetInfo.Entity).EntityId;
+                    else
+                        Log.Line($"packetInfo.Entity is null: {packetInfo.Entity == null}");//null is valid, if not null and it hits here something is wrong
+
                     foreach (var p in Players.Values)
                     {
 
-                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || Vector3D.DistanceSquared(p.GetPosition(), packetInfo.Entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
+                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
                             MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
                     }
                 }

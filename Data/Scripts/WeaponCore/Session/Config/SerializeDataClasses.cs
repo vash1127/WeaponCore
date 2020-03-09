@@ -30,7 +30,8 @@ namespace WeaponCore
         OverRidesUpdate,
         PlayerControlUpdate,
         TargetExpireUpdate,
-        TargetUpdateRequest
+        TargetUpdateRequest,
+        ClientEntityClosed
     }
 
     #region packets

@@ -90,6 +90,11 @@ namespace WeaponCore
             }
             GridToBlockTypeMap.Clear();
 
+            foreach(var playerGrids in PlayerEntityIdInRange)
+                playerGrids.Value.Clear();
+
+            PlayerEntityIdInRange.Clear();
+
             DirtyGrids.Clear();
 
             DsUtil.Purge();
