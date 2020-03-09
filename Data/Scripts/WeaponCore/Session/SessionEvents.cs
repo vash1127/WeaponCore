@@ -74,21 +74,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
-        private void OnEntityAdded(MyEntity entity)
-        {
-            var entId = entity.GetTopMostParent().EntityId;
-
-            HashSet<WeaponComponent> CompsTargeting;
-            if (IsClient && ClientWeaponResyncs.TryGetValue(entId, out CompsTargeting))
-            {
-                Log.Line($"Entity Added To Scene: {entId} ClientGridResyncRequests: {ClientGridResyncRequests.Count}");
-                ClientGridResyncRequests.AddRange(CompsTargeting);
-                Log.Line($"ClientGridResyncRequests: {ClientGridResyncRequests.Count}");
-                CompsTargeting.Clear();
-                ClientWeaponResyncs.Remove(entId);
-            }
-        }
-
         private void GridAddedToScene(MyEntity myEntity)
         {
             try

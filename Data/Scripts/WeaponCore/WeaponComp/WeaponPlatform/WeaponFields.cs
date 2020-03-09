@@ -27,8 +27,6 @@ namespace WeaponCore.Platform
         private readonly int _numModelBarrels;
         private int _nextVirtual;
         private int _fakeHeatTick;
-        private int _entityReChecks;
-        private int _entityAllowedReChecks = 30;
         private uint _ticksUntilShoot;
         private uint _posChangedTick = 1;
         private uint _azimuthSubpartUpdateTick;

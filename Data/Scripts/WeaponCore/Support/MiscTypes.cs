@@ -37,6 +37,7 @@ namespace WeaponCore.Support
         {
             Expired,
             Acquired,
+            invalid,
         }
 
         internal Target(MyCubeBlock firingCube = null, bool client = false)

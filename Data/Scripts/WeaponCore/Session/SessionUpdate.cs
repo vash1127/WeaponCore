@@ -168,8 +168,8 @@ namespace WeaponCore
                                 }
                                 else if (IsClient && w.Target.State == Targets.Acquired && w.Target.Entity != null)
                                     Weapon.TrackingTarget(w, w.Target);
-                                else if (IsClient && w.Target.State == Targets.Acquired)
-                                    w.QueueEntityCheck(comp.WeaponValues.Targets[w.WeaponId].TopEntityId);
+                                else if (IsClient && (w.Target.State == Targets.invalid || w.Target.State == Targets.Acquired) && Tick60)
+                                    w.CheckEntity();
 
 
                                 w.TargetChanged = targetAcquired || targetLost;
@@ -205,7 +205,7 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
 
-                                w.SeekTarget = !IsClient && (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                w.SeekTarget = (!IsClient && w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
                                 if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
                                     w.AcquiringTarget = true;

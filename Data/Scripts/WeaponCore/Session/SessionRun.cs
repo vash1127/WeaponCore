@@ -220,7 +220,6 @@ namespace WeaponCore
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
-                MyEntities.OnEntityAdd += OnEntityAdded;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Gui.GuiControlRemoved += MenuClosed;
 
