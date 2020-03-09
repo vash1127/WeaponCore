@@ -57,7 +57,7 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
-            var mod = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCorePbAPI");
+            var mod = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCoreAPI");
             mod.Getter = (b) => ModApiMethods;
         }
 
