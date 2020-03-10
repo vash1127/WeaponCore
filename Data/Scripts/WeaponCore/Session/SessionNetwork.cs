@@ -116,7 +116,8 @@ namespace WeaponCore
                                 {
                                     var oldChange = weapon.Target.TargetChanged;
                                     weapon.Target.StateChange(true, Target.States.Invalid);
-                                    weapon.Target.TargetChanged = oldChange;
+                                    weapon.Target.TargetChanged = weapon.FirstSync ? false : oldChange;
+                                    weapon.FirstSync = false;
                                 }
                                 //weapon.TargetState = weapon.Target.State;
                             }
@@ -768,7 +769,8 @@ namespace WeaponCore
                                     var compId = targetRequestPacket.Comps[i];
                                     var compCube = MyEntities.GetEntityByIdOrDefault(compId, null, true) as MyCubeBlock;
 
-                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp)) continue;
+                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp))
+                                        continue;
 
                                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                                     {

@@ -36,6 +36,7 @@ namespace WeaponCore.Platform
         internal bool HeatLoopRunning;
         internal bool PreFired;
         internal bool FinishBurst;
+        internal bool FirstSync = true;
         internal uint ShootTick;
         internal uint TicksPerShot;
         internal uint LastSyncTick;

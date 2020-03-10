@@ -110,27 +110,34 @@ namespace WeaponCore
                                 ///
                                 /// Check target for expire states
                                 /// 
-                                if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
+
+                                if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid))
+                                {
 
                                     if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
                                         w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
-                                    else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) 
+                                    else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                         w.Target.Reset(Tick, States.Expired);
                                     else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                         w.Target.Reset(Tick, States.Expired);
-                                    else if (w.AiEnabled) {
+                                    else if (w.AiEnabled)
+                                    {
 
                                         w.UpdatePivotPos();
-                                        if (!Weapon.TrackingTarget(w, w.Target) && !IsClient) {
+                                        if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
+                                        {
                                             w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
                                         }
                                     }
-                                    else {
+                                    else
+                                    {
                                         w.UpdatePivotPos();
                                         Vector3D targetPos;
-                                        if (w.IsTurret) {
+                                        if (w.IsTurret)
+                                        {
 
-                                            if (!w.TrackTarget && !IsClient) {
+                                            if (!w.TrackTarget && !IsClient)
+                                            {
 
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                                     w.Target.Reset(Tick, States.Expired);
@@ -143,7 +150,11 @@ namespace WeaponCore
                                     }
                                 }
                                 else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId))
-                                        comp.Session.ClientGridResyncRequests.Add(comp);
+                                {
+                                    w.Target.HasTarget = false;
+                                    Log.Line($"Entity Exist");
+                                    comp.Session.ClientGridResyncRequests.Add(comp);
+                                }
 
                                 w.ProjectilesNear = w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
 
@@ -154,10 +165,10 @@ namespace WeaponCore
                                 {
                                     w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
                                     w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
-                                    if (w.Target.HasTarget)
-                                        w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
                                     if (MpActive && IsServer && w.Target.TargetChanged && !w.Target.HasTarget) {
+
+                                        w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
                                         PacketsToClient.Add(new PacketInfo {
                                             Entity = w.Comp.MyCube,
