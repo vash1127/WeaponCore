@@ -4,6 +4,7 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
+using Sandbox.Game.Entities;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
@@ -149,8 +150,8 @@ namespace WeaponCore
                                             w.Target.Reset(Tick, States.Expired);
                                     }
                                 }
-                                else if (w.Target.HasTarget) 
-                                    w.CheckEntity();
+                                else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId))
+                                        comp.Session.ClientGridResyncRequests.Add(comp);
 
                                 w.ProjectilesNear = w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
 
@@ -164,13 +165,11 @@ namespace WeaponCore
                                     if (w.Target.HasTarget)
                                         w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
-                                    if (MpActive && IsServer && w.Target.TargetChanged && !w.Target.HasTarget)
-                                    {
-                                        PacketsToClient.Add(new PacketInfo
-                                        {
+                                    if (MpActive && IsServer && w.Target.TargetChanged && !w.Target.HasTarget) {
+
+                                        PacketsToClient.Add(new PacketInfo {
                                             Entity = w.Comp.MyCube,
-                                            Packet = new WeaponIdPacket
-                                            {
+                                            Packet = new WeaponIdPacket {
                                                 EntityId = comp.MyCube.EntityId,
                                                 SenderId = 0,
                                                 PType = PacketType.TargetExpireUpdate,

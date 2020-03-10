@@ -507,23 +507,6 @@ namespace WeaponCore.Platform
             }
         }
 
-        public void CheckEntity()
-        {
-            var ent = MyEntities.GetEntityByIdOrDefault(Comp.WeaponValues.Targets[WeaponId].EntityId);
-
-            if (ent == null)
-            {
-                if (Target.CurrentState != Target.States.Invalid)
-                {
-                    Target.StateChange(false, Target.States.Invalid);
-                    Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-                }
-                return;
-            }
-
-            Comp.Session.ClientGridResyncRequests.Add(Comp);
-        }
-
         public void StartPreFiringSound()
         {
             PreFiringEmitter?.PlaySound(PreFiringSound);
