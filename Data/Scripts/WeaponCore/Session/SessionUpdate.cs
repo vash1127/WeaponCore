@@ -119,8 +119,7 @@ namespace WeaponCore
                                 /// 
                                 if (w.Target.HasTarget)
                                 {
-                                    var clientNotReady = IsClient && w.Target.CurrentState == States.Invalid;
-                                    if (!clientNotReady)
+                                    if (!(IsClient && w.Target.CurrentState == States.Invalid))
                                     {
                                         if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
                                             w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
