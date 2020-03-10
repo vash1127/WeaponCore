@@ -111,9 +111,6 @@ namespace WeaponCore
                                 /// Check target for expire states
                                 /// 
 
-                                if (w.Target.HasTarget && IsClient)
-                                    Log.Line($"w.Target.CurrentState: {w.Target.CurrentState}");
-
                                 if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid))
                                 {
 
