@@ -311,7 +311,7 @@ namespace WeaponCore
                             break;
                         }
                         //saving on extra field with new packet type
-                        comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick);
+                        comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick, Target.States.ServerReset);
 
                         report.PacketValid = true;
                         break;

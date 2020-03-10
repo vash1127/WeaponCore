@@ -206,7 +206,7 @@ namespace WeaponCore.Support
             {
                 var weapon = comp.Platform.Weapons[i];
                 if (weapon.Target.HasTarget)
-                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick);
+                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.Expired);
             }
         }
     }

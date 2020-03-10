@@ -18,8 +18,8 @@ namespace WeaponCore.Support
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetLock;
-        internal bool Client;
         internal bool TargetChanged;
+        internal bool ParentIsWeapon;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
@@ -40,17 +40,22 @@ namespace WeaponCore.Support
         {
             Expired,
             Acquired,
+            NoTargetsSeen,
+            ProjectileClosed,
+            RayCheckFailed,
+            ServerReset,
+            Transfered,
             Invalid,
             Fake,
         }
 
-        internal Target(MyCubeBlock firingCube = null, bool client = false)
+        internal Target(MyCubeBlock firingCube = null)
         {
+            ParentIsWeapon = firingCube != null;
             FiringCube = firingCube;
-            Client = client;
         }
 
-        internal void TransferTo(Target target, uint resetTick, bool reset = true)
+        internal void TransferTo(Target target, uint expireTick, bool reset = true)
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
@@ -61,7 +66,7 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.StateChange(HasTarget, CurrentState);
-            if (reset) Reset(resetTick);
+            if (reset) Reset(expireTick, States.Transfered);
         }
 
         internal void SyncTarget(TransferTarget target, int weaponId)
@@ -97,15 +102,15 @@ namespace WeaponCore.Support
             StateChange(true, States.Acquired);
         }
 
-        internal void SetFake(Vector3D pos)
+        internal void SetFake(uint expiredTick, Vector3D pos)
         {
-            Reset(0, false);
+            Reset(expiredTick, States.Fake,false);
             IsFakeTarget = true;
             TargetPos = pos;
             StateChange(true, States.Fake);
         }
 
-        internal void Reset(uint expiredTick, bool expire = true, bool dontLog = false)
+        internal void Reset(uint expiredTick, States reason, bool expire = true)
         {
             Entity = null;
             IsProjectile = false;
@@ -119,8 +124,8 @@ namespace WeaponCore.Support
             TopEntityId = 0;
             if (expire)
             {
-                StateChange(false, States.Expired);
-                if (expiredTick != uint.MaxValue) ExpiredTick = expiredTick;
+                StateChange(false, reason);
+                ExpiredTick = expiredTick;
             }
             TargetLock = false;
         }
