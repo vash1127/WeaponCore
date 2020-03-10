@@ -167,7 +167,7 @@ namespace WeaponCore
                                 }
                                 else if (IsClient)
                                 {
-                                   if (w.Target.HasTarget && w.Target.Entity != null)
+                                   if (w.Target.HasTarget && (w.Target.IsProjectile || w.Target.IsFakeTarget || w.Target.Entity != null))
                                         Weapon.TrackingTarget(w, w.Target);
                                    else if ((w.Target.CurrentState == States.Invalid || w.Target.HasTarget) && Tick60)
                                         w.CheckEntity();
