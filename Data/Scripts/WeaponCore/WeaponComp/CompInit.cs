@@ -38,7 +38,7 @@ namespace WeaponCore.Support
 
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
-                    weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                    //weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
                     weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDef;
                 }
 

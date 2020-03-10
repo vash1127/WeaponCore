@@ -241,9 +241,16 @@ namespace WeaponCore
                     for (int i = 0; i < players.Count; i++)
                         PlayerConnected(players[i].IdentityId);
 
-                    PlayerMouseStates[Session.Player.IdentityId] = UiInput.ClientMouseState;
+                    PlayerMouseStates[PlayerId] = UiInput.ClientMouseState;
                 }
                 PlayerMouseStates[-1] = new MouseStateData();
+
+                PacketsToServer.Add(new Packet
+                {
+                    EntityId = -1,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.RequestMouseStates,
+                });
 
                 return true;
             }
