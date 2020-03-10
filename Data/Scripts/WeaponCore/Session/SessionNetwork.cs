@@ -99,7 +99,7 @@ namespace WeaponCore
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                                 comp = block?.Components.Get<WeaponComponent>();
 
-                                if (comp == null) continue;
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
 
                                 var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
                                 
@@ -969,7 +969,7 @@ namespace WeaponCore
 
                     foreach (var p in Players.Values)
                     {
-                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
+                        if (p.SteamUserId != packetInfo.Packet.SenderId)
                             MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
                     }
                 }
