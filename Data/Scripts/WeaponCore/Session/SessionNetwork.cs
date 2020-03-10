@@ -975,7 +975,7 @@ namespace WeaponCore
 
                     foreach (var p in Players.Values)
                     {
-                        if (p.SteamUserId != packetInfo.Packet.SenderId)
+                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
                             MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
                     }
                 }
