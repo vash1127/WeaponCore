@@ -112,7 +112,7 @@ namespace WeaponCore
                                 }
 
                                 syncTarget.SyncTarget(weapon.Target);
-                                weapon.TargetState = weapon.Target.State;
+                                //weapon.TargetState = weapon.Target.State;
                             }
 
                             report.PacketValid = true;

@@ -513,19 +513,13 @@ namespace WeaponCore.Platform
 
             if (ent == null)
             {
-                if (TargetState != Target.Targets.Expired)
+                if (Target.CurrentState != Target.States.Invalid)
                 {
-                    Target.Reset(Comp.Session.Tick);
-                    Target.State = Target.Targets.Invalid;
+                    Target.StateChange(false, Target.States.Invalid);
                     Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-                    TargetState = Target.Targets.Invalid;
                 }
                 return;
             }
-
-            Target.Reset(Comp.Session.Tick);
-            Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-            TargetState = Target.Targets.Expired;
 
             Comp.Session.ClientGridResyncRequests.Add(Comp);
         }

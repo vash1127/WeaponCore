@@ -302,7 +302,7 @@ namespace WeaponCore
             Expired
         }
 
-        internal void SyncTarget(Target target)
+        internal void SyncTarget(Target target, bool allowChange = true)
         {
             var entity = MyEntities.GetEntityByIdOrDefault(EntityId);
             target.Entity = entity;
@@ -315,19 +315,18 @@ namespace WeaponCore
             target.IsFakeTarget = false;
 
             if (Info == TargetInfo.IsProjectile)
-            {
                 target.IsProjectile = true;
-                target.State = Targets.Acquired;
-            }
+
             else if (Info == TargetInfo.IsFakeTarget)
-            {
                 target.IsFakeTarget = true;
-                target.State = Targets.Acquired;
-            }
-            else if (Info == TargetInfo.IsEntity)
-                target.State = Targets.Acquired;
-            else
-                target.State = Targets.Expired;
+
+            var state = Info != TargetInfo.Expired ? States.Acquired : States.Expired;
+
+            
+            target.StateChange(Info != TargetInfo.Expired, state);
+
+            if (!allowChange)
+                target.TargetChanged = false;
         }
 
         public TransferTarget()

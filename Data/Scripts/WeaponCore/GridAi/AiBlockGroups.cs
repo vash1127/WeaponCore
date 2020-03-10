@@ -205,7 +205,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var weapon = comp.Platform.Weapons[i];
-                if (weapon.Target.State == Target.Targets.Acquired)
+                if (weapon.Target.HasTarget)
                     comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick);
             }
         }
