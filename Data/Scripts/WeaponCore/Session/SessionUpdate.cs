@@ -121,18 +121,18 @@ namespace WeaponCore
                                 //var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
                                 //var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
                                 //w.TargetState = w.Target.State;
-                                if (!IsClient && w.Target.HasTarget)
+                                if (w.Target.HasTarget)
                                 {
 
-                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
+                                    if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
                                         w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
 
-                                    else if (w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
+                                    else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                     {
                                         w.Target.Reset(Tick, States.Expired);
 
                                     }
-                                    else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
+                                    else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                     {
                                         w.Target.Reset(Tick, States.Expired);
 
@@ -140,7 +140,7 @@ namespace WeaponCore
                                     else if (w.AiEnabled)
                                     {
                                         w.UpdatePivotPos();
-                                        if (!Weapon.TrackingTarget(w, w.Target))
+                                        if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
                                         {
                                             w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
 
@@ -153,23 +153,19 @@ namespace WeaponCore
                                         if (w.IsTurret)
                                         {
 
-                                            if (!w.TrackTarget)
+                                            if (!w.TrackTarget && !IsClient)
                                             {
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                                     w.Target.Reset(Tick, States.Expired);
                                             }
-                                            else if (!Weapon.TargetAligned(w, w.Target, out targetPos))
+                                            else if (!Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                                 w.Target.Reset(Tick, States.Expired);
                                         }
-                                        else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
+                                        else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                             w.Target.Reset(Tick, States.Expired);
                                     }
-                                }
-                                else if (IsClient)
-                                {
-                                   if (w.Target.HasTarget && (w.Target.IsProjectile || w.Target.IsFakeTarget || w.Target.Entity != null))
-                                        Weapon.TrackingTarget(w, w.Target);
-                                   else if ((w.Target.CurrentState == States.Invalid || w.Target.HasTarget) && Tick60)
+
+                                    if (IsClient && w.Target.CurrentState == States.Invalid && Tick60)
                                         w.CheckEntity();
                                 }
 
