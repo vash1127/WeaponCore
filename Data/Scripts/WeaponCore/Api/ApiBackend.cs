@@ -26,9 +26,9 @@ namespace WeaponCore.Support
             ModApiMethods = new Dictionary<string, Delegate>()
             {
                 ["GetAllWeaponDefinitions"] = new Action<IList<byte[]>>(GetAllWeaponDefinitions),
-                ["GetCoreWeapons"] = new Action<IList<MyDefinitionId>>(GetCoreWeapons),
-                ["GetCoreStaticLaunchers"] = new Action<IList<MyDefinitionId>>(GetCoreStaticLaunchers),
-                ["GetCoreTurrets"] = new Action<IList<MyDefinitionId>>(GetCoreTurrets),
+                ["GetCoreWeapons"] = new Action<ICollection<MyDefinitionId>>(GetCoreWeapons),
+                ["GetCoreStaticLaunchers"] = new Action<ICollection<MyDefinitionId>>(GetCoreStaticLaunchers),
+                ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<IMyEntity, MyTuple<bool, int, int>>(GetProjectilesLockedOn),
                 ["GetSortedThreats"] = new Action<IMyEntity, IDictionary<IMyEntity, float>>(GetSortedThreats),
@@ -40,8 +40,8 @@ namespace WeaponCore.Support
                 ["ToggleWeaponFire"] = new Action<IMyTerminalBlock, bool, bool, int>(ToggleWeaponFire),
                 ["IsWeaponReadyToFire"] = new Func<IMyTerminalBlock, int, bool, bool, bool>(IsWeaponReadyToFire),
                 ["GetMaxWeaponRange"] = new Func<IMyTerminalBlock,int, float>(GetMaxWeaponRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<string>, int, bool>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<string>, int>(SetTurretTargetTypes),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, ICollection<string>, int, bool>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, ICollection<string>, int>(SetTurretTargetTypes),
                 ["SetBlockTrackingRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
                 ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
                 ["CanShootTarget"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(CanShootTarget),
@@ -67,19 +67,19 @@ namespace WeaponCore.Support
                 collection.Add(MyAPIGateway.Utilities.SerializeToBinary(wepDef));
         }
 
-        private void GetCoreWeapons(IList<MyDefinitionId> collection)
+        private void GetCoreWeapons(ICollection<MyDefinitionId> collection)
         {
             foreach (var def in _session.WeaponCoreBlockDefs.Values)
                 collection.Add(def);
         }
 
-        private void GetCoreStaticLaunchers(IList<MyDefinitionId> collection)
+        private void GetCoreStaticLaunchers(ICollection<MyDefinitionId> collection)
         {
             foreach (var def in _session.WeaponCoreFixedBlockDefs)
                 collection.Add(def);
         }
 
-        private void GetCoreTurrets(IList<MyDefinitionId> collection)
+        private void GetCoreTurrets(ICollection<MyDefinitionId> collection)
         {
             foreach (var def in _session.WeaponCoreTurretBlockDefs)
                 collection.Add(def);
@@ -250,7 +250,7 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private static bool GetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<string> collection, int weaponId = 0)
+        private static bool GetTurretTargetTypes(IMyTerminalBlock weaponBlock, ICollection<string> collection, int weaponId = 0)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -263,7 +263,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<string> collection, int weaponId = 0)
+        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, ICollection<string> collection, int weaponId = 0)
         {
 
         }
