@@ -93,6 +93,12 @@ namespace WeaponCore.Support
                             var target = WeaponValues.Targets[w.WeaponId];
                             if (target.Info != TransferTarget.TargetInfo.Expired)
                                 target.SyncTarget(w.Target, false);
+                            if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)
+                            {
+                                w.Target.StateChange(true, Target.States.Invalid);
+                                w.Target.TargetChanged = false;
+                            }
+                            
                         }
                     }
 
