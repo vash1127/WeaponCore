@@ -202,6 +202,7 @@ namespace WeaponCore.Support
 
         private void ClearTargets(WeaponComponent comp)
         {
+            if (comp.Session.IsClient) return;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var weapon = comp.Platform.Weapons[i];
