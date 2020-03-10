@@ -14,7 +14,6 @@ using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -248,7 +247,7 @@ namespace WeaponCore.Support
                     }
                     if (forceTarget) break;
                 }
-                if (!attemptReset || w.Target.State != Target.Targets.Acquired) targetType = TargetType.None;
+                if (!attemptReset || w.Target.HasTarget) targetType = TargetType.None;
                 else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
             }
             catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}

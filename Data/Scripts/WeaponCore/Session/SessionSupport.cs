@@ -272,7 +272,7 @@ namespace WeaponCore
             //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
             DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
 
-            if (w.Target.State == Target.Targets.Acquired)
+            if (w.Target.HasTarget)
                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
         }
 

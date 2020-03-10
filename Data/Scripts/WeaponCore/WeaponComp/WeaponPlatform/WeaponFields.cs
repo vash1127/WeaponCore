@@ -93,7 +93,6 @@ namespace WeaponCore.Platform
         internal readonly bool TrackProjectiles;
         internal readonly bool PrimaryWeaponGroup;
 
-        internal Targets TargetState = Targets.Expired;
         internal EventTriggers LastEvent;
         internal PartAnimation CurLgstAnimPlaying;
         internal float RequiredPower;
@@ -147,7 +146,7 @@ namespace WeaponCore.Platform
         internal bool ResetPower;
         internal bool RecalcPower;
         internal bool ProjectilesNear;
-        internal bool TargetChanged;
+        //internal bool TargetChanged;
         internal bool StopBarrelAv;
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;

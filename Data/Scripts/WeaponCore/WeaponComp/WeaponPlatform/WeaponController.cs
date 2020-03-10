@@ -94,7 +94,7 @@ namespace WeaponCore.Platform
             {
                 if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.State == Target.Targets.Acquired)
+                if (State.ManualShoot != TerminalActionState.ShootOff || Comp.UserControlled || Target.HasTarget)
                 {
                     ReturingHome = false;
                     return;
@@ -195,7 +195,7 @@ namespace WeaponCore.Platform
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
             MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
-            if (Target.State == Target.Targets.Acquired)
+            if (Target.HasTarget)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }
 

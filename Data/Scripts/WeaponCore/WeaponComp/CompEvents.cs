@@ -120,7 +120,7 @@ namespace WeaponCore.Support
                     foreach (var weapon in Platform.Weapons)
                     {
                         stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {weapon.Set.Enable && weapon.Comp.State.Value.Online && weapon.Comp.Set.Value.Overrides.Activate}");
-                        stringBuilder.Append($"\nTargetState: {weapon.Target.State} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
+                        stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.OutOfAmmo}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Sync.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");

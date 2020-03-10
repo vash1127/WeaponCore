@@ -101,7 +101,7 @@ namespace WeaponCore
                                 var w = comp.Platform.Weapons[j];
                                 if (!w.Set.Enable)
                                 {
-                                    if (w.Target.State == Targets.Acquired)
+                                    if (w.Target.HasTarget)
                                         w.Target.Reset(comp.Session.Tick);
                                     continue;
                                 }
@@ -118,11 +118,11 @@ namespace WeaponCore
                                 ///
                                 /// Check target for expire states
                                 /// 
-                                var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
-                                var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
-                                w.TargetState = w.Target.State;
+                                //var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
+                                //var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
+                                //w.TargetState = w.Target.State;
 
-                                if (!IsClient && w.Target.State == Targets.Acquired)
+                                if (!IsClient && w.Target.HasTarget)
                                 {
 
                                     if (w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
@@ -166,26 +166,28 @@ namespace WeaponCore
                                             w.Target.Reset(Tick);
                                     }
                                 }
-                                else if (IsClient && w.Target.State == Targets.Acquired && w.Target.Entity != null)
-                                    Weapon.TrackingTarget(w, w.Target);
-                                else if (IsClient && (w.Target.State == Targets.invalid || w.Target.State == Targets.Acquired) && Tick60)
-                                    w.CheckEntity();
+                                else if (IsClient)
+                                {
+                                   if (w.Target.HasTarget && w.Target.Entity != null)
+                                        Weapon.TrackingTarget(w, w.Target);
+                                   else if ((w.Target.CurrentState == States.Invalid || w.Target.HasTarget) && Tick60)
+                                        w.CheckEntity();
+                                }
 
-
-                                w.TargetChanged = targetAcquired || targetLost;
-                                w.ProjectilesNear = w.TrackProjectiles && w.Target.State != Targets.Acquired && (w.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
+                                //w.TargetChanged = targetAcquired || targetLost;
+                                w.ProjectilesNear = w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
 
                                 if (compCurPlayer.ControlType == ControlType.Camera && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
 
-                                if (w.TargetChanged)
+                                if (w.Target.TargetChanged)
                                 {
-                                    w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.State == Targets.Acquired);
-                                    w.EventTriggerStateChanged(EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
-                                    if (w.Target.State == Targets.Expired)
+                                    w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
+                                    w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
+                                    if (w.Target.HasTarget)
                                         w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
-                                    if (targetLost && MpActive && IsServer)
+                                    if (MpActive && IsServer && w.Target.TargetChanged && !w.Target.HasTarget)
                                     {
                                         PacketsToClient.Add(new PacketInfo
                                         {
@@ -205,20 +207,20 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
 
-                                w.SeekTarget = (!IsClient && w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                w.SeekTarget = (!IsClient && w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
                                 if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
-                                else if (w.IsTurret && !w.TrackTarget && w.Target.State != Targets.Acquired && gridAi.TargetingInfo.TargetInRange)
+                                else if (w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
                                     w.Target = w.Comp.TrackingWeapon.Target;
 
                                 ///
                                 /// Check weapon's turret to see if its time to go home
                                 /// 
 
-                                if (w.TurretMode && (w.Target.State != Targets.Acquired && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
+                                if (w.TurretMode && (!w.Target.HasTarget && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
                                     w.TurretHomePosition(comp.WasControlled);
 
                                 ///
@@ -411,15 +413,15 @@ namespace WeaponCore
                     var sinceCheck = Tick - w.Target.CheckTick;
                     var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && gridAi.CheckProjectiles;
 
-                    var checkTime = w.TargetChanged || sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || seekProjectile;
+                    var checkTime = w.Target.TargetChanged || sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || seekProjectile;
 
-                    if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired)
+                    if (checkTime || gridAi.TargetResetTick == Tick && w.Target.HasTarget)
                     {
 
                         if (seekProjectile || comp.TrackReticle || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w))
                         {
 
-                            if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired)
+                            if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget)
                             {
                                 var topMost = comp.TrackingWeapon.Target.Entity?.GetTopMostParent();
                                 GridAi.AcquireTarget(w, false, topMost);
@@ -428,14 +430,13 @@ namespace WeaponCore
                                 GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                         }
 
-                        var aquired = w.Target.State == Targets.Acquired;
 
-                        if (aquired || !gridAi.TargetingInfo.TargetInRange)
+                        if (w.Target.HasTarget || !gridAi.TargetingInfo.TargetInRange)
                         {
 
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
-                            if (aquired && MpActive)
+                            if (w.Target.HasTarget && MpActive)
                             {
                                 w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
                                 WeaponsToSync.Add(w);

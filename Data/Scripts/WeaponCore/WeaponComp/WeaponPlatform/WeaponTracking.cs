@@ -278,7 +278,7 @@ namespace WeaponCore.Platform
                     for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
                     {
                         var w = weapon.Comp.Platform.Weapons[i];
-                        w.Target.State = Target.Targets.Expired;
+                        w.Target.StateChange(false, Target.States.Expired);
                         w.Target.CheckTick -= 240;
                     }
                 }

@@ -10,13 +10,16 @@ namespace WeaponCore.Support
 {
     internal class Target
     {
-        internal Targets State = Targets.Expired;
+        internal States PreviousState = States.Expired;
+        internal States CurrentState = States.Expired;
+        internal bool HasTarget;
         internal bool IsTracking;
         internal bool IsAligned;
         internal bool IsProjectile;
         internal bool IsFakeTarget;
         internal bool TargetLock;
         internal bool Client;
+        internal bool TargetChanged;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
@@ -33,11 +36,12 @@ namespace WeaponCore.Support
         internal long TopEntityId;
         internal readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
 
-        public enum Targets
+        public enum States
         {
             Expired,
             Acquired,
-            invalid,
+            Invalid,
+            Fake,
         }
 
         internal Target(MyCubeBlock firingCube = null, bool client = false)
@@ -56,7 +60,7 @@ namespace WeaponCore.Support
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
-            target.State = State;
+            StateChange(target.HasTarget, target.CurrentState);
             if (reset) Reset(resetTick);
         }
 
@@ -73,12 +77,11 @@ namespace WeaponCore.Support
                 target.Info = TransferTarget.TargetInfo.IsProjectile;
             else if (IsFakeTarget)
                 target.Info = TransferTarget.TargetInfo.IsFakeTarget;
-            else if (State == Targets.Acquired)
+            else if (HasTarget)
                 target.Info = TransferTarget.TargetInfo.IsEntity;
 
-            if (State == Targets.Expired)
+            if (!HasTarget)
                 target.Info = TransferTarget.TargetInfo.Expired;
-
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
@@ -91,7 +94,7 @@ namespace WeaponCore.Support
             HitShortDist = shortDist;
             OrigDistance = origDist;
             TopEntityId = topEntId;
-            State = Targets.Acquired;
+            StateChange(true, States.Acquired);
         }
 
         internal void SetFake(Vector3D pos)
@@ -99,12 +102,11 @@ namespace WeaponCore.Support
             Reset(0, false);
             IsFakeTarget = true;
             TargetPos = pos;
-            State = Targets.Acquired;
+            StateChange(true, States.Fake);
         }
 
         internal void Reset(uint expiredTick, bool expire = true, bool dontLog = false)
         {
-            //if (Client) return;
             Entity = null;
             IsProjectile = false;
             IsFakeTarget = false;
@@ -117,10 +119,18 @@ namespace WeaponCore.Support
             TopEntityId = 0;
             if (expire)
             {
-                State = Targets.Expired;
+                StateChange(false, States.Expired);
                 if (expiredTick != uint.MaxValue) ExpiredTick = expiredTick;
             }
             TargetLock = false;
+        }
+
+        internal void StateChange(bool hasTarget, States reason)
+        {
+            TargetChanged = !HasTarget && hasTarget || HasTarget && !HasTarget;
+            HasTarget = hasTarget;
+            PreviousState = CurrentState;
+            CurrentState = reason;
         }
     }
 

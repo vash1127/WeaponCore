@@ -516,9 +516,9 @@ namespace WeaponCore.Platform
                 if (TargetState != Target.Targets.Expired)
                 {
                     Target.Reset(Comp.Session.Tick);
-                    Target.State = Target.Targets.invalid;
+                    Target.State = Target.Targets.Invalid;
                     Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-                    TargetState = Target.Targets.invalid;
+                    TargetState = Target.Targets.Invalid;
                 }
                 return;
             }
