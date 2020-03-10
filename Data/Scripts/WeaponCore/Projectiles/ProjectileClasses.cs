@@ -15,7 +15,7 @@ namespace WeaponCore.Support
 {
     internal class ProInfo
     {
-        internal readonly Target Target = new Target();
+        internal readonly Target Target = new Target(null);
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal AvShot AvShot;
         internal WeaponSystem System;
@@ -67,9 +67,9 @@ namespace WeaponCore.Support
             Origin = origin;
         }
 
-        internal void Clean()
+        internal void Clean(uint expireTick)
         {
-            Target.Reset(0, true, true);
+            Target.Reset(expireTick, Target.States.ProjectileClosed);
             HitList.Clear();
 
             if (PrimeEntity != null)

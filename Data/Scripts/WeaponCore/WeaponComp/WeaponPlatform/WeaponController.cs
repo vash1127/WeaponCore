@@ -99,7 +99,6 @@ namespace WeaponCore.Platform
                     ReturingHome = false;
                     return;
                 }
-                Target.ExpiredTick = 0;
 
                 var userControlled = o != null && (bool)o;
                 if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)

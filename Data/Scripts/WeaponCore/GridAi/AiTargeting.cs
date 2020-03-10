@@ -44,7 +44,7 @@ namespace WeaponCore.Support
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
                 {
-                    w.Target.SetFake(predictedPos);
+                    w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
@@ -52,9 +52,9 @@ namespace WeaponCore.Support
 
             if (targetType == TargetType.None)
             {
-                w.NewTarget.Reset(w.Comp.Session.Tick, true, true);
+                if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(uint.MaxValue, !w.Comp.TrackReticle, true);
+                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.TrackReticle);
             }
             else w.WakeTargets();
         }
@@ -132,7 +132,7 @@ namespace WeaponCore.Support
                 p.Info.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
                 return true;
             }
-            p.Info.Target.Reset(ai.Session.Tick);
+            p.Info.Target.Reset(ai.Session.Tick, Target.States.NoTargetsSeen);
             return false;
         }
 
@@ -545,7 +545,7 @@ namespace WeaponCore.Support
                 target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
-            else target.Reset(ai.Session.Tick, w == null);
+            else target.Reset(ai.Session.Tick, Target.States.NoTargetsSeen, w == null);
 
             if (newEntity0 != null) top5.Add(newEntity0);
             if (newEntity1 != null) top5.Add(newEntity1);
