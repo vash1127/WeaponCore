@@ -60,7 +60,7 @@ namespace WeaponCore.Support
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
-            StateChange(target.HasTarget, target.CurrentState);
+            target.StateChange(HasTarget, CurrentState);
             if (reset) Reset(resetTick);
         }
 
