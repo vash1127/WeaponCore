@@ -114,8 +114,9 @@ namespace WeaponCore
                                 syncTarget.SyncTarget(weapon.Target);
                                 if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                                 {
+                                    var oldChange = weapon.Target.TargetChanged;
                                     weapon.Target.StateChange(true, Target.States.Invalid);
-                                    weapon.Target.TargetChanged = false;
+                                    weapon.Target.TargetChanged = oldChange;
                                 }
                                 //weapon.TargetState = weapon.Target.State;
                             }
