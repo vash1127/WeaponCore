@@ -117,52 +117,40 @@ namespace WeaponCore
                                 ///
                                 /// Check target for expire states
                                 /// 
-                                if (w.Target.HasTarget)
-                                {
-                                    if (!(IsClient && w.Target.CurrentState == States.Invalid))
-                                    {
-                                        if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
+                                if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
+
+                                    if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
+                                        w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
+                                    else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose)) 
+                                        w.Target.Reset(Tick, States.Expired);
+                                    else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
+                                        w.Target.Reset(Tick, States.Expired);
+                                    else if (w.AiEnabled) {
+
+                                        w.UpdatePivotPos();
+                                        if (!Weapon.TrackingTarget(w, w.Target) && !IsClient) {
                                             w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
-                                        else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
-                                        {
-                                            w.Target.Reset(Tick, States.Expired);
-
-                                        }
-                                        else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
-                                        {
-                                            w.Target.Reset(Tick, States.Expired);
-
-                                        }
-                                        else if (w.AiEnabled)
-                                        {
-                                            w.UpdatePivotPos();
-                                            if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
-                                            {
-                                                w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
-
-                                            }
-                                        }
-                                        else
-                                        {
-                                            w.UpdatePivotPos();
-                                            Vector3D targetPos;
-                                            if (w.IsTurret)
-                                            {
-
-                                                if (!w.TrackTarget && !IsClient)
-                                                {
-                                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
-                                                        w.Target.Reset(Tick, States.Expired);
-                                                }
-                                                else if (!Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
-                                                    w.Target.Reset(Tick, States.Expired);
-                                            }
-                                            else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
-                                                w.Target.Reset(Tick, States.Expired);
                                         }
                                     }
-                                    else w.CheckEntity();
+                                    else {
+                                        w.UpdatePivotPos();
+                                        Vector3D targetPos;
+                                        if (w.IsTurret) {
+
+                                            if (!w.TrackTarget && !IsClient) {
+
+                                                if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
+                                                    w.Target.Reset(Tick, States.Expired);
+                                            }
+                                            else if (!Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
+                                                w.Target.Reset(Tick, States.Expired);
+                                        }
+                                        else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
+                                            w.Target.Reset(Tick, States.Expired);
+                                    }
                                 }
+                                else if (w.Target.HasTarget) 
+                                    w.CheckEntity();
 
                                 w.ProjectilesNear = w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
 
