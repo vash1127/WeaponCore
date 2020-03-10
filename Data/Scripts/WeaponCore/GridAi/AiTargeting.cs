@@ -247,7 +247,7 @@ namespace WeaponCore.Support
                     }
                     if (forceTarget) break;
                 }
-                if (!attemptReset || w.Target.HasTarget) targetType = TargetType.None;
+                if (!attemptReset || !w.Target.HasTarget) targetType = TargetType.None;
                 else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
             }
             catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}

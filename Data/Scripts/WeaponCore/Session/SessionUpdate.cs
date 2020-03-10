@@ -121,7 +121,6 @@ namespace WeaponCore
                                 //var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
                                 //var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
                                 //w.TargetState = w.Target.State;
-
                                 if (!IsClient && w.Target.HasTarget)
                                 {
 
@@ -207,7 +206,7 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
 
-                                w.SeekTarget = (!IsClient && w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
                                 if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
                                     w.AcquiringTarget = true;
