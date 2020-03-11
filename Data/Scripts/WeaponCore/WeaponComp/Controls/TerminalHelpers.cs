@@ -193,12 +193,10 @@ namespace WeaponCore.Control
                                 var comp = blk?.Components?.Get<WeaponComponent>();
                                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                                comp.Set.Value.Range = Value;
-                                Log.Line($"Range: {Value}");
+                                comp.Set.Value.Range = Value;                                
 
                                 if (comp.Session.HandlesInput && comp.Session.MpActive)
                                 {
-
                                     comp.Set.Value.MId++;
                                     comp.Session.PacketsToServer.Add(new RangePacket
                                     {
