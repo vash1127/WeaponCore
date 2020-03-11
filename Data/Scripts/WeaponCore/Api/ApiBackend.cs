@@ -411,7 +411,7 @@ namespace WeaponCore.Support
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
                 return comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoRound;
 
-            return string.Empty;
+            return null;
         }
 
         private static void SetActiveAmmo(IMyTerminalBlock weaponBlock, int weaponId, string ammoTypeStr)
