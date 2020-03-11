@@ -52,13 +52,10 @@ namespace WeaponCore.Support
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
                 ["HasGridAi"] = new Func<IMyEntity, bool>(HasGridAi),
                 ["HasCoreWeapon"] = new Func<IMyTerminalBlock, bool>(HasCoreWeapon),
+                ["GetOptimalDps"] = new Func<IMyTerminalBlock, float>(GetOptimalDps),
+                ["GetActiveAmmo"] = new Func<IMyTerminalBlock, int, string>(GetActiveAmmo),
+                ["SetActiveAmmo"] = new Action<IMyTerminalBlock, int, string>(SetActiveAmmo),
             };
-        }
-
-        internal void Init()
-        {
-            var mod = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCoreAPI");
-            mod.Getter = (b) => ModApiMethods;
         }
 
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
@@ -297,9 +294,8 @@ namespace WeaponCore.Support
         private static bool CanShootTarget(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                if (comp.Platform.State != Ready) return false;
                 var w = comp.Platform.Weapons[weaponId];
                 var topMost = targetEnt.GetTopMostParent();
                 var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
@@ -328,13 +324,9 @@ namespace WeaponCore.Support
         private static float GetHeatLevel(IMyTerminalBlock weaponBlock)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.MaxHeat > 0)
             {
-
-                if (comp.Platform.State != Ready || comp.MaxHeat <= 0) return 0f;
-
                 return comp.State.Value.Heat / comp.MaxHeat;
-
             }
             return 0f;
         }
@@ -392,6 +384,48 @@ namespace WeaponCore.Support
         private static bool HasCoreWeapon(IMyTerminalBlock weaponBlock)
         {
             return weaponBlock.Components.Has<WeaponComponent>();
+        }
+
+        private float GetOptimalDps(IMyEntity entity)
+        {
+            var terminalBlock = entity as IMyTerminalBlock;
+            if (terminalBlock != null)
+            {
+                WeaponComponent comp;
+                if (terminalBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+                    return comp.OptimalDps;
+            }
+            else
+            {
+                var grid = entity.GetTopMostParent() as MyCubeGrid;
+                GridAi gridAi;
+                if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+                    return gridAi.OptimalDps;
+            }
+            return 0f;
+        }
+
+        private static string GetActiveAmmo(IMyTerminalBlock weaponBlock, int weaponId)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+                return comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoRound;
+
+            return string.Empty;
+        }
+
+        private static void SetActiveAmmo(IMyTerminalBlock weaponBlock, int weaponId, string ammoTypeStr)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+            {
+                var w = comp.Platform.Weapons[weaponId];
+                foreach (var ammoType in w.System.WeaponAmmoTypes)
+                {
+                    if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
+                        w.ActiveAmmoDef = ammoType.AmmoDef;
+                }
+            }
         }
     }
 }

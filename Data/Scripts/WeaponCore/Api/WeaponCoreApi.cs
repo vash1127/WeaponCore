@@ -39,6 +39,9 @@ namespace WeaponCore.Support
         private Action<IMyTerminalBlock> _disableRequiredPower;
         private Func<IMyEntity, bool> _hasGridAi;
         private Func<IMyTerminalBlock, bool> _hasCoreWeapon;
+        private Func<IMyEntity, float> _getOptimalDps;
+        private Func<IMyTerminalBlock, int, string> _getActiveAmmo;
+        private Action<IMyTerminalBlock, int, string> _setActiveAmmo;
 
         private const long Channel = 67549756549;
 
@@ -82,6 +85,7 @@ namespace WeaponCore.Support
         public void ApiLoad(IReadOnlyDictionary<string, Delegate> delegates, bool getWeaponDefinitions = false)
         {
             _apiInit = true;
+            _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
             _getCoreWeapons = (Action<ICollection<MyDefinitionId>>)delegates["GetCoreWeapons"];
             _getCoreStaticLaunchers = (Action<ICollection<MyDefinitionId>>)delegates["GetCoreStaticLaunchers"];
             _getCoreTurrets = (Action<ICollection<MyDefinitionId>>)delegates["GetCoreTurrets"];
@@ -108,7 +112,10 @@ namespace WeaponCore.Support
             _disableRequiredPower = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
             _hasGridAi = (Func<IMyEntity, bool>)delegates["HasGridAi"];
             _hasCoreWeapon = (Func<IMyTerminalBlock, bool>)delegates["HasCoreWeapon"];
-            _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
+            _getOptimalDps = (Func<IMyEntity, float>)delegates["GetOptimalDps"];
+            _getActiveAmmo = (Func<IMyTerminalBlock, int, string>)delegates["GetActiveAmmo"];
+            _setActiveAmmo = (Action<IMyTerminalBlock, int, string>)delegates["SetActiveAmmo"];
+
             if (getWeaponDefinitions)
             {
                 var byteArrays = new List<byte[]>();
@@ -147,6 +154,9 @@ namespace WeaponCore.Support
         public void DisableRequiredPower(IMyTerminalBlock weapon) => _disableRequiredPower?.Invoke(weapon);
         public bool HasGridAi(IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
         public bool HasCoreWeapon(IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
+        public float GetOptimalDps(IMyEntity entity) => _getOptimalDps?.Invoke(entity) ?? 0f;
+        public string GetActiveAmmo(IMyTerminalBlock weapon, int weaponId) => _getActiveAmmo?.Invoke(weapon, weaponId) ?? string.Empty;
+        public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) => _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
 
     }
 }
