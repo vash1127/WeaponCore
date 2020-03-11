@@ -139,6 +139,8 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(false);
             Session.GridAiPool.Return(this);
 
+            Log.Line($"Grid Closed");
+
             if (Session.IsClient)
             {
                 Session.PacketsToServer.Add(new Packet {
