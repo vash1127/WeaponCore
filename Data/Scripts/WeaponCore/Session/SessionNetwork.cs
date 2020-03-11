@@ -1061,19 +1061,19 @@ namespace WeaponCore
             comp.WeaponValues.Timings[weapon.WeaponId] = timings;
             weapon.Timings = timings;
 
-            var hasMags = weapon.State.Sync.CurrentMags > 0;
+            var hasMags = weapon.State.Sync.CurrentMags > 0 || IsCreative;
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
-            var chargeFullReload = weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || !weapon.ActiveAmmoDef.Const.EnergyAmmo);
+            var chargeFullReload = weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || weapon.ActiveAmmoDef.Const.EnergyAmmo);
             var regularFullReload = !weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
 
-            var chargeContinueReloading = weapon.ActiveAmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
-            var regularContinueReloading = !weapon.ActiveAmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
+            var chargeFinishReloading = weapon.ActiveAmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
+            var regularFinishedReloading = !weapon.ActiveAmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
 
             if (chargeFullReload || regularFullReload)
                 weapon.StartReload();
 
-            else if (chargeContinueReloading || regularContinueReloading)
+            else if (chargeFinishReloading || regularFinishedReloading)
             {
                 weapon.CancelableReloadAction += weapon.Reloaded;
                 if (weapon.Timings.ReloadedTick > 0)
