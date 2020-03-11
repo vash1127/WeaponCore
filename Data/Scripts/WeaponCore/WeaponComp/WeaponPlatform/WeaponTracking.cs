@@ -171,8 +171,29 @@ namespace WeaponCore.Platform
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
             var system = weapon.System;
+            Vector3D targetCenter;
 
-            var targetCenter = weapon.Comp.TrackReticle ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            if (weapon.Comp.TrackReticle)
+                targetCenter = weapon.Comp.Ai.DummyTarget.Position;
+            else if (target.IsProjectile)
+            {
+                if (target.Projectile == null)
+                {
+                    Log.Line($"TrackingTarget: is projectile and it is null");
+                    targetCenter = Vector3D.Zero;
+                }
+                else targetCenter = target.Projectile.Position;
+            }
+            else
+            {
+                if (target.Entity == null)
+                {
+                    Log.Line($"TrackingTarget: is entity and it is null");
+                    targetCenter = Vector3D.Zero;
+                }
+                else targetCenter = target.Entity.PositionComp.WorldAABB.Center;
+            }
+
             var needsPrediction = weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0);
             if (needsPrediction)
             {
@@ -261,7 +282,8 @@ namespace WeaponCore.Platform
             }
             else weapon.Target.IsTracking = false;
 
-            if (weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera) return weapon.Target.IsTracking;
+            if (weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera) 
+                return weapon.Target.IsTracking;
 
             var isAligned = false;
 
