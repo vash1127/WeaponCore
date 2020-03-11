@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using VRage;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.Target;
 
 namespace WeaponCore
@@ -31,7 +30,9 @@ namespace WeaponCore
         PlayerControlUpdate,
         TargetExpireUpdate,
         TargetUpdateRequest,
-        ClientEntityClosed
+        ClientEntityClosed,
+        RequestMouseStates,
+        FullMouseUpdate
     }
 
     #region packets
@@ -49,6 +50,7 @@ namespace WeaponCore
     [ProtoInclude(14, typeof(ControllingPlayerPacket))]
     [ProtoInclude(15, typeof(WeaponIdPacket))]
     [ProtoInclude(16, typeof(RequestTargetsPacket))]
+    [ProtoInclude(17, typeof(MouseInputSyncPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -260,6 +262,19 @@ namespace WeaponCore
             Comps = new long[0];
         }
     }
+
+    [ProtoContract]
+    public class MouseInputSyncPacket : Packet
+    {
+        [ProtoMember(1)] internal PlayerMouseData[] Data = new PlayerMouseData[0];
+        public MouseInputSyncPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = new PlayerMouseData[0];
+        }
+    }
     #endregion
 
     #region packet Data
@@ -281,6 +296,13 @@ namespace WeaponCore
         [ProtoMember(1)] internal bool MouseButtonLeft;
         [ProtoMember(2)] internal bool MouseButtonMiddle;
         [ProtoMember(3)] internal bool MouseButtonRight;
+    }
+
+    [ProtoContract]
+    internal class PlayerMouseData
+    {
+        [ProtoMember(1)] internal long PlayerId;
+        [ProtoMember(2)] internal MouseStateData MouseStateData;
     }
 
     [ProtoContract]

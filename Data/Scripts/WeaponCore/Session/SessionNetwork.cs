@@ -323,6 +323,23 @@ namespace WeaponCore
                         report.PacketValid = true;
                         break;
 
+                    case PacketType.FullMouseUpdate:
+                        {
+                            var mouseUpdatePacket = packet as MouseInputSyncPacket;
+
+                            if (mouseUpdatePacket == null || mouseUpdatePacket.Data == null) break;
+
+                            for(int i = 0; i < mouseUpdatePacket.Data.Length; i++)
+                            {
+                                var playerMousePackets = mouseUpdatePacket.Data[i];
+                                if(playerMousePackets.PlayerId != PlayerId)
+                                    PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
+                            }
+
+                            report.PacketValid = true;
+                            break;
+                        }
+
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
                         invalidType = true;
@@ -808,6 +825,38 @@ namespace WeaponCore
 
                             if (myGrid == null) break;
 
+                        }
+                        break;
+
+                    case PacketType.RequestMouseStates:
+                        {
+                            var mouseUpdatePacket = new MouseInputSyncPacket
+                            {
+                                EntityId = -1,
+                                SenderId = packet.SenderId,
+                                PType = PacketType.FullMouseUpdate,
+                                Data = new PlayerMouseData[PlayerMouseStates.Count],
+                            };
+
+                            var c = 0;
+                            foreach (var playerMouse in PlayerMouseStates)
+                            {
+                                mouseUpdatePacket.Data[c] = new PlayerMouseData
+                                {
+                                    PlayerId = playerMouse.Key,
+                                    MouseStateData = playerMouse.Value
+                                };
+                            }
+
+                            if (PlayerMouseStates.Count > 0)
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = null,
+                                    Packet = mouseUpdatePacket,
+                                    SingleClient = true,
+                                });
+
+                                report.PacketValid = true;
                         }
                         break;
 
