@@ -152,7 +152,6 @@ namespace WeaponCore
                                 else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId))
                                 {
                                     w.Target.HasTarget = false;
-                                    Log.Line($"Entity Exist");
                                     comp.Session.ClientGridResyncRequests.Add(comp);
                                 }
 
@@ -160,14 +159,13 @@ namespace WeaponCore
 
                                 if (compCurPlayer.ControlType == ControlType.Camera && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
-
+                                
                                 if (w.Target.TargetChanged)
                                 {
                                     w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
                                     w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
 
-                                    if (MpActive && IsServer && w.Target.TargetChanged && !w.Target.HasTarget) {
-
+                                    if (MpActive && IsServer && !w.Target.HasTarget) {
                                         w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
                                         PacketsToClient.Add(new PacketInfo {

@@ -132,7 +132,7 @@ namespace WeaponCore.Support
 
         internal void StateChange(bool hasTarget, States reason)
         {
-            TargetChanged = !HasTarget && hasTarget || HasTarget && !HasTarget;
+            TargetChanged = !HasTarget && hasTarget || HasTarget && !hasTarget;
             HasTarget = hasTarget;
             PreviousState = CurrentState;
             CurrentState = reason;
