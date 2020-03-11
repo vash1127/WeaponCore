@@ -228,7 +228,7 @@ namespace WeaponCore.Projectiles
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
             var pruneStaticCheck = Info.Ai.ClosestPlanetSqr * 0.5 < MaxTrajectorySqr || Info.Ai.StaticGridInRange;
             PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            
+            //Log.Line($"{PruneQuery} - {pruneStaticCheck} - {Info.Ai.PlanetSurfaceInRange} - {Info.Ai.ClosestPlanetSqr}({double.MaxValue}) - {Vector3D.DistanceSquared(Position, Info.Ai.PlanetClosestPoint)} - {Vector3D.Distance(Position, Info.Ai.PlanetClosestPoint)} ");
             
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
