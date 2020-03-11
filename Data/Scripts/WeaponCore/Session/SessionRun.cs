@@ -1,4 +1,5 @@
 using System;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -236,6 +237,7 @@ namespace WeaponCore
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
+                Static.GetCategories()["ShipWeapons"].IsShipCategory = false;
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
