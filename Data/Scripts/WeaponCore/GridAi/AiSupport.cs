@@ -318,12 +318,15 @@ namespace WeaponCore.Support
             if (!clear)
             {
                 MyPlanet = MyPlanetTmp;
-                var gridRadius = MyGrid.PositionComp.LocalVolume.Radius;
+                var gridVolume = MyGrid.PositionComp.WorldVolume;
+                var gridRadius = gridVolume.Radius;
+                var gridCenter = gridVolume.Center;
                 var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
+
                 ClosestPlanetSqr = double.MaxValue;
-                if (new BoundingSphereD(planetCenter, MyPlanet.MaximumRadius + gridRadius).Intersects(MyGrid.PositionComp.WorldVolume))
+
+                if (new BoundingSphereD(planetCenter, MyPlanet.AtmosphereRadius + gridRadius).Intersects(gridVolume))
                 {
-                    var gridCenter = MyGrid.PositionComp.WorldAABB.Center;
                     PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
                     double pointDistSqr;
                     Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
@@ -335,8 +338,13 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    PlanetClosestPoint = Vector3D.Zero;
-                    PlanetSurfaceInRange = false;
+                    PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
+                    double pointDistSqr;
+                    Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
+
+                    pointDistSqr -= (gridRadius * gridRadius);
+                    if (pointDistSqr < 0) pointDistSqr = 0;
+                    ClosestPlanetSqr = pointDistSqr;
                 }
             }
             else
