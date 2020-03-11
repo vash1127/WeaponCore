@@ -558,7 +558,7 @@ namespace WeaponCore.Support
         }
 
 
-        private static void AcquireProjectile(Weapon w, out TargetType targetType)
+        internal static void AcquireProjectile(Weapon w, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
             var s = w.System;

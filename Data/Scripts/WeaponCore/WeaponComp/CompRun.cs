@@ -6,6 +6,7 @@ using VRage.Game.Components;
 using VRage.ModAPI;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
+using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
@@ -85,20 +86,32 @@ namespace WeaponCore.Support
 
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
-                        var w = Platform.Weapons[i];
-                        w.UpdatePivotPos();
+                        var weapon = Platform.Weapons[i];
+                        weapon.UpdatePivotPos();
 
                         if (Session.IsClient)
                         {
-                            var target = WeaponValues.Targets[w.WeaponId];
+                            var target = WeaponValues.Targets[weapon.WeaponId];
                             if (target.Info != TransferTarget.TargetInfo.Expired)
-                                target.SyncTarget(w.Target, false);
-                            if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)
+                                target.SyncTarget(weapon.Target, false);
+                            if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                             {
-                                w.Target.StateChange(true, Target.States.Invalid);
-                                w.Target.TargetChanged = false;
+                                weapon.Target.StateChange(true, Target.States.Invalid);
+                                weapon.Target.TargetChanged = false;
                             }
-                            
+                            else if (weapon.Target.IsProjectile)
+                            {
+                                TargetType targetType;
+                                AcquireProjectile(weapon, out targetType);
+
+                                if (targetType == TargetType.None)
+                                {
+                                    if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
+                                        weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);
+                                    if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
+                                }
+                            }
+
                         }
                     }
 
