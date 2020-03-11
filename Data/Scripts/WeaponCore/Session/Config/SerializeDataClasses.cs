@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using VRage;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.Target;
 
 namespace WeaponCore
@@ -32,7 +33,10 @@ namespace WeaponCore
         TargetUpdateRequest,
         ClientEntityClosed,
         RequestMouseStates,
-        FullMouseUpdate
+        FullMouseUpdate,
+        CompToolbarShootState,
+        WeaponToolbarShootState,
+        RangeUpdate
     }
 
     #region packets
@@ -51,6 +55,9 @@ namespace WeaponCore
     [ProtoInclude(15, typeof(WeaponIdPacket))]
     [ProtoInclude(16, typeof(RequestTargetsPacket))]
     [ProtoInclude(17, typeof(MouseInputSyncPacket))]
+    [ProtoInclude(18, typeof(ShootStatePacket))]
+    [ProtoInclude(19, typeof(RangePacket))]
+    [ProtoInclude(20, typeof(WeaponShootStatePacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -273,6 +280,53 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = new PlayerMouseData[0];
+        }
+    }
+
+    [ProtoContract]
+    public class ShootStatePacket : Packet
+    {
+        [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
+        [ProtoMember(2)] internal uint MId;
+        public ShootStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = TerminalActionState.ShootOff;
+            MId = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class RangePacket : Packet
+    {
+        [ProtoMember(1)] internal float Data;
+        [ProtoMember(2)] internal uint MId;
+        public RangePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = 0f;
+            MId = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class WeaponShootStatePacket : Packet
+    {
+        [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
+        [ProtoMember(2)] internal uint MId;
+        [ProtoMember(3)] internal int WeaponId;
+        public WeaponShootStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = TerminalActionState.ShootOff;
+            MId = 0;
+            WeaponId = -1;
         }
     }
     #endregion

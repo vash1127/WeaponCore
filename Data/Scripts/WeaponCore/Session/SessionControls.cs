@@ -184,9 +184,27 @@ namespace WeaponCore
                     }
                 }
 
+                if (comp.Session.HandlesInput && comp.Session.MpActive)
+                {
+                    comp.State.Value.MId++;
+                    comp.Session.PacketsToServer.Add(new ShootStatePacket
+                    {
+                        EntityId = blk.EntityId,
+                        SenderId = comp.Session.MultiplayerId,
+                        PType = PacketType.CompToolbarShootState,
+                        MId = comp.State.Value.MId,
+                        Data = cState.ClickShoot ? ShootOff : ShootClick,
+                    });
+                }
+
+                comp.SendControlingPlayer();
+
                 cState.ClickShoot = !cState.ClickShoot;
                 cState.ShootOn = !cState.ClickShoot && cState.ShootOn;
-                comp.UpdateStateMp();
+
+                
+
+                //comp.UpdateStateMp();
             };
 
             action.Writer = (blk, sb) =>
@@ -226,7 +244,21 @@ namespace WeaponCore
                 else
                     w.State.ManualShoot = ShootOn;
 
-                comp.UpdateStateMp();
+                
+                if(comp.Session.HandlesInput && comp.Session.MpActive)
+                {
+                    comp.State.Value.MId++;
+                    comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
+                    {
+                        EntityId = blk.EntityId,
+                        SenderId = comp.Session.MultiplayerId,
+                        MId = comp.State.Value.MId,
+                        PType = PacketType.WeaponToolbarShootState,
+                        Data = w.State.ManualShoot,
+                        WeaponId = w.WeaponId,
+                    });
+                }
+
             };
             action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
             action0.Enabled = (b) =>

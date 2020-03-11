@@ -6,6 +6,7 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -335,6 +336,71 @@ namespace WeaponCore
                                 if(playerMousePackets.PlayerId != PlayerId)
                                     PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
                             }
+
+                            report.PacketValid = true;
+                            break;
+                        }
+
+                    case PacketType.CompToolbarShootState:
+                        {
+                            var shootStatePacket = packet as ShootStatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (shootStatePacket == null || comp == null) break;
+
+                            comp.State.Value.MId = shootStatePacket.MId;
+
+                            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                            {
+                                var w = comp.Platform.Weapons[i];
+
+                                if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                    w.State.SingleShotCounter++;
+
+                                w.State.ManualShoot = shootStatePacket.Data;
+                            }
+
+                            report.PacketValid = true;
+                            break;
+                        }
+
+                    case PacketType.WeaponToolbarShootState:
+                        {
+                            var shootStatePacket = packet as WeaponShootStatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (shootStatePacket == null || comp == null) break;
+                            
+                            comp.State.Value.MId = shootStatePacket.MId;
+                            var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
+
+                            if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                w.State.SingleShotCounter++;
+
+                            w.State.ManualShoot = shootStatePacket.Data;
+
+                            PacketsToClient.Add(new PacketInfo
+                            {
+                                Entity = ent,
+                                Packet = shootStatePacket,
+                            });
+
+                            report.PacketValid = true;
+                            break;
+                        }
+
+                    case PacketType.RangeUpdate:
+                        {
+                            var rangePacket = packet as RangePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (rangePacket == null || comp == null) break;
+
+                            comp.Set.Value.MId = rangePacket.MId;
+                            comp.Set.Value.Range = rangePacket.Data;
 
                             report.PacketValid = true;
                             break;
@@ -859,6 +925,91 @@ namespace WeaponCore
                                 report.PacketValid = true;
                         }
                         break;
+
+                    case PacketType.CompToolbarShootState:
+                        {
+                            var shootStatePacket = packet as ShootStatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (shootStatePacket == null || comp == null) break;
+
+                            if(comp.State.Value.MId < shootStatePacket.MId)
+                            {
+                                comp.State.Value.MId = shootStatePacket.MId;
+                                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                                {
+                                    var w = comp.Platform.Weapons[i];
+
+                                    if(shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                        w.State.SingleShotCounter++;
+
+                                    w.State.ManualShoot = shootStatePacket.Data;
+                                }
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = shootStatePacket,
+                                });
+                            }
+
+                            report.PacketValid = true;
+                            break;
+                        }
+
+                    case PacketType.WeaponToolbarShootState:
+                        {
+                            var shootStatePacket = packet as WeaponShootStatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (shootStatePacket == null || comp == null) break;
+
+                            if (comp.State.Value.MId < shootStatePacket.MId)
+                            {
+                                comp.State.Value.MId = shootStatePacket.MId;
+                                var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
+
+                                if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                    w.State.SingleShotCounter++;
+
+                                w.State.ManualShoot = shootStatePacket.Data;
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = shootStatePacket,
+                                });
+                            }
+
+                            report.PacketValid = true;
+                            break;
+                        }
+
+                    case PacketType.RangeUpdate:
+                        {
+                            var rangePacket = packet as RangePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (rangePacket == null || comp == null) break;
+
+                            if (comp.Set.Value.MId < rangePacket.MId)
+                            {
+                                comp.Set.Value.MId = rangePacket.MId;
+                                comp.Set.Value.Range = rangePacket.Data;
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = rangePacket,
+                                });
+                            }
+
+                            report.PacketValid = true;
+                            break;
+                        }
 
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);

@@ -57,7 +57,20 @@ namespace WeaponCore.Control
 
                         cState.ClickShoot = false;
                         cState.ShootOn = false;
-                        comp.UpdateStateMp();
+
+                        if (comp.Session.HandlesInput && comp.Session.MpActive)
+                        {
+                            comp.State.Value.MId++;
+                            comp.Session.PacketsToServer.Add(new ShootStatePacket
+                            {
+                                EntityId = blk.EntityId,
+                                SenderId = comp.Session.MultiplayerId,
+                                PType = PacketType.CompToolbarShootState,
+                                MId = comp.State.Value.MId,
+                                Data = ShootOnce,
+                            });
+                        }
+                        //comp.UpdateStateMp();
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -86,9 +99,23 @@ namespace WeaponCore.Control
                                 w.State.ManualShoot = ShootOn;
                         }
 
+                        if (comp.Session.HandlesInput && comp.Session.MpActive)
+                        {
+                            comp.State.Value.MId++;
+                            comp.Session.PacketsToServer.Add(new ShootStatePacket
+                            {
+                                EntityId = blk.EntityId,
+                                SenderId = comp.Session.MultiplayerId,
+                                PType = PacketType.CompToolbarShootState,
+                                MId = comp.State.Value.MId,
+                                Data = cState.ShootOn ? ShootOff : ShootOn,
+                            });
+                        }
+
                         cState.ShootOn = !cState.ShootOn;
                         cState.ClickShoot = cState.ShootOn ? false : cState.ClickShoot;
-                        comp.UpdateStateMp();
+
+                        //comp.UpdateStateMp();
                     };
 
                     var oldWriter = a.Writer;
@@ -129,9 +156,11 @@ namespace WeaponCore.Control
                 "Range",
             };
 
-            for (int i = isTurretType ? 13 : 0; i < controls.Count; i++)
+            for (int i = isTurretType ? 12 : 0; i < controls.Count; i++)
             {
                 var c = controls[i];
+
+                Log.Line($"typeof(T): {typeof(T)} id: {c.Id}");
 
                 if(!visibleControls.Contains(c.Id))
                     c.Visible = b => !b.Components.Has<WeaponComponent>();
@@ -147,18 +176,43 @@ namespace WeaponCore.Control
                         break;
 
                     case "OnOff":
-                        ((IMyTerminalControlOnOffSwitch)c).Setter += OnOffAnimations;
-                        break;
+                        {
+                            ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, On) =>
+                            {
+                                var comp = blk?.Components?.Get<WeaponComponent>();
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                                OnOffAnimations(comp, On);
+                            };
+                            break;
+                        }
 
                     case "Range":
-                        ((IMyTerminalControlSlider)c).Setter += (blk, Value) =>
                         {
-                            var comp = blk?.Components?.Get<WeaponComponent>();
-                            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                            ((IMyTerminalControlSlider)c).Setter += (blk, Value) =>
+                            {
+                                var comp = blk?.Components?.Get<WeaponComponent>();
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                            comp.Set.Value.Range = Value;
-                        };                        
-                        break;
+                                comp.Set.Value.Range = Value;
+                                Log.Line($"Range: {Value}");
+
+                                if (comp.Session.HandlesInput && comp.Session.MpActive)
+                                {
+
+                                    comp.Set.Value.MId++;
+                                    comp.Session.PacketsToServer.Add(new RangePacket
+                                    {
+                                        EntityId = blk.EntityId,
+                                        SenderId = comp.Session.MultiplayerId,
+                                        PType = PacketType.RangeUpdate,
+                                        MId = comp.Set.Value.MId,
+                                        Data = Value,
+                                    });
+                                }
+
+                            };
+                            break;
+                        }
                 }  
             }
 
@@ -196,11 +250,8 @@ namespace WeaponCore.Control
             }
         }
 
-        private static void OnOffAnimations(IMyTerminalBlock blk, bool On)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            
+        private static void OnOffAnimations(WeaponComponent comp, bool On)
+        {            
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];

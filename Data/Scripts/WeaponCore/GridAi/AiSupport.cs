@@ -878,6 +878,24 @@ namespace WeaponCore.Support
 
                 }
 
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                comp.State.Value.CurrentPlayerControl.PlayerId = -1;                
+
+                if (comp.Session.HandlesInput && comp.Session.MpActive)
+                {
+                    comp.State.Value.MId++;
+                    comp.Session.PacketsToServer.Add(new ShootStatePacket
+                    {
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = comp.Session.MultiplayerId,
+                        MId = comp.State.Value.MId,
+                        PType = PacketType.WeaponToolbarShootState,
+                        Data = Weapon.TerminalActionState.ShootOff,
+                    });
+
+                    comp.SendControlingPlayer();
+                }
+
                 cState.ClickShoot = false;
                 comp.UpdateStateMp();
             }
