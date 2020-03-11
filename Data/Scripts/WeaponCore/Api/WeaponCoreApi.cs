@@ -18,7 +18,7 @@ namespace WeaponCore.Support
         private Action<ICollection<MyDefinitionId>> _getCoreTurrets;
         private Func<IMyTerminalBlock, IDictionary<string, int>, bool> _getBlockWeaponMap;
         private Func<IMyEntity, MyTuple<bool, int, int>> _getProjectilesLockedOn;
-        private Action<IMyEntity, IDictionary<IMyEntity, float>> _getSortedThreats;
+        private Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>> _getSortedThreats;
         private Func<IMyEntity, int, IMyEntity> _getAiFocus;
         private Func<IMyEntity, IMyEntity, int, bool> _setAiFocus;
         private Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>> _getWeaponTarget;
@@ -39,6 +39,9 @@ namespace WeaponCore.Support
         private Action<IMyTerminalBlock> _disableRequiredPower;
         private Func<IMyEntity, bool> _hasGridAi;
         private Func<IMyTerminalBlock, bool> _hasCoreWeapon;
+        private Func<IMyEntity, float> _getOptimalDps;
+        private Func<IMyTerminalBlock, int, string> _getActiveAmmo;
+        private Action<IMyTerminalBlock, int, string> _setActiveAmmo;
 
         private const long Channel = 67549756549;
 
@@ -82,12 +85,13 @@ namespace WeaponCore.Support
         public void ApiLoad(IReadOnlyDictionary<string, Delegate> delegates, bool getWeaponDefinitions = false)
         {
             _apiInit = true;
+            _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
             _getCoreWeapons = (Action<ICollection<MyDefinitionId>>)delegates["GetCoreWeapons"];
             _getCoreStaticLaunchers = (Action<ICollection<MyDefinitionId>>)delegates["GetCoreStaticLaunchers"];
             _getCoreTurrets = (Action<ICollection<MyDefinitionId>>)delegates["GetCoreTurrets"];
             _getBlockWeaponMap = (Func<IMyTerminalBlock, IDictionary<string, int>, bool>)delegates["GetBlockWeaponMap"];
             _getProjectilesLockedOn = (Func<IMyEntity, MyTuple<bool, int, int>>)delegates["GetProjectilesLockedOn"];
-            _getSortedThreats = (Action< IMyEntity, IDictionary<IMyEntity, float>>)delegates["GetSortedThreats"];
+            _getSortedThreats = (Action< IMyEntity, ICollection<MyTuple<IMyEntity, float>>>)delegates["GetSortedThreats"];
             _getAiFocus = (Func<IMyEntity, int, IMyEntity>)delegates["GetAiFocus"];
             _setAiFocus = (Func<IMyEntity, IMyEntity, int, bool>)delegates["SetAiFocus"];
             _getWeaponTarget = (Func <IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>)delegates["GetWeaponTarget"];
@@ -108,7 +112,10 @@ namespace WeaponCore.Support
             _disableRequiredPower = (Action<IMyTerminalBlock>)delegates["DisableRequiredPower"];
             _hasGridAi = (Func<IMyEntity, bool>)delegates["HasGridAi"];
             _hasCoreWeapon = (Func<IMyTerminalBlock, bool>)delegates["HasCoreWeapon"];
-            _getAllWeaponDefinitions = (Action<IList<byte[]>>)delegates["GetAllWeaponDefinitions"];
+            _getOptimalDps = (Func<IMyEntity, float>)delegates["GetOptimalDps"];
+            _getActiveAmmo = (Func<IMyTerminalBlock, int, string>)delegates["GetActiveAmmo"];
+            _setActiveAmmo = (Action<IMyTerminalBlock, int, string>)delegates["SetActiveAmmo"];
+
             if (getWeaponDefinitions)
             {
                 var byteArrays = new List<byte[]>();
@@ -126,7 +133,7 @@ namespace WeaponCore.Support
         public void GetAllCoreTurrets(ICollection<MyDefinitionId> collection) => _getCoreTurrets?.Invoke(collection);
         public bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection) => _getBlockWeaponMap?.Invoke(weaponBlock, collection) ?? false;
         public MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim) => _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
-        public void GetSortedThreats(IMyEntity shooter, IDictionary<IMyEntity, float> collection) => _getSortedThreats?.Invoke(shooter, collection);
+        public void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection) => _getSortedThreats?.Invoke(shooter, collection);
         public IMyEntity GetAiFocus(IMyEntity shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
         public bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0) => _setAiFocus?.Invoke(shooter, target, priority) ?? false;
         public MyTuple<bool, bool, bool, IMyEntity> GetWeaponTarget(IMyTerminalBlock weapon, int weaponId = 0) => _getWeaponTarget?.Invoke(weapon, weaponId) ?? new MyTuple<bool, bool, bool, IMyEntity>();
@@ -147,6 +154,9 @@ namespace WeaponCore.Support
         public void DisableRequiredPower(IMyTerminalBlock weapon) => _disableRequiredPower?.Invoke(weapon);
         public bool HasGridAi(IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
         public bool HasCoreWeapon(IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
+        public float GetOptimalDps(IMyEntity entity) => _getOptimalDps?.Invoke(entity) ?? 0f;
+        public string GetActiveAmmo(IMyTerminalBlock weapon, int weaponId) => _getActiveAmmo?.Invoke(weapon, weaponId) ?? null;
+        public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) => _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
 
     }
 }
