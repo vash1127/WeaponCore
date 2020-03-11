@@ -31,7 +31,7 @@ namespace WeaponCore.Support
                 ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetBlockWeaponMap"] = new Func<IMyTerminalBlock, IDictionary<string, int>, bool>(GetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<IMyEntity, MyTuple<bool, int, int>>(GetProjectilesLockedOn),
-                ["GetSortedThreats"] = new Action<IMyEntity, IDictionary<IMyEntity, float>>(GetSortedThreats),
+                ["GetSortedThreats"] = new Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>>(GetSortedThreats),
                 ["GetAiFocus"] = new Func<IMyEntity, int, IMyEntity>(GetAiFocus),
                 ["SetAiFocus"] = new Func<IMyEntity, IMyEntity, int, bool>(SetAiFocus),
                 ["GetWeaponTarget"] = new Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>>(GetWeaponTarget),
@@ -112,7 +112,7 @@ namespace WeaponCore.Support
             return tuple;
         }
 
-        private void GetSortedThreats(IMyEntity shooter, IDictionary<IMyEntity, float> collection)
+        private void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection)
         {
             var grid = shooter.GetTopMostParent() as MyCubeGrid;
             GridAi gridAi;
@@ -121,7 +121,7 @@ namespace WeaponCore.Support
                 for (int i = 0; i < gridAi.SortedTargets.Count; i++)
                 {
                     var targetInfo = gridAi.SortedTargets[i];
-                    collection.Add(targetInfo.Target, targetInfo.OffenseRating);
+                    collection.Add(new MyTuple<IMyEntity, float>(targetInfo.Target, targetInfo.OffenseRating));
                 }
             }
         }
