@@ -78,12 +78,12 @@ namespace WeaponCore
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
         [ProtoMember(8)] public float Range = 100;
         [ProtoMember(9)] public MyObjectBuilder_Inventory Inventory = null;
-        [ProtoMember(10)] public CompGroupOverrides Overrides;
+        [ProtoMember(10)] public GroupOverrides Overrides;
         [ProtoMember(11)] public int Version = Session.VersionControl;
 
         public CompSettingsValues()
         {
-            Overrides = new CompGroupOverrides();
+            Overrides = new GroupOverrides();
         }
 
         public void Sync(WeaponComponent comp, CompSettingsValues syncFrom)
@@ -306,75 +306,8 @@ namespace WeaponCore
         public WeaponValues() { }
     }
 
-    /*
     [ProtoContract]
-    public class GridAIValues
-    {
-        [ProtoMember(1)] public FakeTarget DummyTarget = new FakeTarget();
-        [ProtoMember(2)] public PlayerToBlock[] ControllingPlayersStorage = new PlayerToBlock[0];
-
-        public Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
-
-        Session _session;
-        MyCubeGrid grid;
-
-        public GridAIValues() { }
-
-        public void Save()
-        {
-            if (_session.IsClient || !_session.MpActive) return;
-
-            var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
-
-            if (grid.Storage != null)
-                grid.Storage[_session.GridAiGuid] = Convert.ToBase64String(binary);
-            else
-            {
-                grid.Storage = new MyModStorageComponent();
-                grid.Storage[_session.GridAiGuid] = Convert.ToBase64String(binary);
-            }
-        }
-
-        public void Load(GridAi ai)
-        {
-            
-            _session = ai.Session;
-
-            string rawData;
-            byte[] base64;
-            if (_session.IsClient && grid.Storage != null && grid.Storage.TryGetValue(_session.GridAiGuid, out rawData))
-            {
-                base64 = Convert.FromBase64String(rawData);
-                ai.AIValues = MyAPIGateway.Utilities.SerializeFromBinary<GridAIValues>(base64);
-
-                for (int i = 0; i < ControllingPlayersStorage.Length; i++)
-                {
-                    var playerBlock = ControllingPlayersStorage[i];
-
-                    var block = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
-                    if (block == null) continue;
-
-
-                    Log.Line($"Player: {playerBlock.playerId} EntityID: {playerBlock.EntityId}");
-
-                    ControllingPlayers.Add(playerBlock.playerId, block);
-                }
-
-            }
-            else
-            {
-                if(grid.Storage == null)
-                    grid.Storage = new MyModStorageComponent();
-
-                grid.Storage
-
-                ai.AIValues = new GridAIValues();
-            }
-        }
-    }*/
-
-    [ProtoContract]
-    public class CompGroupOverrides
+    public class GroupOverrides
     {
         [ProtoMember(1), DefaultValue(true)] public bool Activate = true;
         [ProtoMember(2)] public bool Neutrals;
@@ -389,9 +322,9 @@ namespace WeaponCore
         [ProtoMember(11)] public bool Biologicals;
         [ProtoMember(12)] public bool Projectiles;
 
-        public CompGroupOverrides() { }
+        public GroupOverrides() { }
 
-        public void Sync(CompGroupOverrides syncFrom)
+        public void Sync(GroupOverrides syncFrom)
         {
             Activate = syncFrom.Activate;
             Neutrals = syncFrom.Neutrals;

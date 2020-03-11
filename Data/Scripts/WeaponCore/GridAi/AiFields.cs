@@ -90,6 +90,8 @@ namespace WeaponCore.Support
         internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
+        internal uint LastSerializedTick;
+        internal uint UiMId;
         internal int SourceCount;
         internal int BlockCount;
         internal int NumSyncWeapons;

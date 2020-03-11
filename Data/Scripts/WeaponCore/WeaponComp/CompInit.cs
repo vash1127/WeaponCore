@@ -29,8 +29,11 @@ namespace WeaponCore.Support
                 Set.SettingsInit();
                 UpdateSettings(Set.Value);
 
-                Set.Value.Overrides.TargetPainter = false;
-                Set.Value.Overrides.ManualControl = false;
+                if (!Session.IsClient)
+                {
+                    Set.Value.Overrides.TargetPainter = false;
+                    Set.Value.Overrides.ManualControl = false;
+                }
 
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {

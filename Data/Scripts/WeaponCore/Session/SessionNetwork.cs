@@ -294,19 +294,40 @@ namespace WeaponCore
                         break;
 
                     case PacketType.OverRidesUpdate:
-                        var overRidesPacket = packet as OverRidesPacket;
-
-                        if (comp == null || overRidesPacket == null)
                         {
-                            errorPacket.Error = $"overRidesPacket was null {overRidesPacket == null} Comp was null: {comp == null}";
+                            var overRidesPacket = packet as OverRidesPacket;
+
+                            if (overRidesPacket == null)
+                            {
+                                errorPacket.Error = $"overRidesPacket was null {overRidesPacket == null}";
+                                break;
+                            }
+
+                            if (comp != null) {
+                                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                                comp.Set.Value.MId = overRidesPacket.MId;
+                                report.PacketValid = true;
+                            }
+                            else if (ent is MyCubeGrid)
+                            {
+                                var myGrid = ent as MyCubeGrid;
+                                GridAi ai;
+                                if(myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                {
+                                    var o = overRidesPacket.Data;
+
+                                    SyncGridOverrides(ai, overRidesPacket.GroupName, o);
+
+                                    foreach (var component in ai.BlockGroups[overRidesPacket.GroupName].Comps)
+                                        component.Set.Value.Overrides.Sync(o);
+
+                                    report.PacketValid = true;
+                                }
+                            }
+
+
                             break;
                         }
-
-                        comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                        comp.Set.Value.MId = overRidesPacket.MId;
-                        report.PacketValid = true;
-                        break;
-
                     case PacketType.PlayerControlUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
@@ -811,24 +832,46 @@ namespace WeaponCore
                             break;
                         }
                     case PacketType.OverRidesUpdate:
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
-                        comp = ent?.Components.Get<WeaponComponent>();
-                        var overRidesPacket = packet as OverRidesPacket;
-
-                        if (comp == null || overRidesPacket == null || comp.Set.Value.MId >= overRidesPacket.MId) return;
-                        if (ent.MarkedForClose)
                         {
-                            report.EntityClosed = true;
-                            return;
+                            var overRidesPacket = packet as OverRidesPacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (overRidesPacket == null) break;
+
+                            if (comp != null && comp.Set.Value.MId < overRidesPacket.MId)
+                            {
+                                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                                comp.Set.Value.MId = overRidesPacket.MId;
+                                report.PacketValid = true;
+                            }
+                            else if (ent is MyCubeGrid)
+                            {
+                                var myGrid = ent as MyCubeGrid;
+                                GridAi ai;
+                                if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai) && ai.UiMId < overRidesPacket.MId)
+                                {
+                                    var o = overRidesPacket.Data;
+                                    ai.UiMId = overRidesPacket.MId;
+
+                                    foreach (var component in ai.BlockGroups[overRidesPacket.GroupName].Comps)
+                                        component.Set.Value.Overrides.Sync(o);
+
+                                    report.PacketValid = true;
+                                }
+                            }
+
+                            if (report.PacketValid)
+                            {
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = overRidesPacket,
+                                });
+                            }
+
+                            break;
                         }
-
-                        comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                        comp.Set.Value.MId = overRidesPacket.MId;
-                        report.PacketValid = true;
-
-                        PacketsToClient.Add(new PacketInfo {Entity = comp.MyCube, Packet = overRidesPacket });
-                        break;
-
                     case PacketType.PlayerControlUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
@@ -1291,6 +1334,22 @@ namespace WeaponCore
 
                 return Packet.GetHashCode();
             }
+        }
+
+        internal static void SyncGridOverrides(GridAi ai, string groupName, GroupOverrides o)
+        {
+            ai.BlockGroups[groupName].Settings["Active"] = o.Activate ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["Neutrals"] = o.Neutrals ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["Projectiles"] = o.Projectiles ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["Biologicals"] = o.Biologicals ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["Meteors"] = o.Meteors ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["Friendly"] = o.Friendly ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["Unowned"] = o.Unowned ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["TargetPainter"] = o.TargetPainter ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["ManualControl"] = o.ManualControl ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["FocusTargets"] = o.FocusTargets ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["FocusSubSystem"] = o.FocusSubSystem ? 1 : 0;
+            ai.BlockGroups[groupName].Settings["SubSystems"] = (int)o.SubSystem;
         }
         #endregion
     }

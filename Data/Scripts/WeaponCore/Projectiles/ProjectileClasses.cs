@@ -22,7 +22,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
-        internal CompGroupOverrides Overrides;
+        internal GroupOverrides Overrides;
         internal WeaponFrameCache WeaponCache;
         internal AmmoDef AmmoDef;
         internal Vector3D ShooterVel;
@@ -375,7 +375,7 @@ namespace WeaponCore.Support
         public MyEntity TriggerEntity;
         public MyEntity Target;
         public MyCubeBlock FiringCube;
-        public CompGroupOverrides Overrides;
+        public GroupOverrides Overrides;
         public Vector3D Origin;
         public Vector3D OriginUp;
         public Vector3D Direction;

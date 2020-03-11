@@ -31,11 +31,12 @@ namespace WeaponCore.Support
             Modify
         }
 
-        internal void ApplySettings()
+        internal void ApplySettings(string BlockGroup)
         {
+            GroupOverrides o = null;
             foreach (var comp in Comps)
             {
-                var o = comp.Set.Value.Overrides;
+                o = comp.Set.Value.Overrides;
                 foreach (var setting in Settings)
                 {
                     switch (setting.Key)
@@ -90,10 +91,13 @@ namespace WeaponCore.Support
                     comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                 }
-
-                comp.SendOverRides();
                 comp.SendControlingPlayer();
             }
+
+            var gridAi = Comps?.FirstElement()?.Ai;
+
+            if (gridAi != null && gridAi.Session.HandlesInput && gridAi.Session.MpActive && o != null)
+                gridAi.SendOverRides(BlockGroup, o);
         }
 
         internal void SetValue(WeaponComponent comp, string setting, int value)
@@ -150,8 +154,12 @@ namespace WeaponCore.Support
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
-            comp.SendOverRides();
-            comp.SendControlingPlayer();
+
+            if (comp.Session.HandlesInput && comp.Session.MpActive)
+            {
+                comp.SendControlingPlayer();
+                comp.SendOverRides();
+            }
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)

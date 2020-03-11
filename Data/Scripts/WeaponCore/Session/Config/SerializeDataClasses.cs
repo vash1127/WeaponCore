@@ -215,8 +215,9 @@ namespace WeaponCore
     [ProtoContract]
     public class OverRidesPacket : Packet
     {
-        [ProtoMember(1)] internal CompGroupOverrides Data = null;
-        [ProtoMember(2)] internal uint MId;
+        [ProtoMember(1)] internal GroupOverrides Data = null;
+        [ProtoMember(2)] internal string GroupName = "";
+        [ProtoMember(3)] internal uint MId = 0;
 
         public OverRidesPacket() { }
 
@@ -224,6 +225,8 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
+            GroupName = "";
+            MId = 0;
         }
     }
 
@@ -357,6 +360,13 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal long PlayerId;
         [ProtoMember(2)] internal MouseStateData MouseStateData;
+    }
+
+    [ProtoContract]
+    internal class GroupSettingsData
+    {
+        [ProtoMember(1)] internal string SettingName;
+        [ProtoMember(2)] internal bool Value;
     }
 
     [ProtoContract]

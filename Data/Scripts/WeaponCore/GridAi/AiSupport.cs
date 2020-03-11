@@ -13,6 +13,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
+using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 namespace WeaponCore.Support
 {
@@ -224,7 +225,7 @@ namespace WeaponCore.Support
                         groupInfo.ChangeState = GroupInfo.ChangeStates.None;
                         groupInfo.Name = group.Name;
                     }
-
+                    
                     group.GetBlocks(null, block =>
                     {
                         var cube = (MyCubeBlock) block;
@@ -257,9 +258,49 @@ namespace WeaponCore.Support
                         BlockGroups.Remove(group.Key);
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
+
+                    if(group.Value.Comps.Count > 0)
+                        SyncGridOverrides(this, group.Key, group.Value.Comps.FirstElement().Set.Value.Overrides);
                 }
                 BlockGroups.ApplyRemovals();
+
                 ScanBlockGroups = false;
+            }
+        }
+
+        internal void SendOverRides(string groupName, GroupOverrides overRides)
+        {
+            if (Session.MpActive)
+            {
+                UiMId++;
+                if (Session.IsClient)
+                {
+                    Session.PacketsToServer.Add(new OverRidesPacket
+                    {
+                        EntityId = MyGrid.EntityId,
+                        SenderId = Session.MultiplayerId,
+                        MId = UiMId,
+                        GroupName = groupName,
+                        PType = PacketType.OverRidesUpdate,
+                        Data = overRides,
+                    });
+                }
+                else if (Session.HandlesInput)
+                {
+                    Session.PacketsToClient.Add(new PacketInfo
+                    {
+                        Entity = MyGrid,
+                        Packet = new OverRidesPacket
+                        {
+                            EntityId = MyGrid.EntityId,
+                            SenderId = 0,
+                            MId = UiMId,
+                            GroupName = groupName,
+                            PType = PacketType.OverRidesUpdate,
+                            Data = overRides,
+                        }
+                    });
+                }
             }
         }
 

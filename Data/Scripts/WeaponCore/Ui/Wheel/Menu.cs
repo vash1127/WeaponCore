@@ -174,7 +174,7 @@ namespace WeaponCore
                 {
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
-                        SetGroupSettings(groupInfo, item);
+                        SetGroupSettings(groupInfo, item, Wheel.ActiveGroupName);
                         break;
                 }
                 switch (Name)
@@ -201,7 +201,7 @@ namespace WeaponCore
                 Message = message;
             }
 
-            internal void SetGroupSettings(GroupInfo groupInfo, Item item)
+            internal void SetGroupSettings(GroupInfo groupInfo, Item item, string groupName)
             {
                 var currentSettingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var currentValue = groupInfo.Settings[currentSettingName];
@@ -209,7 +209,7 @@ namespace WeaponCore
                 var nextValueStr = map[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
                 groupInfo.Settings[currentSettingName] = nextValue;
-                groupInfo.ApplySettings();
+                groupInfo.ApplySettings(groupName);
                 ReportGroupSettings(groupInfo, item);
             }
 
