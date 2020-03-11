@@ -8,6 +8,7 @@ using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
+using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore
@@ -113,12 +114,28 @@ namespace WeaponCore
                                 }
 
                                 syncTarget.SyncTarget(weapon.Target);
-                                if (weapon.Target.HasTarget && !weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
+
+                                if (weapon.Target.HasTarget)
                                 {
-                                    var oldChange = weapon.Target.TargetChanged;
-                                    weapon.Target.StateChange(true, Target.States.Invalid);
-                                    weapon.Target.TargetChanged = weapon.FirstSync ? false : oldChange;
-                                    weapon.FirstSync = false;
+                                    if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
+                                    {
+                                        var oldChange = weapon.Target.TargetChanged;
+                                        weapon.Target.StateChange(true, Target.States.Invalid);
+                                        weapon.Target.TargetChanged = weapon.FirstSync ? false : oldChange;
+                                        weapon.FirstSync = false;
+                                    }
+                                    else if (weapon.Target.IsProjectile)
+                                    {
+                                        TargetType targetType;
+                                        AcquireProjectile(weapon, out targetType);
+
+                                        if (targetType == TargetType.None)
+                                        {
+                                            if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
+                                                weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);                                            
+                                            if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
+                                        }
+                                    }
                                 }
                                 //weapon.TargetState = weapon.Target.State;
                             }

@@ -160,8 +160,6 @@ namespace WeaponCore.Control
             {
                 var c = controls[i];
 
-                Log.Line($"typeof(T): {typeof(T)} id: {c.Id}");
-
                 if(!visibleControls.Contains(c.Id))
                     c.Visible = b => !b.Components.Has<WeaponComponent>();
 
