@@ -184,7 +184,7 @@ namespace WeaponCore.Platform
                 }
                 else targetCenter = target.Projectile.Position;
             }
-            else
+            else if(!target.IsFakeTarget)
             {
                 if (target.Entity == null)
                 {
@@ -193,6 +193,8 @@ namespace WeaponCore.Platform
                 }
                 else targetCenter = target.Entity.PositionComp.WorldAABB.Center;
             }
+            else
+                targetCenter = Vector3D.Zero;
 
             var needsPrediction = weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0);
             if (needsPrediction)
