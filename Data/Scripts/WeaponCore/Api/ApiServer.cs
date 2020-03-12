@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 
-namespace WeaponCore.Support
+namespace WeaponCore.Api
 {
     public class ApiServer
     {

@@ -7,12 +7,12 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using static WeaponCore.Platform.MyWeaponPlatform.PlatformState;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 
-namespace WeaponCore.Support
+namespace WeaponCore.Api
 {
     internal class ApiBackend
     {
@@ -52,7 +52,7 @@ namespace WeaponCore.Support
                 ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower),
                 ["HasGridAi"] = new Func<IMyEntity, bool>(HasGridAi),
                 ["HasCoreWeapon"] = new Func<IMyTerminalBlock, bool>(HasCoreWeapon),
-                ["GetOptimalDps"] = new Func<IMyTerminalBlock, float>(GetOptimalDps),
+                ["GetOptimalDps"] = new Func<IMyEntity, float>(GetOptimalDps),
                 ["GetActiveAmmo"] = new Func<IMyTerminalBlock, int, string>(GetActiveAmmo),
                 ["SetActiveAmmo"] = new Action<IMyTerminalBlock, int, string>(SetActiveAmmo),
             };
