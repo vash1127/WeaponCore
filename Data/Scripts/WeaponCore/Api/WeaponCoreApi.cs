@@ -69,7 +69,7 @@ namespace WeaponCore.Api
         /// </summary>
         /// <param name="getWeaponDefinitions">Set to true to fill <see cref="WeaponDefinitions"/>.</param>
         /// <returns>True if WeaponCore replied.</returns>
-        public void Load(bool getWeaponDefinitions = false)
+        public bool Load(bool getWeaponDefinitions = false)
         {
             _getWeaponDefinitions = getWeaponDefinitions;
 
@@ -79,6 +79,8 @@ namespace WeaponCore.Api
             _isRegistered = true;
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
             MyAPIGateway.Utilities.SendModMessage(Channel, "ApiEndpointRequest");
+            MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
+            return IsReady;
         }
 
         public void Unload()
@@ -101,7 +103,6 @@ namespace WeaponCore.Api
 
             IsReady = true;
             ApiAssign(dict, _getWeaponDefinitions);
-            MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
         }
 
 
