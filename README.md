@@ -43,7 +43,7 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1998506274
 
 # Thanks and Credits
 
-Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations and cockpit controls! 
+Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations, and multiplayer support!
 
 Thanks to NukeGuard for the awesome GUI textures. 
 
