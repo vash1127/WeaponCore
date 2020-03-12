@@ -23,6 +23,10 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1918681825
 
 [Octo Beam Lasers](https://steamcommunity.com/sharedfiles/filedetails/?id=1824060550)
 
+[NorthWind Weapons](https://steamcommunity.com/sharedfiles/filedetails/?id=2016817336)
+
+[165mm L9A1 Demolition Gun - AWG](https://steamcommunity.com/sharedfiles/filedetails/?id=2019923298)
+
 
 
 # Documentation
@@ -39,7 +43,7 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1998506274
 
 # Thanks and Credits
 
-Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations and cockpit controls! 
+Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations, cockpit controls, and multiplayer support!
 
 Thanks to NukeGuard for the awesome GUI textures. 
 
