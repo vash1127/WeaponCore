@@ -23,6 +23,10 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1918681825
 
 [Octo Beam Lasers](https://steamcommunity.com/sharedfiles/filedetails/?id=1824060550)
 
+[NorthWind Weapons](https://steamcommunity.com/sharedfiles/filedetails/?id=2016817336)
+
+[165mm L9A1 Demolition Gun - AWG](https://steamcommunity.com/sharedfiles/filedetails/?id=2019923298)
+
 
 
 # Documentation
