@@ -36,7 +36,8 @@ namespace WeaponCore
         FullMouseUpdate,
         CompToolbarShootState,
         WeaponToolbarShootState,
-        RangeUpdate
+        RangeUpdate,
+        GridAiUiMidUpdate
     }
 
     #region packets
@@ -256,6 +257,20 @@ namespace WeaponCore
         {
             base.CleanUp();
             WeaponId = -1;
+        }
+    }
+
+    [ProtoContract]
+    public class MIdPacket : Packet
+    {
+        [ProtoMember(1)] internal uint Id = 0;
+
+        public MIdPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Id = 0;
         }
     }
 
