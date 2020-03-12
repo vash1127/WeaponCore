@@ -620,6 +620,9 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
                         break;
 
                     case PacketType.CompSettingsUpdate:
@@ -642,6 +645,9 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
                         break;
 
                     case PacketType.ClientMouseEvent:
