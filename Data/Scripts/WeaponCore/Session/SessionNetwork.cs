@@ -317,6 +317,8 @@ namespace WeaponCore
                                     var o = overRidesPacket.Data;
                                     ai.UiMId = overRidesPacket.MId;
 
+                                    ai.ReScanBlockGroups();
+
                                     SyncGridOverrides(ai, overRidesPacket.GroupName, o);
 
                                     foreach (var component in ai.BlockGroups[overRidesPacket.GroupName].Comps)
@@ -591,7 +593,7 @@ namespace WeaponCore
                 Reporter.ReportData[packet.PType].Add(report);
                 ptype = packet.PType;
 
-                var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
+                var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = ptype };
 
                 MyEntity ent; // not inited here to avoid extras calls unless needed
                 WeaponComponent comp; // not inited here to avoid extras calls unless needed
@@ -890,6 +892,10 @@ namespace WeaponCore
                                 {
                                     var o = overRidesPacket.Data;
                                     ai.UiMId = overRidesPacket.MId;
+
+                                    ai.ReScanBlockGroups();
+
+                                    SyncGridOverrides(ai, overRidesPacket.GroupName, o);
 
                                     GroupInfo groups;
                                     if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
