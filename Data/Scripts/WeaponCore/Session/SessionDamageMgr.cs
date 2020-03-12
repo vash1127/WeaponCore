@@ -227,6 +227,23 @@ namespace WeaponCore
                 if (door != null && door.Open)
                 {
                     Log.Line($"door is open");
+                    var ray = new RayD(ref hitEnt.Intersection.From, ref hitEnt.Intersection.Direction);
+                    var rayHit = ray.Intersects(door.PositionComp.WorldVolume);
+                    if (rayHit != null)
+                    {
+                        //var rotMatrix = Quaternion.CreateFromRotationMatrix(door.WorldMatrix);
+                        //var obb = new MyOrientedBoundingBoxD(door.PositionComp.WorldAABB.Center, door.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        var hitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * (rayHit.Value + 0.25f));
+                        IHitInfo hitInfo;
+                        if (!MyAPIGateway.Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15) || hitInfo.HitEntity != door)
+                        {
+                            var ent = (MyEntity)hitInfo?.HitEntity;
+                            if (ent != null) Log.Line($"open door and no hit: {ent.DebugName}");
+                            else Log.Line($"open door and no hit and ent null");
+                            continue;
+                        }
+                        Log.Line($"door hit");
+                    }
 
                 }
                 */
