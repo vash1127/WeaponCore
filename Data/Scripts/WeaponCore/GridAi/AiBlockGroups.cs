@@ -154,12 +154,9 @@ namespace WeaponCore.Support
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
-
-            if (comp.Session.HandlesInput && comp.Session.MpActive)
-            {
-                comp.SendControlingPlayer();
-                comp.SendOverRides();
-            }
+            
+            comp.SendControlingPlayer();
+            comp.SendOverRides();
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)
