@@ -669,11 +669,6 @@ namespace WeaponCore
 
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeBlock;
                             if (block == null) return;
-                            if (block.MarkedForClose)
-                            {
-                                report.EntityClosed = true;
-                                return;
-                            }
 
                             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
 
@@ -1181,12 +1176,12 @@ namespace WeaponCore
             GridAi trackingAi;
             if (updateAdd) //update/add
             {
-                if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && Players.ContainsKey(playerId))
+                if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
                     trackingAi.ControllingPlayers[playerId] = block;
             }
             else //remove
             {
-                if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && Players.ContainsKey(playerId))
+                if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
                     trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
             }
         }
