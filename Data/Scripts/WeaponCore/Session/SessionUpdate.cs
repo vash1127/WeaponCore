@@ -86,9 +86,6 @@ namespace WeaponCore
                                 rightClick = mouseState.MouseButtonRight;// && currentControl;
                             }
 
-                            if (overRides.ManualControl && IsClient && Tick10)
-                                Log.Line($"leftClick: {leftClick} rightClick: {rightClick}  PlayerId: {compCurPlayer.PlayerId}");
-
                             ///
                             /// Weapon update section
                             ///

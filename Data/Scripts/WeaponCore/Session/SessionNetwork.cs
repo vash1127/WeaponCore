@@ -315,6 +315,7 @@ namespace WeaponCore
                                 if(myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                                 {
                                     var o = overRidesPacket.Data;
+                                    ai.UiMId = overRidesPacket.MId;
 
                                     SyncGridOverrides(ai, overRidesPacket.GroupName, o);
 
