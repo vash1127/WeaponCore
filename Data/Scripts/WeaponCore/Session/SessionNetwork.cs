@@ -669,6 +669,8 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "Player Not Found";
 
                         break;
 
