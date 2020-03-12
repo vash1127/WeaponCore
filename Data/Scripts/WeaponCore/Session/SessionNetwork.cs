@@ -438,6 +438,23 @@ namespace WeaponCore
                             break;
                         }
 
+                    case PacketType.GridAiUiMidUpdate:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var midPacket = packet as MIdPacket;
+
+                            if (myGrid == null || midPacket == null) break;
+
+                            GridAi ai;
+                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                ai.UiMId = midPacket.Id;
+
+                                report.PacketValid = true;
+                            }
+                                break;
+                        }
+
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
                         invalidType = true;
@@ -792,6 +809,19 @@ namespace WeaponCore
                                         Packet = gridPacket,
                                         SingleClient = true,
                                     });
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = myGrid,
+                                    Packet = new MIdPacket
+                                    {
+                                        EntityId = myGrid.EntityId,
+                                        SenderId = packet.SenderId,
+                                        PType = PacketType.GridAiUiMidUpdate,
+                                        Id = ai.UiMId,
+                                    },
+                                    SingleClient = true,
+                                });
 
                                 if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
                                     PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
