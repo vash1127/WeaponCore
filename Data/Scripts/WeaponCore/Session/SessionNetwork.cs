@@ -878,10 +878,16 @@ namespace WeaponCore
                                     var o = overRidesPacket.Data;
                                     ai.UiMId = overRidesPacket.MId;
 
-                                    foreach (var component in ai.BlockGroups[overRidesPacket.GroupName].Comps)
-                                        component.Set.Value.Overrides.Sync(o);
+                                    GroupInfo groups;
+                                    if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
+                                    {
+                                        foreach (var component in groups.Comps)
+                                            component.Set.Value.Overrides.Sync(o);
 
-                                    report.PacketValid = true;
+                                        report.PacketValid = true;
+                                    }
+                                    else
+                                        Log.Line("Group Not found");
                                 }
                             }
 
