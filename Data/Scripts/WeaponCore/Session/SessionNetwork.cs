@@ -418,13 +418,6 @@ namespace WeaponCore
                                 w.State.SingleShotCounter++;
 
                             w.State.ManualShoot = shootStatePacket.Data;
-
-                            PacketsToClient.Add(new PacketInfo
-                            {
-                                Entity = ent,
-                                Packet = shootStatePacket,
-                            });
-
                             report.PacketValid = true;
                             break;
                         }
