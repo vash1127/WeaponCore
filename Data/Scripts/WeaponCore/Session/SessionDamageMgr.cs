@@ -222,6 +222,14 @@ namespace WeaponCore
                         continue;
                     }
                 }
+                /*
+                var door = rootBlock.FatBlock as MyDoorBase;
+                if (door != null && door.Open)
+                {
+                    Log.Line($"door is open");
+
+                }
+                */
                 var radiate = radiantCascade || nova;
                 var dmgCount = 1;
                 if (radiate)
