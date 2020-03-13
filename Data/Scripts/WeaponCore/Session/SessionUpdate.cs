@@ -165,7 +165,7 @@ namespace WeaponCore
                                     w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
                                     w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
 
-                                    if (MpActive && IsServer && !w.Target.HasTarget) {
+                                    if (MpActive && IsServer && !w.Target.HasTarget && !comp.TrackReticle) {
                                         w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
 
                                         PacketsToClient.Add(new PacketInfo {

@@ -85,13 +85,25 @@ namespace WeaponCore.Support
                 {
                     comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+
+                    if (o.ManualControl)
+                        o.TargetPainter = false;
+                    else
+                        o.ManualControl = false;
+
+                    comp.State.Value.ClickShoot = false;
+                    comp.State.Value.ShootOn = false;
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                        comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.TerminalActionState.ShootOff;
                 }
                 else
                 {
                     comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                 }
-                comp.SendControlingPlayer();
+
+                if(comp.Session.MpActive)
+                    comp.SendControlingPlayer();
             }
 
             var gridAi = Comps?.FirstElement()?.Ai;
@@ -148,6 +160,16 @@ namespace WeaponCore.Support
             {
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+
+                if (o.ManualControl)
+                    o.TargetPainter = false;
+                else
+                    o.ManualControl = false;
+
+                comp.State.Value.ClickShoot = false;
+                comp.State.Value.ShootOn = false;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.TerminalActionState.ShootOff;
             }
             else
             {

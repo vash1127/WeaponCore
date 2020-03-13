@@ -242,7 +242,21 @@ namespace WeaponCore
                 if (w.State.ManualShoot == ShootOn)
                     w.State.ManualShoot = ShootOff;
                 else
+                {
                     w.State.ManualShoot = ShootOn;
+
+                    var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+                    comp.Set.Value.Overrides.ManualControl = false;
+                    comp.Set.Value.Overrides.TargetPainter = false;
+
+                    if (update && comp.Session.MpActive)
+                    {
+                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                        comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                        comp.SendControlingPlayer();
+                        comp.SendOverRides();
+                    }
+                }
 
                 
                 if(comp.Session.HandlesInput && comp.Session.MpActive)
@@ -282,11 +296,38 @@ namespace WeaponCore
                 
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
-                
-                comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOn;
-                comp.UpdateStateMp();
 
+                var w = comp.Platform.Weapons[weaponId];
+
+                comp.State.Value.Weapons[weaponId].ManualShoot = ShootOn;
+
+                var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+                comp.Set.Value.Overrides.ManualControl = false;
+                comp.Set.Value.Overrides.TargetPainter = false;
+
+                if (update && comp.Session.MpActive)
+                {
+                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                    comp.SendControlingPlayer();
+                    comp.SendOverRides();
+                }
+
+                if (comp.Session.HandlesInput && comp.Session.MpActive)
+                {
+                    comp.State.Value.MId++;
+                    comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
+                    {
+                        EntityId = blk.EntityId,
+                        SenderId = comp.Session.MultiplayerId,
+                        MId = comp.State.Value.MId,
+                        PType = PacketType.WeaponToolbarShootState,
+                        Data = w.State.ManualShoot,
+                        WeaponId = w.WeaponId,
+                    });
+                }
             };
+
             action1.Writer = (b, t) => t.Append("On");
             action1.Enabled = (b) =>
             {
@@ -309,8 +350,22 @@ namespace WeaponCore
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
 
-                var w = comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
-                comp.UpdateStateMp();
+                comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
+
+                if (comp.Session.HandlesInput && comp.Session.MpActive)
+                {
+                    var w = comp.Platform.Weapons[weaponId];
+                    comp.State.Value.MId++;
+                    comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
+                    {
+                        EntityId = blk.EntityId,
+                        SenderId = comp.Session.MultiplayerId,
+                        MId = comp.State.Value.MId,
+                        PType = PacketType.WeaponToolbarShootState,
+                        Data = w.State.ManualShoot,
+                        WeaponId = w.WeaponId,
+                    });
+                }
 
             };
             action2.Writer = (b, t) => t.Append("Off");
@@ -346,7 +401,20 @@ namespace WeaponCore
                         var cState = comp.State.Value;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].SingleShotCounter++;
-                        comp.UpdateStateMp();
+                        
+                        if (comp.Session.HandlesInput && comp.Session.MpActive)
+                        {
+                            comp.State.Value.MId++;
+                            comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
+                            {
+                                EntityId = blk.EntityId,
+                                SenderId = comp.Session.MultiplayerId,
+                                MId = comp.State.Value.MId,
+                                PType = PacketType.WeaponToolbarShootState,
+                                Data = comp.Platform.Weapons[weaponId].State.ManualShoot,
+                                WeaponId = weaponId,
+                            });
+                        }
                     }
                 }
             };
