@@ -317,6 +317,8 @@ namespace WeaponCore
                                     var o = overRidesPacket.Data;
                                     ai.UiMId = overRidesPacket.MId;
 
+                                    ai.ReScanBlockGroups();
+
                                     SyncGridOverrides(ai, overRidesPacket.GroupName, o);
 
                                     foreach (var component in ai.BlockGroups[overRidesPacket.GroupName].Comps)
@@ -578,6 +580,7 @@ namespace WeaponCore
 
         private void ServerReceivedPacket(byte[] rawData)
         {
+            PacketType ptype = PacketType.Invalid;
             try
             {
                 var report = Reporter.ReportPool.Get();
@@ -588,6 +591,9 @@ namespace WeaponCore
                 if (packet == null) return;
 
                 Reporter.ReportData[packet.PType].Add(report);
+                ptype = packet.PType;
+
+                var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = ptype };
 
                 MyEntity ent; // not inited here to avoid extras calls unless needed
                 WeaponComponent comp; // not inited here to avoid extras calls unless needed
@@ -597,15 +603,14 @@ namespace WeaponCore
                 {
                     case PacketType.CompStateUpdate:
                         var statePacket = packet as StatePacket;
-                        if (statePacket?.Data == null) return;
-
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
-                        if (comp == null) return;
-                        if (ent.MarkedForClose)
+
+                        if (statePacket?.Data == null || comp == null || ent == null || ent.MarkedForClose)
                         {
-                            report.EntityClosed = true;
-                            return;
+                            report.EntityClosed = ent.MarkedForClose;
+                            errorPacket.Error = $"statePacket?.Data is null: {statePacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null}";
+                            break;
                         }
 
                         if (statePacket.Data.MId > comp.State.Value.MId)
@@ -615,20 +620,22 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
                         break;
 
                     case PacketType.CompSettingsUpdate:
 
                         var setPacket = packet as SettingPacket;
-                        if (setPacket?.Data == null) return;
-
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
-                        if (comp == null) return;
-                        if (ent.MarkedForClose)
+
+                        if (setPacket?.Data == null || comp == null || ent == null || ent.MarkedForClose)
                         {
-                            report.EntityClosed = true;
-                            return;
+                            report.EntityClosed = ent.MarkedForClose;
+                            errorPacket.Error = $"setPacket?.Data is null: {setPacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null}";
+                            break;
                         }
 
                         if (setPacket.Data.MId > comp.Set.Value.MId)
@@ -638,6 +645,9 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
                         break;
 
                     case PacketType.ClientMouseEvent:
@@ -645,11 +655,11 @@ namespace WeaponCore
                         var mousePacket = packet as MouseInputPacket;
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
 
-                        if (mousePacket?.Data == null || ent == null) return;
-                        if (ent.MarkedForClose)
+                        if (mousePacket?.Data == null || ent == null || ent.MarkedForClose)
                         {
-                            report.EntityClosed = true;
-                            return;
+                            report.EntityClosed = ent.MarkedForClose;
+                            errorPacket.Error = $"mousePacket?.Data is null: {mousePacket?.Data == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent}";
+                            break;
                         }
 
                         if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -659,20 +669,21 @@ namespace WeaponCore
 
                             report.PacketValid = true;
                         }
+                        else
+                            errorPacket.Error = "Player Not Found";
 
                         break;
 
                     case PacketType.ActiveControlUpdate:
                         {
                             var dPacket = packet as BoolUpdatePacket;
-                            if (dPacket?.Data == null) return;
-
                             var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeBlock;
-                            if (block == null) return;
-                            if (block.MarkedForClose)
+
+                            if (dPacket?.Data == null || block == null || block.MarkedForClose)
                             {
-                                report.EntityClosed = true;
-                                return;
+                                report.EntityClosed = block.MarkedForClose;
+                                errorPacket.Error = $"dPacket?.Data is null: {dPacket?.Data == null} block is null: {block == null} ent.MarkedForClose: {block.MarkedForClose}";
+                                break;
                             }
 
                             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
@@ -687,14 +698,13 @@ namespace WeaponCore
                     case PacketType.FocusUpdate:
                         {
                             var targetPacket = packet as FocusPacket;
-                            if (targetPacket == null) return;
-
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
-                            if (myGrid == null) return;
-                            if (myGrid.MarkedForClose)
+
+                            if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                report.EntityClosed = true;
-                                return;
+                                report.EntityClosed = myGrid.MarkedForClose;
+                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null}";
+                                break;
                             }
 
                             GridAi ai;
@@ -709,19 +719,21 @@ namespace WeaponCore
                                     report.PacketValid = true;
                                 }
                             }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
                             break;
                         }
                     case PacketType.FakeTargetUpdate:
                         {
                             var targetPacket = packet as FakeTargetPacket;
-                            if (targetPacket?.Data == null) return;
-
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
-                            if (myGrid == null) return;
-                            if (myGrid.MarkedForClose)
+
+                            if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                report.EntityClosed = true;
-                                return;
+                                report.EntityClosed = myGrid.MarkedForClose;
+                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null }";
+                                break;
                             }
 
                             GridAi ai;
@@ -731,17 +743,20 @@ namespace WeaponCore
                                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                                 report.PacketValid = true;
                             }
+                            else
+                                errorPacket.Error = "GridAi not found";
 
                             break;
                         }
                     case PacketType.GridSyncRequestUpdate://can be a large update, only call on stream sync
                         {
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
-                            if (myGrid == null) return;
-                            if (myGrid.MarkedForClose)
+
+                            if (myGrid == null || myGrid.MarkedForClose)
                             {
-                                report.EntityClosed = true;
-                                return;
+                                report.EntityClosed = myGrid.MarkedForClose;
+                                errorPacket.Error = $"ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null }";
+                                break;
                             }
 
                             GridAi ai;
@@ -830,6 +845,9 @@ namespace WeaponCore
 
                                 report.PacketValid = true;
                             }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
                             break;
                         }
                     case PacketType.ReticleUpdate:
@@ -838,11 +856,11 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (reticlePacket == null || comp == null) return;
-                            if (ent.MarkedForClose)
+                            if (reticlePacket == null || ent == null || comp == null || ent.MarkedForClose)
                             {
-                                report.EntityClosed = true;
-                                return;
+                                report.EntityClosed = ent.MarkedForClose;
+                                errorPacket.Error = $"reticlePacket is null: {reticlePacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null }";
+                                break;
                             }
 
                             if (reticlePacket.Data)
@@ -861,7 +879,12 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (overRidesPacket == null) break;
+                            if (overRidesPacket == null || ent == null || (comp == null && !(ent is MyCubeGrid)) || ent.MarkedForClose)
+                            {
+                                report.EntityClosed = ent.MarkedForClose;
+                                errorPacket.Error = $"overRidesPacket is null: {overRidesPacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
 
                             if (comp != null && comp.Set.Value.MId < overRidesPacket.MId)
                             {
@@ -878,6 +901,10 @@ namespace WeaponCore
                                     var o = overRidesPacket.Data;
                                     ai.UiMId = overRidesPacket.MId;
 
+                                    ai.ReScanBlockGroups();
+
+                                    SyncGridOverrides(ai, overRidesPacket.GroupName, o);
+
                                     GroupInfo groups;
                                     if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                                     {
@@ -887,8 +914,10 @@ namespace WeaponCore
                                         report.PacketValid = true;
                                     }
                                     else
-                                        Log.Line("Group Not found");
+                                        errorPacket.Error = "Block group not found";
                                 }
+                                else
+                                    errorPacket.Error = "GridAi not found";
                             }
 
                             if (report.PacketValid)
@@ -907,18 +936,23 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = packet as ControllingPlayerPacket;
 
-                        if (comp == null || cPlayerPacket == null || comp.Set.Value.MId >= cPlayerPacket.MId) return;
-                        if (ent.MarkedForClose)
+                        if (cPlayerPacket == null || ent == null || comp == null  || ent.MarkedForClose)
                         {
-                            report.EntityClosed = true;
-                            return;
+                            report.EntityClosed = ent.MarkedForClose;
+                            errorPacket.Error = $"overRidesPacket is null: {cPlayerPacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null }";
+                            break;
                         }
 
-                        comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                        comp.Set.Value.MId = cPlayerPacket.MId;
-                        report.PacketValid = true;
-
-                        PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
+                        if (comp.Set.Value.MId < cPlayerPacket.MId)
+                        {
+                            comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
+                            comp.Set.Value.MId = cPlayerPacket.MId;
+                            report.PacketValid = true;
+                            PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
+                        }
+                        else
+                            errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                        
                         break;
 
                     case PacketType.TargetUpdateRequest:
@@ -926,18 +960,25 @@ namespace WeaponCore
                             var targetRequestPacket = packet as RequestTargetsPacket;
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
 
-                            if (myGrid == null || targetRequestPacket == null) break;
-                            GridAi ai;
-                            if(GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            if (targetRequestPacket == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                var gridPacket = new GridWeaponPacket {
+                                report.EntityClosed = myGrid.MarkedForClose;
+                                errorPacket.Error = $"overRidesPacket is null: {targetRequestPacket == null} ent.MarkedForClose: {myGrid.MarkedForClose} ent is null: {myGrid == null }";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var gridPacket = new GridWeaponPacket
+                                {
                                     EntityId = packet.EntityId,
                                     SenderId = packet.SenderId,
                                     PType = PacketType.TargetUpdate,
                                     Data = new List<WeaponData>()
                                 };
 
-                                for(int i = 0; i < targetRequestPacket.Comps.Length; i++)
+                                for (int i = 0; i < targetRequestPacket.Comps.Length; i++)
                                 {
                                     var compId = targetRequestPacket.Comps[i];
                                     var compCube = MyEntities.GetEntityByIdOrDefault(compId, null, true) as MyCubeBlock;
@@ -957,11 +998,12 @@ namespace WeaponCore
                                         };
 
                                         gridPacket.Data.Add(weaponData);
-                                    }                                        
+                                    }
                                 }
 
                                 if (gridPacket.Data.Count > 0)
-                                    PacketsToClient.Add(new PacketInfo {
+                                    PacketsToClient.Add(new PacketInfo
+                                    {
                                         Entity = myGrid,
                                         Packet = gridPacket,
                                         SingleClient = true,
@@ -969,6 +1011,9 @@ namespace WeaponCore
 
                                 report.PacketValid = true;
                             }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
                             break;
                         }
 
@@ -978,8 +1023,6 @@ namespace WeaponCore
 
                             if (PlayerEntityIdInRange.ContainsKey(packet.SenderId))
                                 PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
-
-                            if (myGrid == null) break;
 
                         }
                         break;
@@ -1022,16 +1065,21 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (shootStatePacket == null || comp == null) break;
+                            if (shootStatePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
+                            {
+                                report.EntityClosed = ent.MarkedForClose;
+                                errorPacket.Error = $"shootStatePacket is null: {shootStatePacket?.Data == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
 
-                            if(comp.State.Value.MId < shootStatePacket.MId)
+                            if (comp.State.Value.MId < shootStatePacket.MId)
                             {
                                 comp.State.Value.MId = shootStatePacket.MId;
                                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                                 {
                                     var w = comp.Platform.Weapons[i];
 
-                                    if(shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                    if (shootStatePacket.Data == TerminalActionState.ShootOnce)
                                         w.State.SingleShotCounter++;
 
                                     w.State.ManualShoot = shootStatePacket.Data;
@@ -1042,9 +1090,13 @@ namespace WeaponCore
                                     Entity = ent,
                                     Packet = shootStatePacket,
                                 });
-                            }
 
-                            report.PacketValid = true;
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
+                            
                             break;
                         }
 
@@ -1054,7 +1106,12 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (shootStatePacket == null || comp == null) break;
+                            if (shootStatePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
+                            {
+                                report.EntityClosed = ent.MarkedForClose;
+                                errorPacket.Error = $"shootStatePacket is null: {shootStatePacket?.Data == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
 
                             if (comp.State.Value.MId < shootStatePacket.MId)
                             {
@@ -1071,9 +1128,13 @@ namespace WeaponCore
                                     Entity = ent,
                                     Packet = shootStatePacket,
                                 });
-                            }
 
-                            report.PacketValid = true;
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
+                            
                             break;
                         }
 
@@ -1083,7 +1144,12 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (rangePacket == null || comp == null) break;
+                            if (rangePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
+                            {
+                                report.EntityClosed = ent.MarkedForClose;
+                                errorPacket.Error = $"shootStatePacket is null: {rangePacket?.Data == null} ent.MarkedForClose: {ent.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
 
                             if (comp.Set.Value.MId < rangePacket.MId)
                             {
@@ -1095,9 +1161,12 @@ namespace WeaponCore
                                     Entity = ent,
                                     Packet = rangePacket,
                                 });
-                            }
 
-                            report.PacketValid = true;
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                            
                             break;
                         }
 
@@ -1107,8 +1176,11 @@ namespace WeaponCore
 
                         break;
                 }
+
+                if(!report.PacketValid)
+                    Log.Line($"Invalid Packet: {errorPacket.PType} Entity: {errorPacket.Packet.EntityId} Failed to reproccess, Error Cause: {errorPacket.Error}");
             }
-            catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: PacketType:{ptype} Exception: {ex}"); }
         }
 
         internal void SyncWeapon(Weapon weapon, WeaponTimings timings, ref WeaponSyncValues weaponData, bool setState = true)
@@ -1181,12 +1253,12 @@ namespace WeaponCore
             GridAi trackingAi;
             if (updateAdd) //update/add
             {
-                if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && Players.ContainsKey(playerId))
+                if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
                     trackingAi.ControllingPlayers[playerId] = block;
             }
             else //remove
             {
-                if (GridTargetingAIs.TryGetValue(grid, out trackingAi) && Players.ContainsKey(playerId))
+                if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
                     trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
             }
         }
