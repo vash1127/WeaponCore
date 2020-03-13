@@ -101,8 +101,6 @@ namespace WeaponCore.Api
             if (dict == null)
                 return;
 
-            MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
-
             ApiAssign(dict, _getWeaponDefinitions);
 
             IsReady = true;

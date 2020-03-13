@@ -159,8 +159,7 @@ namespace WeaponCore
             DirtyGridsTmp.Clear();
             DirtyGridsTmp.AddRange(DirtyGrids);
             DirtyGrids.Clear();
-            for (int i = 0; i < DirtyGridsTmp.Count; i++)
-            {
+            for (int i = 0; i < DirtyGridsTmp.Count; i++) {
                 var grid = DirtyGridsTmp[i];
                 var newTypeMap = BlockTypePool.Get();
                 newTypeMap[Offense] = ConcurrentListPool.Get();
@@ -174,19 +173,17 @@ namespace WeaponCore
                 ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
                 FatMap fatMap;
-                if (GridToFatMap.TryGetValue(grid, out fatMap))
-                {
+                if (GridToFatMap.TryGetValue(grid, out fatMap)) {
                     var allFat = fatMap.MyCubeBocks;
                     var terminals = 0;
                     var tStatus = fatMap.Targeting == null || fatMap.Targeting.AllowScanning;
-                    for (int j = 0; j < allFat.Count; j++)
-                    {
+                    for (int j = 0; j < allFat.Count; j++) {
                         var fat = allFat[j];
                         if (!(fat is IMyTerminalBlock)) continue;
                         terminals++;
 
-                        using (fat.Pin())
-                        {
+                        using (fat.Pin()) {
+
                             if (fat.MarkedForClose) continue;
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
@@ -213,21 +210,16 @@ namespace WeaponCore
                     var gridBlocks = grid.BlocksCount;
                     if (gridBlocks > fatMap.MostBlocks) fatMap.MostBlocks = gridBlocks;
                     ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
-                    if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
-                    {
+                    if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap)) {
                         GridToBlockTypeMap[grid] = newTypeMap;
-                        
                         BlockTypeCleanUp.Enqueue(new DeferedTypeCleaning {Collection = oldTypeMap, RequestTick = Tick});
                     }
                     else GridToBlockTypeMap[grid] = newTypeMap;
                 }
                 else if (GridToBlockTypeMap.TryRemove(grid, out noFatTypeMap))
-                {
                     BlockTypeCleanUp.Enqueue(new DeferedTypeCleaning { Collection = noFatTypeMap, RequestTick = Tick });
-                }
             }
             DirtyGridsTmp.Clear();
-            //DsUtil2.Complete("UpdateGrids", false, true);
         }
     }
 }

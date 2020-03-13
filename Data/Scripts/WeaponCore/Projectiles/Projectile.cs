@@ -56,7 +56,7 @@ namespace WeaponCore.Projectiles
         internal double VisualStep;
         internal double DeadZone = 3;
         internal double MaxTrajectorySqr;
-        internal double DistanceToSurfaceSqr;
+        internal double PrevEndPointToCenterSqr;
         internal float DesiredSpeed;
         internal float MaxTrajectory;
         internal float BaseAmmoParticleScale;
