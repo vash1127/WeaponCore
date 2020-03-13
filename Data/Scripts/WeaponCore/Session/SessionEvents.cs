@@ -158,7 +158,7 @@ namespace WeaponCore
             var cube = lastEnt as MyCubeBlock;
             GridAi gridAi;
             if (cube!= null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                gridAi.TurnMouseShootOff();
+                gridAi.TurnManualShootOff();
         }
 
         private void PlayerConnected(long id)

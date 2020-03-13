@@ -96,7 +96,21 @@ namespace WeaponCore.Control
                             if (cState.ShootOn)
                                 w.State.ManualShoot = ShootOff;
                             else
+                            {
                                 w.State.ManualShoot = ShootOn;
+
+                                var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+                                comp.Set.Value.Overrides.ManualControl = false;
+                                comp.Set.Value.Overrides.TargetPainter = false;
+
+                                if (update && comp.Session.MpActive)
+                                {
+                                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                                    comp.SendControlingPlayer();
+                                    comp.SendOverRides();
+                                }
+                            }
                         }
 
                         if (comp.Session.HandlesInput && comp.Session.MpActive)

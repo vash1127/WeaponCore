@@ -908,45 +908,56 @@ namespace WeaponCore.Support
         }
 
 
-        internal void TurnMouseShootOff()
+        internal void TurnManualShootOff()
         {
             foreach (var cubeComp in WeaponBase)
             {
                 var comp = cubeComp.Value;
-                if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
+                var currPlayer = comp.State.Value.CurrentPlayerControl;
+
+                if (currPlayer.PlayerId != Session.PlayerId) continue;
+
                 var cState = comp.State.Value;
+                var origState = cState;
+                var overRides = comp.Set.Value.Overrides;
 
-                if (!cState.ClickShoot) return;
+                currPlayer.ControlType = ControlType.None;
+                currPlayer.PlayerId = -1;
+                comp.SendControlingPlayer();
 
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                if (cState.ClickShoot)
                 {
-                    var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
-
-                    if (cState.ClickShoot)
-                        wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
-
-                }
-
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                comp.State.Value.CurrentPlayerControl.PlayerId = -1;                
-
-                if (comp.Session.HandlesInput && comp.Session.MpActive)
-                {
-                    comp.State.Value.MId++;
-                    comp.Session.PacketsToServer.Add(new ShootStatePacket
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        MId = comp.State.Value.MId,
-                        PType = PacketType.WeaponToolbarShootState,
-                        Data = Weapon.TerminalActionState.ShootOff,
-                    });
+                        var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
 
-                    comp.SendControlingPlayer();
+                        if (cState.ClickShoot)
+                            wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
+
+                    }
+
+                    cState.ClickShoot = false;
+
+                    if (comp.Session.HandlesInput && comp.Session.MpActive)
+                    {
+                        comp.State.Value.MId++;
+                        comp.Session.PacketsToServer.Add(new ShootStatePacket
+                        {
+                            EntityId = comp.MyCube.EntityId,
+                            SenderId = comp.Session.MultiplayerId,
+                            MId = comp.State.Value.MId,
+                            PType = PacketType.WeaponToolbarShootState,
+                            Data = Weapon.TerminalActionState.ShootOff,
+                        });
+                    }
                 }
-
-                cState.ClickShoot = false;
-                comp.UpdateStateMp();
+                else if (overRides.TargetPainter || overRides.ManualControl)
+                {
+                    overRides.TargetPainter = false;
+                    overRides.ManualControl = false;
+                    comp.SendOverRides();
+                }
             }
         }
 
