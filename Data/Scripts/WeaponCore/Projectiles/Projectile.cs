@@ -145,7 +145,7 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
-            DistanceToSurfaceSqr = double.MaxValue;
+            PrevEndPointToCenterSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
 
             Guidance = Info.AmmoDef.Trajectory.Guidance;
