@@ -12,7 +12,7 @@ namespace WeaponCore.Api
     /// <summary>
     /// https://github.com/sstixrud/WeaponCore/blob/master/Data/Scripts/WeaponCore/Api/WeaponCoreApi.cs
     /// </summary>
-    internal class WcApi
+    public class WcApi
     {
         private bool _apiInit;
 
@@ -50,41 +50,40 @@ namespace WeaponCore.Api
         private const long Channel = 67549756549;
         private bool _getWeaponDefinitions;
         private bool _isRegistered;
+        private Action _readyCallback;
 
         /// <summary>
-        /// True if the WeaponCore replied when <see cref="Load(bool)"/> got called.
+        /// True if the WeaponCore replied when <see cref="Load"/> got called.
         /// </summary>
         public bool IsReady { get; private set; }
-        
+
         /// <summary>
-        /// Only filled if giving true to <see cref="Load(bool)"/>.
+        /// Only filled if giving true to <see cref="Load"/>.
         /// </summary>
         public readonly List<WcApiDef.WeaponDefinition> WeaponDefinitions = new List<WcApiDef.WeaponDefinition>();
 
-
         /// <summary>
         /// Ask WeaponCore to send the API methods.
-        /// <para>Returns true if it sent them, false if the mod didn't respond (not installed or had errors).</para>
         /// <para>Throws an exception if it gets called more than once per session without <see cref="Unload"/>.</para>
         /// </summary>
+        /// <param name="readyCallback">Method to be called when WeaponCore replies.</param>
         /// <param name="getWeaponDefinitions">Set to true to fill <see cref="WeaponDefinitions"/>.</param>
-        /// <returns>True if WeaponCore replied.</returns>
-        public bool Load(bool getWeaponDefinitions = false)
+        public void Load(Action readyCallback = null, bool getWeaponDefinitions = false)
         {
-            _getWeaponDefinitions = getWeaponDefinitions;
-
             if (_isRegistered)
                 throw new Exception($"{GetType().Name}.Load() should not be called multiple times!");
 
+            _readyCallback = readyCallback;
+            _getWeaponDefinitions = getWeaponDefinitions;
             _isRegistered = true;
             MyAPIGateway.Utilities.RegisterMessageHandler(Channel, HandleMessage);
             MyAPIGateway.Utilities.SendModMessage(Channel, "ApiEndpointRequest");
-            MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
-            return IsReady;
         }
 
         public void Unload()
         {
+            MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
+
             ApiAssign(null, false);
 
             _isRegistered = false;
@@ -94,17 +93,21 @@ namespace WeaponCore.Api
 
         private void HandleMessage(object obj)
         {
-            if (_apiInit)
+            if (_apiInit || obj is string) // the sent "ApiEndpointRequest" will also be received here, explicitly ignoring that
                 return;
 
             var dict = obj as IReadOnlyDictionary<string, Delegate>;
+
             if (dict == null)
                 return;
 
-            IsReady = true;
-            ApiAssign(dict, _getWeaponDefinitions);
-        }
+            MyAPIGateway.Utilities.UnregisterMessageHandler(Channel, HandleMessage);
 
+            ApiAssign(dict, _getWeaponDefinitions);
+
+            IsReady = true;
+            _readyCallback?.Invoke();
+        }
 
         public void ApiAssign(IReadOnlyDictionary<string, Delegate> delegates, bool getWeaponDefinitions = false)
         {
@@ -795,7 +798,6 @@ namespace WeaponCore.Api
                 [ProtoMember(5)] internal bool Restart;
                 [ProtoMember(6)] internal float HitPlayChance;
             }
-
 
             [ProtoContract]
             public struct ParticleDef
