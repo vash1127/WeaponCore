@@ -222,31 +222,10 @@ namespace WeaponCore
                         continue;
                     }
                 }
-                /*
                 var door = rootBlock.FatBlock as MyDoorBase;
-                if (door != null && door.Open)
-                {
-                    Log.Line($"door is open");
-                    var ray = new RayD(ref hitEnt.Intersection.From, ref hitEnt.Intersection.Direction);
-                    var rayHit = ray.Intersects(door.PositionComp.WorldVolume);
-                    if (rayHit != null)
-                    {
-                        //var rotMatrix = Quaternion.CreateFromRotationMatrix(door.WorldMatrix);
-                        //var obb = new MyOrientedBoundingBoxD(door.PositionComp.WorldAABB.Center, door.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                        var hitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * (rayHit.Value + 0.25f));
-                        IHitInfo hitInfo;
-                        if (!MyAPIGateway.Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15) || hitInfo.HitEntity != door)
-                        {
-                            var ent = (MyEntity)hitInfo?.HitEntity;
-                            if (ent != null) Log.Line($"open door and no hit: {ent.DebugName}");
-                            else Log.Line($"open door and no hit and ent null");
-                            continue;
-                        }
-                        Log.Line($"door hit");
-                    }
+                if (door != null && door.Open && !HitDoor(hitEnt, door))
+                    continue;
 
-                }
-                */
                 var radiate = radiantCascade || nova;
                 var dmgCount = 1;
                 if (radiate)
@@ -577,6 +556,25 @@ namespace WeaponCore
             entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero);
         }
 
+        private bool HitDoor(HitEntity hitEnt, MyDoorBase door)
+        {
+            var ray = new RayD(ref hitEnt.Intersection.From, ref hitEnt.Intersection.Direction);
+            var rayHit = ray.Intersects(door.PositionComp.WorldVolume);
+            if (rayHit != null)
+            {
+                var hitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * (rayHit.Value + 0.25f));
+                IHitInfo hitInfo;
+                if (MyAPIGateway.Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15))
+                {
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(door.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(door.PositionComp.WorldAABB.Center, door.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    var sphere = new BoundingSphereD(hitInfo.Position + (hitEnt.Intersection.Direction * 0.15f), 0.01f);
+                    if (obb.Intersects(ref sphere))
+                        return true;
+                }
+            }
+            return false;
+        }
         public void GetBlockSphereDb(MyCubeGrid grid, double areaRadius, out List<Vector3I> radiatedBlocks)
         {
             areaRadius = Math.Ceiling(areaRadius);
