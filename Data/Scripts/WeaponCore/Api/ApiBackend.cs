@@ -84,13 +84,16 @@ namespace WeaponCore.Api
 
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
         {
-            WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
+            WeaponStructure weaponStructure;
+            if (_session.WeaponPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id.SubtypeId, out weaponStructure))
             {
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                foreach (var platform in _session.WeaponPlatforms.Values)
                 {
-                    var w = comp.Platform.Weapons[i];
-                    collection.Add(w.System.WeaponName, w.WeaponId);
+                    foreach (var weaponSystem in platform.WeaponSystems.Values)
+                    {
+                        var system = weaponSystem;
+                        collection.Add(system.WeaponName, system.WeaponId);
+                    }
                 }
                 return true;
             }
