@@ -16,20 +16,6 @@ namespace WeaponCore
     public partial class Session
     {
         #region Network sync
-        internal void PacketizeToClientsInRange(MyEntity entity, Packet packet)
-        {
-            try
-            {
-                var bytes = MyAPIGateway.Utilities.SerializeToBinary(packet);
-                foreach (var p in Players.Values)
-                {
-                    if (p.SteamUserId != packet.SenderId && (entity == null || Vector3D.DistanceSquared(p.GetPosition(), entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr))
-                        MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in PacketizeToClientsInRange: {ex}"); }
-        }
-
         private void ClientReceivedPacket(byte[] rawData)
         {
             try
@@ -285,10 +271,7 @@ namespace WeaponCore
                             break;
                         }
 
-                        if (reticlePacket.Data)
-                            comp.OtherPlayerTrackingReticle = true;
-                        else
-                            comp.OtherPlayerTrackingReticle = false;
+                        comp.OtherPlayerTrackingReticle = reticlePacket.Data;
 
                         report.PacketValid = true;
                         break;
@@ -328,17 +311,16 @@ namespace WeaponCore
                                 }
                             }
 
-
                             break;
                         }
                     case PacketType.PlayerControlUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
-                        var cPlayerPacket = packet as ControllingPlayerPacket;
+                        var cPlayerPacket = (ControllingPlayerPacket) packet;
 
-                        if (comp == null || cPlayerPacket == null)
+                        if (comp == null)
                         {
-                            errorPacket.Error = $"cPlayerPacket was null {cPlayerPacket == null} Comp was null: {comp == null}";
+                            errorPacket.Error = $"[cPlayerPacket] Comp was null";
                             break;
                         }
 
@@ -352,11 +334,11 @@ namespace WeaponCore
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
-                        var idPacket = packet as WeaponIdPacket;
+                        var idPacket = (WeaponIdPacket) packet;
 
-                        if (comp == null || idPacket == null)
+                        if (comp == null)
                         {
-                            errorPacket.Error = $"idPacket was null {idPacket == null} Comp was null: {comp == null}";
+                            errorPacket.Error = $"[idPacket] Comp was null";
                             break;
                         }
                         //saving on extra field with new packet type
@@ -367,9 +349,9 @@ namespace WeaponCore
 
                     case PacketType.FullMouseUpdate:
                         {
-                            var mouseUpdatePacket = packet as MouseInputSyncPacket;
+                            var mouseUpdatePacket = (MouseInputSyncPacket) packet;
 
-                            if (mouseUpdatePacket?.Data == null) break;
+                            if (mouseUpdatePacket.Data == null) break;
 
                             for(int i = 0; i < mouseUpdatePacket.Data.Length; i++)
                             {
@@ -384,11 +366,11 @@ namespace WeaponCore
 
                     case PacketType.CompToolbarShootState:
                         {
-                            var shootStatePacket = packet as ShootStatePacket;
+                            var shootStatePacket = (ShootStatePacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (shootStatePacket == null || comp == null) break;
+                            if (comp == null) break;
 
                             comp.State.Value.MId = shootStatePacket.MId;
 
@@ -420,11 +402,11 @@ namespace WeaponCore
 
                     case PacketType.WeaponToolbarShootState:
                         {
-                            var shootStatePacket = packet as WeaponShootStatePacket;
+                            var shootStatePacket = (WeaponShootStatePacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (shootStatePacket == null || comp == null) break;
+                            if (comp == null) break;
                             
                             comp.State.Value.MId = shootStatePacket.MId;
                             var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
@@ -451,11 +433,11 @@ namespace WeaponCore
 
                     case PacketType.RangeUpdate:
                         {
-                            var rangePacket = packet as RangePacket;
+                            var rangePacket = (RangePacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (rangePacket == null || comp == null) break;
+                            if (comp == null) break;
 
                             comp.Set.Value.MId = rangePacket.MId;
                             comp.Set.Value.Range = rangePacket.Data;
@@ -467,9 +449,9 @@ namespace WeaponCore
                     case PacketType.GridAiUiMidUpdate:
                         {
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
-                            var midPacket = packet as MIdPacket;
+                            var midPacket = (MIdPacket) packet;
 
-                            if (myGrid == null || midPacket == null) break;
+                            if (myGrid == null) break;
 
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
@@ -631,7 +613,6 @@ namespace WeaponCore
 
                         if (statePacket?.Data == null || comp == null || ent.MarkedForClose)
                         {
-                            if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
                             errorPacket.Error = $"statePacket?.Data is null: {statePacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
                             break;
                         }
@@ -656,7 +637,6 @@ namespace WeaponCore
 
                         if (setPacket?.Data == null || comp == null || ent.MarkedForClose)
                         {
-                            if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
                             errorPacket.Error = $"setPacket?.Data is null: {setPacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
                             break;
                         }
@@ -680,7 +660,6 @@ namespace WeaponCore
 
                         if (mousePacket?.Data == null || ent == null || ent.MarkedForClose)
                         {
-                            if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
                             errorPacket.Error = $"mousePacket?.Data is null: {mousePacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent}";
                             break;
                         }
@@ -704,7 +683,6 @@ namespace WeaponCore
 
                             if (dPacket?.Data == null || block == null || block.MarkedForClose)
                             {
-                                if (block != null && block.MarkedForClose) report.EntityClosed = true;
                                 errorPacket.Error = $"dPacket?.Data is null: {dPacket?.Data == null} block is null: {block == null} ent.MarkedForClose: {block?.MarkedForClose}";
                                 break;
                             }
@@ -725,7 +703,6 @@ namespace WeaponCore
 
                             if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                report.EntityClosed = myGrid.MarkedForClose;
                                 errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null}";
                                 break;
                             }
@@ -754,7 +731,6 @@ namespace WeaponCore
 
                             if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                report.EntityClosed = myGrid.MarkedForClose;
                                 errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null }";
                                 break;
                             }
@@ -777,7 +753,6 @@ namespace WeaponCore
 
                             if (myGrid == null || myGrid.MarkedForClose)
                             {
-                                if (myGrid != null && myGrid.MarkedForClose) report.EntityClosed = true;
                                 errorPacket.Error = $"ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null: {myGrid == null }";
                                 break;
                             }
@@ -818,11 +793,9 @@ namespace WeaponCore
                                     Data = new List<WeaponData>()
                                 };
 
-                                List<WeaponComponent> comps = new List<WeaponComponent>(ai.WeaponBase.Values);
-
-                                for (int i = 0; i < comps.Count; i++)
+                                for (int i = 0; i < _gridSyncCompTmpList.Count; i++)
                                 {
-                                    comp = comps[i];
+                                    comp = _gridSyncCompTmpList[i];
                                     if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed) continue;
 
                                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -839,6 +812,7 @@ namespace WeaponCore
                                         gridPacket.Data.Add(weaponData);
                                     }
                                 }
+                                _gridSyncCompTmpList.Clear();
 
                                 if (gridPacket.Data.Count > 0)
                                     PacketsToClient.Add(new PacketInfo
@@ -879,17 +853,13 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (reticlePacket == null || ent == null || comp == null || ent.MarkedForClose)
+                            if (reticlePacket == null || comp == null || ent.MarkedForClose)
                             {
-                                if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
                                 errorPacket.Error = $"reticlePacket is null: {reticlePacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
                             }
 
-                            if (reticlePacket.Data)
-                                comp.TrackReticle = true;
-                            else
-                                comp.TrackReticle = false;
+                            comp.TrackReticle = reticlePacket.Data;
 
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
 
@@ -898,18 +868,18 @@ namespace WeaponCore
                         }
                     case PacketType.OverRidesUpdate:
                         {
-                            var overRidesPacket = packet as OverRidesPacket;
+                            var overRidesPacket = (OverRidesPacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (overRidesPacket == null || ent == null || (comp == null && !(ent is MyCubeGrid)) || ent.MarkedForClose)
+                            var myGrid = ent as MyCubeGrid;
+
+                            if (ent == null || ent.MarkedForClose || comp == null && myGrid == null)
                             {
-                                if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
-                                errorPacket.Error = $"overRidesPacket is null: {overRidesPacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                errorPacket.Error = $"comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
                             }
 
-                            var myGrid = ent as MyCubeGrid;
                             if (comp != null && comp.Set.Value.MId < overRidesPacket.MId)
                             {
                                 comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
@@ -957,12 +927,11 @@ namespace WeaponCore
                     case PacketType.PlayerControlUpdate:
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                         comp = ent?.Components.Get<WeaponComponent>();
-                        var cPlayerPacket = packet as ControllingPlayerPacket;
+                        var cPlayerPacket = (ControllingPlayerPacket) packet;
 
-                        if (cPlayerPacket == null || ent == null || comp == null  || ent.MarkedForClose)
+                        if (comp == null  || ent.MarkedForClose)
                         {
-                            if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
-                            errorPacket.Error = $"overRidesPacket is null: {cPlayerPacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                            errorPacket.Error = $"[overRidesPacket] comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose}";
                             break;
                         }
 
@@ -980,13 +949,12 @@ namespace WeaponCore
 
                     case PacketType.TargetUpdateRequest:
                         {
-                            var targetRequestPacket = packet as RequestTargetsPacket;
+                            var targetRequestPacket = (RequestTargetsPacket) packet;
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
 
-                            if (targetRequestPacket == null || myGrid == null || myGrid.MarkedForClose)
+                            if (myGrid == null || myGrid.MarkedForClose)
                             {
-                                if (myGrid != null && myGrid.MarkedForClose) report.EntityClosed = true;
-                                errorPacket.Error = $"overRidesPacket is null: {targetRequestPacket == null} ent.MarkedForClose: {myGrid?.MarkedForClose} ent is null: {myGrid == null }";
+                                errorPacket.Error = $"[overRidesPacket] ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null: {myGrid == null }";
                                 break;
                             }
 
@@ -1081,14 +1049,13 @@ namespace WeaponCore
 
                     case PacketType.CompToolbarShootState:
                         {
-                            var shootStatePacket = packet as ShootStatePacket;
+                            var shootStatePacket = (ShootStatePacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (shootStatePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
                             {
-                                if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
-                                errorPacket.Error = $"shootStatePacket is null: {shootStatePacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
+                                errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
                                 break;
                             }
 
@@ -1134,14 +1101,13 @@ namespace WeaponCore
 
                     case PacketType.WeaponToolbarShootState:
                         {
-                            var shootStatePacket = packet as WeaponShootStatePacket;
+                            var shootStatePacket = (WeaponShootStatePacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (shootStatePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
+                            if (comp == null || ent.MarkedForClose)
                             {
-                                if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
-                                errorPacket.Error = $"shootStatePacket is null: {shootStatePacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
                             }
 
@@ -1183,14 +1149,13 @@ namespace WeaponCore
 
                     case PacketType.RangeUpdate:
                         {
-                            var rangePacket = packet as RangePacket;
+                            var rangePacket = (RangePacket) packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (rangePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
+                            if (comp == null || ent.MarkedForClose)
                             {
-                                if (ent != null && ent.MarkedForClose) report.EntityClosed = true;
-                                errorPacket.Error = $"shootStatePacket is null: {rangePacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
                             }
 

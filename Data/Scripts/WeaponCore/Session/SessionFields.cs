@@ -100,7 +100,6 @@ namespace WeaponCore
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
         internal readonly Queue<Weapon> ChargingWeaponsToReload = new Queue<Weapon>();
-        
         internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
@@ -122,7 +121,8 @@ namespace WeaponCore
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
-        
+        private readonly List<WeaponComponent> _gridSyncCompTmpList = new List<WeaponComponent>();
+
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
