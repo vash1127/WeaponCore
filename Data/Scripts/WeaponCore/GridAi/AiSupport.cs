@@ -162,6 +162,8 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
+                var gridCompare = (x.Target is MyCubeGrid).CompareTo(y.Target is MyCubeGrid);
+                if (gridCompare != 0) return -gridCompare;
                 var xCollision = x.Approaching && x.DistSqr < 90000 && x.VelLenSqr > 100;
                 var yCollision = y.Approaching && y.DistSqr < 90000 && y.VelLenSqr > 100;
                 var collisionRisk = xCollision.CompareTo(yCollision);
@@ -229,7 +231,7 @@ namespace WeaponCore.Support
                 {
                     OffenseRating = targetAi.Construct.OptimalDps / myAi.Construct.OptimalDps;
                 }
-                else if (detectInfo.Armed) OffenseRating = 0.01f;
+                else if (detectInfo.Armed) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
 
                 var targetDist = Vector3D.Distance(myAi.GridVolume.Center, TargetPos) - TargetRadius;
