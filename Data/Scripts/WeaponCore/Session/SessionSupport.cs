@@ -212,13 +212,14 @@ namespace WeaponCore
                 var w = ChargingWeaponsToReload.Dequeue();
                 w.StartReload();
             }
-
+            /*
             foreach (var myEntity in MyEntities.GetEntities())
             {
                 var grid = myEntity as MyCubeGrid;
                 if (grid != null)
                     RemoveCoreToolbarWeapons(grid);
             }
+            */
         }
 
         internal bool KeenFuckery()
