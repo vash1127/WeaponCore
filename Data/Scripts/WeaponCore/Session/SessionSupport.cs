@@ -78,36 +78,6 @@ namespace WeaponCore
                 ShieldApiLoaded = true;
         }
 
-        internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
-        {
-            foreach (var cube in grid.GetFatBlocks())
-            {
-                if (cube is MyShipController)
-                {
-                    var ob = (MyObjectBuilder_ShipController)cube.GetObjectBuilderCubeBlock();
-                    var reinit = false;
-                    for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
-                    {
-                        var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
-                        if (toolbarItem != null)
-                        {
-                            var defId = (MyDefinitionId)toolbarItem.defId;
-                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId))
-                            {
-                                var index = ob.Toolbar.Slots[i].Index;
-                                var item = ob.Toolbar.Slots[i].Item;
-                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot { Index = index, Item = item };
-                                reinit = true;
-                            }
-                        }
-                    }
-
-                    if (reinit)
-                        cube.Init(ob, grid);
-                }
-            }
-        }
-
         internal void ProfilePerformance()
         {
             var netTime = DsUtil.GetValue("network");
@@ -212,6 +182,7 @@ namespace WeaponCore
                 var w = ChargingWeaponsToReload.Dequeue();
                 w.StartReload();
             }
+
             /*
             foreach (var myEntity in MyEntities.GetEntities())
             {
@@ -221,6 +192,38 @@ namespace WeaponCore
             }
             */
         }
+
+
+        internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
+        {
+            foreach (var cube in grid.GetFatBlocks())
+            {
+                if (cube is MyShipController)
+                {
+                    var ob = (MyObjectBuilder_ShipController)cube.GetObjectBuilderCubeBlock();
+                    var reinit = false;
+                    for (int i = 0; i < ob.Toolbar.Slots.Count; i++)
+                    {
+                        var toolbarItem = ob.Toolbar.Slots[i].Data as MyObjectBuilder_ToolbarItemWeapon;
+                        if (toolbarItem != null)
+                        {
+                            var defId = (MyDefinitionId)toolbarItem.defId;
+                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId))
+                            {
+                                var index = ob.Toolbar.Slots[i].Index;
+                                var item = ob.Toolbar.Slots[i].Item;
+                                ob.Toolbar.Slots[i] = new MyObjectBuilder_Toolbar.Slot { Index = index, Item = item };
+                                reinit = true;
+                            }
+                        }
+                    }
+
+                    if (reinit)
+                        cube.Init(ob, grid);
+                }
+            }
+        }
+
 
         internal bool KeenFuckery()
         {

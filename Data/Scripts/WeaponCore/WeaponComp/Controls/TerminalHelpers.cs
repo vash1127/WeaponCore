@@ -27,13 +27,6 @@ namespace WeaponCore.Control
                 if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
                     a.Enabled = b => !b.Components.Has<WeaponComponent>();
 
-                /*else if(a.Id.Contains("Control"))
-                    a.Enabled = b =>
-                    {
-                        var comp = b?.Components?.Get<WeaponComponent>();
-                        return comp == null || comp.HasTurret;
-                    };*/
-
                 else if (a.Id.Equals("ShootOnce"))
                 {
                     var oldAction = a.Action;
@@ -70,7 +63,6 @@ namespace WeaponCore.Control
                                 Data = ShootOnce,
                             });
                         }
-                        //comp.UpdateStateMp();
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -127,9 +119,7 @@ namespace WeaponCore.Control
                         }
 
                         cState.ShootOn = !cState.ShootOn;
-                        cState.ClickShoot = cState.ShootOn ? false : cState.ClickShoot;
-
-                        //comp.UpdateStateMp();
+                        cState.ClickShoot = !cState.ShootOn && cState.ClickShoot;
                     };
 
                     var oldWriter = a.Writer;
