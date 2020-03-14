@@ -160,7 +160,7 @@ namespace WeaponCore.Support
 
                         Entity.NeedsWorldMatrix = true;
 
-                        if (!Ai.GridInit) 
+                        if (!Ai.GridInit || !Ai.Session.GridToFatMap.ContainsKey(Ai.MyGrid)) 
                             Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
                         else 
                             OnAddedToSceneTasks();

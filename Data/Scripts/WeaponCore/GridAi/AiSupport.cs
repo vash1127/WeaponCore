@@ -100,6 +100,7 @@ namespace WeaponCore.Support
                 OptimalDps = ai.OptimalDps;
                 foreach (var grid in ai.SubGrids)
                 {
+                    if (grid == ai.MyGrid) continue;
                     FatMap fatMap;
                     if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
                     {
@@ -288,7 +289,7 @@ namespace WeaponCore.Support
 
                     if (Session.MpActive && group.Value.Comps != null && group.Value.Comps.Count > 0 && group.Key != null && group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null)
                         SyncGridOverrides(this, group.Key, group.Value.Comps.FirstElement().Set.Value.Overrides);
-                    else Log.Line($"[SyncGridOverrides had null] - Comp:{group.Value.Comps != null} - GroupKey:{group.Key != null} - Overrides:{group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null}");
+                    else if (Session.MpActive) Log.Line($"[SyncGridOverrides had null] - Comp:{group.Value.Comps != null} - GroupKey:{group.Key != null} - Set:{group.Value.Comps?.FirstElement()?.Set != null} - Value:{group.Value.Comps?.FirstElement()?.Set?.Value != null} - Overrides:{group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null}");
                 }
                 BlockGroups.ApplyRemovals();
 
