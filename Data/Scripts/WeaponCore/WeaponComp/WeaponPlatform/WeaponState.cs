@@ -392,6 +392,7 @@ namespace WeaponCore.Platform
             FinishBurst = false;
             State.Sync.Reloading = true;
 
+            /*
             var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
             if (!(ActiveAmmoDef.Equals(newAmmo)) && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
@@ -402,7 +403,7 @@ namespace WeaponCore.Platform
                 //moving ammo is threaded need this to wait for the ammo to swap out
                 Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, 3);
                 return;
-            }
+            }*/
 
             if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
