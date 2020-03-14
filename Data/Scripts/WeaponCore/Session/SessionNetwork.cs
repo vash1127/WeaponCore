@@ -124,7 +124,6 @@ namespace WeaponCore
                                         }
                                     }
                                 }
-                                //weapon.TargetState = weapon.Target.State;
                             }
 
                             report.PacketValid = true;
@@ -1187,9 +1186,6 @@ namespace WeaponCore
 
                         break;
                 }
-
-                //if(!report.PacketValid)
-                    //Log.Line($"Invalid Packet: {errorPacket.PType} Entity: {errorPacket.Packet.EntityId} Failed to reproccess, Error Cause: {errorPacket.Error}");
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: PacketType:{ptype} Exception: {ex}"); }
         }
