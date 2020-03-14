@@ -96,18 +96,25 @@ namespace WeaponCore.Support
 
             internal Constructs(GridAi ai)
             {
-                BlockCount = ai.Session.GridToFatMap[ai.MyGrid].MostBlocks;
-                OptimalDps = ai.OptimalDps;
-                foreach (var grid in ai.SubGrids)
+                FatMap fatMap;
+                if (ai?.MyGrid != null && ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap))
                 {
-                    if (grid == ai.MyGrid) continue;
-                    FatMap fatMap;
-                    if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
+                    BlockCount = fatMap.MostBlocks;
+                    OptimalDps = ai.OptimalDps;
+                    foreach (var grid in ai.SubGrids)
                     {
-                        BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
-                        OptimalDps += ai.OptimalDps;
+                        if (grid == ai.MyGrid) continue;
+                        if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
+                        {
+                            BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
+                            OptimalDps += ai.OptimalDps;
+                        }
                     }
+                    return;
                 }
+
+                OptimalDps = 0;
+                BlockCount = 0;
             }
         }
 
