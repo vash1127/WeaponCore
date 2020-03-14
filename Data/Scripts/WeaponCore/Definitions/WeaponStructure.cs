@@ -55,6 +55,7 @@ namespace WeaponCore.Support
         public readonly int MinElevation;
         public readonly int MaxElevation;
         public readonly int MaxHeat;
+        public readonly int WeaponIdHash;
         public readonly int WeaponId;
         public readonly int BarrelsPerShot;
         public readonly int HeatPerShot;
@@ -119,7 +120,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, int weaponId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -129,6 +130,7 @@ namespace WeaponCore.Support
 
             Values = values;
             Barrels = values.Assignments.Barrels;
+            WeaponIdHash = weaponIdHash;
             WeaponId = weaponId;
             WeaponName = weaponName;
             WeaponAmmoTypes = weaponAmmoTypes;
@@ -706,7 +708,7 @@ namespace WeaponCore.Support
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             var muzzlePartNames = new MyStringHash[numOfParts];
-            var mapIndex = 0;
+            var weaponId = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             HashToId = new Dictionary<int, int>();
 
@@ -717,7 +719,7 @@ namespace WeaponCore.Support
                 var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
                 var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
 
-                muzzlePartNames[mapIndex] = myMuzzleNameHash;
+                muzzlePartNames[weaponId] = myMuzzleNameHash;
 
                 var typeName = w.Value.Item1;
                 var weaponDef = new WeaponDefinition();
@@ -735,7 +737,7 @@ namespace WeaponCore.Support
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
                     var ammo = weaponDef.Ammos[i];
-                    if (!shrapnelNames.Contains(ammo.Shrapnel.AmmoRound) && !String.IsNullOrEmpty(ammo.Shrapnel.AmmoRound))
+                    if (!shrapnelNames.Contains(ammo.Shrapnel.AmmoRound) && !string.IsNullOrEmpty(ammo.Shrapnel.AmmoRound))
                         shrapnelNames.Add(ammo.Shrapnel.AmmoRound);
                 }
                     
@@ -753,10 +755,10 @@ namespace WeaponCore.Support
                     weaponAmmo[i] = new WeaponAmmoTypes {AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
-                var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
-                HashToId.Add(weaponId, mapIndex);
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponId));
-                mapIndex++;
+                var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
+                HashToId.Add(weaponIdHash, weaponId);
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
+                weaponId++;
             }
 
             GridWeaponCap = gridWeaponCap;

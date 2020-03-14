@@ -168,7 +168,7 @@ namespace WeaponCore.Projectiles
 
                 var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize);
                 sphere.Include(new BoundingSphereD(p.Info.Target.Projectile.LastPosition, 1));
-                var rayCheck = useLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
+                var rayCheck = useLine && sphere.Intersects(new RayD(p.LastPosition, p.Info.Direction)) != null;
                 var testSphere = p.PruneSphere;
                 testSphere.Radius = hitTolerance;
 
@@ -224,7 +224,7 @@ namespace WeaponCore.Projectiles
                 p.Info.TriggeredPulse = true;
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                 p.Velocity = Vector3D.Zero;
-                p.Hit.HitPos = p.Position + p.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
+                p.Hit.HitPos = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
                 p.Info.HitList.Clear();
                 return false;
             }

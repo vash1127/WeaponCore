@@ -189,7 +189,7 @@ namespace WeaponCore.Platform
                             {
 
                                 vProjectile.Info.Origin = muzzle.Position;
-                                vProjectile.Direction = muzzle.DeviatedDir;
+                                vProjectile.Info.Direction = muzzle.DeviatedDir;
                                 vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
                             }
 
@@ -223,7 +223,7 @@ namespace WeaponCore.Platform
                             p.Info.Origin = muzzle.Position;
                             p.Info.OriginUp = MyPivotUp;
                             p.PredictedTargetPos = Target.TargetPos;
-                            p.Direction = muzzle.DeviatedDir;
+                            p.Info.Direction = muzzle.DeviatedDir;
                             p.State = Projectile.ProjectileState.Start;
                             p.Info.PrimeEntity = ActiveAmmoDef.AmmoDef.Const.PrimeModel ? ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
                             p.Info.TriggerEntity = ActiveAmmoDef.AmmoDef.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
@@ -237,11 +237,11 @@ namespace WeaponCore.Platform
                                     var addProjectile = ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                                     if (!addProjectile && targetAi.PointDefense)
                                     {
-                                        if (Vector3.Dot(p.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
+                                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
                                         {
                                             var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
                                             targetSphere.Radius *= 3;
-                                            var testRay = new RayD(p.Info.Origin, p.Direction);
+                                            var testRay = new RayD(p.Info.Origin, p.Info.Direction);
                                             var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
                                             if (!quickCheck)
                                             {
@@ -367,7 +367,7 @@ namespace WeaponCore.Platform
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;
             p.PredictedTargetPos = Target.TargetPos;
-            p.Direction = MyPivotDir;
+            p.Info.Direction = MyPivotDir;
             p.State = Projectile.ProjectileState.Start;
             return p;
         }

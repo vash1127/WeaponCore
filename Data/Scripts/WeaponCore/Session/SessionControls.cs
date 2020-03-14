@@ -138,16 +138,16 @@ namespace WeaponCore
                         if (ob != null && builderType.GetType() == ob.GetType())
                         {
                             var wepName = ws.Value.WeaponName;
-                            var wepId = ws.Value.WeaponId;
+                            var wepIdHash = ws.Value.WeaponIdHash;
 
-                            if (!wepIDs.Contains(wepId))
-                                wepIDs.Add(wepId);
+                            if (!wepIDs.Contains(wepIdHash))
+                                wepIDs.Add(wepIdHash);
                             else
                                 continue;
 
-                            CreateShootActionSet<T>(wepName, wepId);
+                            CreateShootActionSet<T>(wepName, wepIdHash);
                             if (ws.Value.WeaponAmmoTypes.Length > 1)
-                                CreateCycleAmmoOptions<T>(wepName, wepId, session.ModPath());
+                                CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
                         }
                     }
                 }
@@ -235,7 +235,7 @@ namespace WeaponCore
             action0.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
                 
                 var w = comp.Platform.Weapons[weaponId];
 
@@ -281,7 +281,7 @@ namespace WeaponCore
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
 
-                return comp.Platform.Weapons[weaponId].System.WeaponId == id;
+                return comp.Platform.Weapons[weaponId].System.WeaponIdHash == id;
             };
 
             action0.ValidForGroups = true;
@@ -295,7 +295,7 @@ namespace WeaponCore
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 
                 int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
 
                 var w = comp.Platform.Weapons[weaponId];
 
@@ -335,7 +335,7 @@ namespace WeaponCore
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
                 
-                return comp.Platform.Weapons[weaponId].System.WeaponId == id;
+                return comp.Platform.Weapons[weaponId].System.WeaponIdHash == id;
             };
             action1.ValidForGroups = false;
 
@@ -348,7 +348,7 @@ namespace WeaponCore
                 var comp = blk?.Components?.Get<WeaponComponent>();
 
                 int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
 
                 comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
 
@@ -377,7 +377,7 @@ namespace WeaponCore
                 int weaponId;
                 if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
                 {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                    if (comp.Platform.Weapons[weaponId].System.WeaponIdHash == id)
                         return true;
                 }
                 return false;
@@ -396,7 +396,7 @@ namespace WeaponCore
                 int weaponId;
                 if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
                 {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                    if (comp.Platform.Weapons[weaponId].System.WeaponIdHash == id)
                     {
                         var cState = comp.State.Value;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
@@ -427,7 +427,7 @@ namespace WeaponCore
                 int weaponId;
                 if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
                 {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                    if (comp.Platform.Weapons[weaponId].System.WeaponIdHash == id)
                         return true;
                 }
                 return false;
@@ -446,7 +446,7 @@ namespace WeaponCore
             {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
                 try
                 {
                     var w = comp.Platform.Weapons[weaponId];
@@ -495,7 +495,7 @@ namespace WeaponCore
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
 
-                return comp.Platform.Weapons[weaponId].System.WeaponId == id;
+                return comp.Platform.Weapons[weaponId].System.WeaponIdHash == id;
             };
 
             action0.ValidForGroups = true;
@@ -512,7 +512,7 @@ namespace WeaponCore
                 if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
                 {
                     var w = comp.Platform.Weapons[weaponId];
-                    if (weaponHash == w.System.WeaponId && w.State.ManualShoot != ShootOff)
+                    if (weaponHash == w.System.WeaponIdHash && w.State.ManualShoot != ShootOff)
                         return true;
                 }
             }
