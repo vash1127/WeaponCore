@@ -87,13 +87,10 @@ namespace WeaponCore.Api
             WeaponStructure weaponStructure;
             if (_session.WeaponPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id.SubtypeId, out weaponStructure))
             {
-                foreach (var platform in _session.WeaponPlatforms.Values)
+                foreach (var weaponSystem in weaponStructure.WeaponSystems.Values)
                 {
-                    foreach (var weaponSystem in platform.WeaponSystems.Values)
-                    {
-                        var system = weaponSystem;
-                        collection.Add(system.WeaponName, system.WeaponId);
-                    }
+                    var system = weaponSystem;
+                    collection.Add(system.WeaponName, system.WeaponId);
                 }
                 return true;
             }
