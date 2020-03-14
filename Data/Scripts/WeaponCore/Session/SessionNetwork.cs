@@ -1327,7 +1327,7 @@ namespace WeaponCore
         }
         internal void ProccessServerPacketsForClients()
         {
-            if (!IsServer)
+            if (!IsServer || !MpActive)
             {
                 Log.Line($"trying to process server packets on a non-server");
                 return;
@@ -1356,7 +1356,7 @@ namespace WeaponCore
 
         internal void ProccessClientPacketsForServer()
         {
-            if (!IsClient)
+            if (!IsClient || !MpActive)
             {
                 Log.Line($"trying to process client packets on a non-client");
                 return;
