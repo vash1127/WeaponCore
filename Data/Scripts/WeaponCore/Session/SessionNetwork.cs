@@ -367,7 +367,7 @@ namespace WeaponCore
                     case PacketType.CompToolbarShootState:
                         {
                             var shootStatePacket = (ShootStatePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (comp == null) break;
@@ -403,7 +403,7 @@ namespace WeaponCore
                     case PacketType.WeaponToolbarShootState:
                         {
                             var shootStatePacket = (WeaponShootStatePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (comp == null) break;
@@ -434,7 +434,7 @@ namespace WeaponCore
                     case PacketType.RangeUpdate:
                         {
                             var rangePacket = (RangePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (comp == null) break;
@@ -448,7 +448,7 @@ namespace WeaponCore
 
                     case PacketType.GridAiUiMidUpdate:
                         {
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
                             var midPacket = (MIdPacket) packet;
 
                             if (myGrid == null) break;
