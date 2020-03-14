@@ -156,7 +156,7 @@ namespace WeaponCore
                     if (report.PacketValid) validPackets++;
                     else invalidPackets++;
 
-                    if (report.EntityClosed) closedEntities++;
+                    //if (report.EntityClosed) closedEntities++;
 
                     if (report.Receiver == NetworkReporter.Report.Received.None) noneReceivers++;
                     else if (report.Receiver == NetworkReporter.Report.Received.Server) serverReceivers++;

@@ -187,7 +187,7 @@ namespace WeaponCore
         }
 
         #region Network
-        /*public void NetworkUpdate()
+        public void NetworkUpdate()
         {
             Value.MId++;
             if (Comp.Session.MpActive && Comp.Session.IsServer)
@@ -211,7 +211,7 @@ namespace WeaponCore
                     Data = Value
                 });
             }
-        }*/
+        }
         #endregion
     }
 }

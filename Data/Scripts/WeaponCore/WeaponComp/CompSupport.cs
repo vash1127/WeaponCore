@@ -25,11 +25,11 @@ namespace WeaponCore.Support
                 State.NetworkUpdate();
         }*/
 
-        /*internal void UpdateSettingsMp()
+        internal void UpdateSettingsMp()
         {
             if (Session.MpActive)
                 Set.NetworkUpdate();
-        }*/
+        }
 
         internal void SendOverRides()
         {
