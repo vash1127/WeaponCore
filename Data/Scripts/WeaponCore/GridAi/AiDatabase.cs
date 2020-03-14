@@ -75,14 +75,19 @@ namespace WeaponCore.Support
                                     }
                                     if (!valid) continue;
                                 }
-                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatMap.MostBlocks, fatCount));
-                                ValidGrids.Add(ent);
+
+                                int partCount;
                                 GridAi targetAi;
-                                if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
-                                {
+                                if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi)) {
                                     targetAi.TargetAisTmp.Add(this);
                                     TargetAisTmp.Add(targetAi);
+                                    partCount = targetAi.Construct.BlockCount;
                                 }
+                                else 
+                                    partCount = fatMap.MostBlocks;
+
+                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount));
+                                ValidGrids.Add(ent);
                             }
                             else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
                         }

@@ -62,6 +62,7 @@ namespace WeaponCore.Support
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
+        internal Constructs Construct;
         //internal GridAIValues AIValues = new GridAIValues();
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -111,7 +112,6 @@ namespace WeaponCore.Support
         internal bool StaticGridInRange;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
-        //internal bool CheckReload;
         internal bool HasPower;
         internal bool HadPower;
         internal bool WasPowered;
@@ -155,7 +155,6 @@ namespace WeaponCore.Support
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
-            
             if (Session.IsClient)
             {
                 Session.PacketsToServer.Add(new Packet

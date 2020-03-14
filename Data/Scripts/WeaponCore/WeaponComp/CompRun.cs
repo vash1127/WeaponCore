@@ -222,7 +222,7 @@ namespace WeaponCore.Support
                 }
 
                 Ai.OptimalDps += OptimalDps;
-
+                Ai.UpdateConstruct();
                 
                 if (!FunctionalBlock.Enabled)
                     for (int i = 0; i < Platform.Weapons.Length; i++)

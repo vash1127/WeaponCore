@@ -12,6 +12,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
@@ -80,6 +81,32 @@ namespace WeaponCore.Support
             {
                 ThreatRangeSqr = double.MaxValue;
                 TargetInRange = false;
+            }
+        }
+
+        internal void UpdateConstruct()
+        {
+            Construct = new Constructs(this);
+        }
+
+        internal struct Constructs
+        {
+            internal readonly float OptimalDps;
+            internal readonly int BlockCount;
+
+            internal Constructs(GridAi ai)
+            {
+                BlockCount = ai.Session.GridToFatMap[ai.MyGrid].MostBlocks;
+                OptimalDps = ai.OptimalDps;
+                foreach (var grid in ai.SubGrids)
+                {
+                    FatMap fatMap;
+                    if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
+                    {
+                        BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
+                        OptimalDps += ai.OptimalDps;
+                    }
+                }
             }
         }
 
@@ -192,7 +219,7 @@ namespace WeaponCore.Support
 
                 if (targetAi != null)
                 {
-                    OffenseRating = targetAi.OptimalDps / myAi.OptimalDps;
+                    OffenseRating = targetAi.Construct.OptimalDps / myAi.Construct.OptimalDps;
                 }
                 else if (detectInfo.Armed) OffenseRating = 0.01f;
                 else OffenseRating = 0;
@@ -259,8 +286,9 @@ namespace WeaponCore.Support
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
 
-                    if(group.Value.Comps.Count > 0)
+                    if (Session.MpActive && group.Value.Comps != null && group.Value.Comps.Count > 0 && group.Key != null && group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null)
                         SyncGridOverrides(this, group.Key, group.Value.Comps.FirstElement().Set.Value.Overrides);
+                    else Log.Line($"[SyncGridOverrides had null] - Comp:{group.Value.Comps != null} - GroupKey:{group.Key != null} - Overrides:{group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null}");
                 }
                 BlockGroups.ApplyRemovals();
 
@@ -737,6 +765,8 @@ namespace WeaponCore.Support
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
             }
             RemSubGrids.Clear();
+
+            UpdateConstruct();
         }
 
         #region Power
@@ -789,7 +819,6 @@ namespace WeaponCore.Support
             PowerIncrease = false;
             RequestedPowerChanged = false;
             RequestIncrease = false;
-            //CheckReload = false;
             DbReady = false;
             Focus.Clean();
             MyShieldTmp = null;

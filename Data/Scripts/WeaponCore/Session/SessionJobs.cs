@@ -54,12 +54,7 @@ namespace WeaponCore
                     db.TargetingInfo.Clean();
 
                     if (db.MyPlanetTmp != null)
-                    {
-                        //var gridBox = db.MyGrid.PositionComp.WorldAABB;
-                        //if (db.MyPlanetTmp.IntersectsWithGravityFast(ref gridBox)) db.MyPlanetInfo();
-                        //else if (db.MyPlanet != null) db.MyPlanetInfo(clear: true);
                         db.MyPlanetInfo();
-                    }
 
                     foreach (var sub in db.PrevSubGrids) db.SubGrids.Add(sub);
                     if (db.SubGridsChanged) db.SubGridChanges();

@@ -83,9 +83,9 @@ namespace WeaponCore.Support
 
         internal string GetSystemStatus()
         {
-            if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
-            if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
-            return "[Systems Online]";
+            if (!State.Value.Online && !MyCube.IsFunctional) return "[Fault]";
+            if (!State.Value.Online && !MyCube.IsWorking) return "[Offline]";
+            return "[Online]";
         }
 
         private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder stringBuilder)
@@ -95,8 +95,9 @@ namespace WeaponCore.Support
                 var status = GetSystemStatus();
 
                 stringBuilder.Append(status +
-                    "\n[Optimal DPS]: " + OptimalDps.ToString("0.0") + 
-                    "\n[Current DPS]: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/OptimalDps).ToString("P") + ")");
+                    "\n[Construct DPS]: " + Ai.OptimalDps.ToString("0.0") +
+                    "\n[Weapon MaxDPS]: " + OptimalDps.ToString("0.0") + 
+                    "\n[Weapon DPS]: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/OptimalDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +
