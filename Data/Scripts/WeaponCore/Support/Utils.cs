@@ -112,14 +112,12 @@ namespace WeaponCore.Support
 
             public Received Receiver;
             public bool PacketValid;
-            public bool EntityClosed;
             public int PacketSize;
 
             public void Clean()
             {
                 Receiver = Received.None;
                 PacketValid = false;
-                EntityClosed = false;
                 PacketSize = 0;
             }
         }

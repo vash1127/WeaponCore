@@ -94,19 +94,19 @@ namespace WeaponCore.Projectiles
                             if (p.LinePlanetCheck)
                             {
                                 var check = false;
-                                var closestPos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
+                                var surfacePos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
                                 var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
-                                double cDistToCenter;
-                                Vector3D.DistanceSquared(ref closestPos, ref planetCenter, out cDistToCenter);
-                                double pDistToCenter;
-                                Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistToCenter);
-                                double mDistToCenter;
-                                Vector3D.DistanceSquared(ref p.Info.Origin, ref planetCenter, out mDistToCenter);
+                                double surfaceToCenter;
+                                Vector3D.DistanceSquared(ref surfacePos, ref planetCenter, out surfaceToCenter);
+                                double endPointToCenter;
+                                Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out endPointToCenter);
+                                double startPointToCenter;
+                                Vector3D.DistanceSquared(ref p.Info.Origin, ref planetCenter, out startPointToCenter);
 
-                                var prevDistToSurfaceSqr = p.DistanceToSurfaceSqr;
-                                Vector3D.DistanceSquared(ref closestPos, ref p.Position, out p.DistanceToSurfaceSqr);
+                                var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
+                                Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
 
-                                if (cDistToCenter > pDistToCenter || p.DistanceToSurfaceSqr <= (planetBeam.Length * planetBeam.Length) || pDistToCenter > mDistToCenter && prevDistToSurfaceSqr > p.DistanceToTravelSqr || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
+                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
                                 if (check)
                                 {
                                     using (voxel.Pin())
