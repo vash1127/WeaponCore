@@ -7,6 +7,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Projectiles;
 
 namespace WeaponCore.Support
 {
@@ -159,6 +160,143 @@ namespace WeaponCore.Support
             Ai.Session.Av.AvStart.Add(this);
         }
 
+        internal static void DeferedAvStateUpdates(Session s)
+        {
+            for (int x = 0; x < s.Projectiles.DeferedAvDraw.Count; x++)
+            {
+                var d = s.Projectiles.DeferedAvDraw[x];
+                var i = d.Info;
+                var a = i.AvShot;
+
+                var lineEffect = a.AmmoDef.Const.Trail || a.AmmoDef.Const.DrawLine;
+                var saveHit = d.Hit;
+
+                ++a.LifeTime;
+                a.LastTick = s.Tick;
+                a.StepSize = d.StepSize;
+                a.EstTravel = a.StepSize * a.LifeTime;
+                a.ShortStepSize = d.ShortStepSize ?? d.StepSize;
+                a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
+
+                a.VisualLength = d.VisualLength;
+                a.TracerFront = d.TracerFront;
+                a.Direction = i.Direction;
+                a.PointDir = i.VisualDir;
+
+                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
+
+                a.OnScreen = Screen.None; // clear OnScreen
+                if (i.ModelOnly)
+                {
+                    a.ModelSphereCurrent.Center = a.TracerFront;
+                    if (a.Triggered)
+                        a.ModelSphereCurrent.Radius = i.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
+
+                    if (s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
+                        a.OnScreen = Screen.ModelOnly;
+                }
+                else if (lineEffect || a.Model == ModelState.None && a.AmmoDef.Const.AmmoParticle)
+                {
+
+
+                    var rayTracer = new RayD(a.TracerBack, a.PointDir);
+                    var rayTrail = new RayD(a.TracerFront + (-a.Direction * a.ShortEstTravel), a.Direction);
+
+                    //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
+                    //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
+
+                    double? dist;
+                   s.CameraFrustrum.Intersects(ref rayTracer, out dist);
+
+                    if (dist != null && dist <= a.VisualLength)
+                        a.OnScreen = Screen.Tracer;
+                    else if (a.AmmoDef.Const.Trail)
+                    {
+                        s.CameraFrustrum.Intersects(ref rayTrail, out dist);
+                        if (dist != null && dist <= a.ShortEstTravel + a.ShortStepSize)
+                            a.OnScreen = Screen.Trail;
+                    }
+
+                    if (a.OnScreen != Screen.None && !a.TrailActivated && a.AmmoDef.Const.Trail) a.TrailActivated = true;
+
+                    if (a.OnScreen == Screen.None && a.TrailActivated) a.OnScreen = Screen.Trail;
+
+                    if (a.Model != ModelState.None)
+                    {
+                        a.ModelSphereCurrent.Center = a.TracerFront;
+                        if (a.Triggered)
+                            a.ModelSphereCurrent.Radius = i.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
+
+                        if (a.OnScreen == Screen.None && s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
+                            a.OnScreen = Screen.ModelOnly;
+                    }
+                }
+
+                if (i.MuzzleId == -1)
+                    return;
+
+                if (saveHit)
+                {
+                    if (a.Hit.Entity != null)
+                        a.HitVelocity = a.Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
+                    else if (a.Hit.Projectile != null)
+                        a.HitVelocity = a.Hit.Projectile.Velocity;
+                    a.Hitting = !a.ShrinkInited;
+                }
+                a.LastStep = a.Hitting || MyUtils.IsZero(a.AmmoDef.Const.MaxTrajectory - a.ShortEstTravel, 1E-01F);
+
+                if (a.AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F))
+                {
+                    a.Tracer = TracerState.Full;
+                }
+                else if (a.Tracer != TracerState.Off && a.VisualLength <= 0)
+                {
+                    a.Tracer = TracerState.Off;
+                }
+                else if (a.Hitting && !i.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
+                {
+                    a.Tracer = TracerState.Shrink;
+                    a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
+                }
+                else if (a.Tracer == TracerState.Grow && a.LastStep)
+                {
+                    a.Tracer = TracerState.Full;
+                }
+
+                var lineOnScreen = a.OnScreen > (Screen)1;
+
+                if (lineEffect && (a.Active || lineOnScreen))
+                    a.LineVariableEffects();
+
+                if (a.Tracer != TracerState.Off && lineOnScreen)
+                {
+                    if (a.Tracer == TracerState.Shrink && !a.ShrinkInited)
+                        a.Shrink();
+                    else if (a.AmmoDef.Const.IsBeamWeapon && a.Hitting && a.AmmoDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.AmmoDef.Const.ConvergeBeams || a.AmmoDef.Const.OneHitParticle)))
+                    {
+                        ContainmentType containment;
+                        s.CameraFrustrum.Contains(ref a.Hit.HitPos, out containment);
+                        if (containment != ContainmentType.Disjoint) a.RunBeam();
+                    }
+
+                    if (a.AmmoDef.Const.OffsetEffect)
+                        a.PrepOffsetEffect(a.TracerFront, a.PointDir, a.VisualLength);
+                }
+
+                var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
+                if (a.Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
+                    a.RunGlow(ref a.EmptyShrink);
+
+                if (!a.Active && a.OnScreen != Screen.None)
+                {
+                    a.Active = true;
+                    s.Av.AvShots.Add(a);
+                }
+                a.Hitting = false;
+            }
+            s.Projectiles.DeferedAvDraw.Clear();
+        }
+
         internal void Update(ProInfo info, double stepSize, double visualLength, ref Vector3D tracerFront, ref Vector3D direction, ref Vector3D pointDir, double? shortStepSize = null, bool saveHit = false, bool modelOnly = false)
         {
             var lineEffect = AmmoDef.Const.Trail || AmmoDef.Const.DrawLine;
@@ -175,6 +313,9 @@ namespace WeaponCore.Support
             TracerFront = tracerFront;
             TracerBack = TracerFront + (-Direction * VisualLength);
             PointDir = pointDir;
+            
+            OnScreen = Screen.None; // clear OnScreen
+
             if (modelOnly) {
                 ModelSphereCurrent.Center = TracerFront;
                 if (Triggered)
@@ -658,6 +799,15 @@ namespace WeaponCore.Support
         internal float Thickness;
         internal bool Last;
 
+    }
+    internal struct DeferedAv
+    {
+        internal ProInfo Info;
+        internal bool Hit;
+        internal double StepSize;
+        internal double VisualLength;
+        internal double? ShortStepSize;
+        internal Vector3D TracerFront;
     }
 
     internal struct Shrunk

@@ -22,9 +22,9 @@ namespace WeaponCore.Projectiles
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
         internal GuidanceType Guidance;
-        internal Vector3D Direction;
         internal Vector3D AccelDir;
-        internal Vector3D VisualDir;
+        //internal Vector3D Direction;
+        //internal Vector3D VisualDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D StartSpeed;
@@ -96,6 +96,7 @@ namespace WeaponCore.Projectiles
         internal bool TerminalControlled;
         internal bool EarlyEnd;
         internal bool FeelsGravity;
+        internal bool LineOrNotModel;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -109,8 +110,8 @@ namespace WeaponCore.Projectiles
         internal void Start()
         {
             Position = Info.Origin;
-            AccelDir = Direction;
-            VisualDir = Direction;
+            AccelDir = Info.Direction;
+            Info.VisualDir = Info.Direction;
             var cameraStart = Info.Ai.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Info.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = Info.AmmoDef.Const.ShrapnelId > -1;
@@ -202,7 +203,7 @@ namespace WeaponCore.Projectiles
             }
             else MaxTrajectory = Info.AmmoDef.Trajectory.MaxTrajectory;
 
-            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Direction * MaxTrajectory);
+            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Info.Direction * MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
@@ -248,13 +249,13 @@ namespace WeaponCore.Projectiles
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
-            var desiredSpeed = (Direction * DesiredSpeed);
+            var desiredSpeed = (Info.Direction * DesiredSpeed);
             var relativeSpeedCap = StartSpeed + desiredSpeed;
             MaxVelocity = relativeSpeedCap.LengthSquared() > desiredSpeed.LengthSquared() ? relativeSpeedCap : Vector3D.Zero + desiredSpeed;
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = accelPerSec * StepConst;
-            AccelVelocity = (Direction * AccelLength);
+            AccelVelocity = (Info.Direction * AccelLength);
 
             if (ConstantSpeed)
             {
@@ -296,13 +297,19 @@ namespace WeaponCore.Projectiles
                     Info.AvShot.ModelSphereCurrent.Radius = largestSize * 2;
                 }
             }
+
+            if (EnableAv)
+            {
+                LineOrNotModel = Info.AmmoDef.Const.DrawLine || ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle;
+                Info.ModelOnly = !LineOrNotModel && ModelState == EntityState.Exists;
+            }
         }
 
         internal void StaticEntCheck()
         {
             var ai = Info.Ai;
             LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
-            var lineTest = new LineD(Position, Position + (Direction * MaxTrajectory));
+            var lineTest = new LineD(Position, Position + (Info.Direction * MaxTrajectory));
 
             for (int i = 0; i < Info.Ai.StaticsInRange.Count; i++)
             {
@@ -401,7 +408,7 @@ namespace WeaponCore.Projectiles
 
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
-            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Direction * (Info.DistanceTraveled - MaxTrajectory) : Position;  
+            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - MaxTrajectory) : Position;  
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
             var avSize = useCollisionSize ? Info.AmmoDef.Const.CollisionSize : TracerLength;
             double remainingTracer;
@@ -428,7 +435,8 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
+            //Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
+            Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit});
         }
 
         internal void CreateFakeBeams(bool miss = false)
@@ -445,25 +453,32 @@ namespace WeaponCore.Projectiles
                 if (Info.AmmoDef.Const.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerBack, Position);
-                    vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref beam.Direction, beam.Length, !miss);
+                    vp.Info.Direction = beam.Direction;
+                    //vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref beam.Direction, beam.Length, !miss);
+                    Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss });
+
                 }
                 else
                 {
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
-                        beamEnd = vs.Origin + (vp.Info.VirDirection * MaxTrajectory);
+                        beamEnd = vs.Origin + (vp.Info.Direction * MaxTrajectory);
                     else
-                        beamEnd = vs.Origin + (vp.Info.VirDirection * Info.WeaponCache.HitDistance);
+                        beamEnd = vs.Origin + (vp.Info.Direction * Info.WeaponCache.HitDistance);
 
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
                     {
-                        vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, true);
+                        //vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, true);
+                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true });
+
                     }
                     else
                     {
-                        vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, false);
+                        //vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, false);
+                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false });
+
                     }
                 }
             }
@@ -521,15 +536,15 @@ namespace WeaponCore.Projectiles
             Info.DistanceTraveled = 0;
             Info.PrevDistanceTraveled = 0;
 
-            Direction = Vector3D.Normalize(predictedPos - Position);
-            AccelDir = Direction;
-            VisualDir = Direction;
+            Info.Direction = Vector3D.Normalize(predictedPos - Position);
+            AccelDir = Info.Direction;
+            Info.VisualDir = Info.Direction;
             VelocityLengthSqr = 0;
 
-            MaxVelocity = (Direction * DesiredSpeed);
+            MaxVelocity = (Info.Direction * DesiredSpeed);
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
-            AccelVelocity = (Direction * AccelLength);
+            AccelVelocity = (Info.Direction * AccelLength);
 
             if (ConstantSpeed)
             {
@@ -598,7 +613,7 @@ namespace WeaponCore.Projectiles
                         {
                             double dist;
                             Vector3D.DistanceSquared(ref Position, ref targetPos, out dist);
-                            if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Direction, Position - targetPos) > 0)
+                            if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Info.Direction, Position - targetPos) > 0)
                                 OffSetTarget();
                         }
                         targetPos += TargetOffSet;
@@ -638,7 +653,7 @@ namespace WeaponCore.Projectiles
                     {
                         double dist;
                         Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
-                        if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Direction, Position - PrevTargetPos) > 0)
+                        if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Info.Direction, Position - PrevTargetPos) > 0)
                         {
                             OffSetTarget(true);
                             PrevTargetPos += TargetOffSet;
@@ -669,13 +684,13 @@ namespace WeaponCore.Projectiles
                 newVel = Velocity + (commandedAccel * StepConst);
 
                 AccelDir = commandedAccel / StepPerSec;
-                Vector3D.Normalize(ref Velocity, out Direction);
+                Vector3D.Normalize(ref Velocity, out Info.Direction);
             }
             else
-                newVel = Velocity += (Direction * AccelLength);
+                newVel = Velocity += (Info.Direction * AccelLength);
             VelocityLengthSqr = newVel.LengthSquared();
 
-            if (VelocityLengthSqr > MaxSpeedSqr) newVel = Direction * MaxSpeed;
+            if (VelocityLengthSqr > MaxSpeedSqr) newVel = Info.Direction * MaxSpeed;
             Velocity = newVel;
         }
 

@@ -28,7 +28,8 @@ namespace WeaponCore.Support
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
-        internal Vector3D VirDirection;
+        internal Vector3D Direction;
+        internal Vector3D VisualDir;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
@@ -48,8 +49,8 @@ namespace WeaponCore.Support
         internal bool LastHitShield;
         internal bool TriggeredPulse;
         internal bool EwarActive;
+        internal bool ModelOnly;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
-
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
         {
@@ -63,7 +64,7 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            VirDirection = virDirection;
+            Direction = virDirection;
             Origin = origin;
         }
 
@@ -92,13 +93,15 @@ namespace WeaponCore.Support
             IsShrapnel = false;
             TriggeredPulse = false;
             EwarActive = false;
+            ModelOnly = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
             Age = 0;
             ProjectileDisplacement = 0;
             EnableGuidance = true;
-            VirDirection = Vector3D.Zero;
+            Direction = Vector3D.Zero;
+            VisualDir = Vector3D.Zero;
             Origin = Vector3D.Zero;
             ShooterVel = Vector3D.Zero;
             TriggerMatrix = MatrixD.Identity;
@@ -298,7 +301,7 @@ namespace WeaponCore.Support
                 frag.Seed = p.Info.Seed;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
-                var dirMatrix = Matrix.CreateFromDir(p.Direction);
+                var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
                 var randomFloat1 = MyUtils.GetRandomFloat(0.0f, posValue);
@@ -353,7 +356,7 @@ namespace WeaponCore.Support
                 p.Info.Seed = frag.Seed;
                 p.Info.BaseDamagePool = frag.AmmoDef.BaseDamage;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
-                p.Direction = frag.Direction;
+                p.Info.Direction = frag.Direction;
 
                 p.State = Projectiles.Projectile.ProjectileState.Start;
                 p.StartSpeed = frag.Velocity;
