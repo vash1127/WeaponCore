@@ -97,7 +97,6 @@ namespace WeaponCore.Api
             return false;
         }
 
-
         private MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim)
         {
             var grid = victim.GetTopMostParent() as MyCubeGrid;
