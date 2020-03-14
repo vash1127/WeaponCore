@@ -21,18 +21,21 @@ namespace WeaponCore
             {
                 if (!comp.MyCube.HasInventory) return;
 
-                var def = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDefinitionId;
-                var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
+                var ammo = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId];
 
-                weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(def);                
+                if (!ammo.AmmoDef.Const.EnergyAmmo)
+                {
+                    var invWithMagsAvailable = comp.Ai.AmmoInventories[ammo.AmmoDefinitionId];
 
-                weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.Const.MagVolume;
+                    weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
 
-                if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
-                    weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
+                    weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+
+                    if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
+                        weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
+                }
 
                 weapon.CheckReload();
-
             }
             else
                 comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
@@ -105,6 +108,20 @@ namespace WeaponCore
             cachedInv.Clear();
         }
 
+        internal void RemoveAmmo()
+        {
+            Weapon weapon;
+            while(WeaponAmmoRemoveQueue.TryDequeue(out weapon))
+            {
+                var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
+                var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
+
+                var magsToRemove = weapon.Comp.BlockInventory.GetItemAmount(def);
+
+
+            }
+        }
+
         internal void MoveAmmo()
         {
             MyTuple<Weapon, MyTuple<MyInventory, int>[]> weaponAmmoToPull;
@@ -114,7 +131,7 @@ namespace WeaponCore
                 if (!weapon.Comp.InventoryInited) continue;
                 var inventoriesToPull = weaponAmmoToPull.Item2;
                 var def = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId].AmmoDefinitionId;
-                var magItem = weapon.ActiveAmmoDef.Const.AmmoItem;
+                var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
 
                 weapon.Comp.IgnoreInvChange = true;
 

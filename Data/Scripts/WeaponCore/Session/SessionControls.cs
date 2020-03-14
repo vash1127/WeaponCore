@@ -454,12 +454,12 @@ namespace WeaponCore
 
                     var availAmmo = w.System.WeaponAmmoTypes.Length;
                     var next = (w.Set.AmmoTypeId + 1) % availAmmo;
-                    var currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
+                    var currDef = w.System.WeaponAmmoTypes[next];
 
-                    while (currDef != w.ActiveAmmoDef)
+                    while (!(currDef.Equals(w.ActiveAmmoDef)))
                     {
 
-                        if (currDef.Const.IsTurretSelectable)
+                        if (currDef.AmmoDef.Const.IsTurretSelectable)
                         {
                             //w.ActiveAmmoDef = currDef;
                             w.Set.AmmoTypeId = next;
@@ -467,7 +467,7 @@ namespace WeaponCore
                         }
 
                         next = (next + 1) % availAmmo;
-                        currDef = w.System.WeaponAmmoTypes[next].AmmoDef;
+                        currDef = w.System.WeaponAmmoTypes[next];
                     }
 
                     WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
@@ -487,7 +487,7 @@ namespace WeaponCore
                     return;
                 }
 
-                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoRound);
+                t.Append(comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoDef.AmmoRound);
             };
             action0.Enabled = (b) =>
             {

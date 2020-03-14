@@ -56,6 +56,7 @@ namespace WeaponCore
                 if (!retry) Reporter.ReportData[packet.PType].Add(report);
 
                 var invalidType = false;
+                var noReproccess = false;
 
                 //TODO pool error packets for quicker checks if a valid packet should remove from list
                 var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet };
@@ -172,6 +173,7 @@ namespace WeaponCore
                         }
                     case PacketType.FakeTargetUpdate:
                         {
+                            noReproccess = true;
                             var targetPacket = packet as FakeTargetPacket;
                             if (targetPacket?.Data == null)
                             {
@@ -349,6 +351,7 @@ namespace WeaponCore
                         break;
 
                     case PacketType.TargetExpireUpdate:
+                        noReproccess = true;
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
@@ -489,7 +492,7 @@ namespace WeaponCore
                         break;
                 }
 
-                if (!report.PacketValid && !invalidType && !retry)
+                if (!report.PacketValid && !invalidType && !retry && !noReproccess)
                 {
                     Log.Line($"Invalid Packet: {packet.PType} Occured");
                     if (!ClientSideErrorPktList.Contains(errorPacket))
@@ -1225,7 +1228,7 @@ namespace WeaponCore
                 }
 
                 if(!report.PacketValid)
-                    Log.Line($"Invalid Packet: {errorPacket.PType} Entity: {errorPacket.Packet.EntityId} Failed to reproccess, Error Cause: {errorPacket.Error}");
+                    Log.Line($"Invalid Packet: {errorPacket.PType} Entity: {errorPacket.Packet.EntityId} Failed, Error Cause: {errorPacket.Error}");
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: PacketType:{ptype} Exception: {ex}"); }
         }
@@ -1256,11 +1259,11 @@ namespace WeaponCore
             var hasMags = weapon.State.Sync.CurrentMags > 0 || IsCreative;
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
-            var chargeFullReload = weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || weapon.ActiveAmmoDef.Const.EnergyAmmo);
-            var regularFullReload = !weapon.ActiveAmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
+            var chargeFullReload = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo);
+            var regularFullReload = !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
 
-            var chargeFinishReloading = weapon.ActiveAmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
-            var regularFinishedReloading = !weapon.ActiveAmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
+            var chargeFinishReloading = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
+            var regularFinishedReloading = !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
 
             if (chargeFullReload || regularFullReload)
                 weapon.StartReload();
@@ -1275,13 +1278,13 @@ namespace WeaponCore
             }
             else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
             {
-                if (!weapon.ActiveAmmoDef.Const.MustCharge)
+                if (!weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                     weapon.CancelableReloadAction -= weapon.Reloaded;
 
                 weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
             }
 
-            else if (weapon.ActiveAmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
+            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
                 weapon.ChargeReload();
 
             if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)

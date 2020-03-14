@@ -115,7 +115,7 @@ namespace WeaponCore
                     updateDPS = true;
                     var w = comp.Platform.Weapons[i];
 
-                    w.ActiveAmmoDef = w.System.WeaponAmmoTypes[syncFrom.Weapons[i].AmmoTypeId].AmmoDef;
+                    w.ActiveAmmoDef = w.System.WeaponAmmoTypes[syncFrom.Weapons[i].AmmoTypeId];
                 }
 
                 Weapons[i].AmmoTypeId = syncFrom.Weapons[i].AmmoTypeId;

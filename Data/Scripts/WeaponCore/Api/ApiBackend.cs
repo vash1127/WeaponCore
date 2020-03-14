@@ -242,7 +242,7 @@ namespace WeaponCore.Api
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
-                return (float)comp.Platform.Weapons[weaponId].ActiveAmmoDef.Const.MaxTrajectory;
+                return (float)comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
             return 0f;
         }
@@ -409,7 +409,7 @@ namespace WeaponCore.Api
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
-                return comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoRound;
+                return comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoDef.AmmoRound;
 
             return null;
         }
@@ -423,7 +423,7 @@ namespace WeaponCore.Api
                 foreach (var ammoType in w.System.WeaponAmmoTypes)
                 {
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
-                        w.ActiveAmmoDef = ammoType.AmmoDef;
+                        w.ActiveAmmoDef = ammoType;
                 }
             }
         }

@@ -145,5 +145,12 @@ namespace WeaponCore.Support
         public WeaponDefinition.AmmoDef AmmoDef;
         public string AmmoName;
         public bool IsShrapnel;
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() != GetType()) return false;
+
+            return AmmoDef.Equals(((WeaponAmmoTypes)obj).AmmoDef);
+        }
     }
 }

@@ -84,7 +84,7 @@ namespace WeaponCore.Platform
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
-        internal AmmoDef ActiveAmmoDef;
+        internal WeaponAmmoTypes ActiveAmmoDef;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -162,7 +162,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.Const.EnergyAmmo || ActiveAmmoDef.Const.MustCharge) && (State.Sync.Reloading || OutOfAmmo);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (State.Sync.Reloading || OutOfAmmo);
                 var canShoot = !State.Sync.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !State.Sync.Charging && (ShootTick <= Comp.Session.Tick) && (Timings.ShootDelayTick <= Comp.Session.Tick);
                 return shotReady;

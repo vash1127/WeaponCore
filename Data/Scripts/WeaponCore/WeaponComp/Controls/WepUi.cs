@@ -48,7 +48,7 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
-                if (!w.ActiveAmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.Const.MustCharge) continue;
+                if (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
                 comp.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
             }
@@ -67,9 +67,9 @@ namespace WeaponCore
             if (w == null) return;
 
             var comp = w.Comp;
-            var newBase = w.ActiveAmmoDef.Const.BaseDamage * comp.Set.Value.DpsModifier;
+            var newBase = w.ActiveAmmoDef.AmmoDef.Const.BaseDamage * comp.Set.Value.DpsModifier;
 
-            if (w.ActiveAmmoDef.Const.IsBeamWeapon)
+            if (w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
             {
                 newBase *= comp.Set.Value.Overload;
             }
@@ -84,14 +84,14 @@ namespace WeaponCore
             w.UpdateShotEnergy();
             w.UpdateRequiredPower();
 
-            var mulitplier = (w.ActiveAmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.Const.BaseDamage > 0) ? w.BaseDamage / w.ActiveAmmoDef.Const.BaseDamage : 1;
+            var mulitplier = (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? w.BaseDamage / w.ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
 
-            if (w.BaseDamage > w.ActiveAmmoDef.Const.BaseDamage)
+            if (w.BaseDamage > w.ActiveAmmoDef.AmmoDef.Const.BaseDamage)
                 mulitplier *= mulitplier;
 
             w.HeatPShot = w.System.HeatPerShot * mulitplier;
-            w.AreaEffectDmg = w.ActiveAmmoDef.Const.AreaEffectDamage * mulitplier;
-            w.DetonateDmg = w.ActiveAmmoDef.Const.DetonationDamage * mulitplier;
+            w.AreaEffectDmg = w.ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage * mulitplier;
+            w.DetonateDmg = w.ActiveAmmoDef.AmmoDef.Const.DetonationDamage * mulitplier;
             w.RequiredPower *= mulitplier;
 
             w.TicksPerShot = (uint)(3600f / w.RateOfFire);
@@ -100,18 +100,18 @@ namespace WeaponCore
             var oldDps = w.Dps;
             w.Dps = (60f / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
-            if (w.ActiveAmmoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled)
+            if (w.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled)
             {
-                if (w.ActiveAmmoDef.AreaEffect.Detonation.DetonateOnEnd)
-                    w.Dps += (w.DetonateDmg / 2) * (w.ActiveAmmoDef.Trajectory.DesiredSpeed > 0
-                                      ? w.ActiveAmmoDef.Trajectory.AccelPerSec /
-                                        w.ActiveAmmoDef.Trajectory.DesiredSpeed
+                if (w.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
+                    w.Dps += (w.DetonateDmg / 2) * (w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed > 0
+                                      ? w.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec /
+                                        w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed
                                       : 1);
                 else
                     w.Dps += (w.AreaEffectDmg / 2) *
-                                  (w.ActiveAmmoDef.Trajectory.DesiredSpeed > 0
-                                      ? w.ActiveAmmoDef.Trajectory.AccelPerSec /
-                                        w.ActiveAmmoDef.Trajectory.DesiredSpeed
+                                  (w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed > 0
+                                      ? w.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec /
+                                        w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed
                                       : 1);
             }
             
@@ -155,7 +155,7 @@ namespace WeaponCore
             {
                 var w = comp.Platform.Weapons[i];
 
-                if (!w.ActiveAmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.Const.MustCharge) continue;
+                if (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
                 var newRate = (int)(w.System.RateOfFire * comp.Set.Value.RofModifier);
 
@@ -187,7 +187,7 @@ namespace WeaponCore
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                if(comp.Platform.Weapons[i].ActiveAmmoDef.Const.IsBeamWeapon && !comp.Platform.Weapons[i].ActiveAmmoDef.Const.MustCharge)
+                if(comp.Platform.Weapons[i].ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && !comp.Platform.Weapons[i].ActiveAmmoDef.AmmoDef.Const.MustCharge)
                     SetDps(comp, comp.Set.Value.DpsModifier);
             }
         }
@@ -217,7 +217,7 @@ namespace WeaponCore
             var maxTrajectory = 0f;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                var curMax = comp.Platform.Weapons[i].ActiveAmmoDef.Const.MaxTrajectory;
+                var curMax = comp.Platform.Weapons[i].ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
                 if (curMax > maxTrajectory)
                     maxTrajectory = (float)curMax;
             }

@@ -48,7 +48,7 @@ namespace WeaponCore.Support
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
                         var w = Platform.Weapons[i];
-                        if (!w.ActiveAmmoDef.Const.EnergyAmmo)
+                        if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                             Session.ComputeStorage(w);
                     }
                     
@@ -126,9 +126,9 @@ namespace WeaponCore.Support
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");
                         stringBuilder.Append($"\nCanShoot: {weapon.Timings.ShootDelayTick <= weapon.Comp.Session.Tick} - Charging: {weapon.State.Sync.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
-                        stringBuilder.Append($"\nMagSize: {(weapon.ActiveAmmoDef.Const.EnergyAmmo ? weapon.ActiveAmmoDef.Const.EnergyMagSize : weapon.ActiveAmmoDef.Const.MagazineDef.Capacity)} - CurrentCharge: {State.Value.CurrentCharge}({weapon.State.Sync.CurrentCharge})");
+                        stringBuilder.Append($"\nMagSize: {(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? weapon.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize : weapon.ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity)} - CurrentCharge: {State.Value.CurrentCharge}({weapon.State.Sync.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.Timings.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.Timings.ChargeDelayTicks}");
-                        stringBuilder.Append($"\nCharging: {weapon.State.Sync.Charging}({weapon.ActiveAmmoDef.Const.MustCharge}) - Delay: {weapon.Timings.ChargeDelayTicks}");
+                        stringBuilder.Append($"\nCharging: {weapon.State.Sync.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.Timings.ChargeDelayTicks}");
                     }
                 }
             }

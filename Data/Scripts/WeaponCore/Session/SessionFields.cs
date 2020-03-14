@@ -62,6 +62,7 @@ namespace WeaponCore
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
 
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
+        internal readonly ConcurrentQueue<Weapon> WeaponAmmoRemoveQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
@@ -166,6 +167,7 @@ namespace WeaponCore
         internal Task ITask = new Task();
         internal Task NTask = new Task();
         internal Task MTask = new Task();
+        internal Task CTask = new Task();
 
         internal string TriggerEntityModel;
         internal object InitObj = new object();

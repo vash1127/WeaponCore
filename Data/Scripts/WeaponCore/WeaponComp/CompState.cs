@@ -19,7 +19,7 @@ namespace WeaponCore.Support
                     Status = Start.Started;
                     break;
             }
-            UpdateNetworkState();
+            //UpdateNetworkState();
         }
 
         private void Startup()

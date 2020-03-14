@@ -284,7 +284,7 @@ namespace WeaponCore.Control
                     }
                     w.StopShooting();
 
-                    if (w.ActiveAmmoDef.Const.MustCharge && ((w.ActiveAmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.Const.MagazineDef.Capacity) || (!w.ActiveAmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.Const.EnergyMagSize)))
+                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge && ((w.ActiveAmmoDef.AmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity) || (!w.ActiveAmmoDef.AmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize)))
                     {
                         w.State.Sync.CurrentCharge = 0;
                         w.State.Sync.CurrentAmmo = 0;
@@ -303,7 +303,7 @@ namespace WeaponCore.Control
                     if (w.System.WeaponAnimationLengths.TryGetValue(TurnOn, out delay))
                         w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
 
-                    if (!w.ActiveAmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.Const.MustCharge)
+                    if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         Session.ComputeStorage(w);
                 }
 

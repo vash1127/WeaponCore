@@ -204,7 +204,7 @@ namespace WeaponCore
                                 ///
                                 /// 
                                 w.AiShooting = (w.Target.TargetLock || w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay) && !comp.UserControlled;
-                                var reloading = (!w.ActiveAmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.Const.MustCharge) && (w.State.Sync.Reloading || w.OutOfAmmo);
+                                var reloading = (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) && (w.State.Sync.Reloading || w.OutOfAmmo);
                                 var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
@@ -213,7 +213,7 @@ namespace WeaponCore
 
                                 if (canShoot && (validShootStates || manualShot || w.FinishBurst)) {
 
-                                    if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.Const.MustCharge) {
+                                    if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
                                         if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)
                                             w.RecalcPower = true;
@@ -225,14 +225,14 @@ namespace WeaponCore
 
                                     if (w.Timings.ChargeDelayTicks == 0 || w.Timings.ChargeUntilTick <= Tick) {
 
-                                        if (!w.RequestedPower && !w.ActiveAmmoDef.Const.MustCharge) {
+                                        if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                                             gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
                                         }
 
                                         ShootingWeapons.Add(w);
                                     }
-                                    else if (w.Timings.ChargeUntilTick > Tick && !w.ActiveAmmoDef.Const.MustCharge) {
+                                    else if (w.Timings.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                                         w.State.Sync.Charging = true;
                                         w.StopShooting(false, false);
                                     }
@@ -287,7 +287,7 @@ namespace WeaponCore
 
                     if (Tick60 && w.DrawingPower)
                     {
-                        if ((cState.CurrentCharge + w.UseablePower) < w.ActiveAmmoDef.Const.EnergyMagSize)
+                        if ((cState.CurrentCharge + w.UseablePower) < w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize)
                         {
                             wState.Sync.CurrentCharge += w.UseablePower;
                             cState.CurrentCharge += w.UseablePower;
@@ -295,8 +295,8 @@ namespace WeaponCore
                         }
                         else
                         {
-                            w.Comp.State.Value.CurrentCharge += (w.ActiveAmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge);
-                            wState.Sync.CurrentCharge = w.ActiveAmmoDef.Const.EnergyMagSize;
+                            w.Comp.State.Value.CurrentCharge += (w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge);
+                            wState.Sync.CurrentCharge = w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
                         }
                     }
 
@@ -344,7 +344,7 @@ namespace WeaponCore
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                        w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                         w.Timings.ChargeUntilTick = w.Timings.ChargeDelayTicks + Tick;
 
                         if (!w.DrawingPower)
@@ -428,7 +428,7 @@ namespace WeaponCore
                         continue;
                     }
                     //TODO add logic for power priority
-                    if (w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.Const.MustCharge)
+                    if (w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                     {
 
                         if (w.Timings.ChargeDelayTicks == 0)
@@ -453,7 +453,7 @@ namespace WeaponCore
                             w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.ActiveAmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
+                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
                     {
 
                         w.OldUseablePower = w.UseablePower;

@@ -45,7 +45,7 @@ namespace WeaponCore.Support
                 if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
-                    if (w.ActiveAmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
+                    if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
             }
@@ -208,7 +208,7 @@ namespace WeaponCore.Support
                         session.CanShoot++;
                         if (!w.AiEnabled)
                         {
-                            var newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.Const.DesiredProjectileSpeed > 0) ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
+                            var newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
@@ -449,7 +449,7 @@ namespace WeaponCore.Support
                     var bestTest = false;
                     if (best)
                     {
-                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.Trajectory.Smarts.OverideTarget))
+                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.AmmoDef.Trajectory.Smarts.OverideTarget))
                         {
                             ai.Session.CanShoot++;
                             var castRay = false;

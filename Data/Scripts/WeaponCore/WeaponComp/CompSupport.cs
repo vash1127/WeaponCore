@@ -19,17 +19,17 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void UpdateStateMp()
+        /*internal void UpdateStateMp()
         {
             if(Session.MpActive)
                 State.NetworkUpdate();
-        }
+        }*/
 
-        internal void UpdateSettingsMp()
+        /*internal void UpdateSettingsMp()
         {
             if (Session.MpActive)
                 Set.NetworkUpdate();
-        }
+        }*/
 
         internal void SendOverRides()
         {

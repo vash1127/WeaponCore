@@ -33,13 +33,13 @@ namespace WeaponCore.Support
 
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
-        internal readonly HashSet<MyInventory> Inventories = new HashSet<MyInventory>();
         internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> RemSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
+        internal readonly MyConcurrentHashSet<MyInventory> Inventories = new MyConcurrentHashSet<MyInventory>();
 
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
