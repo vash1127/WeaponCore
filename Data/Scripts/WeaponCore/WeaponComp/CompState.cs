@@ -64,15 +64,6 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}"); }
         }
 
-        internal void UpdateSettings(CompSettingsValues newSettings)
-        {
-            if (newSettings.MId > Set.Value.MId)
-            {
-                Set.Value = newSettings;
-                SettingsUpdated = true;
-            }
-        }
-
         internal void UpdateNetworkState()
         {
             if (Session.MpActive)

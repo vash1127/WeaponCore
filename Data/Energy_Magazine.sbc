@@ -17,7 +17,7 @@
       <Volume>1</Volume>
       <Model>Models\Components\PowerCellComponent.mwm</Model>
       <Capacity>1</Capacity>
-      <AmmoDefinitionId Subtype="Energy" />
-    </AmmoMagazine>
+      <AmmoDefinitionId Subtype="Blank" />
+	  </AmmoMagazine>
   </AmmoMagazines>
 </Definitions>

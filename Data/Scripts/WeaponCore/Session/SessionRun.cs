@@ -40,6 +40,15 @@ namespace WeaponCore
             try
             {
                 Timings();
+
+                if (!WeaponAmmoPullQueue.IsEmpty && CTask.IsComplete)
+                {
+                    if (CTask.valid && CTask.Exceptions != null)
+                        TaskHasErrors(ref CTask, "CTask");
+
+                    CTask = MyAPIGateway.Parallel.StartBackground(AmmoToRemove, RemoveAmmo);
+                }
+
                 if (!WeaponAmmoPullQueue.IsEmpty && ITask.IsComplete)
                 {
                     if (ITask.valid && ITask.Exceptions != null)
