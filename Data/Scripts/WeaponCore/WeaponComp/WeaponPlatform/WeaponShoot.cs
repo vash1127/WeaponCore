@@ -117,9 +117,7 @@ namespace WeaponCore.Platform
                 {
                     var current = NextMuzzle;
                     var muzzle = Muzzles[current];
-                    var lastTick = muzzle.LastUpdateTick;
-                    var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
-                    if (recentMovement || _posChangedTick > lastTick)
+                    if (muzzle.LastUpdateTick != tick)
                     {
                         var dummy = Dummies[current];
                         var newInfo = dummy.Info;
@@ -398,7 +396,7 @@ namespace WeaponCore.Platform
             if (Comp.TrackReticle) return;
 
 
-            if (Target.Projectile != null)
+            if (Target.IsProjectile)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
@@ -407,7 +405,7 @@ namespace WeaponCore.Platform
                     return;
                 }
             }
-            if (Target.Projectile == null)
+            if (!Target.IsProjectile)
             {
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
                 {
@@ -448,7 +446,7 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null)
             {
-                if (Target.Projectile != null)
+                if (Target.IsProjectile || Target.Entity is IMyCharacter)
                     return;
 
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
@@ -456,18 +454,18 @@ namespace WeaponCore.Platform
                 return;
             }
 
-            var projectile = Target.Projectile != null;
-            var unexpectedHit = projectile || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent);
+            var topMost = hitInfo.HitEntity?.GetTopMostParent();
+            var unexpectedHit = Target.IsProjectile || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != topMost);
 
             if (unexpectedHit)
             {
                 var rootAsGrid = hitInfo.HitEntity as MyCubeGrid;
-                var parentAsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+                var topAsGrid = topMost as MyCubeGrid;
 
-                if (rootAsGrid == null && parentAsGrid == null)
+                if (rootAsGrid == null && topAsGrid == null)
                     return;
 
-                var grid = parentAsGrid ?? rootAsGrid;
+                var grid = topAsGrid ?? rootAsGrid;
                 if (grid == Comp.Ai.MyGrid)
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
@@ -488,12 +486,8 @@ namespace WeaponCore.Platform
             }
             if (System.ClosestFirst)
             {
-                if (Target.Projectile != null)
-                {
-                    Log.Line($"projectile not null other branch2: {((MyEntity)hitInfo.HitEntity).DebugName} - {Comp.Ai.MyGrid.IsSameConstructAs(hitInfo.HitEntity as MyCubeGrid)}");
-                }
                 var grid = hitInfo.HitEntity as MyCubeGrid;
-                if (grid != null && Target.Entity.GetTopMostParent() == grid)
+                if (grid != null && topMost == grid)
                 {
                     var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
                     var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
