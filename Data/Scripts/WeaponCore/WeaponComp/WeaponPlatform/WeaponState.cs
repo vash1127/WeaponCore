@@ -73,7 +73,7 @@ namespace WeaponCore.Platform
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
             var session = Comp.Session;
-            var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(session.PlayerPos, MyPivotPos);
+            var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
 
             switch (state)
             {
