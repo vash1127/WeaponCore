@@ -1527,6 +1527,7 @@ namespace WeaponCore
                 ai.CurrWeapon++;
             }
             _session.WeaponsToSync.Clear();
+            _session.WeaponsSyncCheck.Clear();
         }
 
         private void ProccessGridWeaponPackets()
