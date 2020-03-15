@@ -986,7 +986,7 @@ namespace WeaponCore.Support
                             EntityId = comp.MyCube.EntityId,
                             SenderId = comp.Session.MultiplayerId,
                             MId = comp.State.Value.MId,
-                            PType = PacketType.WeaponToolbarShootState,
+                            PType = PacketType.CompToolbarShootState,
                             Data = Weapon.TerminalActionState.ShootOff,
                         });
                     }

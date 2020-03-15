@@ -37,7 +37,8 @@ namespace WeaponCore
         CompToolbarShootState,
         WeaponToolbarShootState,
         RangeUpdate,
-        GridAiUiMidUpdate
+        GridAiUiMidUpdate,
+        CycleAmmo
     }
 
     #region packets
@@ -59,6 +60,7 @@ namespace WeaponCore
     [ProtoInclude(18, typeof(ShootStatePacket))]
     [ProtoInclude(19, typeof(RangePacket))]
     [ProtoInclude(20, typeof(WeaponShootStatePacket))]
+    [ProtoInclude(21, typeof(CycleAmmoPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -344,6 +346,23 @@ namespace WeaponCore
             base.CleanUp();
             Data = TerminalActionState.ShootOff;
             MId = 0;
+            WeaponId = -1;
+        }
+    }
+
+    [ProtoContract]
+    public class CycleAmmoPacket : Packet
+    {
+        [ProtoMember(1)] internal uint MId;
+        [ProtoMember(2)] internal int AmmoId;
+        [ProtoMember(3)] internal int WeaponId;
+        public CycleAmmoPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            MId = 0;
+            AmmoId = -1;
             WeaponId = -1;
         }
     }

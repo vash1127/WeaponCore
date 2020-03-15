@@ -226,12 +226,9 @@ namespace WeaponCore
                 }
 
                 WepUi.SetDps(weapon.Comp, weapon.Comp.Set.Value.DpsModifier, false, true);
-
-                if (inventoriesToAddTo.Length > 0)
-                {
-                    weapon.State.Sync.Reloading = false;
-                    ComputeStorage(weapon);
-                }
+                
+                weapon.State.Sync.Reloading = false;
+                ComputeStorage(weapon);
 
                 weapon.Comp.IgnoreInvChange = false;
             }

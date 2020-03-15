@@ -465,6 +465,22 @@ namespace WeaponCore
                             break;
                         }
 
+                    case PacketType.CycleAmmo:
+                        {
+                            var cyclePacket = (CycleAmmoPacket)packet;
+
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp.Platform.State}";
+                                break;
+                            }
+                            
+                            comp.Set.Value.MId = cyclePacket.MId;
+                            comp.Platform.Weapons[cyclePacket.WeaponId].Set.AmmoTypeId = cyclePacket.AmmoId;
+
+                            break;
+                        }
+
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
                         invalidType = true;
@@ -1180,6 +1196,37 @@ namespace WeaponCore
                             break;
                         }
 
+                    case PacketType.CycleAmmo:
+                        {
+                            var cyclePacket = (CycleAmmoPacket)packet;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp.Platform.State}";
+                                break;
+                            }
+
+                            if (cyclePacket.MId > comp.Set.Value.MId)
+                            {
+                                comp.Set.Value.MId = cyclePacket.MId;
+                                comp.Platform.Weapons[cyclePacket.WeaponId].Set.AmmoTypeId = cyclePacket.AmmoId;
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = cyclePacket,
+                                });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+
+                            break;
+                        }
+
                     default:
                         Reporter.ReportData[PacketType.Invalid].Add(report);
                         report.PacketValid = false;
@@ -1203,12 +1250,13 @@ namespace WeaponCore
                 comp.CurrentHeat -= weapon.State.Sync.Heat;
                 cState.CurrentCharge -= weapon.State.Sync.CurrentCharge;
                 
+                
                 weaponData.SetState(wState.Sync);
 
                 comp.CurrentHeat += weapon.State.Sync.Heat;
                 cState.CurrentCharge += weapon.State.Sync.CurrentCharge;
             }
-
+            
             comp.WeaponValues.Timings[weapon.WeaponId] = timings;
             weapon.Timings = timings;
 
@@ -1220,6 +1268,9 @@ namespace WeaponCore
 
             var chargeFinishReloading = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
             var regularFinishedReloading = !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
+
+            if(!chargeFullReload & !regularFullReload)
+                weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId];
 
             if (chargeFullReload || regularFullReload)
                 weapon.StartReload();
@@ -1324,6 +1375,38 @@ namespace WeaponCore
                 });
             }
         }
+
+        internal void CycleAmmoNetworkUpdate(Weapon weapon, int ammoId)
+        {
+            weapon.Comp.Set.Value.MId++;
+            if (IsClient)
+            {
+                PacketsToServer.Add(new CycleAmmoPacket
+                {
+                    EntityId = weapon.Comp.MyCube.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.CycleAmmo,
+                    AmmoId = ammoId,
+                    MId = weapon.Comp.Set.Value.MId
+                });
+            }
+            else
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = weapon.Comp.MyCube,
+                    Packet = new CycleAmmoPacket
+                    {
+                        EntityId = weapon.Comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.CycleAmmo,
+                        AmmoId = ammoId,
+                        MId = weapon.Comp.Set.Value.MId
+                    }
+                });
+            }
+        }
+
         internal void ProccessServerPacketsForClients()
         {
             if (!IsServer || !MpActive)
