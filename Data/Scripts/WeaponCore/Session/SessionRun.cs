@@ -121,7 +121,7 @@ namespace WeaponCore
                 if (FragmentsNeedingEntities.Count > 0)
                     Projectiles.PrepFragmentEntities();
 
-                PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
+                //PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
                 //if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -135,12 +135,14 @@ namespace WeaponCore
                 if (!DedicatedServer) ProcessAnimations();
 
                 DsUtil.Start("projectiles");
-
+                /*
                 if (!PTask.IsComplete)
                     PTask.Wait();
 
                 if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
                     TaskHasErrors(ref PTask, "PTask");
+                    */
+                Projectiles.Update();
 
                 DsUtil.Complete("projectiles", true);
 
