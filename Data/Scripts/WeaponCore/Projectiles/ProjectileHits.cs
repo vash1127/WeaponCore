@@ -188,7 +188,6 @@ namespace WeaponCore.Projectiles
             hitEntity.EventType = HitEntity.Type.Projectile;
             hitEntity.Hit = true;
             hitEntity.Projectile = target;
-            hitEntity.HitPos = attacker.Position;
             hitEntity.SphereCheck = !lineCheck;
             hitEntity.PruneSphere = attacker.PruneSphere;
             double dist;
@@ -196,6 +195,8 @@ namespace WeaponCore.Projectiles
             hitEntity.HitDist = dist;
 
             hitEntity.Intersection = new LineD(attacker.LastPosition, attacker.LastPosition + (attacker.Info.Direction * dist));
+            hitEntity.HitPos = hitEntity.Intersection.To;
+
             attacker.Info.HitList.Add(hitEntity);
             return true;
         }
@@ -282,11 +283,7 @@ namespace WeaponCore.Projectiles
                 if (triggerEvent && (info.Ai.Targets.ContainsKey(ent) || shield != null))
                     hitEnt.PulseTrigger = true;
                 else if (hitEnt.Projectile != null)
-                {
                     dist = hitEnt.HitDist.Value;
-                    hitEnt.Hit = true;
-                    hitEnt.HitPos = hitEnt.Projectile.Position;
-                }
                 else if (shield != null)
                 {
                     hitEnt.Hit = true;
