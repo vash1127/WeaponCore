@@ -195,7 +195,7 @@ namespace WeaponCore.Projectiles
             Vector3D.Distance(ref beam.From, ref target.Position, out dist);
             hitEntity.HitDist = dist;
 
-            hitEntity.Intersection = new LineD(attacker.LastPosition, target.Position);
+            hitEntity.Intersection = new LineD(attacker.LastPosition, attacker.LastPosition + (attacker.Info.Direction * dist));
             attacker.Info.HitList.Add(hitEntity);
             return true;
         }
