@@ -173,7 +173,7 @@ namespace WeaponCore.Support
             {
                 BlockInventory.Constraint.Clear();
 
-                float MaxInventoryVolume = 0f;
+                var maxInventoryVolume = 0f;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var w = Platform.Weapons[i];
@@ -181,10 +181,10 @@ namespace WeaponCore.Support
                     for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
                         BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
 
-                    MaxInventoryVolume += w.System.MaxAmmoVolume;
+                    maxInventoryVolume += w.System.MaxAmmoVolume;
                 }
 
-                BlockInventory.FixInventoryVolume(MaxInventoryVolume);
+                BlockInventory.FixInventoryVolume(maxInventoryVolume);
                 BlockInventory.Refresh();
             }
             InventoryInited = true;
