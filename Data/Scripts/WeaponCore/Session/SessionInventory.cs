@@ -35,7 +35,7 @@ namespace WeaponCore
                         weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
                 }
 
-                if(weapon.State.Sync.CurrentMags > 0)
+                if(weapon.State.Sync.CurrentMags > 0 || comp.Session.IsCreative)
                     weapon.CheckReload();
             }
             else

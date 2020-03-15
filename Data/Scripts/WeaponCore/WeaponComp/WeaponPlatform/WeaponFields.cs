@@ -109,6 +109,7 @@ namespace WeaponCore.Platform
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;
+        internal uint LastResyncTick;
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;
