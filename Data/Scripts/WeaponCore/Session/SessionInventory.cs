@@ -230,7 +230,7 @@ namespace WeaponCore
                 if (inventoriesToAddTo.Length > 0)
                 {
                     weapon.State.Sync.Reloading = false;
-                    FutureEvents.Schedule(o => { ComputeStorage(weapon); }, null, 1);
+                    ComputeStorage(weapon);
                 }
 
                 weapon.Comp.IgnoreInvChange = false;
