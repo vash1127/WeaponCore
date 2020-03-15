@@ -462,7 +462,10 @@ namespace WeaponCore
                         if (currDef.AmmoDef.Const.IsTurretSelectable)
                         { 
                             w.Set.AmmoTypeId = next;
-                            Log.Line($"w.Set.AmmoTypeId: {w.Set.AmmoTypeId}");
+
+                            if (comp.Session.MpActive)
+                                comp.Session.CycleAmmoNetworkUpdate(w, next);
+
                             break;
                         }
 

@@ -421,6 +421,16 @@ namespace WeaponCore.Platform
                     ActiveAmmoDef = newAmmo;
             }
 
+            if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks)
+            {
+                if (Comp.Session.WeaponsSyncCheck.Add(this))
+                {
+                    Comp.Session.WeaponsToSync.Add(this);
+                    Comp.Ai.NumSyncWeapons++;
+                    LastSyncTick = Comp.Session.Tick;
+                }
+            }
+
             if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
                 Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, Timings.AnimationDelayTick - Comp.Session.Tick);

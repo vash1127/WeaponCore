@@ -408,6 +408,7 @@ namespace WeaponCore
                                 {
                                     WeaponsToSync.Add(w);
                                     w.Comp.Ai.NumSyncWeapons++;
+                                    w.LastSyncTick = Tick;
                                 }
                             }
                         }

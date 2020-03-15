@@ -127,7 +127,6 @@ namespace WeaponCore
         [ProtoMember(6)] public bool Charging;
         [ProtoMember(7)] public int WeaponId;
         [ProtoMember(8)] public MyFixedPoint CurrentMags;
-        [ProtoMember(9)] public int ActiveAmmoId;
 
         public void SetState (WeaponSyncValues sync)
         {
@@ -138,7 +137,6 @@ namespace WeaponCore
             sync.Overheated = Overheated;
             sync.Reloading = Reloading;
             sync.Charging = Charging;
-            sync.ActiveAmmoId = ActiveAmmoId;
         }
     }
 
