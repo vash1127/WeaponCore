@@ -77,7 +77,7 @@ namespace WeaponCore
         [ProtoMember(6)] public float RofModifier = 1;
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
         [ProtoMember(8)] public float Range = 100;
-        [ProtoMember(9)] public MyObjectBuilder_Inventory Inventory = null;
+        [ProtoMember(9)] public bool InventoryInited;
         [ProtoMember(10)] public GroupOverrides Overrides;
         [ProtoMember(11)] public int Version = Session.VersionControl;
 
@@ -93,37 +93,15 @@ namespace WeaponCore
             Modes = syncFrom.Modes;
             
             Range = syncFrom.Range;
-            Inventory = syncFrom.Inventory;
+            InventoryInited = syncFrom.InventoryInited;
             Overrides = syncFrom.Overrides;
-
-            var updateDPS = false;
 
             if (Overload != syncFrom.Overload || RofModifier != syncFrom.RofModifier || DpsModifier != syncFrom.DpsModifier)
             {
                 Overload = syncFrom.Overload;
                 RofModifier = syncFrom.RofModifier;
-                updateDPS = true;
-            }
-
-
-            for (int i = 0; i < syncFrom.Weapons.Length; i++)
-            {
-                Weapons[i].Enable = syncFrom.Weapons[i].Enable;
-
-                if (Weapons[i].AmmoTypeId != syncFrom.Weapons[i].AmmoTypeId)
-                {
-                    updateDPS = true;
-                    var w = comp.Platform.Weapons[i];
-
-                    w.ActiveAmmoDef = w.System.WeaponAmmoTypes[syncFrom.Weapons[i].AmmoTypeId];
-                }
-
-                Weapons[i].AmmoTypeId = syncFrom.Weapons[i].AmmoTypeId;
-            }
-
-            if(updateDPS)
                 WepUi.SetDps(comp, syncFrom.DpsModifier, true);
-
+            }
         }
 
     }

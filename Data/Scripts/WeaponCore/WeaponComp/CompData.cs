@@ -120,28 +120,6 @@ namespace WeaponCore
             Block = comp.MyCube;
         }
 
-        public void SettingsInit()
-        {
-            var maxTrajectory = 0f;
-            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-            {
-                var weapon = Comp.Platform.Weapons[i];
-                if (weapon.ActiveAmmoDef.AmmoDef == null) {
-                    var ammoDef = weapon.System.WeaponAmmoTypes[0];
-                    if (!ammoDef.AmmoDef.Const.IsTurretSelectable) {
-                        Log.Line($"Your first ammoType cannot be a shrapnel with HardPointUsable set to false, I am crashing now Dave.");
-                        return;
-                    }
-                    weapon.ActiveAmmoDef = ammoDef;
-                }
-
-                if (maxTrajectory < weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory) maxTrajectory = (float)weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
-            }
-
-            //TODO change this
-            Value.Range =  Comp.BaseType != Turret ? maxTrajectory : Comp.TurretBase.Range;
-        }
-
         public void SaveSettings(bool createStorage = false)
         {
             if (Block?.Storage == null) return;
@@ -182,6 +160,7 @@ namespace WeaponCore
                 Value = new CompSettingsValues {Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length]};
                 for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponSettingsValues();
 
+                Value.Range = Comp.BaseType == Turret ? Comp.TurretBase.Range : 0;
             }
             return loadedSomething;
         }

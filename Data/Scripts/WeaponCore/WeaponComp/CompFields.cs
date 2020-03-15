@@ -42,7 +42,7 @@ namespace WeaponCore.Support
         internal uint IsWorkingChangedTick;
         internal uint MatrixUpdateTick;
         internal int Seed;
-        internal float MaxInventoryVolume;
+        //internal float MaxInventoryVolume;
         internal float OptimalDps;
         internal float CurrentDps;
         internal float CurrentHeat;

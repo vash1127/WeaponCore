@@ -26,8 +26,6 @@ namespace WeaponCore.Support
 
                 State.LoadState();
                 Set.LoadSettings();
-                Set.SettingsInit();
-                UpdateSettings(Set.Value);
 
                 if (!Session.IsClient)
                 {
@@ -35,15 +33,27 @@ namespace WeaponCore.Support
                     Set.Value.Overrides.ManualControl = false;
                 }
 
+                var maxTrajectory = 0f;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var weapon = Platform.Weapons[i];
-
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
-                    //weapon.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId];
+
+                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes.Length > 0 ? weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId] : new WeaponAmmoTypes();
+
+                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable)
+                    {
+                        Log.Line($"Your first ammoType is broken, I am crashing now Dave.");
+                        return;
+                    }
+
+                    if (maxTrajectory < weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory) maxTrajectory = (float)weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+
                 }
+
+                if (BaseType != BlockType.Turret && Set.Value.Range <= 0.01)
+                    Set.Value.Range = maxTrajectory;
 
                 WeaponValues.Load(this);
             }
@@ -149,28 +159,33 @@ namespace WeaponCore.Support
 
         private void InventoryInit()
         {
+            if (Set.Value.InventoryInited)
+            {
+                InventoryInited = true;
+                return;
+            }
+            Set.Value.InventoryInited = true;
+
             if (MyCube is IMyConveyorSorter) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
             BlockInventory.Constraint.m_useDefaultIcon = false;
             BlockInventory.ResetVolume();
             BlockInventory.Refresh();
 
-            if (Set.Value.Inventory != null)
-                BlockInventory.Init(Set.Value.Inventory);
-            
-            foreach (var weapon in Platform.Weapons)
-                MaxInventoryVolume += weapon.System.MaxAmmoVolume;
-
             if (MyCube.HasInventory)
             {
-                BlockInventory.FixInventoryVolume(MaxInventoryVolume);
-
                 BlockInventory.Constraint.Clear();
 
-                foreach (var w in Platform.Weapons)
+                for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
-                    var magId = w.ActiveAmmoDef.AmmoDef.Const.MagazineDef.Id;
-                    BlockInventory.Constraint.Add(magId);
+                    var w = Platform.Weapons[i];
+
+                    for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
+                        BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+
+                    //MaxInventoryVolume += w.System.MaxAmmoVolume;
                 }
+
+                //BlockInventory.FixInventoryVolume(MaxInventoryVolume);
                 BlockInventory.Refresh();
             }
             InventoryInited = true;

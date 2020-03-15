@@ -451,26 +451,25 @@ namespace WeaponCore
                 {
                     var w = comp.Platform.Weapons[weaponId];
 
-
                     var availAmmo = w.System.WeaponAmmoTypes.Length;
+                    // cant use w.ActiveAmmoDef as it may not have reloaded yet
+                    var currActive = w.System.WeaponAmmoTypes[w.Set.AmmoTypeId]; 
                     var next = (w.Set.AmmoTypeId + 1) % availAmmo;
                     var currDef = w.System.WeaponAmmoTypes[next];
-
-                    while (!(currDef.Equals(w.ActiveAmmoDef)))
+                    
+                    while (!(currActive.Equals(currDef)))
                     {
 
                         if (currDef.AmmoDef.Const.IsTurretSelectable)
-                        {
-                            //w.ActiveAmmoDef = currDef;
+                        { 
                             w.Set.AmmoTypeId = next;
+                            Log.Line($"w.Set.AmmoTypeId: {w.Set.AmmoTypeId}");
                             break;
                         }
 
                         next = (next + 1) % availAmmo;
                         currDef = w.System.WeaponAmmoTypes[next];
                     }
-
-                    WepUi.SetDps(comp, comp.Set.Value.DpsModifier);
                 }
                 catch (Exception e)
                 {

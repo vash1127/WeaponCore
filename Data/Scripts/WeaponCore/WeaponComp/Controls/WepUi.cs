@@ -40,7 +40,7 @@ namespace WeaponCore
             SetDps(comp, newValue);
         }
 
-            internal static void SetDps(WeaponComponent comp, float newValue, bool isNetworkUpdate = false)
+            internal static void SetDps(WeaponComponent comp, float newValue, bool isNetworkUpdate = false, bool ammoChange = false)
         {
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.DpsModifier = newValue;
@@ -48,7 +48,7 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
-                if (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
+                if (!ammoChange && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
 
                 comp.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
             }

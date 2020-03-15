@@ -126,6 +126,9 @@ namespace WeaponCore
                                 if (gunDef != null)
                                 {
                                     var blockDefs = weaponDef.HardPoint.HardWare;
+
+                                    Log.Line($"gunDef.RotationSpeed: {gunDef.RotationSpeed}  blockDefs.RotateRate: {blockDefs.RotateRate}");
+                                    
                                     gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
                                     gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
                                     gunDef.MinElevationDegrees = blockDefs.MinElevation;
