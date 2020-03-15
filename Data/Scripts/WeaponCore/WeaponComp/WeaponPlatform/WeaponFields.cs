@@ -28,7 +28,6 @@ namespace WeaponCore.Platform
         private int _nextVirtual;
         private int _fakeHeatTick;
         private uint _ticksUntilShoot;
-        private uint _posChangedTick = 1;
         private uint _azimuthSubpartUpdateTick;
         private uint _prefiredTick;
         private uint _spinUpTick;
@@ -40,6 +39,7 @@ namespace WeaponCore.Platform
         internal uint ShootTick;
         internal uint TicksPerShot;
         internal uint LastSyncTick;
+        internal uint PosChangedTick = 1;
         internal double TimePerShot;
         internal int LoadId;
         internal int ShortLoadId;

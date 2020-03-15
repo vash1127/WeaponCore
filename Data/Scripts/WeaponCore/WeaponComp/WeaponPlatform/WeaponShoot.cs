@@ -117,9 +117,7 @@ namespace WeaponCore.Platform
                 {
                     var current = NextMuzzle;
                     var muzzle = Muzzles[current];
-                    var lastTick = muzzle.LastUpdateTick;
-                    var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
-                    if (recentMovement || _posChangedTick > lastTick)
+                    if (muzzle.LastUpdateTick != tick)
                     {
                         var dummy = Dummies[current];
                         var newInfo = dummy.Info;

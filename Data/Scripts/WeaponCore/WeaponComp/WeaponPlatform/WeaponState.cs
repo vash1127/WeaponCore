@@ -17,10 +17,8 @@ namespace WeaponCore.Platform
         {
             try
             {
-                if (_posChangedTick != Comp.Session.Tick)
+                if (PosChangedTick != Comp.Session.Tick)
                     UpdatePivotPos();
-
-                _posChangedTick = Comp.Session.Tick;
             }
             catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
         }
@@ -36,6 +34,31 @@ namespace WeaponCore.Platform
                 if(!part.Key.Contains(System.AzimuthPartName.String))
                     part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
             }
+        }
+
+        internal void TargetChanged()
+        {
+            EventTriggerStateChanged(EventTriggers.Tracking, Target.HasTarget);
+            EventTriggerStateChanged(EventTriggers.StopTracking, !Target.HasTarget);
+
+            if (Comp.Session.MpActive && Comp.Session.IsServer && !Target.HasTarget && !Comp.TrackReticle)
+            {
+
+                Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
+                Comp.Session.PacketsToClient.Add(new Session.PacketInfo
+                {
+                    Entity = Comp.MyCube,
+                    Packet = new WeaponIdPacket
+                    {
+                        EntityId = Comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.TargetExpireUpdate,
+                        WeaponId = WeaponId,
+                    }
+                });
+            }
+
+            Target.TargetChanged = false;
         }
 
         internal void EntPartClose(MyEntity obj)

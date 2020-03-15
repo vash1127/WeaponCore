@@ -40,7 +40,6 @@ namespace WeaponCore.Support
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
-        internal uint MatrixUpdateTick;
         internal int Seed;
         //internal float MaxInventoryVolume;
         internal float OptimalDps;

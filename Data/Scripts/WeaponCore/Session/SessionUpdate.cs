@@ -111,8 +111,9 @@ namespace WeaponCore
                                 /// Check target for expire states
                                 /// 
 
-                                if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid))
-                                {
+                                if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
+
+                                    if (w.PosChangedTick != Tick) w.UpdatePivotPos();
 
                                     if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
                                         w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
@@ -120,23 +121,18 @@ namespace WeaponCore
                                         w.Target.Reset(Tick, States.Expired);
                                     else if (!IsClient && w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                         w.Target.Reset(Tick, States.Expired);
-                                    else if (w.AiEnabled)
-                                    {
+                                    else if (w.AiEnabled) {
 
-                                        w.UpdatePivotPos();
                                         if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
-                                        {
                                             w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
-                                        }
                                     }
-                                    else
-                                    {
-                                        w.UpdatePivotPos();
+                                    else {
+
                                         Vector3D targetPos;
                                         if (w.IsTurret) {
 
-                                            if (!w.TrackTarget && !IsClient)
-                                            {
+                                            if (!w.TrackTarget && !IsClient) {
+
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                                     w.Target.Reset(Tick, States.Expired);
                                             }
@@ -147,8 +143,7 @@ namespace WeaponCore
                                             w.Target.Reset(Tick, States.Expired);
                                     }
                                 }
-                                else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId))
-                                {
+                                else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId)) {
                                     w.Target.HasTarget = false;
                                     comp.Session.ClientGridResyncRequests.Add(comp);
                                 }
@@ -162,38 +157,16 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
                                 w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
-                                if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
-                                {
+                                if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui)) {
+                                    
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
                                 else if (w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
                                     w.Target = w.Comp.TrackingWeapon.Target;
 
-                                if (w.Target.TargetChanged)
-                                {
-                                    w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
-                                    w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
-
-                                    if (MpActive && IsServer && !w.Target.HasTarget && !comp.TrackReticle)
-                                    {
-                                        w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
-
-                                        PacketsToClient.Add(new PacketInfo
-                                        {
-                                            Entity = w.Comp.MyCube,
-                                            Packet = new WeaponIdPacket
-                                            {
-                                                EntityId = comp.MyCube.EntityId,
-                                                SenderId = 0,
-                                                PType = PacketType.TargetExpireUpdate,
-                                                WeaponId = w.WeaponId,
-                                            }
-                                        });
-                                    }
-
-                                    w.Target.TargetChanged = false;
-                                }
+                                if (w.Target.TargetChanged) // Target changed
+                                    w.TargetChanged();
 
                                 ///
                                 /// Check weapon's turret to see if its time to go home

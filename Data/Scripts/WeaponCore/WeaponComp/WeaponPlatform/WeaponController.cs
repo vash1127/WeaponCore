@@ -144,21 +144,16 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            if (AzimuthPart?.Entity?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Entity?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            PosChangedTick = Comp.Session.Tick;
 
-            if (Comp.MatrixUpdateTick < Comp.Session.Tick && AzimuthOnBase)
-            {
-                Comp.MatrixUpdateTick = Comp.Session.Tick;
+            if (AzimuthOnBase)
                 Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
-            }
 
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrix;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrix;
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrix.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
-
-            //Log.Line($"up: {AzimuthPart.RotationAxis} left: {ElevationPart.RotationAxis}");
-
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
@@ -175,13 +170,13 @@ namespace WeaponCore.Platform
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
             }
 
-            Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
+            var axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
             if (Vector3D.IsZero(axis))
                 MyPivotPos = centerTestPos;
             else
             {
-                Vector3D perpDir2 = Vector3D.Cross(MyPivotDir, axis);
-                Vector3D point1To2 = weaponCenter - centerTestPos;
+                var perpDir2 = Vector3D.Cross(MyPivotDir, axis);
+                var point1To2 = weaponCenter - centerTestPos;
                 MyPivotPos = centerTestPos + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(MyPivotUp, perpDir2) * MyPivotUp;
             }
 
