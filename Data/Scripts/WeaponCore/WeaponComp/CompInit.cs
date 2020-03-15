@@ -183,7 +183,6 @@ namespace WeaponCore.Support
                     for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
                     {
                         BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
-                        Log.Line($"round id: {w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id.SubtypeName}");
                     }
 
                     MaxInventoryVolume += w.System.MaxAmmoVolume;
