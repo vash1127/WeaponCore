@@ -39,7 +39,6 @@ namespace WeaponCore.Projectiles
         internal void Update() // Methods highly inlined due to keen's mod profiler
         {
             DeferedAvStateUpdates(Session);
-
             Clean();
             SpawnFragments();
 
@@ -49,20 +48,7 @@ namespace WeaponCore.Projectiles
             CheckHits();
             UpdateAv();
         }
-        /*
-        internal void DeferedDrawUpdate()
-        {
-            for (int i = 0; i < DeferedAvDraw.Count; i++)
-            {
-                var d = DeferedAvDraw[i];
-                var p = d.Projectile;
-                var info = d.Projectile.Info;
 
-                info.AvShot.Update(info, d.StepSize, d.VisualLength, ref d.TracerFront, ref p.Direction, ref p.VisualDir, d.ShortStepSize, d.Hit, info.AvShot.OnScreen == Screen.None && p.ModelState == EntityState.Exists);
-            }
-            DeferedAvDraw.Clear();
-        }
-        */
         internal void Clean()
         {
             for (int j = 0; j < CleanUp.Count; j++)

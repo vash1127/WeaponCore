@@ -88,6 +88,7 @@ namespace WeaponCore
                     EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
+                    PlayerPos = Session.Player.GetPosition();
                 }
 
                 if (GameLoaded)
