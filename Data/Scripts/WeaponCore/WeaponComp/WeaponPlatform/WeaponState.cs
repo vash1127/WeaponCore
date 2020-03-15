@@ -540,9 +540,9 @@ namespace WeaponCore.Platform
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative))
             {
-                State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
-                   Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
+                if (!Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)))
+                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+                   
             }
         }
 
