@@ -561,9 +561,13 @@ namespace WeaponCore.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.HasBurstDelay)
                 State.ShotsFired = 0;
 
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative))
+            var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
+
+            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags)
             {
                 if (!Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)))
+                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+                else if (Comp.Session.IsClient && hasMags)
                     State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
                    
             }
