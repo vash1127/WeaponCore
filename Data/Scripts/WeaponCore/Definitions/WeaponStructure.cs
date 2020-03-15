@@ -566,7 +566,7 @@ namespace WeaponCore.Support
             virtualBeams = ammoDef.Beams.VirtualBeams && IsBeamWeapon;
             rotateRealBeam = ammoDef.Beams.RotateRealBeam && VirtualBeams;
             convergeBeams = !RotateRealBeam && ammoDef.Beams.ConvergeBeams && VirtualBeams;
-            oneHitParticle = ammoDef.Beams.OneParticle && IsBeamWeapon;
+            oneHitParticle = ammoDef.Beams.OneParticle && IsBeamWeapon && VirtualBeams;
             offsetEffect = ammoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset > 0;
         }
 
@@ -584,7 +584,7 @@ namespace WeaponCore.Support
                 if (!isLine) isLine = true;
                 size = 1;
             }
-            else if (!isLine) size = size * 0.5;
+            else if (!isLine) size *= 0.5;
 
             collisionIsLine = isLine;
             collisionSize = size;
