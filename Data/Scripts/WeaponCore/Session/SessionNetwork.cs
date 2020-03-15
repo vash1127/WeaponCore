@@ -1202,8 +1202,7 @@ namespace WeaponCore
             {
                 comp.CurrentHeat -= weapon.State.Sync.Heat;
                 cState.CurrentCharge -= weapon.State.Sync.CurrentCharge;
-
-
+                
                 weaponData.SetState(wState.Sync);
 
                 comp.CurrentHeat += weapon.State.Sync.Heat;

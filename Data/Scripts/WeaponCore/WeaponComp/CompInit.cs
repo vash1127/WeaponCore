@@ -175,17 +175,21 @@ namespace WeaponCore.Support
             {
                 BlockInventory.Constraint.Clear();
 
+                float MaxInventoryVolume = 0f;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var w = Platform.Weapons[i];
 
                     for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
+                    {
                         BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+                        Log.Line($"round id: {w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id.SubtypeName}");
+                    }
 
-                    //MaxInventoryVolume += w.System.MaxAmmoVolume;
+                    MaxInventoryVolume += w.System.MaxAmmoVolume;
                 }
 
-                //BlockInventory.FixInventoryVolume(MaxInventoryVolume);
+                BlockInventory.FixInventoryVolume(MaxInventoryVolume);
                 BlockInventory.Refresh();
             }
             InventoryInited = true;

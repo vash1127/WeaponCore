@@ -403,8 +403,12 @@ namespace WeaponCore
                             if (w.Target.HasTarget && MpActive)
                             {
                                 w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
-                                WeaponsToSync.Add(w);
-                                w.Comp.Ai.NumSyncWeapons++;
+
+                                if (WeaponsSyncCheck.Add(w))
+                                {
+                                    WeaponsToSync.Add(w);
+                                    w.Comp.Ai.NumSyncWeapons++;
+                                }
                             }
                         }
                     }

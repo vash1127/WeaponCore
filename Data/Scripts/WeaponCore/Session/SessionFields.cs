@@ -29,6 +29,7 @@ namespace WeaponCore
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
         internal const int VersionControl = 1;
+        internal const uint ResyncMinDelayTicks = 720;
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;
@@ -84,6 +85,7 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<Weapon> ChargingWeaponsCheck = new HashSet<Weapon>();
+        internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
 
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();

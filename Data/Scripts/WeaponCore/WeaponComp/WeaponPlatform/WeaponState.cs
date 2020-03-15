@@ -383,7 +383,7 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
-        public void StartReload(bool reset = false, bool swapRecheck = false)
+        public void StartReload(bool reset = false)
         {
             if (reset) State.Sync.Reloading = false;
 
@@ -394,14 +394,33 @@ namespace WeaponCore.Platform
 
             var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
-            if (!(ActiveAmmoDef.Equals(newAmmo)) && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !swapRecheck)
-            {
-                if (State.Sync.CurrentMags > 0 && Comp.Session.IsServer)
-                    Comp.Session.WeaponAmmoRemoveQueue.Enqueue(this);
+            if (!ActiveAmmoDef.Equals(newAmmo)) {
 
-                return;
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
+                {
+                    if (Comp.Session.IsServer && !Comp.Session.IsCreative)
+                        Comp.Session.WeaponAmmoRemoveQueue.Enqueue(this);
+                    else
+                    {
+                        if(Comp.Session.IsCreative)
+                            ActiveAmmoDef = newAmmo;
+
+                        State.Sync.Reloading = false;
+                        Session.ComputeStorage(this);
+                    }
+                    return;
+                }
+                else if (!newAmmo.AmmoDef.Const.EnergyAmmo)
+                {
+                    ActiveAmmoDef = newAmmo;
+                    State.Sync.Reloading = false;
+                    Session.ComputeStorage(this);
+                    return;
+                }
+                else
+                    ActiveAmmoDef = newAmmo;
             }
-            
+
             if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
                 Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, Timings.AnimationDelayTick - Comp.Session.Tick);
@@ -473,11 +492,11 @@ namespace WeaponCore.Platform
 
         internal void CheckReload()
         {
-            var hasMags = State.Sync.CurrentMags > 0;
+            var hasMags = State.Sync.CurrentMags > 0 || Comp.Session.IsCreative;
             var chargeReload = ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || hasMags);
             var standardReload = !ActiveAmmoDef.AmmoDef.Const.MustCharge && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags;
 
-            if (State.Sync.CurrentAmmo == 0 && (Comp.Session.IsCreative || chargeReload || standardReload))
+            if (State.Sync.CurrentAmmo == 0 && (chargeReload || standardReload))
                 StartReload();
         }
 
