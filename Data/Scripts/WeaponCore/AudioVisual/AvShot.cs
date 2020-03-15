@@ -7,7 +7,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Projectiles;
 
 namespace WeaponCore.Support
 {
@@ -296,7 +295,7 @@ namespace WeaponCore.Support
             }
             s.Projectiles.DeferedAvDraw.Clear();
         }
-
+        /*
         internal void Update(ProInfo info, double stepSize, double visualLength, ref Vector3D tracerFront, ref Vector3D direction, ref Vector3D pointDir, double? shortStepSize = null, bool saveHit = false, bool modelOnly = false)
         {
             var lineEffect = AmmoDef.Const.Trail || AmmoDef.Const.DrawLine;
@@ -414,6 +413,7 @@ namespace WeaponCore.Support
             }
             Hitting = false;
         }
+        */
 
         internal void End(Vector3D endPos, bool detonateFakeExp = false)
         {

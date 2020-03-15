@@ -161,6 +161,7 @@ namespace WeaponCore
         internal Color[] HeatEmissives;
 
         internal Vector3D CameraPos;
+        internal Vector3D PlayerPos;
         internal Task PTask = new Task();
         internal Task GridTask = new Task();
         internal Task DbTask = new Task();
