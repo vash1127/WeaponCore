@@ -159,12 +159,10 @@ namespace WeaponCore.Support
 
         private void InventoryInit()
         {
-            if (Set.Value.InventoryInited)
-            {
-                InventoryInited = true;
+            if (InventoryInited)
                 return;
-            }
-            Set.Value.InventoryInited = true;
+
+            //Set.Value.InventoryInited = true;
 
             if (MyCube is IMyConveyorSorter) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
             BlockInventory.Constraint.m_useDefaultIcon = false;
@@ -181,9 +179,7 @@ namespace WeaponCore.Support
                     var w = Platform.Weapons[i];
 
                     for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
-                    {
                         BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
-                    }
 
                     MaxInventoryVolume += w.System.MaxAmmoVolume;
                 }
