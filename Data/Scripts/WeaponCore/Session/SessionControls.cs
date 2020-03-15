@@ -466,6 +466,9 @@ namespace WeaponCore
                             if (comp.Session.MpActive)
                                 comp.Session.CycleAmmoNetworkUpdate(w, next);
 
+                            if (w.State.Sync.CurrentAmmo == 0)
+                                comp.Session.FutureEvents.Schedule(o => { w.StartReload(); }, null, 1);
+
                             break;
                         }
 

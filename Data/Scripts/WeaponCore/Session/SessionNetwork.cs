@@ -476,7 +476,11 @@ namespace WeaponCore
                             }
                             
                             comp.Set.Value.MId = cyclePacket.MId;
-                            comp.Platform.Weapons[cyclePacket.WeaponId].Set.AmmoTypeId = cyclePacket.AmmoId;
+                            var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
+                            weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
+
+                            if (weapon.State.Sync.CurrentAmmo == 0)
+                                weapon.StartReload();
 
                             break;
                         }
@@ -1211,7 +1215,13 @@ namespace WeaponCore
                             if (cyclePacket.MId > comp.Set.Value.MId)
                             {
                                 comp.Set.Value.MId = cyclePacket.MId;
-                                comp.Platform.Weapons[cyclePacket.WeaponId].Set.AmmoTypeId = cyclePacket.AmmoId;
+
+                                var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
+
+                                weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
+
+                                if (weapon.State.Sync.CurrentAmmo == 0)
+                                    weapon.StartReload();
 
                                 PacketsToClient.Add(new PacketInfo
                                 {
