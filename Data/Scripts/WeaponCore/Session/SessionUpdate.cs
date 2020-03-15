@@ -159,26 +159,6 @@ namespace WeaponCore
 
                                 if (compCurPlayer.ControlType == ControlType.Camera && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
-                                
-                                if (w.Target.TargetChanged)
-                                {
-                                    w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
-                                    w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
-
-                                    if (MpActive && IsServer && !w.Target.HasTarget && !comp.TrackReticle) {
-                                        w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
-
-                                        PacketsToClient.Add(new PacketInfo {
-                                            Entity = w.Comp.MyCube,
-                                            Packet = new WeaponIdPacket {
-                                                EntityId = comp.MyCube.EntityId,
-                                                SenderId = 0,
-                                                PType = PacketType.TargetExpireUpdate,
-                                                WeaponId = w.WeaponId,
-                                            }
-                                        });
-                                    }
-                                }
 
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
@@ -191,6 +171,31 @@ namespace WeaponCore
                                 }
                                 else if (w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
                                     w.Target = w.Comp.TrackingWeapon.Target;
+
+                                if (w.Target.TargetChanged)
+                                {
+                                    w.EventTriggerStateChanged(EventTriggers.Tracking, w.Target.HasTarget);
+                                    w.EventTriggerStateChanged(EventTriggers.StopTracking, !w.Target.HasTarget);
+
+                                    if (MpActive && IsServer && !w.Target.HasTarget && !comp.TrackReticle)
+                                    {
+                                        w.Comp.WeaponValues.Targets[w.WeaponId].Info = TransferTarget.TargetInfo.Expired;
+
+                                        PacketsToClient.Add(new PacketInfo
+                                        {
+                                            Entity = w.Comp.MyCube,
+                                            Packet = new WeaponIdPacket
+                                            {
+                                                EntityId = comp.MyCube.EntityId,
+                                                SenderId = 0,
+                                                PType = PacketType.TargetExpireUpdate,
+                                                WeaponId = w.WeaponId,
+                                            }
+                                        });
+                                    }
+
+                                    w.Target.TargetChanged = false;
+                                }
 
                                 ///
                                 /// Check weapon's turret to see if its time to go home
