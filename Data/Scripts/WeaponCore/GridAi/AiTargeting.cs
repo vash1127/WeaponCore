@@ -196,6 +196,7 @@ namespace WeaponCore.Support
 
                     if (info?.Target == null || info.Target.MarkedForClose || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
+                    if (info.Target is IMyCharacter) Log.Line($"{x} - {adjTargetCount}");
                     if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > ((weaponRange + info.TargetRadius) * (weaponRange + info.TargetRadius))) continue;
