@@ -354,7 +354,7 @@ namespace WeaponCore.Platform
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
-                Comp.State.Value.Weapons[WeaponId].SingleShotCounter = 0;
+                State.SingleShotCounter = 0;
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
