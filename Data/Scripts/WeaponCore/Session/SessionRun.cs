@@ -121,8 +121,8 @@ namespace WeaponCore
                 if (FragmentsNeedingEntities.Count > 0)
                     Projectiles.PrepFragmentEntities();
 
-                PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
-                if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.Start(Proccessor.Proccess);
+                //PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
+                //if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -135,13 +135,14 @@ namespace WeaponCore
                 if (!DedicatedServer) ProcessAnimations();
 
                 DsUtil.Start("projectiles");
-
+                /*
                 if (!PTask.IsComplete)
                     PTask.Wait();
 
                 if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
                     TaskHasErrors(ref PTask, "PTask");
-
+                */
+                Projectiles.Update();
                 DsUtil.Complete("projectiles", true);
 
                 if (_effectedCubes.Count > 0) 
@@ -157,20 +158,22 @@ namespace WeaponCore
                 if (Hits.Count > 0) ProcessHits();
                 DsUtil.Complete("damage", true);
 
-                DsUtil.Start("network");
-                if (!NTask.IsComplete)
-                    NTask.Wait();
-
-                if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
-                    TaskHasErrors(ref NTask, "NTask");
-
                 if (!MTask.IsComplete)
                     MTask.Wait();
 
                 if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
                     TaskHasErrors(ref MTask, "MTask");
 
+                DsUtil.Start("network");
+                /*
+                if (!NTask.IsComplete)
+                    NTask.Wait();
 
+                if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
+                    TaskHasErrors(ref NTask, "NTask");
+                */
+
+                if (WeaponsToSync.Count > 0) Proccessor.Proccess();
                 Proccessor.AddPackets();
 
                 if (MpActive && !HandlesInput)
