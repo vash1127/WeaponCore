@@ -133,12 +133,10 @@ namespace WeaponCore
                                     {
                                         w.UpdatePivotPos();
                                         Vector3D targetPos;
-                                        if (w.IsTurret)
-                                        {
+                                        if (w.IsTurret) {
 
                                             if (!w.TrackTarget && !IsClient)
                                             {
-
                                                 if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                                     w.Target.Reset(Tick, States.Expired);
                                             }
