@@ -383,7 +383,7 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
-        public void StartReload(bool reset = false)
+        public void StartReload(bool reset = false, bool swapRecheck = false)
         {
             if (reset) State.Sync.Reloading = false;
 
@@ -392,19 +392,16 @@ namespace WeaponCore.Platform
             FinishBurst = false;
             State.Sync.Reloading = true;
 
-            
             var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
-            if (!(ActiveAmmoDef.Equals(newAmmo)) && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+            if (!(ActiveAmmoDef.Equals(newAmmo)) && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !swapRecheck)
             {
-                if(State.Sync.CurrentMags > 0 && Comp.Session.IsServer)
+                if (State.Sync.CurrentMags > 0 && Comp.Session.IsServer)
                     Comp.Session.WeaponAmmoRemoveQueue.Enqueue(this);
 
-                //moving ammo is threaded need this to wait for the ammo to swap out
-                Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, 3);
                 return;
             }
-
+            
             if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
                 Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, Timings.AnimationDelayTick - Comp.Session.Tick);
@@ -486,7 +483,7 @@ namespace WeaponCore.Platform
 
         internal void GetAmmoClient()
         {
-            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
+            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
             CheckReload();
         }
 
@@ -516,7 +513,7 @@ namespace WeaponCore.Platform
             {
                 State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
                 if (!Comp.Session.IsClient && !Comp.Session.IsCreative)
-                   Comp.BlockInventory.RemoveItemsOfType(1, System.WeaponAmmoTypes[Set.AmmoTypeId].AmmoDefinitionId);
+                   Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
             }
         }
 

@@ -457,12 +457,13 @@ namespace WeaponCore
                     var next = (w.Set.AmmoTypeId + 1) % availAmmo;
                     var currDef = w.System.WeaponAmmoTypes[next];
                     
-                    while (!(currDef.Equals(currActive)))
+                    while (!(currActive.Equals(currDef)))
                     {
 
                         if (currDef.AmmoDef.Const.IsTurretSelectable)
                         { 
                             w.Set.AmmoTypeId = next;
+                            Log.Line($"w.Set.AmmoTypeId: {w.Set.AmmoTypeId}");
                             break;
                         }
 

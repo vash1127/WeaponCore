@@ -41,7 +41,7 @@ namespace WeaponCore
             {
                 Timings();
 
-                if (!WeaponAmmoPullQueue.IsEmpty && CTask.IsComplete)
+                if (!WeaponAmmoRemoveQueue.IsEmpty && CTask.IsComplete)
                 {
                     if (CTask.valid && CTask.Exceptions != null)
                         TaskHasErrors(ref CTask, "CTask");
