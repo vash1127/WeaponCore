@@ -144,7 +144,7 @@ namespace WeaponCore.Support
             ClosestFirst = values.Targeting.ClosestFirst;
             AlwaysFireFullBurst = Values.HardPoint.Loading.FireFullBurst;
             Prediction = Values.HardPoint.AimLeadingPrediction;
-            LockOnFocus = Values.HardPoint.Ai.LockOnFocus;
+            LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
 
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
