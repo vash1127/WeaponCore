@@ -884,10 +884,27 @@ namespace WeaponCore.Support
                             {
                                 if (Weapons.Count > 0)
                                 {
-                                    FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
-                                    PowerDistributor = FakeShipController.GridResourceDistributor;
-                                    if (PowerDistributor == null)
+                                    var cube = Weapons[Weapons.Count - 1].MyCube;
+                                    if (cube != null)
+                                    {
+                                        using (cube.Pin())
+                                        {
+                                            if (cube.MarkedForClose || cube.CubeGrid.MarkedForClose && cube.SlimBlock != null)
+                                            {
+                                                Log.Line($"powerDist cube is not ready");
+                                                return;
+                                            }
+                                            FakeShipController.SlimBlock = cube.SlimBlock;
+                                            PowerDistributor = FakeShipController.GridResourceDistributor;
+                                            if (PowerDistributor == null)
+                                                return;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Log.Line($"powerDist cube is null");
                                         return;
+                                    }
                                 }
                                 else return;
                             }
