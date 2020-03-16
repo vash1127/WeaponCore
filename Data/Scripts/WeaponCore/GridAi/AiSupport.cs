@@ -296,9 +296,9 @@ namespace WeaponCore.Support
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
 
-                    if (Session.MpActive && group.Value.Comps != null && group.Value.Comps.Count > 0 && group.Key != null && group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null)
+                    /*if (Session.MpActive && group.Value.Comps != null && group.Value.Comps.Count > 0 && group.Key != null && group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null)
                         SyncGridOverrides(this, group.Key, group.Value.Comps.FirstElement().Set.Value.Overrides);
-                    else if (Session.MpActive) Log.Line($"[SyncGridOverrides had null] - Comp:{group.Value.Comps != null} - GroupKey:{group.Key != null} - Set:{group.Value.Comps?.FirstElement()?.Set != null} - Value:{group.Value.Comps?.FirstElement()?.Set?.Value != null} - Overrides:{group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null}");
+                    else if (Session.MpActive) Log.Line($"[SyncGridOverrides had null] - Comp:{group.Value.Comps != null} - GroupKey:{group.Key != null} - Set:{group.Value.Comps?.FirstElement()?.Set != null} - Value:{group.Value.Comps?.FirstElement()?.Set?.Value != null} - Overrides:{group.Value.Comps?.FirstElement()?.Set?.Value?.Overrides != null}");*/
                 }
                 BlockGroups.ApplyRemovals();
 
@@ -949,6 +949,17 @@ namespace WeaponCore.Support
 
         internal void TurnManualShootOff()
         {
+            if (TurnOffManualTick == Session.Tick) return;
+
+            TurnOffManualTick = Session.Tick;
+            /*
+            foreach (var grid in SubGrids)
+            {
+                GridAi ai;
+                if (grid != MyGrid && Session.GridTargetingAIs.TryGetValue(grid, out ai))
+                    ai.TurnManualShootOff();
+            }*/
+
             foreach (var cubeComp in WeaponBase)
             {
                 var comp = cubeComp.Value;
