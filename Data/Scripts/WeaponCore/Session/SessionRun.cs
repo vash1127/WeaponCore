@@ -121,8 +121,12 @@ namespace WeaponCore
                 if (FragmentsNeedingEntities.Count > 0)
                     Projectiles.PrepFragmentEntities();
 
-                //PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
-                //if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
+                if (!DedicatedServer)
+                {
+                    PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
+                    if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
+                }
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -135,14 +139,15 @@ namespace WeaponCore
                 if (!DedicatedServer) ProcessAnimations();
 
                 DsUtil.Start("projectiles");
-                /*
-                if (!PTask.IsComplete)
-                    PTask.Wait();
+                if (!DedicatedServer)
+                {
+                    if (!PTask.IsComplete)
+                        PTask.Wait();
 
-                if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
-                    TaskHasErrors(ref PTask, "PTask");
-                    */
-                Projectiles.Update();
+                    if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
+                        TaskHasErrors(ref PTask, "PTask");
+                }
+                else Projectiles.Update();
 
                 DsUtil.Complete("projectiles", true);
 
@@ -159,22 +164,25 @@ namespace WeaponCore
                 if (Hits.Count > 0) ProcessHits();
                 DsUtil.Complete("damage", true);
 
-                /*
-                if (!NTask.IsComplete)
-                    NTask.Wait();
+                if (IsClient)
+                {
+                    if (!MTask.IsComplete)
+                        MTask.Wait();
 
-                if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
-                    TaskHasErrors(ref NTask, "NTask");
+                    if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
+                        TaskHasErrors(ref MTask, "MTask");
+                }
 
-                if (!MTask.IsComplete)
-                    MTask.Wait();
-                */
-                if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
-                    TaskHasErrors(ref MTask, "MTask");
                 DsUtil.Start("network");
+                if (!DedicatedServer)
+                {
+                    if (!NTask.IsComplete)
+                        NTask.Wait();
 
-                if (WeaponsToSync.Count > 0) Proccessor.Proccess();
-
+                    if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
+                        TaskHasErrors(ref NTask, "NTask");
+                }
+                else if (WeaponsToSync.Count > 0) Proccessor.Proccess();
                 Proccessor.AddPackets();
 
                 if (MpActive && !HandlesInput)
