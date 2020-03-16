@@ -184,10 +184,12 @@ namespace WeaponCore
                                 var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-
                                 var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+                                var shoot = (validShootStates || manualShot || w.FinishBurst);
 
-                                if (canShoot && (validShootStates || manualShot || w.FinishBurst)) {
+                                w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus;
+
+                                if (canShoot && (shoot || w.LockOnFireState)) {
 
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 

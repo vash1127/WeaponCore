@@ -81,6 +81,9 @@ namespace WeaponCore.Platform
                 if (ShootTick > tick)
                     return;
 
+                if (LockOnFireState && (Target.Entity != Comp.Ai.Focus.Target[0] || Target.Entity != Comp.Ai.Focus.Target[1])) 
+                    Comp.Ai.Focus.GetPriorityTarget(out Target.Entity);
+
                 ShootTick = tick + TicksPerShot;
 
                 if (!IsShooting) StartShooting();
@@ -215,7 +218,7 @@ namespace WeaponCore.Platform
                             p.Info.WeaponCache = WeaponCache;
                             p.Info.WeaponCache.VirutalId = -1;
                             p.Info.Seed = Comp.Seed;
-
+                            p.Info.LockOnFireState = LockOnFireState;
                             p.TerminalControlled = Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None;
                             p.Info.ShooterVel = Comp.Ai.GridVel;
                             p.Info.Origin = muzzle.Position;
@@ -351,7 +354,7 @@ namespace WeaponCore.Platform
             p.Info.DetonationDamage = DetonateDmg;
             p.Info.AreaEffectDamage = AreaEffectDmg;
             p.Info.Seed = Comp.Seed;
-
+            p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;
 
             WeaponCache.VirtualHit = false;

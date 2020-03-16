@@ -223,7 +223,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
+            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget && !Info.LockOnFireState;
             if (PickTarget || LockedTarget) NewTargets++;
 
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
