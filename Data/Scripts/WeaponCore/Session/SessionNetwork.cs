@@ -499,8 +499,6 @@ namespace WeaponCore
                                             ai.Focus.ReleaseActive(ai, true);
                                             break;
                                     }
-
-                                    PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
                                     report.PacketValid = true;
                                 }
                             }
