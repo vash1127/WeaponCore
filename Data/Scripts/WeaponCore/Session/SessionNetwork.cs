@@ -469,7 +469,7 @@ namespace WeaponCore
                     case PacketType.ReleaseActiveUpdate:
                         {
                             var focusPacket = packet as FocusPacket;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null) as MyCubeGrid;
 
                             if (myGrid == null || myGrid.MarkedForClose)
                             {
@@ -654,7 +654,7 @@ namespace WeaponCore
                 {
                     case PacketType.CompStateUpdate:
                         var statePacket = packet as StatePacket;
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
                         if (statePacket?.Data == null || comp == null || ent.MarkedForClose)
@@ -678,7 +678,7 @@ namespace WeaponCore
                     case PacketType.CompSettingsUpdate:
 
                         var setPacket = packet as SettingPacket;
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
                         if (setPacket?.Data == null || comp == null || ent.MarkedForClose)
@@ -702,7 +702,7 @@ namespace WeaponCore
                     case PacketType.ClientMouseEvent:
 
                         var mousePacket = packet as MouseInputPacket;
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
 
                         if (mousePacket?.Data == null || ent == null || ent.MarkedForClose)
                         {
@@ -725,7 +725,7 @@ namespace WeaponCore
                     case PacketType.ActiveControlUpdate:
                         {
                             var dPacket = packet as BoolUpdatePacket;
-                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeBlock;
+                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
 
                             if (dPacket?.Data == null || block == null || block.MarkedForClose)
                             {
@@ -746,7 +746,7 @@ namespace WeaponCore
                     case PacketType.FakeTargetUpdate:
                         {
                             var targetPacket = packet as FakeTargetPacket;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
@@ -769,7 +769,7 @@ namespace WeaponCore
 
                     case PacketType.GridSyncRequestUpdate://can be a large update, only call on stream sync
                         {
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             if (myGrid == null || myGrid.MarkedForClose)
                             {
@@ -870,7 +870,7 @@ namespace WeaponCore
                     case PacketType.ReticleUpdate:
                         {
                             var reticlePacket = packet as BoolUpdatePacket;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (reticlePacket == null || comp == null || ent.MarkedForClose)
@@ -947,7 +947,7 @@ namespace WeaponCore
                         }
 
                     case PacketType.PlayerControlUpdate:
-                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                        ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = (ControllingPlayerPacket) packet;
 
@@ -972,7 +972,7 @@ namespace WeaponCore
                     case PacketType.TargetUpdateRequest:
                         {
                             var targetRequestPacket = (RequestTargetsPacket) packet;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             if (myGrid == null || myGrid.MarkedForClose)
                             {
@@ -994,7 +994,7 @@ namespace WeaponCore
                                 for (int i = 0; i < targetRequestPacket.Comps.Length; i++)
                                 {
                                     var compId = targetRequestPacket.Comps[i];
-                                    var compCube = MyEntities.GetEntityByIdOrDefault(compId, null, true) as MyCubeBlock;
+                                    var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
 
                                     if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp))
                                         continue;
@@ -1072,7 +1072,7 @@ namespace WeaponCore
                     case PacketType.CompToolbarShootState:
                         {
                             var shootStatePacket = (ShootStatePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (ent == null || comp == null || ent.MarkedForClose)
@@ -1124,7 +1124,7 @@ namespace WeaponCore
                     case PacketType.WeaponToolbarShootState:
                         {
                             var shootStatePacket = (ShootStatePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (comp == null || ent.MarkedForClose)
@@ -1172,7 +1172,7 @@ namespace WeaponCore
                     case PacketType.RangeUpdate:
                         {
                             var rangePacket = (RangePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (comp == null || ent.MarkedForClose)
@@ -1203,7 +1203,7 @@ namespace WeaponCore
                     case PacketType.CycleAmmo:
                         {
                             var cyclePacket = (CycleAmmoPacket)packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
                             if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
@@ -1243,7 +1243,7 @@ namespace WeaponCore
                     case PacketType.ReleaseActiveUpdate:
                         {
                             var focusPacket = packet as FocusPacket;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true) as MyCubeGrid;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             if (myGrid == null || myGrid.MarkedForClose)
                             {
@@ -1254,7 +1254,7 @@ namespace WeaponCore
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId, null, true) as MyCubeGrid;
+                                var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
                                 if (targetGrid != null)
                                 {
