@@ -50,6 +50,7 @@ namespace WeaponCore.Support
         internal bool TriggeredPulse;
         internal bool EwarActive;
         internal bool ModelOnly;
+        internal bool LockOnFireState;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
@@ -94,6 +95,7 @@ namespace WeaponCore.Support
             TriggeredPulse = false;
             EwarActive = false;
             ModelOnly = false;
+            LockOnFireState = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;

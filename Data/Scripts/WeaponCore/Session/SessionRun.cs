@@ -6,6 +6,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -88,7 +89,7 @@ namespace WeaponCore
                     EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
-                    PlayerPos = Session.Player.GetPosition();
+                    PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
                 }
 
                 if (GameLoaded)

@@ -84,6 +84,7 @@ namespace WeaponCore.Support
         public readonly bool HardPointRotationSound;
         public readonly bool BarrelRotationSound;
         public readonly bool PreFireSound;
+        public readonly bool LockOnFocus;
 
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
@@ -143,6 +144,7 @@ namespace WeaponCore.Support
             ClosestFirst = values.Targeting.ClosestFirst;
             AlwaysFireFullBurst = Values.HardPoint.Loading.FireFullBurst;
             Prediction = Values.HardPoint.AimLeadingPrediction;
+            LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
 
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
@@ -313,7 +315,7 @@ namespace WeaponCore.Support
             barrelSoundDistSqr = 0f;
             hardPointSoundDistSqr = 0f;
             noAmmoSoundDistSqr = 0f;
-            hardPointAvMaxDistSqr = 0f;
+            hardPointAvMaxDistSqr = HardPointAvMaxDistSqr;
 
             foreach (var def in Session.SoundDefinitions)
             {
@@ -357,7 +359,6 @@ namespace WeaponCore.Support
                     if (ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory > firingSoundDistSqr)
                         firingSoundDistSqr = ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory;
         }
-
     }
 
     public class AmmoConstants
@@ -484,7 +485,6 @@ namespace WeaponCore.Support
 
             TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
             CanZombie = TargetLossTime > 0 && TargetLossTime != int.MaxValue && !IsMine;
-
             MaxLifeTime = ammo.AmmoDef.Trajectory.MaxLifeTime > 0 ? ammo.AmmoDef.Trajectory.MaxLifeTime : int.MaxValue;
             MaxChaseTime = ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime > 0 ? ammo.AmmoDef.Trajectory.Smarts.MaxChaseTime : int.MaxValue;
             MaxObjectsHit = ammo.AmmoDef.ObjectsHit.MaxObjectsHit > 0 ? ammo.AmmoDef.ObjectsHit.MaxObjectsHit : int.MaxValue;

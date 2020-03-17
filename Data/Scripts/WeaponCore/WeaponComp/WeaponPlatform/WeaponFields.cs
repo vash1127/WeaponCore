@@ -36,6 +36,7 @@ namespace WeaponCore.Platform
         internal bool PreFired;
         internal bool FinishBurst;
         internal bool FirstSync = true;
+        internal bool LockOnFireState;
         internal uint ShootTick;
         internal uint TicksPerShot;
         internal uint LastSyncTick;
