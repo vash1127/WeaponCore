@@ -211,7 +211,7 @@ namespace WeaponCore.Support
                     double weaponMaxRange;
                     DpsAndHeatInit(weapon, ob, out weaponMaxRange);
 
-                    if(maxTrajectory < weaponMaxRange)
+                    if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
                 }
 

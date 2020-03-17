@@ -138,7 +138,6 @@ namespace WeaponCore.Control
                 "ShowOnHUD",
                 "CustomData",
                 "Control",
-                "Range",
             };
 
             for (int i = isTurretType ? 12 : 0; i < controls.Count; i++)
@@ -171,10 +170,16 @@ namespace WeaponCore.Control
 
                     case "Range":
                         {
-                            ((IMyTerminalControlSlider)c).Setter += (blk, Value) =>
+                            /*
+                            var oldRangeSetter = ((IMyTerminalControlSlider)c).Setter;
+                            ((IMyTerminalControlSlider)c).Setter = (blk, Value) =>
                             {
                                 var comp = blk?.Components?.Get<WeaponComponent>();
-                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                                {
+                                    oldRangeSetter(blk, Value);
+                                    return;
+                                }
 
                                 comp.Set.Value.Range = Value;
 
@@ -182,6 +187,21 @@ namespace WeaponCore.Control
                                     comp.Session.SendRangeUpdate(comp, Value);
 
                             };
+
+                            var oldRangeGetter = ((IMyTerminalControlSlider)c).Getter;
+                            ((IMyTerminalControlSlider)c).Getter = (blk) =>
+                            {
+                                var comp = blk?.Components?.Get<WeaponComponent>();
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                                    return oldRangeGetter(blk);
+
+                                Log.Line($"Range: {comp.Set.Value.Range}");
+                                return comp.Set.Value.Range;
+                            };
+
+                            ((IMyTerminalControlSlider)c).SetLimits(WepUi.GetMinRange, WepUi.GetMaxRange);
+
+                            */
                             break;
                         }
                 }  
@@ -198,14 +218,14 @@ namespace WeaponCore.Control
                         return comp != null && comp.HasGuidanceToggle;
                     });
                 
-                AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDpsFromTerminal,
+                AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.SetDpsFromTerminal,
                     (block, i) =>
                     {
                         var comp = block?.Components?.Get<WeaponComponent>();
                         return comp != null && comp.HasDamageSlider;
                     });
 
-                AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof,
+                AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.SetRof,
                     (block, i) =>
                     {
                         var comp = block?.Components?.Get<WeaponComponent>();
@@ -320,7 +340,7 @@ namespace WeaponCore.Control
             return c;
         }
 
-        internal static IMyTerminalControlSlider AddSlider<T>(int id, string name, string title, string tooltip,int min, int max, float incAmt,Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, int, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null) where T : IMyTerminalBlock
+        internal static IMyTerminalControlSlider AddSlider<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, int, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null) where T : IMyTerminalBlock
         {
             var s = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
 
@@ -337,7 +357,7 @@ namespace WeaponCore.Control
 
             MyAPIGateway.TerminalControls.AddControl<T>(s);
 
-            CreateSliderActionSet<T>(s, name, id, min/100, max/100, incAmt, visibleGetter);
+            CreateSliderActionSet<T>(s, name, id, 0, 1, .1f, visibleGetter);
             return s;
         }
 

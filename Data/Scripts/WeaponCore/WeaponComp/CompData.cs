@@ -132,7 +132,7 @@ namespace WeaponCore
                 Value = new CompSettingsValues {Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length]};
                 for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponSettingsValues();
 
-                Value.Range = Comp.BaseType == Turret ? Comp.TurretBase.Range : 0;
+                Value.Range = -1;
             }
             return loadedSomething;
         }        

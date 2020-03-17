@@ -100,11 +100,13 @@ namespace WeaponCore
                     builderType = new MyObjectBuilder_ConveyorSorterDefinition();
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
-                    TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, (b, i) => { var comp = b?.Components?.Get<WeaponComponent>(); return comp == null || comp.HasTurret; }, WepUi.GetMinRange, WepUi.GetMaxRange);
 
                     CreateShootClick<T>();
 
                 }
+
+                TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.SetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
+
                 if (builderType == null) return;
 
                 var wepIDs = new HashSet<int>();
@@ -480,6 +482,34 @@ namespace WeaponCore
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;
                 }
+            }
+
+            int rangeControl = -1;
+            IMyTerminalControl wcRangeControl = null;
+            for (int i = controls.Count - 1; i >= 0; i--)
+            {
+                if (controls[i].Id.Equals("Range"))
+                {
+                    rangeControl = i;
+                    controls.RemoveAt(i);
+                }
+                else if (controls[i].Id.Equals("WC_Range"))
+                {
+                    wcRangeControl = controls[i];
+                    controls.RemoveAt(i);
+                }
+            }
+
+            if (rangeControl != -1)
+                controls.RemoveAt(rangeControl);
+
+            if(wcRangeControl != null)
+            {
+                if (rangeControl != -1)
+                    controls.Insert(rangeControl, wcRangeControl);
+
+                else
+                    controls.Add(wcRangeControl);
             }
         }
         #endregion

@@ -48,11 +48,12 @@ namespace WeaponCore.Support
                         return;
                     }
 
-                    if (maxTrajectory < weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory) maxTrajectory = (float)weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+                    if (maxTrajectory < weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory)
+                        maxTrajectory = (float)weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
                 }
 
-                if (BaseType != BlockType.Turret && Set.Value.Range <= 0.01)
+                if (Set.Value.Range == -1)
                     Set.Value.Range = maxTrajectory;
 
                 WeaponValues.Load(this);

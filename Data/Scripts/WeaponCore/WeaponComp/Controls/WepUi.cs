@@ -204,6 +204,22 @@ namespace WeaponCore
             comp.Set.Value.Range = range;
         }
 
+        internal static bool ShowRange(IMyTerminalBlock block, int notUsed)
+        {
+            return true;
+            var comp = block?.Components?.Get<WeaponComponent>();
+
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return true;
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var weapon = comp.Platform.Weapons[i];
+                if (weapon.TrackTarget) return true;
+            }
+
+            return false;
+        }
+
         internal static float GetMinRange(IMyTerminalBlock block)
         {
             return 0;
@@ -221,6 +237,8 @@ namespace WeaponCore
                 if (curMax > maxTrajectory)
                     maxTrajectory = (float)curMax;
             }
+
+            Log.Line($"maxTrajectory: {maxTrajectory}");
             return maxTrajectory;
         }
     }
