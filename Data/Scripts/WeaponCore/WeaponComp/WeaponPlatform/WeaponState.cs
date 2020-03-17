@@ -435,7 +435,7 @@ namespace WeaponCore.Platform
                     ActiveAmmoDef = newAmmo;
             }
 
-            if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks)
+            if (Comp.Session.IsServer && !TrackTarget && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks)
             {
                 if (Comp.Session.WeaponsSyncCheck.Add(this))
                 {
