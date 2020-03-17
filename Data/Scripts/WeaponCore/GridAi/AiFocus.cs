@@ -50,16 +50,20 @@ namespace WeaponCore.Support
             return false;
         }
 
-        internal bool ReassignTarget(MyEntity target, int focusId, GridAi ai)
+        internal bool ReassignTarget(MyEntity target, int focusId, GridAi ai, bool alreadySynced = false)
         {
             if (focusId >= Target.Length || target == null || target.MarkedForClose) return false;
             Target[focusId] = target;
             HasFocus = true;
             UpdateSubGrids(ai);
+
+            if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
+                ai.Session.SendReassignTargetUpdate(ai, target.EntityId, focusId);
+
             return true;
         }
 
-        internal void NextActive(bool addSecondary, GridAi ai)
+        internal void NextActive(bool addSecondary, GridAi ai, bool alreadySynced = false)
         {
             var prevId = ActiveId;
             var newActiveId = prevId;
@@ -75,6 +79,10 @@ namespace WeaponCore.Support
                 ActiveId = newActiveId;
 
             UpdateSubGrids(ai);
+
+            if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
+                ai.Session.SendNextActiveUpdate(ai, addSecondary);
+
         }
 
         internal bool IsFocused(GridAi ai)
@@ -103,12 +111,15 @@ namespace WeaponCore.Support
             return HasFocus;
         }
 
-        internal void ReleaseActive(GridAi ai)
+        internal void ReleaseActive(GridAi ai, bool alreadySynced = false)
         {
             Target[ActiveId] = null;
 
             IsFocused(ai);
             UpdateSubGrids(ai);
+
+            if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
+                ai.Session.SendReleaseActiveUpdate(ai);
         }
 
         internal void UpdateSubGrids(GridAi ai, bool resetTick = false)

@@ -394,34 +394,6 @@ namespace WeaponCore
                 });
             }
         }
-        
-        internal void SendFocusTargetUpdate(GridAi ai, long targetId)
-        {
-            if (IsClient)
-            {
-                PacketsToServer.Add(new FocusPacket
-                {
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.FocusUpdate,
-                    Data = targetId
-                });
-            }
-            else if (HandlesInput)
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = ai.MyGrid,
-                    Packet = new FocusPacket
-                    {
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.FocusUpdate,
-                        Data = targetId
-                    }
-                });
-            }
-        }
 
         internal void SendUpdateRequest(long entityId, PacketType ptype)
         {
@@ -489,6 +461,120 @@ namespace WeaponCore
                 }
             });
         }
+
+        #region AIFocus packets
+        internal void SendFocusTargetUpdate(GridAi ai, long targetId)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new FocusPacket
+                {
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.FocusUpdate,
+                    TargetId = targetId
+                });
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new FocusPacket
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.FocusUpdate,
+                        TargetId = targetId
+                    }
+                });
+            }
+        }
+
+        internal void SendReassignTargetUpdate(GridAi ai, long targetId, int focusId)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new FocusPacket
+                {
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ReassignTargetUpdate,
+                    TargetId = targetId,
+                    FocusId = focusId
+                });
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new FocusPacket
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ReassignTargetUpdate,
+                        TargetId = targetId,
+                        FocusId = focusId
+                    }
+                });
+            }
+        }
+
+        internal void SendNextActiveUpdate(GridAi ai, bool addSecondary)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new FocusPacket
+                {
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.NextActiveUpdate,
+                    AddSecondary = addSecondary
+                });
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new FocusPacket
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.NextActiveUpdate,
+                        AddSecondary = addSecondary
+                    }
+                });
+            }
+        }
+
+        internal void SendReleaseActiveUpdate(GridAi ai)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new FocusPacket
+                {
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.ReleaseActiveUpdate
+                });
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new FocusPacket
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ReleaseActiveUpdate
+                    }
+                });
+            }
+        }
+        #endregion
         #endregion
 
 

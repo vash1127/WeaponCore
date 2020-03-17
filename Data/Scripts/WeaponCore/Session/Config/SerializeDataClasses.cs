@@ -39,7 +39,11 @@ namespace WeaponCore
         WeaponToolbarShootState,
         RangeUpdate,
         GridAiUiMidUpdate,
-        CycleAmmo
+        CycleAmmo,
+        ReassignTargetUpdate,
+        NextActiveUpdate,
+        ReleaseActiveUpdate
+
     }
 
     #region packets
@@ -205,13 +209,17 @@ namespace WeaponCore
     [ProtoContract]
     public class FocusPacket : Packet
     {
-        [ProtoMember(1)] internal long Data;
+        [ProtoMember(1)] internal long TargetId;
+        [ProtoMember(2), DefaultValue(-1)] internal int FocusId;
+        [ProtoMember(3)] internal bool AddSecondary;
         public FocusPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = 0;
+            TargetId = 0;
+            FocusId = -1;
+            AddSecondary = false;
         }
     }
 
