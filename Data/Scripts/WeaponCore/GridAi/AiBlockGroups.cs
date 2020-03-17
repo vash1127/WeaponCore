@@ -9,7 +9,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
             {"Active", 1},
-            {"Neutrals", 1},
+            {"Neutrals", 0},
             {"Projectiles", 0 },
             {"Biologicals", 0 },
             {"Meteors", 0 },
