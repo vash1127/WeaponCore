@@ -237,8 +237,6 @@ namespace WeaponCore
                 if (curMax > maxTrajectory)
                     maxTrajectory = (float)curMax;
             }
-
-            Log.Line($"maxTrajectory: {maxTrajectory}");
             return maxTrajectory;
         }
     }
