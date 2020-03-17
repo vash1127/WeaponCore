@@ -9,8 +9,6 @@ using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore
 {
@@ -472,7 +470,7 @@ namespace WeaponCore
 
                             if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
-                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp.Platform.State}";
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
                                 break;
                             }
                             
@@ -625,7 +623,7 @@ namespace WeaponCore
 
                 MyEntity ent; // not inited here to avoid extras calls unless needed
                 WeaponComponent comp; // not inited here to avoid extras calls unless needed
-                long playerId = 0;
+                long playerId;
 
                 switch (packet.PType)
                 {
@@ -726,7 +724,7 @@ namespace WeaponCore
 
                             if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null}";
+                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
                                 break;
                             }
 
@@ -754,7 +752,7 @@ namespace WeaponCore
 
                             if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
                             {
-                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid.MarkedForClose} myGrid is null: {myGrid == null }";
+                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
                                 break;
                             }
 
@@ -1075,7 +1073,7 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (shootStatePacket?.Data == null || ent == null || comp == null || ent.MarkedForClose)
+                            if (ent == null || comp == null || ent.MarkedForClose)
                             {
                                 errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
                                 break;
@@ -1208,7 +1206,7 @@ namespace WeaponCore
 
                             if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
-                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp.Platform.State}";
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
                                 break;
                             }
 

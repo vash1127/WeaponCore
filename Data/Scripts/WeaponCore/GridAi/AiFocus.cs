@@ -22,13 +22,13 @@ namespace WeaponCore.Support
         internal int ActiveId;
         internal bool HasFocus;
 
-        internal void AddFocus(MyEntity target, GridAi ai, bool networkUpdate = false)
+        internal void AddFocus(MyEntity target, GridAi ai, bool alreadySynced = false)
         {
             var session = ai.Session;
             Target[ActiveId] = target;
             ai.TargetResetTick = session.Tick + 1;
             UpdateSubGrids(ai, true);
-            if (session.MpActive && session.HandlesInput && !networkUpdate)
+            if (session.MpActive && session.HandlesInput && !alreadySynced)
                 session.SendFocusTargetUpdate(ai, target.EntityId);
         }
 
