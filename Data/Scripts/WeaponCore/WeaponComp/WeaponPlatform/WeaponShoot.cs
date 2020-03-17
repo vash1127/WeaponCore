@@ -315,7 +315,8 @@ namespace WeaponCore.Platform
                 }
                 else if (ActiveAmmoDef.AmmoDef.Const.BurstMode && System.AlwaysFireFullBurst && State.Sync.CurrentAmmo > 0)
                     FinishBurst = (State.Sync.CurrentAmmo > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
-
+                else if (ActiveAmmoDef.AmmoDef.Const.MustCharge && State.Sync.CurrentAmmo > 0)
+                    FinishBurst = true;
                 else if ((!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && State.Sync.CurrentAmmo == 0 && !State.Sync.Reloading)
                     StartReload();
                 

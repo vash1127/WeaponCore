@@ -440,7 +440,7 @@ namespace WeaponCore
                 Packet = new BoolUpdatePacket
                 {
                     EntityId = id,
-                    SenderId = Players[id].SteamUserId,
+                    SenderId = 0,
                     PType = PacketType.PlayerIdUpdate,
                     Data = connected
                 }
