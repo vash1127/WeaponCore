@@ -35,7 +35,7 @@ namespace WeaponCore.Support
             [ProtoMember(3)] public Vector3 Acceleration;
             [ProtoMember(4)] public bool ClearTarget;
 
-            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, bool fromServer = false)
+            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, bool networkUpdate = false)
             {
                 Position = hitPos;
                 if (ent != null)
@@ -44,17 +44,9 @@ namespace WeaponCore.Support
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
 
-                if (ai.Session.IsClient && !fromServer)
-                {
-                    ai.Session.PacketsToServer.Add(new FakeTargetPacket
-                    {
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = ai.Session.MultiplayerId,
-                        PType = PacketType.FakeTargetUpdate,
-                        Data = hitPos,
-                    });
+                if (ai.Session.MpActive && !networkUpdate)
+                    ai.Session.SendFakeTargetUpdate(ai, hitPos);
 
-                }
                 ClearTarget = false;
             }
 
@@ -305,43 +297,6 @@ namespace WeaponCore.Support
                 ScanBlockGroups = false;
             }
         }
-
-        internal void SendOverRides(string groupName, GroupOverrides overRides)
-        {
-            if (Session.MpActive)
-            {
-                UiMId++;
-                if (Session.IsClient)
-                {
-                    Session.PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = MyGrid.EntityId,
-                        SenderId = Session.MultiplayerId,
-                        MId = UiMId,
-                        GroupName = groupName,
-                        PType = PacketType.OverRidesUpdate,
-                        Data = overRides,
-                    });
-                }
-                else if (Session.HandlesInput)
-                {
-                    Session.PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = MyGrid,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = MyGrid.EntityId,
-                            SenderId = 0,
-                            MId = UiMId,
-                            GroupName = groupName,
-                            PType = PacketType.OverRidesUpdate,
-                            Data = overRides,
-                        }
-                    });
-                }
-            }
-        }
-
 
         internal void CompChange(bool add, WeaponComponent comp)
         {
@@ -801,7 +756,6 @@ namespace WeaponCore.Support
             AddSubGrids.Clear();
             SubGridChanges();
             SubGrids.Clear();
-            Gunners.Clear();
             Obstructions.Clear();
             TargetAis.Clear();
             EntitiesInRange.Clear();
@@ -974,7 +928,9 @@ namespace WeaponCore.Support
 
                 currPlayer.ControlType = ControlType.None;
                 currPlayer.PlayerId = -1;
-                comp.SendControlingPlayer();
+
+                if (comp.Session.MpActive)
+                    comp.Session.SendControlingPlayer(comp);
 
                 if (cState.ClickShoot)
                 {
@@ -989,24 +945,15 @@ namespace WeaponCore.Support
 
                     cState.ClickShoot = false;
 
-                    if (comp.Session.HandlesInput && comp.Session.MpActive)
-                    {
-                        comp.State.Value.MId++;
-                        comp.Session.PacketsToServer.Add(new ShootStatePacket
-                        {
-                            EntityId = comp.MyCube.EntityId,
-                            SenderId = comp.Session.MultiplayerId,
-                            MId = comp.State.Value.MId,
-                            PType = PacketType.CompToolbarShootState,
-                            Data = Weapon.TerminalActionState.ShootOff,
-                        });
-                    }
+                    if (comp.Session.MpActive)
+                        comp.Session.SendActionShootUpdate(comp, Weapon.TerminalActionState.ShootOff);
                 }
                 else if (overRides.TargetPainter || overRides.ManualControl)
                 {
                     overRides.TargetPainter = false;
                     overRides.ManualControl = false;
-                    comp.SendOverRides();
+                    if (comp.Session.MpActive)
+                        comp.Session.SendOverRidesUpdate(comp, overRides);
                 }
             }
         }

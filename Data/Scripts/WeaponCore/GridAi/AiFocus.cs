@@ -22,7 +22,7 @@ namespace WeaponCore.Support
         internal int ActiveId;
         internal bool HasFocus;
 
-        internal void AddFocus(MyEntity target, GridAi ai, bool serverUpdate = false)
+        internal void AddFocus(MyEntity target, GridAi ai, bool networkUpdate = false)
         {
             var session = ai.Session;
             Target[ActiveId] = target;
@@ -37,15 +37,8 @@ namespace WeaponCore.Support
                 }
             }
 
-            if (session.IsClient && !serverUpdate)
-            {
-                session.PacketsToServer.Add(new FocusPacket {
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = session.MultiplayerId,
-                        PType = PacketType.FocusUpdate,
-                        Data = target.EntityId
-                    });
-            }
+            if (session.MpActive && session.HandlesInput && !networkUpdate)
+                session.SendFocusTargetUpdate(ai, target.EntityId);
         }
 
         internal bool ReassignTarget(MyEntity target, int focusId, GridAi ai)

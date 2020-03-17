@@ -139,13 +139,8 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(false);
             Session.GridAiPool.Return(this);
 
-            if (Session.IsClient) {
-                Session.PacketsToServer.Add(new Packet {
-                    EntityId = MyGrid.EntityId,
-                    SenderId = Session.MultiplayerId,
-                    PType = PacketType.ClientEntityClosed
-                });
-            }
+            if (Session.IsClient)
+                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
         }
     }
 }

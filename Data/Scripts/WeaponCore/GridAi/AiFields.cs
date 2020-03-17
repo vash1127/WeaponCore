@@ -55,7 +55,6 @@ namespace WeaponCore.Support
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
 
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
-        internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
 
@@ -157,14 +156,7 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
             if (Session.IsClient)
-            {
-                Session.PacketsToServer.Add(new Packet
-                {
-                    EntityId = grid.EntityId,
-                    SenderId = Session.MultiplayerId,
-                    PType = PacketType.GridSyncRequestUpdate
-                });
-            }
+                session.SendUpdateRequest(grid.EntityId, PacketType.GridSyncRequestUpdate);
         }
     }
 }

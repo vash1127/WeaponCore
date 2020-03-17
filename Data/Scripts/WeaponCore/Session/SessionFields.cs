@@ -125,7 +125,6 @@ namespace WeaponCore
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
-        private readonly List<WeaponComponent> _gridSyncCompTmpList = new List<WeaponComponent>();
 
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 

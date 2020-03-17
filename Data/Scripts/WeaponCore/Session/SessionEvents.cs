@@ -169,19 +169,7 @@ namespace WeaponCore
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
 
                 if (IsServer && MpActive)
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = null,
-                        Packet = new BoolUpdatePacket
-                        {
-                            EntityId = id,
-                            SenderId = Players[id].SteamUserId,
-                            PType = PacketType.PlayerIdUpdate,
-                            Data = true
-                        }
-                    });
-                }
+                    SendPlayerConnectionUpdate(id, true);
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
         }
@@ -199,19 +187,7 @@ namespace WeaponCore
                     PlayerMouseStates.Remove(playerId);
 
                     if (IsServer && MpActive)
-                    {
-                        PacketsToClient.Add(new PacketInfo
-                        {
-                            Entity = null,
-                            Packet = new BoolUpdatePacket
-                            {
-                                EntityId = playerId,
-                                SenderId = removedPlayer.SteamUserId,
-                                PType = PacketType.PlayerIdUpdate,
-                                Data = false
-                            }
-                        });
-                    }
+                        SendPlayerConnectionUpdate(l, false);
 
                     if (removedPlayer.SteamUserId == AuthorSteamId)
                     {

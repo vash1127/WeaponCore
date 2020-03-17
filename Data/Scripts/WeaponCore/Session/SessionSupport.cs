@@ -246,12 +246,8 @@ namespace WeaponCore
                 }
                 PlayerMouseStates[-1] = new MouseStateData();
 
-                PacketsToServer.Add(new Packet
-                {
-                    EntityId = -1,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.RequestMouseStates,
-                });
+                if (IsClient)
+                    SendUpdateRequest(-1, PacketType.RequestMouseStates);
 
                 return true;
             }

@@ -78,34 +78,6 @@ namespace WeaponCore
 
             return loadedSomething;
         }
-
-        #region Network
-        public void NetworkUpdate()
-        {
-            Value.MId++;
-            if (Comp.Session.MpActive && Comp.Session.IsServer)
-            {
-                Comp.Session.PacketsToClient.Add(new PacketInfo {
-                    Entity = Comp.MyCube,
-                    Packet = new StatePacket {
-                        EntityId = Block.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.CompStateUpdate,
-                        Data = Value
-                    }
-                });
-            }
-            else if (Comp.Session.IsClient)
-            { // client, send settings to server
-                Comp.Session.PacketsToServer.Add(new StatePacket {
-                    EntityId = Block.EntityId,
-                    PType = PacketType.CompStateUpdate,
-                    SenderId = Comp.Session.MultiplayerId,
-                    Data = Value
-                });
-            }
-        }
-        #endregion
     }
 
     public class CompSettings
@@ -163,34 +135,6 @@ namespace WeaponCore
                 Value.Range = Comp.BaseType == Turret ? Comp.TurretBase.Range : 0;
             }
             return loadedSomething;
-        }
-
-        #region Network
-        public void NetworkUpdate()
-        {
-            Value.MId++;
-            if (Comp.Session.MpActive && Comp.Session.IsServer)
-            {
-                Comp.Session.PacketsToClient.Add(new PacketInfo {
-                    Entity = Comp.MyCube,
-                    Packet = new SettingPacket {
-                        EntityId = Block.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.CompStateUpdate,
-                        Data = Value
-                    }
-                });
-            }
-            else if (Comp.Session.IsClient)// client, send settings to server
-            {
-                Comp.Session.PacketsToServer.Add(new SettingPacket {
-                    EntityId = Block.EntityId,
-                    PType = PacketType.CompSettingsUpdate,
-                    SenderId = Comp.Session.MultiplayerId,
-                    Data = Value
-                });
-            }
-        }
-        #endregion
+        }        
     }
 }

@@ -53,8 +53,8 @@ namespace WeaponCore
                 comp.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
             }
 
-            if(!isNetworkUpdate && comp.Session.IsClient)
-                comp.UpdateSettingsMp();
+            if (!isNetworkUpdate && comp.Session.HandlesInput)
+                comp.Session.SendCompSettingUpdate(comp);
 
             comp.Ai.UpdatePowerSources = true;
             comp.SettingsUpdated = true;

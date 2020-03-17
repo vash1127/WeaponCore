@@ -41,21 +41,12 @@ namespace WeaponCore.Platform
             EventTriggerStateChanged(EventTriggers.Tracking, Target.HasTarget);
             EventTriggerStateChanged(EventTriggers.StopTracking, !Target.HasTarget);
 
-            if (Comp.Session.MpActive && Comp.Session.IsServer && !Target.HasTarget && !Comp.TrackReticle)
+            if (!Target.HasTarget)
             {
-
                 Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
-                Comp.Session.PacketsToClient.Add(new Session.PacketInfo
-                {
-                    Entity = Comp.MyCube,
-                    Packet = new WeaponIdPacket
-                    {
-                        EntityId = Comp.MyCube.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.TargetExpireUpdate,
-                        WeaponId = WeaponId,
-                    }
-                });
+
+                if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.TrackReticle)
+                    Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
             }
 
             Target.TargetChanged = false;

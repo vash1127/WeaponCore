@@ -72,7 +72,15 @@ namespace WeaponCore
                             var compCurPlayer = comp.State.Value.CurrentPlayerControl;
 
                             if (HandlesInput)
-                                TargetUi.SetCompTrackReticle(comp);
+                            {
+                                comp.WasTrackReticle = comp.TrackReticle;
+                                var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == PlayerId;
+
+                                comp.TrackReticle = comp.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.ControllingPlayers.ContainsKey(PlayerId));
+
+                                if (MpActive && isControllingPlayer && comp.TrackReticle != comp.WasTrackReticle)
+                                    comp.Session.SendTrackReticleUpdate(comp);
+                            }
 
                             comp.WasControlled = comp.UserControlled;
                             comp.UserControlled = compCurPlayer.ControlType != ControlType.None;

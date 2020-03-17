@@ -184,27 +184,14 @@ namespace WeaponCore
                     }
                 }
 
-                if (comp.Session.HandlesInput && comp.Session.MpActive)
+                if (comp.Session.MpActive)
                 {
-                    comp.State.Value.MId++;
-                    comp.Session.PacketsToServer.Add(new ShootStatePacket
-                    {
-                        EntityId = blk.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        PType = PacketType.CompToolbarShootState,
-                        MId = comp.State.Value.MId,
-                        Data = cState.ClickShoot ? ShootOff : ShootClick,
-                    });
+                    comp.Session.SendControlingPlayer(comp);
+                    comp.Session.SendActionShootUpdate(comp, (cState.ClickShoot ? ShootOff : ShootClick));
                 }
-
-                comp.SendControlingPlayer();
 
                 cState.ClickShoot = !cState.ClickShoot;
                 cState.ShootOn = !cState.ClickShoot && cState.ShootOn;
-
-                
-
-                //comp.UpdateStateMp();
             };
 
             action.Writer = (blk, sb) =>
@@ -253,25 +240,14 @@ namespace WeaponCore
                     {
                         comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                         comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                        comp.SendControlingPlayer();
-                        comp.SendOverRides();
+
+                        comp.Session.SendControlingPlayer(comp);
+                        comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
                     }
                 }
 
-                
-                if(comp.Session.HandlesInput && comp.Session.MpActive)
-                {
-                    comp.State.Value.MId++;
-                    comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
-                    {
-                        EntityId = blk.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        MId = comp.State.Value.MId,
-                        PType = PacketType.WeaponToolbarShootState,
-                        Data = w.State.ManualShoot,
-                        WeaponId = w.WeaponId,
-                    });
-                }
+                if (comp.Session.MpActive)
+                    comp.Session.SendActionShootUpdate(comp, w.State.ManualShoot, w.WeaponId);
 
             };
             action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
@@ -309,23 +285,12 @@ namespace WeaponCore
                 {
                     comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                    comp.SendControlingPlayer();
-                    comp.SendOverRides();
+                    comp.Session.SendControlingPlayer(comp);
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
                 }
 
-                if (comp.Session.HandlesInput && comp.Session.MpActive)
-                {
-                    comp.State.Value.MId++;
-                    comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
-                    {
-                        EntityId = blk.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        MId = comp.State.Value.MId,
-                        PType = PacketType.WeaponToolbarShootState,
-                        Data = w.State.ManualShoot,
-                        WeaponId = w.WeaponId,
-                    });
-                }
+                if (comp.Session.MpActive)
+                    comp.Session.SendActionShootUpdate(comp, ShootOn, weaponId);
             };
 
             action1.Writer = (b, t) => t.Append("On");
@@ -352,20 +317,8 @@ namespace WeaponCore
 
                 comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
 
-                if (comp.Session.HandlesInput && comp.Session.MpActive)
-                {
-                    var w = comp.Platform.Weapons[weaponId];
-                    comp.State.Value.MId++;
-                    comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
-                    {
-                        EntityId = blk.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        MId = comp.State.Value.MId,
-                        PType = PacketType.WeaponToolbarShootState,
-                        Data = w.State.ManualShoot,
-                        WeaponId = w.WeaponId,
-                    });
-                }
+                if (comp.Session.MpActive)
+                    comp.Session.SendActionShootUpdate(comp, ShootOff, weaponId);
 
             };
             action2.Writer = (b, t) => t.Append("Off");
@@ -401,20 +354,9 @@ namespace WeaponCore
                         var cState = comp.State.Value;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
                         cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].SingleShotCounter++;
-                        
-                        if (comp.Session.HandlesInput && comp.Session.MpActive)
-                        {
-                            comp.State.Value.MId++;
-                            comp.Session.PacketsToServer.Add(new WeaponShootStatePacket
-                            {
-                                EntityId = blk.EntityId,
-                                SenderId = comp.Session.MultiplayerId,
-                                MId = comp.State.Value.MId,
-                                PType = PacketType.WeaponToolbarShootState,
-                                Data = comp.Platform.Weapons[weaponId].State.ManualShoot,
-                                WeaponId = weaponId,
-                            });
-                        }
+
+                        if (comp.Session.MpActive)
+                            comp.Session.SendActionShootUpdate(comp, ShootOnce, weaponId);
                     }
                 }
             };
@@ -464,7 +406,7 @@ namespace WeaponCore
                             w.Set.AmmoTypeId = next;
 
                             if (comp.Session.MpActive)
-                                comp.Session.CycleAmmoNetworkUpdate(w, next);
+                                comp.Session.SendCycleAmmoNetworkUpdate(w, next);
 
                             if (w.State.Sync.CurrentAmmo == 0)
                                 comp.Session.FutureEvents.Schedule(o => { w.StartReload(); }, null, 1);

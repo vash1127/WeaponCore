@@ -103,13 +103,13 @@ namespace WeaponCore.Support
                 }
 
                 if(comp.Session.MpActive)
-                    comp.SendControlingPlayer();
+                    comp.Session.SendControlingPlayer(comp);
             }
 
             var gridAi = Comps?.FirstElement()?.Ai;
 
             if (gridAi != null && gridAi.Session.HandlesInput && gridAi.Session.MpActive && o != null)
-                gridAi.SendOverRides(BlockGroup, o);
+                gridAi.Session.SendOverRidesUpdate(gridAi, BlockGroup, o);
         }
 
         internal void SetValue(WeaponComponent comp, string setting, int value)
@@ -176,9 +176,12 @@ namespace WeaponCore.Support
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
-            
-            comp.SendControlingPlayer();
-            comp.SendOverRides();
+
+            if (comp.Session.MpActive)
+            {
+                comp.Session.SendControlingPlayer(comp);
+                comp.Session.SendOverRidesUpdate(comp, o);
+            }
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)

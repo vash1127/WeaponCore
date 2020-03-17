@@ -63,14 +63,5 @@ namespace WeaponCore.Support
             }
             catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}"); }
         }
-
-        internal void UpdateNetworkState()
-        {
-            if (Session.MpActive)
-                State.NetworkUpdate();
-
-            State.Value.Message = false;
-            State.SaveState();
-        }
     }
 }

@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using System.Collections.Generic;
+using System.ComponentModel;
 using VRage;
 using VRageMath;
 using WeaponCore.Support;
@@ -59,8 +60,7 @@ namespace WeaponCore
     [ProtoInclude(17, typeof(MouseInputSyncPacket))]
     [ProtoInclude(18, typeof(ShootStatePacket))]
     [ProtoInclude(19, typeof(RangePacket))]
-    [ProtoInclude(20, typeof(WeaponShootStatePacket))]
-    [ProtoInclude(21, typeof(CycleAmmoPacket))]
+    [ProtoInclude(20, typeof(CycleAmmoPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -97,7 +97,7 @@ namespace WeaponCore
     [ProtoContract]
     public class StatePacket : Packet
     {
-        [ProtoMember(1)] internal CompStateValues Data = null;
+        [ProtoMember(1)] internal CompStateValues Data;
 
         public StatePacket() { }
 
@@ -111,7 +111,7 @@ namespace WeaponCore
     [ProtoContract]
     public class SettingPacket : Packet
     {
-        [ProtoMember(1)] internal CompSettingsValues Data = null;
+        [ProtoMember(1)] internal CompSettingsValues Data;
         public SettingPacket() { }
 
         public override void CleanUp()
@@ -124,7 +124,7 @@ namespace WeaponCore
     [ProtoContract]
     public class GridWeaponPacket : Packet
     {
-        [ProtoMember(1)] internal List<WeaponData> Data = new List<WeaponData>();
+        [ProtoMember(1)] internal List<WeaponData> Data;
         public GridWeaponPacket() { }
 
         public override void CleanUp()
@@ -137,13 +137,13 @@ namespace WeaponCore
     [ProtoContract]
     public class FakeTargetPacket : Packet
     {
-        [ProtoMember(1)] internal Vector3 Data = Vector3.Zero;
+        [ProtoMember(1)] internal Vector3 Data;
         public FakeTargetPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = Vector3.Zero;
+            Data = new Vector3();
         }
     }
 
@@ -151,7 +151,7 @@ namespace WeaponCore
     [ProtoContract]
     public class MouseInputPacket : Packet
     {
-        [ProtoMember(1)] internal MouseStateData Data = null;
+        [ProtoMember(1)] internal MouseStateData Data;
         public MouseInputPacket() { }
 
         public override void CleanUp()
@@ -178,14 +178,14 @@ namespace WeaponCore
     public class MagUpdatePacket : Packet
     {
         [ProtoMember(1)] internal MyFixedPoint Mags;
-        [ProtoMember(2)] internal int WeaponId;
+        [ProtoMember(2), DefaultValue(-1)] internal int WeaponId;
         public MagUpdatePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
             Mags = 0;
-            WeaponId = 0;
+            WeaponId = -1;
         }
     }
 
@@ -218,9 +218,9 @@ namespace WeaponCore
     [ProtoContract]
     public class OverRidesPacket : Packet
     {
-        [ProtoMember(1)] internal GroupOverrides Data = null;
-        [ProtoMember(2)] internal string GroupName = "";
-        [ProtoMember(3)] internal uint MId = 0;
+        [ProtoMember(1)] internal GroupOverrides Data;
+        [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
+        [ProtoMember(3)] internal uint MId;
 
         public OverRidesPacket() { }
 
@@ -236,7 +236,7 @@ namespace WeaponCore
     [ProtoContract]
     public class ControllingPlayerPacket : Packet
     {
-        [ProtoMember(1)] internal PlayerControl Data = null;
+        [ProtoMember(1)] internal PlayerControl Data;
         [ProtoMember(2)] internal uint MId;
 
         public ControllingPlayerPacket() { }
@@ -251,7 +251,7 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponIdPacket : Packet
     {
-        [ProtoMember(1)] internal int WeaponId = -1;
+        [ProtoMember(1), DefaultValue(-1)] internal int WeaponId = -1;
 
         public WeaponIdPacket() { }
 
@@ -265,7 +265,7 @@ namespace WeaponCore
     [ProtoContract]
     public class MIdPacket : Packet
     {
-        [ProtoMember(1)] internal uint Id = 0;
+        [ProtoMember(1)] internal uint Id;
 
         public MIdPacket() { }
 
@@ -308,6 +308,7 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
         [ProtoMember(2)] internal uint MId;
+        [ProtoMember(3), DefaultValue(-1)] internal int WeaponId = -1;
         public ShootStatePacket() { }
 
         public override void CleanUp()
@@ -315,6 +316,7 @@ namespace WeaponCore
             base.CleanUp();
             Data = TerminalActionState.ShootOff;
             MId = 0;
+            WeaponId = -1;
         }
     }
 
@@ -334,28 +336,11 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class WeaponShootStatePacket : Packet
-    {
-        [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
-        [ProtoMember(2)] internal uint MId;
-        [ProtoMember(3)] internal int WeaponId;
-        public WeaponShootStatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = TerminalActionState.ShootOff;
-            MId = 0;
-            WeaponId = -1;
-        }
-    }
-
-    [ProtoContract]
     public class CycleAmmoPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;
-        [ProtoMember(2)] internal int AmmoId;
-        [ProtoMember(3)] internal int WeaponId;
+        [ProtoMember(2), DefaultValue(-1)] internal int AmmoId = -1;
+        [ProtoMember(3), DefaultValue(-1)] internal int WeaponId = -1;
         public CycleAmmoPacket() { }
 
         public override void CleanUp()
@@ -373,10 +358,10 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponData
     {
-        [ProtoMember(1)] internal TransferTarget TargetData = null;
+        [ProtoMember(1)] internal TransferTarget TargetData;
         [ProtoMember(2)] internal long CompEntityId;
         [ProtoMember(3)] internal WeaponSyncValues SyncData;
-        [ProtoMember(4)] internal WeaponTimings Timmings = null;
+        [ProtoMember(4)] internal WeaponTimings Timmings;
 
         public WeaponData() { }
     }
