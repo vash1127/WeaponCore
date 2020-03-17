@@ -5,6 +5,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 
 namespace WeaponCore.Platform
 {
@@ -172,6 +173,10 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             var system = weapon.System;
             Vector3D targetCenter;
+
+            var rayCheckTest = !weapon.Comp.Session.IsClient && weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            if (rayCheckTest && !weapon.RayCheckTest())
+                return false;
 
             if (weapon.Comp.TrackReticle)
                 targetCenter = weapon.Comp.Ai.DummyTarget.Position;

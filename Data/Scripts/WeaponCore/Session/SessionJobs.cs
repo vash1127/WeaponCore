@@ -5,6 +5,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.ModAPI;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 
@@ -99,7 +100,6 @@ namespace WeaponCore
                     }
                     db.NewEntities.Clear();
                     db.SortedTargets.Sort(TargetCompare);
-
                     db.TargetAis.Clear();
                     db.TargetAis.AddRange(db.TargetAisTmp);
                     db.TargetAisTmp.Clear();
