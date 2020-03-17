@@ -315,7 +315,7 @@ namespace WeaponCore.Support
             barrelSoundDistSqr = 0f;
             hardPointSoundDistSqr = 0f;
             noAmmoSoundDistSqr = 0f;
-            hardPointAvMaxDistSqr = 0f;
+            hardPointAvMaxDistSqr = HardPointAvMaxDistSqr;
 
             foreach (var def in Session.SoundDefinitions)
             {
@@ -359,7 +359,6 @@ namespace WeaponCore.Support
                     if (ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory > firingSoundDistSqr)
                         firingSoundDistSqr = ammoType.AmmoDef.Trajectory.MaxTrajectory * ammoType.AmmoDef.Trajectory.MaxTrajectory;
         }
-
     }
 
     public class AmmoConstants
