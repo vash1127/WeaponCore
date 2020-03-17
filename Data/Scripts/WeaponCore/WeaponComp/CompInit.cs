@@ -106,20 +106,17 @@ namespace WeaponCore.Support
 
             if (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled)
             {
+                var areaDamage = (float)(weapon.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffectDamage * (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffectRadius * 0.5f));
+                weapon.Dps += areaDamage;
+
                 if (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
-                    weapon.Dps += (weapon.DetonateDmg / 2) * (weapon.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed > 0
-                                        ? weapon.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec /
-                                        weapon.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed
-                                        : 1);
-                else
-                    weapon.Dps += (weapon.AreaEffectDmg / 2) *
-                                    (weapon.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed > 0
-                                        ? weapon.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec /
-                                        weapon.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed
-                                        : 1);
+                {
+                    var detationAreaDamage = (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonationDamage * (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonationRadius * 0.5f));
+                    weapon.Dps += detationAreaDamage;
+                }
             }
 
-            OptimalDps += weapon.Dps;
+            if (!weapon.System.DesignatorWeapon) OptimalDps += weapon.Dps;
 
 
             //range slider fix
