@@ -76,27 +76,39 @@ namespace WeaponCore.Support
             else if (!addSecondary && Target[newActiveId] != null)
                 ActiveId = newActiveId;
 
-            UpdateSubGrids(ai);
+            IsFocused(ai);
 
             if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
                 ai.Session.SendNextActiveUpdate(ai, addSecondary);
+        }
 
+        internal void ReleaseActive(GridAi ai, bool alreadySynced = false)
+        {
+            Target[ActiveId] = null;
+
+            IsFocused(ai);
+
+            if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
+                ai.Session.SendReleaseActiveUpdate(ai);
         }
 
         internal bool IsFocused(GridAi ai)
         {
             HasFocus = false;
-            for (int i = 0; i < Target.Length; i++) {
+            for (int i = 0; i < Target.Length; i++)
+            {
 
-                if (Target[i] != null) {
+                if (Target[i] != null)
+                {
 
-                    if (!Target[i].MarkedForClose) 
+                    if (!Target[i].MarkedForClose)
                         HasFocus = true;
                     else
                         Target[i] = null;
                 }
 
-                if (Target[0] == null && HasFocus) {
+                if (Target[0] == null && HasFocus)
+                {
 
                     Target[0] = Target[i];
                     Target[i] = null;
@@ -109,15 +121,6 @@ namespace WeaponCore.Support
             return HasFocus;
         }
 
-        internal void ReleaseActive(GridAi ai, bool alreadySynced = false)
-        {
-            Target[ActiveId] = null;
-
-            IsFocused(ai);
-
-            if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
-                ai.Session.SendReleaseActiveUpdate(ai);
-        }
 
         internal void UpdateSubGrids(GridAi ai, bool resetTick = false)
         {
