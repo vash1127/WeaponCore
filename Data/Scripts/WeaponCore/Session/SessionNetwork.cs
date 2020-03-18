@@ -14,7 +14,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        #region Network sync
+        #region Client Sync
         private void ClientReceivedPacket(byte[] rawData)
         {
             try
@@ -633,6 +633,9 @@ namespace WeaponCore
                     ClientSideErrorPktList.Remove(erroredPacket);
             }
         }
+        #endregion
+
+        #region Server Sync
 
         private void ServerReceivedPacket(byte[] rawData)
         {
@@ -820,6 +823,45 @@ namespace WeaponCore
                                     },
                                     SingleClient = true,
                                 });
+
+                                var gridPacket = new GridWeaponPacket
+                                {
+                                    EntityId = packet.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.TargetUpdate,
+                                    Data = new List<WeaponData>()
+                                };
+
+                                foreach (var cubeComp in ai.WeaponBase)
+                                {
+                                    comp = cubeComp.Value;
+                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed) continue;
+
+                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                                    {
+                                        var w = comp.Platform.Weapons[j];
+
+                                        if (!w.Target.HasTarget) continue;
+
+                                        var weaponData = new WeaponData
+                                        {
+                                            CompEntityId = comp.MyCube.EntityId,
+                                            SyncData = w.State.Sync,
+                                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                                            TargetData = comp.WeaponValues.Targets[j],
+                                        };
+
+                                        gridPacket.Data.Add(weaponData);
+                                    }
+                                }
+
+                                if (gridPacket.Data.Count > 0)
+                                    PacketsToClient.Add(new PacketInfo
+                                    {
+                                        Entity = myGrid,
+                                        Packet = gridPacket,
+                                        SingleClient = true,
+                                    });
 
                                 if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
                                     PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
