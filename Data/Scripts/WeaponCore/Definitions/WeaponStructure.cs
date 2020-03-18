@@ -546,7 +546,7 @@ namespace WeaponCore.Support
 
                 var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : s.ReloadTime;
                 var timePerMag = 3600f * (magSize / s.RateOfFire / s.BarrelsPerShot) + s.ReloadTime + timeSpentOnBurst;
-                shotsPerSec = (((3600f / timePerMag) * magSize) / 60) * 2;
+                shotsPerSec = ((3600f / timePerMag) * magSize) / 60;
                 baseDps = BaseDamage * shotsPerSec;
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec;
