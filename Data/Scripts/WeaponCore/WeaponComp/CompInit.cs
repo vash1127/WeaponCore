@@ -93,9 +93,6 @@ namespace WeaponCore.Support
             weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
             HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
 
-            weapon.AreaEffectDmg = weapon.ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage * mulitplier;
-            weapon.DetonateDmg = weapon.ActiveAmmoDef.AmmoDef.Const.DetonationDamage * mulitplier;
-
             weapon.RequiredPower *= mulitplier;
             MaxRequiredPower += weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge ? weapon.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize : weapon.RequiredPower;
             weapon.UseablePower = weapon.RequiredPower;
@@ -103,27 +100,11 @@ namespace WeaponCore.Support
             weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
             weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-            weapon.Dps = (60f / weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
+            weapon.Dps = weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;
 
-            if (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled)
-            {
-                var areaDamage = (float)(weapon.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffectDamage * (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffectRadius * 0.5f));
-                weapon.Dps += areaDamage;
+            if (!weapon.System.DesignatorWeapon) OptimalDps += weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps;
 
-                if (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
-                {
-                    var detationAreaDamage = (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonationDamage * (weapon.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonationRadius * 0.5f));
-                    weapon.Dps += detationAreaDamage;
-                }
-            }
-
-            if (!weapon.System.DesignatorWeapon) OptimalDps += weapon.Dps;
-
-
-            //range slider fix
             maxTrajectory = 0;
-            //if (ob != null && ob.MaxRangeMeters > maxTrajectory)
-                //maxTrajectory = ob.MaxRangeMeters;
             if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
                 maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
