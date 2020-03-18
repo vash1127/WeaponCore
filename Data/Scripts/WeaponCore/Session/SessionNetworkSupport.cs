@@ -634,7 +634,7 @@ namespace WeaponCore
             }
 
             else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
-                weapon.ChargeReload();
+                weapon.ChargeReload(true);
 
 
             if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)

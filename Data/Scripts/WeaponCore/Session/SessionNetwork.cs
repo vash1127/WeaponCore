@@ -839,7 +839,8 @@ namespace WeaponCore
                                     {
                                         var w = comp.Platform.Weapons[j];
 
-                                        if (!w.Target.HasTarget) continue;
+                                        if (comp.WeaponValues.Targets[j].Info == TransferTarget.TargetInfo.Expired)
+                                            continue;
 
                                         var weaponData = new WeaponData
                                         {

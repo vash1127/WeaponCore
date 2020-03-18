@@ -20,13 +20,20 @@ namespace WeaponCore.Control
 
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-            for (int i = isTurretType ? 13 : 0; i < actions.Count; i++)
+            for (int i = isTurretType ? 12 : 0; i < actions.Count; i++)
             {
                 var a = actions[i];
 
-                if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
+                if (!a.Id.Contains("OnOff") && !a.Id.Contains("Shoot") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
                     a.Enabled = b => !b.Components.Has<WeaponComponent>();
-
+                else if (a.Id.Equals("Control"))
+                {
+                    a.Enabled = (b) =>
+                    {
+                        WeaponComponent comp;
+                        return !b.Components.TryGet(out comp) && comp.BaseType == WeaponComponent.BlockType.Turret;
+                    };
+                }
                 else if (a.Id.Equals("ShootOnce"))
                 {
                     var oldAction = a.Action;
@@ -104,7 +111,7 @@ namespace WeaponCore.Control
                     };
 
                     var oldWriter = a.Writer;
-                    a.Writer = (blk, sb) => 
+                    a.Writer = (blk, sb) =>
                     {
                         var comp = blk.Components.Get<WeaponComponent>();
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
