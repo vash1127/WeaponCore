@@ -22,30 +22,12 @@ namespace WeaponCore.Support
         internal int ActiveId;
         internal bool HasFocus;
 
-        internal bool ChangeFocus
-        {
-            set
-            {
-                if (value != HasFocus)
-                {
-                    SyncFocus();
-                    HasFocus = value;
-                }
-            }
-        }
-
-        internal void SyncFocus()
-        {
-
-        }
-
         internal void AddFocus(MyEntity target, GridAi ai, bool alreadySynced = false)
         {
             var session = ai.Session;
             Target[ActiveId] = target;
             ai.TargetResetTick = session.Tick + 1;
             IsFocused(ai);
-            UpdateSubGrids(ai, true);
             if (session.MpActive && session.HandlesInput && !alreadySynced)
                 session.SendFocusTargetUpdate(ai, target.EntityId);
         }
@@ -73,8 +55,6 @@ namespace WeaponCore.Support
             if (focusId >= Target.Length || target == null || target.MarkedForClose) return false;
             Target[focusId] = target;
             IsFocused(ai);
-            UpdateSubGrids(ai);
-
             if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
                 ai.Session.SendReassignTargetUpdate(ai, target.EntityId, focusId);
 
@@ -134,7 +114,6 @@ namespace WeaponCore.Support
             Target[ActiveId] = null;
 
             IsFocused(ai);
-            UpdateSubGrids(ai);
 
             if (ai.Session.MpActive && ai.Session.HandlesInput && !alreadySynced)
                 ai.Session.SendReleaseActiveUpdate(ai);
