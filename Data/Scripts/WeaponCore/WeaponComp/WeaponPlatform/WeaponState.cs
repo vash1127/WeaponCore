@@ -541,7 +541,6 @@ namespace WeaponCore.Platform
 
             EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
                 State.ShotsFired = 0;
 
@@ -554,6 +553,17 @@ namespace WeaponCore.Platform
                 else if (Comp.Session.IsClient && hasMags)
                     State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
                    
+            }
+
+            if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks && Comp.Session.WeaponsSyncCheck.Add(this))
+            {
+                Comp.Session.WeaponsToSync.Add(this);
+                Comp.Ai.NumSyncWeapons++;
+
+                SendTarget = false;
+                SendSync = true;
+
+                LastSyncTick = Comp.Session.Tick;
             }
         }
 
