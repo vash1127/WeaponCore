@@ -96,8 +96,13 @@ namespace WeaponCore.Support
 
                 stringBuilder.Append(status +
                     "\n[Construct DPS]: " + Ai.OptimalDps.ToString("0.0") +
-                    "\n[Weapon MaxDPS]: " + OptimalDps.ToString("0.0") + 
-                    "\n[Weapon DPS]: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/OptimalDps).ToString("P") + ")");
+                    "\n[ShotsPerSec  ]: " + ShotsPerSec.ToString("0.0") +
+                    "\n" +
+                    "\n[PeakDps]: " + PeakDps.ToString("0.0") +
+                    "\n[BaseDps]: " + BaseDps.ToString("0.0") +
+                    "\n[AreaDps]: " + AreaDps.ToString("0.0") +
+                    "\n[Explode]: " + DetDps.ToString("0.0") +
+                    "\n[Current]: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/ PeakDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +

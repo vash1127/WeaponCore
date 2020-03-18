@@ -102,7 +102,14 @@ namespace WeaponCore.Support
 
             weapon.Dps = weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;
 
-            if (!weapon.System.DesignatorWeapon) OptimalDps += weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps;
+            if (!weapon.System.DesignatorWeapon)
+            {
+                PeakDps += weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps;
+                ShotsPerSec += weapon.ActiveAmmoDef.AmmoDef.Const.ShotsPerSec;
+                BaseDps += weapon.ActiveAmmoDef.AmmoDef.Const.BaseDps;
+                AreaDps += weapon.ActiveAmmoDef.AmmoDef.Const.AreaDps;
+                DetDps += weapon.ActiveAmmoDef.AmmoDef.Const.DetDps;
+            }
 
             maxTrajectory = 0;
             if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
