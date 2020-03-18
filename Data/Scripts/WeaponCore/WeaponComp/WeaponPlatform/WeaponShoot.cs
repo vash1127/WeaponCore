@@ -210,8 +210,8 @@ namespace WeaponCore.Platform
                             p.Info.MuzzleId = muzzle.MuzzleId;
                             p.Info.BaseDamagePool = BaseDamage;
                             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
-                            p.Info.DetonationDamage = DetonateDmg;
-                            p.Info.AreaEffectDamage = AreaEffectDmg;
+                            p.Info.DetonationDamage = ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
+                            p.Info.AreaEffectDamage = ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
                             p.Info.WeaponCache = WeaponCache;
                             p.Info.WeaponCache.VirutalId = -1;
                             p.Info.Seed = Comp.Seed;
@@ -349,8 +349,8 @@ namespace WeaponCore.Platform
             p.Info.Target.FiringCube = Comp.MyCube;
             p.Info.BaseDamagePool = BaseDamage;
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
-            p.Info.DetonationDamage = DetonateDmg;
-            p.Info.AreaEffectDamage = AreaEffectDmg;
+            p.Info.DetonationDamage = ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
+            p.Info.AreaEffectDamage = ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
             p.Info.Seed = Comp.Seed;
             p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;

@@ -50,7 +50,7 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
                 if (!ammoChange && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
 
-                comp.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
+                comp.Session.FutureEvents.Schedule(SetWeaponDps, w, 0);
             }
 
             if (!isNetworkUpdate && comp.Session.HandlesInput)
@@ -61,7 +61,7 @@ namespace WeaponCore
             comp.ClientUiUpdate = true;
         }
 
-        internal static void SetWeaponDPS(object o)
+        internal static void SetWeaponDps(object o)
         {
             var w = o as Weapon;
             if (w == null) return;
@@ -90,31 +90,12 @@ namespace WeaponCore
                 mulitplier *= mulitplier;
 
             w.HeatPShot = w.System.HeatPerShot * mulitplier;
-            w.AreaEffectDmg = w.ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage * mulitplier;
-            w.DetonateDmg = w.ActiveAmmoDef.AmmoDef.Const.DetonationDamage * mulitplier;
             w.RequiredPower *= mulitplier;
 
             w.TicksPerShot = (uint)(3600f / w.RateOfFire);
             w.TimePerShot = (3600d / w.RateOfFire);
-
             var oldDps = w.Dps;
-            w.Dps = (60f / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
-
-            if (w.ActiveAmmoDef.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Disabled)
-            {
-                if (w.ActiveAmmoDef.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
-                    w.Dps += (w.DetonateDmg / 2) * (w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed > 0
-                                      ? w.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec /
-                                        w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed
-                                      : 1);
-                else
-                    w.Dps += (w.AreaEffectDmg / 2) *
-                                  (w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed > 0
-                                      ? w.ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec /
-                                        w.ActiveAmmoDef.AmmoDef.Trajectory.DesiredSpeed
-                                      : 1);
-            }
-            
+            w.Dps = w.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;
             var heatPShot = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
 
             var heatDif = oldHeatPSec - heatPShot;
@@ -131,8 +112,6 @@ namespace WeaponCore
 
             comp.HeatPerSecond -= heatDif;
             comp.MaxRequiredPower -= powerDif;
-            comp.OptimalDps -= dpsDif;
-            comp.Ai.OptimalDps -= dpsDif;
 
             w.Timings.ChargeDelayTicks = 0;
         }

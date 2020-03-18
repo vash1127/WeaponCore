@@ -383,6 +383,7 @@ namespace WeaponCore.Support
         public readonly int EnergyMagSize;
         public readonly int ShrapnelId = -1;
         public readonly int MaxChaseTime;
+        public readonly int MagazineSize;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -439,6 +440,7 @@ namespace WeaponCore.Support
         public readonly float HitSoundDistSqr;
         public readonly float AmmoTravelSoundDistSqr;
         public readonly float AmmoSoundMaxDistSqr;
+        public readonly float PeakDps;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
@@ -513,8 +515,8 @@ namespace WeaponCore.Support
             PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
-
-
+            MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
+            GetPeakDps(ammo, system, wDef, out PeakDps);
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             
@@ -523,6 +525,35 @@ namespace WeaponCore.Support
                 var ammoType = wDef.Ammos[i];
                 if (ammoType.AmmoRound.Equals(ammo.AmmoDef.Shrapnel.AmmoRound))
                     ShrapnelId = i;
+            }
+        }
+
+        private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps)
+        {
+            var s = system;
+            var a = ammoDef.AmmoDef;
+            var l = wDef.HardPoint.Loading;
+            if (s.ReloadTime > 0)
+            {
+                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
+                burstPerMag = burstPerMag > 1 ? burstPerMag - 1 : burstPerMag;
+
+                var timeSpentOnBurst = burstPerMag * l.DelayAfterBurst;
+                var timePerMag = (3600 * (MagazineSize / s.RateOfFire / s.BarrelsPerShot)) + s.ReloadTime + timeSpentOnBurst;
+                var shotsPerSec = ((3600 / timePerMag) * MagazineSize) / 60;
+                var baseDamage = BaseDamage * shotsPerSec;
+                var areaDamage = (a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec;
+                peakDps = (float)(baseDamage + areaDamage);
+                if (peakDps <= 0) Log.Line($"reload[{s.WeaponName}]: {MagazineSize} - baseDamage:{baseDamage} - areaDamage:{areaDamage} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - timePerMag:{timePerMag} - burstPerMag:{burstPerMag} - reloadTime:{s.ReloadTime}");
+            }
+            else
+            {
+                var timeSpentOnBurst = ((3600 / s.RateOfFire) * (l.ShotsInBurst / s.BarrelsPerShot)) + l.DelayAfterBurst;
+                var shotsPerSec = ((3600 / timeSpentOnBurst) * l.ShotsInBurst) / 60;
+                var baseDamage = BaseDamage * shotsPerSec;
+                var areaDamage = (a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec;
+                peakDps = (float)(baseDamage + areaDamage);
+                if (peakDps <= 0) Log.Line($"noReload[{s.WeaponName}]: baseDamage:{baseDamage} - areaDamage:{areaDamage} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
             }
         }
 
