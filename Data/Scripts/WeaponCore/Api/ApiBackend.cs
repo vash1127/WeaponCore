@@ -392,7 +392,7 @@ namespace WeaponCore.Api
             {
                 WeaponComponent comp;
                 if (terminalBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
-                    return comp.OptimalDps;
+                    return comp.PeakDps;
             }
             else
             {

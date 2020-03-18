@@ -197,7 +197,7 @@ namespace WeaponCore.Support
 
                 MaxRequiredPower = 0;
                 HeatPerSecond = 0;
-                OptimalDps = 0;
+                PeakDps = 0;
                 MaxHeat = 0;
 
                 var maxTrajectory = 0d;
@@ -221,7 +221,7 @@ namespace WeaponCore.Support
                     Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
                 }
 
-                Ai.OptimalDps += OptimalDps;
+                Ai.OptimalDps += PeakDps;
                 Ai.UpdateConstruct();
                 
                 if (!FunctionalBlock.Enabled)
