@@ -481,35 +481,35 @@ namespace WeaponCore
                 {
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;
+
+                    int rangeControl = -1;
+                    IMyTerminalControl wcRangeControl = null;
+                    for (int i = controls.Count - 1; i >= 0; i--)
+                    {
+                        if (controls[i].Id.Equals("Range"))
+                        {
+                            rangeControl = i;
+                            controls.RemoveAt(i);
+                        }
+                        else if (controls[i].Id.Equals("WC_Range"))
+                        {
+                            wcRangeControl = controls[i];
+                            controls.RemoveAt(i);
+                        }
+                    }
+
+                    if (rangeControl != -1)
+                        controls.RemoveAt(rangeControl);
+
+                    if (wcRangeControl != null)
+                    {
+                        if (rangeControl != -1)
+                            controls.Insert(rangeControl, wcRangeControl);
+
+                        else
+                            controls.Add(wcRangeControl);
+                    }
                 }
-            }
-
-            int rangeControl = -1;
-            IMyTerminalControl wcRangeControl = null;
-            for (int i = controls.Count - 1; i >= 0; i--)
-            {
-                if (controls[i].Id.Equals("Range"))
-                {
-                    rangeControl = i;
-                    controls.RemoveAt(i);
-                }
-                else if (controls[i].Id.Equals("WC_Range"))
-                {
-                    wcRangeControl = controls[i];
-                    controls.RemoveAt(i);
-                }
-            }
-
-            if (rangeControl != -1)
-                controls.RemoveAt(rangeControl);
-
-            if(wcRangeControl != null)
-            {
-                if (rangeControl != -1)
-                    controls.Insert(rangeControl, wcRangeControl);
-
-                else
-                    controls.Add(wcRangeControl);
             }
         }
         #endregion

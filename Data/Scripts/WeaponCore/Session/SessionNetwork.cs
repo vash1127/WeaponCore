@@ -491,14 +491,12 @@ namespace WeaponCore
                                     {
                                         case PacketType.FocusUpdate:
                                             ai.Focus.AddFocus(targetGrid, ai, true);
-                                            ai.Focus.IsFocused(ai);
                                             break;
                                         case PacketType.ReassignTargetUpdate:
                                             ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
                                             break;
                                         case PacketType.NextActiveUpdate:
                                             ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
-                                            ai.Focus.IsFocused(ai);
                                             break;
                                         case PacketType.ReleaseActiveUpdate:
                                             ai.Focus.ReleaseActive(ai, true);
