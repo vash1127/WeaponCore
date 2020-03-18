@@ -33,12 +33,11 @@ namespace WeaponCore
 
                     if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                         weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-                }
-
-                if(weapon.State.Sync.CurrentMags > 0 || comp.Session.IsCreative)
-                    weapon.CheckReload();
+                    else if (weapon.State.Sync.CurrentAmmo == 0)
+                        weapon.CheckReload();
+                }                
             }
-            else
+            else if(weapon.State.Sync.CurrentAmmo == 0 && !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                 comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
         }
 

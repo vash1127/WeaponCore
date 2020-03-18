@@ -121,13 +121,10 @@ namespace WeaponCore.Support
             if (!weapon.Comp.Session.IsClient)
                 weapon.State.Sync.Reloading = false;
 
-            if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                Session.ComputeStorage(weapon);
+            //if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                //Session.ComputeStorage(weapon);            
 
-            if (!weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
-                weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
-
-            else if ((!Session.IsClient || !Session.MpActive) && weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && ((weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize) || (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && weapon.State.Sync.CurrentAmmo != weapon.ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity)))
+            if ((!Session.IsClient || !Session.MpActive) && weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.CurrentAmmo != weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
             {
                 if (weapon.State.Sync.CurrentCharge > 0)
                     State.Value.CurrentCharge -= weapon.State.Sync.CurrentCharge;
@@ -140,6 +137,11 @@ namespace WeaponCore.Support
                     Session.ChargingWeaponsToReload.Enqueue(weapon);
                 else
                     Session.ComputeStorage(weapon);
+            }
+            else if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && weapon.State.Sync.CurrentAmmo == 0)
+            {
+                weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
+                Session.ComputeStorage(weapon);
             }
         }
 

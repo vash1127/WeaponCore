@@ -393,7 +393,12 @@ namespace WeaponCore
                                 if (WeaponsSyncCheck.Add(w))
                                 {
                                     WeaponsToSync.Add(w);
-                                    w.Comp.Ai.NumSyncWeapons++;
+                                    comp.Ai.NumSyncWeapons++;
+                                    w.SendTarget = true;
+
+                                    if (Tick - w.LastSyncTick > 20)
+                                        w.SendSync = true;
+
                                     w.LastSyncTick = Tick;
                                 }
                             }

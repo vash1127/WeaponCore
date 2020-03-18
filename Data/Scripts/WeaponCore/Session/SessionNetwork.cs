@@ -99,27 +99,30 @@ namespace WeaponCore
                                     SyncWeapon(weapon, timings, ref weaponData.SyncData);
                                 }
 
-                                syncTarget.SyncTarget(weapon.Target);
-
-                                if (weapon.Target.HasTarget)
+                                if (syncTarget != null)
                                 {
-                                    if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
-                                    {
-                                        var oldChange = weapon.Target.TargetChanged;
-                                        weapon.Target.StateChange(true, Target.States.Invalid);
-                                        weapon.Target.TargetChanged = !weapon.FirstSync && oldChange;
-                                        weapon.FirstSync = false;
-                                    }
-                                    else if (weapon.Target.IsProjectile)
-                                    {
-                                        TargetType targetType;
-                                        AcquireProjectile(weapon, out targetType);
+                                    syncTarget.SyncTarget(weapon.Target);
 
-                                        if (targetType == TargetType.None)
+                                    if (weapon.Target.HasTarget)
+                                    {
+                                        if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                                         {
-                                            if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
-                                                weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);                                            
-                                            if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
+                                            var oldChange = weapon.Target.TargetChanged;
+                                            weapon.Target.StateChange(true, Target.States.Invalid);
+                                            weapon.Target.TargetChanged = !weapon.FirstSync && oldChange;
+                                            weapon.FirstSync = false;
+                                        }
+                                        else if (weapon.Target.IsProjectile)
+                                        {
+                                            TargetType targetType;
+                                            AcquireProjectile(weapon, out targetType);
+
+                                            if (targetType == TargetType.None)
+                                            {
+                                                if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
+                                                    weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);
+                                                if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
+                                            }
                                         }
                                     }
                                 }
@@ -488,12 +491,14 @@ namespace WeaponCore
                                     {
                                         case PacketType.FocusUpdate:
                                             ai.Focus.AddFocus(targetGrid, ai, true);
+                                            ai.Focus.IsFocused(ai);
                                             break;
                                         case PacketType.ReassignTargetUpdate:
                                             ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
                                             break;
                                         case PacketType.NextActiveUpdate:
                                             ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
+                                            ai.Focus.IsFocused(ai);
                                             break;
                                         case PacketType.ReleaseActiveUpdate:
                                             ai.Focus.ReleaseActive(ai, true);
@@ -510,7 +515,7 @@ namespace WeaponCore
 
                     default:
                         if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
-                        Log.Line($"Invalid Packet Type: {packet.PType}");
+                        Log.Line($"Invalid Packet Type: {packet.PType} packet type: {packet.GetType()}");
                         invalidType = true;
                         report.PacketValid = false;
 
@@ -767,7 +772,7 @@ namespace WeaponCore
                             break;
                         }
 
-                    case PacketType.GridSyncRequestUpdate://can be a large update, only call on stream sync
+                    case PacketType.GridSyncRequestUpdate:
                         {
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
@@ -788,58 +793,20 @@ namespace WeaponCore
                                     c++;
                                 }
 
-                                var syncPacket = new ControllingPacket
-                                {
-                                    EntityId = packet.EntityId,
-                                    SenderId = packet.SenderId,
-                                    PType = PacketType.ActiveControlFullUpdate,
-                                    Data = new ControllingPlayersSync
-                                    {
-                                        PlayersToControlledBlock = playerToBlocks
-                                    }
-                                };
-
                                 PacketsToClient.Add(new PacketInfo {
                                     Entity = myGrid,
-                                    Packet = syncPacket,
+                                    Packet = new ControllingPacket
+                                    {
+                                        EntityId = packet.EntityId,
+                                        SenderId = packet.SenderId,
+                                        PType = PacketType.ActiveControlFullUpdate,
+                                        Data = new ControllingPlayersSync
+                                        {
+                                            PlayersToControlledBlock = playerToBlocks
+                                        }
+                                    },
                                     SingleClient = true,
                                 });
-
-                                var gridPacket = new GridWeaponPacket
-                                {
-                                    EntityId = packet.EntityId,
-                                    SenderId = packet.SenderId,
-                                    PType = PacketType.TargetUpdate,
-                                    Data = new List<WeaponData>()
-                                };
-
-                                foreach (var cubeComp in ai.WeaponBase)
-                                {
-                                    comp = cubeComp.Value;
-                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed) continue;
-
-                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                                    {
-                                        var w = comp.Platform.Weapons[j];
-                                        var weaponData = new WeaponData
-                                        {
-                                            CompEntityId = comp.MyCube.EntityId,
-                                            SyncData = w.State.Sync,
-                                            Timmings = w.Timings.SyncOffsetServer(Tick),
-                                            TargetData = comp.WeaponValues.Targets[j],
-                                        };
-
-                                        gridPacket.Data.Add(weaponData);
-                                    }
-                                }
-
-                                if (gridPacket.Data.Count > 0)
-                                    PacketsToClient.Add(new PacketInfo
-                                    {
-                                        Entity = myGrid,
-                                        Packet = gridPacket,
-                                        SingleClient = true,
-                                    });
 
                                 PacketsToClient.Add(new PacketInfo
                                 {
@@ -1423,20 +1390,25 @@ namespace WeaponCore
                 var weaponSync = new WeaponData
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
-                    TargetData = w.Comp.WeaponValues.Targets[w.WeaponId],
+                    TargetData = null,
                     Timmings = null,
                     SyncData = null
                 };
-                
-                if (_session.Tick - w.LastSyncTick > 20)
+
+                if (w.SendTarget)
+                {
+                    weaponSync.TargetData = w.Comp.WeaponValues.Targets[w.WeaponId];
+                    w.SendTarget = false;
+                }
+
+                if (w.SendSync)
                 {
                     weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
                     weaponSync.SyncData = w.State.Sync;
-                    w.LastSyncTick = _session.Tick;
+                    w.SendSync = false;
                 }
 
                 gridSync.Data.Add(weaponSync);
-                ai.CurrWeapon++;
             }
             _session.WeaponsToSync.Clear();
             _session.WeaponsSyncCheck.Clear();
@@ -1447,7 +1419,6 @@ namespace WeaponCore
             foreach (var gridPacket in _gridsToSync)
             {
                 var ai = gridPacket.Key;
-                ai.CurrWeapon = 0;
                 ai.NumSyncWeapons = 0;
                 _packets.Add(new PacketInfo { Entity = ai.MyGrid, Packet = gridPacket.Value });
             }

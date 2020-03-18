@@ -421,7 +421,7 @@ namespace WeaponCore.Support
         public readonly bool BurstMode;
         public readonly bool EnergyAmmo;
         public readonly bool MustCharge;
-        public readonly bool HasBurstDelay;
+        public readonly bool HasShotReloadDelay;
         public readonly bool HitSound;
         public readonly bool AmmoTravelSound;
         public readonly bool IsHybrid;
@@ -518,7 +518,7 @@ namespace WeaponCore.Support
             CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
             PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
-            Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasBurstDelay);
+            Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
@@ -657,13 +657,13 @@ namespace WeaponCore.Support
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
         }
 
-        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool hasBurst)
+        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
             burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
 
-            hasBurst = !burstMode && wDef.HardPoint.Loading.ShotsInBurst > 0 && wDef.HardPoint.Loading.DelayAfterBurst > 0;
+            shotReload = !burstMode && wDef.HardPoint.Loading.ShotsInBurst > 0 && wDef.HardPoint.Loading.DelayAfterBurst > 0;
 
             if (mustCharge)
             {

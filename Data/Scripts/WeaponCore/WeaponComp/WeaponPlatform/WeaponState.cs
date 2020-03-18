@@ -408,42 +408,8 @@ namespace WeaponCore.Platform
 
             var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
-            if (!ActiveAmmoDef.Equals(newAmmo)) {
-
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
-                {
-                    if (Comp.Session.IsServer && !Comp.Session.IsCreative)
-                        Comp.Session.WeaponAmmoRemoveQueue.Enqueue(this);
-                    else
-                    {
-                        if(Comp.Session.IsCreative)
-                            ActiveAmmoDef = newAmmo;
-
-                        State.Sync.Reloading = false;
-                        Session.ComputeStorage(this);
-                    }
-                    return;
-                }
-                else if (!newAmmo.AmmoDef.Const.EnergyAmmo)
-                {
-                    ActiveAmmoDef = newAmmo;
-                    State.Sync.Reloading = false;
-                    Session.ComputeStorage(this);
-                    return;
-                }
-                else
-                    ActiveAmmoDef = newAmmo;
-            }
-
-            if (Comp.Session.IsServer && !TrackTarget && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks)
-            {
-                if (Comp.Session.WeaponsSyncCheck.Add(this))
-                {
-                    Comp.Session.WeaponsToSync.Add(this);
-                    Comp.Ai.NumSyncWeapons++;
-                    LastSyncTick = Comp.Session.Tick;
-                }
-            }
+            if (!ActiveAmmoDef.Equals(newAmmo))
+                ChangeAmmo(ref newAmmo);
 
             if (Timings.AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
@@ -478,7 +444,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsCheck.Contains(this))
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && !Comp.Session.ChargingWeaponsCheck.Contains(this))
                     ChargeReload();
                 else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
@@ -492,6 +458,33 @@ namespace WeaponCore.Platform
                 ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
 
             }
+        }
+
+        public void ChangeAmmo(ref WeaponAmmoTypes newAmmo)
+        {
+            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
+            {
+                if (Comp.Session.IsServer && !Comp.Session.IsCreative)
+                    Comp.Session.WeaponAmmoRemoveQueue.Enqueue(this);
+                else
+                {
+                    if (Comp.Session.IsCreative)
+                        ActiveAmmoDef = newAmmo;
+
+                    State.Sync.Reloading = false;
+                    Session.ComputeStorage(this);
+                }
+                return;
+            }
+            else if (!newAmmo.AmmoDef.Const.EnergyAmmo)
+            {
+                ActiveAmmoDef = newAmmo;
+                State.Sync.Reloading = false;
+                Session.ComputeStorage(this);
+                return;
+            }
+            else
+                ActiveAmmoDef = newAmmo;
         }
 
         public void ChargeReload()
@@ -548,8 +541,7 @@ namespace WeaponCore.Platform
 
             EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-
-            if (!ActiveAmmoDef.AmmoDef.Const.HasBurstDelay)
+            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
                 State.ShotsFired = 0;
 
             var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
@@ -561,6 +553,17 @@ namespace WeaponCore.Platform
                 else if (Comp.Session.IsClient && hasMags)
                     State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
                    
+            }
+
+            if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks && Comp.Session.WeaponsSyncCheck.Add(this))
+            {
+                Comp.Session.WeaponsToSync.Add(this);
+                Comp.Ai.NumSyncWeapons++;
+
+                SendTarget = false;
+                SendSync = true;
+
+                LastSyncTick = Comp.Session.Tick;
             }
         }
 

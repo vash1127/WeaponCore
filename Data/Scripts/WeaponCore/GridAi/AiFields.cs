@@ -96,7 +96,6 @@ namespace WeaponCore.Support
         internal int SourceCount;
         internal int BlockCount;
         internal int NumSyncWeapons;
-        internal int CurrWeapon;
         internal long MyOwner;
         internal bool PointDefense;
         internal bool SupressMouseShoot;
