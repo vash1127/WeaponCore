@@ -181,23 +181,22 @@ namespace WeaponCore
         [ProtoMember(6)] public uint WeaponReadyTick;
         [ProtoMember(7)] public uint LastHeatUpdateTick;
         [ProtoMember(8)] public uint ReloadedTick;
-
-        public uint Offset = 4;
+        
 
         public WeaponTimings SyncOffsetServer(uint tick)
         {
-            var offset = tick + Offset;
+            var offset = tick + Session.ServerTickOffset;
 
             return new WeaponTimings
             {
                 ChargeDelayTicks = ChargeDelayTicks,
-                AnimationDelayTick = AnimationDelayTick > tick ? AnimationDelayTick >= offset ? AnimationDelayTick - offset : 0 : 0,
-                ChargeUntilTick = ChargeUntilTick > tick ? ChargeUntilTick >= offset ? ChargeUntilTick - offset : 0 : 0,
-                OffDelay = OffDelay > tick ? OffDelay >= offset ? OffDelay - offset : 0 : 0,
-                ShootDelayTick = ShootDelayTick > tick ? ShootDelayTick >= offset ? ShootDelayTick - offset : 0 : 0,
-                WeaponReadyTick = WeaponReadyTick > tick ? WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0 : 0,
+                AnimationDelayTick = AnimationDelayTick >= offset ? AnimationDelayTick - offset : 0,
+                ChargeUntilTick = ChargeUntilTick >= offset ? ChargeUntilTick - offset : 0,
+                OffDelay = OffDelay >= offset ? OffDelay - offset : 0,
+                ShootDelayTick = ShootDelayTick >= offset ? ShootDelayTick - offset : 0,
+                WeaponReadyTick = WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0,
                 LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset,
-                ReloadedTick = ReloadedTick > tick ? ReloadedTick > offset ? ReloadedTick - offset : 0 : 0,
+                ReloadedTick = ReloadedTick > offset ? ReloadedTick - offset : 0,
             };
 
         }

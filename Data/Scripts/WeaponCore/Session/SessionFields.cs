@@ -30,6 +30,7 @@ namespace WeaponCore
         internal const double AimDirToleranceAngle = 5; //in degrees
         internal const int VersionControl = 1;
         internal const uint ResyncMinDelayTicks = 720;
+        internal const uint ServerTickOffset = 4;
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;

@@ -95,7 +95,7 @@ namespace WeaponCore.Platform
                     State.ShotsFired = 1;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
-                else if (ActiveAmmoDef.AmmoDef.Const.HasBurstDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     State.ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
