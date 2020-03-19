@@ -129,7 +129,7 @@ namespace WeaponCore.Platform
                         muzzle.LastUpdateTick = tick;
                     }
 
-                    if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
+                    if (ActiveAmmoDef.AmmoDef.Const.Reloadable)
                     {
                         if (State.Sync.CurrentAmmo == 0) break;
                         State.Sync.CurrentAmmo--;

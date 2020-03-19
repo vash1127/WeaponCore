@@ -707,7 +707,7 @@ namespace WeaponCore.Support
 
             reloadable = !energyAmmo || mustCharge;
 
-            burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
+            burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst) && wDef.HardPoint.Loading.DelayAfterBurst > 0;
 
             shotReload = !burstMode && wDef.HardPoint.Loading.ShotsInBurst > 0 && wDef.HardPoint.Loading.DelayAfterBurst > 0;
 
