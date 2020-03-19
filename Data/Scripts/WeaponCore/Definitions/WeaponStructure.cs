@@ -523,7 +523,7 @@ namespace WeaponCore.Support
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             try
             {
-                //GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+                GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             }
             catch (Exception ex) { Log.Line($"Exception in GetPeakDps: {ex}"); }
 
@@ -589,8 +589,9 @@ namespace WeaponCore.Support
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
                 peakDps = (baseDps + areaDps + detDps);
-                Log.Line($"reload[{s.WeaponName}]: peakDps:{peakDps} - magSize:{magSize} - reloadTime:{s.ReloadTime} - timePerMag:{timePerMag}({magSize / s.RateOfFire} - {s.ReloadTime} - {timeSpentOnBurst}) - burstPerMag:{burstPerMag} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - RateOfFire:{s.RateOfFire} - BarrelsPerShot:{s.BarrelsPerShot}");
-                Log.Line($"                                     timePerMag = 3600f * ({magSize} / {s.RateOfFire} / {s.BarrelsPerShot}) + {s.ReloadTime} + {timeSpentOnBurst} ");
+                if (s.WeaponName.Contains("TelionGatling")) Log.LineShortDate($"reload[{s.WeaponName}]: peakDps:{peakDps} - {3600.0f * (magSize / s.RateOfFire / s.BarrelsPerShot) + s.ReloadTime + timeSpentOnBurst} - {timePerMag}");
+                if (s.WeaponName.Contains("TelionGatling")) Log.LineShortDate($"");
+                if (s.WeaponName.Contains("TelionGatling")) Log.LineShortDate($"3600.0f * ({magSize} / {s.RateOfFire} / {s.BarrelsPerShot}) + {s.ReloadTime} + {timeSpentOnBurst}) - {timePerMag}");
 
             }
             else
