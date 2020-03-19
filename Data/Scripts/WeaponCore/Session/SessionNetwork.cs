@@ -87,14 +87,11 @@ namespace WeaponCore
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                                 comp = block?.Components.Get<WeaponComponent>();
 
-                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
-
-                                if (weaponData.TargetData == null)
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weaponData.TargetData == null)
                                 {
-                                    comp.Session.ClientGridResyncRequests.Add(comp);
+                                    Log.Line($"weaponData.TargetData: {weaponData.TargetData == null}");
                                     continue;
                                 }
-
                                 var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
                                 var syncTarget = weaponData.TargetData;
 
@@ -620,7 +617,7 @@ namespace WeaponCore
                         PacketsToServer.Add(new RequestTargetsPacket {
                             EntityId = erroredPacket.Packet.EntityId,
                             SenderId = MultiplayerId,
-                            PType = PacketType.TargetUpdateRequest,
+                            PType = PacketType.WeaponUpdateRequest,
                             Comps = compsArr
                         });
 
@@ -1008,7 +1005,7 @@ namespace WeaponCore
                         
                         break;
 
-                    case PacketType.TargetUpdateRequest:
+                    case PacketType.WeaponUpdateRequest:
                         {
                             var targetRequestPacket = (RequestTargetsPacket) packet;
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
@@ -1035,7 +1032,7 @@ namespace WeaponCore
                                     var compId = targetRequestPacket.Comps[i];
                                     var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
 
-                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp))
+                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp) && comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                                         continue;
 
                                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -1399,7 +1396,7 @@ namespace WeaponCore
                 {
                     EntityId = gridComps.Key.MyGrid.EntityId,
                     SenderId = MultiplayerId,
-                    PType = PacketType.TargetUpdateRequest,
+                    PType = PacketType.WeaponUpdateRequest,
                     Comps = new long[gridComps.Value.Count],
                 };
 

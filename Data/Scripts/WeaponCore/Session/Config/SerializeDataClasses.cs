@@ -31,7 +31,7 @@ namespace WeaponCore
         OverRidesUpdate,
         PlayerControlUpdate,
         TargetExpireUpdate,
-        TargetUpdateRequest,
+        WeaponUpdateRequest,
         ClientEntityClosed,
         RequestMouseStates,
         FullMouseUpdate,
