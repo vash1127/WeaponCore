@@ -100,6 +100,7 @@ namespace WeaponCore
 
                     obs.Add(new MyObjectBuilder_SmallMissileLauncher().GetType());
                     obs.Add(new MyObjectBuilder_SmallMissileLauncherReload().GetType());
+                    obs.Add(new MyObjectBuilder_SmallGatlingGun().GetType());
                 }
                 else if (typeof(T) == typeof(IMyConveyorSorter))
                 {
@@ -127,6 +128,7 @@ namespace WeaponCore
                         if (session.ReplaceVanilla && session.VanillaCoreIds.TryGetValue(wp.Key, out defId))
                         {
                             if (!MyDefinitionManager.Static.TryGetDefinition(defId, out def)) return;
+                            type = defId.TypeId;
                         }
                         else
                         {
@@ -142,6 +144,9 @@ namespace WeaponCore
                             }
                             if (type == null) return;
                         }
+
+                        Log.Line($"type:{type} ");
+
                         try
                         {
                             //var ob = def.GetObjectBuilder();
