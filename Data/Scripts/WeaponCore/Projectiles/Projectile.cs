@@ -936,7 +936,7 @@ namespace WeaponCore.Projectiles
 
                 if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect))
                 {
-                    AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
+                    //AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                     var scaler = 1;
 
@@ -964,9 +964,9 @@ namespace WeaponCore.Projectiles
                 var matrix = MatrixD.CreateTranslation(pos);
                 MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
                 if (HitEffect == null) return;
-                HitEffect.Loop = false;
-                HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
-                HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
+                //HitEffect.Loop = false;
+                //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
+                //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
                 HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 var reScale = 1;
                 var scaler = reScale < 1 ? reScale : 1;

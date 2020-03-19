@@ -308,9 +308,9 @@ namespace WeaponCore.Support
 
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel1.Color;
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
-                            weapon.BarrelEffects1[muzzle.MuzzleId].DistanceMax = particles.Barrel1.Extras.MaxDistance;
-                            weapon.BarrelEffects1[muzzle.MuzzleId].DurationMax = particles.Barrel1.Extras.MaxDuration;
-                            weapon.BarrelEffects1[muzzle.MuzzleId].Loop = muzzle.Av1Looping;
+                            //weapon.BarrelEffects1[muzzle.MuzzleId].DistanceMax = particles.Barrel1.Extras.MaxDistance;
+                            //weapon.BarrelEffects1[muzzle.MuzzleId].DurationMax = particles.Barrel1.Extras.MaxDuration;
+                            //weapon.BarrelEffects1[muzzle.MuzzleId].Loop = muzzle.Av1Looping;
                             weapon.BarrelEffects1[muzzle.MuzzleId].WorldMatrix = matrix;
                             weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             weapon.BarrelEffects1[muzzle.MuzzleId].Play();
@@ -378,9 +378,9 @@ namespace WeaponCore.Support
 
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
-                            weapon.BarrelEffects2[muzzle.MuzzleId].DistanceMax = particles.Barrel2.Extras.MaxDistance;
-                            weapon.BarrelEffects2[muzzle.MuzzleId].DurationMax = particles.Barrel2.Extras.MaxDuration;
-                            weapon.BarrelEffects2[muzzle.MuzzleId].Loop = muzzle.Av2Looping;
+                            //weapon.BarrelEffects2[muzzle.MuzzleId].DistanceMax = particles.Barrel2.Extras.MaxDistance;
+                            //weapon.BarrelEffects2[muzzle.MuzzleId].DurationMax = particles.Barrel2.Extras.MaxDuration;
+                            //weapon.BarrelEffects2[muzzle.MuzzleId].Loop = muzzle.Av2Looping;
                             weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
                             weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             weapon.BarrelEffects2[muzzle.MuzzleId].Play();

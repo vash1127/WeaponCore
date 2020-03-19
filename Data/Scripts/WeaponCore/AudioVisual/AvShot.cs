@@ -599,10 +599,10 @@ namespace WeaponCore.Support
                             return;
                         }
 
-                        effect.DistanceMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
-                        effect.DurationMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
+                        //effect.DistanceMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
+                        //effect.DurationMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
                         effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                        effect.Loop = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Loop;
+                        //effect.Loop = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Loop;
                         effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                         effect.UserEmitterScale = (float)scale;
