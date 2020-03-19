@@ -61,6 +61,7 @@ namespace WeaponCore.Support
         public readonly int HeatPerShot;
         public readonly int RateOfFire;
         public readonly int BarrelSpinRate;
+        public readonly int ShotsPerBurst;
 
         public readonly bool HasBarrelRotation;
         public readonly bool BarrelEffect1;
@@ -148,7 +149,7 @@ namespace WeaponCore.Support
 
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
-            BarrelValues(out BarrelsPerShot, out RateOfFire);
+            BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
@@ -190,10 +191,11 @@ namespace WeaponCore.Support
             hasBarrelRotation = barrelSpinRate > 0;
         }
 
-        private void BarrelValues(out int barrelsPerShot, out int rateOfFire)
+        private void BarrelValues(out int barrelsPerShot, out int rateOfFire, out int shotsPerBurst)
         {
             barrelsPerShot = Values.HardPoint.Loading.BarrelsPerShot;
             rateOfFire = Values.HardPoint.Loading.RateOfFire;
+            shotsPerBurst = Values.HardPoint.Loading.ShotsInBurst;
         }
 
         private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove)
@@ -420,6 +422,7 @@ namespace WeaponCore.Support
         public readonly bool HasBackKickForce;
         public readonly bool BurstMode;
         public readonly bool EnergyAmmo;
+        public readonly bool Reloadable;
         public readonly bool MustCharge;
         public readonly bool HasShotReloadDelay;
         public readonly bool HitSound;
@@ -518,12 +521,12 @@ namespace WeaponCore.Support
             CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
             PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
-            Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasShotReloadDelay);
+            Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             try
             {
-                GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+                //GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             }
             catch (Exception ex) { Log.Line($"Exception in GetPeakDps: {ex}"); }
 
@@ -556,7 +559,7 @@ namespace WeaponCore.Support
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec;
                 peakDps = (baseDps + areaDps + detDps);
-                Log.Line($"reload[{s.WeaponName}]: peakDps:{peakDps} - magSize:{magSize} - reloadTime:{s.ReloadTime} - timePerMag:{timePerMag}({magSize / s.RateOfFire} - {s.ReloadTime} - {timeSpentOnBurst}) - burstPerMag:{burstPerMag} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst}");
+                //Log.Line($"reload[{s.WeaponName}]: peakDps:{peakDps} - magSize:{magSize} - reloadTime:{s.ReloadTime} - timePerMag:{timePerMag}({magSize / s.RateOfFire} - {s.ReloadTime} - {timeSpentOnBurst}) - burstPerMag:{burstPerMag} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst}");
             }
             else
             {
@@ -566,7 +569,7 @@ namespace WeaponCore.Support
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec;
                 peakDps = (baseDps + areaDps + detDps);
-                Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
+                //Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
             }
         }
 
@@ -589,9 +592,8 @@ namespace WeaponCore.Support
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
                 peakDps = (baseDps + areaDps + detDps);
-                if (s.WeaponName.Contains("TelionGatling")) Log.LineShortDate($"reload[{s.WeaponName}]: peakDps:{peakDps} - {3600.0f * (magSize / s.RateOfFire / s.BarrelsPerShot) + s.ReloadTime + timeSpentOnBurst} - {timePerMag}");
-                if (s.WeaponName.Contains("TelionGatling")) Log.LineShortDate($"");
-                if (s.WeaponName.Contains("TelionGatling")) Log.LineShortDate($"3600.0f * ({magSize} / {s.RateOfFire} / {s.BarrelsPerShot}) + {s.ReloadTime} + {timeSpentOnBurst}) - {timePerMag}");
+                //Log.Line($"reload[{s.WeaponName}]: peakDps:{peakDps} - magSize:{magSize} - reloadTime:{s.ReloadTime} - timePerMag:{timePerMag}({magSize / s.RateOfFire} - {s.ReloadTime} - {timeSpentOnBurst}) - burstPerMag:{burstPerMag} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - RateOfFire:{s.RateOfFire} - BarrelsPerShot:{s.BarrelsPerShot}");
+                //.Line($" timePerMag = 3600f * ({magSize} / {s.RateOfFire} / {s.BarrelsPerShot}) + {s.ReloadTime} + {timeSpentOnBurst} ");
 
             }
             else
@@ -602,7 +604,7 @@ namespace WeaponCore.Support
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
                 peakDps = (baseDps + areaDps + detDps);
-                Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
+                //Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
             }
         }
 
@@ -698,10 +700,13 @@ namespace WeaponCore.Support
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
         }
 
-        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool shotReload)
+        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
+
+            reloadable = !energyAmmo || mustCharge;
+
             burstMode = wDef.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= wDef.HardPoint.Loading.ShotsInBurst);
 
             shotReload = !burstMode && wDef.HardPoint.Loading.ShotsInBurst > 0 && wDef.HardPoint.Loading.DelayAfterBurst > 0;

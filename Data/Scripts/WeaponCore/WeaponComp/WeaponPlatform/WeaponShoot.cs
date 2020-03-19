@@ -32,6 +32,9 @@ namespace WeaponCore.Platform
                     if (AvCapable && System.PreFireSound && !PreFiringEmitter.IsPlaying)
                         StartPreFiringSound();
 
+                    if (ActiveAmmoDef.AmmoDef.Const.MustCharge || System.AlwaysFireFullBurst)
+                        FinishBurst = true;
+
                     if (!PreFired)
                     {
                         var nxtMuzzle = NextMuzzle;
@@ -90,12 +93,12 @@ namespace WeaponCore.Platform
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++State.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++State.ShotsFired > System.ShotsPerBurst)
                 {
                     State.ShotsFired = 1;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
-                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.Values.HardPoint.Loading.ShotsInBurst > 0 && ++State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++State.ShotsFired == System.ShotsPerBurst)
                 {
                     State.ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
@@ -126,7 +129,7 @@ namespace WeaponCore.Platform
                         muzzle.LastUpdateTick = tick;
                     }
 
-                    if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid || ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                    if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
                     {
                         if (State.Sync.CurrentAmmo == 0) break;
                         State.Sync.CurrentAmmo--;
@@ -299,7 +302,7 @@ namespace WeaponCore.Platform
                 if(IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (State.Sync.CurrentAmmo > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !ActiveAmmoDef.AmmoDef.Const.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && ActiveAmmoDef.AmmoDef.Const.BurstMode && (State.Sync.CurrentAmmo > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && State.ShotsFired == System.ShotsPerBurst)
                 {
                     uint delay = 0;
                     FinishBurst = false;
@@ -313,11 +316,10 @@ namespace WeaponCore.Platform
 
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                 }
-                else if (ActiveAmmoDef.AmmoDef.Const.BurstMode && System.AlwaysFireFullBurst && State.Sync.CurrentAmmo > 0)
-                    FinishBurst = (State.Sync.CurrentAmmo > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && State.ShotsFired < System.Values.HardPoint.Loading.ShotsInBurst;
-                else if (ActiveAmmoDef.AmmoDef.Const.MustCharge && State.Sync.CurrentAmmo > 0)
+                else if (((ActiveAmmoDef.AmmoDef.Const.BurstMode && System.AlwaysFireFullBurst) || ActiveAmmoDef.AmmoDef.Const.MustCharge) && State.Sync.CurrentAmmo > 0 && State.ShotsFired < System.ShotsPerBurst)
                     FinishBurst = true;
-                else if ((!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && State.Sync.CurrentAmmo == 0 && !State.Sync.Reloading)
+
+                else if (ActiveAmmoDef.AmmoDef.Const.Reloadable && (State.Sync.CurrentAmmo == 0 || (State.ShotsFired == System.ShotsPerBurst && ActiveAmmoDef.AmmoDef.Const.MustCharge)) && !State.Sync.Reloading)
                     StartReload();
                 
 
