@@ -568,6 +568,7 @@ namespace WeaponCore.Platform
             else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
             {
                 ActiveAmmoDef = System.WeaponAmmoTypes[Set.AmmoTypeId];
+                WepUi.SetWeaponDps(this);
                 if (CanReload)
                     StartReload();
             }

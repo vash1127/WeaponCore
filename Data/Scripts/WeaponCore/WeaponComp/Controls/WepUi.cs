@@ -50,7 +50,7 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
                 if (!ammoChange && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
 
-                comp.Session.FutureEvents.Schedule(SetWeaponDps, w, 0);
+                comp.Session.FutureEvents.Schedule(SetWeaponDps, w, 1);
             }
 
             if (!isNetworkUpdate && comp.Session.HandlesInput)

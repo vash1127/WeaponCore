@@ -14,6 +14,8 @@ using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI.Interfaces;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using Sandbox.Common.ObjectBuilders;
+using VRage.ObjectBuilders;
 
 namespace WeaponCore
 {
@@ -63,7 +65,7 @@ namespace WeaponCore
         {
             try
             {
-                object builderType = null;
+                var obs = new HashSet<Type>();
 
                 if (typeof(T) == typeof(IMyLargeTurretBase))
                 {
@@ -79,7 +81,9 @@ namespace WeaponCore
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
 
-                    builderType = new MyObjectBuilder_LargeTurretBaseDefinition();
+                    obs.Add(new MyObjectBuilder_LargeMissileTurret().GetType());
+                    obs.Add(new MyObjectBuilder_InteriorTurret().GetType());
+                    obs.Add(new MyObjectBuilder_LargeGatlingTurret().GetType());
                 }
                 else if (typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun))
                 {
@@ -93,11 +97,13 @@ namespace WeaponCore
 
                     CreateShootClick<T>();
 
-                    builderType = new MyObjectBuilder_WeaponBlockDefinition();
+
+                    obs.Add(new MyObjectBuilder_SmallMissileLauncher().GetType());
+                    obs.Add(new MyObjectBuilder_SmallMissileLauncherReload().GetType());
                 }
                 else if (typeof(T) == typeof(IMyConveyorSorter))
                 {
-                    builderType = new MyObjectBuilder_ConveyorSorterDefinition();
+                    obs.Add(new MyObjectBuilder_ConveyorSorter().GetType());
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
 
@@ -107,7 +113,7 @@ namespace WeaponCore
 
                 TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.SetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
 
-                if (builderType == null) return;
+                if (obs.Count == 0) return;
 
                 var wepIDs = new HashSet<int>();
                 foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in session.WeaponPlatforms)
@@ -117,13 +123,14 @@ namespace WeaponCore
                         MyDefinitionId defId;
                         MyDefinitionBase def = null;
 
+                        Type type = null;
                         if (session.ReplaceVanilla && session.VanillaCoreIds.TryGetValue(wp.Key, out defId))
                         {
                             if (!MyDefinitionManager.Static.TryGetDefinition(defId, out def)) return;
                         }
                         else
                         {
-                            Type type = null;
+                            
                             foreach (var tmpdef in session.AllDefinitions)
                             {
                                 if (tmpdef.Id.SubtypeId == wp.Key)
@@ -136,23 +143,32 @@ namespace WeaponCore
                             if (type == null) return;
                         }
 
-                        var ob = def.GetObjectBuilder();
-                        if (ob != null && builderType.GetType() == ob.GetType())
+                        Log.Line($"type:{type} ");
+
+                        try
                         {
-                            var wepName = ws.Value.WeaponName;
-                            var wepIdHash = ws.Value.WeaponIdHash;
-
-                            if (!wepIDs.Contains(wepIdHash))
-                                wepIDs.Add(wepIdHash);
-                            else
-                                continue;
-                            if (!ws.Value.DesignatorWeapon)
+                            //var ob = def.GetObjectBuilder();
+                            if (obs.Contains(type))
                             {
-                                CreateShootActionSet<T>(wepName, wepIdHash);
+                                var wepName = ws.Value.WeaponName;
+                                var wepIdHash = ws.Value.WeaponIdHash;
 
-                                if (ws.Value.WeaponAmmoTypes.Length > 1)
-                                    CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+                                if (!wepIDs.Contains(wepIdHash))
+                                    wepIDs.Add(wepIdHash);
+                                else
+                                    continue;
+                                if (!ws.Value.DesignatorWeapon)
+                                {
+                                    CreateShootActionSet<T>(wepName, wepIdHash);
+
+                                    if (ws.Value.WeaponAmmoTypes.Length > 1)
+                                        CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+                                }
                             }
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Line($"Keen Broke it: {e}");
                         }
                     }
                 }

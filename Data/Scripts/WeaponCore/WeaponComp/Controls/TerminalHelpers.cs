@@ -24,6 +24,8 @@ namespace WeaponCore.Control
             {
                 var a = actions[i];
 
+                Log.Line($"action: {a.Id}");
+
                 if (!a.Id.Contains("OnOff") && !a.Id.Contains("Shoot") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
                     a.Enabled = b => !b.Components.Has<WeaponComponent>();
                 else if (a.Id.Equals("Control"))
