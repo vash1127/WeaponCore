@@ -123,7 +123,8 @@ namespace WeaponCore
                     SenderId = MultiplayerId,
                     PType = PacketType.CycleAmmo,
                     AmmoId = ammoId,
-                    MId = weapon.Comp.Set.Value.MId
+                    MId = weapon.Comp.Set.Value.MId,
+                    WeaponId = weapon.WeaponId
                 });
             }
             else
@@ -137,7 +138,8 @@ namespace WeaponCore
                         SenderId = 0,
                         PType = PacketType.CycleAmmo,
                         AmmoId = ammoId,
-                        MId = weapon.Comp.Set.Value.MId
+                        MId = weapon.Comp.Set.Value.MId,
+                        WeaponId = weapon.WeaponId
                     }
                 });
             }

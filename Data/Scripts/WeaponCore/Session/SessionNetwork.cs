@@ -1442,10 +1442,11 @@ namespace WeaponCore
                 var w = _session.WeaponsToSync[i];
                 var ai = w.Comp.Ai;
 
-                if (ai == null || ai?.MyGrid == null || w.Comp.MyCube == null || w.Comp.MyCube.MarkedForClose || w.Comp.MyCube.Closed)
+                if (ai == null || w.Comp.MyCube == null || w.Comp.MyCube.MarkedForClose || w.Comp.MyCube.Closed)
                 {
                     _session.WeaponsToSync.RemoveAtFast(i);
                     _session.WeaponsSyncCheck.Remove(w);
+                    continue;
                 }
 
                 //need to pool to reduce allocations
