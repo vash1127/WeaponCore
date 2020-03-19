@@ -74,40 +74,7 @@ namespace WeaponCore.Support
             if (weapon.RateOfFire < 1)
                 weapon.RateOfFire = 1;
 
-            WepUi.SetWeaponDps(weapon);
-            /*
-            if (weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                weapon.BaseDamage = weapon.ActiveAmmoDef.AmmoDef.Const.BaseDamage * Set.Value.DpsModifier;
-            else
-                weapon.BaseDamage = weapon.ActiveAmmoDef.AmmoDef.Const.BaseDamage;
-
-            if (weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-                weapon.BaseDamage *= Set.Value.Overload;
-
-            if (weapon.BaseDamage < 0)
-                weapon.BaseDamage = 0;
-
-            if (weapon.RateOfFire < 1)
-                weapon.RateOfFire = 1;
-
-            weapon.UpdateShotEnergy();
-            weapon.UpdateRequiredPower();
-            var mulitplier = (weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && weapon.ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? weapon.BaseDamage / weapon.ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
-
-            if (weapon.BaseDamage > weapon.ActiveAmmoDef.AmmoDef.Const.BaseDamage)
-                mulitplier *= mulitplier;
-
-            weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
-            HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
-
-            weapon.RequiredPower *= mulitplier;
-            MaxRequiredPower += weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge ? weapon.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize : weapon.RequiredPower;
-            weapon.UseablePower = weapon.RequiredPower;
-
-            weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
-            weapon.TimePerShot = (3600d / weapon.RateOfFire);
-
-            weapon.Dps = weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;*/
+            weapon.SetWeaponDps();
 
             if (!weapon.System.DesignatorWeapon)
             {
