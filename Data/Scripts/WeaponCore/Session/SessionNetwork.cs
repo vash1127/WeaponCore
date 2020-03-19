@@ -861,7 +861,7 @@ namespace WeaponCore
                                 foreach (var cubeComp in ai.WeaponBase)
                                 {
                                     comp = cubeComp.Value;
-                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed) continue;
+                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
 
                                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                                     {
@@ -1477,12 +1477,12 @@ namespace WeaponCore
                 else if (w.SendTarget)
                     continue;
 
-                if (w.SendSync && weaponSync.Timmings != null && weaponSync.SyncData != null)
+                if (w.SendSync && w.Timings != null && w.State.Sync != null)
                 {
                     weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
                     weaponSync.SyncData = w.State.Sync;
                 }
-                else
+                else if(w.SendSync)
                     continue;
 
                 w.SendTarget = false;
