@@ -625,8 +625,16 @@ namespace WeaponCore
 
                 weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
             }
-            else if(wasReloading && weapon.State.Sync.Reloading && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+            else if (wasReloading && weapon.State.Sync.Reloading && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+            {
+                if (weapon.ReloadSubscribed)
+                {
+                    weapon.ReloadSubscribed = false;
+                    weapon.CancelableReloadAction -= weapon.Reloaded;
+                }
+
                 comp.Session.FutureEvents.Schedule(weapon.Reloaded, null, weapon.Timings.ReloadedTick);
+            }
 
             else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsCheck.ContainsKey(weapon))
                 weapon.ChargeReload(true);
