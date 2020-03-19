@@ -131,8 +131,7 @@ namespace WeaponCore
                             type = defId.TypeId;
                         }
                         else
-                        {
-                            
+                        {                            
                             foreach (var tmpdef in session.AllDefinitions)
                             {
                                 if (tmpdef.Id.SubtypeId == wp.Key)

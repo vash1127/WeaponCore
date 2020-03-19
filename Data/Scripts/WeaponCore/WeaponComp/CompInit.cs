@@ -64,11 +64,14 @@ namespace WeaponCore.Support
         private void DpsAndHeatInit(Weapon weapon, MyLargeTurretBaseDefinition ob, out double maxTrajectory)
         {
             MaxHeat += weapon.System.MaxHeat;
+
             weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
             weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Set.Value.RofModifier);
             HeatSinkRate += weapon.HsRate;
             if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();
 
+            WepUi.SetWeaponDps(weapon);
+            /*
             if (weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                 weapon.BaseDamage = weapon.ActiveAmmoDef.AmmoDef.Const.BaseDamage * Set.Value.DpsModifier;
             else
@@ -100,7 +103,7 @@ namespace WeaponCore.Support
             weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
             weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-            weapon.Dps = weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;
+            weapon.Dps = weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;*/
 
             if (!weapon.System.DesignatorWeapon)
             {
