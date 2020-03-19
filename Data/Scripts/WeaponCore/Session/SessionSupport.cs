@@ -194,6 +194,30 @@ namespace WeaponCore
             */
         }
 
+        //Would use DSUnique but to many profiler hits
+        internal bool RemoveChargeWeapon(Weapon weapon)
+        {
+            int oldPos;
+            if (ChargingWeaponsCheck.TryGetValue(weapon, out oldPos))
+            {
+
+                ChargingWeaponsCheck.Remove(weapon);
+                ChargingWeapons.RemoveAtFast(oldPos);
+                var count = ChargingWeapons.Count;
+                if (count > 0)
+                {
+                    count--;
+                    if (oldPos <= count)
+                        ChargingWeaponsCheck[ChargingWeapons[oldPos]] = oldPos;
+                    else
+                        ChargingWeaponsCheck[ChargingWeapons[count]] = count;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
 
         internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
         {

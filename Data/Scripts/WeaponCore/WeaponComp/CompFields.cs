@@ -35,7 +35,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal WeaponValues WeaponValues;
+        internal WeaponValues WeaponValues = new WeaponValues();
 
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;

@@ -259,9 +259,7 @@ namespace WeaponCore
                     var gridAi = comp.Ai;
                     if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate)
                     {
-                        ChargingWeapons.RemoveAtFast(i);
-                        if (ChargingWeaponsCheck.Contains(w))
-                            ChargingWeaponsCheck.Remove(w);
+                        RemoveChargeWeapon(w);
                         continue;
                     }
 
@@ -295,9 +293,8 @@ namespace WeaponCore
                             w.StopPowerDraw();
 
                         w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
-                        ChargingWeapons.RemoveAtFast(i);
-                        if (ChargingWeaponsCheck.Contains(w))
-                            ChargingWeaponsCheck.Remove(w);
+
+                        RemoveChargeWeapon(w);
                         continue;
                     }
 

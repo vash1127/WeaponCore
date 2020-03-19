@@ -81,11 +81,11 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<long, MouseStateData> PlayerMouseStates = new Dictionary<long, MouseStateData>();
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
+        internal readonly Dictionary<Weapon, int> ChargingWeaponsCheck = new Dictionary<Weapon, int>();
 
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        internal readonly HashSet<Weapon> ChargingWeaponsCheck = new HashSet<Weapon>();
+        internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();        
         internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
 
 

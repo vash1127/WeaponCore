@@ -79,14 +79,14 @@ namespace WeaponCore.Support
             target.WeaponId = weaponId;
 
             if (IsProjectile)
-                target.Info = TransferTarget.TargetInfo.IsProjectile;
+                target.State = TransferTarget.TargetInfo.IsProjectile;
             else if (IsFakeTarget)
-                target.Info = TransferTarget.TargetInfo.IsFakeTarget;
+                target.State = TransferTarget.TargetInfo.IsFakeTarget;
             else if (HasTarget)
-                target.Info = TransferTarget.TargetInfo.IsEntity;
+                target.State = TransferTarget.TargetInfo.IsEntity;
 
             if (!HasTarget)
-                target.Info = TransferTarget.TargetInfo.Expired;
+                target.State = TransferTarget.TargetInfo.Expired;
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)

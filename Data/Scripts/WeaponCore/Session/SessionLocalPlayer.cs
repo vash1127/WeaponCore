@@ -28,6 +28,7 @@ namespace WeaponCore
                 MyCubeBlock oldBlock;
                 TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock);
                 TrackingAi.ControllingPlayers[PlayerId] = ActiveControlBlock;
+                TrackingAi.ControllingPlayers.ApplyAdditionsAndModifications();
 
                 if (MpActive && !DedicatedServer && oldBlock != ActiveControlBlock)
                     SendActiveControlUpdate(activeBlock, true);
@@ -42,7 +43,8 @@ namespace WeaponCore
                     if (MpActive && !DedicatedServer && TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock))
                         SendActiveControlUpdate(oldBlock, false);
 
-                    TrackingAi.ControllingPlayers.Remove(PlayerId);
+                    TrackingAi.ControllingPlayers.Remove(PlayerId, true);
+                    TrackingAi.ControllingPlayers.ApplyRemovals();
                 }
 
                 TrackingAi = null;

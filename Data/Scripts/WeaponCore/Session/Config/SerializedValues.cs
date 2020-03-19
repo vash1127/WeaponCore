@@ -232,11 +232,8 @@ namespace WeaponCore
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                var wid = comp.Platform.Weapons[i].WeaponId;
-                sv.Timings[wid] = new WeaponTimings();
-                var timings = Timings[wid];
-
-                sv.Timings[wid] = timings.SyncOffsetServer(comp.Session.Tick);
+                var w = comp.Platform.Weapons[i];
+                sv.Timings[w.WeaponId] = w.Timings.SyncOffsetServer(comp.Session.Tick);
             }
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(sv);
@@ -257,10 +254,9 @@ namespace WeaponCore
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-                    var values = new WeaponSyncValues();
                     var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
 
-                    comp.Session.SyncWeapon(w, wTiming, ref values, false);
+                    comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false);
                 }
 
             }

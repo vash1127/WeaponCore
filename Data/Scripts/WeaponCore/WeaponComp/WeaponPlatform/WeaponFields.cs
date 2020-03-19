@@ -39,6 +39,7 @@ namespace WeaponCore.Platform
         internal bool LockOnFireState;
         internal bool SendTarget;
         internal bool SendSync;
+        internal bool ReloadSubscribed;
         internal uint ShootTick;
         internal uint TicksPerShot;
         internal uint LastSyncTick;
@@ -171,7 +172,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                return State.Sync.CurrentAmmo == 0 && ((State.Sync.CurrentMags > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.MustCharge)) || Comp.Session.IsCreative);
+                return !State.Sync.Reloading && State.Sync.CurrentAmmo == 0 && (((!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0) || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.MustCharge)) || Comp.Session.IsCreative);
             }
         }
 

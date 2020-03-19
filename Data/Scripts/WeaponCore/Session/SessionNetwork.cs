@@ -72,7 +72,7 @@ namespace WeaponCore
                         
                         report.PacketValid = true;
                         break;
-                    case PacketType.TargetUpdate:
+                    case PacketType.WeaponSyncUpdate:
                     {
                             var targetPacket = packet as GridWeaponPacket;
                             if (targetPacket?.Data == null || ent == null) {
@@ -80,8 +80,8 @@ namespace WeaponCore
 
                                 break;
                             }
-                            
-                            for(int i = 0; i < targetPacket.Data.Count; i++)
+
+                            for (int i = 0; i < targetPacket.Data.Count; i++)
                             {
                                 var weaponData = targetPacket.Data[i];
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
@@ -89,8 +89,13 @@ namespace WeaponCore
 
                                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
 
+                                if (weaponData.TargetData == null)
+                                {
+                                    comp.Session.ClientGridResyncRequests.Add(comp);
+                                    continue;
+                                }
+
                                 var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
-                                
                                 var syncTarget = weaponData.TargetData;
 
                                 if (weaponData.Timmings != null && weaponData.SyncData != null)
@@ -557,7 +562,7 @@ namespace WeaponCore
 
                     switch (erroredPacket.PType)
                     {
-                        case PacketType.TargetUpdate:
+                        case PacketType.WeaponSyncUpdate:
                             erroredPacket.MaxAttempts = 7;
                             erroredPacket.RetryDelayTicks = 15;                            
                             break;
@@ -580,7 +585,7 @@ namespace WeaponCore
 
                 switch (erroredPacket.PType)
                 {
-                    case PacketType.TargetUpdate:
+                    case PacketType.WeaponSyncUpdate:
                         var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
                         if (ent == null) break;
 
@@ -787,12 +792,26 @@ namespace WeaponCore
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 var c = 0;
-                                var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Count];
+                                var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
                                 foreach (var playerBlockPair in ai.ControllingPlayers)
                                 {
-                                    playerToBlocks[c] = new PlayerToBlock { PlayerId = playerBlockPair.Key, EntityId = playerBlockPair.Value.EntityId };
-                                    c++;
+                                    if (playerBlockPair.Value != null)
+                                    {
+                                        playerToBlocks[c] = new PlayerToBlock
+                                        {
+                                            PlayerId = playerBlockPair.Key,
+                                            EntityId = playerBlockPair.Value.EntityId
+                                        };
+
+                                        c++;
+                                    }
+                                    else
+                                        ai.ControllingPlayers.Remove(playerBlockPair.Key);
                                 }
+
+                                ai.ControllingPlayers.ApplyRemovals();
+
+                                Array.Resize(ref playerToBlocks, c + 1);
 
                                 PacketsToClient.Add(new PacketInfo {
                                     Entity = myGrid,
@@ -826,7 +845,7 @@ namespace WeaponCore
                                 {
                                     EntityId = packet.EntityId,
                                     SenderId = packet.SenderId,
-                                    PType = PacketType.TargetUpdate,
+                                    PType = PacketType.WeaponSyncUpdate,
                                     Data = new List<WeaponData>()
                                 };
 
@@ -839,7 +858,7 @@ namespace WeaponCore
                                     {
                                         var w = comp.Platform.Weapons[j];
 
-                                        if (comp.WeaponValues.Targets[j].Info == TransferTarget.TargetInfo.Expired)
+                                        if (comp.WeaponValues.Targets == null || comp.WeaponValues.Targets[j].State == TransferTarget.TargetInfo.Expired)
                                             continue;
 
                                         var weaponData = new WeaponData
@@ -849,7 +868,7 @@ namespace WeaponCore
                                             Timmings = w.Timings.SyncOffsetServer(Tick),
                                             TargetData = comp.WeaponValues.Targets[j],
                                         };
-
+                                        
                                         gridPacket.Data.Add(weaponData);
                                     }
                                 }
@@ -995,7 +1014,7 @@ namespace WeaponCore
                                 {
                                     EntityId = packet.EntityId,
                                     SenderId = packet.SenderId,
-                                    PType = PacketType.TargetUpdate,
+                                    PType = PacketType.WeaponSyncUpdate,
                                     Data = new List<WeaponData>()
                                 };
 
@@ -1421,7 +1440,7 @@ namespace WeaponCore
                     {
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = 0,
-                        PType = PacketType.TargetUpdate,
+                        PType = PacketType.WeaponSyncUpdate,
                         Data = new List<WeaponData>(ai.NumSyncWeapons),
                     };
                     _gridsToSync[ai] = gridSync;

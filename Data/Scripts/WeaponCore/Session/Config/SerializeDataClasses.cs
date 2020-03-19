@@ -18,7 +18,7 @@ namespace WeaponCore
         GridSyncRequestUpdate,
         CompStateUpdate,
         CompSettingsUpdate,
-        TargetUpdate,
+        WeaponSyncUpdate,
         WeaponPacket,
         FakeTargetUpdate,
         ClientMouseEvent,
@@ -404,7 +404,7 @@ namespace WeaponCore
         [ProtoMember(3)] internal float HitShortDist;
         [ProtoMember(4)] internal float OrigDistance;
         [ProtoMember(5)] internal long TopEntityId;
-        [ProtoMember(6)] internal TargetInfo Info = TargetInfo.Expired;
+        [ProtoMember(6)] internal TargetInfo State = TargetInfo.Expired;
         [ProtoMember(7)] internal int WeaponId;
 
         public enum TargetInfo
@@ -427,16 +427,16 @@ namespace WeaponCore
             target.IsProjectile = false;
             target.IsFakeTarget = false;
 
-            if (Info == TargetInfo.IsProjectile)
+            if (State == TargetInfo.IsProjectile)
                 target.IsProjectile = true;
 
-            else if (Info == TargetInfo.IsFakeTarget)
+            else if (State == TargetInfo.IsFakeTarget)
                 target.IsFakeTarget = true;
 
-            var state = Info != TargetInfo.Expired ? States.Acquired : States.Expired;
+            var state = State != TargetInfo.Expired ? States.Acquired : States.Expired;
 
             
-            target.StateChange(Info != TargetInfo.Expired, state);
+            target.StateChange(State != TargetInfo.Expired, state);
 
             if (!allowChange)
                 target.TargetChanged = false;

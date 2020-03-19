@@ -56,7 +56,7 @@ namespace WeaponCore.Support
 
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
-        internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
+        internal readonly CachingDictionary<long, MyCubeBlock> ControllingPlayers = new CachingDictionary<long, MyCubeBlock>();
 
 
         internal Session Session;

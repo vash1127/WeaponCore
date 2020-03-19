@@ -344,7 +344,7 @@ namespace WeaponCore
                 PacketsToServer.Add(new StatePacket
                 {
                     EntityId = comp.MyCube.EntityId,
-                    PType = PacketType.CompSettingsUpdate,
+                    PType = PacketType.CompStateUpdate,
                     SenderId = MultiplayerId,
                     Data = comp.State.Value
                 });
@@ -388,7 +388,7 @@ namespace WeaponCore
                     {
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
-                        PType = PacketType.CompStateUpdate,
+                        PType = PacketType.CompSettingsUpdate,
                         Data = comp.Set.Value
                     }
                 });
@@ -605,35 +605,28 @@ namespace WeaponCore
             var hasMags = weapon.State.Sync.CurrentMags > 0 || IsCreative;
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
-            var chargeFullReload = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && (hasMags || weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo);
-            var regularFullReload = !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !wasReloading && !weapon.State.Sync.Reloading && !hasAmmo && hasMags;
+            var canReload = weapon.CanReload;
 
-            var chargeFinishReloading = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !weapon.State.Sync.Reloading && wasReloading;
-            var regularFinishedReloading = !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && !hasAmmo && hasMags && ((!weapon.State.Sync.Reloading && wasReloading) || (weapon.State.Sync.Reloading && !wasReloading));
-
-            if (!chargeFullReload & !regularFullReload)
+            if (!canReload)
                 weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId];
 
-            if (chargeFullReload || regularFullReload)
+            if (canReload)
                 weapon.StartReload();
 
-            else if (chargeFinishReloading || regularFinishedReloading)
-            {
-                weapon.CancelableReloadAction += weapon.Reloaded;
-                if (weapon.Timings.ReloadedTick > 0)
-                    comp.Session.FutureEvents.Schedule(weapon.CancelableReloadAction, null, weapon.Timings.ReloadedTick);
-                else
-                    weapon.Reloaded();
-            }
             else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
             {
-                if (!weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                if (!weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.ReloadSubscribed)
+                {
+                    weapon.ReloadSubscribed = false;
                     weapon.CancelableReloadAction -= weapon.Reloaded;
+                }
 
                 weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
             }
+            else if(wasReloading && weapon.State.Sync.Reloading && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                comp.Session.FutureEvents.Schedule(weapon.Reloaded, null, weapon.Timings.ReloadedTick);
 
-            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !weapon.Comp.Session.ChargingWeaponsCheck.Contains(weapon))
+            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsCheck.ContainsKey(weapon))
                 weapon.ChargeReload(true);
 
 
@@ -654,7 +647,10 @@ namespace WeaponCore
             if (updateAdd) //update/add
             {
                 if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
+                {
                     trackingAi.ControllingPlayers[playerId] = block;
+                    trackingAi.ControllingPlayers.ApplyAdditionsAndModifications();
+                }
             }
             else //remove
             {

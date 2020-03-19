@@ -43,7 +43,7 @@ namespace WeaponCore.Platform
 
             if (!Target.HasTarget)
             {
-                Comp.WeaponValues.Targets[WeaponId].Info = TransferTarget.TargetInfo.Expired;
+                Comp.WeaponValues.Targets[WeaponId].State = TransferTarget.TargetInfo.Expired;
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.TrackReticle)
                     Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
@@ -355,7 +355,7 @@ namespace WeaponCore.Platform
 
                     if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !State.Sync.Reloading && Comp.State.Value.Online)
+                    else if (ActiveAmmoDef.AmmoDef.Const.MustCharge && CanReload)
                         StartReload();
 
                 }
@@ -438,11 +438,12 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative) && !Comp.Session.ChargingWeaponsCheck.Contains(this))
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative) && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
                     ChargeReload(isNewtorkUpdate);
                 else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
                     CancelableReloadAction += Reloaded;
+                    ReloadSubscribed = true;
                     Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
                     Timings.ReloadedTick = (uint)System.ReloadTime + Comp.Session.Tick;
                 }
@@ -492,7 +493,7 @@ namespace WeaponCore.Platform
             }
 
             Comp.Session.ChargingWeapons.Add(this);
-            Comp.Session.ChargingWeaponsCheck.Add(this);
+            Comp.Session.ChargingWeaponsCheck.Add(this, Comp.Session.ChargingWeapons.Count - 1);
 
             Comp.Ai.RequestedWeaponsDraw += RequiredPower;
 
@@ -510,6 +511,7 @@ namespace WeaponCore.Platform
 
         internal void Reloaded(object o = null)
         {
+            if (!State.Sync.Reloading) return;
             State.Sync.Reloading = false;
 
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
@@ -523,8 +525,11 @@ namespace WeaponCore.Platform
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
             }
-            else
+            else if (ReloadSubscribed)
+            {
                 CancelableReloadAction -= Reloaded;
+                ReloadSubscribed = true;
+            }
 
             EventTriggerStateChanged(EventTriggers.Reloading, false);
 
