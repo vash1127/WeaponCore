@@ -1031,7 +1031,7 @@ namespace WeaponCore
                                     var compId = targetRequestPacket.Comps[i];
                                     var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
 
-                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp) && comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp) || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                                         continue;
 
                                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
