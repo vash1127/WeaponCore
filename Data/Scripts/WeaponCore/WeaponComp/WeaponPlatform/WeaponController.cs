@@ -290,6 +290,87 @@ namespace WeaponCore.Platform
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
 
+        internal void SetWeaponDps(object o = null)
+        {
+            var newBase = 0f;
+
+            if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Set.Value.DpsModifier;
+            else
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
+
+            if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
+                newBase *= Comp.Set.Value.Overload;
+
+            if (newBase < 0)
+                newBase = 0;
+
+            BaseDamage = newBase;
+            var oldRequired = RequiredPower;
+            var oldHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
+
+            UpdateShotEnergy();
+            UpdateRequiredPower();
+
+            var mulitplier = (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
+
+            var dpsMulti = mulitplier;
+
+            if (BaseDamage > ActiveAmmoDef.AmmoDef.Const.BaseDamage)
+                mulitplier *= mulitplier;
+
+            HeatPShot = System.HeatPerShot * mulitplier;
+
+            RequiredPower *= mulitplier;
+
+            TicksPerShot = (uint)(3600f / RateOfFire);
+            TimePerShot = (3600d / RateOfFire);
+
+            var oldDps = Dps;
+            var oldMaxCharge = MaxCharge;
+
+            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                MaxCharge = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize * mulitplier;
+
+            Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
+
+            var heatPShot = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
+            var heatDif = oldHeatPSec - heatPShot;
+            var dpsDif = oldDps - Dps;
+            var powerDif = oldRequired - RequiredPower;
+            var chargeDif = oldMaxCharge - MaxCharge;
+
+            if (IsShooting)
+                Comp.CurrentDps -= dpsDif;
+
+            if (DrawingPower)
+            {
+                Comp.Ai.RequestedWeaponsDraw -= powerDif;
+                OldUseablePower = UseablePower;
+
+                Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
+
+                if (!Comp.Ai.OverPowered)
+                {
+                    UseablePower = RequiredPower;
+                    DrawPower(true);
+                }
+                else
+                {
+                    RecalcPower = true;
+                    ResetPower = true;
+                    Timings.ChargeDelayTicks = 0;
+                }
+            }
+            else
+                UseablePower = RequiredPower;
+
+            Comp.HeatPerSecond -= heatDif;
+
+            Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
+
+        }
+
         internal void SpinBarrel(bool spinDown = false)
         {
             var matrix = MuzzlePart.Entity.PositionComp.LocalMatrix * BarrelRotationPerShot[BarrelRate];

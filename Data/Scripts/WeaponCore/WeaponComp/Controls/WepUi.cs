@@ -50,7 +50,7 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
                 if (!ammoChange && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
 
-                comp.Session.FutureEvents.Schedule(SetWeaponDps, w, 1);
+                comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
             }
 
             if (!isNetworkUpdate && comp.Session.HandlesInput)
@@ -59,78 +59,6 @@ namespace WeaponCore
             comp.Ai.UpdatePowerSources = true;
             comp.SettingsUpdated = true;
             comp.ClientUiUpdate = true;
-        }
-
-        internal static void SetWeaponDps(object o)
-        {
-            var w = o as Weapon;
-            if (w == null) return;
-
-            var comp = w.Comp;
-            var newBase = w.ActiveAmmoDef.AmmoDef.Const.BaseDamage * comp.Set.Value.DpsModifier;
-
-            if (w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-            {
-                newBase *= comp.Set.Value.Overload;
-            }
-
-            if (newBase < 0)
-                newBase = 0;
-
-            w.BaseDamage = newBase;
-            var oldRequired = w.RequiredPower;
-            var oldHeatPSec = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
-
-            w.UpdateShotEnergy();
-            w.UpdateRequiredPower();
-
-            var mulitplier = (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? w.BaseDamage / w.ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
-
-            if (w.BaseDamage > w.ActiveAmmoDef.AmmoDef.Const.BaseDamage)
-                mulitplier *= mulitplier;
-
-            w.HeatPShot = w.System.HeatPerShot * mulitplier;
-            w.RequiredPower *= mulitplier;
-
-            w.TicksPerShot = (uint)(3600f / w.RateOfFire);
-            w.TimePerShot = (3600d / w.RateOfFire);
-            var oldDps = w.Dps;
-            w.Dps = w.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;
-            var heatPShot = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
-
-            var heatDif = oldHeatPSec - heatPShot;
-            var dpsDif = oldDps - w.Dps;
-            var powerDif = oldRequired - w.RequiredPower;
-
-            if (w.IsShooting)
-                comp.CurrentDps -= dpsDif;
-
-            if (w.DrawingPower)
-            {
-                comp.Ai.RequestedWeaponsDraw -= powerDif;
-                w.OldUseablePower = w.UseablePower;
-
-                comp.Ai.OverPowered = comp.Ai.RequestedWeaponsDraw > 0 && comp.Ai.RequestedWeaponsDraw > comp.Ai.GridMaxPower;
-
-                if (!comp.Ai.OverPowered)
-                {
-                    w.UseablePower = w.RequiredPower;
-                    w.DrawPower(true);
-                }
-                else
-                {
-                    w.RecalcPower = true;
-                    w.ResetPower = true;
-                }
-            }
-            else
-                w.UseablePower = w.RequiredPower;
-
-            comp.HeatPerSecond -= heatDif;
-            comp.MaxRequiredPower -= powerDif;
-
-            w.Timings.ChargeDelayTicks = 0;
-
         }
 
         internal static float GetRof(IMyTerminalBlock block)

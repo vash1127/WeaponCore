@@ -524,9 +524,10 @@ namespace WeaponCore.Platform
                 State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
                 Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
-                Comp.State.Value.CurrentCharge += ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
-                State.Sync.CurrentCharge = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                State.Sync.CurrentCharge = MaxCharge;
+                Comp.State.Value.CurrentCharge += MaxCharge;
+
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
             }
@@ -573,7 +574,7 @@ namespace WeaponCore.Platform
             else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
             {
                 ActiveAmmoDef = System.WeaponAmmoTypes[Set.AmmoTypeId];
-                WepUi.SetWeaponDps(this);
+                SetWeaponDps();
                 if (CanReload)
                     StartReload();
             }
