@@ -561,6 +561,18 @@ namespace WeaponCore.Platform
             Comp.TerminalRefresh();
         }
 
+        internal void CycleAmmo(object o = null)
+        {
+            if (CanReload)
+                StartReload();
+            else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
+            {
+                ActiveAmmoDef = System.WeaponAmmoTypes[Set.AmmoTypeId];
+                if (CanReload)
+                    StartReload();
+            }
+        }
+
         public void StartPreFiringSound()
         {
             PreFiringEmitter?.PlaySound(PreFiringSound);

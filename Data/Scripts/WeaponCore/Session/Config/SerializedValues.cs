@@ -224,7 +224,7 @@ namespace WeaponCore
 
         public void Save(WeaponComponent comp, Guid id)
         {
-            if (!comp.Session.MpActive) return;
+            //if (!comp.Session.MpActive) return;
 
             if (comp.MyCube?.Storage == null) return;
 
@@ -244,7 +244,7 @@ namespace WeaponCore
         public static void Load(WeaponComponent comp)
         {
             string rawData;
-            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(comp.Session.MpTargetSyncGuid, out rawData))
+            if (comp.MyCube.Storage.TryGetValue(comp.Session.MpTargetSyncGuid, out rawData))
             {
                 var base64 = Convert.FromBase64String(rawData);
                 comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);

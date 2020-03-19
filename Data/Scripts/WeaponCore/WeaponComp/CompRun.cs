@@ -251,22 +251,8 @@ namespace WeaponCore.Support
 
                     State.SaveState();
                     Set.SaveSettings();
-                    if (Session.MpActive)
-                    {
-                        WeaponValues.Save(this, Session.MpTargetSyncGuid);
-
-                        if(Ai.LastSerializedTick != Session.Tick)
-                        {
-                            if(Ai.MyGrid.Storage != null)
-                            {
-
-                            }
-                            else
-                            {
-
-                            }
-                        }
-                    }
+                    WeaponValues.Save(this, Session.MpTargetSyncGuid);
+                        
                 }
             }
             return false;

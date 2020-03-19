@@ -27,6 +27,8 @@ namespace WeaponCore.Support
         {
             try
             {
+                if (_instances.ContainsKey(name)) return;
+
                 if (defaultInstance) _defaultInstance = name;
                 var instance = _logPool.Get();
                 _instances[name] = instance;
@@ -108,17 +110,27 @@ namespace WeaponCore.Support
 
         public static void ThreadedWrite(string logLine)
         {
-            _threadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -} ", logLine });
+            _threadedLineQueue.Enqueue(new string[] { $"Threaded Time:  {DateTime.Now:HH-mm-ss-fff} - ", logLine });
             MyAPIGateway.Utilities.InvokeOnGameThread(WriteLog);
         }
 
         private static void WriteLog() {
             string[] line;
+
+            var instance = _instances[_defaultInstance];
+            if (instance.TextWriter != null)
+                Init("debugdevelop.log");
+
+            instance = _instances[_defaultInstance];           
+
             while (_threadedLineQueue.TryDequeue(out line))
             {
-                Line(line[0] + line[1]);
+                if (instance.TextWriter != null)
+                {
+                    instance.TextWriter.WriteLine(line[0] + line[1]);
+                    instance.TextWriter.Flush();
+                }
             }
-
         }
 
         public static void Close()

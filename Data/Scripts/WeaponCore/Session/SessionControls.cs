@@ -408,7 +408,9 @@ namespace WeaponCore
                     var currActive = w.System.WeaponAmmoTypes[w.Set.AmmoTypeId]; 
                     var next = (w.Set.AmmoTypeId + 1) % availAmmo;
                     var currDef = w.System.WeaponAmmoTypes[next];
-                    
+
+                    var change = false;
+
                     while (!(currActive.Equals(currDef)))
                     {
                         if (currDef.AmmoDef.Const.IsTurretSelectable)
@@ -418,8 +420,7 @@ namespace WeaponCore
                             if (comp.Session.MpActive)
                                 comp.Session.SendCycleAmmoNetworkUpdate(w, next);
 
-                            if (w.CanReload)
-                                comp.Session.FutureEvents.Schedule(o => { w.StartReload(); }, null, 1);
+                            change = true;
 
                             break;
                         }
@@ -427,6 +428,10 @@ namespace WeaponCore
                         next = (next + 1) % availAmmo;
                         currDef = w.System.WeaponAmmoTypes[next];
                     }
+
+                    if (change)
+                        comp.Session.FutureEvents.Schedule(w.CycleAmmo, null, 1);
+
                 }
                 catch (Exception e)
                 {
