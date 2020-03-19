@@ -179,8 +179,9 @@ namespace WeaponCore
 
             while (ChargingWeaponsToReload.Count > 0)
             {
+                Log.Line("charge before load");
                 var w = ChargingWeaponsToReload.Dequeue();
-                w.StartReload();
+                ComputeStorage(w);
             }
 
             /*

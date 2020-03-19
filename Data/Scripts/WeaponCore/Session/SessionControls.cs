@@ -146,10 +146,13 @@ namespace WeaponCore
                                 wepIDs.Add(wepIdHash);
                             else
                                 continue;
+                            if (!ws.Value.DesignatorWeapon)
+                            {
+                                CreateShootActionSet<T>(wepName, wepIdHash);
 
-                            CreateShootActionSet<T>(wepName, wepIdHash);
-                            if (ws.Value.WeaponAmmoTypes.Length > 1)
-                                CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+                                if (ws.Value.WeaponAmmoTypes.Length > 1)
+                                    CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+                            }
                         }
                     }
                 }
@@ -168,22 +171,27 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
                 var cState = comp.State.Value;
+
+                if (cState.ClickShoot)
+                {
+                    cState.CurrentPlayerControl.PlayerId = -1;
+                    cState.CurrentPlayerControl.ControlType = ControlType.None;
+                }
+                else
+                {
+                    cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                    cState.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+                }
+
+                    
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
 
                     if (cState.ClickShoot)
-                    {
                         w.State.ManualShoot = ShootOff;
-                        cState.CurrentPlayerControl.PlayerId = -1;
-                        cState.CurrentPlayerControl.ControlType = ControlType.None;
-                    }
                     else
-                    {
                         w.State.ManualShoot = ShootClick;
-                        cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                        cState.CurrentPlayerControl.ControlType = ControlType.Toolbar;
-                    }
                 }
 
                 if (comp.Session.MpActive)
@@ -460,7 +468,7 @@ namespace WeaponCore
                 if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
                 {
                     var w = comp.Platform.Weapons[weaponId];
-                    if (weaponHash == w.System.WeaponIdHash && w.State.ManualShoot != ShootOff)
+                    if (weaponHash == w.System.WeaponIdHash && w.State.ManualShoot == ShootOn)
                         return true;
                 }
             }

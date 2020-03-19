@@ -167,6 +167,14 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal bool CanReload
+        {
+            get
+            {
+                return State.Sync.CurrentAmmo == 0 && ((State.Sync.CurrentMags > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.MustCharge)) || Comp.Session.IsCreative);
+            }
+        }
+
         public enum TerminalActionState
         {
             ShootOn,

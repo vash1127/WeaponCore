@@ -15,7 +15,7 @@ namespace WeaponCore
     {
         internal static void ComputeStorage(Weapon weapon, bool force = false)
         {
-            var comp = weapon.Comp;            
+            var comp = weapon.Comp;         
 
             if (!comp.Session.IsClient)
             {
@@ -25,17 +25,24 @@ namespace WeaponCore
 
                 if (!ammo.AmmoDef.Const.EnergyAmmo)
                 {
-                    var invWithMagsAvailable = comp.Ai.AmmoInventories[ammo.AmmoDefinitionId];
+                    if (!comp.Session.IsCreative)
+                    {
+                        var invWithMagsAvailable = comp.Ai.AmmoInventories[ammo.AmmoDefinitionId];
 
-                    weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
-                    
-                    weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                        weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
 
-                    if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
-                        weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-                    else if (weapon.State.Sync.CurrentAmmo == 0)
-                        weapon.CheckReload();
-                }                
+                        weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+
+                        if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
+                            weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
+                        else if (weapon.CanReload)
+                            weapon.StartReload();
+                    }
+                    else if (weapon.CanReload)
+                        weapon.StartReload();
+                }
+                else if (weapon.CanReload)
+                    weapon.StartReload();
             }
             else if(weapon.State.Sync.CurrentAmmo == 0 && !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                 comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
@@ -131,7 +138,8 @@ namespace WeaponCore
                 if(inventoriesToPull.Length > 0)
                 {
                     weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-                    weapon.CheckReload();
+                    if (weapon.CanReload)
+                        weapon.StartReload();
                 }
 
                 weapon.Comp.IgnoreInvChange = false;

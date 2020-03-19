@@ -122,7 +122,9 @@ namespace WeaponCore.Support
                 weapon.State.Sync.Reloading = false;
 
             //if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                //Session.ComputeStorage(weapon);            
+            //Session.ComputeStorage(weapon);            
+
+            //Log.Line($"MustCharge: {weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge} CurrentAmmo: {weapon.State.Sync.CurrentAmmo} MagSize: {weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize} hybrid: {weapon.ActiveAmmoDef.AmmoDef.Const.IsHybrid} EnergyAmmo: {weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo}");
 
             if ((!Session.IsClient || !Session.MpActive) && weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.CurrentAmmo != weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
             {

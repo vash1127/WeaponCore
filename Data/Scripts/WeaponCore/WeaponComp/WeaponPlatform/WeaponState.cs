@@ -355,14 +355,8 @@ namespace WeaponCore.Platform
 
                     if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                    {
-                        State.Sync.CurrentAmmo = 0;
-                        Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
-                        State.Sync.CurrentCharge = 0;
-                        if (Comp.State.Value.Online)
-                            StartReload();
-                    }
+                    else if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !State.Sync.Reloading && Comp.State.Value.Online)
+                        StartReload();
 
                 }
                 IsShooting = false;
@@ -397,7 +391,7 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
-        public void StartReload(bool reset = false)
+        public void StartReload(bool reset = false, bool isNewtorkUpdate = false)
         {
             if (reset) State.Sync.Reloading = false;
 
@@ -444,8 +438,8 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && !Comp.Session.ChargingWeaponsCheck.Contains(this))
-                    ChargeReload();
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative) && !Comp.Session.ChargingWeaponsCheck.Contains(this))
+                    ChargeReload(isNewtorkUpdate);
                 else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
                     CancelableReloadAction += Reloaded;
@@ -487,14 +481,14 @@ namespace WeaponCore.Platform
                 ActiveAmmoDef = newAmmo;
         }
 
-        public void ChargeReload()
+        public void ChargeReload(bool syncCharge)
         {
-            var syncCharge = Timings.ChargeUntilTick > 0;
             if (!syncCharge)
             {
-                var currDif = Comp.State.Value.CurrentCharge - State.Sync.CurrentCharge;
-                Comp.State.Value.CurrentCharge = currDif > 0 ? currDif : 0;
+                State.Sync.CurrentAmmo = 0;
+                Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
                 State.Sync.CurrentCharge = 0;
+                Comp.TerminalRefresh();
             }
 
             Comp.Session.ChargingWeapons.Add(this);
@@ -506,21 +500,12 @@ namespace WeaponCore.Platform
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
         }
 
-
-        internal void CheckReload()
-        {
-            var hasMags = State.Sync.CurrentMags > 0 || Comp.Session.IsCreative;
-            var chargeReload = ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || hasMags);
-            var standardReload = !ActiveAmmoDef.AmmoDef.Const.MustCharge && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags;
-
-            if (State.Sync.CurrentAmmo == 0 && (chargeReload || standardReload))
-                StartReload();
-        }
-
         internal void GetAmmoClient()
         {
             State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
-            CheckReload();
+
+            if (CanReload)
+                StartReload();
         }
 
         internal void Reloaded(object o = null)
@@ -530,9 +515,11 @@ namespace WeaponCore.Platform
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
             {
                 State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-                Comp.State.Value.CurrentCharge = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-                State.Sync.CurrentCharge = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
+                Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+                Comp.State.Value.CurrentCharge += ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+
+                State.Sync.CurrentCharge = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
                 Timings.ChargeUntilTick = 0;
                 Timings.ChargeDelayTicks = 0;
             }
@@ -565,6 +552,8 @@ namespace WeaponCore.Platform
 
                 LastSyncTick = Comp.Session.Tick;
             }
+
+            Comp.TerminalRefresh();
         }
 
         public void StartPreFiringSound()
