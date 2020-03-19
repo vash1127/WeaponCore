@@ -128,9 +128,8 @@ namespace WeaponCore
                                         }
                                     }
                                 }
+                                report.PacketValid = true;
                             }
-
-                            report.PacketValid = true;
                             break;
                         }
 
