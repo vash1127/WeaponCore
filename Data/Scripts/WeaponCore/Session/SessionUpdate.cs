@@ -311,8 +311,6 @@ namespace WeaponCore
                         continue;
                     }
 
-
-
                     if (!w.DrawingPower || gridAi.RequestedPowerChanged || gridAi.AvailablePowerChanged || (w.RecalcPower && Tick60))
                     {
                         if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)

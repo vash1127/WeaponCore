@@ -105,15 +105,32 @@ namespace WeaponCore
             if (w.IsShooting)
                 comp.CurrentDps -= dpsDif;
 
-            if(w.DrawingPower)
+            if (w.DrawingPower)
+            {
                 comp.Ai.RequestedWeaponsDraw -= powerDif;
+                w.OldUseablePower = w.UseablePower;
 
-            w.ResetPower = true;
+                comp.Ai.OverPowered = comp.Ai.RequestedWeaponsDraw > 0 && comp.Ai.RequestedWeaponsDraw > comp.Ai.GridMaxPower;
+
+                if (!comp.Ai.OverPowered)
+                {
+                    w.UseablePower = w.RequiredPower;
+                    w.DrawPower(true);
+                }
+                else
+                {
+                    w.RecalcPower = true;
+                    w.ResetPower = true;
+                }
+            }
+            else
+                w.UseablePower = w.RequiredPower;
 
             comp.HeatPerSecond -= heatDif;
             comp.MaxRequiredPower -= powerDif;
 
             w.Timings.ChargeDelayTicks = 0;
+
         }
 
         internal static float GetRof(IMyTerminalBlock block)
