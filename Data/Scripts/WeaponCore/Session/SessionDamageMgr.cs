@@ -99,8 +99,6 @@ namespace WeaponCore
             var heal = damageType == ShieldDef.ShieldType.Heal;
             var shieldByPass = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
 
-            Log.Line($"damageType: {damageType} Modifier: {info.AmmoDef.Const.ShieldModifier} info.BaseDamagePool: {info.BaseDamagePool} energy: {energy} heal: {heal}");
-
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f) : 0;

@@ -450,6 +450,11 @@ namespace WeaponCore.Platform
 
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+                if (ReloadSound == null)
+                {
+                    Log.Line($"ReloadSound is null");
+                    return;
+                }
                 ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
 
             }
@@ -576,6 +581,11 @@ namespace WeaponCore.Platform
 
         public void StartPreFiringSound()
         {
+            if (PreFiringSound == null)
+            {
+                Log.Line($"PreFiringSound is null");
+                return;
+            }
             PreFiringEmitter?.PlaySound(PreFiringSound);
         }
 
@@ -586,6 +596,11 @@ namespace WeaponCore.Platform
 
         public void StartFiringSound()
         {
+            if (FiringSound == null)
+            {
+                Log.Line($"FiringSound is null");
+                return;
+            }
             FiringEmitter?.PlaySound(FiringSound);
         }
 
