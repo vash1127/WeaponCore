@@ -1428,10 +1428,17 @@ namespace WeaponCore
 
         private void ProccessTargetUpdates()
         {
-            for (int i = 0; i < _session.WeaponsToSync.Count; i++)
+            for (int i = _session.WeaponsToSync.Count -1 ; i >= 0; i--)
             {
                 var w = _session.WeaponsToSync[i];
                 var ai = w.Comp.Ai;
+
+                if (ai == null || ai?.MyGrid == null || w.Comp.MyCube == null || w.Comp.MyCube.MarkedForClose || w.Comp.MyCube.Closed)
+                {
+                    _session.WeaponsToSync.RemoveAtFast(i);
+                    _session.WeaponsSyncCheck.Remove(w);
+                }
+
                 //need to pool to reduce allocations
                 GridWeaponPacket gridSync;
                 if (!_gridsToSync.ContainsKey(ai))
@@ -1455,23 +1462,26 @@ namespace WeaponCore
                     SyncData = null
                 };
 
-                if (w.SendTarget)
-                {
+                if (w.SendTarget && w.Comp.WeaponValues.Targets != null)
                     weaponSync.TargetData = w.Comp.WeaponValues.Targets[w.WeaponId];
-                    w.SendTarget = false;
-                }
+                else if (w.SendTarget)
+                    continue;
 
-                if (w.SendSync)
+                if (w.SendSync && weaponSync.Timmings != null && weaponSync.SyncData != null)
                 {
                     weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
                     weaponSync.SyncData = w.State.Sync;
-                    w.SendSync = false;
                 }
+                else
+                    continue;
+
+                w.SendTarget = false;
+                w.SendSync = false;
 
                 gridSync.Data.Add(weaponSync);
+                _session.WeaponsToSync.RemoveAtFast(i);
+                _session.WeaponsSyncCheck.Remove(w);
             }
-            _session.WeaponsToSync.Clear();
-            _session.WeaponsSyncCheck.Clear();
         }
 
         private void ProccessGridWeaponPackets()
