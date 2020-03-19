@@ -145,8 +145,6 @@ namespace WeaponCore
                             if (type == null) return;
                         }
 
-                        Log.Line($"type:{type} ");
-
                         try
                         {
                             //var ob = def.GetObjectBuilder();
