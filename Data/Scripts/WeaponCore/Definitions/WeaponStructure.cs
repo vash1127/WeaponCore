@@ -521,7 +521,12 @@ namespace WeaponCore.Support
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
-            //GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+            try
+            {
+                GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+            }
+            catch (Exception ex) { Log.Line($"Exception in GetPeakDps: {ex}"); }
+
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
             
@@ -533,7 +538,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        private void GetPeakDpsOld(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
             var a = ammoDef.AmmoDef;
@@ -560,6 +565,41 @@ namespace WeaponCore.Support
                 baseDps = BaseDamage * shotsPerSec;
                 areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec;
+                peakDps = (baseDps + areaDps + detDps);
+                Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
+            }
+        }
+
+        private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        {
+            var s = system;
+            var a = ammoDef.AmmoDef;
+            var l = wDef.HardPoint.Loading;
+            if (s.ReloadTime > 0)
+            {
+                var magSize = MagazineSize > 0 ? MagazineSize : s.RateOfFire / s.BarrelsPerShot;
+                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(magSize / l.ShotsInBurst)) : 0;
+                burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
+
+
+                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
+                var timePerMag = 3600.0f * (magSize / s.RateOfFire / s.BarrelsPerShot) + s.ReloadTime + timeSpentOnBurst;
+                shotsPerSec = ((3600f / timePerMag) * magSize) / 60 * l.TrajectilesPerBarrel;
+                baseDps = BaseDamage * shotsPerSec;
+                areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
+                detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
+                peakDps = (baseDps + areaDps + detDps);
+                Log.Line($"reload[{s.WeaponName}]: peakDps:{peakDps} - magSize:{magSize} - reloadTime:{s.ReloadTime} - timePerMag:{timePerMag}({magSize / s.RateOfFire} - {s.ReloadTime} - {timeSpentOnBurst}) - burstPerMag:{burstPerMag} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - RateOfFire:{s.RateOfFire} - BarrelsPerShot:{s.BarrelsPerShot}");
+                Log.Line($" timePerMag = 3600f * ({magSize} / {s.RateOfFire} / {s.BarrelsPerShot}) + {s.ReloadTime} + {timeSpentOnBurst} ");
+
+            }
+            else
+            {
+                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? ((3600 / s.RateOfFire) * (l.ShotsInBurst / s.BarrelsPerShot)) + l.DelayAfterBurst : 0;
+                shotsPerSec = ((3600 / timeSpentOnBurst) * l.ShotsInBurst) / 60 * l.TrajectilesPerBarrel;
+                baseDps = BaseDamage * shotsPerSec;
+                areaDps = (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
+                detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
                 peakDps = (baseDps + areaDps + detDps);
                 Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
             }
