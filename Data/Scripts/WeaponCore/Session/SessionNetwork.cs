@@ -394,8 +394,14 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (comp == null) break;
-                            
+                            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) break;
+
+                            if (shootStatePacket.WeaponId == -1)
+                            {
+                                errorPacket.Error = $"[WeaponToolbarShootState] weapon Id: {shootStatePacket.WeaponId}";
+                                break;
+                            }
+
                             comp.State.Value.MId = shootStatePacket.MId;
                             var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
 
@@ -460,7 +466,13 @@ namespace WeaponCore
                                 errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
                                 break;
                             }
-                            
+
+                            if (cyclePacket.WeaponId == -1)
+                            {
+                                errorPacket.Error = $"[WeaponToolbarShootState] weapon Id: {cyclePacket.WeaponId}";
+                                break;
+                            }
+
                             comp.Set.Value.MId = cyclePacket.MId;
                             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
                             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
