@@ -67,12 +67,15 @@ namespace WeaponCore
             if (w == null) return;
 
             var comp = w.Comp;
-            var newBase = w.ActiveAmmoDef.AmmoDef.Const.BaseDamage * comp.Set.Value.DpsModifier;
+            var newBase = 0f;
+
+            if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                newBase = w.ActiveAmmoDef.AmmoDef.Const.BaseDamage * comp.Set.Value.DpsModifier;
+            else
+                newBase = w.ActiveAmmoDef.AmmoDef.Const.BaseDamage;
 
             if (w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-            {
                 newBase *= comp.Set.Value.Overload;
-            }
 
             if (newBase < 0)
                 newBase = 0;
@@ -86,21 +89,31 @@ namespace WeaponCore
 
             var mulitplier = (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? w.BaseDamage / w.ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
 
+            var dpsMulti = mulitplier;
+
             if (w.BaseDamage > w.ActiveAmmoDef.AmmoDef.Const.BaseDamage)
                 mulitplier *= mulitplier;
 
             w.HeatPShot = w.System.HeatPerShot * mulitplier;
+
             w.RequiredPower *= mulitplier;
 
             w.TicksPerShot = (uint)(3600f / w.RateOfFire);
             w.TimePerShot = (3600d / w.RateOfFire);
-            var oldDps = w.Dps;
-            w.Dps = w.ActiveAmmoDef.AmmoDef.Const.PeakDps * mulitplier;
-            var heatPShot = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
 
+            var oldDps = w.Dps;
+            var oldMaxCharge = w.MaxCharge;
+
+            if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                w.MaxCharge = w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize * mulitplier;
+
+            w.Dps = w.ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
+
+            var heatPShot = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
             var heatDif = oldHeatPSec - heatPShot;
             var dpsDif = oldDps - w.Dps;
             var powerDif = oldRequired - w.RequiredPower;
+            var chargeDif = oldMaxCharge - w.MaxCharge;
 
             if (w.IsShooting)
                 comp.CurrentDps -= dpsDif;
@@ -121,15 +134,15 @@ namespace WeaponCore
                 {
                     w.RecalcPower = true;
                     w.ResetPower = true;
+                    w.Timings.ChargeDelayTicks = 0;
                 }
             }
             else
                 w.UseablePower = w.RequiredPower;
 
             comp.HeatPerSecond -= heatDif;
-            comp.MaxRequiredPower -= powerDif;
 
-            w.Timings.ChargeDelayTicks = 0;
+            comp.MaxRequiredPower -= w.ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
 
         }
 
