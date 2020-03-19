@@ -524,11 +524,11 @@ namespace WeaponCore.Support
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
-            try
+            /*try
             {
                 //GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             }
-            catch (Exception ex) { Log.Line($"Exception in GetPeakDps: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in GetPeakDps: {ex}"); }*/
 
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
