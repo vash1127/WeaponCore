@@ -526,7 +526,7 @@ namespace WeaponCore.Support
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             /*try
             {
-                GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+                //GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             }
             catch (Exception ex) { Log.Line($"Exception in GetPeakDps: {ex}"); }*/
 
