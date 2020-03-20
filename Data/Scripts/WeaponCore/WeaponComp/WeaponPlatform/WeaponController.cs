@@ -366,7 +366,6 @@ namespace WeaponCore.Platform
                 UseablePower = RequiredPower;
 
             Comp.HeatPerSecond -= heatDif;
-
             Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
 
         }
