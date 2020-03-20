@@ -161,7 +161,16 @@ namespace WeaponCore
                                     CreateShootActionSet<T>(wepName, wepIdHash);
 
                                     if (ws.Value.WeaponAmmoTypes.Length > 1)
-                                        CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+                                    {
+                                        var c = 0;
+                                        for(int i = 0; i < ws.Value.WeaponAmmoTypes.Length; i++)
+                                        {
+                                            if (ws.Value.WeaponAmmoTypes[i].AmmoDef.HardPointUsable)
+                                                c++;
+                                        }
+                                        if(c > 1)
+                                            CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+                                    }
                                 }
                             }
                         }

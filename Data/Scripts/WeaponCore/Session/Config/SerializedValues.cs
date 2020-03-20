@@ -247,35 +247,42 @@ namespace WeaponCore
             if (comp.MyCube.Storage.TryGetValue(comp.Session.MpTargetSyncGuid, out rawData))
             {
                 var base64 = Convert.FromBase64String(rawData);
-                comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
-
-                var timings = comp.WeaponValues.Timings;
-
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                try
                 {
-                    var w = comp.Platform.Weapons[i];
-                    var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
+                    comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
 
-                    comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false);
+                    var timings = comp.WeaponValues.Timings;
+
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    {
+                        var w = comp.Platform.Weapons[i];
+                        var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
+
+                        comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false);
+                    }
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Log.Line($"Weapon Values Failed To load re-initing");
                 }
 
             }
-            else
-            {
-                comp.WeaponValues = new WeaponValues
-                {
-                    Targets = new TransferTarget[comp.Platform.Weapons.Length],
-                    Timings = new WeaponTimings[comp.Platform.Weapons.Length]
-                };
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var w = comp.Platform.Weapons[i];
 
-                    comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
-                    w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
-                }
+            comp.WeaponValues = new WeaponValues
+            {
+                Targets = new TransferTarget[comp.Platform.Weapons.Length],
+                Timings = new WeaponTimings[comp.Platform.Weapons.Length]
+            };
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var w = comp.Platform.Weapons[i];
+
+                comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
+                w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
             }
         }
+
         public WeaponValues() { }
     }
 
