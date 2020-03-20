@@ -485,6 +485,7 @@ namespace WeaponCore.Platform
                 return;
             }
             ActiveAmmoDef = newAmmo;
+            SetWeaponDps();
         }
 
         public void ChargeReload(bool syncCharge)
