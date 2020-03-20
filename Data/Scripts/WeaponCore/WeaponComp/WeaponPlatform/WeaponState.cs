@@ -517,7 +517,8 @@ namespace WeaponCore.Platform
 
         internal void Reloaded(object o = null)
         {
-            if (!State.Sync.Reloading) return;
+            if (State?.Sync == null || Comp?.State?.Value == null  || Timings == null|| !State.Sync.Reloading) return;
+
             State.Sync.Reloading = false;
 
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
@@ -549,7 +550,7 @@ namespace WeaponCore.Platform
             {
                 if (!Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)))
                     State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                else if (Comp.Session.IsClient && hasMags)
+                else if (Comp.Session.IsClient)
                     State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
                    
             }
