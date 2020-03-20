@@ -546,36 +546,32 @@ namespace WeaponCore.Support
             {
                 var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
                 burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
-                var rof = s.RateOfFire;
-                var bps = s.BarrelsPerShot;
-                var shotRate = rof / bps;
-                var magDrainRate = MagazineSize / shotRate;
-                var drainPerMin = magDrainRate * 3600;
+                //var rof = s.RateOfFire;
+                //var bps = s.BarrelsPerShot;
+                //var shotRate = rof / bps;
+                //var magDrainRate = MagazineSize / shotRate;
+                //var drainPerMin = magDrainRate * 3600;
+                var drainPerMin = ((MagazineSize / (float)s.RateOfFire) / s.BarrelsPerShot) * 3600.0f;
+                drainPerMin = MagazineSize >= 1 ? drainPerMin : 1;
 
                 var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
                 var timePerMag = drainPerMin + s.ReloadTime + timeSpentOnBurst;
 
-                shotsPerSec = (((3600f / timePerMag) * MagazineSize) / 60) * l.TrajectilesPerBarrel;
+                shotsPerSec = ((3600f / timePerMag) * MagazineSize) / 60 * l.TrajectilesPerBarrel;
                 baseDps = BaseDamage * shotsPerSec;
                 areaDps = !AmmoAreaEffect ? 0 : (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
                 peakDps = (baseDps + areaDps + detDps);
-                //var timeForMag = (int)Math.Floor((double)(MagazineSize / rof / bps));
-                //Log.Line($"reload[{s.WeaponName}]: peakDps:{peakDps} - magSize:{MagazineSize} - reloadTime:{s.ReloadTime} - timePerMag:{timePerMag}({drainPerMin} - {s.ReloadTime} - {timeSpentOnBurst}) - burstPerMag:{burstPerMag} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - RateOfFire:{s.RateOfFire} - BarrelsPerShot:{s.BarrelsPerShot} - TimeForMag:{timeForMag}");
-                //Log.Line($" timePerMag = 3600f * ({MagazineSize} / {s.RateOfFire} / {s.BarrelsPerShot}) + {s.ReloadTime} + {timeSpentOnBurst} ");
-                //Log.Line($" timePerMag:{timeForMag} rof:{rof} bps:{bps} magSize:{MagazineSize} _iTest:{shotRate} _iTest3:{magDrainRate} _iTest4:{drainPerMin}");
-                //Log.Line($" AoE Type = {a.AreaEffect.AreaEffect.ToString()}");
             }
             else
             {
                 var timeSpentOnBurst = l.DelayAfterBurst > 0 ? ((3600 / s.RateOfFire) * (l.ShotsInBurst / s.BarrelsPerShot)) + l.DelayAfterBurst : 0;
 
-                shotsPerSec = timeSpentOnBurst > 0 ? ((((3600 / timeSpentOnBurst) * l.ShotsInBurst) / 60) * l.TrajectilesPerBarrel) * s.BarrelsPerShot : (((60) / (3600 / s.RateOfFire)) * l.TrajectilesPerBarrel) * s.BarrelsPerShot;
+                shotsPerSec = timeSpentOnBurst > 0 ? (((3600 / timeSpentOnBurst) * l.ShotsInBurst) / 60 * l.TrajectilesPerBarrel) * s.BarrelsPerShot : (((60) / (3600 / s.RateOfFire)) * l.TrajectilesPerBarrel) * s.BarrelsPerShot;
                 baseDps = BaseDamage * shotsPerSec;
                 areaDps = !AmmoAreaEffect ? 0 : (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
                 peakDps = (baseDps + areaDps + detDps);
-                //Log.Line($"noReload[{s.WeaponName}]: peakDps:{peakDps} - shotsPerSec:{shotsPerSec} - timeSpentOnBurst:{timeSpentOnBurst} - reloadTime:{s.ReloadTime}");
             }
         }
 
@@ -688,11 +684,11 @@ namespace WeaponCore.Support
                 var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
                 var requiredPower = (((shotEnergyCost * ((system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel);
 
-                energyMagSize = (int)(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+                energyMagSize = (int)Math.Ceiling(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
                 return;
             }
 
-            energyMagSize = 0;
+            energyMagSize = int.MaxValue;
 
         }
 
