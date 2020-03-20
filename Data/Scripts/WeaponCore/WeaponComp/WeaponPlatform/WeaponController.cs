@@ -307,7 +307,7 @@ namespace WeaponCore.Platform
 
             BaseDamage = newBase;
             var oldRequired = RequiredPower;
-            var oldHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
+            var oldHeatPSec = Comp.HeatPerSecond;
 
             UpdateShotEnergy();
             UpdateRequiredPower();
@@ -320,6 +320,8 @@ namespace WeaponCore.Platform
                 mulitplier *= mulitplier;
 
             HeatPShot = System.HeatPerShot * mulitplier;
+
+
 
             RequiredPower *= mulitplier;
 
@@ -334,8 +336,9 @@ namespace WeaponCore.Platform
 
             Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
 
-            var heatPShot = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
-            var heatDif = oldHeatPSec - heatPShot;
+            var neweHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
+
+            var heatDif = oldHeatPSec - neweHeatPSec;
             var dpsDif = oldDps - Dps;
             var powerDif = oldRequired - RequiredPower;
             var chargeDif = oldMaxCharge - MaxCharge;

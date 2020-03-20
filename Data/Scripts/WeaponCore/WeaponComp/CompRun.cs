@@ -195,11 +195,6 @@ namespace WeaponCore.Support
                     }
                 }
 
-                MaxRequiredPower = 0;
-                HeatPerSecond = 0;
-                PeakDps = 0;
-                MaxHeat = 0;
-
                 var maxTrajectory = 0d;
                 var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
 
