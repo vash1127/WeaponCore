@@ -379,7 +379,10 @@ namespace WeaponCore.Platform
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
+            { 
+                RotateEmitter?.SetPosition(MyPivotPos);
+                RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
+            }
 
             if (_spinUpTick <= Comp.Session.Tick && spinDown)
             {
