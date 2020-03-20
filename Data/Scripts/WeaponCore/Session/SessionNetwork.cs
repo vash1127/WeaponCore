@@ -484,12 +484,12 @@ namespace WeaponCore
                     case PacketType.NextActiveUpdate:
                     case PacketType.ReleaseActiveUpdate:
                         {
-                            var focusPacket = packet as FocusPacket;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null) as MyCubeGrid;
+                            var focusPacket = (FocusPacket) packet;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             if (myGrid == null || myGrid.MarkedForClose)
                             {
-                                errorPacket.Error = $"targetPacket is null: {focusPacket == null} ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
+                                errorPacket.Error = $"targetPacket is null ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
                                 break;
                             }
 
