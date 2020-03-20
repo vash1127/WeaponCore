@@ -96,7 +96,7 @@ namespace WeaponCore.Support
 
                 stringBuilder.Append(status +
                     "\n[Construct DPS]: " + Ai.OptimalDps.ToString("0.0") +
-                    "\n[ShotsPerSec  ]: " + ShotsPerSec.ToString("0.0") +
+                    "\n[ShotsPerSec  ]: " + ShotsPerSec.ToString("0.000") +
                     "\n" +
                     "\n[PeakDps]: " + PeakDps.ToString("0.0") +
                     "\n[BaseDps]: " + BaseDps.ToString("0.0") +
