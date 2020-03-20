@@ -540,7 +540,7 @@ namespace WeaponCore.Platform
                 var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
 
                 Vector3D? hit;
-                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube))
+                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube, Comp.Ai))
                     return true;
             }
             return false;

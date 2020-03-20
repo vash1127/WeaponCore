@@ -358,7 +358,7 @@ namespace WeaponCore.Support
 
                     blocksSighted++;
                     Vector3D? hitPos;
-                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref weaponPos, ref blockPos, out hitPos, w.Comp.MyCube))
+                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref weaponPos, ref blockPos, out hitPos, w.Comp.MyCube, w.Comp.Ai))
                         continue;
 
                     ai.Session.RandomRayCasts++;
@@ -426,7 +426,6 @@ namespace WeaponCore.Support
             var top5Count = target.Top5.Count;
             var testPos = currentPos;
             var top5 = target.Top5;
-            var physics = ai.Session.Physics;
             IHitInfo hitInfo = null;
             var notSelfHit = false;
             for (int i = 0; i < cubes.Count + top5Count; i++)
@@ -457,7 +456,7 @@ namespace WeaponCore.Support
                             Vector3D predictedPos;
                             Vector3D? hitPos;
                             if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel, out predictedPos))
-                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref testPos, ref cubePos, out hitPos, w.Comp.MyCube);
+                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref testPos, ref cubePos, out hitPos, w.Comp.MyCube, w.Comp.Ai);
 
                             if (castRay)
                             {
@@ -640,6 +639,10 @@ namespace WeaponCore.Support
                     }
                     else
                     {
+                        Vector3D? hitInfo;
+                        if (GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref weaponPos, ref lp.Position, out hitInfo, w.Comp.MyCube, w.Comp.Ai))
+                            continue;
+
                         double hitDist;
                         Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
                         var shortDist = hitDist;
