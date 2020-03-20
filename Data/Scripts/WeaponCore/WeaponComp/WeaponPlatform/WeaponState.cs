@@ -535,7 +535,7 @@ namespace WeaponCore.Platform
             else if (ReloadSubscribed)
             {
                 CancelableReloadAction -= Reloaded;
-                ReloadSubscribed = true;
+                ReloadSubscribed = false;
             }
 
             EventTriggerStateChanged(EventTriggers.Reloading, false);
@@ -588,6 +588,7 @@ namespace WeaponCore.Platform
                 Log.Line($"PreFiringSound is null");
                 return;
             }
+            PreFiringEmitter.SetPosition(MyPivotPos);
             PreFiringEmitter?.PlaySound(PreFiringSound);
         }
 

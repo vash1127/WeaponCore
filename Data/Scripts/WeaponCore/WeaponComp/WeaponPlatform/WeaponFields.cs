@@ -255,28 +255,28 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
-                FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                FiringEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
                 FiringSound = new MySoundPair();
                 FiringSound.Init(System.Values.HardPoint.Audio.FiringSound);
             }
 
             if (AvCapable && system.PreFireSound)
             {
-                PreFiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                PreFiringEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
                 PreFiringSound = new MySoundPair();
                 PreFiringSound.Init(System.Values.HardPoint.Audio.PreFiringSound);
             }
 
             if (AvCapable && system.WeaponReloadSound)
             {
-                ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                ReloadEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
                 ReloadSound = new MySoundPair();
                 ReloadSound.Init(System.Values.HardPoint.Audio.ReloadSound);
             }
 
             if (AvCapable && system.BarrelRotationSound)
             {
-                RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                RotateEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
                 RotateSound = new MySoundPair();
                 RotateSound.Init(System.Values.HardPoint.Audio.BarrelRotationSound);
             }
