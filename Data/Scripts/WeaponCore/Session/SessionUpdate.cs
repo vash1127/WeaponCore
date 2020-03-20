@@ -211,7 +211,7 @@ namespace WeaponCore
 
                                     if (w.Timings.ChargeDelayTicks == 0 || w.Timings.ChargeUntilTick <= Tick) {
 
-                                        if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                                        if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge && !w.System.DesignatorWeapon) {
                                             gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
                                         }
@@ -419,7 +419,7 @@ namespace WeaponCore
                         continue;
                     }
                     //TODO add logic for power priority
-                    if (w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                     {
 
                         if (w.Timings.ChargeDelayTicks == 0)
