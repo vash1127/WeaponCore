@@ -476,15 +476,15 @@ namespace WeaponCore.Platform
                 }
                 return;
             }
-            else if (!newAmmo.AmmoDef.Const.EnergyAmmo)
+
+            if (!newAmmo.AmmoDef.Const.EnergyAmmo)
             {
                 ActiveAmmoDef = newAmmo;
                 State.Sync.Reloading = false;
                 Session.ComputeStorage(this);
                 return;
             }
-            else
-                ActiveAmmoDef = newAmmo;
+            ActiveAmmoDef = newAmmo;
         }
 
         public void ChargeReload(bool syncCharge)
