@@ -124,7 +124,7 @@ namespace WeaponCore
 
                 if (!DedicatedServer)
                 {
-                    PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
+                    //PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
                     if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
                 }
 
@@ -140,7 +140,7 @@ namespace WeaponCore
                 if (!DedicatedServer) ProcessAnimations();
 
                 DsUtil.Start("projectiles");
-                if (!DedicatedServer)
+                if (!DedicatedServer && false)
                 {
                     if (!PTask.IsComplete)
                         PTask.Wait();
