@@ -380,7 +380,6 @@ namespace WeaponCore.Platform
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
             { 
-                RotateEmitter?.SetPosition(MyPivotPos);
                 RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
             }
 

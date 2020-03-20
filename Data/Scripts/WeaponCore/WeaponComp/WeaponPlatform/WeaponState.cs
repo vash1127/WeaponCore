@@ -589,7 +589,6 @@ namespace WeaponCore.Platform
                 Log.Line($"PreFiringSound is null");
                 return;
             }
-            PreFiringEmitter?.SetPosition(MyPivotPos);
             PreFiringEmitter?.PlaySound(PreFiringSound);
         }
 
@@ -605,7 +604,6 @@ namespace WeaponCore.Platform
                 Log.Line($"FiringSound is null");
                 return;
             }
-            FiringEmitter?.SetPosition(MyPivotPos);
             FiringEmitter?.PlaySound(FiringSound);
         }
 
