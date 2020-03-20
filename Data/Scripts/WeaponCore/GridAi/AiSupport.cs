@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ProtoBuf;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -459,7 +460,26 @@ namespace WeaponCore.Support
             if (topMostParent != null)
             {
                 var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
-                var relationship = topMostParent.BigOwners.Count != 0 ? MyIDModule.GetRelationPlayerBlock(gridOwner, topMostParent.BigOwners[0], MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
+                var hasOwner = topMostParent.BigOwners.Count != 0;
+                MyRelationsBetweenPlayerAndBlock relationship;
+                if (hasOwner)
+                {
+                    var topOwner = topMostParent.BigOwners[0];
+                    relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction);
+
+                    if (relationship == MyRelationsBetweenPlayerAndBlock.Neutral)
+                    {
+                        var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
+                        if (topFaction != null)
+                        {
+                            var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(gridOwner);
+                            if (aiFaction != null && MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(aiFaction.FactionId, topFaction.FactionId) < -500)
+                                relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
+                        }
+                    }
+                }
+                else relationship = MyRelationsBetweenPlayerAndBlock.Owner;
+
                 entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
                 return true;
             }

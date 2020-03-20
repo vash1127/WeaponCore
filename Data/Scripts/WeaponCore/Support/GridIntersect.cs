@@ -10,7 +10,7 @@ namespace WeaponCore.Support
 
     public static class GridIntersection
     {
-        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyCubeBlock weapon = null)
+        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyCubeBlock weapon = null, GridAi ai = null)
         {
             var start = grid.WorldToGridInteger(worldStart);
             var end = grid.WorldToGridInteger(worldEnd);
@@ -26,6 +26,25 @@ namespace WeaponCore.Support
             var gMaxX = grid.Max.X;
             var gMaxY = grid.Max.Y;
             var gMaxZ = grid.Max.Z;
+
+            if (ai != null)
+            {
+                var dir = (worldEnd - worldStart);
+                var ray = new RayD(ref worldStart, ref dir);
+                foreach (var sub in ai.SubGrids)
+                {
+                    if (sub == grid) continue;
+                    var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
+                    if (subDist.HasValue)
+                    {
+                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        Vector3D? ignoreHit;
+                        if (obb.Intersects(ref ray) != null && BresenhamGridIntersection(sub, ref worldStart, ref worldEnd, out ignoreHit, weapon))
+                            return true;
+                    }
+                }
+            }
 
             if (max == delta.X)
             {
@@ -53,7 +72,6 @@ namespace WeaponCore.Support
                     MyCube cube;
                     if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
-                        //hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
@@ -85,7 +103,6 @@ namespace WeaponCore.Support
                     MyCube cube;
                     if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
-                        //hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
@@ -117,7 +134,6 @@ namespace WeaponCore.Support
                     MyCube cube;
                     if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
-                        //hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
