@@ -87,23 +87,22 @@ namespace WeaponCore
                                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                                 comp = block?.Components.Get<WeaponComponent>();
 
-                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weaponData.TargetData == null)
-                                {
-                                    Log.Line($"weaponData.TargetData: {weaponData.TargetData == null}");
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                                     continue;
-                                }
-                                var weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
-                                var syncTarget = weaponData.TargetData;
+
+                                Weapon weapon;
 
                                 if (weaponData.Timmings != null && weaponData.SyncData != null)
                                 {
+                                    weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
                                     var timings = weaponData.Timmings.SyncOffsetClient(Tick);
                                     SyncWeapon(weapon, timings, ref weaponData.SyncData);
                                 }
 
-                                if (syncTarget != null)
+                                if (weaponData.TargetData != null)
                                 {
-                                    syncTarget.SyncTarget(weapon.Target);
+                                    weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
+                                    weaponData.TargetData.SyncTarget(weapon.Target);
 
                                     if (weapon.Target.HasTarget)
                                     {
@@ -128,6 +127,7 @@ namespace WeaponCore
                                         }
                                     }
                                 }
+
                                 report.PacketValid = true;
                             }
                             break;
