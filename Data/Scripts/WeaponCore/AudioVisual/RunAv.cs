@@ -203,9 +203,11 @@ namespace WeaponCore.Support
                     if (av.HitSoundActived)
                     {
                         av.HitSoundActived = false;
+                        /*
                         av.HitEmitter.SetPosition(av.TracerFront);
                         av.HitEmitter.CanPlayLoopSounds = false;
                         av.HitEmitter.PlaySound(av.HitSound, true);
+                        */
                         /*
                         var prevPos = t.Position + (-t.Direction * t.Length);
                         IHitInfo hitInfo;
@@ -409,6 +411,7 @@ namespace WeaponCore.Support
                 if (av.StartSoundActived) {
 
                     av.StartSoundActived = false;
+                    continue;
                     av.FireEmitter.PlaySound(av.FireSound, true);
                 }
             }
