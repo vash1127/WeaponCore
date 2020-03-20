@@ -61,7 +61,6 @@ namespace WeaponCore
                 Weapons[i].Sync.Heat = syncFrom.Weapons[i].Sync.Heat;
                 Weapons[i].Sync.Overheated = syncFrom.Weapons[i].Sync.Overheated;
                 Weapons[i].Sync.Reloading = syncFrom.Weapons[i].Sync.Reloading;
-                Weapons[i].Sync.WeaponId = syncFrom.Weapons[i].Sync.WeaponId;
             }
         }
     }
