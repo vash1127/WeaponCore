@@ -340,6 +340,8 @@ namespace WeaponCore.Platform
             var powerDif = oldRequired - RequiredPower;
             var chargeDif = oldMaxCharge - MaxCharge;
 
+            Log.Line($"chargeDif: {chargeDif}");
+
             if (IsShooting)
                 Comp.CurrentDps -= dpsDif;
 
