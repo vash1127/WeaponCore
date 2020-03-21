@@ -125,11 +125,21 @@ namespace WeaponCore
                 if (FragmentsNeedingEntities.Count > 0)
                     Projectiles.PrepFragmentEntities();
 
+                DsUtil.Start("projectiles");
+                Projectiles.Update();
+                DsUtil.Complete("projectiles", true);
+
+                DsUtil.Start("network1");
+                if (WeaponsToSync.Count > 0) Proccessor.Proccess();
+                DsUtil.Complete("network1", true);
+
+                /*
                 if (!DedicatedServer)
                 {
                     //PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
                     if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
                 }
+                */
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -142,6 +152,7 @@ namespace WeaponCore
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer) ProcessAnimations();
 
+                /*
                 DsUtil.Start("projectiles");
                 if (!DedicatedServer && false)
                 {
@@ -154,7 +165,7 @@ namespace WeaponCore
                 else Projectiles.Update();
 
                 DsUtil.Complete("projectiles", true);
-
+                */
                 if (_effectedCubes.Count > 0) 
                     ApplyGridEffect();
 
@@ -176,7 +187,7 @@ namespace WeaponCore
                     if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
                         TaskHasErrors(ref MTask, "MTask");
                 }
-
+                /*
                 DsUtil.Start("network");
                 if (!DedicatedServer)
                 {
@@ -187,6 +198,9 @@ namespace WeaponCore
                         TaskHasErrors(ref NTask, "NTask");
                 }
                 else if (WeaponsToSync.Count > 0) Proccessor.Proccess();
+                */
+
+                DsUtil.Start("network2");
                 Proccessor.AddPackets();
 
                 if (MpActive && !HandlesInput)
@@ -194,8 +208,8 @@ namespace WeaponCore
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
                 }
+                DsUtil.Complete("network2", true);
 
-                DsUtil.Complete("network", true);
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
