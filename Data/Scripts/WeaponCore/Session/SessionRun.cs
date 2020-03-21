@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -260,7 +263,8 @@ namespace WeaponCore
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
-                Static.GetCategories()["ShipWeapons"].IsShipCategory = false;
+
+                ReallyStupidKeenShit();
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

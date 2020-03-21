@@ -12,6 +12,7 @@ using VRage.Game;
 using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
+using Sandbox.Definitions;
 
 namespace WeaponCore
 {
@@ -279,6 +280,74 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientMouseState != null}"); }
 
             return false;
+        }
+
+        internal void ReallyStupidKeenShit() //aka block group removal of individual blocks
+        {
+            var categories = MyDefinitionManager.Static.GetCategories();
+
+            var removeDefs = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
+            var keepDefs = new HashSet<string>();
+
+            foreach (var weaponDef in WeaponDefinitions)
+            {
+                foreach (var mount in weaponDef.Assignments.MountPoints)
+                {
+                    var subTypeId = mount.SubtypeId;
+
+                    MyDefinitionId defId = new MyDefinitionId();
+
+                    if ((ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeId), out defId)))
+                        removeDefs.Add(defId);
+                    else
+                    {
+                        foreach (var def in AllDefinitions)
+                        {
+                            if (def.Id.SubtypeName == subTypeId)
+                            {
+                                removeDefs.Add(def.Id);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            foreach (var def in AllDefinitions)
+                if (!removeDefs.Contains(def.Id))
+                    keepDefs.Add(def.Id.SubtypeName);
+
+            foreach (var category in categories)
+            {
+                if (category.Value.IsShipCategory)
+                {
+                    var removeList = new List<string>();
+                    foreach (var item in category.Value.ItemIds)
+                    {
+                        foreach (var def in removeDefs)
+                        {
+                            var type = def.TypeId.ToString().Replace("MyObjectBuilder_", "");
+                            var subType = string.IsNullOrEmpty(def.SubtypeName) ? "(null)" : def.SubtypeName;
+
+                            if ((item.Contains(type) || item.Contains(subType)))
+                                removeList.Add(item);
+                        }
+                    }
+
+                    foreach (var keep in keepDefs)
+                    {
+                        for (int i = 0; i < removeList.Count; i++)
+                        {
+                            var toRemove = removeList[i];
+                            if (!string.IsNullOrEmpty(keep) && toRemove.EndsWith(keep))
+                                removeList.RemoveAtFast(i);
+                        }
+                    }
+
+                    for (int i = 0; i < removeList.Count; i++)
+                        category.Value.ItemIds.Remove(removeList[i]);
+                }
+            }
         }
 
         internal static double ModRadius(double radius, bool largeBlock)
