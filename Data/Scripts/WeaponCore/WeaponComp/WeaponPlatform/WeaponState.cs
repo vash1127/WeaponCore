@@ -448,7 +448,6 @@ namespace WeaponCore.Platform
                     Timings.ReloadedTick = (uint)System.ReloadTime + Comp.Session.Tick;
                 }
 
-                return;
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
                 if (ReloadSound == null)
                 {
@@ -584,7 +583,6 @@ namespace WeaponCore.Platform
 
         public void StartPreFiringSound()
         {
-            return;
             if (PreFiringSound == null)
             {
                 Log.Line($"PreFiringSound is null");
@@ -595,13 +593,11 @@ namespace WeaponCore.Platform
 
         public void StopPreFiringSound(bool force)
         {
-            //PreFiringEmitter?.StopSound(force);
+            PreFiringEmitter?.StopSound(force);
         }
 
         public void StartFiringSound()
         {
-            return;
-
             if (FiringSound == null)
             {
                 Log.Line($"FiringSound is null");
@@ -612,17 +608,17 @@ namespace WeaponCore.Platform
 
         public void StopFiringSound(bool force)
         {
-            //FiringEmitter?.StopSound(force);
+            FiringEmitter?.StopSound(force);
         }
 
         public void StopReloadSound()
         {
-            //ReloadEmitter?.StopSound(true);
+            ReloadEmitter?.StopSound(true);
         }
 
         public void StopRotateSound()
         {
-            //RotateEmitter?.StopSound(true);
+            RotateEmitter?.StopSound(true);
         }
 
         internal void WakeTargets()
