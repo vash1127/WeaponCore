@@ -219,7 +219,6 @@ namespace WeaponCore.Platform
                             p.Info.WeaponCache.VirutalId = -1;
                             p.Info.Seed = Comp.Seed;
                             p.Info.LockOnFireState = LockOnFireState;
-                            p.TerminalControlled = Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None;
                             p.Info.ShooterVel = Comp.Ai.GridVel;
                             p.Info.Origin = muzzle.Position;
                             p.Info.OriginUp = MyPivotUp;
@@ -238,7 +237,7 @@ namespace WeaponCore.Platform
                                     var addProjectile = ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                                     if (!addProjectile && targetAi.PointDefense)
                                     {
-                                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
+                                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrixRef.Translation) < 0)
                                         {
                                             var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
                                             targetSphere.Radius *= 3;
@@ -363,7 +362,6 @@ namespace WeaponCore.Platform
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
 
-            p.TerminalControlled = Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera;
             p.Info.ShooterVel = Comp.Ai.GridVel;
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;

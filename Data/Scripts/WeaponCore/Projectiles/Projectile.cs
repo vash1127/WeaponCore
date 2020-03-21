@@ -39,6 +39,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
         internal Hit Hit = new Hit();
+        internal LineD Beam;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal BoundingSphereD PruneSphere;
         internal double AccelLength;
@@ -90,7 +91,6 @@ namespace WeaponCore.Projectiles
         internal bool FakeExplosion;
         internal bool AtMaxRange;
         internal bool ShieldBypassed;
-        internal bool TerminalControlled;
         internal bool EarlyEnd;
         internal bool FeelsGravity;
         internal bool LineOrNotModel;
@@ -957,8 +957,7 @@ namespace WeaponCore.Projectiles
                 //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
                 //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
                 HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                var reScale = 1;
-                var scaler = reScale < 1 ? reScale : 1;
+                var scaler =1;
 
                 HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                 var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;

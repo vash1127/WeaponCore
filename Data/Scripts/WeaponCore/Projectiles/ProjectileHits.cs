@@ -32,7 +32,7 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 if (ent is IMyCharacter && p.Info.EwarActive && !genericFields) continue;
-                if (grid != null && (!(p.Info.AmmoDef.Const.SelfDamage || p.TerminalControlled) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
+                if (grid != null && p.SmartsOn && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
 
                 if (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField && p.Info.AmmoDef.Const.AreaEffect == EmpField))
                 {
@@ -322,7 +322,7 @@ namespace WeaponCore.Projectiles
                         {
                             grid.RayCastCells(beam.From, beam.To, slims, null, true, true);
                             var closestBlockFound = false;
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrix);
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef);
                             for (int j = 0; j < slims.Count; j++)
                             {
                                 var firstBlock = grid.GetCubeBlock(slims[j]) as IMySlimBlock;
@@ -333,7 +333,7 @@ namespace WeaponCore.Projectiles
                                     MyOrientedBoundingBoxD obb;
                                     var fat = firstBlock.FatBlock;
                                     if (fat != null)
-                                        obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrix);
+                                        obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrixRef);
                                     else
                                     {
                                         Vector3D center;
@@ -385,7 +385,7 @@ namespace WeaponCore.Projectiles
                         }
                         else
                         {
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrixRef);
                             var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                             dist = obb.Intersects(ref beam) ?? double.MaxValue;
                             if (dist < double.MaxValue)

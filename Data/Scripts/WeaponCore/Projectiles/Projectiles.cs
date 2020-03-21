@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.GameSystems;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -40,7 +38,9 @@ namespace WeaponCore.Projectiles
 
         internal void Update() // Methods highly inlined due to keen's mod profiler
         {
-            DeferedAvStateUpdates(Session);
+            if (!Session.DedicatedServer) 
+                DeferedAvStateUpdates(Session);
+
             Clean();
             SpawnFragments();
 
@@ -48,7 +48,8 @@ namespace WeaponCore.Projectiles
 
             UpdateState();
             CheckHits();
-            UpdateAv();
+            if (!Session.DedicatedServer) 
+                UpdateAv();
         }
 
         internal void Clean()
@@ -319,9 +320,6 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Center = p.Position;
                         p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
                     }
-
-                    if (!((p.Info.AmmoDef.Const.SelfDamage || p.TerminalControlled) && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
-                        sphere = true;
                 }
 
                 if (sphere)
