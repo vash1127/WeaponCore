@@ -13,6 +13,7 @@ using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using Sandbox.Game.Entities.Cube;
 
 namespace WeaponCore
 {
@@ -31,13 +32,18 @@ namespace WeaponCore
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             Tick3600 = Tick % 3600 == 0;
-            if (Tick60) Av.ExplosionCounter = 0;
+            if (Tick60)
+            {
+                if (Av.ExplosionCounter - 5 >= 0) Av.ExplosionCounter -= 5;
+                else Av.ExplosionCounter = 0;
+            }
             if (++SCount == 60) SCount = 0;
             if (Count++ == 119)
             {
                 Count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
+                CheckAdminRights();
             }
             LCount++;
             if (LCount == 129)
@@ -171,6 +177,56 @@ namespace WeaponCore
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
             }
             return false;
+        }
+
+        private void CheckAdminRights()
+        {
+            foreach (var item in Players) {
+
+                var pLevel = item.Value.PromoteLevel;
+                var playerId = item.Key;
+                var player = item.Value;
+                var wasAdmin = Admins.ContainsKey(playerId);
+
+                if (pLevel == MyPromoteLevel.Admin || pLevel == MyPromoteLevel.Owner || pLevel == MyPromoteLevel.SpaceMaster) {
+
+                    var character = player.Character;
+                    var isAdmin = false;
+                    if (character != null) {
+
+                        if (MySafeZone.CheckAdminIgnoreSafezones(player.SteamUserId))
+                            isAdmin = true;
+                        else {
+
+                            foreach (var gridAi in GridTargetingAIs.Values) {
+
+                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Weapons.Count > 0 && ((IMyTerminalBlock)gridAi.Weapons[0].MyCube).HasPlayerAccess(playerId)) {
+
+                                    if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.MyOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                        isAdmin = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (isAdmin) {
+                            Admins[playerId] = character;
+                            AdminMap[character] = player;
+                            continue;
+                        }
+                    }
+                }
+
+
+                if (wasAdmin)
+                {
+                    IMyCharacter removeCharacter;
+                    IMyPlayer removePlayer;
+                    Admins.TryRemove(playerId, out removeCharacter);
+                    AdminMap.TryRemove(removeCharacter, out removePlayer);
+                }
+            }
         }
 
         internal void InitRayCast()

@@ -494,11 +494,6 @@ namespace WeaponCore.Support
                 var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
 
                 entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
-                IMyPlayer player;
-                Session.Players.TryGetValue(playerId, out player);
-                if (player != null && Session.Session.IsUserAdmin(player.SteamUserId) && MySafeZone.CheckAdminIgnoreSafezones(player.SteamUserId))
-                    return false;
-
                 return !myCharacter.IsDead;
             }
             const MyRelationsBetweenPlayerAndBlock relationship1 = MyRelationsBetweenPlayerAndBlock.Neutral;

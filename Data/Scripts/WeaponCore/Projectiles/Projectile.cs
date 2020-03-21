@@ -922,7 +922,7 @@ namespace WeaponCore.Projectiles
                 }
 
                 var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : int.MaxValue;
-                if (MyParticlesManager.TryCreateParticleEffect("Smoke_Missile", ref matrix, ref Position, renderId, out AmmoEffect))
+                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, renderId, out AmmoEffect))
                 {
                     //AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;

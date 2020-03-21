@@ -408,12 +408,14 @@ namespace WeaponCore.Platform
             }
             if (!Target.IsProjectile)
             {
-                if ((Target.Entity == null || Target.Entity.MarkedForClose))
+                var character = Target.Entity as IMyCharacter;
+                if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && Comp.Session.AdminMap.ContainsKey(character))
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     return false;
                 }
+
                 var cube = Target.Entity as MyCubeBlock;
                 if (cube != null && !cube.IsWorking)
                 {
@@ -430,7 +432,7 @@ namespace WeaponCore.Platform
                 }
             }
 
-            var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
+            var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
             {
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
@@ -488,7 +490,7 @@ namespace WeaponCore.Platform
             if (System.ClosestFirst && topAsGrid != null)
             {
                 var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
-                var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
+                var targetPos = Target.Entity.PositionComp.WorldMatrixRef.Translation;
                 var weaponPos = MyPivotPos;
 
                 double rayDist;

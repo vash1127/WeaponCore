@@ -23,13 +23,14 @@ namespace WeaponCore.Support
         internal Session Session;
 
         internal int ExplosionCounter;
+        internal int MaxExplosions = 20;
 
         internal bool ExplosionReady
         {
             get {
-
-                if (++ExplosionCounter <= 5) {
-
+                if (ExplosionCounter + 1 <= MaxExplosions)
+                {
+                    ExplosionCounter++;
                     return true;
                 }
                 return false;
@@ -221,7 +222,7 @@ namespace WeaponCore.Support
                     if (av.FakeExplosion)
                     {
                         av.FakeExplosion = false;
-                        if (ExplosionReady)
+                        if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
                             else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
@@ -423,9 +424,12 @@ namespace WeaponCore.Support
 
                     av.FakeExplosion = false;
                     if (ExplosionReady) {
-                        
-                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
-                        else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
+
+                        if (av.OnScreen != AvShot.Screen.None)
+                        {
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
+                        }
                     }
                 }
 
