@@ -293,125 +293,6 @@ namespace WeaponCore.Support
             }
             s.Projectiles.DeferedAvDraw.Clear();
         }
-        /*
-        internal void Update(ProInfo info, double stepSize, double visualLength, ref Vector3D tracerFront, ref Vector3D direction, ref Vector3D pointDir, double? shortStepSize = null, bool saveHit = false, bool modelOnly = false)
-        {
-            var lineEffect = AmmoDef.Const.Trail || AmmoDef.Const.DrawLine;
-
-            ++LifeTime;
-            LastTick = Ai.Session.Tick;
-            StepSize = stepSize;
-            EstTravel = StepSize * LifeTime;
-            ShortStepSize = shortStepSize ?? stepSize;
-            ShortEstTravel = MathHelperD.Clamp((EstTravel - StepSize) + ShortStepSize, 0, double.MaxValue);
-            
-            Direction = direction;
-            VisualLength = visualLength;
-            TracerFront = tracerFront;
-            TracerBack = TracerFront + (-Direction * VisualLength);
-            PointDir = pointDir;
-            
-            OnScreen = Screen.None; // clear OnScreen
-
-            if (modelOnly) {
-                ModelSphereCurrent.Center = TracerFront;
-                if (Triggered)
-                    ModelSphereCurrent.Radius = info.TriggerGrowthSteps < AmmoDef.Const.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : AmmoDef.Const.AreaEffectSize;
-
-                if (Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
-                    OnScreen = Screen.ModelOnly;
-            }
-            else if (lineEffect || Model == ModelState.None && AmmoDef.Const.AmmoParticle) {
-
-
-                var rayTracer = new RayD(TracerBack, PointDir);
-                var rayTrail = new RayD(TracerFront + (-Direction * ShortEstTravel), Direction);
-
-                //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
-                //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
-                
-                double? dist;
-                Ai.Session.CameraFrustrum.Intersects(ref rayTracer, out dist);
-
-                if (dist != null && dist <= VisualLength)
-                    OnScreen = Screen.Tracer;
-                else if (AmmoDef.Const.Trail) {
-                    Ai.Session.CameraFrustrum.Intersects(ref rayTrail, out dist);
-                    if (dist != null && dist <= ShortEstTravel + ShortStepSize)
-                        OnScreen = Screen.Trail;
-                }
-
-                if (OnScreen != Screen.None && !TrailActivated && AmmoDef.Const.Trail) TrailActivated = true;
-                
-                if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
-
-                if (Model != ModelState.None)
-                {
-                    ModelSphereCurrent.Center = TracerFront;
-                    if (Triggered)
-                        ModelSphereCurrent.Radius = info.TriggerGrowthSteps < AmmoDef.Const.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : AmmoDef.Const.AreaEffectSize;
-
-                    if (OnScreen == Screen.None && Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
-                        OnScreen = Screen.ModelOnly;
-                }
-            }
-
-            if (info.MuzzleId == -1)
-                return;
-
-            if (saveHit) {
-                if (Hit.Entity != null)
-                    HitVelocity = Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
-                else if (Hit.Projectile != null)
-                    HitVelocity = Hit.Projectile.Velocity;
-                Hitting = !ShrinkInited;
-            }
-            LastStep = Hitting || MyUtils.IsZero(AmmoDef.Const.MaxTrajectory - ShortEstTravel, 1E-01F);
-
-            if (AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)) {
-                Tracer = TracerState.Full;
-            }
-            else if (Tracer != TracerState.Off && VisualLength <= 0) {
-                Tracer = TracerState.Off;
-            }
-            else if (Hitting && !modelOnly && lineEffect && VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F)) {
-                Tracer = TracerState.Shrink;
-                TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, TracerFront));
-            }
-            else if (Tracer == TracerState.Grow && LastStep) {
-                Tracer = TracerState.Full;
-            }
-
-            var lineOnScreen = OnScreen > (Screen)1;
-
-            if (lineEffect && (Active || lineOnScreen))
-                LineVariableEffects();
-
-            if (Tracer != TracerState.Off && lineOnScreen) {
-                if (Tracer == TracerState.Shrink && !ShrinkInited)
-                    Shrink();
-                else if (AmmoDef.Const.IsBeamWeapon && Hitting && AmmoDef.Const.HitParticle && !(MuzzleId != 0 && (AmmoDef.Const.ConvergeBeams || AmmoDef.Const.OneHitParticle)))
-                {
-                    ContainmentType containment;
-                    Ai.Session.CameraFrustrum.Contains(ref Hit.HitPos, out containment);
-                    if (containment != ContainmentType.Disjoint) RunBeam();
-                }
-
-                if (AmmoDef.Const.OffsetEffect)
-                    PrepOffsetEffect(TracerFront, PointDir, VisualLength);
-            }
-
-            var backAndGrowing = Back && Tracer == TracerState.Grow;
-            if (Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
-                RunGlow(ref EmptyShrink);
-
-            if (!Active && OnScreen != Screen.None) {
-                Active = true;
-                Ai.Session.Av.AvShots.Add(this);
-            }
-            Hitting = false;
-        }
-        */
 
         internal void End(Vector3D endPos, bool detonateFakeExp = false)
         {
@@ -590,8 +471,7 @@ namespace WeaponCore.Support
                     MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
                     if (effect == null)
                     {
-                        MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect);
-                        if (effect == null)
+                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect))
                         {
                             weapon.HitEffects[MuzzleId] = null;
                             return;
@@ -603,7 +483,7 @@ namespace WeaponCore.Support
                         //effect.Loop = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Loop;
                         effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        effect.UserEmitterScale = (float)scale;
+                        effect.UserScale = (float)scale;
                     }
                     else if (effect.IsEmittingStopped)
                         effect.Play();
