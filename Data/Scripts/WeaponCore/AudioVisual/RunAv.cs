@@ -166,8 +166,7 @@ namespace WeaponCore.Support
                                 av.PrimeEntity.InScene = true;
                                 av.PrimeEntity.Render.UpdateRenderObject(true, false);
                             }
-                            av.PrimeEntity.PositionComp.SetWorldMatrix(av.PrimeMatrix, null, false, false, false);
-
+                            av.PrimeEntity.PositionComp.SetWorldMatrix(ref av.PrimeMatrix, null, false, false, false);
                         }
 
                         if ((av.Cloaked || av.OnScreen == AvShot.Screen.None) && av.PrimeEntity.InScene)
@@ -183,7 +182,7 @@ namespace WeaponCore.Support
                             av.TriggerEntity.InScene = true;
                             av.TriggerEntity.Render.UpdateRenderObject(true, false);
                         }
-                        av.TriggerEntity.PositionComp.SetWorldMatrix(av.TriggerMatrix, null, false, false, false);
+                        av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
                     }
 
                     if (av.HasTravelSound)
@@ -203,11 +202,9 @@ namespace WeaponCore.Support
                     if (av.HitSoundActived)
                     {
                         av.HitSoundActived = false;
-                        /*
                         av.HitEmitter.SetPosition(av.TracerFront);
                         av.HitEmitter.CanPlayLoopSounds = false;
                         av.HitEmitter.PlaySound(av.HitSound, true);
-                        */
                         /*
                         var prevPos = t.Position + (-t.Direction * t.Length);
                         IHitInfo hitInfo;
@@ -411,7 +408,6 @@ namespace WeaponCore.Support
                 if (av.StartSoundActived) {
 
                     av.StartSoundActived = false;
-                    continue;
                     av.FireEmitter.PlaySound(av.FireSound, true);
                 }
             }

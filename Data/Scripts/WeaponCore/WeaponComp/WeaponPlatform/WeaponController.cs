@@ -375,12 +375,12 @@ namespace WeaponCore.Platform
 
         internal void SpinBarrel(bool spinDown = false)
         {
-            var matrix = MuzzlePart.Entity.PositionComp.LocalMatrix * BarrelRotationPerShot[BarrelRate];
+            var matrix = MuzzlePart.Entity.PositionComp.LocalMatrixRef * BarrelRotationPerShot[BarrelRate];
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
             { 
-                //RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
+                RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
             }
 
             if (_spinUpTick <= Comp.Session.Tick && spinDown)
@@ -394,8 +394,8 @@ namespace WeaponCore.Platform
                 BarrelRate = 0;
                 BarrelSpinning = false;
 
-                //if (PlayTurretAv && RotateEmitter != null && RotateEmitter.IsPlaying)
-                    //RotateEmitter.StopSound(true);
+                if (PlayTurretAv && RotateEmitter != null && RotateEmitter.IsPlaying)
+                    RotateEmitter.StopSound(true);
             }
             else BarrelSpinning = true;
         }

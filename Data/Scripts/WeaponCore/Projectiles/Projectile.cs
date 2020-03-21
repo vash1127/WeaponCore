@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using ProtoBuf;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -23,8 +22,6 @@ namespace WeaponCore.Projectiles
         internal MyEntityQueryType PruneQuery;
         internal GuidanceType Guidance;
         internal Vector3D AccelDir;
-        //internal Vector3D Direction;
-        //internal Vector3D VisualDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D StartSpeed;
@@ -223,7 +220,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget && !Info.LockOnFireState;
+            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget || Info.LockOnFireState;
             if (PickTarget || LockedTarget) NewTargets++;
 
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
@@ -435,7 +432,6 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            //Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
             Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit});
         }
 
@@ -454,7 +450,6 @@ namespace WeaponCore.Projectiles
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerBack, Position);
                     vp.Info.Direction = beam.Direction;
-                    //vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref beam.Direction, beam.Length, !miss);
                     Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss });
 
                 }
@@ -469,17 +464,9 @@ namespace WeaponCore.Projectiles
 
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
-                    {
-                        //vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, true);
                         Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true });
-
-                    }
                     else
-                    {
-                        //vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, false);
                         Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false });
-
-                    }
                 }
             }
         }
@@ -922,7 +909,7 @@ namespace WeaponCore.Projectiles
                 MatrixD matrix;
                 if (ModelState == EntityState.Exists && Info.AvShot.PrimeEntity != null)
                 {
-                    matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrix.Up);
+                    matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrixRef.Up);
                     var offVec = Position + Vector3D.Rotate(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                     matrix.Translation = offVec;
                     Info.AvShot.PrimeMatrix = matrix;
@@ -934,14 +921,15 @@ namespace WeaponCore.Projectiles
                     matrix.Translation = offVec;
                 }
 
-                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect))
+                var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : int.MaxValue;
+                if (MyParticlesManager.TryCreateParticleEffect("Smoke_Missile", ref matrix, ref Position, renderId, out AmmoEffect))
                 {
                     //AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                     var scaler = 1;
 
                     AmmoEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale * scaler;
-                    AmmoEffect.UserEmitterScale = 1 * scaler;
+                    AmmoEffect.UserScale = 1 * scaler;
                     if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
                     ParticleStopped = false;
                     ParticleLateStart = false;
@@ -964,6 +952,7 @@ namespace WeaponCore.Projectiles
                 var matrix = MatrixD.CreateTranslation(pos);
                 MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
                 if (HitEffect == null) return;
+
                 //HitEffect.Loop = false;
                 //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
                 //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
@@ -974,7 +963,7 @@ namespace WeaponCore.Projectiles
                 HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                 var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
 
-                HitEffect.UserEmitterScale = scale * scaler;
+                HitEffect.UserScale = scale * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
                 Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
                 HitEffect.Velocity = hitVel;

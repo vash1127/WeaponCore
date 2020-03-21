@@ -234,8 +234,7 @@ namespace WeaponCore.Support
                 if (i.MuzzleId == -1)
                     return;
 
-                if (saveHit)
-                {
+                if (saveHit) {
                     if (a.Hit.Entity != null)
                         a.HitVelocity = a.Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
                     else if (a.Hit.Projectile != null)
@@ -244,22 +243,21 @@ namespace WeaponCore.Support
                 }
                 a.LastStep = a.Hitting || MyUtils.IsZero(a.AmmoDef.Const.MaxTrajectory - a.ShortEstTravel, 1E-01F);
 
-                if (a.AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F))
-                {
-                    a.Tracer = TracerState.Full;
-                }
-                else if (a.Tracer != TracerState.Off && a.VisualLength <= 0)
-                {
-                    a.Tracer = TracerState.Off;
-                }
-                else if (a.Hitting && !i.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
-                {
-                    a.Tracer = TracerState.Shrink;
-                    a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
-                }
-                else if (a.Tracer == TracerState.Grow && a.LastStep)
-                {
-                    a.Tracer = TracerState.Full;
+                if (a.AmmoDef.Const.DrawLine) {
+                    if (a.AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F)) {
+                        a.Tracer = TracerState.Full;
+                    }
+                    else if (a.Tracer != TracerState.Off && a.VisualLength <= 0) {
+                        a.Tracer = TracerState.Off;
+                    }
+                    else if (a.Hitting && !i.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F)) {
+                        a.Tracer = TracerState.Shrink;
+                        a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
+                    }
+                    else if (a.Tracer == TracerState.Grow && a.LastStep) {
+                        a.Tracer = TracerState.Full;
+                    }
+
                 }
 
                 var lineOnScreen = a.OnScreen > (Screen)1;
@@ -721,7 +719,6 @@ namespace WeaponCore.Support
 
         internal void AmmoSoundStart()
         {
-            return;
             TravelEmitter.SetPosition(TracerFront);
             TravelEmitter.Entity = PrimeEntity;
             TravelEmitter.PlaySound(TravelSound, true);
