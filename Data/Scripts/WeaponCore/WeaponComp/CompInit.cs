@@ -123,18 +123,16 @@ namespace WeaponCore.Support
 
         private void InventoryInit()
         {
-            if (InventoryInited)
-                return;
-
-            //Set.Value.InventoryInited = true;
-
-            if (MyCube is IMyConveyorSorter) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
-            BlockInventory.Constraint.m_useDefaultIcon = false;
-            BlockInventory.ResetVolume();
-            BlockInventory.Refresh();
-
-            if (MyCube.HasInventory)
+            using (MyCube?.Pin())
             {
+                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose) return;
+
+                if (MyCube is IMyConveyorSorter || BlockInventory.Constraint == null) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
+
+                BlockInventory.Constraint.m_useDefaultIcon = false;
+                BlockInventory.ResetVolume();
+                BlockInventory.Refresh();
+
                 BlockInventory.Constraint.Clear();
 
                 var maxInventoryVolume = 0f;
@@ -150,8 +148,9 @@ namespace WeaponCore.Support
 
                 BlockInventory.FixInventoryVolume(maxInventoryVolume);
                 BlockInventory.Refresh();
+
+                InventoryInited = true;
             }
-            InventoryInited = true;
         }
     }
 }
