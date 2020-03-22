@@ -516,56 +516,62 @@ namespace WeaponCore.Platform
 
         internal void Reloaded(object o = null)
         {
-            if (State?.Sync == null || Comp?.State?.Value == null  || Timings == null|| !State.Sync.Reloading) return;
 
-            State.Sync.Reloading = false;
+            if (State?.Sync == null || Comp?.State?.Value == null  || Comp.Ai == null|| Timings == null|| !State.Sync.Reloading) return;
 
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
+            using (Comp.MyCube?.Pin())
             {
-                State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                if (Comp.MyCube != null && Comp.MyCube.MarkedForClose) return;
 
-                Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+                State.Sync.Reloading = false;
 
-                State.Sync.CurrentCharge = MaxCharge;
-                Comp.State.Value.CurrentCharge += MaxCharge;
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                {
+                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
-                Timings.ChargeUntilTick = 0;
-                Timings.ChargeDelayTicks = 0;
+                    Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+
+                    State.Sync.CurrentCharge = MaxCharge;
+                    Comp.State.Value.CurrentCharge += MaxCharge;
+
+                    Timings.ChargeUntilTick = 0;
+                    Timings.ChargeDelayTicks = 0;
+                }
+                else if (ReloadSubscribed)
+                {
+                    CancelableReloadAction -= Reloaded;
+                    ReloadSubscribed = false;
+                }
+
+                EventTriggerStateChanged(EventTriggers.Reloading, false);
+
+                if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
+                    State.ShotsFired = 0;
+
+                var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
+
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags)
+                {
+                    if (!Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)))
+                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+                    else if (Comp.Session.IsClient)
+                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+
+                }
+
+                if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks && Comp.Session.WeaponsSyncCheck.Add(this))
+                {
+                    Comp.Session.WeaponsToSync.Add(this);
+                    Comp.Ai.NumSyncWeapons++;
+
+                    SendTarget = false;
+                    SendSync = true;
+
+                    LastSyncTick = Comp.Session.Tick;
+                }
+
+                Comp.TerminalRefresh();
             }
-            else if (ReloadSubscribed)
-            {
-                CancelableReloadAction -= Reloaded;
-                ReloadSubscribed = false;
-            }
-
-            EventTriggerStateChanged(EventTriggers.Reloading, false);
-
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
-                State.ShotsFired = 0;
-
-            var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
-
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags)
-            {
-                if (!Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)))
-                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                else if (Comp.Session.IsClient)
-                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                   
-            }
-
-            if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks && Comp.Session.WeaponsSyncCheck.Add(this))
-            {
-                Comp.Session.WeaponsToSync.Add(this);
-                Comp.Ai.NumSyncWeapons++;
-
-                SendTarget = false;
-                SendSync = true;
-
-                LastSyncTick = Comp.Session.Tick;
-            }
-
-            Comp.TerminalRefresh();
         }
 
         internal void CycleAmmo(object o = null)
