@@ -473,17 +473,21 @@ namespace WeaponCore.Support
                     {
                         if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect))
                         {
-                            weapon.HitEffects[MuzzleId] = null;
+                            if (weapon.HitEffects[MuzzleId] != null)
+                            {
+                                weapon.HitEffects[MuzzleId].Stop();
+                                weapon.HitEffects[MuzzleId] = null;
+                            }
                             return;
                         }
 
                         //effect.DistanceMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
                         //effect.DurationMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
+                        effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
                         effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                        //effect.Loop = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Loop;
                         effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        effect.UserScale = (float)scale;
+                        effect.UserScale = scale;
                     }
                     else if (effect.IsEmittingStopped)
                         effect.Play();
@@ -494,7 +498,7 @@ namespace WeaponCore.Support
                 }
                 else if (effect != null)
                 {
-                    effect.Stop(false);
+                    effect.Stop(effect.Loop);
                     weapon.HitEffects[MuzzleId] = null;
                 }
             }

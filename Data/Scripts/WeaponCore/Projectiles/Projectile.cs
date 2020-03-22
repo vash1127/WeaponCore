@@ -1036,6 +1036,11 @@ namespace WeaponCore.Projectiles
             {
                 if (Info.AmmoDef.Const.AmmoParticle) DisposeAmmoEffect(false, false);
                 HitEffects();
+                if (HitEffect != null && HitEffect.Loop)
+                {
+                    Log.Line($"HitEffect Loop Detect: {HitEffect.GetName()}");
+                    DisposeHitEffect(true);
+                }
             }
             State = ProjectileState.Dead;
             Info.Ai.Session.Projectiles.CleanUp.Add(this);
