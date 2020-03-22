@@ -371,7 +371,7 @@ namespace WeaponCore.Support
 
                         var matrix1 = matrix;
                         matrix1.Translation += particles.Barrel2.Offset;
-                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId]) {
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId])) {
 
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
