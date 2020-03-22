@@ -294,10 +294,10 @@ namespace WeaponCore.Support
             s.Projectiles.DeferedAvDraw.Clear();
         }
 
-        internal void End(Vector3D endPos, bool detonateFakeExp = false)
+        internal void AvClose(Vector3D endPos, bool detonateFakeExp = false)
         {
             if (Vector3D.IsZero(TracerFront)) TracerFront = endPos;
-            Ai.Session.Av.AvEnd.Add(this);
+            Ai.Session.Av.AvClose.Add(this);
             DetonateFakeExp = detonateFakeExp;
             Dirty = true;
         }
@@ -603,6 +603,7 @@ namespace WeaponCore.Support
 
         internal void AmmoSoundStart()
         {
+            return;
             TravelEmitter.SetPosition(TracerFront);
             TravelEmitter.Entity = PrimeEntity;
             TravelEmitter.PlaySound(TravelSound, true);

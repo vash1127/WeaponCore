@@ -43,6 +43,7 @@ namespace WeaponCore
         {
             try
             {
+                Av.End();
                 Timings();
 
                 if (!WeaponAmmoRemoveQueue.IsEmpty && CTask.IsComplete)

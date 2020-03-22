@@ -1049,7 +1049,7 @@ namespace WeaponCore.Projectiles
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
-                Info.AvShot.End(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
+                Info.AvShot.AvClose(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
             }
             else
             {
@@ -1057,7 +1057,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (EnableAv)
                         for (int i = 0; i < VrPros.Count; i++)
-                            VrPros[i].VisualShot.End(Position);
+                            VrPros[i].VisualShot.AvClose(Position);
                 }
             }
         }
