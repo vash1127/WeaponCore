@@ -1171,7 +1171,12 @@ namespace WeaponCore
                             if (comp.State.Value.MId < shootStatePacket.MId)
                             {
                                 comp.State.Value.MId = shootStatePacket.MId;
-                                var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
+                                var weaponId = 0;
+                                if (shootStatePacket.WeaponId < 0 || shootStatePacket.WeaponId > comp.Platform.Weapons.Length - 1)
+                                    Log.Line( $"invalid weaponId sync in WeaponToolbarShootState, defaulting to 0: {shootStatePacket.WeaponId}");
+                                else weaponId = shootStatePacket.WeaponId;
+
+                                var w = comp.Platform.Weapons[weaponId];
 
                                 if (shootStatePacket.Data == TerminalActionState.ShootOnce)
                                     w.State.SingleShotCounter++;
