@@ -980,7 +980,7 @@ namespace WeaponCore.Projectiles
             if (pause) ParticleStopped = true;
         }
 
-        private void DisposeHitEffect(bool instant)
+        internal void DisposeHitEffect(bool instant)
         {
             if (HitEffect != null)
             {
@@ -1038,7 +1038,7 @@ namespace WeaponCore.Projectiles
                 HitEffects();
                 if (HitEffect != null && HitEffect.Loop)
                 {
-                    Log.Line($"HitEffect Loop Detect: {HitEffect.GetName()}");
+                    Log.Line($"HitEffect Loop Detect: {HitEffect.GetName()} - WeaponName:{Info.System.WeaponName}");
                     DisposeHitEffect(true);
                 }
             }

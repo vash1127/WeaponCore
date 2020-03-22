@@ -59,7 +59,8 @@ namespace WeaponCore.Projectiles
                 var p = CleanUp[j];
                 if (p.HitEffect != null && p.HitEffect.Loop)
                 {
-                    Log.Line($"stale particle: {p.HitEffect.GetName()} - {p.HitEffect.DurationMax} - {p.HitEffect.DistanceMax}");
+                    Log.Line($"Clean stale particle: {p.HitEffect.GetName()} - WeaponName:{p.Info.System.WeaponName}");
+                    p.DisposeHitEffect(true);
                 }
                 if (p.AmmoEffect != null) Log.Line($"WHAT AMMOEFFECT IS NOT NULL: {p.AmmoEffect.GetName()}");
                 for (int i = 0; i < p.VrPros.Count; i++)
