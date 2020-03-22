@@ -79,7 +79,10 @@ namespace WeaponCore.Platform
                         {
                             if (state == EventTriggers.StopFiring)
                             {
-                                Timings.ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
+                                // Fix this properly
+                                var stopLen = 0u;
+                                System.WeaponAnimationLengths.TryGetValue(EventTriggers.StopFiring, out stopLen);
+                                Timings.ShootDelayTick = stopLen + session.Tick;
                                 if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
                                     if (CurLgstAnimPlaying != null && CurLgstAnimPlaying.Running)
