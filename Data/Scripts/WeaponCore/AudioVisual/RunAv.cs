@@ -56,7 +56,7 @@ namespace WeaponCore.Support
                 var shrinkCnt = av.TracerShrinks.Count;
                 var glowCnt = av.GlowSteps.Count;
                 var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
-
+                /*
                 if (refreshed) {
                     if (av.HasTravelSound) {
 
@@ -76,7 +76,7 @@ namespace WeaponCore.Support
                         av.HitEmitter.PlaySound(av.HitSound, true);
                     }
                 }
-
+                */
                 if (noNextStep) {
                     AvShotPool.Return(av);
                     AvShots.RemoveAtFast(i);
@@ -434,7 +434,7 @@ namespace WeaponCore.Support
                 if (av.StartSoundActived) {
 
                     av.StartSoundActived = false;
-                    av.FireEmitter.PlaySound(av.FireSound, true);
+                    //av.FireEmitter.PlaySound(av.FireSound, true);
                 }
             }
             AvStart.Clear();
