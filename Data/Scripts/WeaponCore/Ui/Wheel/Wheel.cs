@@ -163,7 +163,10 @@ namespace WeaponCore
                     font = "White";
                     break;
             }
-            HudNotify.Font = font; // BuildInfoHighlight, Red, Blue, Green, White, DarkBlue,  
+            HudNotify.Font = font; // BuildInfoHighlight, Red, Blue, Green, White, DarkBlue, 
+            var oldText = HudNotify.Text;
+            if (oldText != currentMessage)
+                HudNotify.Hide();
             HudNotify.Text = currentMessage;
             HudNotify.Show();
         }
