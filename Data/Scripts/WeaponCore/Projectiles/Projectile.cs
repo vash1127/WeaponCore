@@ -950,22 +950,22 @@ namespace WeaponCore.Projectiles
 
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
-                MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
-                if (HitEffect == null) return;
+                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect))
+                {
+                    //HitEffect.Loop = false;
+                    //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
+                    //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
+                    HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                    var scaler = 1;
 
-                //HitEffect.Loop = false;
-                //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
-                //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
-                HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                var scaler =1;
+                    HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
+                    var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
 
-                HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
-
-                HitEffect.UserScale = scale * scaler;
-                var hitVel = LastHitEntVel ?? Vector3.Zero;
-                Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
-                HitEffect.Velocity = hitVel;
+                    HitEffect.UserScale = scale * scaler;
+                    var hitVel = LastHitEntVel ?? Vector3.Zero;
+                    Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
+                    HitEffect.Velocity = hitVel;
+                }
             }
         }
 
