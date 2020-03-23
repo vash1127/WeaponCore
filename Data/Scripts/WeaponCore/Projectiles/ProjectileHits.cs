@@ -32,7 +32,7 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 if (ent is IMyCharacter && p.Info.EwarActive && !genericFields) continue;
-                if (grid != null && (!(p.Info.AmmoDef.Const.SelfDamage || p.TerminalControlled) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
+                if (grid != null && p.SmartsOn && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
 
                 if (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField && p.Info.AmmoDef.Const.AreaEffect == EmpField))
                 {
@@ -141,6 +141,12 @@ namespace WeaponCore.Projectiles
 
                     if (grid != null)
                     {
+                        if (!p.Info.AmmoDef.Const.IsBeamWeapon && beam.Length <= grid.GridSize * 2 && grid.IsSameConstructAs(p.Info.Target.FiringCube.CubeGrid))
+                        {
+                            MyCube cube;
+                            if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock))
+                                continue;
+                        }
                         if (!(p.Info.EwarActive && p.Info.AmmoDef.Const.EwarEffect))
                             hitEntity.EventType = Grid;
                         else if (!p.Info.AmmoDef.Const.Pulse)
@@ -322,7 +328,8 @@ namespace WeaponCore.Projectiles
                         {
                             grid.RayCastCells(beam.From, beam.To, slims, null, true, true);
                             var closestBlockFound = false;
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrix);
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef);
+                            var hitSelf = grid.IsSameConstructAs(hitEnt.Info.Target.FiringCube.CubeGrid);
                             for (int j = 0; j < slims.Count; j++)
                             {
                                 var firstBlock = grid.GetCubeBlock(slims[j]) as IMySlimBlock;
@@ -333,7 +340,7 @@ namespace WeaponCore.Projectiles
                                     MyOrientedBoundingBoxD obb;
                                     var fat = firstBlock.FatBlock;
                                     if (fat != null)
-                                        obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrix);
+                                        obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrixRef);
                                     else
                                     {
                                         Vector3D center;
@@ -346,9 +353,17 @@ namespace WeaponCore.Projectiles
 
                                     var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, obb.Center);
                                     var hitPos = beam.From + (beam.Direction * hitDist);
-                                    if (grid.IsSameConstructAs(hitEnt.Info.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) < 10)
+                                    if (hitSelf)
                                     {
-                                        hitEnt.Blocks.Clear();
+                                        if (Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) <= grid.GridSize * 3) {
+                                            hitEnt.Blocks.Clear();
+                                        }
+                                        else {
+                                            dist = hitDist;
+                                            hitEnt.HitDist = dist;
+                                            hitEnt.Hit = true;
+                                            hitEnt.HitPos = hitPos;
+                                        }
                                         break;
                                     }
 
@@ -385,7 +400,7 @@ namespace WeaponCore.Projectiles
                         }
                         else
                         {
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrixRef);
                             var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                             dist = obb.Intersects(ref beam) ?? double.MaxValue;
                             if (dist < double.MaxValue)

@@ -16,20 +16,21 @@ namespace WeaponCore.Support
 
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
         internal readonly List<AvShot> AvStart = new List<AvShot>(128);
-        internal readonly List<AvShot> AvEnd = new List<AvShot>(128);
+        internal readonly List<AvShot> AvClose = new List<AvShot>(128);
 
         internal readonly Stack<AfterGlow> Glows = new Stack<AfterGlow>();
 
         internal Session Session;
 
         internal int ExplosionCounter;
+        internal int MaxExplosions = 20;
 
         internal bool ExplosionReady
         {
             get {
-
-                if (++ExplosionCounter <= 5) {
-
+                if (ExplosionCounter + 1 <= MaxExplosions)
+                {
+                    ExplosionCounter++;
                     return true;
                 }
                 return false;
@@ -46,6 +47,42 @@ namespace WeaponCore.Support
         private int _glows = 0;
         private int _models = 0;
 
+        internal void End()
+        {
+            for (int i = AvShots.Count - 1; i >= 0; i--) {
+                var av = AvShots[i];
+                var refreshed = av.LastTick == Session.Tick;
+                var shrinkCnt = av.TracerShrinks.Count;
+                var glowCnt = av.GlowSteps.Count;
+                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
+
+                if (refreshed) {
+                    if (av.HasTravelSound) {
+
+                        if (!av.AmmoSound) {
+                            double distSqr;
+                            Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
+                            if (distSqr <= av.AmmoDef.Const.AmmoTravelSoundDistSqr)
+                                av.AmmoSoundStart();
+                        }
+                        else av.TravelEmitter.SetPosition(av.TracerFront);
+                    }
+
+                    if (av.HitSoundActived) {
+                        av.HitSoundActived = false;
+                        av.HitEmitter.SetPosition(av.TracerFront);
+                        av.HitEmitter.CanPlayLoopSounds = false;
+                        av.HitEmitter.PlaySound(av.HitSound, true);
+                    }
+                }
+
+                if (noNextStep) {
+                    AvShotPool.Return(av);
+                    AvShots.RemoveAtFast(i);
+                }
+            }
+        }
+
         internal void Run()
         {
             if (Session.Tick180) {
@@ -60,7 +97,7 @@ namespace WeaponCore.Support
 
             if (AvBarrels1.Count > 0) RunAvBarrels1();
             if (AvBarrels2.Count > 0) RunAvBarrels2();
-            if (AvEnd.Count > 0) End();
+            if (AvClose.Count > 0) Close();
             if (AvStart.Count > 0) Start();
 
             for (int i = AvShots.Count - 1; i >= 0; i--)
@@ -184,7 +221,7 @@ namespace WeaponCore.Support
                         }
                         av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
                     }
-
+                    /*
                     if (av.HasTravelSound)
                     {
                         if (!av.AmmoSound)
@@ -215,28 +252,19 @@ namespace WeaponCore.Support
                             var myHitInfo = new MyHitInfo { Position = hitInfo.Position, Normal = hitInfo.Normal };
                             MyDecals.HandleAddDecal(hitInfo.HitEntity, myHitInfo, new MyStringHash(), new MyStringHash(), null, -1f);
                         }
-                        */
                     }
-
+                    */
                     if (av.FakeExplosion)
                     {
                         av.FakeExplosion = false;
-                        if (ExplosionReady)
+                        if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
                             else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
                         }
                     }
                 }   
-
-                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
-                if (noNextStep)
-                {
-                    AvShotPool.Return(av);
-                    AvShots.RemoveAtFast(i);
-                }
             }
-
         }
 
         private void RunShrinks(AvShot av)
@@ -301,9 +329,7 @@ namespace WeaponCore.Support
 
                         var matrix1 = matrix;
                         matrix1.Translation += particles.Barrel1.Offset;
-                        MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects1[muzzle.MuzzleId]);
-                        
-                        if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
 
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel1.Color;
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
@@ -372,8 +398,7 @@ namespace WeaponCore.Support
 
                         var matrix1 = matrix;
                         matrix1.Translation += particles.Barrel2.Offset;
-                        MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId]);
-                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId])) {
 
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
@@ -414,25 +439,28 @@ namespace WeaponCore.Support
             AvStart.Clear();
         }
 
-        internal void End()
+        internal void Close()
         {
-            for (int i = AvEnd.Count - 1; i >= 0; i--) {
+            for (int i = AvClose.Count - 1; i >= 0; i--) {
 
-                var av = AvEnd[i];
+                var av = AvClose[i];
                 if (av.DetonateFakeExp) {
 
                     av.FakeExplosion = false;
                     if (ExplosionReady) {
-                        
-                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
-                        else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
+
+                        if (av.OnScreen != AvShot.Screen.None)
+                        {
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
+                        }
                     }
                 }
 
                 if (!av.Active)
                     AvShotPool.Return(av);
             }
-            AvEnd.Clear();
+            AvClose.Clear();
         }
     }
 

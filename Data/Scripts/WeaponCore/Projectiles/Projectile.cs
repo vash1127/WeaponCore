@@ -39,6 +39,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
         internal Hit Hit = new Hit();
+        internal LineD Beam;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal BoundingSphereD PruneSphere;
         internal double AccelLength;
@@ -90,7 +91,6 @@ namespace WeaponCore.Projectiles
         internal bool FakeExplosion;
         internal bool AtMaxRange;
         internal bool ShieldBypassed;
-        internal bool TerminalControlled;
         internal bool EarlyEnd;
         internal bool FeelsGravity;
         internal bool LineOrNotModel;
@@ -922,7 +922,7 @@ namespace WeaponCore.Projectiles
                 }
 
                 var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : int.MaxValue;
-                if (MyParticlesManager.TryCreateParticleEffect("Smoke_Missile", ref matrix, ref Position, renderId, out AmmoEffect))
+                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, renderId, out AmmoEffect))
                 {
                     //AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;
@@ -950,23 +950,22 @@ namespace WeaponCore.Projectiles
 
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
-                MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
-                if (HitEffect == null) return;
+                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect))
+                {
+                    //HitEffect.Loop = false;
+                    //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
+                    //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
+                    HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                    var scaler = 1;
 
-                //HitEffect.Loop = false;
-                //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
-                //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
-                HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                var reScale = 1;
-                var scaler = reScale < 1 ? reScale : 1;
+                    HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
+                    var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
 
-                HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
-
-                HitEffect.UserScale = scale * scaler;
-                var hitVel = LastHitEntVel ?? Vector3.Zero;
-                Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
-                HitEffect.Velocity = hitVel;
+                    HitEffect.UserScale = scale * scaler;
+                    var hitVel = LastHitEntVel ?? Vector3.Zero;
+                    Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
+                    HitEffect.Velocity = hitVel;
+                }
             }
         }
 
@@ -981,7 +980,7 @@ namespace WeaponCore.Projectiles
             if (pause) ParticleStopped = true;
         }
 
-        private void DisposeHitEffect(bool instant)
+        internal void DisposeHitEffect(bool instant)
         {
             if (HitEffect != null)
             {
@@ -1037,6 +1036,11 @@ namespace WeaponCore.Projectiles
             {
                 if (Info.AmmoDef.Const.AmmoParticle) DisposeAmmoEffect(false, false);
                 HitEffects();
+                if (HitEffect != null && HitEffect.Loop)
+                {
+                    Log.Line($"HitEffect Loop Detect: {HitEffect.GetName()} - WeaponName:{Info.System.WeaponName}");
+                    DisposeHitEffect(true);
+                }
             }
             State = ProjectileState.Dead;
             Info.Ai.Session.Projectiles.CleanUp.Add(this);
@@ -1045,7 +1049,7 @@ namespace WeaponCore.Projectiles
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
-                Info.AvShot.End(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
+                Info.AvShot.AvClose(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
             }
             else
             {
@@ -1053,7 +1057,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (EnableAv)
                         for (int i = 0; i < VrPros.Count; i++)
-                            VrPros[i].VisualShot.End(Position);
+                            VrPros[i].VisualShot.AvClose(Position);
                 }
             }
         }

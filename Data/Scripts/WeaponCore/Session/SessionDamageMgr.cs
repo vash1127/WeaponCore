@@ -126,16 +126,14 @@ namespace WeaponCore
                 var objHp = hit.Value;
                 if (info.EwarActive)
                     info.BaseHealthPool -= 1;
-                else if (scaledDamage < objHp)
+                else if (objHp > 0)
                 {
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;
                     else 
                         info.BaseDamagePool *= info.AmmoDef.Const.ShieldBypassMod;
                 }
-                else if (objHp > 0) info.BaseDamagePool -= (float)scaledDamage - objHp;
-                else info.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
-
+                else info.BaseDamagePool = (objHp * -1);
                 if (info.AmmoDef.Mass <= 0) return;
 
                 var speed = info.AmmoDef.Trajectory.DesiredSpeed > 0 ? info.AmmoDef.Trajectory.DesiredSpeed : 1;

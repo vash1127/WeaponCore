@@ -13,6 +13,7 @@ using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using Sandbox.Game.Entities.Cube;
 
 namespace WeaponCore
 {
@@ -31,13 +32,18 @@ namespace WeaponCore
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             Tick3600 = Tick % 3600 == 0;
-            if (Tick60) Av.ExplosionCounter = 0;
+            if (Tick60)
+            {
+                if (Av.ExplosionCounter - 5 >= 0) Av.ExplosionCounter -= 5;
+                else Av.ExplosionCounter = 0;
+            }
             if (++SCount == 60) SCount = 0;
             if (Count++ == 119)
             {
                 Count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
+                CheckAdminRights();
             }
             LCount++;
             if (LCount == 129)
@@ -81,7 +87,8 @@ namespace WeaponCore
 
         internal void ProfilePerformance()
         {
-            var netTime = DsUtil.GetValue("network");
+            var netTime1 = DsUtil.GetValue("network1");
+            var netTime2 = DsUtil.GetValue("network2");
             var projectileTime = DsUtil.GetValue("projectiles");
             var updateTime = DsUtil.GetValue("shoot");
             var damageTime = DsUtil.GetValue("damage");
@@ -90,7 +97,7 @@ namespace WeaponCore
             var ai = DsUtil.GetValue("ai");
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
-            Log.LineShortDate($"(CPU-T) --- <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET>{netTime.Median:0.0000}/{netTime.Min:0.0000}/{netTime.Max:0.0000}>");
+            Log.LineShortDate($"(CPU-T) --- <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <NET2>{netTime2.Median:0.0000}/{netTime2.Min:0.0000}/{netTime2.Max:0.0000}>");
             Log.LineShortDate($"(STATS) -------- AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]");
             TargetRequests = 0;
             TargetChecks = 0;
@@ -170,6 +177,56 @@ namespace WeaponCore
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
             }
             return false;
+        }
+
+        private void CheckAdminRights()
+        {
+            foreach (var item in Players) {
+
+                var pLevel = item.Value.PromoteLevel;
+                var playerId = item.Key;
+                var player = item.Value;
+                var wasAdmin = Admins.ContainsKey(playerId);
+
+                if (pLevel == MyPromoteLevel.Admin || pLevel == MyPromoteLevel.Owner || pLevel == MyPromoteLevel.SpaceMaster) {
+
+                    var character = player.Character;
+                    var isAdmin = false;
+                    if (character != null) {
+
+                        if (MySafeZone.CheckAdminIgnoreSafezones(player.SteamUserId))
+                            isAdmin = true;
+                        else {
+
+                            foreach (var gridAi in GridTargetingAIs.Values) {
+
+                                if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Weapons.Count > 0 && ((IMyTerminalBlock)gridAi.Weapons[0].MyCube).HasPlayerAccess(playerId)) {
+
+                                    if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.MyOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                        isAdmin = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (isAdmin) {
+                            Admins[playerId] = character;
+                            AdminMap[character] = player;
+                            continue;
+                        }
+                    }
+                }
+
+
+                if (wasAdmin)
+                {
+                    IMyCharacter removeCharacter;
+                    IMyPlayer removePlayer;
+                    Admins.TryRemove(playerId, out removeCharacter);
+                    AdminMap.TryRemove(removeCharacter, out removePlayer);
+                }
+            }
         }
 
         internal void InitRayCast()

@@ -459,13 +459,13 @@ namespace WeaponCore
 
                             if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
-                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
+                                errorPacket.Error = $"[CycleAmmo]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
                                 break;
                             }
 
                             if (cyclePacket.WeaponId == -1)
                             {
-                                errorPacket.Error = $"[WeaponToolbarShootState] weapon Id: {cyclePacket.WeaponId}";
+                                errorPacket.Error = $"[CycleAmmo] weapon Id: {cyclePacket.WeaponId}";
                                 break;
                             }
 
@@ -676,7 +676,7 @@ namespace WeaponCore
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
-                        if (statePacket?.Data == null || comp == null || ent.MarkedForClose)
+                        if (statePacket?.Data == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             errorPacket.Error = $"statePacket?.Data is null: {statePacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
                             break;
@@ -700,7 +700,7 @@ namespace WeaponCore
                         ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                         comp = ent?.Components.Get<WeaponComponent>();
 
-                        if (setPacket?.Data == null || comp == null || ent.MarkedForClose)
+                        if (setPacket?.Data == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             errorPacket.Error = $"setPacket?.Data is null: {setPacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
                             break;
@@ -908,7 +908,7 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (reticlePacket == null || comp == null || ent.MarkedForClose)
+                            if (reticlePacket == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
                                 errorPacket.Error = $"reticlePacket is null: {reticlePacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
@@ -986,7 +986,7 @@ namespace WeaponCore
                         comp = ent?.Components.Get<WeaponComponent>();
                         var cPlayerPacket = (ControllingPlayerPacket) packet;
 
-                        if (comp == null  || ent.MarkedForClose)
+                        if (comp == null  || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
                             errorPacket.Error = $"[overRidesPacket] comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose}";
                             break;
@@ -1110,7 +1110,7 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (ent == null || comp == null || ent.MarkedForClose)
+                            if (ent == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
                                 errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
                                 break;
@@ -1162,7 +1162,7 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (comp == null || ent.MarkedForClose)
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
                                 errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
@@ -1171,7 +1171,12 @@ namespace WeaponCore
                             if (comp.State.Value.MId < shootStatePacket.MId)
                             {
                                 comp.State.Value.MId = shootStatePacket.MId;
-                                var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
+                                var weaponId = 0;
+                                if (shootStatePacket.WeaponId < 0 || shootStatePacket.WeaponId > comp.Platform.Weapons.Length - 1)
+                                    Log.Line( $"invalid weaponId sync in WeaponToolbarShootState, defaulting to 0: {shootStatePacket.WeaponId}");
+                                else weaponId = shootStatePacket.WeaponId;
+
+                                var w = comp.Platform.Weapons[weaponId];
 
                                 if (shootStatePacket.Data == TerminalActionState.ShootOnce)
                                     w.State.SingleShotCounter++;
@@ -1210,7 +1215,7 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (comp == null || ent.MarkedForClose)
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
                                 errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
                                 break;
