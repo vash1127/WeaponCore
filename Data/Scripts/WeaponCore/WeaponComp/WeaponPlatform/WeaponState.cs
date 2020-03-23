@@ -509,7 +509,10 @@ namespace WeaponCore.Platform
         internal void GetAmmoClient()
         {
             State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
+        }
 
+        internal void ReloadClient()
+        {
             if (CanReload)
                 StartReload();
         }
