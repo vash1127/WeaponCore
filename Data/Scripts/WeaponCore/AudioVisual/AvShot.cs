@@ -603,7 +603,6 @@ namespace WeaponCore.Support
 
         internal void AmmoSoundStart()
         {
-            return;
             TravelEmitter.SetPosition(TracerFront);
             TravelEmitter.Entity = PrimeEntity;
             TravelEmitter.PlaySound(TravelSound, true);
