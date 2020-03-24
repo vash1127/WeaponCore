@@ -74,7 +74,6 @@ namespace WeaponCore
                         ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
 
                 structure.WeaponSystems.Clear();
-                //structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
 
@@ -112,7 +111,6 @@ namespace WeaponCore
             AllArmorBaseDefinitions.Clear();
             AcquireTargets.Clear();
             ChargingWeapons.Clear();
-            ShootingWeapons.Clear();
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
@@ -178,7 +176,6 @@ namespace WeaponCore
             Projectiles.VirtInfoPool.Clean();
             Projectiles.V3Pool.Clean();
 
-            if (DbsToUpdate.Count > 0) Log.Line("DbsToUpdate not empty at purge");
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();
 

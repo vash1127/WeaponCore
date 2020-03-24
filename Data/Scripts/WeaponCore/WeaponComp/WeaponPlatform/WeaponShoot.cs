@@ -433,7 +433,7 @@ namespace WeaponCore.Platform
             }
 
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
-            if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
+            if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > MaxTargetDistanceSqr)
             {
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 if (masterWeapon !=  this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);

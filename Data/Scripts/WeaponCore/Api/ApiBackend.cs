@@ -241,7 +241,7 @@ namespace WeaponCore.Api
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
-                return (float)comp.Platform.Weapons[weaponId].ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+                return (float)comp.Platform.Weapons[weaponId].MaxTargetDistance;
 
             return 0f;
         }
@@ -269,9 +269,12 @@ namespace WeaponCore.Api
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
             {
-                var maxTrajectory = GetMaxWeaponRange(weaponBlock);
-
-                comp.Set.Value.Range = range > maxTrajectory ? maxTrajectory : range;
+                double maxTargetDistance = 0;
+                foreach (var w in comp.Platform.Weapons)
+                    if (w.MaxTargetDistance > maxTargetDistance) 
+                        maxTargetDistance = w.MaxTargetDistance;
+                
+                comp.Set.Value.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
             }
         }
 

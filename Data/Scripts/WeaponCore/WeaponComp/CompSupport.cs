@@ -89,6 +89,37 @@ namespace WeaponCore.Support
 
         }
 
+        public void CleanCompParticles()
+        {
+            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready)
+            {
+                foreach (var w in Platform.Weapons)
+                {
+                    for (int i = 0; i < w.System.Values.Assignments.Barrels.Length; i++)
+                    {
+                        if (w.HitEffects?[i] != null)
+                        {
+                            Log.Line($"[Clean CompHitPartice] Weapon:{w.System.WeaponName} - Particle:{w.HitEffects[i].GetName()}");
+                            w.HitEffects[i].Stop();
+                            w.HitEffects[i] = null;
+                        }
+                        if (w.BarrelEffects1?[i] != null)
+                        {
+                            Log.Line($"[Clean BarrelEffects1] Weapon:{w.System.WeaponName} - Particle:{w.BarrelEffects1[i].GetName()}");
+                            w.BarrelEffects1[i].Stop();
+                            w.BarrelEffects1[i] = null;
+                        }
+                        if (w.BarrelEffects2?[i] != null)
+                        {
+                            Log.Line($"[Clean BarrelEffects2] Weapon:{w.System.WeaponName} - Particle:{ w.BarrelEffects2[i].GetName()}");
+                            w.BarrelEffects2[i].Stop();
+                            w.BarrelEffects2[i] = null;
+                        }
+                    }
+                }
+            }
+        }
+
         public void StopAllAv()
         {
             if (Platform?.State != MyWeaponPlatform.PlatformState.Ready) return;

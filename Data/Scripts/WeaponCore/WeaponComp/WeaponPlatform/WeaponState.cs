@@ -590,6 +590,23 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal double GetMaxWeaponRange()
+        {
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+            var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
+            return Math.Min(hardPointMax, ammoMax);
+        }
+
+        internal void UpdateWeaponRange()
+        {
+            var range = Comp.Set.Value.Range < 0 ? double.MaxValue : Comp.Set.Value.Range; 
+            var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+            var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
+            var weaponRange = Math.Min(hardPointMax, ammoMax);
+            MaxTargetDistance = Math.Min(range, weaponRange);
+            MaxTargetDistanceSqr = MaxTargetDistance * MaxTargetDistance;
+        }
+
         public void StartPreFiringSound()
         {
             if (PreFiringSound == null)

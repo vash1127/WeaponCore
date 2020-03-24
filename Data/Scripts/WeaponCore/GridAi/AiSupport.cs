@@ -64,10 +64,7 @@ namespace WeaponCore.Support
                 var comp = w.Comp;
                 var ai = comp.Ai;
 
-
-                var weaponRangeSqr = comp.Set.Value.Range * comp.Set.Value.Range;
-
-                return ThreatRangeSqr <= weaponRangeSqr || ai.Focus.HasFocus;
+                return ThreatRangeSqr <= w.MaxTargetDistanceSqr || ai.Focus.HasFocus;
             }
 
             internal void Clean()

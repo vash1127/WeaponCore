@@ -64,6 +64,7 @@ namespace WeaponCore.Support
             [ProtoMember(6)] internal bool ClosestFirst;
             [ProtoMember(7)] internal BlockTypes[] SubSystems;
             [ProtoMember(8)] internal Threat[] Threats;
+            [ProtoMember(9)] internal float MaxTargetDistance;
         }
 
         [ProtoContract]

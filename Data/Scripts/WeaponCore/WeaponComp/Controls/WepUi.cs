@@ -126,6 +126,8 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.Range = range;
+            foreach (var w in comp.Platform.Weapons)
+                w.UpdateWeaponRange();
         }
 
         internal static bool ShowRange(IMyTerminalBlock block, int notUsed)
@@ -157,7 +159,7 @@ namespace WeaponCore
             var maxTrajectory = 0f;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                var curMax = comp.Platform.Weapons[i].ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+                var curMax = comp.Platform.Weapons[i].GetMaxWeaponRange();
                 if (curMax > maxTrajectory)
                     maxTrajectory = (float)curMax;
             }

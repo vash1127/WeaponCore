@@ -129,6 +129,8 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
+        internal double MaxTargetDistance;
+        internal double MaxTargetDistanceSqr;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
