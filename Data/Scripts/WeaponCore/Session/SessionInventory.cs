@@ -45,7 +45,7 @@ namespace WeaponCore
                     weapon.StartReload();
             }
             else if(weapon.State.Sync.CurrentAmmo == 0 && !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient);
+                comp.Session.MTask = MyAPIGateway.Parallel.Start(weapon.GetAmmoClient, weapon.ReloadClient);
         }
 
         internal void AmmoPull() {
