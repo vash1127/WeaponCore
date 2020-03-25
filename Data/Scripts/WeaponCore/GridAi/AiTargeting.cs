@@ -150,7 +150,7 @@ namespace WeaponCore.Support
             session.TargetRequests++;
             var physics = session.Physics;
             var weaponPos = w.MyPivotPos;
-            var weaponRange = comp.Set.Value.Range;
+            var weaponRange = w.MaxTargetDistance;
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -329,7 +329,7 @@ namespace WeaponCore.Support
             var foundBlock = false;
             var blocksChecked = 0;
             var blocksSighted = 0;
-            var weaponRangeSqr = turretCheck ? w.Comp.Set.Value.Range * w.Comp.Set.Value.Range : 0;
+            var weaponRangeSqr = turretCheck ? w.MaxTargetDistanceSqr : 0;
             for (int i = 0; i < totalBlocks; i++)
             {
                 if (turretCheck && (blocksChecked > lastBlocks || isPriroity && (blocksSighted > 100 || blocksChecked > 50 && ai.Session.RandomRayCasts > 500 || blocksChecked > 25 && ai.Session.RandomRayCasts > 1000) ))
@@ -585,7 +585,7 @@ namespace WeaponCore.Support
                 }
             }
 
-            var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
+            var weaponRangeSqr = w.MaxTargetDistanceSqr;
 
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.Comp.Seed);

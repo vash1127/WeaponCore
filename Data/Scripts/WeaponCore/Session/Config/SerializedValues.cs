@@ -8,6 +8,7 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
@@ -92,6 +93,10 @@ namespace WeaponCore
             Modes = syncFrom.Modes;
             
             Range = syncFrom.Range;
+
+            foreach (var w in comp.Platform.Weapons)
+                w.UpdateWeaponRange();
+
             InventoryInited = syncFrom.InventoryInited;
             Overrides = syncFrom.Overrides;
 

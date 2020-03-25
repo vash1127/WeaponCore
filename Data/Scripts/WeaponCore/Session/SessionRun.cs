@@ -1,14 +1,10 @@
 using System;
-using System.Collections.Generic;
-using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -43,7 +39,6 @@ namespace WeaponCore
         {
             try
             {
-                Av.End();
                 Timings();
 
                 if (!WeaponAmmoRemoveQueue.IsEmpty && CTask.IsComplete)
@@ -210,8 +205,6 @@ namespace WeaponCore
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
                 }
                 DsUtil.Complete("network2", true);
-
-
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

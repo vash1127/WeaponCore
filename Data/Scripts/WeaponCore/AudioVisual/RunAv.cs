@@ -47,42 +47,6 @@ namespace WeaponCore.Support
         private int _glows = 0;
         private int _models = 0;
 
-        internal void End()
-        {
-            for (int i = AvShots.Count - 1; i >= 0; i--) {
-                var av = AvShots[i];
-                var refreshed = av.LastTick == Session.Tick;
-                var shrinkCnt = av.TracerShrinks.Count;
-                var glowCnt = av.GlowSteps.Count;
-                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
-
-                if (refreshed) {
-                    if (av.HasTravelSound) {
-
-                        if (!av.AmmoSound) {
-                            double distSqr;
-                            Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
-                            if (distSqr <= av.AmmoDef.Const.AmmoTravelSoundDistSqr)
-                                av.AmmoSoundStart();
-                        }
-                        else av.TravelEmitter.SetPosition(av.TracerFront);
-                    }
-
-                    if (av.HitSoundActived) {
-                        av.HitSoundActived = false;
-                        av.HitEmitter.SetPosition(av.TracerFront);
-                        av.HitEmitter.CanPlayLoopSounds = false;
-                        av.HitEmitter.PlaySound(av.HitSound, true);
-                    }
-                }
-
-                if (noNextStep) {
-                    AvShotPool.Return(av);
-                    AvShots.RemoveAtFast(i);
-                }
-            }
-        }
-
         internal void Run()
         {
             if (Session.Tick180) {
@@ -221,7 +185,6 @@ namespace WeaponCore.Support
                         }
                         av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
                     }
-                    /*
                     if (av.HasTravelSound)
                     {
                         if (!av.AmmoSound)
@@ -252,8 +215,8 @@ namespace WeaponCore.Support
                             var myHitInfo = new MyHitInfo { Position = hitInfo.Position, Normal = hitInfo.Normal };
                             MyDecals.HandleAddDecal(hitInfo.HitEntity, myHitInfo, new MyStringHash(), new MyStringHash(), null, -1f);
                         }
-                    }
                     */
+                    }
                     if (av.FakeExplosion)
                     {
                         av.FakeExplosion = false;
@@ -263,7 +226,15 @@ namespace WeaponCore.Support
                             else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
                         }
                     }
-                }   
+                }
+
+                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
+
+                if (noNextStep)
+                {
+                    AvShotPool.Return(av);
+                    AvShots.RemoveAtFast(i);
+                }
             }
         }
 

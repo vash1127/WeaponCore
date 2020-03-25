@@ -48,12 +48,13 @@ namespace WeaponCore.Support
                         return;
                     }
 
-                    if (maxTrajectory < weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory)
-                        maxTrajectory = (float)weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+                    weapon.UpdateWeaponRange();
+                    if (maxTrajectory < weapon.MaxTargetDistance)
+                        maxTrajectory = (float)weapon.MaxTargetDistance;
 
                 }
 
-                if (Set.Value.Range == -1)
+                if (Set.Value.Range < 0)
                     Set.Value.Range = maxTrajectory;
 
                 WeaponValues.Load(this);
