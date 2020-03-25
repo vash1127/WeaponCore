@@ -56,6 +56,7 @@ namespace WeaponCore
                             break;
                         }
 
+                        comp.SyncIds.MIds[(int)packet.PType] = statePacket.MId;
                         comp.State.Value.Sync(statePacket.Data);
 
                         report.PacketValid = true;
@@ -68,6 +69,7 @@ namespace WeaponCore
                             break;
                         }
 
+                        comp.SyncIds.MIds[(int)packet.PType] = setPacket.MId;
                         comp.Set.Value.Sync(comp, setPacket.Data);
                         
                         report.PacketValid = true;
