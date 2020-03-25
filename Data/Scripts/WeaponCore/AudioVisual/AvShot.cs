@@ -156,7 +156,6 @@ namespace WeaponCore.Support
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.AmmoDef.Const.MaxTrajectory);
-            Ai.Session.Av.AvStart.Add(this);
         }
 
         internal static void DeferedAvStateUpdates(Session s)
@@ -297,9 +296,26 @@ namespace WeaponCore.Support
         internal void AvClose(Vector3D endPos, bool detonateFakeExp = false)
         {
             if (Vector3D.IsZero(TracerFront)) TracerFront = endPos;
-            Ai.Session.Av.AvClose.Add(this);
             DetonateFakeExp = detonateFakeExp;
             Dirty = true;
+
+            if (DetonateFakeExp)
+            {
+
+                FakeExplosion = false;
+                if (Ai.Session.Av.ExplosionReady)
+                {
+
+                    if (OnScreen != Screen.None)
+                    {
+                        if (DetonateFakeExp) SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
+                        else SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.AreaEffectRadius, TracerFront, AmmoDef);
+                    }
+                }
+            }
+
+            if (!Active)
+                Ai.Session.Av.AvShotPool.Return(this);
         }
 
         internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
@@ -598,6 +614,11 @@ namespace WeaponCore.Support
                 FireSound.Init(System.Values.HardPoint.Audio.FiringSound, false);
                 FireEmitter.SetPosition(Origin);
                 FireEmitter.Entity = FiringWeapon.MyCube;
+            }
+                        
+            if (StartSoundActived) {
+                StartSoundActived = false;
+                FireEmitter.PlaySound(FireSound, true);
             }
         }
 

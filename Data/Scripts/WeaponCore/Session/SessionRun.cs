@@ -39,6 +39,10 @@ namespace WeaponCore
         {
             try
             {
+                DsUtil.Start("av");
+                Av.End();
+                DsUtil.Complete("av", true);
+
                 Timings();
 
                 if (!WeaponAmmoRemoveQueue.IsEmpty && CTask.IsComplete)
