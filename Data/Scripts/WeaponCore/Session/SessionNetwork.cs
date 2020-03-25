@@ -271,7 +271,7 @@ namespace WeaponCore
 
                             if (comp != null) {
                                 comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                                comp.Set.Value.MId = overRidesPacket.MId;
+                                comp.SyncIds.MIds[(int)packet.PType] = overRidesPacket.MId;
                                 report.PacketValid = true;
                             }
                             else if (myGrid != null)
@@ -308,7 +308,7 @@ namespace WeaponCore
                         }
 
                         comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                        comp.Set.Value.MId = cPlayerPacket.MId;
+                        comp.SyncIds.MIds[(int)packet.PType] = cPlayerPacket.MId;
                         report.PacketValid = true;
 
                         break;
@@ -356,7 +356,7 @@ namespace WeaponCore
 
                             if (comp == null) break;
 
-                            comp.State.Value.MId = shootStatePacket.MId;
+                            comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
 
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                             {
@@ -398,7 +398,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.State.Value.MId = shootStatePacket.MId;
+                            comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
                             var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
 
                             if (shootStatePacket.Data == TerminalActionState.ShootOnce)
@@ -429,7 +429,7 @@ namespace WeaponCore
 
                             if (comp == null) break;
 
-                            comp.Set.Value.MId = rangePacket.MId;
+                            comp.SyncIds.MIds[(int)packet.PType] = rangePacket.MId;
                             comp.Set.Value.Range = rangePacket.Data;
 
                             report.PacketValid = true;
@@ -446,7 +446,7 @@ namespace WeaponCore
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                ai.UiMId = midPacket.Id;
+                                ai.UiMId = midPacket.MId;
 
                                 report.PacketValid = true;
                             }
@@ -469,7 +469,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.Set.Value.MId = cyclePacket.MId;
+                            comp.SyncIds.MIds[(int)packet.PType] = cyclePacket.MId;
                             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
                             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
 
@@ -682,8 +682,9 @@ namespace WeaponCore
                             break;
                         }
 
-                        if (statePacket.Data.MId > comp.State.Value.MId)
+                        if (statePacket.MId > comp.SyncIds.MIds[(int)packet.PType])
                         {
+                            comp.SyncIds.MIds[(int)packet.PType] = statePacket.MId;
                             comp.State.Value.Sync(statePacket.Data);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = packet });
 
@@ -706,8 +707,9 @@ namespace WeaponCore
                             break;
                         }
 
-                        if (setPacket.Data.MId > comp.Set.Value.MId)
+                        if (setPacket.MId > comp.SyncIds.MIds[(int)packet.PType])
                         {
+                            comp.SyncIds.MIds[(int)packet.PType] = setPacket.MId;
                             comp.Set.Value.Sync(comp, setPacket.Data);
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
@@ -844,7 +846,7 @@ namespace WeaponCore
                                         EntityId = myGrid.EntityId,
                                         SenderId = packet.SenderId,
                                         PType = PacketType.GridAiUiMidUpdate,
-                                        Id = ai.UiMId,
+                                        MId = ai.UiMId,
                                     },
                                     SingleClient = true,
                                 });
@@ -856,10 +858,11 @@ namespace WeaponCore
                                     PType = PacketType.WeaponSyncUpdate,
                                     Data = new List<WeaponData>()
                                 };
-
+                                
                                 foreach (var cubeComp in ai.WeaponBase)
                                 {
                                     comp = cubeComp.Value;
+
                                     if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
 
                                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -936,10 +939,10 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp != null && comp.Set.Value.MId < overRidesPacket.MId)
+                            if (comp != null && comp.SyncIds.MIds[(int)packet.PType] < overRidesPacket.MId)
                             {
                                 comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                                comp.Set.Value.MId = overRidesPacket.MId;
+                                comp.SyncIds.MIds[(int)packet.PType] = overRidesPacket.MId;
                                 report.PacketValid = true;
                             }
                             else if (myGrid != null)
@@ -992,10 +995,10 @@ namespace WeaponCore
                             break;
                         }
 
-                        if (comp.State.Value.MId < cPlayerPacket.MId)
+                        if (comp.SyncIds.MIds[(int)packet.PType] < cPlayerPacket.MId)
                         {
                             comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                            comp.State.Value.MId = cPlayerPacket.MId;
+                            comp.SyncIds.MIds[(int)packet.PType] = cPlayerPacket.MId;
                             report.PacketValid = true;
                             PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
                         }
@@ -1116,9 +1119,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp.State.Value.MId < shootStatePacket.MId)
+                            if (comp.SyncIds.MIds[(int)packet.PType] < shootStatePacket.MId)
                             {
-                                comp.State.Value.MId = shootStatePacket.MId;
+                                comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
                                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                                 {
                                     var w = comp.Platform.Weapons[i];
@@ -1168,9 +1171,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp.State.Value.MId < shootStatePacket.MId)
+                            if (comp.SyncIds.MIds[(int)packet.PType] < shootStatePacket.MId)
                             {
-                                comp.State.Value.MId = shootStatePacket.MId;
+                                comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
                                 var weaponId = 0;
                                 if (shootStatePacket.WeaponId < 0 || shootStatePacket.WeaponId > comp.Platform.Weapons.Length - 1)
                                     Log.Line( $"invalid weaponId sync in WeaponToolbarShootState, defaulting to 0: {shootStatePacket.WeaponId}");
@@ -1221,9 +1224,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp.Set.Value.MId < rangePacket.MId)
+                            if (comp.SyncIds.MIds[(int)packet.PType] < rangePacket.MId)
                             {
-                                comp.Set.Value.MId = rangePacket.MId;
+                                comp.SyncIds.MIds[(int)packet.PType] = rangePacket.MId;
                                 comp.Set.Value.Range = rangePacket.Data;
 
                                 PacketsToClient.Add(new PacketInfo
@@ -1252,9 +1255,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (cyclePacket.MId > comp.Set.Value.MId)
+                            if (cyclePacket.MId > comp.SyncIds.MIds[(int)packet.PType])
                             {
-                                comp.Set.Value.MId = cyclePacket.MId;
+                                comp.SyncIds.MIds[(int)packet.PType] = cyclePacket.MId;
 
                                 var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
 

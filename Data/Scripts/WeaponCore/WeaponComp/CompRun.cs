@@ -246,8 +246,8 @@ namespace WeaponCore.Support
 
                     State.SaveState();
                     Set.SaveSettings();
-                    WeaponValues.Save(this, Session.MpTargetSyncGuid);
-                        
+                    WeaponValues.Save(this);
+                    SyncIds.Save(this);                        
                 }
             }
             return false;

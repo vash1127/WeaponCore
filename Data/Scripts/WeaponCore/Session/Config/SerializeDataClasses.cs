@@ -42,29 +42,22 @@ namespace WeaponCore
         CycleAmmo,
         ReassignTargetUpdate,
         NextActiveUpdate,
-        ReleaseActiveUpdate
+        ReleaseActiveUpdate,
 
     }
 
     #region packets
     [ProtoContract]
-    [ProtoInclude(4, typeof(StatePacket))]
-    [ProtoInclude(5, typeof(SettingPacket))]
-    [ProtoInclude(6, typeof(GridWeaponPacket))]
-    [ProtoInclude(7, typeof(MouseInputPacket))]
-    [ProtoInclude(8, typeof(BoolUpdatePacket))]
-    [ProtoInclude(9, typeof(FakeTargetPacket))]
-    [ProtoInclude(10, typeof(ControllingPacket))]
-    [ProtoInclude(11, typeof(FocusPacket))]
-    [ProtoInclude(12, typeof(MagUpdatePacket))]
-    [ProtoInclude(13, typeof(OverRidesPacket))]
-    [ProtoInclude(14, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(15, typeof(WeaponIdPacket))]
-    [ProtoInclude(16, typeof(RequestTargetsPacket))]
-    [ProtoInclude(17, typeof(MouseInputSyncPacket))]
-    [ProtoInclude(18, typeof(ShootStatePacket))]
-    [ProtoInclude(19, typeof(RangePacket))]
-    [ProtoInclude(20, typeof(CycleAmmoPacket))]
+    [ProtoInclude(4, typeof(GridWeaponPacket))]
+    [ProtoInclude(5, typeof(MouseInputPacket))]
+    [ProtoInclude(6, typeof(BoolUpdatePacket))]
+    [ProtoInclude(7, typeof(FakeTargetPacket))]
+    [ProtoInclude(8, typeof(ControllingPacket))]
+    [ProtoInclude(9, typeof(FocusPacket))]
+    [ProtoInclude(10, typeof(MagUpdatePacket))]
+    [ProtoInclude(11, typeof(WeaponIdPacket))]
+    [ProtoInclude(12, typeof(RequestTargetsPacket))]
+    [ProtoInclude(13, typeof(MouseInputSyncPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -95,33 +88,6 @@ namespace WeaponCore
         public override int GetHashCode()
         {
             return (EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode());
-        }
-    }
-
-    [ProtoContract]
-    public class StatePacket : Packet
-    {
-        [ProtoMember(1)] internal CompStateValues Data;
-
-        public StatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
-    public class SettingPacket : Packet
-    {
-        [ProtoMember(1)] internal CompSettingsValues Data;
-        public SettingPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
         }
     }
 
@@ -224,39 +190,6 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class OverRidesPacket : Packet
-    {
-        [ProtoMember(1)] internal GroupOverrides Data;
-        [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
-        [ProtoMember(3)] internal uint MId;
-
-        public OverRidesPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-            GroupName = "";
-            MId = 0;
-        }
-    }
-
-    [ProtoContract]
-    public class ControllingPlayerPacket : Packet
-    {
-        [ProtoMember(1)] internal PlayerControl Data;
-        [ProtoMember(2)] internal uint MId;
-
-        public ControllingPlayerPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
     public class WeaponIdPacket : Packet
     {
         [ProtoMember(1), DefaultValue(-1)] internal int WeaponId = -1;
@@ -267,20 +200,6 @@ namespace WeaponCore
         {
             base.CleanUp();
             WeaponId = -1;
-        }
-    }
-
-    [ProtoContract]
-    public class MIdPacket : Packet
-    {
-        [ProtoMember(1)] internal uint Id;
-
-        public MIdPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Id = 0;
         }
     }
 
@@ -311,54 +230,130 @@ namespace WeaponCore
         }
     }
 
+    #endregion
+
+    #region MId Based Packets
     [ProtoContract]
-    public class ShootStatePacket : Packet
+    [ProtoInclude(14, typeof(RangePacket))]
+    [ProtoInclude(15, typeof(CycleAmmoPacket))]
+    [ProtoInclude(16, typeof(ShootStatePacket))]
+    [ProtoInclude(17, typeof(OverRidesPacket))]
+    [ProtoInclude(18, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(19, typeof(StatePacket))]
+    [ProtoInclude(20, typeof(SettingPacket))]
+    public class MIdPacket : Packet
     {
-        [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
-        [ProtoMember(2)] internal uint MId;
-        [ProtoMember(3), DefaultValue(-1)] internal int WeaponId = -1;
-        public ShootStatePacket() { }
+        [ProtoMember(1)] internal uint MId;
+
+        public MIdPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = TerminalActionState.ShootOff;
             MId = 0;
-            WeaponId = -1;
         }
     }
 
     [ProtoContract]
-    public class RangePacket : Packet
+    public class RangePacket : MIdPacket
     {
         [ProtoMember(1)] internal float Data;
-        [ProtoMember(2)] internal uint MId;
         public RangePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
             Data = 0f;
-            MId = 0;
         }
     }
 
     [ProtoContract]
-    public class CycleAmmoPacket : Packet
+    public class CycleAmmoPacket : MIdPacket
     {
-        [ProtoMember(1)] internal uint MId;
-        [ProtoMember(2), DefaultValue(-1)] internal int AmmoId = -1;
-        [ProtoMember(3), DefaultValue(-1)] internal int WeaponId = -1;
+        [ProtoMember(1), DefaultValue(-1)] internal int AmmoId = -1;
+        [ProtoMember(2), DefaultValue(-1)] internal int WeaponId = -1;
         public CycleAmmoPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            MId = 0;
             AmmoId = -1;
             WeaponId = -1;
         }
     }
+
+    [ProtoContract]
+    public class ShootStatePacket : MIdPacket
+    {
+        [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
+        [ProtoMember(2), DefaultValue(-1)] internal int WeaponId = -1;
+        public ShootStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = TerminalActionState.ShootOff;
+            WeaponId = -1;
+        }
+    }
+
+    [ProtoContract]
+    public class OverRidesPacket : MIdPacket
+    {
+        [ProtoMember(1)] internal GroupOverrides Data;
+        [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
+
+        public OverRidesPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+            GroupName = "";
+        }
+    }
+
+    [ProtoContract]
+    public class ControllingPlayerPacket : MIdPacket
+    {
+        [ProtoMember(1)] internal PlayerControl Data;
+
+        public ControllingPlayerPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class StatePacket : MIdPacket
+    {
+        [ProtoMember(1)] internal CompStateValues Data;
+
+        public StatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class SettingPacket : MIdPacket
+    {
+        [ProtoMember(1)] internal CompSettingsValues Data;
+        public SettingPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
     #endregion
 
     #region packet Data

@@ -22,22 +22,20 @@ namespace WeaponCore
     [ProtoContract]
     public class CompStateValues
     {
-        [ProtoMember(1)] public uint MId;
-        [ProtoMember(2), DefaultValue(-1)] public float PowerLevel;
-        [ProtoMember(3)] public bool Online;
-        [ProtoMember(4)] public bool Overload;
-        [ProtoMember(5)] public bool Message;
-        [ProtoMember(6)] public int Heat;
-        [ProtoMember(7)] public WeaponStateValues[] Weapons;
-        [ProtoMember(9)] public bool ShootOn;
-        [ProtoMember(10)] public bool ClickShoot;
-        [ProtoMember(11)] public PlayerControl CurrentPlayerControl;
-        [ProtoMember(12)] public float CurrentCharge;
-        [ProtoMember(13)] public int Version = Session.VersionControl;
+        [ProtoMember(1), DefaultValue(-1)] public float PowerLevel;
+        [ProtoMember(2)] public bool Online;
+        [ProtoMember(3)] public bool Overload;
+        [ProtoMember(4)] public bool Message;
+        [ProtoMember(5)] public int Heat;
+        [ProtoMember(6)] public WeaponStateValues[] Weapons;
+        [ProtoMember(7)] public bool ShootOn;
+        [ProtoMember(8)] public bool ClickShoot;
+        [ProtoMember(9)] public PlayerControl CurrentPlayerControl;
+        [ProtoMember(10)] public float CurrentCharge;
+        [ProtoMember(11)] public int Version = Session.VersionControl;
 
         public void Sync(CompStateValues syncFrom)
         {
-            MId = syncFrom.MId;
             PowerLevel = syncFrom.PowerLevel;
             Online = syncFrom.Online;
             Overload = syncFrom.Overload;
@@ -69,17 +67,16 @@ namespace WeaponCore
     [ProtoContract]
     public class CompSettingsValues
     {
-        [ProtoMember(1)] public uint MId;
-        [ProtoMember(2)] public bool Guidance = true;
-        [ProtoMember(3)] public int Overload = 1;
-        [ProtoMember(4)] public long Modes;
-        [ProtoMember(5)] public float DpsModifier = 1;
-        [ProtoMember(6)] public float RofModifier = 1;
-        [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
-        [ProtoMember(8)] public float Range = 100;
-        [ProtoMember(9)] public bool InventoryInited;
-        [ProtoMember(10)] public GroupOverrides Overrides;
-        [ProtoMember(11)] public int Version = Session.VersionControl;
+        [ProtoMember(1)] public bool Guidance = true;
+        [ProtoMember(2)] public int Overload = 1;
+        [ProtoMember(3)] public long Modes;
+        [ProtoMember(4)] public float DpsModifier = 1;
+        [ProtoMember(5)] public float RofModifier = 1;
+        [ProtoMember(6)] public WeaponSettingsValues[] Weapons;
+        [ProtoMember(7)] public float Range = 100;
+        [ProtoMember(8)] public bool InventoryInited;
+        [ProtoMember(9)] public GroupOverrides Overrides;
+        [ProtoMember(10)] public int Version = Session.VersionControl;
 
         public CompSettingsValues()
         {
@@ -88,7 +85,6 @@ namespace WeaponCore
 
         public void Sync(WeaponComponent comp, CompSettingsValues syncFrom)
         {
-            MId = syncFrom.MId;
             Guidance = syncFrom.Guidance;
             Modes = syncFrom.Modes;
             
@@ -226,10 +222,8 @@ namespace WeaponCore
         [ProtoMember(1)] public TransferTarget[] Targets;
         [ProtoMember(2)] public WeaponTimings[] Timings;
 
-        public void Save(WeaponComponent comp, Guid id)
+        public void Save(WeaponComponent comp)
         {
-            //if (!comp.Session.MpActive) return;
-
             if (comp.MyCube?.Storage == null) return;
 
             var sv = new WeaponValues {Targets = Targets, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
@@ -241,14 +235,14 @@ namespace WeaponCore
             }
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(sv);
-            comp.MyCube.Storage[id] = Convert.ToBase64String(binary);
+            comp.MyCube.Storage[comp.Session.MpWeaponSyncGuid] = Convert.ToBase64String(binary);
 
         }
 
         public static void Load(WeaponComponent comp)
         {
             string rawData;
-            if (comp.MyCube.Storage.TryGetValue(comp.Session.MpTargetSyncGuid, out rawData))
+            if (comp.MyCube.Storage.TryGetValue(comp.Session.MpWeaponSyncGuid, out rawData))
             {
                 var base64 = Convert.FromBase64String(rawData);
                 try
@@ -323,6 +317,35 @@ namespace WeaponCore
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
         }
+    }
+
+    [ProtoContract]
+    public class CompMids
+    {
+        [ProtoMember(1)] public uint[] MIds;
+
+        public void Save(WeaponComponent comp)
+        {
+            
+            if (comp.MyCube?.Storage == null) return;           
+
+            var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
+            comp.MyCube.Storage[comp.Session.CompMIdGuid] = Convert.ToBase64String(binary);
+        }
+
+        public static void Load(WeaponComponent comp)
+        {
+            string rawData;
+            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(comp.Session.CompMIdGuid, out rawData))
+            {
+                var base64 = Convert.FromBase64String(rawData);
+                comp.SyncIds = MyAPIGateway.Utilities.SerializeFromBinary<CompMids>(base64);
+            }
+            else
+                comp.SyncIds = new CompMids { MIds = new uint [Enum.GetValues(typeof(PacketType)).Length] };
+        }
+
+        public CompMids() { }
     }
 
     [ProtoContract]

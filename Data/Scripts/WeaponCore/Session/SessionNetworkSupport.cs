@@ -114,7 +114,7 @@ namespace WeaponCore
 
         internal void SendCycleAmmoNetworkUpdate(Weapon weapon, int ammoId)
         {
-            weapon.Comp.Set.Value.MId++;
+            weapon.Comp.SyncIds.MIds[(int)PacketType.CycleAmmo]++;
             if (IsClient)
             {
                 PacketsToServer.Add(new CycleAmmoPacket
@@ -123,7 +123,7 @@ namespace WeaponCore
                     SenderId = MultiplayerId,
                     PType = PacketType.CycleAmmo,
                     AmmoId = ammoId,
-                    MId = weapon.Comp.Set.Value.MId,
+                    MId = weapon.Comp.SyncIds.MIds[(int)PacketType.CycleAmmo],
                     WeaponId = weapon.WeaponId
                 });
             }
@@ -138,7 +138,7 @@ namespace WeaponCore
                         SenderId = 0,
                         PType = PacketType.CycleAmmo,
                         AmmoId = ammoId,
-                        MId = weapon.Comp.Set.Value.MId,
+                        MId = weapon.Comp.SyncIds.MIds[(int)PacketType.CycleAmmo],
                         WeaponId = weapon.WeaponId
                     }
                 });
@@ -185,14 +185,14 @@ namespace WeaponCore
         {
             if (MpActive)
             {
-                comp.Set.Value.MId++;
+                comp.SyncIds.MIds[(int)PacketType.OverRidesUpdate]++;
                 if (IsClient)
                 {
                     PacketsToServer.Add(new OverRidesPacket
                     {
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
-                        MId = comp.Set.Value.MId,
+                        MId = comp.SyncIds.MIds[(int)PacketType.OverRidesUpdate],
                         PType = PacketType.OverRidesUpdate,
                         Data = comp.Set.Value.Overrides,
                     });
@@ -206,7 +206,7 @@ namespace WeaponCore
                         {
                             EntityId = comp.MyCube.EntityId,
                             SenderId = 0,
-                            MId = comp.Set.Value.MId,
+                            MId = comp.SyncIds.MIds[(int)PacketType.OverRidesUpdate],
                             PType = PacketType.OverRidesUpdate,
                             Data = comp.Set.Value.Overrides,
                         }
@@ -217,7 +217,14 @@ namespace WeaponCore
 
         internal void SendActionShootUpdate(WeaponComponent comp, TerminalActionState state, int weaponId = -1)
         {
-            comp.State.Value.MId++;
+
+            var mId = 0u;
+               
+            if(weaponId == -1)
+                mId = ++comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState];
+            else
+                mId = ++comp.SyncIds.MIds[(int)PacketType.WeaponToolbarShootState];
+
             if (IsClient)
             {
                 comp.Session.PacketsToServer.Add(new ShootStatePacket
@@ -225,7 +232,7 @@ namespace WeaponCore
                     EntityId = comp.MyCube.EntityId,
                     SenderId = comp.Session.MultiplayerId,
                     PType = weaponId == -1 ? PacketType.CompToolbarShootState : PacketType.WeaponToolbarShootState,
-                    MId = comp.State.Value.MId,
+                    MId = mId,
                     Data = state,
                     WeaponId = weaponId,
                 });
@@ -240,7 +247,7 @@ namespace WeaponCore
                         EntityId = comp.MyCube.EntityId,
                         SenderId = comp.Session.MultiplayerId,
                         PType = weaponId == -1 ? PacketType.CompToolbarShootState : PacketType.WeaponToolbarShootState,
-                        MId = comp.State.Value.MId,
+                        MId = mId,
                         Data = state,
                         WeaponId = weaponId,
                     }
@@ -250,7 +257,7 @@ namespace WeaponCore
 
         internal void SendRangeUpdate(WeaponComponent comp, float range)
         {
-            comp.Set.Value.MId++;
+            comp.SyncIds.MIds[(int)PacketType.RangeUpdate]++;
 
             if (IsClient)
             {
@@ -259,7 +266,7 @@ namespace WeaponCore
                     EntityId = comp.MyCube.EntityId,
                     SenderId = comp.Session.MultiplayerId,
                     PType = PacketType.RangeUpdate,
-                    MId = comp.Set.Value.MId,
+                    MId = comp.SyncIds.MIds[(int)PacketType.RangeUpdate],
                     Data = range,
                 });
             }
@@ -273,7 +280,7 @@ namespace WeaponCore
                         EntityId = comp.MyCube.EntityId,
                         SenderId = comp.Session.MultiplayerId,
                         PType = PacketType.RangeUpdate,
-                        MId = comp.Set.Value.MId,
+                        MId = comp.SyncIds.MIds[(int)PacketType.RangeUpdate],
                         Data = range,
                     }
                 });
@@ -282,14 +289,14 @@ namespace WeaponCore
 
         internal void SendControlingPlayer(WeaponComponent comp)
         {
-            comp.State.Value.MId++;
+            comp.SyncIds.MIds[(int)PacketType.PlayerControlUpdate]++;
             if (IsClient)
             {
                 PacketsToServer.Add(new ControllingPlayerPacket
                 {
                     EntityId = comp.MyCube.EntityId,
                     SenderId = MultiplayerId,
-                    MId = comp.State.Value.MId,
+                    MId = comp.SyncIds.MIds[(int)PacketType.PlayerControlUpdate],
                     PType = PacketType.PlayerControlUpdate,
                     Data = comp.State.Value.CurrentPlayerControl,
                 });
@@ -303,7 +310,7 @@ namespace WeaponCore
                     {
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
-                        MId = comp.State.Value.MId,
+                        MId = comp.SyncIds.MIds[(int)PacketType.PlayerControlUpdate],
                         PType = PacketType.PlayerControlUpdate,
                         Data = comp.State.Value.CurrentPlayerControl,
                     }
@@ -341,7 +348,7 @@ namespace WeaponCore
         
         internal void SendCompStateUpdate(WeaponComponent comp)
         {
-            comp.State.Value.MId++;
+            comp.SyncIds.MIds[(int)PacketType.CompStateUpdate]++;
 
             if (IsClient)// client, send settings to server
             {
@@ -350,7 +357,8 @@ namespace WeaponCore
                     EntityId = comp.MyCube.EntityId,
                     PType = PacketType.CompStateUpdate,
                     SenderId = MultiplayerId,
-                    Data = comp.State.Value
+                    Data = comp.State.Value,
+                    MId = comp.SyncIds.MIds[(int)PacketType.CompStateUpdate]
                 });
             }
             else if (HandlesInput)
@@ -371,7 +379,7 @@ namespace WeaponCore
 
         internal void SendCompSettingUpdate(WeaponComponent comp)
         {
-            comp.Set.Value.MId++;
+            comp.SyncIds.MIds[(int)PacketType.CompSettingsUpdate]++;
 
             if (IsClient)// client, send settings to server
             {
@@ -380,7 +388,8 @@ namespace WeaponCore
                     EntityId = comp.MyCube.EntityId,
                     PType = PacketType.CompSettingsUpdate,
                     SenderId = MultiplayerId,
-                    Data = comp.Set.Value
+                    Data = comp.Set.Value,
+                    MId = comp.SyncIds.MIds[(int)PacketType.CompSettingsUpdate]
                 });
             }
             else if (HandlesInput)
@@ -393,7 +402,8 @@ namespace WeaponCore
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CompSettingsUpdate,
-                        Data = comp.Set.Value
+                        Data = comp.Set.Value,
+                        MId = comp.SyncIds.MIds[(int)PacketType.CompSettingsUpdate]
                     }
                 });
             }

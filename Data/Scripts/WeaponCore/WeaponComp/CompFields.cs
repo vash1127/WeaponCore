@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using System;
 using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.ModAPI;
@@ -36,6 +37,7 @@ namespace WeaponCore.Support
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
         internal WeaponValues WeaponValues = new WeaponValues();
+        internal CompMids SyncIds = new CompMids();
 
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;

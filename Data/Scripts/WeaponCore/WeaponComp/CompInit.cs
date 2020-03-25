@@ -4,7 +4,6 @@ using Sandbox.Game;
 using Sandbox.ModAPI;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 namespace WeaponCore.Support
 {
     public partial class WeaponComponent
@@ -26,11 +25,14 @@ namespace WeaponCore.Support
 
                 State.LoadState();
                 Set.LoadSettings();
+                CompMids.Load(this);
 
                 if (!Session.IsClient)
                 {
                     Set.Value.Overrides.TargetPainter = false;
                     Set.Value.Overrides.ManualControl = false;
+
+
                 }
 
                 var maxTrajectory = 0f;
