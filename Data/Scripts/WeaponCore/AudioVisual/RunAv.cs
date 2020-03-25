@@ -15,9 +15,6 @@ namespace WeaponCore.Support
         internal readonly List<AvBarrel> AvBarrels2 = new List<AvBarrel>(128);
 
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
-        internal readonly List<AvShot> AvStart = new List<AvShot>(128);
-        internal readonly List<AvShot> AvClose = new List<AvShot>(128);
-
         internal readonly Stack<AfterGlow> Glows = new Stack<AfterGlow>();
 
         internal Session Session;
@@ -47,6 +44,92 @@ namespace WeaponCore.Support
         private int _glows = 0;
         private int _models = 0;
 
+        internal void End()
+        {
+            
+            if (AvBarrels1.Count > 0) RunAvBarrels1();
+            if (AvBarrels2.Count > 0) RunAvBarrels2();
+
+            for (int i = AvShots.Count - 1; i >= 0; i--)
+            {
+                var av = AvShots[i];
+                var refreshed = av.LastTick == Session.Tick;
+                var shrinkCnt = av.TracerShrinks.Count;
+                var glowCnt = av.GlowSteps.Count;
+                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
+
+                if (refreshed)
+                {
+                    if (av.PrimeEntity != null)
+                    {
+                        _models++;
+                        if (av.OnScreen != AvShot.Screen.None)
+                        {
+                            if (!av.PrimeEntity.InScene && !av.Cloaked)
+                            {
+                                av.PrimeEntity.InScene = true;
+                                av.PrimeEntity.Render.UpdateRenderObject(true, false);
+                            }
+                            av.PrimeEntity.PositionComp.SetWorldMatrix(ref av.PrimeMatrix, null, false, false, false);
+                        }
+
+                        if ((av.Cloaked || av.OnScreen == AvShot.Screen.None) && av.PrimeEntity.InScene)
+                        {
+                            av.PrimeEntity.InScene = false;
+                            av.PrimeEntity.Render.RemoveRenderObjects();
+                        }
+                    }
+                    if (av.Triggered && av.TriggerEntity != null)
+                    {
+                        if ((!av.TriggerEntity.InScene))
+                        {
+                            av.TriggerEntity.InScene = true;
+                            av.TriggerEntity.Render.UpdateRenderObject(true, false);
+                        }
+                        av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
+                    }
+
+                    if (av.HasTravelSound)
+                    {
+
+                        if (!av.AmmoSound)
+                        {
+                            double distSqr;
+                            Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
+                            if (distSqr <= av.AmmoDef.Const.AmmoTravelSoundDistSqr)
+                                av.AmmoSoundStart();
+                        }
+                        else av.TravelEmitter.SetPosition(av.TracerFront);
+                    }
+
+                    if (av.HitSoundActived)
+                    {
+                        av.HitSoundActived = false;
+                        av.HitEmitter.SetPosition(av.TracerFront);
+                        av.HitEmitter.CanPlayLoopSounds = false;
+                        av.HitEmitter.PlaySound(av.HitSound, true);
+                    }
+
+                    if (av.FakeExplosion)
+                    {
+                        av.FakeExplosion = false;
+                        if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
+                        {
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
+                        }
+                    }
+                }
+
+                if (noNextStep)
+                {
+                    AvShotPool.Return(av);
+                    AvShots.RemoveAtFast(i);
+                }
+            }
+        }
+
+
         internal void Run()
         {
             if (Session.Tick180) {
@@ -58,12 +141,6 @@ namespace WeaponCore.Support
 
             _onScreens = 0;
             _models = 0;
-
-            if (AvBarrels1.Count > 0) RunAvBarrels1();
-            if (AvBarrels2.Count > 0) RunAvBarrels2();
-            if (AvClose.Count > 0) Close();
-            if (AvStart.Count > 0) Start();
-
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
@@ -153,87 +230,6 @@ namespace WeaponCore.Support
                     }
 
                     if (remove) av.GlowSteps.Dequeue();
-                }
-
-                if (refreshed)
-                {
-                    if (av.PrimeEntity != null)
-                    {
-                        _models++;
-                        if (av.OnScreen != AvShot.Screen.None)
-                        {
-                            if (!av.PrimeEntity.InScene && !av.Cloaked)
-                            {
-                                av.PrimeEntity.InScene = true;
-                                av.PrimeEntity.Render.UpdateRenderObject(true, false);
-                            }
-                            av.PrimeEntity.PositionComp.SetWorldMatrix(ref av.PrimeMatrix, null, false, false, false);
-                        }
-
-                        if ((av.Cloaked || av.OnScreen == AvShot.Screen.None) && av.PrimeEntity.InScene)
-                        {
-                            av.PrimeEntity.InScene = false;
-                            av.PrimeEntity.Render.RemoveRenderObjects();
-                        }
-                    }
-                    if (av.Triggered && av.TriggerEntity != null)
-                    {
-                        if ((!av.TriggerEntity.InScene))
-                        {
-                            av.TriggerEntity.InScene = true;
-                            av.TriggerEntity.Render.UpdateRenderObject(true, false);
-                        }
-                        av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
-                    }
-                    if (av.HasTravelSound)
-                    {
-                        if (!av.AmmoSound)
-                        {
-                            double distSqr;
-                            Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
-                            if (distSqr <= av.AmmoDef.Const.AmmoTravelSoundDistSqr)
-                            {
-                                av.AmmoSoundStart();
-                            }
-                        }
-                        else av.TravelEmitter.SetPosition(av.TracerFront);
-                    }
-
-                    if (av.HitSoundActived)
-                    {
-                        av.HitSoundActived = false;
-                        av.HitEmitter.SetPosition(av.TracerFront);
-                        av.HitEmitter.CanPlayLoopSounds = false;
-                        av.HitEmitter.PlaySound(av.HitSound, true);
-                        /*
-                        var prevPos = t.Position + (-t.Direction * t.Length);
-                        IHitInfo hitInfo;
-                        Physics.CastRay(prevPos, t.Position, out hitInfo, 15, false);
-                        if (hitInfo?.HitEntity != null)
-                        {
-                            Log.Line("hit");
-                            var myHitInfo = new MyHitInfo { Position = hitInfo.Position, Normal = hitInfo.Normal };
-                            MyDecals.HandleAddDecal(hitInfo.HitEntity, myHitInfo, new MyStringHash(), new MyStringHash(), null, -1f);
-                        }
-                    */
-                    }
-                    if (av.FakeExplosion)
-                    {
-                        av.FakeExplosion = false;
-                        if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
-                        {
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
-                        }
-                    }
-                }
-
-                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
-
-                if (noNextStep)
-                {
-                    AvShotPool.Return(av);
-                    AvShots.RemoveAtFast(i);
                 }
             }
         }
@@ -394,44 +390,6 @@ namespace WeaponCore.Support
                     }
                 }
             }
-        }
-
-        internal void Start()
-        {
-            for (int i = AvStart.Count - 1; i >= 0; i--) {
-
-                var av = AvStart[i];
-                if (av.StartSoundActived) {
-
-                    av.StartSoundActived = false;
-                    av.FireEmitter.PlaySound(av.FireSound, true);
-                }
-            }
-            AvStart.Clear();
-        }
-
-        internal void Close()
-        {
-            for (int i = AvClose.Count - 1; i >= 0; i--) {
-
-                var av = AvClose[i];
-                if (av.DetonateFakeExp) {
-
-                    av.FakeExplosion = false;
-                    if (ExplosionReady) {
-
-                        if (av.OnScreen != AvShot.Screen.None)
-                        {
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
-                        }
-                    }
-                }
-
-                if (!av.Active)
-                    AvShotPool.Return(av);
-            }
-            AvClose.Clear();
         }
     }
 
