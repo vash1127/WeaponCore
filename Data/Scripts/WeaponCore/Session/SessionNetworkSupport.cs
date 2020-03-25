@@ -227,6 +227,7 @@ namespace WeaponCore
                     PType = weaponId == -1 ? PacketType.CompToolbarShootState : PacketType.WeaponToolbarShootState,
                     MId = comp.State.Value.MId,
                     Data = state,
+                    WeaponId = weaponId,
                 });
             }
             else if (HandlesInput)
@@ -241,6 +242,7 @@ namespace WeaponCore
                         PType = weaponId == -1 ? PacketType.CompToolbarShootState : PacketType.WeaponToolbarShootState,
                         MId = comp.State.Value.MId,
                         Data = state,
+                        WeaponId = weaponId,
                     }
                 });
             }

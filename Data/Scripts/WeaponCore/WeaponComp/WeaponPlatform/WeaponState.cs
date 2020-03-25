@@ -98,7 +98,7 @@ namespace WeaponCore.Platform
                         {
                             var animation = AnimationsSet[state][i];
 
-                            if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles != null && muzzles.Contains(animation.Muzzle)))
+                            if (active && !animation.Running && (animation.Muzzle == "Any" || (muzzles != null && muzzles.Contains(animation.Muzzle))))
                             {
                                 if (animation.TriggerOnce && animation.Triggered) continue;
                                 animation.Triggered = true;
@@ -150,8 +150,8 @@ namespace WeaponCore.Platform
                                 animation.Running = true;
                                 //animation.Paused = Comp.ResettingSubparts;
                                 animation.CanPlay = canPlay;
-                                if (AnimationLookup.TryGetValue(
-                                    animation.EventIdLookup[oppositeEvnt], out animCheck) && animCheck.Running)
+                                string opEvent = "";
+                                if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out opEvent) && AnimationLookup.TryGetValue(opEvent, out animCheck) && animCheck.Running)
                                 {
                                     animCheck.Reverse = true;
 
