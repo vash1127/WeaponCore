@@ -148,6 +148,7 @@ namespace WeaponCore
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
+        internal Action<Vector3, float> ProjectileAddedCallback = (location, health) =>{ };
 
         internal ShieldApi SApi = new ShieldApi();
         internal NetworkReporter Reporter = new NetworkReporter();

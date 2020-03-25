@@ -55,6 +55,8 @@ namespace WeaponCore.Api
                 ["GetOptimalDps"] = new Func<IMyEntity, float>(GetOptimalDps),
                 ["GetActiveAmmo"] = new Func<IMyTerminalBlock, int, string>(GetActiveAmmo),
                 ["SetActiveAmmo"] = new Action<IMyTerminalBlock, int, string>(SetActiveAmmo),
+                ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
+                ["UnRegisterProjectile"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
             };
         }
 
@@ -422,11 +424,35 @@ namespace WeaponCore.Api
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
-                foreach (var ammoType in w.System.WeaponAmmoTypes)
+                for (int i = 0; i < w.System.WeaponAmmoTypes.Length; i++)
                 {
+                    var ammoType = w.System.WeaponAmmoTypes[i];
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
-                        w.ActiveAmmoDef = ammoType;
+                    {
+                        w.Set.AmmoTypeId = i;
+                        if (comp.Session.MpActive)
+                            comp.Session.SendCycleAmmoNetworkUpdate(w, i);
+
+                        break;
+                    }
                 }
+            }
+        }
+
+        private void RegisterProjectileAddedCallback(Action<Vector3, float> callback)
+        {
+            _session.ProjectileAddedCallback += callback;
+        }
+
+        private void UnRegisterProjectileAddedCallback(Action<Vector3, float> callback)
+        {
+            try
+            {
+                _session.ProjectileAddedCallback += callback;
+            }
+            catch (Exception e)
+            {
+                Log.Line($"Cannot remove Action, Action is not registered: {e}");
             }
         }
     }

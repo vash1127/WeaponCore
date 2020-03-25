@@ -46,6 +46,8 @@ namespace WeaponCore.Api
         private Func<IMyEntity, float> _getOptimalDps;
         private Func<IMyTerminalBlock, int, string> _getActiveAmmo;
         private Action<IMyTerminalBlock, int, string> _setActiveAmmo;
+        private Action<Action<Vector3, float>> _registerProjectileAdded;
+        private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
 
         private const long Channel = 67549756549;
         private bool _getWeaponDefinitions;
@@ -141,6 +143,8 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetOptimalDps", ref _getOptimalDps);
             AssignMethod(delegates, "GetActiveAmmo", ref _getActiveAmmo);
             AssignMethod(delegates, "SetActiveAmmo", ref _setActiveAmmo);
+            AssignMethod(delegates, "RegisterProjectileAdded", ref _registerProjectileAdded);
+            AssignMethod(delegates, "UnRegisterProjectileAdded", ref _unRegisterProjectileAdded);
 
             if (getWeaponDefinitions)
             {
@@ -199,6 +203,8 @@ namespace WeaponCore.Api
         public float GetOptimalDps(IMyEntity entity) => _getOptimalDps?.Invoke(entity) ?? 0f;
         public string GetActiveAmmo(IMyTerminalBlock weapon, int weaponId) => _getActiveAmmo?.Invoke(weapon, weaponId) ?? null;
         public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) => _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
+        public void RegisterProjectileAddedCallback(Action<Vector3, float> action) => _registerProjectileAdded?.Invoke(action);
+        public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) => _unRegisterProjectileAdded?.Invoke(action);
     }
 
     public static class WcApiDef
