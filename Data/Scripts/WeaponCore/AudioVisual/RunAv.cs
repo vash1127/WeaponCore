@@ -15,6 +15,7 @@ namespace WeaponCore.Support
         internal readonly List<AvBarrel> AvBarrels2 = new List<AvBarrel>(128);
 
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
+        internal readonly List<AvShot> HitSounds = new List<AvShot>(128);
         internal readonly Stack<AfterGlow> Glows = new Stack<AfterGlow>();
 
         internal Session Session;
@@ -49,6 +50,7 @@ namespace WeaponCore.Support
             
             if (AvBarrels1.Count > 0) RunAvBarrels1();
             if (AvBarrels2.Count > 0) RunAvBarrels2();
+            if (HitSounds.Count > 0) RunHitSounds();
 
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
@@ -102,17 +104,30 @@ namespace WeaponCore.Support
                         else av.TravelEmitter.SetPosition(av.TracerFront);
                     }
 
-                    if (av.HitSoundActived)
+                    if (av.HitParticle == AvShot.ParticleState.Custom) 
                     {
-                        av.HitSoundActived = false;
-                        av.HitEmitter.SetPosition(av.TracerFront);
-                        av.HitEmitter.CanPlayLoopSounds = false;
-                        av.HitEmitter.PlaySound(av.HitSound, true);
-                    }
 
-                    if (av.FakeExplosion)
+                        av.HitParticle = AvShot.ParticleState.Dirty;
+                        if (av.OnScreen != AvShot.Screen.None) {
+                            var pos = av.Hit.HitPos;
+                            var matrix = MatrixD.CreateTranslation(pos);
+                            if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out av.HitEffect)) {
+
+                                av.HitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                                var scaler = 1;
+                                av.HitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
+                                var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
+
+                                av.HitEffect.UserScale = scale * scaler;
+                                var hitVel = av.Hit.HitVelocity;
+                                Vector3D.ClampToSphere(ref hitVel, (float)av.MaxSpeed);
+                                av.HitEffect.Velocity = hitVel;
+                            }
+                        }
+                    }
+                    else if (av.HitParticle == AvShot.ParticleState.Explosion)
                     {
-                        av.FakeExplosion = false;
+                        av.HitParticle = AvShot.ParticleState.Dirty;
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
@@ -254,6 +269,17 @@ namespace WeaponCore.Support
             if (av.TracerShrinks.Count == 0) av.ResetHit();
         }
 
+        internal void RunHitSounds()
+        {
+            for (int i = 0; i < HitSounds.Count; i++)
+            {
+                var av = HitSounds[i];
+                av.HitEmitter.SetPosition(av.TracerFront);
+                av.HitEmitter.PlaySound(av.HitSound);
+            }
+            HitSounds.Clear();
+        }
+
         internal void RunAvBarrels1()
         {
             for (int i = AvBarrels1.Count - 1; i >= 0; i--) {
@@ -300,9 +326,6 @@ namespace WeaponCore.Support
 
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel1.Color;
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
-                            //weapon.BarrelEffects1[muzzle.MuzzleId].DistanceMax = particles.Barrel1.Extras.MaxDistance;
-                            //weapon.BarrelEffects1[muzzle.MuzzleId].DurationMax = particles.Barrel1.Extras.MaxDuration;
-                            //weapon.BarrelEffects1[muzzle.MuzzleId].Loop = muzzle.Av1Looping;
                             weapon.BarrelEffects1[muzzle.MuzzleId].WorldMatrix = matrix;
                             weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             weapon.BarrelEffects1[muzzle.MuzzleId].Play();
@@ -369,9 +392,6 @@ namespace WeaponCore.Support
 
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
-                            //weapon.BarrelEffects2[muzzle.MuzzleId].DistanceMax = particles.Barrel2.Extras.MaxDistance;
-                            //weapon.BarrelEffects2[muzzle.MuzzleId].DurationMax = particles.Barrel2.Extras.MaxDuration;
-                            //weapon.BarrelEffects2[muzzle.MuzzleId].Loop = muzzle.Av2Looping;
                             weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
                             weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             weapon.BarrelEffects2[muzzle.MuzzleId].Play();

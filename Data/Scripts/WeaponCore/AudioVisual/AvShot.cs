@@ -23,7 +23,7 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-
+        internal MyParticleEffect HitEffect;
         internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>(64);
         internal Queue<Shrinks> TracerShrinks = new Queue<Shrinks>(64);
         internal List<Vector3D> Offsets = new List<Vector3D>(64);
@@ -35,9 +35,7 @@ namespace WeaponCore.Support
         internal bool AmmoSound;
         internal bool HasTravelSound;
         internal bool HitSoundActive;
-        internal bool HitSoundActived;
         internal bool StartSoundActived;
-        internal bool FakeExplosion;
         internal bool Triggered;
         internal bool Cloaked;
         internal bool Active;
@@ -73,6 +71,7 @@ namespace WeaponCore.Support
         internal int TracerStep;
         internal int TracerSteps;
         internal uint LastTick;
+        internal ParticleState HitParticle;
         internal TracerState Tracer;
         internal TrailState Trail;
         internal ModelState Model;
@@ -93,6 +92,14 @@ namespace WeaponCore.Support
         internal BoundingSphereD ModelSphereCurrent;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal Shrinks EmptyShrink;
+
+        internal enum ParticleState
+        {
+            None,
+            Explosion,
+            Custom,
+            Dirty,
+        }
 
         internal enum TracerState
         {
@@ -119,6 +126,7 @@ namespace WeaponCore.Support
         {
             None,
             ModelOnly,
+            InProximity,
             Tracer,
             Trail,
         }
@@ -144,6 +152,7 @@ namespace WeaponCore.Support
             ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
             ShrinkInited = false;
+            HitEmitter.CanPlayLoopSounds = false;
             if (AmmoDef.Const.DrawLine) Tracer = !AmmoDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 
@@ -203,7 +212,7 @@ namespace WeaponCore.Support
                     //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
                     //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
 
-                    double? dist;
+                   double? dist;
                    s.CameraFrustrum.Intersects(ref rayTracer, out dist);
 
                     if (dist != null && dist <= a.VisualLength)
@@ -229,6 +238,9 @@ namespace WeaponCore.Support
                             a.OnScreen = Screen.ModelOnly;
                     }
                 }
+                if (a.OnScreen == Screen.None && Vector3D.DistanceSquared(a.TracerFront, a.Ai.Session.CameraPos) <= 225) 
+                    a.OnScreen = Screen.InProximity;
+
 
                 if (i.MuzzleId == -1)
                     return;
@@ -259,7 +271,7 @@ namespace WeaponCore.Support
 
                 }
 
-                var lineOnScreen = a.OnScreen > (Screen)1;
+                var lineOnScreen = a.OnScreen > (Screen)2;
 
                 if (lineEffect && (a.Active || lineOnScreen))
                     a.LineVariableEffects();
@@ -301,8 +313,7 @@ namespace WeaponCore.Support
 
             if (DetonateFakeExp)
             {
-
-                FakeExplosion = false;
+                HitParticle = ParticleState.Dirty;
                 if (Ai.Session.Av.ExplosionReady)
                 {
 
@@ -497,8 +508,6 @@ namespace WeaponCore.Support
                             return;
                         }
 
-                        //effect.DistanceMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
-                        //effect.DurationMax = AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
                         effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
                         effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                         effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
@@ -659,11 +668,10 @@ namespace WeaponCore.Support
             Dirty = false;
             AmmoSound = false;
             HitSoundActive = false;
-            HitSoundActived = false;
             StartSoundActived = false;
             IsShrapnel = false;
             HasTravelSound = false;
-            FakeExplosion = false;
+            HitParticle = ParticleState.None;
             Triggered = false;
             Cloaked = false;
             Active = false;
@@ -677,6 +685,8 @@ namespace WeaponCore.Support
             GlowSteps.Clear();
             Offsets.Clear();
             //
+            HitEffect?.Stop(false);
+            HitEffect = null;
             FiringWeapon = null;
             PrimeEntity = null;
             TriggerEntity = null;

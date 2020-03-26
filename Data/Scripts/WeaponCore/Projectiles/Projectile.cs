@@ -96,7 +96,6 @@ namespace WeaponCore.Projectiles
         internal bool LineOrNotModel;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
-        internal MyParticleEffect HitEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<VirtualProjectile> VrPros = new List<VirtualProjectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
@@ -116,16 +115,6 @@ namespace WeaponCore.Projectiles
             EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
-            /*
-            if (HitEffect != null)
-            {
-                Log.Line($"HitEffect Start: {HitEffect.GetName()} - WeaponName:{Info.System.WeaponName} - Loop: {HitEffect.Loop}");
-            }
-            if (AmmoEffect != null)
-            {
-                Log.Line($"AmmoEffect Start: {AmmoEffect.GetName()} - WeaponName:{Info.System.WeaponName} - Loop: {AmmoEffect.Loop}");
-            }
-            */
             Hit = new Hit();
             LastHitPos = null;
             LastHitEntVel = null;
@@ -249,7 +238,7 @@ namespace WeaponCore.Projectiles
                     var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
                     HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
                 }
-                FakeExplosion = HitParticleActive && Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive;
+                FakeExplosion = HitParticleActive && Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && Info.AmmoDef.AmmoGraphics.Particles.Hit.Name == string.Empty;
             }
 
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
@@ -892,11 +881,20 @@ namespace WeaponCore.Projectiles
                 var closeToCamera = distToCameraSqr < 360000;
                 if (ForceHitParticle) LastHitPos = Position;
 
-                if (Info.AvShot.OnScreen == Screen.Tracer && HitParticleActive && Info.AmmoDef.Const.HitParticle) PlayHitParticle();
-                else if (FakeExplosion && (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)) Info.AvShot.FakeExplosion = true;
-                Info.AvShot.HitSoundActived = Info.AmmoDef.Const.HitSound && (Info.AvShot.HitSoundActive && (ForceHitParticle || distToCameraSqr < Info.AmmoDef.Const.HitSoundDistSqr || LastHitPos.HasValue && (!Info.LastHitShield || Info.AmmoDef.AmmoAudio.HitPlayShield)));
+                if (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)
+                {
+                    if (FakeExplosion)
+                        Info.AvShot.HitParticle = ParticleState.Explosion;
+                    else if (HitParticleActive && Info.AmmoDef.Const.HitParticle && !(Info.LastHitShield && !Info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield))
+                        Info.AvShot.HitParticle = ParticleState.Custom;
+                }
 
-                if (Info.AvShot.HitSoundActived) Info.AvShot.HitEmitter.Entity = Hit.Entity;
+                var hitSound = Info.AmmoDef.Const.HitSound && (Info.AvShot.HitSoundActive && (ForceHitParticle || distToCameraSqr < Info.AmmoDef.Const.HitSoundDistSqr || LastHitPos.HasValue && (!Info.LastHitShield || Info.AmmoDef.AmmoAudio.HitPlayShield)));
+                if (hitSound && !Info.AvShot.HitEmitter.IsPlaying)
+                {
+                    Info.AvShot.HitEmitter.Entity = Hit.Entity;
+                    Info.Ai.Session.Av.HitSounds.Add(Info.AvShot);
+                }
                 Info.LastHitShield = false;
             }
             Colliding = false;
@@ -929,7 +927,6 @@ namespace WeaponCore.Projectiles
                     var offVec = Position + Vector3D.Rotate(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                     matrix.Translation = offVec;
                 }
-
                 var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : int.MaxValue;
                 if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, renderId, out AmmoEffect))
                 {
@@ -946,34 +943,6 @@ namespace WeaponCore.Projectiles
             catch (Exception ex) { Log.Line($"Exception in PlayAmmoParticle: {ex} AmmoEffect:{AmmoEffect != null} - info:{Info != null} - AvShot:{Info?.AvShot != null} - Ai:{Info?.Ai != null} - Session:{Info?.Ai?.Session != null} - System:{Info?.System != null} - Model:{ModelState == EntityState.Exists} - PrimeEntity:{Info?.PrimeEntity != null}"); }
         }
 
-        internal void PlayHitParticle()
-        {
-            if (HitEffect != null)
-                DisposeHitEffect(false);
-
-            if (LastHitPos.HasValue)
-            {
-                if (!Info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield && Info.LastHitShield)
-                    return;
-
-                var pos = LastHitPos.Value;
-                var matrix = MatrixD.CreateTranslation(pos);
-                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect))
-                {
-                    HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                    var scaler = 1;
-
-                    HitEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
-                    var scale = Info.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, Info.AvShot.DistanceToLine / Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, BaseAmmoParticleScale) : 1;
-
-                    HitEffect.UserScale = scale * scaler;
-                    var hitVel = LastHitEntVel ?? Vector3.Zero;
-                    Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
-                    HitEffect.Velocity = hitVel;
-                }
-            }
-        }
-
         internal void DisposeAmmoEffect(bool instant, bool pause)
         {
             if (AmmoEffect != null)
@@ -983,21 +952,6 @@ namespace WeaponCore.Projectiles
             }
 
             if (pause) ParticleStopped = true;
-        }
-
-        internal void DisposeHitEffect(bool instant)
-        {
-            if (HitEffect != null)
-            {
-                HitEffect.Stop(instant);
-                HitEffect = null;
-            }
-        }
-
-        internal void PauseAv()
-        {
-            DisposeAmmoEffect(true, true);
-            DisposeHitEffect(true);
         }
 
         internal void DestroyProjectile()
@@ -1041,11 +995,6 @@ namespace WeaponCore.Projectiles
             {
                 if (Info.AmmoDef.Const.AmmoParticle) DisposeAmmoEffect(false, false);
                 HitEffects();
-                if (HitEffect != null && HitEffect.Loop)
-                {
-                    Log.Line($"HitEffect Loop Detect: {HitEffect.GetName()} - WeaponName:{Info.System.WeaponName}");
-                    DisposeHitEffect(true);
-                }
             }
             State = ProjectileState.Dead;
             Info.Ai.Session.Projectiles.CleanUp.Add(this);

@@ -152,11 +152,6 @@ namespace WeaponCore
             WeaponCoreTurretBlockDefs.Clear();
             foreach (var p in Projectiles.ProjectilePool)
             {
-                if (p.HitEffect != null)
-                {
-                    Log.Line($"active hitEffect during unload, cleaning up");
-                    p.HitEffect.Stop();
-                }
                 if (p.AmmoEffect != null)
                 {
                     Log.Line($"active ammoEffect during unload, cleaning up");

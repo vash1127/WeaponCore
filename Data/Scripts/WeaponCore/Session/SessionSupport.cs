@@ -450,7 +450,21 @@ namespace WeaponCore
             }
 
             foreach (var p in Projectiles.ActiveProjetiles)
-                p.PauseAv();
+            {
+                p.ParticleStopped = true;
+                if (p.AmmoEffect != null)
+                {
+                    p.AmmoEffect.Stop();
+                    p.AmmoEffect = null;
+                }
+
+                if (p.Info.AvShot?.HitEffect != null)
+                {
+                    p.Info.AvShot.HitEffect.Stop();
+                    p.Info.AvShot.HitEffect = null;
+                }
+
+            }
 
             if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
         }
