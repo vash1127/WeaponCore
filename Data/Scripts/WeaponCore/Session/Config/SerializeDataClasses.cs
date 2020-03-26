@@ -206,14 +206,14 @@ namespace WeaponCore
     [ProtoContract]
     public class RequestTargetsPacket : Packet
     {
-        [ProtoMember(1)] internal long[] Comps;
+        [ProtoMember(1)] internal List<long> Comps;
 
         public RequestTargetsPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Comps = new long[0];
+            Comps.Clear();
         }
     }
 

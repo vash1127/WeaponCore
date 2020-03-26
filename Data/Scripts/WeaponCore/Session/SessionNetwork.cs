@@ -612,14 +612,12 @@ namespace WeaponCore
                             if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
                                 compsToCheck.Add(packet.Data[j].CompEntityId);
                         }
-                        var compsArr = new long[compsToCheck.Count];
-                        compsToCheck.CopyTo(compsArr);
 
                         PacketsToServer.Add(new RequestTargetsPacket {
                             EntityId = erroredPacket.Packet.EntityId,
                             SenderId = MultiplayerId,
                             PType = PacketType.WeaponUpdateRequest,
-                            Comps = compsArr
+                            Comps = new List<long>(compsToCheck),
                         });
 
                         success = true;
@@ -1031,7 +1029,7 @@ namespace WeaponCore
                                     Data = new List<WeaponData>()
                                 };
 
-                                for (int i = 0; i < targetRequestPacket.Comps.Length; i++)
+                                for (int i = 0; i < targetRequestPacket.Comps.Count; i++)
                                 {
                                     var compId = targetRequestPacket.Comps[i];
                                     var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
@@ -1406,10 +1404,8 @@ namespace WeaponCore
                     EntityId = gridComps.Key.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.WeaponUpdateRequest,
-                    Comps = new long[gridComps.Value.Count],
+                    Comps = new List<long>(gridComps.Value),
                 };
-
-                gridComps.Value.CopyTo(packet.Comps);
 
                 PacketsToServer.Add(packet);
             }
