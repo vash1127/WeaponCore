@@ -116,7 +116,16 @@ namespace WeaponCore.Projectiles
             EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
-
+            /*
+            if (HitEffect != null)
+            {
+                Log.Line($"HitEffect Start: {HitEffect.GetName()} - WeaponName:{Info.System.WeaponName} - Loop: {HitEffect.Loop}");
+            }
+            if (AmmoEffect != null)
+            {
+                Log.Line($"AmmoEffect Start: {AmmoEffect.GetName()} - WeaponName:{Info.System.WeaponName} - Loop: {AmmoEffect.Loop}");
+            }
+            */
             Hit = new Hit();
             LastHitPos = null;
             LastHitEntVel = null;
@@ -924,7 +933,6 @@ namespace WeaponCore.Projectiles
                 var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : int.MaxValue;
                 if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, renderId, out AmmoEffect))
                 {
-                    //AmmoEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.MaxDistance;
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                     var scaler = 1;
 
@@ -952,9 +960,6 @@ namespace WeaponCore.Projectiles
                 var matrix = MatrixD.CreateTranslation(pos);
                 if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect))
                 {
-                    //HitEffect.Loop = false;
-                    //HitEffect.DurationMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDuration;
-                    //HitEffect.DistanceMax = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance;
                     HitEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                     var scaler = 1;
 
