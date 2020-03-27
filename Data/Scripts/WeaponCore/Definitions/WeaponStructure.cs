@@ -473,11 +473,18 @@ namespace WeaponCore.Support
 
             if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
 
+            for (int i = 0; i < wDef.Ammos.Length; i++)
+            {
+                var ammoType = wDef.Ammos[i];
+                if (ammoType.AmmoRound.Equals(ammo.AmmoDef.Shrapnel.AmmoRound))
+                    ShrapnelId = i;
+            }
 
             IsMine = ammo.AmmoDef.Trajectory.Guidance == DetectFixed || ammo.AmmoDef.Trajectory.Guidance == DetectSmart || ammo.AmmoDef.Trajectory.Guidance == DetectTravelTo;
             IsField = ammo.AmmoDef.Trajectory.FieldTime > 0;
             IsHybrid = ammo.AmmoDef.HybridRound;
-            IsTurretSelectable = !ammo.IsShrapnel || ammo.AmmoDef.HardPointUsable; 
+            IsTurretSelectable = !ammo.IsShrapnel || ammo.AmmoDef.HardPointUsable;
+
 
             AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
@@ -528,29 +535,19 @@ namespace WeaponCore.Support
 
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
-            
-            for (int i = 0; i < wDef.Ammos.Length; i++)
-            {
-                var ammoType = wDef.Ammos[i];
-                if (ammoType.AmmoRound.Equals(ammo.AmmoDef.Shrapnel.AmmoRound))
-                    ShrapnelId = i;
-            }
+
         }
 
         private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
             var a = ammoDef.AmmoDef;
+            var hasShrapnel = ShrapnelId > -1;
             var l = wDef.HardPoint.Loading;
             if (s.ReloadTime > 0 || MagazineSize > 0)
             {
                 var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
                 burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
-                //var rof = s.RateOfFire;
-                //var bps = s.BarrelsPerShot;
-                //var shotRate = rof / bps;
-                //var magDrainRate = MagazineSize / shotRate;
-                //var drainPerMin = magDrainRate * 3600;
                 var drainPerMin = ((MagazineSize / (float)s.RateOfFire) / s.BarrelsPerShot) * 3600.0f;
                 drainPerMin = MagazineSize >= 1 ? drainPerMin : 1;
 
@@ -561,6 +558,14 @@ namespace WeaponCore.Support
                 baseDps = BaseDamage * shotsPerSec;
                 areaDps = !AmmoAreaEffect ? 0 : (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
+                if (hasShrapnel)
+                {
+                    var sAmmo = wDef.Ammos[ShrapnelId];
+                    var fragments = a.Shrapnel.Fragments;
+                    baseDps += sAmmo.BaseDamage * fragments;
+                    areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5f)) * fragments);
+                    detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? (sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments : 0;
+                }
                 peakDps = (baseDps + areaDps + detDps);
             }
             else
@@ -571,6 +576,14 @@ namespace WeaponCore.Support
                 baseDps = BaseDamage * shotsPerSec;
                 areaDps = !AmmoAreaEffect ? 0 : (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
                 detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
+                if (hasShrapnel)
+                {
+                    var sAmmo = wDef.Ammos[ShrapnelId];
+                    var fragments = a.Shrapnel.Fragments;
+                    baseDps += sAmmo.BaseDamage * fragments;
+                    areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5f)) * fragments);
+                    detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? (sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments : 0;
+                }
                 peakDps = (baseDps + areaDps + detDps);
             }
         }
@@ -736,7 +749,7 @@ namespace WeaponCore.Support
 
         private static void PrimeEntityClear(MyEntity myEntity)
         {
-            myEntity.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            myEntity.PositionComp.SetWorldMatrix(ref MatrixD.Identity, null, false, false, false);
             myEntity.InScene = false;
             myEntity.Render.RemoveRenderObjects();
         }
