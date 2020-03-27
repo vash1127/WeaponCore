@@ -131,6 +131,7 @@ namespace WeaponCore
 
             foreach (var av in Av.AvShots)
             {
+                av.HitEffect?.Stop();
                 av.GlowSteps.Clear();
                 Av.AvShotPool.Return(av);
             }
@@ -150,14 +151,10 @@ namespace WeaponCore
             VanillaCoreIds.Clear();
             WeaponCoreFixedBlockDefs.Clear();
             WeaponCoreTurretBlockDefs.Clear();
+
             foreach (var p in Projectiles.ProjectilePool)
-            {
-                if (p.AmmoEffect != null)
-                {
-                    Log.Line($"active ammoEffect during unload, cleaning up");
-                    p.AmmoEffect.Stop();
-                }
-            }
+                p.AmmoEffect?.Stop();
+
             Projectiles.CheckPool.Clean();
             Projectiles.ShrapnelToSpawn.Clear();
             Projectiles.ShrapnelPool.Clean();

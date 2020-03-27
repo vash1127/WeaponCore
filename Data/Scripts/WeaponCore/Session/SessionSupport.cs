@@ -442,6 +442,7 @@ namespace WeaponCore
         {
             Pause = true;
             Log.Line($"Stopping all AV due to pause");
+            /*
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
@@ -465,7 +466,7 @@ namespace WeaponCore
                 }
 
             }
-
+            */
             if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
         }
 

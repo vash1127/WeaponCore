@@ -111,6 +111,7 @@ namespace WeaponCore.Support
                         if (av.OnScreen != AvShot.Screen.None) {
                             var pos = av.Hit.HitPos;
                             var matrix = MatrixD.CreateTranslation(pos);
+
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out av.HitEffect)) {
 
                                 av.HitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;

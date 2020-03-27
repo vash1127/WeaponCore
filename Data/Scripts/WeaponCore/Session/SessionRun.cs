@@ -3,6 +3,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
@@ -40,7 +41,7 @@ namespace WeaponCore
             try
             {
                 DsUtil.Start("av");
-                Av.End();
+                if (!DedicatedServer) Av.End();
                 DsUtil.Complete("av", true);
 
                 Timings();
