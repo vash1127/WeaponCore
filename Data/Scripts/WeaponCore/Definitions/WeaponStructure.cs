@@ -562,7 +562,7 @@ namespace WeaponCore.Support
                 {
                     var sAmmo = wDef.Ammos[ShrapnelId];
                     var fragments = a.Shrapnel.Fragments;
-                    baseDps += sAmmo.BaseDamage * fragments;
+                    baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
                     areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5f)) * fragments) * shotsPerSec;
                     detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? ((sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments) * shotsPerSec : 0;
                 }
@@ -580,7 +580,7 @@ namespace WeaponCore.Support
                 {
                     var sAmmo = wDef.Ammos[ShrapnelId];
                     var fragments = a.Shrapnel.Fragments;
-                    baseDps += sAmmo.BaseDamage * fragments;
+                    baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
                     areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5f)) * fragments) * shotsPerSec;
                     detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? ((sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments) * shotsPerSec : 0;
                 }
