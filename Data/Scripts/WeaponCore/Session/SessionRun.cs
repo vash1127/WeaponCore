@@ -3,7 +3,6 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
@@ -157,9 +156,6 @@ namespace WeaponCore
                         TargetSelection();
                 }
 
-                if (FragmentsNeedingEntities.Count > 0)
-                    Projectiles.PrepFragmentEntities();
-
                 DsUtil.Start("projectiles1");
                 Projectiles.Stage1();
                 DsUtil.Complete("projectiles1", true);
@@ -216,9 +212,7 @@ namespace WeaponCore
         public override void HandleInput()
         {
             if (HandlesInput)
-            {
                 UiInput.UpdateInputState();
-            }
         }
 
         public override void LoadData()

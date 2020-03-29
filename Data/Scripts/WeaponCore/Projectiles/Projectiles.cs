@@ -39,6 +39,9 @@ namespace WeaponCore.Projectiles
 
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
+            if (Session.FragmentsNeedingEntities.Count > 0)
+                PrepFragmentEntities();
+
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
 
