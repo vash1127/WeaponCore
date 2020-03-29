@@ -40,10 +40,44 @@ namespace WeaponCore
         {
             try
             {
+                //
+                // Finish work from last frame
+                //
+                DsUtil.Start("projectiles2");
+                Projectiles.Stage2();
+                DsUtil.Complete("projectiles2", true);
+
+                DsUtil.Start("damage");
+                if (_effectedCubes.Count > 0)
+                    ApplyGridEffect();
+
+                if (Tick60)
+                    GridEffects();
+
+                if (Hits.Count > 0) ProcessHits();
+                DsUtil.Complete("damage", true);
+                
+                if (MpActive)
+                {
+                    DsUtil.Start("network1");
+                    if (WeaponsToSync.Count > 0) Proccessor.Proccess();
+                    if (UiInput.MouseButtonPressed != UiInput.MouseButtonWasPressed && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
+                    if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
+                    
+                    Proccessor.AddPackets();
+
+                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
+                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
+                    if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
+                    DsUtil.Complete("network1", true);
+                }
+
                 DsUtil.Start("av");
                 if (!DedicatedServer) Av.End();
                 DsUtil.Complete("av", true);
-
+                //
+                // Finished last frame
+                //
                 Timings();
 
                 if (!WeaponAmmoRemoveQueue.IsEmpty && CTask.IsComplete)
@@ -126,21 +160,9 @@ namespace WeaponCore
                 if (FragmentsNeedingEntities.Count > 0)
                     Projectiles.PrepFragmentEntities();
 
-                DsUtil.Start("projectiles");
-                Projectiles.Update();
-                DsUtil.Complete("projectiles", true);
-
-                DsUtil.Start("network1");
-                if (WeaponsToSync.Count > 0) Proccessor.Proccess();
-                DsUtil.Complete("network1", true);
-
-                /*
-                if (!DedicatedServer)
-                {
-                    //PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
-                    if (WeaponsToSync.Count > 0) NTask = MyAPIGateway.Parallel.StartBackground(Proccessor.Proccess);
-                }
-                */
+                DsUtil.Start("projectiles1");
+                Projectiles.Stage1();
+                DsUtil.Complete("projectiles1", true);
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -153,32 +175,8 @@ namespace WeaponCore
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer) ProcessAnimations();
 
-                /*
-                DsUtil.Start("projectiles");
-                if (!DedicatedServer && false)
-                {
-                    if (!PTask.IsComplete)
-                        PTask.Wait();
-
-                    if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
-                        TaskHasErrors(ref PTask, "PTask");
-                }
-                else Projectiles.Update();
-
-                DsUtil.Complete("projectiles", true);
-                */
-                if (_effectedCubes.Count > 0) 
-                    ApplyGridEffect();
-
-                if (Tick60) 
-                    GridEffects();
-
                 if (GridTask.IsComplete)
                     CheckDirtyGrids();
-
-                DsUtil.Start("damage");
-                if (Hits.Count > 0) ProcessHits();
-                DsUtil.Complete("damage", true);
 
                 if (IsClient)
                 {
@@ -188,28 +186,6 @@ namespace WeaponCore
                     if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
                         TaskHasErrors(ref MTask, "MTask");
                 }
-                /*
-                DsUtil.Start("network");
-                if (!DedicatedServer)
-                {
-                    if (!NTask.IsComplete)
-                        NTask.Wait();
-
-                    if (NTask.IsComplete && NTask.valid && NTask.Exceptions != null)
-                        TaskHasErrors(ref NTask, "NTask");
-                }
-                else if (WeaponsToSync.Count > 0) Proccessor.Proccess();
-                */
-
-                DsUtil.Start("network2");
-                Proccessor.AddPackets();
-
-                if (MpActive && !HandlesInput)
-                {
-                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
-                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                }
-                DsUtil.Complete("network2", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
@@ -224,7 +200,7 @@ namespace WeaponCore
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-                if ((UiInput.PlayerCamera || UiInput.FirstPersonView || UiInput.InSpyCam) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();
                     TargetUi.DrawTargetUi();
@@ -242,14 +218,6 @@ namespace WeaponCore
             if (HandlesInput)
             {
                 UiInput.UpdateInputState();
-                if (MpActive)
-                {
-                    if (UiInput.MouseButtonPressed != UiInput.MouseButtonWasPressed && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
-                    if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
-                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
-                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                    if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
-                }
             }
         }
 

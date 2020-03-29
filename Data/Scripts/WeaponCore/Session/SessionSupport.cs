@@ -63,7 +63,6 @@ namespace WeaponCore
                 }
                 else if (!FirstLoop)
                 {
-                    Spawn.SpawnCamera("SpyCam", out SpyCam);
                     FirstLoop = true;
                     foreach (var t in AllDefinitions)
                     {
@@ -89,7 +88,9 @@ namespace WeaponCore
         {
             var netTime1 = DsUtil.GetValue("network1");
             var netTime2 = DsUtil.GetValue("network2");
-            var projectileTime = DsUtil.GetValue("projectiles");
+            var projectile1Time = DsUtil.GetValue("projectiles1");
+            var projectile2Time = DsUtil.GetValue("projectiles2");
+
             var updateTime = DsUtil.GetValue("shoot");
             var damageTime = DsUtil.GetValue("damage");
             var drawTime = DsUtil.GetValue("draw");
@@ -98,7 +99,7 @@ namespace WeaponCore
             var ai = DsUtil.GetValue("ai");
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
-            Log.LineShortDate($"(CPU-T) --- <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <NET2>{netTime2.Median:0.0000}/{netTime2.Min:0.0000}/{netTime2.Max:0.0000}>");
+            Log.LineShortDate($"(CPU-T) --- <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <P1>{projectile1Time.Median:0.0000}/{projectile1Time.Min:0.0000}/{projectile1Time.Max:0.0000} <P2>{projectile2Time.Median:0.0000}/{projectile2Time.Min:0.0000}/{projectile2Time.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <NET2>{netTime2.Median:0.0000}/{netTime2.Min:0.0000}/{netTime2.Max:0.0000}>");
             Log.LineShortDate($"(STATS) -------- AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]");
             TargetRequests = 0;
             TargetChecks = 0;
@@ -540,20 +541,6 @@ namespace WeaponCore
             VanillaSubpartNames.Add("GatlingTurretBase1");
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
-        }
-
-        private MyCameraBlock CameraEntityActivator()
-        {
-            var ent = new MyEntity();
-            ent.Init(null, null, null, null, null);
-            ent.Render.CastShadows = false;
-            ent.IsPreview = true;
-            ent.Save = false;
-            ent.SyncFlag = false;
-            ent.NeedsWorldMatrix = false;
-            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
-            MyEntities.Add(ent, false);
-            return ent as MyCameraBlock;
         }
     }
 }

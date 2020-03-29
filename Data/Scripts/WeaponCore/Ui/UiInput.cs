@@ -31,7 +31,6 @@ namespace WeaponCore
         internal bool UiKeyWasPressed;
         internal bool PlayerCamera;
         internal bool FirstPersonView;
-        internal bool InSpyCam;
         private readonly Session _session;
         internal readonly MouseStateData ClientMouseState;
 

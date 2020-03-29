@@ -17,10 +17,10 @@ namespace WeaponCore
     {
         internal bool ActivateSelector()
         {
-            if (!_session.UiInput.InSpyCam && _session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
+            if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
-            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed || _session.UiInput.InSpyCam;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
             return enableActivator;
         }
 
@@ -49,14 +49,7 @@ namespace WeaponCore
             var cockPit = s.ActiveCockPit;
             Vector3D end;
 
-            if (s.UiInput.InSpyCam)
-            {
-                var offetPosition = Vector3D.Transform(PointerOffset, s.ActiveCockPit.WorldMatrix);
-                AimPosition = s.ActiveCockPit.PositionComp.WorldAABB.Center;
-                AimDirection = s.ActiveCockPit.WorldMatrix.Forward;
-                end = AimPosition + (AimDirection * ai.MaxTargetingRange);
-            }
-            else if (!s.UiInput.FirstPersonView) {
+            if (!s.UiInput.FirstPersonView) {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 AimPosition = offetPosition;
                 AimDirection = Vector3D.Normalize(AimPosition - s.CameraPos);
@@ -64,7 +57,7 @@ namespace WeaponCore
             }
             else {
                 if (!_session.UiInput.AltPressed) {
-                    AimDirection = cockPit.PositionComp.WorldMatrix.Forward;
+                    AimDirection = cockPit.PositionComp.WorldMatrixRef.Forward;
                     AimPosition = cockPit.PositionComp.WorldAABB.Center;
                     end = AimPosition + (AimDirection * s.TrackingAi.MaxTargetingRange);
                 }
@@ -75,18 +68,7 @@ namespace WeaponCore
                     end = offetPosition + (AimDirection * ai.MaxTargetingRange);
                 }
             }
-            /*
-            var up = s.ActiveCockPit.WorldMatrix.Up;
-            var forward = s.ActiveCockPit.WorldMatrix.Forward;
-            var centerPos = s.ActiveCockPit.PositionComp.WorldAABB.Center;
-            var sphere = BoundingSphereD.CreateFromBoundingBox(s.ActiveCockPit.CubeGrid.GetPhysicalGroupAABB());
-            var dir = Vector3D.Normalize(centerPos - end);
-            var ray = new RayD(ref end, ref dir);
-            var dist = (ray.Intersects(sphere) ?? 0);
-            //Log.Line($"{dist} - {sphere.Center} - {sphere.Radius}");
-            var sphereEdge = new Vector3D(end + (dir * dist));
-            MatrixD.CreateWorld(ref sphereEdge, ref forward, ref up, out AimMatrix);
-            */
+
             var foundTarget = false;
             var rayOnlyHitSelf = false;
             var rayHitSelf = false;

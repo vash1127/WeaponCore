@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -17,6 +18,7 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>(32);
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
+        internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
 
         internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(30);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
@@ -35,8 +37,7 @@ namespace WeaponCore.Projectiles
             Session = session;
         }
 
-
-        internal void Update() // Methods highly inlined due to keen's mod profiler
+        internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
@@ -47,8 +48,19 @@ namespace WeaponCore.Projectiles
             ActiveProjetiles.ApplyChanges();
 
             UpdateState();
-            CheckHits();
-            if (!Session.DedicatedServer) 
+            Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
+        }
+
+        internal void Stage2() // Methods highly inlined due to keen's mod profiler
+        {
+            if (!Session.PTask.IsComplete)
+                Session.PTask.Wait();
+
+            if (Session.PTask.IsComplete && Session.PTask.valid && Session.PTask.Exceptions != null)
+                Session.TaskHasErrors(ref Session.PTask, "PTask");
+
+            ConfirmHit();
+            if (!Session.DedicatedServer)
                 UpdateAv();
         }
 
@@ -253,7 +265,7 @@ namespace WeaponCore.Projectiles
                 if (!p.Active || (int)p.State > 3) continue;
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
-                var beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
+                p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
                     var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
@@ -272,7 +284,7 @@ namespace WeaponCore.Projectiles
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
-                                    ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref beam);
+                                    ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref p.Beam);
 
                         checkList.Clear();
                         CheckPool.Return(checkList);
@@ -338,18 +350,34 @@ namespace WeaponCore.Projectiles
                 else if (line)
                 {
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
+                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref p.Beam, p.SegmentList, p.PruneQuery);
                 }
 
                 if (p.Info.Target.IsProjectile || p.SegmentList.Count > 0)
                 {
-                    if (GetAllEntitiesInLine(p, beam) && p.Intersected())
-                        continue;
+                    ValidateHits.Add(p);
+                    continue;
                 }
 
                 p.Miss = true;
                 p.Info.HitList.Clear();
             }
+        }
+
+        private void ConfirmHit()
+        {
+            for (int i = 0; i < ValidateHits.Count; i++)
+            {
+                var p = ValidateHits[i];
+
+                if (GetAllEntitiesInLine(p, p.Beam) && p.Intersected())
+                    continue;
+
+                p.Miss = true;
+                p.Info.HitList.Clear();
+
+            }
+            ValidateHits.Clear();
         }
 
         private void UpdateAv()

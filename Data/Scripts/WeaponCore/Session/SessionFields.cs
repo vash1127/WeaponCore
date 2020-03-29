@@ -144,7 +144,6 @@ namespace WeaponCore
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
         internal MyCubeBlock ActiveControlBlock;
-        internal MyCameraBlock SpyCam;
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
