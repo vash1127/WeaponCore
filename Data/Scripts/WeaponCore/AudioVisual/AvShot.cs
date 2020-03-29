@@ -188,9 +188,8 @@ namespace WeaponCore.Support
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
                 a.Direction = i.Direction;
-                a.PointDir = i.VisualDir;
-
-                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
+                a.PointDir = a.GlowSteps.Count > 0 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
+                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength) ;
 
                 a.OnScreen = Screen.None; // clear OnScreen
                 if (i.ModelOnly)
@@ -246,10 +245,7 @@ namespace WeaponCore.Support
                     return;
 
                 if (saveHit) {
-                    if (a.Hit.Entity != null)
-                        a.HitVelocity = a.Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    else if (a.Hit.Projectile != null)
-                        a.HitVelocity = a.Hit.Projectile.Velocity;
+                    a.HitVelocity = a.Hit.HitVelocity;
                     a.Hitting = !a.ShrinkInited;
                 }
                 a.LastStep = a.Hitting || MyUtils.IsZero(a.AmmoDef.Const.MaxTrajectory - a.ShortEstTravel, 1E-01F);
@@ -338,6 +334,11 @@ namespace WeaponCore.Support
             var extStart = Back && firstStep && VisualLength < ShortStepSize;
             Vector3D frontPos;
             Vector3D backPos;
+            var velStep = ShootVelStep;
+            var hit = !MyUtils.IsZero(Hit.HitPos);
+            if (hit)
+                velStep = Vector3D.Zero;
+
             if (shrinking)
             {
                 frontPos = shrink.NewFront;
@@ -345,7 +346,7 @@ namespace WeaponCore.Support
             }
             else
             {
-                var futureStep = Direction * ShortStepSize;
+                var futureStep = (Direction * ShortStepSize) - velStep;
                 frontPos = Back && !onlyStep ? TracerBack + futureStep : TracerFront;
                 backPos = Back && !extStart ? TracerBack : TracerFront + -futureStep;
             }
@@ -368,10 +369,10 @@ namespace WeaponCore.Support
                 {
                     var extend = extEnd && i == endIdx;
                     g.Parent = GlowSteps[i - 1];
-                    g.Line = new LineD(extend ? TracerFront + ShootVelStep: g.Parent.TailPos += ShootVelStep, extend ? g.Parent.TailPos : g.TailPos);
+                    g.Line = new LineD(extend ? TracerFront + velStep : g.Parent.TailPos += velStep, extend ? g.Parent.TailPos : g.TailPos);
                 }
                 else if (i != endIdx)
-                    g.Line = new LineD(g.Line.From + ShootVelStep, g.TailPos);
+                    g.Line = new LineD(g.Line.From + velStep, g.TailPos);
                 else
                     g.Line = new LineD(frontPos, backPos);
             }
@@ -428,7 +429,7 @@ namespace WeaponCore.Support
             if (TracerStep > 0)
             {
                 Hit.HitPos += ShootVelStep;
-                var newTracerFront = Hit.HitPos + -(Direction * (TracerStep * StepSize));
+                var newTracerFront = Hit.HitPos + -(PointDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float) reduced);
             }
