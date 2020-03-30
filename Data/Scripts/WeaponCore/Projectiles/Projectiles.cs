@@ -397,6 +397,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.SmartsOn)
                 {
+                    /*
                     if (p.EnableAv && Vector3D.Dot(p.Info.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
                     {
                         p.VisualStep += 0.0025;
@@ -411,6 +412,8 @@ namespace WeaponCore.Projectiles
                         p.Info.VisualDir = p.AccelDir;
                         p.VisualStep = 0;
                     }
+                    */
+                    p.Info.VisualDir = p.Info.Direction;
                 }
                 else if (p.FeelsGravity) p.Info.VisualDir = p.Info.Direction;
 
