@@ -219,11 +219,17 @@ namespace WeaponCore
         {
 
             var mId = 0u;
-               
-            if(weaponId == -1)
-                mId = ++comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState];
+
+            if (weaponId == -1)
+            {
+                comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState]++;
+                mId = comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState];
+            }
             else
-                mId = ++comp.SyncIds.MIds[(int)PacketType.WeaponToolbarShootState];
+            {
+                comp.SyncIds.MIds[(int)PacketType.WeaponToolbarShootState]++;
+                mId = comp.SyncIds.MIds[(int)PacketType.WeaponToolbarShootState];
+            }
 
             if (IsClient)
             {
