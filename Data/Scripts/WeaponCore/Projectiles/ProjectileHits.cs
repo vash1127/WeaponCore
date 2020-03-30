@@ -126,10 +126,8 @@ namespace WeaponCore.Projectiles
                                 if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
                                 if (check)
                                 {
-                                    p.Info.Ai.Session.DsUtil2.Start("");
                                     using (voxel.Pin())
                                         voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit);
-                                    p.Info.Ai.Session.DsUtil2.Complete("", false, true);
                                 }
                             }
                         }
