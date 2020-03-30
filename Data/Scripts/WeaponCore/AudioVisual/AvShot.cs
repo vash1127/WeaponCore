@@ -188,8 +188,8 @@ namespace WeaponCore.Support
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
                 a.Direction = i.Direction;
-                a.PointDir = a.GlowSteps.Count > 0 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
-                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength) ;
+                a.PointDir = !a.Back && a.GlowSteps.Count > 0 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
+                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
 
                 a.OnScreen = Screen.None; // clear OnScreen
                 if (i.ModelOnly)
@@ -346,7 +346,8 @@ namespace WeaponCore.Support
             }
             else
             {
-                var futureStep = (Direction * ShortStepSize) - velStep;
+                var futureStep = (Direction * ShortStepSize);
+                if (!Back) futureStep -= velStep;
                 frontPos = Back && !onlyStep ? TracerBack + futureStep : TracerFront;
                 backPos = Back && !extStart ? TracerBack : TracerFront + -futureStep;
             }

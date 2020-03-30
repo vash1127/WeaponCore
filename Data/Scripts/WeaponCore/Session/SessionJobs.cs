@@ -189,7 +189,7 @@ namespace WeaponCore
 
                                 newTypeMap[Offense].Add(fat);
                             }
-                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) newTypeMap[Utility].Add(fat);
+                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || fat is MyCockpit || fat is MyRemoteControl || fat is IMyDecoy) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
