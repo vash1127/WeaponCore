@@ -370,6 +370,7 @@ namespace WeaponCore
                                 w.State.ManualShoot = shootStatePacket.Data;
                             }
 
+                            /*
                             if(shootStatePacket.Data != TerminalActionState.ShootOff && shootStatePacket.Data != TerminalActionState.ShootOnce)
                             {
                                 comp.Set.Value.Overrides.ManualControl = false;
@@ -380,7 +381,7 @@ namespace WeaponCore
                                     comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                                 }
-                            }
+                            }*/
 
                             report.PacketValid = true;
                             break;
@@ -405,6 +406,8 @@ namespace WeaponCore
 
                             if (shootStatePacket.Data == TerminalActionState.ShootOnce)
                                 w.State.SingleShotCounter++;
+
+                            /*
                             else if (shootStatePacket.Data != TerminalActionState.ShootOff)
                             {
                                 comp.Set.Value.Overrides.ManualControl = false;
@@ -415,7 +418,7 @@ namespace WeaponCore
                                     comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                                 }
-                            }
+                            }*/
 
                             w.State.ManualShoot = shootStatePacket.Data;
 
@@ -1132,6 +1135,7 @@ namespace WeaponCore
                                     w.State.ManualShoot = shootStatePacket.Data;
                                 }
 
+                                /*
                                 if (shootStatePacket.Data != TerminalActionState.ShootOff && shootStatePacket.Data != TerminalActionState.ShootOnce)
                                 {
                                     comp.Set.Value.Overrides.ManualControl = false;
@@ -1142,7 +1146,7 @@ namespace WeaponCore
                                         comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                                         comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                                     }
-                                }
+                                }*/
 
                                 PacketsToClient.Add(new PacketInfo
                                 {
@@ -1183,6 +1187,8 @@ namespace WeaponCore
 
                                 if (shootStatePacket.Data == TerminalActionState.ShootOnce)
                                     w.State.SingleShotCounter++;
+
+                                /*
                                 else if (shootStatePacket.Data != TerminalActionState.ShootOff)
                                 {
                                     comp.Set.Value.Overrides.ManualControl = false;
@@ -1193,7 +1199,8 @@ namespace WeaponCore
                                         comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                                         comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
                                     }
-                                }
+                                }*/
+
 
                                 w.State.ManualShoot = shootStatePacket.Data;
 

@@ -190,11 +190,11 @@ namespace WeaponCore
             return new WeaponTimings
             {
                 ChargeDelayTicks = ChargeDelayTicks,
-                AnimationDelayTick = AnimationDelayTick >= offset ? AnimationDelayTick - offset : 0,
-                ChargeUntilTick = ChargeUntilTick >= offset ? ChargeUntilTick - offset : 0,
+                AnimationDelayTick = AnimationDelayTick > offset ? AnimationDelayTick - offset : 0,
+                ChargeUntilTick = ChargeUntilTick > offset ? ChargeUntilTick - offset : 0,
                 OffDelay = OffDelay >= offset ? OffDelay - offset : 0,
-                ShootDelayTick = ShootDelayTick >= offset ? ShootDelayTick - offset : 0,
-                WeaponReadyTick = WeaponReadyTick >= offset ? WeaponReadyTick - offset : 0,
+                ShootDelayTick = ShootDelayTick > offset ? ShootDelayTick - offset : 0,
+                WeaponReadyTick = WeaponReadyTick > offset ? WeaponReadyTick - offset : 0,
                 LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset,
                 ReloadedTick = ReloadedTick > offset ? ReloadedTick - offset : 0,
             };

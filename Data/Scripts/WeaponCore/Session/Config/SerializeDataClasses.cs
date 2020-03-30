@@ -58,6 +58,7 @@ namespace WeaponCore
     [ProtoInclude(11, typeof(WeaponIdPacket))]
     [ProtoInclude(12, typeof(RequestTargetsPacket))]
     [ProtoInclude(13, typeof(MouseInputSyncPacket))]
+    [ProtoInclude(14, typeof(MIdPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -234,13 +235,13 @@ namespace WeaponCore
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(15, typeof(RangePacket))]
-    [ProtoInclude(16, typeof(CycleAmmoPacket))]
-    [ProtoInclude(17, typeof(ShootStatePacket))]
-    [ProtoInclude(18, typeof(OverRidesPacket))]
-    [ProtoInclude(19, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(20, typeof(StatePacket))]
-    [ProtoInclude(21, typeof(SettingPacket))]
+    [ProtoInclude(16, typeof(RangePacket))]
+    [ProtoInclude(17, typeof(CycleAmmoPacket))]
+    [ProtoInclude(18, typeof(ShootStatePacket))]
+    [ProtoInclude(19, typeof(OverRidesPacket))]
+    [ProtoInclude(10, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(21, typeof(StatePacket))]
+    [ProtoInclude(22, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;

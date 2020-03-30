@@ -55,6 +55,7 @@ namespace WeaponCore
                     for (int i = 0; i < gridAi.Weapons.Count; i++)
                     {
                         var comp = gridAi.Weapons[i];
+
                         using (comp.MyCube.Pin())
                         {
                             if (comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)

@@ -31,8 +31,6 @@ namespace WeaponCore.Support
                 {
                     Set.Value.Overrides.TargetPainter = false;
                     Set.Value.Overrides.ManualControl = false;
-
-
                 }
 
                 var maxTrajectory = 0f;
