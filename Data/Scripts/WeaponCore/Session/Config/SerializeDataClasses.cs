@@ -52,13 +52,12 @@ namespace WeaponCore
     [ProtoInclude(5, typeof(MouseInputPacket))]
     [ProtoInclude(6, typeof(BoolUpdatePacket))]
     [ProtoInclude(7, typeof(FakeTargetPacket))]
-    [ProtoInclude(8, typeof(ControllingPacket))]
+    [ProtoInclude(8, typeof(CurrentGridPlayersPacket))]
     [ProtoInclude(9, typeof(FocusPacket))]
-    [ProtoInclude(10, typeof(MagUpdatePacket))]
-    [ProtoInclude(11, typeof(WeaponIdPacket))]
-    [ProtoInclude(12, typeof(RequestTargetsPacket))]
-    [ProtoInclude(13, typeof(MouseInputSyncPacket))]
-    [ProtoInclude(14, typeof(MIdPacket))]
+    [ProtoInclude(10, typeof(WeaponIdPacket))]
+    [ProtoInclude(11, typeof(RequestTargetsPacket))]
+    [ProtoInclude(12, typeof(MouseInputSyncPacket))]
+    [ProtoInclude(13, typeof(MIdPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -106,20 +105,6 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class FakeTargetPacket : Packet
-    {
-        [ProtoMember(1)] internal Vector3 Data;
-        public FakeTargetPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = new Vector3();
-        }
-    }
-
-
-    [ProtoContract]
     public class MouseInputPacket : Packet
     {
         [ProtoMember(1)] internal MouseStateData Data;
@@ -133,34 +118,6 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ControllingPacket : Packet
-    {
-        [ProtoMember(1)] internal ControllingPlayersSync Data;
-        public ControllingPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = new ControllingPlayersSync();
-        }
-    }
-
-    [ProtoContract]
-    public class MagUpdatePacket : Packet
-    {
-        [ProtoMember(1)] internal MyFixedPoint Mags;
-        [ProtoMember(2), DefaultValue(-1)] internal int WeaponId;
-        public MagUpdatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Mags = 0;
-            WeaponId = -1;
-        }
-    }
-
-    [ProtoContract]
     public class BoolUpdatePacket : Packet
     {
         [ProtoMember(1)] internal bool Data;
@@ -170,6 +127,32 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = false;
+        }
+    }
+
+    [ProtoContract]
+    public class FakeTargetPacket : Packet
+    {
+        [ProtoMember(1)] internal Vector3 Data;
+        public FakeTargetPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = new Vector3();
+        }
+    }
+
+    [ProtoContract]
+    public class CurrentGridPlayersPacket : Packet
+    {
+        [ProtoMember(1)] internal ControllingPlayersSync Data;
+        public CurrentGridPlayersPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = new ControllingPlayersSync();
         }
     }
 
@@ -235,13 +218,13 @@ namespace WeaponCore
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(16, typeof(RangePacket))]
-    [ProtoInclude(17, typeof(CycleAmmoPacket))]
-    [ProtoInclude(18, typeof(ShootStatePacket))]
-    [ProtoInclude(19, typeof(OverRidesPacket))]
-    [ProtoInclude(10, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(21, typeof(StatePacket))]
-    [ProtoInclude(22, typeof(SettingPacket))]
+    [ProtoInclude(15, typeof(RangePacket))]
+    [ProtoInclude(16, typeof(CycleAmmoPacket))]
+    [ProtoInclude(17, typeof(ShootStatePacket))]
+    [ProtoInclude(18, typeof(OverRidesPacket))]
+    [ProtoInclude(19, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(20, typeof(StatePacket))]
+    [ProtoInclude(21, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;

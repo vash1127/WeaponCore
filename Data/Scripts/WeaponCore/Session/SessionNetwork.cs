@@ -221,7 +221,7 @@ namespace WeaponCore
                         {
                             try
                             {
-                                var csPacket = packet as ControllingPacket;
+                                var csPacket = packet as CurrentGridPlayersPacket;
                                 if (csPacket?.Data == null)
                                 {
                                     errorPacket.Error = $"Data was null";
@@ -689,7 +689,7 @@ namespace WeaponCore
                         {
                             comp.SyncIds.MIds[(int)packet.PType] = statePacket.MId;
                             comp.State.Value.Sync(statePacket.Data);
-                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = packet });
+                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
 
                             report.PacketValid = true;
                         }
@@ -828,7 +828,7 @@ namespace WeaponCore
 
                                 PacketsToClient.Add(new PacketInfo {
                                     Entity = myGrid,
-                                    Packet = new ControllingPacket
+                                    Packet = new CurrentGridPlayersPacket
                                     {
                                         EntityId = packet.EntityId,
                                         SenderId = packet.SenderId,
