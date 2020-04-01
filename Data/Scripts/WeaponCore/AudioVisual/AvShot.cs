@@ -338,7 +338,7 @@ namespace WeaponCore.Support
             var hit = !MyUtils.IsZero(Hit.HitPos);
             if (hit)
                 velStep = Vector3D.Zero;
-            Log.Line($"{System.WeaponName} - {AmmoDef.AmmoMagazine} - {Back}");
+
             if (shrinking)
             {
                 frontPos = shrink.NewFront;
@@ -484,23 +484,23 @@ namespace WeaponCore.Support
             if (FiringWeapon != null)
             {
                 var weapon = FiringWeapon.Platform.Weapons[WeaponId];
+                var effect = weapon.HitEffects[MuzzleId];
                 if (OnScreen != Screen.None)
                 {
-
-                    if (weapon.HitEffects[MuzzleId] != null)
+                    if (effect != null)
                     {
-                        var elapsedTime = weapon.HitEffects[MuzzleId].GetElapsedTime();
+                        var elapsedTime = effect.GetElapsedTime();
                         if (elapsedTime <= 0 || elapsedTime >= 1)
                         {
-                            weapon.HitEffects[MuzzleId].Stop();
-                            weapon.HitEffects[MuzzleId] = null;
+                            effect.Stop(true);
+                            effect = null;
                         }
                     }
                     MatrixD matrix;
                     MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
-                    if (weapon.HitEffects[MuzzleId] == null)
+                    if (effect == null)
                     {
-                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
+                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect))
                         {
                             if (weapon.HitEffects[MuzzleId] != null)
                             {
@@ -510,21 +510,22 @@ namespace WeaponCore.Support
                             return;
                         }
 
-                        weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
-                        weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                        weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
+                        effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
+                        effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                        effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        weapon.HitEffects[MuzzleId].UserScale = scale;
+                        effect.UserScale = scale;
                     }
-                    else if (weapon.HitEffects[MuzzleId].IsEmittingStopped)
-                        weapon.HitEffects[MuzzleId].Play();
+                    else if (effect.IsEmittingStopped)
+                        effect.Play();
 
-                    weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
-                    weapon.HitEffects[MuzzleId].Velocity = HitVelocity;
+                    effect.WorldMatrix = matrix;
+                    effect.Velocity = HitVelocity;
+                    weapon.HitEffects[MuzzleId] = effect;
                 }
-                else if (weapon.HitEffects[MuzzleId] != null)
+                else if (effect != null)
                 {
-                    weapon.HitEffects[MuzzleId].Stop();
+                    effect.Stop(effect.Loop);
                     weapon.HitEffects[MuzzleId] = null;
                 }
             }
