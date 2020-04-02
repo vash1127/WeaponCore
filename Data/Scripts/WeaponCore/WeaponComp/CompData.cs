@@ -54,7 +54,7 @@ namespace WeaponCore
                 }
                 catch(Exception e)
                 {
-                    Log.Line("Invalid State Loaded, Re-init");
+                    //Log.Line("Invalid State Loaded, Re-init");
                 }
             }
 
@@ -118,7 +118,7 @@ namespace WeaponCore
                 }
                 catch (Exception e)
                 {
-                    Log.Line("Invalid Stettings Loaded, Re-init");
+                    //Log.Line("Invalid Stettings Loaded, Re-init");
                 }
             }
 
