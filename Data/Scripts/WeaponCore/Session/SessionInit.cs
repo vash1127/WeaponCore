@@ -131,8 +131,8 @@ namespace WeaponCore
                                     gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
                                     gunDef.MinElevationDegrees = blockDefs.MinElevation;
                                     gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
-                                    gunDef.RotationSpeed = blockDefs.RotateRate;
-                                    gunDef.ElevationSpeed = blockDefs.ElevateRate;
+                                    gunDef.RotationSpeed = MathHelper.ToRadians(blockDefs.RotateRate);
+                                    gunDef.ElevationSpeed = MathHelper.ToRadians(blockDefs.ElevateRate);
                                     gunDef.AiEnabled = false;
                                 }
 
