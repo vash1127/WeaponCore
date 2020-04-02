@@ -251,8 +251,9 @@ namespace WeaponCore.Support
                     {
                         groupInfo.ChangeState = GroupInfo.ChangeStates.None;
                         groupInfo.Name = group.Name;
+                        groupInfo.Comps.Clear();
                     }
-                    
+
                     group.GetBlocks(null, block =>
                     {
                         var cube = (MyCubeBlock) block;
@@ -289,6 +290,11 @@ namespace WeaponCore.Support
                 BlockGroups.ApplyRemovals();
 
                 ScanBlockGroups = false;
+
+                if (Session.MpActive && Session.HandlesInput)
+                {
+                    Session.SendGroupUpdate(this);
+                }
             }
         }
 
@@ -1008,11 +1014,13 @@ namespace WeaponCore.Support
                         comp.Session.SendOverRidesUpdate(comp, overRides);
                         comp.TrackReticle = false;
                         comp.Session.SendTrackReticleUpdate(comp);
-                        GroupInfo group;
-                        if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group)) {
-                            GroupsToCheck.Add(group);
-                            ScanBlockGroupSettings = true;
-                        }
+                    }
+
+                    GroupInfo group;
+                    if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
+                    {
+                        GroupsToCheck.Add(group);
+                        ScanBlockGroupSettings = true;
                     }
                 }
             }
