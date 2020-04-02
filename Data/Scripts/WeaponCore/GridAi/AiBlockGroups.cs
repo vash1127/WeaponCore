@@ -108,6 +108,8 @@ namespace WeaponCore.Support
 
                 if(comp.Session.MpActive)
                     comp.Session.SendControlingPlayer(comp);
+
+                comp.State.Value.CurrentBlockGroup = BlockGroup;
             }
             
             if (ai != null && ai.Session.HandlesInput && ai.Session.MpActive && o != null)

@@ -285,18 +285,33 @@ namespace WeaponCore.Support
                         BlockGroups.Remove(group.Key);
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
-
-                    if (Session.MpActive && group.Value.Comps != null) {
-                        foreach (var comp in group.Value.Comps) {
-                            if (comp.Set?.Value?.Overrides != null) SyncGridOverrides(this, group.Key, comp.Set.Value.Overrides);
-                            break;
-                        }
-                    } 
                 }
                 BlockGroups.ApplyRemovals();
 
                 ScanBlockGroups = false;
             }
+        }
+
+        internal void UpdateGroupOverRides()
+        {
+            var resetOverRides = new GroupOverrides() {Activate = true };
+
+            foreach (var group in GroupsToCheck)
+            {
+                var groupOverrides = GetOverrides(this, group.Name);
+                foreach(var comp in group.Comps)
+                {
+                    if (comp.State.Value.CurrentBlockGroup != group.Name) continue;
+
+                    var o = comp.Set.Value.Overrides;
+                    if (groupOverrides.Equals(o))
+                        return;
+                }
+
+                SyncGridOverrides(this, group.Name, resetOverRides);
+            }
+            GroupsToCheck.Clear();
+            ScanBlockGroupSettings = false;
         }
 
         internal void CompChange(bool add, WeaponComponent comp)
@@ -989,7 +1004,16 @@ namespace WeaponCore.Support
                     overRides.TargetPainter = false;
                     overRides.ManualControl = false;
                     if (comp.Session.MpActive)
+                    {
                         comp.Session.SendOverRidesUpdate(comp, overRides);
+                        comp.TrackReticle = false;
+                        comp.Session.SendTrackReticleUpdate(comp);
+                        GroupInfo group;
+                        if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group)) {
+                            GroupsToCheck.Add(group);
+                            ScanBlockGroupSettings = true;
+                        }
+                    }
                 }
             }
         }

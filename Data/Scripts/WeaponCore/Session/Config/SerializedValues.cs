@@ -33,6 +33,7 @@ namespace WeaponCore
         [ProtoMember(9)] public PlayerControl CurrentPlayerControl;
         [ProtoMember(10)] public float CurrentCharge;
         [ProtoMember(11)] public int Version = Session.VersionControl;
+        [ProtoMember(12)] public string CurrentBlockGroup;
 
         public void Sync(CompStateValues syncFrom)
         {
@@ -45,9 +46,9 @@ namespace WeaponCore
             ClickShoot = syncFrom.ClickShoot;
             CurrentPlayerControl = syncFrom.CurrentPlayerControl;
             CurrentCharge = syncFrom.CurrentCharge;
+            CurrentBlockGroup = syncFrom.CurrentBlockGroup;
 
-
-            for(int i = 0; i < syncFrom.Weapons.Length; i++)
+            for (int i = 0; i < syncFrom.Weapons.Length; i++)
             {
                 Weapons[i].ShotsFired = syncFrom.Weapons[i].ShotsFired;
                 Weapons[i].ManualShoot = syncFrom.Weapons[i].ManualShoot;
@@ -94,7 +95,7 @@ namespace WeaponCore
                 w.UpdateWeaponRange();
 
             InventoryInited = syncFrom.InventoryInited;
-            Overrides = syncFrom.Overrides;
+            Overrides.Sync(syncFrom.Overrides);
 
             if (Overload != syncFrom.Overload || RofModifier != syncFrom.RofModifier || DpsModifier != syncFrom.DpsModifier)
             {
@@ -316,6 +317,30 @@ namespace WeaponCore
             Meteors = syncFrom.Meteors;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+
+            var compared = (GroupOverrides)obj;
+
+            return (
+                compared.Activate.Equals(Activate) && 
+                compared.Neutrals.Equals(Neutrals) && 
+                compared.Unowned.Equals(Unowned) && 
+                compared.Friendly.Equals(Friendly) && 
+                compared.TargetPainter.Equals(TargetPainter) && 
+                compared.ManualControl.Equals(ManualControl) && 
+                compared.FocusTargets.Equals(FocusTargets) && 
+                compared.FocusSubSystem.Equals(FocusSubSystem) && 
+                compared.SubSystem.Equals(SubSystem) && 
+                compared.Meteors.Equals(Meteors) && 
+                compared.Biologicals.Equals(Biologicals) && 
+                compared.Projectiles.Equals(Projectiles)
+            );
         }
     }
 

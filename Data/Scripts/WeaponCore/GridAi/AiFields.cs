@@ -39,6 +39,7 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
+        internal readonly HashSet<GroupInfo> GroupsToCheck = new HashSet<GroupInfo>();
         internal readonly MyConcurrentHashSet<MyInventory> Inventories = new MyConcurrentHashSet<MyInventory>();
 
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
@@ -83,6 +84,7 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
         internal bool ScanBlockGroups = true;
+        internal bool ScanBlockGroupSettings;
         internal bool Registered;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;

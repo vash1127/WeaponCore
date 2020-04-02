@@ -123,6 +123,7 @@ namespace WeaponCore
                     db.Concealed = ((uint)db.MyGrid.Flags & 4) > 0;
 
                     if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
+                    if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();
 
                     db.FirstRun = false;
                 }

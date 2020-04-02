@@ -43,7 +43,7 @@ namespace WeaponCore
         ReassignTargetUpdate,
         NextActiveUpdate,
         ReleaseActiveUpdate,
-
+        GridOverRidesSync
     }
 
     #region packets
@@ -57,7 +57,8 @@ namespace WeaponCore
     [ProtoInclude(10, typeof(WeaponIdPacket))]
     [ProtoInclude(11, typeof(RequestTargetsPacket))]
     [ProtoInclude(12, typeof(MouseInputSyncPacket))]
-    [ProtoInclude(13, typeof(MIdPacket))]
+    [ProtoInclude(13, typeof(GridOverRidesSyncPacket))]
+    [ProtoInclude(14, typeof(MIdPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -214,17 +215,30 @@ namespace WeaponCore
         }
     }
 
+    [ProtoContract]
+    public class GridOverRidesSyncPacket : Packet
+    {
+        [ProtoMember(1)] internal OverRidesData[] Data = new OverRidesData[0];
+        public GridOverRidesSyncPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = new OverRidesData[0];
+        }
+    }
+
     #endregion
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(16, typeof(RangePacket))]
-    [ProtoInclude(17, typeof(CycleAmmoPacket))]
-    [ProtoInclude(18, typeof(ShootStatePacket))]
-    [ProtoInclude(19, typeof(OverRidesPacket))]
-    [ProtoInclude(20, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(21, typeof(StatePacket))]
-    [ProtoInclude(22, typeof(SettingPacket))]
+    [ProtoInclude(18, typeof(RangePacket))]
+    [ProtoInclude(19, typeof(CycleAmmoPacket))]
+    [ProtoInclude(20, typeof(ShootStatePacket))]
+    [ProtoInclude(21, typeof(OverRidesPacket))]
+    [ProtoInclude(22, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(23, typeof(StatePacket))]
+    [ProtoInclude(24, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;
@@ -378,13 +392,13 @@ namespace WeaponCore
     [ProtoContract]
     public class TransferTarget
     {
-        [ProtoMember(1)] internal long EntityId;
-        [ProtoMember(2)] internal Vector3 TargetPos;
-        [ProtoMember(3)] internal float HitShortDist;
-        [ProtoMember(4)] internal float OrigDistance;
-        [ProtoMember(5)] internal long TopEntityId;
-        [ProtoMember(6)] internal TargetInfo State = TargetInfo.Expired;
-        [ProtoMember(7)] internal int WeaponId;
+        [ProtoMember(1)] public long EntityId;
+        [ProtoMember(2)] public Vector3 TargetPos;
+        [ProtoMember(3)] public float HitShortDist;
+        [ProtoMember(4)] public float OrigDistance;
+        [ProtoMember(5)] public long TopEntityId;
+        [ProtoMember(6)] public TargetInfo State = TargetInfo.Expired;
+        [ProtoMember(7)] public int WeaponId;
 
         public enum TargetInfo
         {
@@ -424,6 +438,13 @@ namespace WeaponCore
         public TransferTarget()
         {
         }
+    }
+
+    [ProtoContract]
+    public struct OverRidesData
+    {
+        [ProtoMember(1)] public string GroupName;
+        [ProtoMember(2)] public GroupOverrides Overrides;
     }
     #endregion
 }
