@@ -73,7 +73,7 @@ namespace WeaponCore.Support
         internal bool WasControlled;
         internal bool TrackReticle;
         internal bool WasTrackReticle;
-        internal bool OtherPlayerTrackingReticle;
+        //internal bool OtherPlayerTrackingReticle;
         internal bool UserControlled;
         internal bool Debug;
         internal bool UnlimitedPower;

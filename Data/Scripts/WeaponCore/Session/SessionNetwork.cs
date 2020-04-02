@@ -255,7 +255,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.OtherPlayerTrackingReticle = reticlePacket.Data;
+                            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
 
                             report.PacketValid = true;
                             break;

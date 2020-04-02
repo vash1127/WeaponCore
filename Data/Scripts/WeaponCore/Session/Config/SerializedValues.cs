@@ -34,6 +34,7 @@ namespace WeaponCore
         [ProtoMember(10)] public float CurrentCharge;
         [ProtoMember(11)] public int Version = Session.VersionControl;
         [ProtoMember(12)] public string CurrentBlockGroup;
+        [ProtoMember(13)] public bool OtherPlayerTrackingReticle;
 
         public void Sync(CompStateValues syncFrom)
         {
@@ -47,6 +48,7 @@ namespace WeaponCore
             CurrentPlayerControl = syncFrom.CurrentPlayerControl;
             CurrentCharge = syncFrom.CurrentCharge;
             CurrentBlockGroup = syncFrom.CurrentBlockGroup;
+            OtherPlayerTrackingReticle = syncFrom.OtherPlayerTrackingReticle;
 
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
             {
