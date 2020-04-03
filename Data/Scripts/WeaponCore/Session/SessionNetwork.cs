@@ -255,7 +255,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.OtherPlayerTrackingReticle = reticlePacket.Data;
+                            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
 
                             report.PacketValid = true;
                             break;
@@ -531,6 +531,23 @@ namespace WeaponCore
                                 }
                             }
                                 break;
+                        }
+                    case PacketType.RescanGroupRequest:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"myGrid is null: {myGrid == null} ent.MarkedForClose: {myGrid?.MarkedForClose}";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                ai.ScanBlockGroups = true;
+
+                            report.PacketValid = true;
+                            break;
                         }
                     case PacketType.FocusUpdate:
                     case PacketType.ReassignTargetUpdate:
@@ -1358,6 +1375,25 @@ namespace WeaponCore
                             else
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
 
+                            break;
+                        }
+                    case PacketType.RescanGroupRequest:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"myGrid is null: {myGrid == null} ent.MarkedForClose: {myGrid?.MarkedForClose}";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                ai.ScanBlockGroups = true;
+
+                            PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
+
+                            report.PacketValid = true;
                             break;
                         }
                     case PacketType.FocusUpdate:

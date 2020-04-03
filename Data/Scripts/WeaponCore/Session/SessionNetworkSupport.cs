@@ -482,6 +482,31 @@ namespace WeaponCore
             });
         }
 
+        internal void SendGroupUpdate(GridAi ai)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new Packet
+                {
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.RescanGroupRequest,
+                });
+            }
+            else if (IsServer)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new Packet
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        PType = PacketType.RescanGroupRequest,
+                    }
+                });
+            }
+        }
+
         #region AIFocus packets
         internal void SendFocusTargetUpdate(GridAi ai, long targetId)
         {

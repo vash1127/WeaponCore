@@ -31,6 +31,7 @@ namespace WeaponCore.Support
                 {
                     Set.Value.Overrides.TargetPainter = false;
                     Set.Value.Overrides.ManualControl = false;
+                    State.Value.OtherPlayerTrackingReticle = false;
                 }
 
                 var maxTrajectory = 0f;

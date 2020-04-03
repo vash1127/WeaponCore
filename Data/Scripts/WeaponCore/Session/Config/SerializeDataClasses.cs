@@ -43,7 +43,8 @@ namespace WeaponCore
         ReassignTargetUpdate,
         NextActiveUpdate,
         ReleaseActiveUpdate,
-        GridOverRidesSync
+        GridOverRidesSync,
+        RescanGroupRequest
     }
 
     #region packets
@@ -227,18 +228,17 @@ namespace WeaponCore
             Data = new OverRidesData[0];
         }
     }
-
     #endregion
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(18, typeof(RangePacket))]
-    [ProtoInclude(19, typeof(CycleAmmoPacket))]
-    [ProtoInclude(20, typeof(ShootStatePacket))]
-    [ProtoInclude(21, typeof(OverRidesPacket))]
-    [ProtoInclude(22, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(23, typeof(StatePacket))]
-    [ProtoInclude(24, typeof(SettingPacket))]
+    [ProtoInclude(19, typeof(RangePacket))]
+    [ProtoInclude(20, typeof(CycleAmmoPacket))]
+    [ProtoInclude(21, typeof(ShootStatePacket))]
+    [ProtoInclude(22, typeof(OverRidesPacket))]
+    [ProtoInclude(23, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(24, typeof(StatePacket))]
+    [ProtoInclude(25, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;
