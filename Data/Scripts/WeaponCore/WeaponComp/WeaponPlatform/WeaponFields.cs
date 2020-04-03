@@ -175,7 +175,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                return !State.Sync.Reloading && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
+                return !State.Sync.Reloading && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative);
             }
         }
 

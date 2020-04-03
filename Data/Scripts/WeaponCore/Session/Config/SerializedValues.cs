@@ -268,7 +268,7 @@ namespace WeaponCore
                     Log.Line($"Weapon Values Failed To load re-initing");
                 }
 
-            }
+            }            
 
             comp.WeaponValues = new WeaponValues
             {
@@ -281,6 +281,8 @@ namespace WeaponCore
 
                 comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
                 w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
+
+                comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false);
             }
         }
 
