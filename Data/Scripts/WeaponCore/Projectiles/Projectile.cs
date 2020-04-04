@@ -148,7 +148,7 @@ namespace WeaponCore.Projectiles
             Info.DistanceTraveled = 0;
             PrevEndPointToCenterSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
-            Gravity = Vector3D.Zero;
+            Gravity = Vector3.Zero;
 
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
