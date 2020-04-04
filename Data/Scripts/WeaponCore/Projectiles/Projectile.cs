@@ -743,39 +743,39 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.PushField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance) {
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance) {
                         Info.EwarActive = true;
                     }
                     break;
@@ -927,7 +927,7 @@ namespace WeaponCore.Projectiles
                     var offVec = Position + Vector3D.Rotate(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                     matrix.Translation = offVec;
                 }
-                var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : int.MaxValue;
+                var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : uint.MaxValue;
                 if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, renderId, out AmmoEffect))
                 {
                     AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;

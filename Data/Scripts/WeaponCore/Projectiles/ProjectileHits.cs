@@ -171,6 +171,9 @@ namespace WeaponCore.Projectiles
                         else
                             hitEntity.EventType = Field;
 
+
+                        Log.Line($"hitEntity.EventType: {hitEntity.EventType}");
+
                         if (p.Info.AmmoDef.Const.AreaEffect == DotField)
                             hitEntity.DamageOverTime = true;
                     }
