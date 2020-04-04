@@ -38,6 +38,7 @@ namespace WeaponCore.Projectiles
         internal Vector3 PrevTargetVel;
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
+        internal Vector3 Gravity;
         internal Hit Hit = new Hit();
         internal LineD Beam;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -94,6 +95,8 @@ namespace WeaponCore.Projectiles
         internal bool EarlyEnd;
         internal bool FeelsGravity;
         internal bool LineOrNotModel;
+        internal bool EntitiesNear;
+        internal bool FakeGravityNear;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -124,6 +127,7 @@ namespace WeaponCore.Projectiles
             NewTargets = 0;
             ZombieLifeTime = 0;
             LastOffsetTime = 0;
+            EntitiesNear = true;
             PruningProxyId = -1;
             Colliding = false;
             Active = false;
@@ -138,11 +142,13 @@ namespace WeaponCore.Projectiles
             LinePlanetCheck = false;
             AtMaxRange = false;
             ShieldBypassed = false;
+            FakeGravityNear = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
             PrevEndPointToCenterSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
+            Gravity = Vector3D.Zero;
 
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;

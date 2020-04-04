@@ -27,7 +27,7 @@ namespace WeaponCore.Platform
 
                     if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
                     {
-                        var azMatrix = AzimuthPart.Entity.PositionComp.LocalMatrix;
+                        var azMatrix = AzimuthPart.Entity.PositionComp.LocalMatrixRef;
 
                         if (absAzChange >= System.AzStep)
                         {
@@ -59,7 +59,7 @@ namespace WeaponCore.Platform
                     else
                         absElChange = elevationChange;
 
-                    var elMatrix = ElevationPart.Entity.PositionComp.LocalMatrix;
+                    var elMatrix = ElevationPart.Entity.PositionComp.LocalMatrixRef;
 
                     if (absElChange >= System.ElStep)
                     {
@@ -144,15 +144,15 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Entity?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             PosChangedTick = Comp.Session.Tick;
 
             if (AzimuthOnBase)
-                Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
+                Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrixRef;
 
-            var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrix;
-            var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrix;
-            var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrix.Translation;
+            var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
+            var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
+            var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
 
             MyPivotUp = azimuthMatrix.Up;
@@ -165,7 +165,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                var forward = AzimuthOnBase ? Comp.CubeMatrix.Forward : AzimuthPart.Entity.Parent.WorldMatrix.Forward;
+                var forward = AzimuthOnBase ? Comp.CubeMatrix.Forward : AzimuthPart.Parent.PositionComp.WorldMatrixRef.Forward;
                 var left = Vector3D.Cross(MyPivotUp, forward);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
             }

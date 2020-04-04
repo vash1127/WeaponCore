@@ -383,6 +383,7 @@ namespace WeaponCore.Support
 
                 if (new BoundingSphereD(planetCenter, MyPlanet.AtmosphereRadius + gridRadius).Intersects(gridVolume))
                 {
+                    InPlanetGravity = true;
                     PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
                     double pointDistSqr;
                     Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
@@ -394,6 +395,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
+                    InPlanetGravity = false;
                     PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
                     double pointDistSqr;
                     Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
@@ -408,6 +410,7 @@ namespace WeaponCore.Support
                 MyPlanet = null;
                 PlanetClosestPoint = Vector3D.Zero;
                 PlanetSurfaceInRange = false;
+                InPlanetGravity = false;
                 ClosestPlanetSqr = double.MaxValue;
             }
         }

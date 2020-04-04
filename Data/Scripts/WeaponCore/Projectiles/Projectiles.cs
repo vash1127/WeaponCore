@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
@@ -139,8 +140,15 @@ namespace WeaponCore.Projectiles
 
                 if (p.FeelsGravity)
                 {
-                    var totalGravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
-                    p.Velocity += (totalGravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
+                    var update = p.FakeGravityNear || p.EntitiesNear || p.Info.Ai.InPlanetGravity && p.Info.Age % 30 == 0 || !p.Info.Ai.InPlanetGravity && p.Info.Age % 10 == 0;
+                    if (update)
+                    {
+                        p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+
+                        if (!p.Info.Ai.InPlanetGravity && !MyUtils.IsZero(p.Gravity)) p.FakeGravityNear = true;
+                        else p.FakeGravityNear = false;
+                    }
+                    p.Velocity += (p.Gravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
                     Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
                 }
 
