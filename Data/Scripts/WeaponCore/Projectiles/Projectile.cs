@@ -749,39 +749,39 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.PushField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance) {
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance) {
                         Info.EwarActive = true;
                     }
                     break;

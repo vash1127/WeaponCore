@@ -319,11 +319,10 @@ namespace WeaponCore.Support
                 if (entityExists && !weapon.StopBarrelAv) {
 
                     var particles = weapon.System.Values.HardPoint.Graphics;
+                    matrix.Translation +=  Vector3D.Rotate(particles.Barrel1.Offset, matrix);
                     if (weapon.BarrelEffects1[muzzle.MuzzleId] == null && ticksAgo <= 0) {
-
-                        var matrix1 = matrix;
-                        matrix1.Translation += particles.Barrel1.Offset;
-                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
+;
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
 
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel1.Color;
                             weapon.BarrelEffects1[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
@@ -385,11 +384,10 @@ namespace WeaponCore.Support
                 if (entityExists && !weapon.StopBarrelAv) {
 
                     var particles = weapon.System.Values.HardPoint.Graphics;
+                    matrix.Translation += Vector3D.Rotate(particles.Barrel2.Offset, matrix);
                     if (weapon.BarrelEffects2[muzzle.MuzzleId] == null && ticksAgo <= 0) {
-
-                        var matrix1 = matrix;
-                        matrix1.Translation += particles.Barrel2.Offset;
-                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId])) {
+                        
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId])) {
 
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
                             weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
