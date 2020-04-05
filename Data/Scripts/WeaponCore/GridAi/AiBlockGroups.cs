@@ -87,13 +87,21 @@ namespace WeaponCore.Support
 
                 if (o.ManualControl || o.TargetPainter)
                 {
+                    if (comp.Platform.State != Platform.MyWeaponPlatform.PlatformState.Ready) continue;
+
                     comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                     comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
 
                     if (o.ManualControl)
+                    {
                         o.TargetPainter = false;
+                        Settings["TargetPainter"] = 0;
+                    }
                     else
+                    {
                         o.ManualControl = false;
+                        Settings["ManualControl"] = 0;
+                    }
 
                     comp.State.Value.ClickShoot = false;
                     comp.State.Value.ShootOn = false;
