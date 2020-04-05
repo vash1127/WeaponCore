@@ -238,7 +238,7 @@ namespace WeaponCore.Support
             TargetsUpdatedTick = Session.Tick;
         }
 
-        internal void ReScanBlockGroups()
+        internal void ReScanBlockGroups(bool networkSync = false)
         {
             if (TerminalSystem == null)
                 TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
@@ -291,7 +291,7 @@ namespace WeaponCore.Support
 
                 ScanBlockGroups = false;
 
-                if (Session.MpActive && Session.HandlesInput)
+                if (Session.MpActive && Session.HandlesInput && !networkSync)
                 {
                     Session.SendGroupUpdate(this);
                 }

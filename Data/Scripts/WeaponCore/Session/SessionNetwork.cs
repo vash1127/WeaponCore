@@ -544,7 +544,7 @@ namespace WeaponCore
 
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                                ai.ScanBlockGroups = true;
+                                ai.ReScanBlockGroups(true);
 
                             report.PacketValid = true;
                             break;
@@ -1389,7 +1389,7 @@ namespace WeaponCore
 
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                                ai.ScanBlockGroups = true;
+                                ai.ReScanBlockGroups(true);
 
                             PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
 
