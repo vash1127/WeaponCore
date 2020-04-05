@@ -107,7 +107,6 @@ namespace WeaponCore
         internal readonly List<Weapon> WeaponsToSync = new List<Weapon>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
-        internal readonly Queue<Weapon> ChargingWeaponsToReload = new Queue<Weapon>();
         internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));

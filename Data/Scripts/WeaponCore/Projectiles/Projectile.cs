@@ -716,6 +716,8 @@ namespace WeaponCore.Projectiles
                 }
             }
 
+            Log.Line($"Pulse: {Info.AmmoDef.Const.Pulse} Age: {Info.Age} PulseInterval: {Info.AmmoDef.Const.PulseInterval}");
+
             if (!Info.AmmoDef.Const.Pulse || Info.AmmoDef.Const.Pulse && Info.Age % Info.AmmoDef.Const.PulseInterval == 0)
                 EwarEffects();
             else Info.EwarActive = false;

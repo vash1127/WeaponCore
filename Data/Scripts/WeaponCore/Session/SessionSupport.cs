@@ -236,13 +236,6 @@ namespace WeaponCore
 
             MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
 
-            while (ChargingWeaponsToReload.Count > 0)
-            {
-                Log.Line("charge before load");
-                var w = ChargingWeaponsToReload.Dequeue();
-                ComputeStorage(w);
-            }
-
             /*
             foreach (var myEntity in MyEntities.GetEntities())
             {
