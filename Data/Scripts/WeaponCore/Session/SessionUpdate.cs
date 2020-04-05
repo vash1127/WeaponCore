@@ -166,13 +166,33 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
                                 w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
-                                if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui)) {
-                                    
+                                if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
+                                {
+
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
                                 else if (w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
-                                    w.Target = w.Comp.TrackingWeapon.Target;
+                                {
+                                    if (w.Target != w.Comp.TrackingWeapon.Target)
+                                    {
+                                        w.Target = w.Comp.TrackingWeapon.Target;
+
+                                        w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
+
+                                        if (WeaponsSyncCheck.Add(w))
+                                        {
+                                            WeaponsToSync.Add(w);
+                                            comp.Ai.NumSyncWeapons++;
+                                            w.SendTarget = true;
+
+                                            if (Tick - w.LastSyncTick > 20)
+                                                w.SendSync = true;
+
+                                            w.LastSyncTick = Tick;
+                                        }
+                                    }
+                                }
 
                                 if (w.Target.TargetChanged) // Target changed
                                     w.TargetChanged();
