@@ -359,8 +359,6 @@ namespace WeaponCore.Platform
 
                     if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (ActiveAmmoDef.AmmoDef.Const.MustCharge && CanReload)
-                        StartReload();
 
                 }
                 IsShooting = false;
