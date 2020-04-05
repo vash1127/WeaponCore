@@ -322,10 +322,7 @@ namespace WeaponCore.Platform
                     FinishBurst = true;
 
                 else if (CanReload || ActiveAmmoDef.AmmoDef.Const.MustCharge && State.ShotsFired >= System.ShotsPerBurst)
-                {
-                    FinishBurst = false;
                     StartReload();
-                }
                 
 
                 if (State.ManualShoot == TerminalActionState.ShootOnce && --State.SingleShotCounter <= 0)
