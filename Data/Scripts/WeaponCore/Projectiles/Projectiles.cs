@@ -223,8 +223,11 @@ namespace WeaponCore.Projectiles
                         p.AmmoEffect.SetTranslation(ref offVec);
                     }
                 }
-                else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticle)
-                    p.AmmoEffect.Velocity = p.Velocity;
+                else if (p.EnableAv && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticle)
+                {
+                    var translation = p.AmmoEffect.WorldMatrix.Translation + p.TravelMagnitude;
+                    p.AmmoEffect.SetTranslation(ref translation);
+                }
 
                 if (p.DynamicGuidance)
                 {
@@ -464,9 +467,9 @@ namespace WeaponCore.Projectiles
                     p.TestSphere.Center = p.Position;
                     if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
+                        //Log.Line($"test: {p.AmmoEffect != null} - {p.Info.System.WeaponName} - {p.ParticleStopped} - {p.ParticleLateStart} - {p.AmmoEffect.IsEmittingStopped}");
                         if (!p.Info.AmmoDef.Const.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticleShrinks)
                             p.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, p.BaseAmmoParticleScale);
-
                         if ((p.ParticleStopped || p.ParticleLateStart))
                             p.PlayAmmoParticle();
                     }

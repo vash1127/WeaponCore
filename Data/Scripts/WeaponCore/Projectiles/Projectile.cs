@@ -943,7 +943,7 @@ namespace WeaponCore.Projectiles
 
                     AmmoEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale * scaler;
                     AmmoEffect.UserScale = 1 * scaler;
-                    if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
+                    //if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
                     ParticleStopped = false;
                     ParticleLateStart = false;
                 }
