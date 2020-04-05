@@ -7,6 +7,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Platform
@@ -397,11 +398,16 @@ namespace WeaponCore.Platform
         public void StartReload(bool reset = false, bool isNewtorkUpdate = false)
         {
             if (reset) State.Sync.Reloading = false;
-
             if (State.Sync.Reloading || State.Sync.CurrentAmmo > 0) return;
 
             FinishBurst = false;
             State.Sync.Reloading = true;
+
+            if (IsShooting)
+                StopShooting();
+
+            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
+                State.ShotsFired = 0;
 
             var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
@@ -413,9 +419,6 @@ namespace WeaponCore.Platform
                 Comp.Session.FutureEvents.Schedule(o => { StartReload(true); }, null, Timings.AnimationDelayTick - Comp.Session.Tick);
                 return;
             }
-
-            if (IsShooting)
-                StopShooting();
 
             if ((State.Sync.CurrentMags == 0 && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !Comp.Session.IsCreative))
             {
@@ -547,9 +550,6 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
-                    State.ShotsFired = 0;
-
                 var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
                 
                 if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags && (Comp.Session.IsClient || !Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content))))
@@ -652,6 +652,49 @@ namespace WeaponCore.Platform
             LastTargetTick = Comp.Session.Tick;
             LoadId = Comp.Session.LoadAssigner();
             ShortLoadId = Comp.Session.ShortLoadAssigner();
+        }
+
+        public void PlayEmissives(PartAnimation animation, WeaponSystem system)
+        {
+            EmissiveState LastEmissive = new EmissiveState();
+            for (int i = 0; i < animation.MoveToSetIndexer.Length; i++)
+            {
+                EmissiveState currentEmissive;
+                if (system.WeaponEmissiveSet.TryGetValue(animation.EmissiveIds[animation.MoveToSetIndexer[i][(int)Indexer.EmissiveIndex]], out currentEmissive))
+                {
+                    currentEmissive.CurrentPart = animation.CurrentEmissivePart[animation.MoveToSetIndexer[i][(int)Indexer.EmissivePartIndex]];
+
+                    if (currentEmissive.EmissiveParts != null && LastEmissive.EmissiveParts != null && currentEmissive.CurrentPart == LastEmissive.CurrentPart && currentEmissive.CurrentColor == LastEmissive.CurrentColor && Math.Abs(currentEmissive.CurrentIntensity - LastEmissive.CurrentIntensity) < 0.001)
+                        currentEmissive = new EmissiveState();
+
+                    LastEmissive = currentEmissive;
+
+
+                    if (currentEmissive.EmissiveParts != null && currentEmissive.EmissiveParts.Length > 0)
+                    {
+                        if (currentEmissive.CycleParts)
+                        {
+                            animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor,
+                                currentEmissive.CurrentIntensity);
+                            if (!currentEmissive.LeavePreviousOn)
+                            {
+                                var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts
+                                    .Length - 1;
+                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
+                                    Color.Transparent,
+                                    0);
+                            }
+                        }
+                        else
+                        {
+
+                            Log.Line($"set emissive currentEmissive.CurrentColor: {currentEmissive.CurrentColor} currentEmissive.CurrentIntensity: {currentEmissive.CurrentIntensity} currentEmissive.EmissiveParts.Length: {currentEmissive.EmissiveParts.Length}");
+                            for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
+                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[j], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
+                        }
+                    }
+                }
+            }
         }
     }
 }

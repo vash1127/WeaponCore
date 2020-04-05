@@ -827,7 +827,7 @@ namespace WeaponCore
                                         .Length - 1;
                                     animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
                                         Color.Transparent,
-                                        currentEmissive.CurrentIntensity);
+                                        0);
                                 }
                             }
                             else

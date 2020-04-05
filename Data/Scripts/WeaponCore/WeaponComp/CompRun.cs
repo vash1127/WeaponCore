@@ -7,6 +7,7 @@ using VRage.ModAPI;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
+using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
@@ -84,6 +85,11 @@ namespace WeaponCore.Support
 
                     Entity.NeedsWorldMatrix = true;
 
+                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                    else OnAddedToSceneTasks();
+
+                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
+
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
                         var weapon = Platform.Weapons[i];
@@ -111,14 +117,21 @@ namespace WeaponCore.Support
                                     if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
                                 }
                             }
+                        }
 
+                        if (weapon.State.Sync.CurrentAmmo == 0)
+                            weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
+
+                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                        {
+                            //Log.Line($"On exists");
+                            for (int j = 0; j < weapon.AnimationsSet[EventTriggers.TurnOn].Length; j++)
+                            {
+                                var animation = weapon.AnimationsSet[EventTriggers.TurnOn][j];
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => weapon.PlayEmissives(animation, weapon.System));
+                            }
                         }
                     }
-
-                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
-                    else OnAddedToSceneTasks();
-
-                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
                 } 
                 else Log.Line($"Comp Init() failed");
             }

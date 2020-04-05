@@ -301,6 +301,9 @@ namespace WeaponCore.Platform
                 if(IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
+
+                Log.Line($"State.ShotsFired: {State.ShotsFired} System.ShotsPerBurst: {System.ShotsPerBurst}");
+
                 if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && ActiveAmmoDef.AmmoDef.Const.BurstMode && (State.Sync.CurrentAmmo > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && State.ShotsFired == System.ShotsPerBurst)
                 {
                     uint delay = 0;
@@ -318,8 +321,11 @@ namespace WeaponCore.Platform
                 else if (((ActiveAmmoDef.AmmoDef.Const.BurstMode && System.AlwaysFireFullBurst) || ActiveAmmoDef.AmmoDef.Const.MustCharge) && State.Sync.CurrentAmmo > 0 && State.ShotsFired < System.ShotsPerBurst)
                     FinishBurst = true;
 
-                else if (ActiveAmmoDef.AmmoDef.Const.Reloadable && (State.Sync.CurrentAmmo == 0 || (State.ShotsFired == System.ShotsPerBurst && ActiveAmmoDef.AmmoDef.Const.MustCharge)) && !State.Sync.Reloading)
+                else if (CanReload || ActiveAmmoDef.AmmoDef.Const.MustCharge && State.ShotsFired >= System.ShotsPerBurst)
+                {
+                    FinishBurst = false;
                     StartReload();
+                }
                 
 
                 if (State.ManualShoot == TerminalActionState.ShootOnce && --State.SingleShotCounter <= 0)

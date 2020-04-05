@@ -36,7 +36,7 @@ namespace WeaponCore.Support {
         internal readonly string[] EmissiveIds;
         internal readonly string[] EmissiveParts;
 
-        internal enum indexer
+        internal enum Indexer
         {
             MoveIndex,
             RotationIndex,
@@ -198,18 +198,18 @@ namespace WeaponCore.Support {
 
         internal void GetCurrentMove(out Vector3D translation, out Matrix rotation, out Matrix rotAroundCenter, out AnimationType type, out EmissiveState emissiveState)
         {
-            type = TypeSet[MoveToSetIndexer[_currentMove][(int)indexer.TypeIndex]];
+            type = TypeSet[MoveToSetIndexer[_currentMove][(int)Indexer.TypeIndex]];
             var moveSet = System.WeaponLinearMoveSet[AnimationId];
 
             if (type == AnimationType.Movement)
             {
-                if (moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]] != Matrix.Zero)
-                    translation = moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]].Translation;
+                if (moveSet[MoveToSetIndexer[_currentMove][(int)Indexer.MoveIndex]] != Matrix.Zero)
+                    translation = moveSet[MoveToSetIndexer[_currentMove][(int)Indexer.MoveIndex]].Translation;
                 else
                     translation = Vector3D.Zero;
 
-                rotation = RotationSet[MoveToSetIndexer[_currentMove][(int)indexer.RotationIndex]];
-                rotAroundCenter = RotCenterSet[MoveToSetIndexer[_currentMove][(int)indexer.RotCenterIndex]];
+                rotation = RotationSet[MoveToSetIndexer[_currentMove][(int)Indexer.RotationIndex]];
+                rotAroundCenter = RotCenterSet[MoveToSetIndexer[_currentMove][(int)Indexer.RotCenterIndex]];
 
             }
             else
@@ -219,9 +219,9 @@ namespace WeaponCore.Support {
                 rotAroundCenter = Matrix.Zero;
             }
 
-            if (System.WeaponEmissiveSet.TryGetValue(EmissiveIds[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]], out emissiveState))
+            if (System.WeaponEmissiveSet.TryGetValue(EmissiveIds[MoveToSetIndexer[_currentMove][(int)Indexer.EmissiveIndex]], out emissiveState))
             {
-                emissiveState.CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissivePartIndex]];
+                emissiveState.CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)Indexer.EmissivePartIndex]];
 
                 if (emissiveState.EmissiveParts != null && LastEmissive.EmissiveParts != null && emissiveState.CurrentPart == LastEmissive.CurrentPart && emissiveState.CurrentColor == LastEmissive.CurrentColor && Math.Abs(emissiveState.CurrentIntensity - LastEmissive.CurrentIntensity) < 0.001)
                     emissiveState = new EmissiveState();
