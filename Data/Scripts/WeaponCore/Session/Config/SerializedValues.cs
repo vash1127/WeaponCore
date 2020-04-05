@@ -77,9 +77,8 @@ namespace WeaponCore
         [ProtoMember(5)] public float RofModifier = 1;
         [ProtoMember(6)] public WeaponSettingsValues[] Weapons;
         [ProtoMember(7)] public float Range = 100;
-        [ProtoMember(8)] public bool InventoryInited;
-        [ProtoMember(9)] public GroupOverrides Overrides;
-        [ProtoMember(10)] public int Version = Session.VersionControl;
+        [ProtoMember(8)] public GroupOverrides Overrides;
+        [ProtoMember(9)] public int Version = Session.VersionControl;
 
         public CompSettingsValues()
         {
@@ -96,7 +95,6 @@ namespace WeaponCore
             foreach (var w in comp.Platform.Weapons)
                 w.UpdateWeaponRange();
 
-            InventoryInited = syncFrom.InventoryInited;
             Overrides.Sync(syncFrom.Overrides);
 
             if (Overload != syncFrom.Overload || RofModifier != syncFrom.RofModifier || DpsModifier != syncFrom.DpsModifier)
@@ -281,6 +279,7 @@ namespace WeaponCore
 
                 comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
                 w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
+
 
                 comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false);
             }

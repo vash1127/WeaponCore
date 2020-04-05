@@ -398,7 +398,7 @@ namespace WeaponCore.Platform
         {
             if (reset) State.Sync.Reloading = false;
 
-            if (State.Sync.Reloading) return;
+            if (State.Sync.Reloading || State.Sync.CurrentAmmo > 0) return;
 
             FinishBurst = false;
             State.Sync.Reloading = true;
@@ -472,8 +472,7 @@ namespace WeaponCore.Platform
                 {
                     if (Comp.Session.IsCreative)
                         ActiveAmmoDef = newAmmo;
-
-                    State.Sync.Reloading = false;
+                    
                     Session.ComputeStorage(this);
                 }
                 return;
@@ -482,7 +481,6 @@ namespace WeaponCore.Platform
             if (!newAmmo.AmmoDef.Const.EnergyAmmo)
             {
                 ActiveAmmoDef = newAmmo;
-                State.Sync.Reloading = false;
                 Session.ComputeStorage(this);
                 return;
             }
@@ -523,13 +521,11 @@ namespace WeaponCore.Platform
         internal void Reloaded(object o = null)
         {
 
-            if (State?.Sync == null || Comp?.State?.Value == null  || Comp.Ai == null|| Timings == null|| !State.Sync.Reloading) return;
+            if (State?.Sync == null || Comp?.State?.Value == null  || Comp.Ai == null|| Timings == null|| !State.Sync.Reloading || State.Sync.CurrentAmmo > 0) return;
 
             using (Comp.MyCube?.Pin())
             {
                 if (Comp.MyCube != null && Comp.MyCube.MarkedForClose) return;
-
-                State.Sync.Reloading = false;
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
@@ -555,15 +551,11 @@ namespace WeaponCore.Platform
                     State.ShotsFired = 0;
 
                 var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
+                
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags && (Comp.Session.IsClient || !Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content))))
+                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
 
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags)
-                {
-                    if (!Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content)))
-                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                    else if (Comp.Session.IsClient)
-                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-
-                }
+                State.Sync.Reloading = false;
 
                 if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks && Comp.Session.WeaponsSyncCheck.Add(this))
                 {
@@ -582,7 +574,12 @@ namespace WeaponCore.Platform
 
         internal void CycleAmmo(object o = null)
         {
-            if (CanReload)
+            if (State.Sync.CurrentAmmo == 0)
+            {
+                var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
+                ChangeAmmo(ref newAmmo);
+            }
+            else if (CanReload)
                 StartReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
             {
