@@ -480,6 +480,8 @@ namespace WeaponCore
                         continue;
 
                     if (w.Timings.ShootDelayTick <= Tick) w.Shoot();
+
+                    if (MpActive && IsServer && !w.IsTurret && w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Tick - w.LastSyncTick > ResyncMinDelayTicks) w.ForceSync();
                 }
             }
             ShootingWeapons.Clear();

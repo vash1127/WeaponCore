@@ -570,6 +570,20 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal void ForceSync()
+        {
+            if (Comp.Session.WeaponsSyncCheck.Add(this))
+            {
+                Comp.Session.WeaponsToSync.Add(this);
+                Comp.Ai.NumSyncWeapons++;
+
+                SendTarget = false;
+                SendSync = true;
+
+                LastSyncTick = Comp.Session.Tick;
+            }
+        }
+
         internal void CycleAmmo(object o = null)
         {
             if (State.Sync.CurrentAmmo == 0)
