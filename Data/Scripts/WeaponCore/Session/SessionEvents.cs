@@ -138,7 +138,7 @@ namespace WeaponCore
         {
             try
             {
-                PlayerControlAcquired(ControlledEntity);
+                //PlayerControlAcquired(ControlledEntity);
                 InMenu = true;
             }
             catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}"); }

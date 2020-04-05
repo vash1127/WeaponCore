@@ -241,7 +241,7 @@ namespace WeaponCore
             action.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
-                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && !comp.HasTurret;
             };
             action.ValidForGroups = true;
 
