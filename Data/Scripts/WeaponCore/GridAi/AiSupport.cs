@@ -380,7 +380,6 @@ namespace WeaponCore.Support
                 var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
 
                 ClosestPlanetSqr = double.MaxValue;
-
                 if (new BoundingSphereD(planetCenter, MyPlanet.AtmosphereRadius + gridRadius).Intersects(gridVolume))
                 {
                     InPlanetGravity = true;

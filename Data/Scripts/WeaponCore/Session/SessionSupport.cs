@@ -435,31 +435,6 @@ namespace WeaponCore
         {
             Pause = true;
             Log.Line($"Stopping all AV due to pause");
-            /*
-            foreach (var aiPair in GridTargetingAIs)
-            {
-                var gridAi = aiPair.Value;
-                foreach (var comp in gridAi.WeaponBase.Values)
-                    comp.StopAllAv();
-            }
-
-            foreach (var p in Projectiles.ActiveProjetiles)
-            {
-                p.ParticleStopped = true;
-                if (p.AmmoEffect != null)
-                {
-                    p.AmmoEffect.Stop();
-                    p.AmmoEffect = null;
-                }
-
-                if (p.Info.AvShot?.HitEffect != null)
-                {
-                    p.Info.AvShot.HitEffect.Stop();
-                    p.Info.AvShot.HitEffect = null;
-                }
-
-            }
-            */
             if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
         }
 
@@ -490,7 +465,7 @@ namespace WeaponCore
             ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             MyEntities.Add(ent);
 
-            ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            ent.PositionComp.SetWorldMatrix(ref MatrixD.Identity, null, false, false, false);
             ent.InScene = false;
             ent.Render.RemoveRenderObjects();
             return ent;
@@ -498,7 +473,7 @@ namespace WeaponCore
 
         internal void TriggerEntityClear(MyEntity myEntity)
         {
-            myEntity.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            myEntity.PositionComp.SetWorldMatrix(ref MatrixD.Identity, null, false, false, false);
             myEntity.InScene = false;
             myEntity.Render.RemoveRenderObjects();
         }
