@@ -393,10 +393,10 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
-        public void StartReload(bool reset = false, bool isNewtorkUpdate = false)
+        public void StartReload(bool reset = false)
         {
             if (reset) State.Sync.Reloading = false;
-            if (State.Sync.Reloading || State.Sync.CurrentAmmo > 0) return;
+            if (State.Sync.Reloading) return;
 
             FinishBurst = false;
             State.Sync.Reloading = true;
@@ -443,7 +443,7 @@ namespace WeaponCore.Platform
                 }
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative) && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
-                    ChargeReload(isNewtorkUpdate);
+                    ChargeReload();
                 else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
                     CancelableReloadAction += Reloaded;
@@ -489,7 +489,7 @@ namespace WeaponCore.Platform
             SetWeaponDps();
         }
 
-        public void ChargeReload(bool syncCharge)
+        public void ChargeReload(bool syncCharge = false)
         {
             if (!syncCharge)
             {
