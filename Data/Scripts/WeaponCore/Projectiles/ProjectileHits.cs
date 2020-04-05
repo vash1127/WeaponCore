@@ -27,6 +27,7 @@ namespace WeaponCore.Projectiles
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
             var planetBeam = beam;
             planetBeam.To = p.Info.AmmoDef.Const.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
+            p.EntitiesNear = false;
             bool projetileInShield = false;
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
@@ -59,6 +60,7 @@ namespace WeaponCore.Projectiles
                         double? dist = null;
                         if (ent.Physics != null && ent.Physics.IsPhantom)
                         {
+                            p.EntitiesNear = true;
                             dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
                             if (p.Info.Target.IsProjectile && Vector3D.Transform(p.Info.Target.Projectile.Position, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
                                 projetileInShield = true;
@@ -171,11 +173,10 @@ namespace WeaponCore.Projectiles
                         else
                             hitEntity.EventType = Field;
 
-
-                        Log.Line($"hitEntity.EventType: {hitEntity.EventType}");
-
                         if (p.Info.AmmoDef.Const.AreaEffect == DotField)
                             hitEntity.DamageOverTime = true;
+
+                        p.EntitiesNear = true;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;

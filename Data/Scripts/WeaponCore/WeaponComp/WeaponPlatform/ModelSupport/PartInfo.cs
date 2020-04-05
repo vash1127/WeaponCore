@@ -6,6 +6,7 @@ namespace WeaponCore.Support
     class PartInfo
     {
         internal MyEntity Entity;
+        internal MyEntity Parent;
         internal Matrix ToTransformation;
         internal Matrix FromTransformation;
         internal Matrix FullRotationStep;

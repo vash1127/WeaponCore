@@ -82,6 +82,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD GridVolume;
         //internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
+        internal bool InPlanetGravity;
         internal bool FirstRun = true;
         internal bool ScanBlockGroups = true;
         internal bool ScanBlockGroupSettings;

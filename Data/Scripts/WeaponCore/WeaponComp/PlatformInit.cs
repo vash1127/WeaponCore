@@ -380,7 +380,10 @@ namespace WeaponCore.Platform
                     var weapon = Weapons[c];
                     MyEntity azimuthPartEntity;
                     if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
+                    {
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
+                        weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
+                    }
 
                     MyEntity elevationPartEntity;
                     if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))

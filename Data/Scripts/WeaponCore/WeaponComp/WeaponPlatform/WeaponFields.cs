@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.Target;
-using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
@@ -40,6 +37,7 @@ namespace WeaponCore.Platform
         internal bool SendTarget;
         internal bool SendSync;
         internal bool ReloadSubscribed;
+        internal uint GravityTick;
         internal uint ShootTick;
         internal uint TicksPerShot;
         internal uint LastSyncTick;
@@ -53,6 +51,7 @@ namespace WeaponCore.Platform
         internal PartInfo AzimuthPart;
         internal PartInfo ElevationPart;
         internal List<MyEntity> HeatingParts;
+        internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
