@@ -100,6 +100,7 @@ namespace WeaponCore.Projectiles
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
+        internal readonly List<MyEntity> CheckList = new List<MyEntity>();
         internal readonly List<VirtualProjectile> VrPros = new List<VirtualProjectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
@@ -799,17 +800,16 @@ namespace WeaponCore.Projectiles
 
             var wakeRadius = detectRadius > deCloakRadius ? detectRadius : deCloakRadius;
             PruneSphere = new BoundingSphereD(Position, wakeRadius);
-            var checkList = Info.Ai.Session.Projectiles.CheckPool.Get();
             var inRange = false;
             var activate = false;
             var minDist = double.MaxValue;
             if (!MineActivated)
             {
                 MyEntity closestEnt = null;
-                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref PruneSphere, checkList, MyEntityQueryType.Dynamic);
-                for (int i = 0; i < checkList.Count; i++)
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref PruneSphere, CheckList, MyEntityQueryType.Dynamic);
+                for (int i = 0; i < CheckList.Count; i++)
                 {
-                    var ent = checkList[i];
+                    var ent = CheckList[i];
                     var grid = ent as MyCubeGrid;
                     var character = ent as IMyCharacter;
                     if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
@@ -862,9 +862,7 @@ namespace WeaponCore.Projectiles
                 TriggerMine(false);
                 SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = Info.Target.Entity });
             }
-
-            checkList.Clear();
-            Info.Ai.Session.Projectiles.CheckPool.Return(checkList);
+            CheckList.Clear();
         }
 
         internal void OffSetTarget(bool roam = false)

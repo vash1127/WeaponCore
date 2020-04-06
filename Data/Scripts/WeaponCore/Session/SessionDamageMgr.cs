@@ -144,13 +144,11 @@ namespace WeaponCore
         private void DamageGrid(HitEntity hitEnt, ProInfo t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-            if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
-            {
+            if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) {
                 hitEnt.Blocks?.Clear();
                 return;
             }
-            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal || (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.MyGrid.IsSameConstructAs(grid))
-            {
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal || (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Ai.MyGrid.IsSameConstructAs(grid)) {
                 t.BaseDamagePool = 0;
                 return;
             }

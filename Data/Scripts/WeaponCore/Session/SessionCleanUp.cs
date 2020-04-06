@@ -155,18 +155,15 @@ namespace WeaponCore
             foreach (var p in Projectiles.ProjectilePool)
                 p.AmmoEffect?.Stop();
 
-            Projectiles.CheckPool.Clean();
             Projectiles.ShrapnelToSpawn.Clear();
             Projectiles.ShrapnelPool.Clean();
             Projectiles.FragmentPool.Clean();
-            Projectiles.CheckPool.Clean();
             Projectiles.ActiveProjetiles.ApplyChanges();
             Projectiles.ActiveProjetiles.Clear();
             Projectiles.ProjectilePool.Clear();
             Projectiles.HitEntityPool.Clean();
             Projectiles.CleanUp.Clear();
             Projectiles.VirtInfoPool.Clean();
-            Projectiles.V3Pool.Clean();
 
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();

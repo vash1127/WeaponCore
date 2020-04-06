@@ -16,21 +16,18 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal readonly Session Session;
+        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(256);
         internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>(32);
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
+        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32, hitEnt => hitEnt.Clean());
+
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
-
-        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(30);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
-
         internal readonly CachingHashSet<Projectile> ActiveProjetiles = new CachingHashSet<Projectile>();
-        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32);
-        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(256);
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
+        internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
 
-        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>(32);
-        internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>();
         internal ulong CurrentProjectileId;
 
         internal Projectiles(Session session)
@@ -272,36 +269,33 @@ namespace WeaponCore.Projectiles
 
         private void CheckHits()
         {
-            foreach (var p in ActiveProjetiles)
-            {
+            foreach (var p in ActiveProjetiles) {
+
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
-                if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
-                {
+                
+                if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)) {
+                    
                     var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
-
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = dInfo.DetonationRadius;
 
-                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0))
-                    {
-                        var checkList = CheckPool.Get();
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList,
+                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0)) {
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList,
                             p.PruneQuery);
-                        for (int i = 0; i < checkList.Count; i++)
+                        for (int i = 0; i < p.CheckList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
-                            { Distance = 0, Element = checkList[i] });
+                            { Distance = 0, Element = p.CheckList[i] });
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
                                     ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref p.Beam);
 
-                        checkList.Clear();
-                        CheckPool.Return(checkList);
+                        p.CheckList.Clear();
                         p.State = ProjectileState.Detonate;
                         p.ForceHitParticle = true;
                     }
@@ -314,8 +308,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.MineSeeking && !p.MineTriggered)
                     p.SeekEnemy();
-                else if (useEwarSphere)
-                {
+                else if (useEwarSphere) {
                     if (p.Info.EwarActive) {
                         p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
                         var currentRadius = p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.AmmoDef.Const.AreaEffectSize;
@@ -325,50 +318,40 @@ namespace WeaponCore.Projectiles
                         }
                     }
                     else
-                    {
                         p.PruneSphere = new BoundingSphereD(p.Position, triggerRange);
-                    }
 
                     sphere = true;
                 }
-                else if (p.Info.AmmoDef.Const.CollisionIsLine)
-                {
+                else if (p.Info.AmmoDef.Const.CollisionIsLine) {
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
                     if (p.Info.AmmoDef.Const.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
                         line = true;
                 }
-                else
-                {
+                else {
                     p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                    if (p.PruneSphere.Radius < p.Info.AmmoDef.Const.CollisionSize)
-                    {
+                    if (p.PruneSphere.Radius < p.Info.AmmoDef.Const.CollisionSize) {
                         p.PruneSphere.Center = p.Position;
                         p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
                     }
                 }
 
-                if (sphere)
-                {
+                if (sphere) {
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) 
                         p.CheckForNearVoxel(60);
 
-                    var checkList = CheckPool.Get();
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
-                    for (int i = 0; i < checkList.Count; i++)
-                        p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList, p.PruneQuery);
+                    for (int i = 0; i < p.CheckList.Count; i++)
+                        p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = p.CheckList[i] });
 
-                    checkList.Clear();
-                    CheckPool.Return(checkList);
+                    p.CheckList.Clear();
                 }
-                else if (line)
-                {
+                else if (line) {
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref p.Beam, p.SegmentList, p.PruneQuery);
                 }
 
-                if (p.Info.Target.IsProjectile || p.SegmentList.Count > 0)
-                {
+                if (p.Info.Target.IsProjectile || p.SegmentList.Count > 0) {
                     ValidateHits.Add(p);
                     continue;
                 }
@@ -380,10 +363,9 @@ namespace WeaponCore.Projectiles
 
         private void ConfirmHit()
         {
-            for (int i = 0; i < ValidateHits.Count; i++)
-            {
+            for (int i = 0; i < ValidateHits.Count; i++) {
+                
                 var p = ValidateHits[i];
-
                 if (GetAllEntitiesInLine(p, p.Beam) && p.Intersected())
                     continue;
 
@@ -467,7 +449,6 @@ namespace WeaponCore.Projectiles
                     p.TestSphere.Center = p.Position;
                     if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
-                        //Log.Line($"test: {p.AmmoEffect != null} - {p.Info.System.WeaponName} - {p.ParticleStopped} - {p.ParticleLateStart} - {p.AmmoEffect.IsEmittingStopped}");
                         if (!p.Info.AmmoDef.Const.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticleShrinks)
                             p.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, p.BaseAmmoParticleScale);
                         if ((p.ParticleStopped || p.ParticleLateStart))
