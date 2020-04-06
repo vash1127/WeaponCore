@@ -119,7 +119,7 @@ namespace WeaponCore.Support
                             }
                         }
 
-                        if (weapon.State.Sync.CurrentAmmo == 0)
+                        if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
 
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
