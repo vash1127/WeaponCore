@@ -131,6 +131,7 @@ namespace WeaponCore.Support
         }
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
+        public readonly List<Vector3I> Vector3ICache = new List<Vector3I>();
         public MyEntity Entity;
         internal Projectile Projectile;
         public ProInfo Info;
@@ -146,9 +147,9 @@ namespace WeaponCore.Support
 
         public void Clean()
         {
+            Vector3ICache.Clear();
             Entity = null;
             Projectile = null;
-
             Intersection.Length = 0;
             Intersection.Direction = Vector3D.Zero;
             Intersection.From = Vector3D.Zero;

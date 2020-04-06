@@ -166,7 +166,6 @@ namespace WeaponCore
             Projectiles.HitEntityPool.Clean();
             Projectiles.CleanUp.Clear();
             Projectiles.VirtInfoPool.Clean();
-            Projectiles.V3Pool.Clean();
 
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();

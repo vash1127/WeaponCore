@@ -16,20 +16,21 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal readonly Session Session;
+        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(256);
         internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>(32);
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
+        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32, hitEnt => hitEnt.Clean());
+
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
 
-        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(30);
+        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(32);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
 
         internal readonly CachingHashSet<Projectile> ActiveProjetiles = new CachingHashSet<Projectile>();
-        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32);
-        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(256);
+
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
 
-        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>(32);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>();
         internal ulong CurrentProjectileId;
 
