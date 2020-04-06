@@ -44,7 +44,8 @@ namespace WeaponCore
         NextActiveUpdate,
         ReleaseActiveUpdate,
         GridOverRidesSync,
-        RescanGroupRequest
+        RescanGroupRequest,
+        GridFocusListSync
     }
 
     #region packets
@@ -59,7 +60,8 @@ namespace WeaponCore
     [ProtoInclude(11, typeof(RequestTargetsPacket))]
     [ProtoInclude(12, typeof(MouseInputSyncPacket))]
     [ProtoInclude(13, typeof(GridOverRidesSyncPacket))]
-    [ProtoInclude(14, typeof(MIdPacket))]
+    [ProtoInclude(14, typeof(GridFocusListPacket))]
+    [ProtoInclude(15, typeof(MIdPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -228,17 +230,30 @@ namespace WeaponCore
             Data = new OverRidesData[0];
         }
     }
+
+    [ProtoContract]
+    public class GridFocusListPacket : Packet
+    {
+        [ProtoMember(1)] internal long[] EntityIds;
+        public GridFocusListPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            EntityIds = null;
+        }
+    }
     #endregion
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(19, typeof(RangePacket))]
-    [ProtoInclude(20, typeof(CycleAmmoPacket))]
-    [ProtoInclude(21, typeof(ShootStatePacket))]
-    [ProtoInclude(22, typeof(OverRidesPacket))]
-    [ProtoInclude(23, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(24, typeof(StatePacket))]
-    [ProtoInclude(25, typeof(SettingPacket))]
+    [ProtoInclude(20, typeof(RangePacket))]
+    [ProtoInclude(21, typeof(CycleAmmoPacket))]
+    [ProtoInclude(22, typeof(ShootStatePacket))]
+    [ProtoInclude(23, typeof(OverRidesPacket))]
+    [ProtoInclude(24, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(25, typeof(StatePacket))]
+    [ProtoInclude(26, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;

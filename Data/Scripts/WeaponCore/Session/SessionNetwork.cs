@@ -391,19 +391,6 @@ namespace WeaponCore
                                 w.State.ManualShoot = shootStatePacket.Data;
                             }
 
-                            /*
-                            if(shootStatePacket.Data != TerminalActionState.ShootOff && shootStatePacket.Data != TerminalActionState.ShootOnce)
-                            {
-                                comp.Set.Value.Overrides.ManualControl = false;
-                                comp.Set.Value.Overrides.TargetPainter = false;
-
-                                if (shootStatePacket.Data != TerminalActionState.ShootClick)
-                                {
-                                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                                }
-                            }*/
-
                             report.PacketValid = true;
                             break;
                         }
@@ -426,19 +413,6 @@ namespace WeaponCore
 
                             if (shootStatePacket.Data == TerminalActionState.ShootOnce)
                                 w.State.SingleShotCounter++;
-
-                            /*
-                            else if (shootStatePacket.Data != TerminalActionState.ShootOff)
-                            {
-                                comp.Set.Value.Overrides.ManualControl = false;
-                                comp.Set.Value.Overrides.TargetPainter = false;
-
-                                if (shootStatePacket.Data != TerminalActionState.ShootClick)
-                                {
-                                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                                }
-                            }*/
 
                             w.State.ManualShoot = shootStatePacket.Data;
 
@@ -549,6 +523,29 @@ namespace WeaponCore
                             report.PacketValid = true;
                             break;
                         }
+                    case PacketType.GridFocusListSync:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+                            var focusPacket = (GridFocusListPacket)packet;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"myGrid is null: {myGrid == null} ent.MarkedForClose: {myGrid?.MarkedForClose}";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                for(int i = 0; i < focusPacket.EntityIds.Length; i++)
+                                {
+                                    ai.Focus.Target[i] = MyEntities.GetEntityByIdOrDefault(focusPacket.EntityIds[i]);
+                                }
+                                report.PacketValid = true;
+                            }
+                            
+                            break;
+                        }
                     case PacketType.FocusUpdate:
                     case PacketType.ReassignTargetUpdate:
                     case PacketType.NextActiveUpdate:
@@ -566,27 +563,26 @@ namespace WeaponCore
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId, null, true) as MyCubeGrid;
+                                var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
-                                if (targetGrid != null)
+                                switch (packet.PType)
                                 {
-                                    switch (packet.PType)
-                                    {
-                                        case PacketType.FocusUpdate:
+                                    case PacketType.FocusUpdate:
+                                        if (targetGrid != null)
                                             ai.Focus.AddFocus(targetGrid, ai, true);
-                                            break;
-                                        case PacketType.ReassignTargetUpdate:
+                                        break;
+                                    case PacketType.ReassignTargetUpdate:
+                                        if (targetGrid != null)
                                             ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
-                                            break;
-                                        case PacketType.NextActiveUpdate:
-                                            ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
-                                            break;
-                                        case PacketType.ReleaseActiveUpdate:
-                                            ai.Focus.ReleaseActive(ai, true);
-                                            break;
-                                    }
-                                    report.PacketValid = true;
+                                        break;
+                                    case PacketType.NextActiveUpdate:
+                                        ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
+                                        break;
+                                    case PacketType.ReleaseActiveUpdate:
+                                        ai.Focus.ReleaseActive(ai, true);
+                                        break;
                                 }
+                                report.PacketValid = true;
                             }
                             else
                                 errorPacket.Error = "GridAi not found";
@@ -984,6 +980,24 @@ namespace WeaponCore
                                         SingleClient = true,
                                     });
                                 }
+
+                                var focusPacket = new GridFocusListPacket
+                                {
+                                    EntityId = myGrid.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.GridFocusListSync,
+                                    EntityIds = new long[ai.Focus.Target.Length]
+                                };
+
+                                for(int i = 0; i < ai.Focus.Target.Length; i++)
+                                    focusPacket.EntityIds[i] = ai.Focus.Target[i]?.EntityId ?? -1;
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = myGrid,
+                                    Packet = focusPacket,
+                                    SingleClient = true,
+                                });
 
                                 if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
                                     PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
@@ -1415,27 +1429,26 @@ namespace WeaponCore
                             {
                                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
-                                if (targetGrid != null)
+                                switch (packet.PType)
                                 {
-                                    switch (packet.PType)
-                                    {
-                                        case PacketType.FocusUpdate:
+                                    case PacketType.FocusUpdate:
+                                        if (targetGrid != null)
                                             ai.Focus.AddFocus(targetGrid, ai, true);
-                                            break;
-                                        case PacketType.ReassignTargetUpdate:
+                                        break;
+                                    case PacketType.ReassignTargetUpdate:
+                                        if (targetGrid != null)
                                             ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
-                                            break;
-                                        case PacketType.NextActiveUpdate:
-                                            ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
-                                            break;
-                                        case PacketType.ReleaseActiveUpdate:
-                                            ai.Focus.ReleaseActive(ai, true);
-                                            break;
-                                    }
-
-                                    PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
-                                    report.PacketValid = true;
+                                        break;
+                                    case PacketType.NextActiveUpdate:
+                                        ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
+                                        break;
+                                    case PacketType.ReleaseActiveUpdate:
+                                        ai.Focus.ReleaseActive(ai, true);
+                                        break;
                                 }
+
+                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
+                                report.PacketValid = true;
                             }
                             else
                                 errorPacket.Error = "GridAi not found";
