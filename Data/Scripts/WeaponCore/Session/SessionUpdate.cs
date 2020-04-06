@@ -172,7 +172,7 @@ namespace WeaponCore
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
-                                else if (w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
+                                else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
                                 {
                                     if (w.Target != w.Comp.TrackingWeapon.Target)
                                     {
