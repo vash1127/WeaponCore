@@ -1499,6 +1499,7 @@ namespace WeaponCore
             if (!IsClient || !MpActive)
             {
                 Log.Line($"trying to process client packets on a non-client");
+                PacketsToServer.Clear();
                 return;
             }
 
