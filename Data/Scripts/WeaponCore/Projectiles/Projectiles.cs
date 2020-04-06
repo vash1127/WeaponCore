@@ -23,12 +23,8 @@ namespace WeaponCore.Projectiles
 
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
-
-        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(32);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
-
         internal readonly CachingHashSet<Projectile> ActiveProjetiles = new CachingHashSet<Projectile>();
-
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
 
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>();
@@ -290,19 +286,17 @@ namespace WeaponCore.Projectiles
 
                     if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0))
                     {
-                        var checkList = CheckPool.Get();
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList,
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList,
                             p.PruneQuery);
-                        for (int i = 0; i < checkList.Count; i++)
+                        for (int i = 0; i < p.CheckList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
-                            { Distance = 0, Element = checkList[i] });
+                            { Distance = 0, Element = p.CheckList[i] });
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
                                     ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref p.Beam);
 
-                        checkList.Clear();
-                        CheckPool.Return(checkList);
+                        p.CheckList.Clear();
                         p.State = ProjectileState.Detonate;
                         p.ForceHitParticle = true;
                     }
@@ -354,13 +348,11 @@ namespace WeaponCore.Projectiles
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) 
                         p.CheckForNearVoxel(60);
 
-                    var checkList = CheckPool.Get();
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
-                    for (int i = 0; i < checkList.Count; i++)
-                        p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList, p.PruneQuery);
+                    for (int i = 0; i < p.CheckList.Count; i++)
+                        p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = p.CheckList[i] });
 
-                    checkList.Clear();
-                    CheckPool.Return(checkList);
+                    p.CheckList.Clear();
                 }
                 else if (line)
                 {
