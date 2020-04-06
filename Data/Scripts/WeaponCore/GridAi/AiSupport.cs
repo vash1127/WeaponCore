@@ -479,9 +479,10 @@ namespace WeaponCore.Support
             var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
             if (topMostParent != null)
             {
-                var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
+                /*
                 var hasOwner = topMostParent.BigOwners.Count != 0;
                 MyRelationsBetweenPlayerAndBlock relationship;
+                
                 if (hasOwner)
                 {
                     var topOwner = topMostParent.BigOwners[0];
@@ -499,7 +500,31 @@ namespace WeaponCore.Support
                     }
                 }
                 else relationship = MyRelationsBetweenPlayerAndBlock.Owner;
+                */
+                MyRelationsBetweenPlayerAndBlock relationship;
+                if (topMostParent.BigOwners.Count > 0)
+                {
+                    var topOwner = topMostParent.BigOwners[0];
+                    relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction);
 
+                    if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.Friends && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare)
+                    {
+                        var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
+                        if (topFaction != null)
+                        {
+                            var rep = MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(gridOwner, topFaction.FactionId);
+                            if (topFaction.Members.ContainsKey(gridOwner))
+                                relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
+                            else if (rep < -500)
+                                relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
+                            else if (rep <= 0)
+                                relationship = MyRelationsBetweenPlayerAndBlock.Neutral;
+                            else relationship = MyRelationsBetweenPlayerAndBlock.Friends;
+                        }
+                    }
+                }
+                else relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
+                var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
                 entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
                 return true;
             }
@@ -973,7 +998,7 @@ namespace WeaponCore.Support
                     ai.TurnManualShootOff();
             }*/
 
-            foreach (var cubeComp in WeaponBase)
+                foreach (var cubeComp in WeaponBase)
             {
                 var comp = cubeComp.Value;
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;

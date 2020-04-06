@@ -63,7 +63,6 @@ namespace WeaponCore.Projectiles
 
                         if (dist != null && (dist.Value < beam.Length || p.Info.EwarActive) && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
                             var hitEntity = HitEntityPool.Get();
-                            //hitEntity.Clean();
                             hitEntity.Info = p.Info;
                             found = true;
                             if (shieldByPass) p.ShieldBypassed = true;
@@ -133,7 +132,6 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     var hitEntity = HitEntityPool.Get();
-                    //hitEntity.Clean();
                     hitEntity.Info = p.Info;
                     hitEntity.Entity = ent;
                     hitEntity.Intersection = beam;
@@ -222,7 +220,6 @@ namespace WeaponCore.Projectiles
         internal bool ProjectileHit(Projectile attacker, Projectile target, bool lineCheck, ref LineD beam)
         {
             var hitEntity = HitEntityPool.Get();
-            //hitEntity.Clean();
             hitEntity.Info = attacker.Info;
             hitEntity.EventType = HitEntity.Type.Projectile;
             hitEntity.Hit = true;
