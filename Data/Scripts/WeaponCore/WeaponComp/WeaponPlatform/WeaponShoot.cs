@@ -322,8 +322,8 @@ namespace WeaponCore.Platform
                     StartReload();
                 
 
-                if (State.ManualShoot == TerminalActionState.ShootOnce && --State.SingleShotCounter <= 0)
-                    State.ManualShoot = TerminalActionState.ShootOff;
+                if (State.ManualShoot == ManualShootActionState.ShootOnce && --State.SingleShotCounter <= 0)
+                    State.ManualShoot = ManualShootActionState.ShootOff;
 
                 _muzzlesToFire.Clear();
 

@@ -7,7 +7,7 @@ using VRage.Game;
 using Sandbox.Game.Entities;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
-using static WeaponCore.Platform.Weapon.TerminalActionState;
+using static WeaponCore.Platform.Weapon.ManualShootActionState;
 
 
 namespace WeaponCore
