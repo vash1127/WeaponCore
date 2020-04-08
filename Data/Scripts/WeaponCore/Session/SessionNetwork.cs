@@ -385,7 +385,7 @@ namespace WeaponCore
                             {
                                 var w = comp.Platform.Weapons[i];
 
-                                if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                if (shootStatePacket.Data == ManualShootActionState.ShootOnce)
                                     w.State.SingleShotCounter++;
 
                                 w.State.ManualShoot = shootStatePacket.Data;
@@ -411,7 +411,7 @@ namespace WeaponCore
                             comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
                             var w = comp.Platform.Weapons[shootStatePacket.WeaponId];
 
-                            if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                            if (shootStatePacket.Data == ManualShootActionState.ShootOnce)
                                 w.State.SingleShotCounter++;
 
                             w.State.ManualShoot = shootStatePacket.Data;
@@ -1237,7 +1237,7 @@ namespace WeaponCore
                                 {
                                     var w = comp.Platform.Weapons[i];
 
-                                    if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                    if (shootStatePacket.Data == ManualShootActionState.ShootOnce)
                                         w.State.SingleShotCounter++;
 
                                     w.State.ManualShoot = shootStatePacket.Data;
@@ -1292,7 +1292,7 @@ namespace WeaponCore
 
                                 var w = comp.Platform.Weapons[weaponId];
 
-                                if (shootStatePacket.Data == TerminalActionState.ShootOnce)
+                                if (shootStatePacket.Data == ManualShootActionState.ShootOnce)
                                     w.State.SingleShotCounter++;
 
                                 /*

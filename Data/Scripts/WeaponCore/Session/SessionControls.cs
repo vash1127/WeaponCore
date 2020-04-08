@@ -13,7 +13,7 @@ using VRage.Game;
 using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI.Interfaces;
-using static WeaponCore.Platform.Weapon.TerminalActionState;
+using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using Sandbox.Common.ObjectBuilders;
 using VRage.ObjectBuilders;
 
@@ -158,8 +158,6 @@ namespace WeaponCore
                                     continue;
                                 if (!ws.Value.DesignatorWeapon)
                                 {
-                                    CreateShootActionSet<T>(wepName, wepIdHash);
-
                                     if (ws.Value.WeaponAmmoTypes.Length > 1)
                                     {
                                         var c = 0;

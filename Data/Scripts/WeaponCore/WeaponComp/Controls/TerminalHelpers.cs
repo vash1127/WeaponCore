@@ -8,7 +8,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
-using static WeaponCore.Platform.Weapon.TerminalActionState;
+using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
 namespace WeaponCore.Control
 {

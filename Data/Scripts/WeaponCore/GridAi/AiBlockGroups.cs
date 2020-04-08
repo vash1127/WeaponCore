@@ -106,7 +106,7 @@ namespace WeaponCore.Support
                     comp.State.Value.ClickShoot = false;
                     comp.State.Value.ShootOn = false;
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                        comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.TerminalActionState.ShootOff;
+                        comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
                 }
                 else
                 {
@@ -181,7 +181,7 @@ namespace WeaponCore.Support
                 comp.State.Value.ClickShoot = false;
                 comp.State.Value.ShootOn = false;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.TerminalActionState.ShootOff;
+                    comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
             }
             else
             {

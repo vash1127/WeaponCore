@@ -99,7 +99,8 @@ namespace WeaponCore.Support
         {
             using (MyCube?.Pin())
             {
-                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose) return;
+                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose || Platform.State == MyWeaponPlatform.PlatformState.Invalid || Platform?.Weapons?.Length == 0 || BlockInventory == null) return;
+                
 
                 if (MyCube is IMyConveyorSorter || BlockInventory.Constraint == null) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
 
@@ -113,6 +114,8 @@ namespace WeaponCore.Support
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var w = Platform.Weapons[i];
+
+                    if (w == null) continue;
 
                     for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
                         BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);

@@ -1023,14 +1023,14 @@ namespace WeaponCore.Support
                         var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
 
                         if (cState.ClickShoot)
-                            wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                            wState.ManualShoot = Weapon.ManualShootActionState.ShootOff;
 
                     }
 
                     cState.ClickShoot = false;
 
                     if (comp.Session.MpActive)
-                        comp.Session.SendActionShootUpdate(comp, Weapon.TerminalActionState.ShootOff);
+                        comp.Session.SendActionShootUpdate(comp, Weapon.ManualShootActionState.ShootOff);
                 }
                 else if (overRides.TargetPainter || overRides.ManualControl)
                 {

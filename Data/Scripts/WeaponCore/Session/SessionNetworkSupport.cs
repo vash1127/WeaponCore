@@ -215,7 +215,7 @@ namespace WeaponCore
             }
         }
 
-        internal void SendActionShootUpdate(WeaponComponent comp, TerminalActionState state, int weaponId = -1)
+        internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state, int weaponId = -1)
         {
 
             var mId = 0u;

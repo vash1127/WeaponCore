@@ -298,14 +298,14 @@ namespace WeaponCore
     [ProtoContract]
     public class ShootStatePacket : MIdPacket
     {
-        [ProtoMember(1)] internal TerminalActionState Data = TerminalActionState.ShootOff;
+        [ProtoMember(1)] internal ManualShootActionState Data = ManualShootActionState.ShootOff;
         [ProtoMember(2), DefaultValue(-1)] internal int WeaponId = -1;
         public ShootStatePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = TerminalActionState.ShootOff;
+            Data = ManualShootActionState.ShootOff;
             WeaponId = -1;
         }
     }

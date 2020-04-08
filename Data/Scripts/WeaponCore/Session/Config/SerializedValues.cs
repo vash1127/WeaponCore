@@ -111,7 +111,7 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public int ShotsFired;
-        [ProtoMember(2)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
+        [ProtoMember(2)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff;
         [ProtoMember(3)] public int SingleShotCounter;
         [ProtoMember(4)] public WeaponSyncValues Sync;
 
