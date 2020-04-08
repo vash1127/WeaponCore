@@ -109,7 +109,7 @@ namespace WeaponCore.Support
 
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (av.OnScreen != AvShot.Screen.None) {
-                            var pos = av.Hit.HitPos;
+                            var pos = !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
                             var matrix = MatrixD.CreateTranslation(pos);
 
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out av.HitEffect)) {
@@ -131,8 +131,9 @@ namespace WeaponCore.Support
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.AmmoDef);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, av.TracerFront, av.AmmoDef);
+                            var pos = !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, pos, av.AmmoDef);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, pos, av.AmmoDef);
                         }
                     }
                 }

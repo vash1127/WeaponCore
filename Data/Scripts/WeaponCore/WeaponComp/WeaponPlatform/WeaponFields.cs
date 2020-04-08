@@ -256,7 +256,7 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
-                FiringEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+                FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
                 FiringSound.Init(System.Values.HardPoint.Audio.FiringSound);
             }

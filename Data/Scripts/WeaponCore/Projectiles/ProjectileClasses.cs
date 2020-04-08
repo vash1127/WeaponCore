@@ -317,7 +317,6 @@ namespace WeaponCore.Support
                     MyMath.FastCos(randomFloat1)), dirMatrix);
 
                 frag.Direction = shrapnelDir;
-
                 frag.PrimeEntity = null;
                 frag.TriggerEntity = null;
                 if (frag.AmmoDef.Const.PrimeModel && frag.AmmoDef.Const.PrimeEntityPool.Count > 0)
