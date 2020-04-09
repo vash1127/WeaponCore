@@ -59,8 +59,7 @@ namespace WeaponCore
 
         internal void SendMouseUpdate(MyEntity entity)
         {
-            if (!HandlesInput) return;
-            if (!IsServer)
+            if (IsClient)
             {
                 PacketsToServer.Add(new InputPacket
                 {
@@ -70,18 +69,20 @@ namespace WeaponCore
                     Data = UiInput.ClientInputState
                 });
             }
-
-            PacketsToClient.Add(new PacketInfo
+            else if (MpActive && IsServer)
             {
-                Entity = entity,
-                Packet = new InputPacket
+                PacketsToClient.Add(new PacketInfo
                 {
-                    EntityId = entity.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.ClientMouseEvent,
-                    Data = UiInput.ClientInputState
-                }
-            });
+                    Entity = entity,
+                    Packet = new InputPacket
+                    {
+                        EntityId = entity.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ClientMouseEvent,
+                        Data = UiInput.ClientInputState
+                    }
+                });
+            }
         }
 
         internal void SendActiveControlUpdate(MyCubeBlock controlBlock, bool active)

@@ -799,7 +799,7 @@ namespace WeaponCore
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
                                 PlayerMouseStates[playerId] = inputPacket.Data;
-                                //PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
+                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
 
                                 report.PacketValid = true;
                             }
