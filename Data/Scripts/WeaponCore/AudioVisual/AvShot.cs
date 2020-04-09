@@ -651,6 +651,11 @@ namespace WeaponCore.Support
         {
             // Reset only vars that are not always set
             Hit = new Hit();
+            if (AmmoSound)
+            {
+                TravelEmitter.StopSound(true);
+                AmmoSound = false;
+            }
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
@@ -687,6 +692,7 @@ namespace WeaponCore.Support
             GlowSteps.Clear();
             Offsets.Clear();
             //
+
             HitEffect?.Stop(false);
             HitEffect = null;
             FiringWeapon = null;

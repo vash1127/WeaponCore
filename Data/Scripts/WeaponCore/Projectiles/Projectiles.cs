@@ -10,6 +10,8 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
 using static WeaponCore.Support.AvShot;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+
 namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
@@ -21,6 +23,7 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
         internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32, hitEnt => hitEnt.Clean());
 
+        internal readonly List<Projectile> AddTargets = new List<Projectile>();
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
@@ -48,7 +51,11 @@ namespace WeaponCore.Projectiles
 
             ActiveProjetiles.ApplyChanges();
 
+            if (AddTargets.Count > 0)
+                AddProjectileTargets();
+
             UpdateState();
+
             Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
         }
 
@@ -107,6 +114,47 @@ namespace WeaponCore.Projectiles
             for (int j = 0; j < ShrapnelToSpawn.Count; j++)
                 ShrapnelToSpawn[j].Spawn();
             ShrapnelToSpawn.Clear();
+        }
+
+        internal void AddProjectileTargets()
+        {
+            for (int i = 0; i < AddTargets.Count; i++) {
+
+                var p = AddTargets[i];
+                for (int t = 0; t < p.Info.Ai.TargetAis.Count; t++) {
+
+                    var targetAi = p.Info.Ai.TargetAis[t];
+                    var addProjectile = p.Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
+                    if (!addProjectile && targetAi.PointDefense) {
+
+                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrixRef.Translation) < 0) {
+
+                            var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
+                            targetSphere.Radius *= 3;
+                            var testRay = new RayD(p.Info.Origin, p.Info.Direction);
+                            var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
+                            
+                            if (!quickCheck) {
+                                var deltaPos = targetSphere.Center - p.Info.Origin;
+                                var deltaVel = targetAi.GridVel - p.Info.Ai.GridVel;
+                                var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, p.Info.AmmoDef.Const.DesiredProjectileSpeed);
+                                var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
+                                targetSphere.Center = predictedPos;
+                            }
+
+                            if (quickCheck || targetSphere.Intersects(testRay) != null)
+                                addProjectile = true;
+                        }
+                    }
+                    if (addProjectile) {
+                        targetAi.LiveProjectile.Add(p);
+                        targetAi.LiveProjectileTick = Session.Tick;
+                        targetAi.NewProjectileTick = Session.Tick;
+                        p.Watchers.Add(targetAi);
+                    }
+                }
+            }
+            AddTargets.Clear();
         }
 
         private void UpdateState()
@@ -325,7 +373,7 @@ namespace WeaponCore.Projectiles
                 else if (p.Info.AmmoDef.Const.CollisionIsLine) {
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
-                    if (p.Info.AmmoDef.Const.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
+                    if (p.Info.AmmoDef.Const.IsBeamWeapon || p.PruneSphere.Contains(p.DeadSphere) == ContainmentType.Disjoint)
                         line = true;
                 }
                 else {
@@ -459,5 +507,6 @@ namespace WeaponCore.Projectiles
                 }
             }
         }
+
     }
 }

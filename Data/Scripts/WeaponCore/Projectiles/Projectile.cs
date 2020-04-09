@@ -43,6 +43,7 @@ namespace WeaponCore.Projectiles
         internal LineD Beam;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal BoundingSphereD PruneSphere;
+        internal BoundingSphereD DeadSphere;
         internal double AccelLength;
         internal double DistanceToTravelSqr;
         internal double TracerLength;
@@ -53,7 +54,6 @@ namespace WeaponCore.Projectiles
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
-        internal double DeadZone = 3;
         internal double MaxTrajectorySqr;
         internal double PrevEndPointToCenterSqr;
         internal float DesiredSpeed;
@@ -150,7 +150,6 @@ namespace WeaponCore.Projectiles
             PrevEndPointToCenterSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
             Gravity = Vector3.Zero;
-
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);

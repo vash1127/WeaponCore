@@ -303,6 +303,7 @@ namespace WeaponCore.Support
                 frag.Seed = p.Info.Seed;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
+                frag.DeadSphere = p.DeadSphere;
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
@@ -358,10 +359,15 @@ namespace WeaponCore.Support
                 p.Info.BaseDamagePool = frag.AmmoDef.BaseDamage;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Info.Direction = frag.Direction;
-
-                p.State = Projectiles.Projectile.ProjectileState.Start;
+                p.DeadSphere = frag.DeadSphere;
                 p.StartSpeed = frag.Velocity;
+                p.State = Projectiles.Projectile.ProjectileState.Start;
+
                 frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
+
+                if (p.Info.AmmoDef.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
+                    frag.Ai.Session.Projectiles.AddTargets.Add(p);
+
                 frag.Ai.Session.Projectiles.FragmentPool.Return(frag);
             }
 
@@ -385,6 +391,7 @@ namespace WeaponCore.Support
         public Vector3D Direction;
         public Vector3D Velocity;
         public Vector3D PredictedTargetPos;
+        public BoundingSphereD DeadSphere;
         public int WeaponId;
         public int MuzzleId;
         public int Seed;
