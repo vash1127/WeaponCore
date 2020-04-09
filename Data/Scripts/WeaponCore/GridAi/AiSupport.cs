@@ -17,6 +17,7 @@ using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -73,6 +74,8 @@ namespace WeaponCore.Support
                 TargetInRange = false;
             }
         }
+
+
 
         internal void UpdateConstruct()
         {

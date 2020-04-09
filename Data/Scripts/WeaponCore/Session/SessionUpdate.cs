@@ -157,7 +157,7 @@ namespace WeaponCore
                                 }
                                 else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId)) {
                                     w.Target.HasTarget = false;
-                                    comp.Session.ClientGridResyncRequests.Add(comp);
+                                    ClientGridResyncRequests.Add(comp);
                                 }
 
                                 w.ProjectilesNear = w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
@@ -436,7 +436,10 @@ namespace WeaponCore
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai?.MyGrid.Pin())
                 {
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                    var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
+                    var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
+                    var quickRemove = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot; 
+                    if (quickRemove)
                     {
 
                         ShootingWeapons.RemoveAtFast(i);

@@ -43,6 +43,7 @@ namespace WeaponCore.Projectiles
         internal LineD Beam;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal BoundingSphereD PruneSphere;
+        internal BoundingSphereD DeadSphere;
         internal double AccelLength;
         internal double DistanceToTravelSqr;
         internal double TracerLength;
@@ -53,7 +54,6 @@ namespace WeaponCore.Projectiles
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
-        internal double DeadZone = 3;
         internal double MaxTrajectorySqr;
         internal double PrevEndPointToCenterSqr;
         internal float DesiredSpeed;
@@ -150,7 +150,6 @@ namespace WeaponCore.Projectiles
             PrevEndPointToCenterSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
             Gravity = Vector3.Zero;
-
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
@@ -410,7 +409,7 @@ namespace WeaponCore.Projectiles
 
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
-            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - MaxTrajectory) : Position;  
+            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - MaxTrajectory) : Position;
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
             var avSize = useCollisionSize ? Info.AmmoDef.Const.CollisionSize : TracerLength;
             double remainingTracer;
@@ -620,15 +619,16 @@ namespace WeaponCore.Projectiles
                     if (fake) tVel = Info.Ai.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
-
-                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Info.Ai.Session.Tick20)
+                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Info.Ai.Session.Tick20 && Info.Age > 240)
                     {
                         if (!MyUtils.IsZero(tVel, 1E-02F))
                         {
-                            var targetDir = Vector3D.Normalize(tVel);
+                            var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
                             if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
+                            {
                                 PickTarget = true;
+                            }
                         }
                     }
 
@@ -639,7 +639,10 @@ namespace WeaponCore.Projectiles
                     PrevTargetPos = PredictedTargetPos;
 
                     if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime)
+                    {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
+                        EarlyEnd = true;
+                    }
 
                     if (Info.Age - LastOffsetTime > 300)
                     {
@@ -722,8 +725,6 @@ namespace WeaponCore.Projectiles
                     }
                 }
             }
-
-            Log.Line($"Pulse: {Info.AmmoDef.Const.Pulse} Age: {Info.Age} PulseInterval: {Info.AmmoDef.Const.PulseInterval}");
 
             if (!Info.AmmoDef.Const.Pulse || Info.AmmoDef.Const.Pulse && Info.Age % Info.AmmoDef.Const.PulseInterval == 0)
                 EwarEffects();
@@ -885,7 +886,11 @@ namespace WeaponCore.Projectiles
             {
                 var distToCameraSqr = Vector3D.DistanceSquared(Position, Info.Ai.Session.CameraPos);
                 var closeToCamera = distToCameraSqr < 360000;
-                if (ForceHitParticle) LastHitPos = Position;
+                if (ForceHitParticle)
+                {
+                    LastHitPos = Position;
+                    EarlyEnd = true;
+                }
 
                 if (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)
                 {

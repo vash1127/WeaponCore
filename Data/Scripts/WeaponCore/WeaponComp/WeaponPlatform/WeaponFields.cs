@@ -111,6 +111,7 @@ namespace WeaponCore.Platform
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;
+        internal uint LastSmartLosCheck;
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;
@@ -159,6 +160,7 @@ namespace WeaponCore.Platform
         internal bool CanUseHybridAmmo;
         internal bool CanUseChargeAmmo;
         internal bool CanUseBeams;
+        internal bool PauseShoot;
         internal bool ShotReady
         {
             get
@@ -256,7 +258,7 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
-                FiringEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+                FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
                 FiringSound.Init(System.Values.HardPoint.Audio.FiringSound);
             }

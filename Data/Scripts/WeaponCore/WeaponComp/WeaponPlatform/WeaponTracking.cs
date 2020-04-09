@@ -1,6 +1,8 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -317,6 +319,22 @@ namespace WeaponCore.Platform
 
             weapon.Target.TargetLock = weapon.Target.IsTracking && weapon.Target.IsAligned;
             return weapon.Target.IsTracking;
+        }
+
+        public bool SmartLos()
+        {
+            LastSmartLosCheck = Comp.Ai.Session.Tick;
+            IHitInfo hitInfo;
+            Comp.Ai.Session.Physics.CastRay(MyPivotPos + (MyPivotDir * Comp.Ai.GridVolume.Radius), MyPivotPos, out hitInfo, 15, false);
+            var grid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
+            if (grid != null && grid.IsSameConstructAs(Comp.Ai.MyGrid) && grid.GetTargetedBlock(hitInfo.Position + (-MyPivotDir * 0.1f)) != Comp.MyCube.SlimBlock)
+            {
+                PauseShoot = true;
+                return false;
+            }
+
+            PauseShoot = false;
+            return true;
         }
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel)

@@ -111,8 +111,6 @@ namespace WeaponCore.Platform
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
 
-                var targetAiCnt = Comp.Ai.TargetAis.Count;
-
                 Projectile vProjectile = null;
                 if (ActiveAmmoDef.AmmoDef.Const.VirtualBeams) vProjectile = CreateVirtualProjectile();
 
@@ -227,47 +225,15 @@ namespace WeaponCore.Platform
                             p.Info.OriginUp = MyPivotUp;
                             p.PredictedTargetPos = Target.TargetPos;
                             p.Info.Direction = muzzle.DeviatedDir;
+                            p.DeadSphere.Center = MyPivotPos;
+                            p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
                             p.State = Projectile.ProjectileState.Start;
                             p.Info.PrimeEntity = ActiveAmmoDef.AmmoDef.Const.PrimeModel ? ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
                             p.Info.TriggerEntity = ActiveAmmoDef.AmmoDef.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                             Comp.Session.Projectiles.ActiveProjetiles.Add(p);
 
                             if (targetable)
-                            {
-                                for (int t = 0; t < targetAiCnt; t++)
-                                {
-                                    var targetAi = Comp.Ai.TargetAis[t];
-                                    var addProjectile = ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
-                                    if (!addProjectile && targetAi.PointDefense)
-                                    {
-                                        if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrixRef.Translation) < 0)
-                                        {
-                                            var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
-                                            targetSphere.Radius *= 3;
-                                            var testRay = new RayD(p.Info.Origin, p.Info.Direction);
-                                            var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
-                                            if (!quickCheck)
-                                            {
-                                                var deltaPos = targetSphere.Center - MyPivotPos;
-                                                var deltaVel = targetAi.GridVel - Comp.Ai.GridVel;
-                                                var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed);
-                                                var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
-                                                targetSphere.Center = predictedPos;
-                                            }
-
-                                            if (quickCheck || targetSphere.Intersects(testRay) != null)
-                                                addProjectile = true;
-                                        }
-                                    }
-                                    if (addProjectile)
-                                    {
-                                        targetAi.LiveProjectile.Add(p);
-                                        targetAi.LiveProjectileTick = tick;
-                                        targetAi.NewProjectileTick = tick;
-                                        p.Watchers.Add(targetAi);
-                                    }
-                                }
-                            }
+                                Comp.Ai.Session.Projectiles.AddTargets.Add(p);
                         }
                     }
 
@@ -370,7 +336,10 @@ namespace WeaponCore.Platform
             p.Info.OriginUp = MyPivotUp;
             p.PredictedTargetPos = Target.TargetPos;
             p.Info.Direction = MyPivotDir;
+            p.DeadSphere.Center = MyPivotPos;
+            p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
             p.State = Projectile.ProjectileState.Start;
+
             return p;
         }
 
@@ -412,7 +381,7 @@ namespace WeaponCore.Platform
             if (!Target.IsProjectile)
             {
                 var character = Target.Entity as IMyCharacter;
-                if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && Comp.Session.AdminMap.ContainsKey(character))
+                if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && (Comp.Session.AdminMap.ContainsKey(character) || character.IsDead))
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
