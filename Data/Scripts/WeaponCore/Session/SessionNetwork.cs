@@ -1471,15 +1471,16 @@ namespace WeaponCore
 
         internal void ProccessServerPacketsForClients()
         {
+
+            if ((!IsServer || !MpActive))
+            {
+                Log.Line($"trying to process server packets on a non-server");
+                return;
+            }
+
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
-
-                if (packetInfo.Packet.PType != PacketType.ClientMouseEvent && (!IsServer || !MpActive))
-                {
-                    Log.Line($"trying to process server packets on a non-server PacketType: {packetInfo.Packet.PType}");
-                    continue;
-                }
 
                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
 
