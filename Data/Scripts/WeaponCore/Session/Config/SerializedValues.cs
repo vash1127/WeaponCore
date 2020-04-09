@@ -257,7 +257,7 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[i];
                         var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
 
-                        comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false);
+                        comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false); }, null, 1);
                     }
                     return;
                 }
@@ -281,7 +281,7 @@ namespace WeaponCore
                 w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
 
 
-                comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false);
+                comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false); }, null, 1);
             }
         }
 
