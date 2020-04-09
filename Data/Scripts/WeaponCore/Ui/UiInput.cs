@@ -14,10 +14,11 @@ namespace WeaponCore
         internal bool LeftMouseReleased;
         internal bool RightMouseReleased;
         internal bool MouseButtonPressed;
-        internal bool MouseButtonWasPressed;
+        internal bool InputChanged;
         internal bool MouseButtonLeftWasPressed;
         internal bool MouseButtonMiddleWasPressed;
         internal bool MouseButtonRightWasPressed;
+        internal bool WasInMenu;
         internal bool WheelForward;
         internal bool WheelBackward;
         internal bool ShiftReleased;
@@ -32,12 +33,12 @@ namespace WeaponCore
         internal bool PlayerCamera;
         internal bool FirstPersonView;
         private readonly Session _session;
-        internal readonly MouseStateData ClientMouseState;
+        internal readonly InputStateData ClientInputState;
 
         internal UiInput(Session session)
         {
             _session = session;
-            ClientMouseState = new MouseStateData();
+            ClientInputState = new InputStateData();
         }
 
         internal void UpdateInputState()
@@ -50,26 +51,29 @@ namespace WeaponCore
 
             if (s.InGridAiBlock && !s.InMenu)
             {
-                MouseButtonWasPressed = MouseButtonPressed;
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
 
-                MouseButtonLeftWasPressed = ClientMouseState.MouseButtonLeft;
-                MouseButtonMiddleWasPressed = ClientMouseState.MouseButtonMiddle;
-                MouseButtonRightWasPressed = ClientMouseState.MouseButtonRight;
+                MouseButtonLeftWasPressed = ClientInputState.MouseButtonLeft;
+                MouseButtonMiddleWasPressed = ClientInputState.MouseButtonMiddle;
+                MouseButtonRightWasPressed = ClientInputState.MouseButtonRight;
+
+                WasInMenu = ClientInputState.InMenu;
+                ClientInputState.InMenu = _session.InMenu;
 
                 if (MouseButtonPressed)
                 {
-                    ClientMouseState.MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                    ClientMouseState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
-                    ClientMouseState.MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
+                    ClientInputState.MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
+                    ClientInputState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
+                    ClientInputState.MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
                 }
                 else
                 {
-                    ClientMouseState.MouseButtonLeft = false;
-                    ClientMouseState.MouseButtonMiddle = false;
-                    ClientMouseState.MouseButtonRight = false;
+                    ClientInputState.MouseButtonLeft = false;
+                    ClientInputState.MouseButtonMiddle = false;
+                    ClientInputState.MouseButtonRight = false;
                 }
 
+                InputChanged = MouseButtonLeftWasPressed != ClientInputState.MouseButtonLeft || MouseButtonMiddleWasPressed != ClientInputState.MouseButtonMiddle || MouseButtonRightWasPressed != ClientInputState.MouseButtonRight || WasInMenu != ClientInputState.InMenu;
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);

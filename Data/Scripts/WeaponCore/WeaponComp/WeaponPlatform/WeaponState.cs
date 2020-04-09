@@ -699,8 +699,6 @@ namespace WeaponCore.Platform
                         }
                         else
                         {
-
-                            Log.Line($"set emissive currentEmissive.CurrentColor: {currentEmissive.CurrentColor} currentEmissive.CurrentIntensity: {currentEmissive.CurrentIntensity} currentEmissive.EmissiveParts.Length: {currentEmissive.EmissiveParts.Length}");
                             for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
                                 animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[j], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
                         }

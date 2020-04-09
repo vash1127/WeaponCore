@@ -18,9 +18,9 @@ namespace WeaponCore
             var s = Session;
             if (s.UiInput.MouseButtonPressed)
             {
-                if (s.UiInput.ClientMouseState.MouseButtonMiddle && ChangeState == State.Open)
+                if (s.UiInput.ClientInputState.MouseButtonMiddle && ChangeState == State.Open)
                     OpenWheel();
-                else if (s.UiInput.ClientMouseState.MouseButtonMiddle && ChangeState == State.Close) 
+                else if (s.UiInput.ClientInputState.MouseButtonMiddle && ChangeState == State.Close) 
                     CloseWheel();
 
 

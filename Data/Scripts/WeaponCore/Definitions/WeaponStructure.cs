@@ -171,7 +171,7 @@ namespace WeaponCore.Support
             maxHeat = Values.HardPoint.Loading.MaxHeat;
             wepCoolDown = Values.HardPoint.Loading.Cooldown;
             heatPerShot = Values.HardPoint.Loading.HeatPerShot;
-            if (wepCoolDown < .2f) wepCoolDown = .2f;
+            if (wepCoolDown < 0) wepCoolDown = 0;
             if (wepCoolDown > .95f) wepCoolDown = .95f;
         }
 

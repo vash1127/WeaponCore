@@ -60,7 +60,7 @@ namespace WeaponCore
                 {
                     DsUtil.Start("network1");
                     if (WeaponsToSync.Count > 0) Proccessor.Proccess();
-                    if (UiInput.MouseButtonPressed != UiInput.MouseButtonWasPressed && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
+                    if (UiInput.InputChanged && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
                     if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
                     
                     Proccessor.AddPackets();

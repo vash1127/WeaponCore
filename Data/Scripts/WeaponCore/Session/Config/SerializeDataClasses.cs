@@ -45,13 +45,14 @@ namespace WeaponCore
         ReleaseActiveUpdate,
         GridOverRidesSync,
         RescanGroupRequest,
-        GridFocusListSync
+        GridFocusListSync,
+        FixedWeaponHitEvent,
     }
 
     #region packets
     [ProtoContract]
     [ProtoInclude(4, typeof(GridWeaponPacket))]
-    [ProtoInclude(5, typeof(MouseInputPacket))]
+    [ProtoInclude(5, typeof(InputPacket))]
     [ProtoInclude(6, typeof(BoolUpdatePacket))]
     [ProtoInclude(7, typeof(FakeTargetPacket))]
     [ProtoInclude(8, typeof(CurrentGridPlayersPacket))]
@@ -61,7 +62,8 @@ namespace WeaponCore
     [ProtoInclude(12, typeof(MouseInputSyncPacket))]
     [ProtoInclude(13, typeof(GridOverRidesSyncPacket))]
     [ProtoInclude(14, typeof(GridFocusListPacket))]
-    [ProtoInclude(15, typeof(MIdPacket))]
+    [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
+    [ProtoInclude(16, typeof(MIdPacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -109,10 +111,10 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class MouseInputPacket : Packet
+    public class InputPacket : Packet
     {
-        [ProtoMember(1)] internal MouseStateData Data;
-        public MouseInputPacket() { }
+        [ProtoMember(1)] internal InputStateData Data;
+        public InputPacket() { }
 
         public override void CleanUp()
         {
@@ -243,17 +245,41 @@ namespace WeaponCore
             EntityIds = null;
         }
     }
+
+    [ProtoContract]
+    public class FixedWeaponHitPacket : Packet
+    {
+        [ProtoMember(1), DefaultValue(-1)] internal long HitEnt;
+        [ProtoMember(2)] internal Vector3 HitDirection;
+        [ProtoMember(3)] internal Vector3 HitOffset;
+        [ProtoMember(4)] internal Vector3 Up;
+        [ProtoMember(5)] internal int MuzzleId;
+        [ProtoMember(6), DefaultValue(-1)] internal int WeaponId;
+
+        public FixedWeaponHitPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            HitEnt = -1;
+            HitDirection = Vector3.Zero;
+            HitOffset = Vector3.Zero;
+            Up = Vector3.Zero;
+            MuzzleId = -1;
+            WeaponId = -1;
+        }
+    }
     #endregion
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(20, typeof(RangePacket))]
-    [ProtoInclude(21, typeof(CycleAmmoPacket))]
-    [ProtoInclude(22, typeof(ShootStatePacket))]
-    [ProtoInclude(23, typeof(OverRidesPacket))]
-    [ProtoInclude(24, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(25, typeof(StatePacket))]
-    [ProtoInclude(26, typeof(SettingPacket))]
+    [ProtoInclude(21, typeof(RangePacket))]
+    [ProtoInclude(22, typeof(CycleAmmoPacket))]
+    [ProtoInclude(23, typeof(ShootStatePacket))]
+    [ProtoInclude(24, typeof(OverRidesPacket))]
+    [ProtoInclude(25, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(26, typeof(StatePacket))]
+    [ProtoInclude(27, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;
@@ -383,18 +409,19 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    internal class MouseStateData
+    internal class InputStateData
     {
         [ProtoMember(1)] internal bool MouseButtonLeft;
         [ProtoMember(2)] internal bool MouseButtonMiddle;
         [ProtoMember(3)] internal bool MouseButtonRight;
+        [ProtoMember(4)] internal bool InMenu;
     }
 
     [ProtoContract]
     internal class PlayerMouseData
     {
         [ProtoMember(1)] internal long PlayerId;
-        [ProtoMember(2)] internal MouseStateData MouseStateData;
+        [ProtoMember(2)] internal InputStateData MouseStateData;
     }
 
     [ProtoContract]

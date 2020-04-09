@@ -148,7 +148,7 @@ namespace WeaponCore
 
         internal void TargetSelection()
         {
-            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientMouseState.MouseButtonRight) && InGridAiBlock)
+            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight) && InGridAiBlock)
                 TrackingAi.Focus.ReleaseActive(TrackingAi);
 
             if (InGridAiBlock)
