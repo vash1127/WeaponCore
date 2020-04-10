@@ -271,13 +271,13 @@ namespace WeaponCore.Control
 
                     }
                     w.StopShooting();
+                    if (w.DrawingPower)
+                        w.StopPowerDraw();
 
-                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge && ((w.ActiveAmmoDef.AmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity) || (!w.ActiveAmmoDef.AmmoDef.Const.IsHybrid && w.State.Sync.CurrentAmmo != w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize)))
-                    {
-                        w.State.Sync.CurrentCharge = 0;
-                        w.State.Sync.CurrentAmmo = 0;
+                    comp.TerminalRefresh();
+
+                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         w.State.Sync.Reloading = false;
-                    }
                     //comp.State.Value.CurrentCharge += w.State.Sync.CurrentCharge;
 
                     uint delay;

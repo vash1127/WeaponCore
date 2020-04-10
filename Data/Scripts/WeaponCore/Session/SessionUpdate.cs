@@ -340,6 +340,7 @@ namespace WeaponCore
                         if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)
                         {
                             w.RecalcPower = true;
+                            Log.Line($"recalc");
                             continue;
                         }
 
