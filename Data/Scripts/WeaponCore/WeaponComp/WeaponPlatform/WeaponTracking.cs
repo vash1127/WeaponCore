@@ -265,22 +265,25 @@ namespace WeaponCore.Platform
 
                 if (weapon.Target.IsTracking && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera && !weapon.Comp.ResettingSubparts)
                 {
+                    var oldAz = weapon.Azimuth;
+                    var oldEl = weapon.Elevation;
                     var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
+                    var az = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                    var el = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
 
-                    var azStep = MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                    var elStep = MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
-                    
-                    var azLocked = MyUtils.IsZero(azStep, (float)epsilon);
-                    var elLocked = MyUtils.IsZero(elStep, (float)epsilon);
-                    
+                    var azDiff = oldAz - az;
+                    var elDiff = oldEl - el;
+                    var azLocked = MyUtils.IsZero(azDiff, (float)epsilon);
+                    var elLocked = MyUtils.IsZero(elDiff, (float)epsilon);
+
                     var aim = !azLocked || !elLocked;
                     locked = !aim;
                     if (aim)
                     {
                         if (!azLocked)
-                            weapon.Azimuth += azStep;
+                            weapon.Azimuth = az;
                         if (!elLocked)
-                            weapon.Elevation += elStep;
+                            weapon.Elevation = el;
                         weapon.IsHome = false;
                         weapon.AimBarrel(!azLocked, !elLocked);
                     }
