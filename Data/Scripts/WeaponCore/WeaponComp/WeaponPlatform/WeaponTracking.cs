@@ -191,7 +191,7 @@ namespace WeaponCore.Platform
                 }
                 else targetCenter = target.Projectile.Position;
             }
-            else if(!target.IsFakeTarget)
+            else if (!target.IsFakeTarget)
             {
                 if (target.Entity == null)
                 {
@@ -251,12 +251,12 @@ namespace WeaponCore.Platform
                 var left = Vector3D.Cross(up, currentVector);
                 if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left)) left.Normalize();
                 var forward = Vector3D.Cross(left, up);
-                var constraintMatrix = new MatrixD {Forward = forward, Left = left, Up = up,};
+                var constraintMatrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
                 double desiredAzimuth;
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
-                
+
                 var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
                 var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
                 var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
@@ -270,14 +270,14 @@ namespace WeaponCore.Platform
                     var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
                     var az = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
                     var el = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
-                    
+
                     var azDiff = oldAz - az;
                     var elDiff = oldEl - el;
                     var azLocked = MyUtils.IsZero(azDiff, (float)epsilon);
                     var elLocked = MyUtils.IsZero(elDiff, (float)epsilon);
 
-                    locked = azLocked && elLocked;
                     var aim = !azLocked || !elLocked;
+                    locked = !aim;
                     if (aim)
                     {
                         if (!azLocked)
@@ -285,13 +285,13 @@ namespace WeaponCore.Platform
                         if (!elLocked)
                             weapon.Elevation = el;
                         weapon.IsHome = false;
-                        weapon.AimBarrel(azDiff, elDiff, !azLocked, !elLocked);
+                        weapon.AimBarrel(!azLocked, !elLocked);
                     }
                 }
             }
             else weapon.Target.IsTracking = false;
 
-            if (weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera) 
+            if (weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera)
                 return weapon.Target.IsTracking;
 
             var isAligned = false;
@@ -365,7 +365,7 @@ namespace WeaponCore.Platform
         {
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
-            
+
             Vector3D deltaPosNorm;
             if (Vector3D.IsZero(deltaPos)) deltaPosNorm = Vector3D.Zero;
             else if (Vector3D.IsUnit(ref deltaPos)) deltaPosNorm = deltaPos;
@@ -400,7 +400,7 @@ namespace WeaponCore.Platform
 
             Vector3D aimDirection = estimatedImpactPoint - shooterPos;
 
-            Vector3D projectileVel = shooterVel; 
+            Vector3D projectileVel = shooterVel;
             Vector3D projectilePos = shooterPos;
 
             Vector3D aimDirectionNorm;
@@ -429,7 +429,7 @@ namespace WeaponCore.Platform
             Vector3D targetAccStep = targetAcc * dt;
             Vector3D projectileAccStep = aimDirectionNorm * projectileAccMag * dt;
             Vector3D gravityStep = gravity * gravityMultiplier * dt;
-            Vector3D aimOffset = Vector3D.Zero; 
+            Vector3D aimOffset = Vector3D.Zero;
             double minDiff = double.MaxValue;
             for (int i = 0; i < count; ++i)
             {
@@ -461,11 +461,11 @@ namespace WeaponCore.Platform
                 }
                 if (diffLenSq < minDiff)
                 {
-                    minDiff = diffLenSq; 
+                    minDiff = diffLenSq;
                     aimOffset = diff;
                 }
             }
-            return estimatedImpactPoint + aimOffset; 
+            return estimatedImpactPoint + aimOffset;
         }
 
         /*
@@ -548,12 +548,12 @@ namespace WeaponCore.Platform
             MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
             MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
 
-            if(System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
+            if (System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
             {
                 MinElevationRadians -= toleranceRads;
                 MaxElevationRadians += toleranceRads;
             }
-            else if(System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
+            else if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
                 MinAzimuthRadians -= toleranceRads;
                 MaxAzimuthRadians += toleranceRads;

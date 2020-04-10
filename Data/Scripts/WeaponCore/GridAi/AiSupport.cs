@@ -988,20 +988,23 @@ namespace WeaponCore.Support
         }
 
 
-        internal void TurnManualShootOff()
+        internal void TurnManualShootOff(bool isCallingGrid = true)
         {
             if (TurnOffManualTick == Session.Tick) return;
 
             TurnOffManualTick = Session.Tick;
-            /*
-            foreach (var grid in SubGrids)
-            {
-                GridAi ai;
-                if (grid != MyGrid && Session.GridTargetingAIs.TryGetValue(grid, out ai))
-                    ai.TurnManualShootOff();
-            }*/
 
-                foreach (var cubeComp in WeaponBase)
+            if (isCallingGrid)
+            {
+                foreach (var grid in SubGrids)
+                {
+                    GridAi ai;
+                    if (grid != MyGrid && Session.GridTargetingAIs.TryGetValue(grid, out ai))
+                        ai.TurnManualShootOff(false);
+                }
+            }
+
+            foreach (var cubeComp in WeaponBase)
             {
                 var comp = cubeComp.Value;
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
@@ -1010,7 +1013,6 @@ namespace WeaponCore.Support
                 if (currPlayer.PlayerId != Session.PlayerId) continue;
 
                 var cState = comp.State.Value;
-                var origState = cState;
                 var overRides = comp.Set.Value.Overrides;
 
                 currPlayer.ControlType = ControlType.None;

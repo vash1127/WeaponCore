@@ -7,77 +7,31 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        public void AimBarrel(double azimuthChange, double elevationChange, bool moveAz = true, bool moveEl = true)
+        public void AimBarrel(bool moveAz, bool moveEl)
         {
             LastTrackedTick = Comp.Session.Tick;
 
             if (AiOnlyWeapon)
             {
-                if (moveAz)
+                if (moveAz && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
                 {
-                    bool rAz = false;
-                    double absAzChange;
-                    if (azimuthChange < 0)
-                    {
-                        absAzChange = azimuthChange * -1d;
-                        rAz = true;
-                    }
-                    else
-                        absAzChange = azimuthChange;
+                    var azRotMatrix = Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)Azimuth);
+                    azRotMatrix.Translation = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation;
 
-                    if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
-                    {
-                        var azMatrix = AzimuthPart.Entity.PositionComp.LocalMatrixRef;
-
-                        if (absAzChange >= System.AzStep)
-                        {
-                            
-
-                            if (rAz)
-                                azMatrix *= AzimuthPart.RevFullRotationStep;
-                            else
-                                azMatrix *= AzimuthPart.FullRotationStep;
-                        }
-                        else
-                        {
-                            azMatrix *= (AzimuthPart.ToTransformation * Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)-azimuthChange) * AzimuthPart.FromTransformation);
-                        }
-
-                        AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azMatrix, null, true);
-                    }
+                    AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azRotMatrix, null, true);
                 }
 
                 if (moveEl && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly))
                 {
-                    bool rEl = false;
-                    double absElChange;
-                    if (elevationChange < 0)
-                    {
-                        absElChange = elevationChange * -1d;
-                        rEl = true;
-                    }
-                    else
-                        absElChange = elevationChange;
 
-                    var elMatrix = ElevationPart.Entity.PositionComp.LocalMatrixRef;
+                    var elRotMatrix = Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, -(float)Elevation);
+                    elRotMatrix.Translation = ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
 
-                    if (absElChange >= System.ElStep)
-                    {
-                        if (rEl)
-                            elMatrix *= ElevationPart.RevFullRotationStep;
-                        else
-                            elMatrix *= ElevationPart.FullRotationStep;
-                    }
-                    else
-                    {
-                        elMatrix *= (ElevationPart.ToTransformation * Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, (float)elevationChange) * ElevationPart.FromTransformation);
-                    }
-
-                    ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elMatrix, null, true);
+                    ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
                 }
             }
             else
-            {   
+            {
                 if (moveEl)
                     Comp.TurretBase.Elevation = (float)Elevation;
 
@@ -125,7 +79,7 @@ namespace WeaponCore.Platform
                         Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
 
-                    AimBarrel(oldAz - Azimuth, oldEl - Elevation);
+                    AimBarrel(oldAz != Azimuth, oldEl != Elevation);
                 }
 
                 if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
@@ -217,11 +171,11 @@ namespace WeaponCore.Platform
 
                         var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
 
-                        for(int i = 0; i < HeatingParts.Count; i++)
+                        for (int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", color, intensity);
                     }
                     else if (set)
-                        for(int i = 0; i < HeatingParts.Count; i++)
+                        for (int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                     LastHeat = currentHeat;
@@ -265,7 +219,7 @@ namespace WeaponCore.Platform
                         //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         if (CurLgstAnimPlaying != null)
                             Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
-                        
+
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
                         State.Sync.Overheated = false;
                     }
@@ -379,7 +333,7 @@ namespace WeaponCore.Platform
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-            { 
+            {
                 RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
             }
 

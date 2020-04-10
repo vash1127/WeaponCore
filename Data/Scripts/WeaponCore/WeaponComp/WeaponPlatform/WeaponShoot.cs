@@ -113,6 +113,7 @@ namespace WeaponCore.Platform
 
                 Projectile vProjectile = null;
                 if (ActiveAmmoDef.AmmoDef.Const.VirtualBeams) vProjectile = CreateVirtualProjectile();
+                var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 for (int i = 0; i < bps; i++)
                 {
@@ -168,69 +169,83 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        if (ActiveAmmoDef.AmmoDef.Const.VirtualBeams && j == 0)
+                        var patternIndex = !pattern.Enable || !pattern.Random ? ActiveAmmoDef.AmmoDef.Const.PatternIndex : pattern.TriggerChance >= 1 || pattern.TriggerChance >= MyUtils.GetRandomDouble(0.0f, 1f) ? MyUtils.GetRandomInt(pattern.RandomMin, pattern.RandomMax) : 1;
+                        if (pattern.Random)
                         {
-                            MyEntity primeE = null;
-                            MyEntity triggerE = null;
-
-                            if (ActiveAmmoDef.AmmoDef.Const.PrimeModel)
-                                primeE = ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get();
-
-                            if (ActiveAmmoDef.AmmoDef.Const.TriggerModel)
-                                triggerE = session.TriggerEntityPool.Get();
-
-                            var info = session.Projectiles.VirtInfoPool.Get();
-                            info.InitVirtual(System, Comp.Ai, ActiveAmmoDef.AmmoDef, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
-                            vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.Av.AvShotPool.Get() });
-
-                            if (!ActiveAmmoDef.AmmoDef.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
-                            else if (i == _nextVirtual)
+                            for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
                             {
-
-                                vProjectile.Info.Origin = muzzle.Position;
-                                vProjectile.Info.Direction = muzzle.DeviatedDir;
-                                vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
+                                var y = MyUtils.GetRandomInt(w + 1);
+                                ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[w] = ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y];
+                                ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y] = w;
                             }
-
-                            Comp.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
                         }
-                        else
+                        for (int k = 0; k < patternIndex; k++)
                         {
-                            var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
-                            p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
-                            p.Info.System = System;
-                            p.Info.Ai = Comp.Ai;
-                            p.Info.AmmoDef = ActiveAmmoDef.AmmoDef;
-                            p.Info.Overrides = Comp.Set.Value.Overrides;
-                            p.Info.Target.Entity = Target.Entity;
-                            p.Info.Target.Projectile = Target.Projectile;
-                            p.Info.Target.IsProjectile = Target.Projectile != null;
-                            p.Info.Target.IsFakeTarget = Comp.TrackReticle;
-                            p.Info.Target.FiringCube = Comp.MyCube;
-                            p.Info.WeaponId = WeaponId;
-                            p.Info.MuzzleId = muzzle.MuzzleId;
-                            p.Info.BaseDamagePool = BaseDamage;
-                            p.Info.EnableGuidance = Comp.Set.Value.Guidance;
-                            p.Info.DetonationDamage = ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
-                            p.Info.AreaEffectDamage = ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
-                            p.Info.WeaponCache = WeaponCache;
-                            p.Info.WeaponCache.VirutalId = -1;
-                            p.Info.Seed = Comp.Seed;
-                            p.Info.LockOnFireState = LockOnFireState;
-                            p.Info.ShooterVel = Comp.Ai.GridVel;
-                            p.Info.Origin = muzzle.Position;
-                            p.Info.OriginUp = MyPivotUp;
-                            p.PredictedTargetPos = Target.TargetPos;
-                            p.Info.Direction = muzzle.DeviatedDir;
-                            p.DeadSphere.Center = MyPivotPos;
-                            p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
-                            p.State = Projectile.ProjectileState.Start;
-                            p.Info.PrimeEntity = ActiveAmmoDef.AmmoDef.Const.PrimeModel ? ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
-                            p.Info.TriggerEntity = ActiveAmmoDef.AmmoDef.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
-                            Comp.Session.Projectiles.ActiveProjetiles.Add(p);
+                            var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
+                            if (ammoPattern.Const.VirtualBeams && j == 0)
+                            {
+                                MyEntity primeE = null;
+                                MyEntity triggerE = null;
 
-                            if (targetable)
-                                Comp.Ai.Session.Projectiles.AddTargets.Add(p);
+                                if (ammoPattern.Const.PrimeModel)
+                                    primeE = ammoPattern.Const.PrimeEntityPool.Get();
+
+                                if (ammoPattern.Const.TriggerModel)
+                                    triggerE = session.TriggerEntityPool.Get();
+
+                                var info = session.Projectiles.VirtInfoPool.Get();
+                                info.InitVirtual(System, Comp.Ai, ammoPattern, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
+                                vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.Av.AvShotPool.Get() });
+
+                                if (!ammoPattern.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
+                                else if (i == _nextVirtual)
+                                {
+
+                                    vProjectile.Info.Origin = muzzle.Position;
+                                    vProjectile.Info.Direction = muzzle.DeviatedDir;
+                                    vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
+                                }
+
+                                Comp.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
+                            }
+                            else
+                            {
+                                var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
+                                p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
+                                p.Info.System = System;
+                                p.Info.Ai = Comp.Ai;
+                                p.Info.AmmoDef = ammoPattern;
+                                p.Info.Overrides = Comp.Set.Value.Overrides;
+                                p.Info.Target.Entity = Target.Entity;
+                                p.Info.Target.Projectile = Target.Projectile;
+                                p.Info.Target.IsProjectile = Target.Projectile != null;
+                                p.Info.Target.IsFakeTarget = Comp.TrackReticle;
+                                p.Info.Target.FiringCube = Comp.MyCube;
+                                p.Info.WeaponId = WeaponId;
+                                p.Info.MuzzleId = muzzle.MuzzleId;
+                                p.Info.BaseDamagePool = BaseDamage;
+                                p.Info.EnableGuidance = Comp.Set.Value.Guidance;
+                                p.Info.DetonationDamage = ammoPattern.Const.DetonationDamage;
+                                p.Info.AreaEffectDamage = ammoPattern.Const.AreaEffectDamage;
+                                p.Info.WeaponCache = WeaponCache;
+                                p.Info.WeaponCache.VirutalId = -1;
+                                p.Info.Seed = Comp.Seed;
+                                p.Info.LockOnFireState = LockOnFireState;
+                                p.Info.ShooterVel = Comp.Ai.GridVel;
+                                p.Info.Origin = muzzle.Position;
+                                p.Info.OriginUp = MyPivotUp;
+                                p.PredictedTargetPos = Target.TargetPos;
+                                p.Info.Direction = muzzle.DeviatedDir;
+                                p.DeadSphere.Center = MyPivotPos;
+                                p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
+                                p.State = Projectile.ProjectileState.Start;
+                                p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
+                                p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
+                                Comp.Session.Projectiles.ActiveProjetiles.Add(p);
+
+                                if (targetable)
+                                    Comp.Ai.Session.Projectiles.AddTargets.Add(p);
+                            }
                         }
                     }
 
@@ -280,10 +295,12 @@ namespace WeaponCore.Platform
                     if (IsShooting) StopShooting();
 
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
+
+                    if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
+                        Target.Reset(Comp.Session.Tick, Target.States.FiredBurst);
                 }
                 else if (((ActiveAmmoDef.AmmoDef.Const.BurstMode && System.AlwaysFireFullBurst) || ActiveAmmoDef.AmmoDef.Const.MustCharge) && State.Sync.CurrentAmmo > 0 && State.ShotsFired < System.ShotsPerBurst)
                     FinishBurst = true;
-
                 else if (CanReload || ActiveAmmoDef.AmmoDef.Const.MustCharge && State.ShotsFired >= System.ShotsPerBurst)
                     StartReload();
                 
