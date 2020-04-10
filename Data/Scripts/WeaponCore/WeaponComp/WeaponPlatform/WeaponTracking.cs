@@ -280,11 +280,12 @@ namespace WeaponCore.Platform
                     var aim = !azLocked || !elLocked;
                     if (aim)
                     {
-                        weapon.Azimuth = az;
-                        weapon.Elevation = el;
-
+                        if (!azLocked)
+                            weapon.Azimuth = az;
+                        if (!elLocked)
+                            weapon.Elevation = el;
                         weapon.IsHome = false;
-                        weapon.AimBarrel(azDiff, elDiff);
+                        weapon.AimBarrel(azDiff, elDiff, !azLocked, !elLocked);
                     }
                 }
             }
