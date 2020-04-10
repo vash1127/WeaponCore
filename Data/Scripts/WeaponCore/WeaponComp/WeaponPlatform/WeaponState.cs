@@ -58,7 +58,7 @@ namespace WeaponCore.Platform
             obj.PositionComp.OnPositionChanged -= PositionChanged;
             obj.OnMarkForClose -= EntPartClose;
 
-            if (Comp.Session.VanillaSubpartNames.Contains(System.AzimuthPartName.String) && Comp.Session.VanillaSubpartNames.Contains(System.ElevationPartName.String))
+            if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.Session.VanillaSubpartNames.Contains(System.AzimuthPartName.String) && Comp.Session.VanillaSubpartNames.Contains(System.ElevationPartName.String))
                 obj.PositionComp.OnPositionChanged -= UpdateParts;
         }
 
