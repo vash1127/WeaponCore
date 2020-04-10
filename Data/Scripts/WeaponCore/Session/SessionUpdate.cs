@@ -89,11 +89,14 @@ namespace WeaponCore
                             var leftClick = false;
                             var rightClick = false;
 
-                            MouseStateData mouseState;
-                            if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out mouseState)) {
-                                leftClick = mouseState.MouseButtonLeft;// && currentControl;
-                                rightClick = mouseState.MouseButtonRight;// && currentControl;
+                            InputStateData inputState;
+                            if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out inputState))
+                            {
+                                leftClick = inputState.MouseButtonLeft;// && currentControl;
+                                rightClick = inputState.MouseButtonRight;// && currentControl;
                             }
+                            else
+                                inputState = PlayerMouseStates[-1];
 
                             ///
                             /// Weapon update section
@@ -213,7 +216,7 @@ namespace WeaponCore
                                 var canShoot = !w.State.Sync.Overheated && !reloading;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                                var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+                                var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 var shoot = (validShootStates || manualShot || w.FinishBurst);
 
                                 w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus;

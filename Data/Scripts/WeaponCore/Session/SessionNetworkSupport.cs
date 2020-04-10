@@ -2,6 +2,7 @@
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -60,12 +61,12 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new MouseInputPacket
+                PacketsToServer.Add(new InputPacket
                 {
                     EntityId = entity.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ClientMouseEvent,
-                    Data = UiInput.ClientMouseState
+                    Data = UiInput.ClientInputState
                 });
             }
             else if (MpActive && IsServer)
@@ -73,12 +74,12 @@ namespace WeaponCore
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = entity,
-                    Packet = new MouseInputPacket
+                    Packet = new InputPacket
                     {
                         EntityId = entity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ClientMouseEvent,
-                        Data = UiInput.ClientMouseState
+                        Data = UiInput.ClientInputState
                     }
                 });
             }
@@ -217,8 +218,9 @@ namespace WeaponCore
 
         internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state, int weaponId = -1)
         {
+            if (!HandlesInput) return;
 
-            var mId = 0u;
+                var mId = 0u;
 
             if (weaponId == -1)
             {
@@ -243,7 +245,7 @@ namespace WeaponCore
                     WeaponId = weaponId,
                 });
             }
-            else if (HandlesInput)
+            else
             {
                 comp.Session.PacketsToClient.Add(new PacketInfo
                 {
@@ -507,6 +509,32 @@ namespace WeaponCore
             }
         }
 
+        internal void SendFixedGunHitEvent(MyCubeBlock firingCube, MyEntity hitEnt, Vector3 hitPos, Vector3 hitDirection, Vector3 up, int muzzleId, int systemId)
+        {
+            if (firingCube == null) return;
+
+            var comp = firingCube.Components.Get<WeaponComponent>();
+
+            Log.Line($"firingCube.EntityId: {firingCube.EntityId} hitEnt.EntityId: {hitEnt.EntityId}");
+
+            int weaponId;
+            if(comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
+            {
+                PacketsToServer.Add(new FixedWeaponHitPacket
+                {
+                    EntityId = firingCube.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.FixedWeaponHitEvent,
+                    HitEnt = hitEnt.EntityId,
+                    HitDirection = hitDirection,
+                    HitOffset = hitEnt.PositionComp.WorldMatrixRef.Translation - hitPos,
+                    Up = up,
+                    MuzzleId = muzzleId,
+                    WeaponId = weaponId
+                });
+            }
+        }
+
         #region AIFocus packets
         internal void SendFocusTargetUpdate(GridAi ai, long targetId)
         {
@@ -744,6 +772,43 @@ namespace WeaponCore
             o.SubSystem = (BlockTypes)ai.BlockGroups[groupName].Settings["SubSystems"];
 
             return o;
+        }
+
+        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 originUp, int muzzleId)
+        {
+            var comp = weapon.Comp;
+
+            var p = comp.Session.Projectiles.ProjectilePool.Count > 0 ? comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
+            p.Info.Id = comp.Session.Projectiles.CurrentProjectileId++;
+            p.Info.System = weapon.System;
+            p.Info.Ai = comp.Ai;
+            p.Info.ClientSent = true;
+            p.Info.AmmoDef = weapon.ActiveAmmoDef.AmmoDef;
+            p.Info.Overrides = comp.Set.Value.Overrides;
+            p.Info.Target.Entity = targetEntity;
+            p.Info.Target.Projectile = null;
+            p.Info.Target.IsProjectile = false;
+            p.Info.Target.IsFakeTarget = false;
+            p.Info.Target.FiringCube = comp.MyCube;
+            p.Info.WeaponId = weapon.WeaponId;
+            p.Info.MuzzleId = muzzleId;
+            p.Info.BaseDamagePool = weapon.BaseDamage;
+            p.Info.EnableGuidance = false;
+            p.Info.DetonationDamage = weapon.ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
+            p.Info.AreaEffectDamage = weapon.ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
+            p.Info.WeaponCache = weapon.WeaponCache;
+            p.Info.WeaponCache.VirutalId = -1;
+            p.Info.Seed = comp.Seed;
+            p.Info.LockOnFireState = false;
+            p.Info.ShooterVel = comp.Ai.GridVel;
+            p.Info.Origin = origin;
+            p.Info.OriginUp = originUp;
+            p.PredictedTargetPos = Vector3D.Zero;
+            p.Info.Direction = direction;
+            p.State = Projectile.ProjectileState.Start;
+            p.Info.PrimeEntity = weapon.ActiveAmmoDef.AmmoDef.Const.PrimeModel ? weapon.ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
+            p.Info.TriggerEntity = weapon.ActiveAmmoDef.AmmoDef.Const.TriggerModel ? comp.Session.TriggerEntityPool.Get() : null;
+            comp.Session.Projectiles.ActiveProjetiles.Add(p);
         }
         #endregion
     }

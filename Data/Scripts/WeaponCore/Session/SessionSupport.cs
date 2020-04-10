@@ -172,7 +172,7 @@ namespace WeaponCore
             {
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
-                PlayerMouseStates[id] = new MouseStateData();
+                PlayerMouseStates[id] = new InputStateData();
 
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
@@ -319,16 +319,16 @@ namespace WeaponCore
                     for (int i = 0; i < players.Count; i++)
                         PlayerConnected(players[i].IdentityId);
 
-                    PlayerMouseStates[PlayerId] = UiInput.ClientMouseState;
+                    PlayerMouseStates[PlayerId] = UiInput.ClientInputState;
                 }
-                PlayerMouseStates[-1] = new MouseStateData();
+                
 
                 if (IsClient)
                     SendUpdateRequest(-1, PacketType.RequestMouseStates);
 
                 return true;
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientMouseState != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientInputState != null}"); }
 
             return false;
         }
@@ -417,7 +417,7 @@ namespace WeaponCore
             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Blue, 0.05f);
             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Green, 0.05f);
             DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
-            //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
+            DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
             //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
             DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
 

@@ -180,7 +180,7 @@ namespace WeaponCore
                         }
                     case PacketType.ClientMouseEvent:
                         {
-                            var mousePacket = packet as MouseInputPacket;
+                            var mousePacket = packet as InputPacket;
                             if (mousePacket?.Data == null)
                             {
                                 errorPacket.Error = $"Data was null {mousePacket?.Data == null}";
@@ -787,19 +787,19 @@ namespace WeaponCore
                         }
                     case PacketType.ClientMouseEvent:
                         {
-                            var mousePacket = packet as MouseInputPacket;
+                            var inputPacket = packet as InputPacket;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
 
-                            if (mousePacket?.Data == null || ent == null || ent.MarkedForClose)
+                            if (inputPacket?.Data == null || ent == null || ent.MarkedForClose)
                             {
-                                errorPacket.Error = $"mousePacket?.Data is null: {mousePacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent}";
+                                errorPacket.Error = $"mousePacket?.Data is null: {inputPacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent}";
                                 break;
                             }
 
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
-                                PlayerMouseStates[playerId] = mousePacket.Data;
-                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = mousePacket });
+                                PlayerMouseStates[playerId] = inputPacket.Data;
+                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
 
                                 report.PacketValid = true;
                             }
@@ -1243,19 +1243,6 @@ namespace WeaponCore
                                     w.State.ManualShoot = shootStatePacket.Data;
                                 }
 
-                                /*
-                                if (shootStatePacket.Data != TerminalActionState.ShootOff && shootStatePacket.Data != TerminalActionState.ShootOnce)
-                                {
-                                    comp.Set.Value.Overrides.ManualControl = false;
-                                    comp.Set.Value.Overrides.TargetPainter = false;
-
-                                    if (shootStatePacket.Data != TerminalActionState.ShootClick)
-                                    {
-                                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                                        comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                                    }
-                                }*/
-
                                 PacketsToClient.Add(new PacketInfo
                                 {
                                     Entity = ent,
@@ -1294,20 +1281,6 @@ namespace WeaponCore
 
                                 if (shootStatePacket.Data == ManualShootActionState.ShootOnce)
                                     w.State.SingleShotCounter++;
-
-                                /*
-                                else if (shootStatePacket.Data != TerminalActionState.ShootOff)
-                                {
-                                    comp.Set.Value.Overrides.ManualControl = false;
-                                    comp.Set.Value.Overrides.TargetPainter = false;
-
-                                    if (shootStatePacket.Data != TerminalActionState.ShootClick)
-                                    {
-                                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                                        comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                                    }
-                                }*/
-
 
                                 w.State.ManualShoot = shootStatePacket.Data;
 
@@ -1410,6 +1383,34 @@ namespace WeaponCore
                             report.PacketValid = true;
                             break;
                         }
+                    case PacketType.FixedWeaponHitEvent:
+                        {
+                            var hitPacket = (FixedWeaponHitPacket)packet;
+
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            Log.Line($"packet.EntityId: {packet.EntityId} hitPacket: {hitPacket.HitEnt}");
+
+                            if (comp == null || comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"comp is null: {comp == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
+                                break;
+                            }
+
+                            
+
+                            var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
+                            var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
+                            
+                            var hitPos = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
+                            var origin = hitPos - hitPacket.HitDirection;
+
+                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Up, hitPacket.MuzzleId);
+
+                            report.PacketValid = true;
+                            break;
+                        }
                     case PacketType.FocusUpdate:
                     case PacketType.ReassignTargetUpdate:
                     case PacketType.NextActiveUpdate:
@@ -1461,13 +1462,17 @@ namespace WeaponCore
 
                         break;
                 }
+
+                if (!report.PacketValid)
+                    Log.Line(errorPacket.Error);
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: PacketType:{ptype} Exception: {ex}"); }
         }
 
         internal void ProccessServerPacketsForClients()
         {
-            if (!IsServer || !MpActive)
+
+            if ((!IsServer || !MpActive))
             {
                 Log.Line($"trying to process server packets on a non-server");
                 return;
@@ -1476,6 +1481,7 @@ namespace WeaponCore
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
+
                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
 
                 if (packetInfo.SingleClient)

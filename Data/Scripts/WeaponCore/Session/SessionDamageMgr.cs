@@ -12,6 +12,8 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
+using static WeaponCore.Support.WeaponSystem.TurretType;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
 namespace WeaponCore
 {
     public struct RadiatedBlock
@@ -35,6 +37,15 @@ namespace WeaponCore
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
                 if (tInvalid) info.Target.Reset(info.Ai.Session.Tick, Target.States.ProjectileClosed);
                 var skip = pInvalid || tInvalid;
+                var fixedFire = p.Info.System.TurretMovement == Fixed && p.Guidance == None && !p.Info.AmmoDef.Const.IsBeamWeapon;
+                var canDamage = !MpActive || !IsClient && (!fixedFire || ((p.Info.IsFiringPlayer || p.Info.ClientSent) && fixedFire));
+
+                if (IsClient && p.Info.IsFiringPlayer && fixedFire)
+                {
+                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Hit.Entity, info.HitList[0].HitPos ??Vector3.Zero, info.Direction, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash);
+                    p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
+                }
+
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
                     var hitEnt = info.HitList[i];
@@ -56,13 +67,13 @@ namespace WeaponCore
                             DamageShield(hitEnt, info);
                             continue;
                         case HitEntity.Type.Grid:
-                            DamageGrid(hitEnt, info);
+                            DamageGrid(hitEnt, info, canDamage);
                             continue;
                         case HitEntity.Type.Destroyable:
-                            DamageDestObj(hitEnt, info);
+                            DamageDestObj(hitEnt, info, canDamage);
                             continue;
                         case HitEntity.Type.Voxel:
-                            DamageVoxel(hitEnt, info);
+                            DamageVoxel(hitEnt, info, canDamage);
                             continue;
                         case HitEntity.Type.Projectile:
                             DamageProjectile(hitEnt, info);
@@ -141,7 +152,7 @@ namespace WeaponCore
             }
         }
 
-        private void DamageGrid(HitEntity hitEnt, ProInfo t)
+        private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) {
@@ -322,7 +333,7 @@ namespace WeaponCore
                         }
                     }
 
-                    if (!IsClient)
+                    if (canDamage)
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
                     else
                     {
@@ -379,7 +390,7 @@ namespace WeaponCore
             hitEnt.Blocks.Clear();
         }
 
-        private void DamageDestObj(HitEntity hitEnt, ProInfo info)
+        private void DamageDestObj(HitEntity hitEnt, ProInfo info, bool canDamage)
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as IMyDestroyableObject;
@@ -417,7 +428,7 @@ namespace WeaponCore
             if (scaledDamage < objHp) info.BaseDamagePool = 0;
             else info.BaseDamagePool -= objHp;
 
-            if(!IsClient)
+            if(canDamage)
                 destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, sync, null, attackerId);
             if (info.AmmoDef.Mass > 0)
             {
@@ -478,7 +489,7 @@ namespace WeaponCore
             }
         }
 
-        private void DamageVoxel(HitEntity hitEnt, ProInfo info)
+        private void DamageVoxel(HitEntity hitEnt, ProInfo info, bool canDamage)
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
@@ -510,7 +521,6 @@ namespace WeaponCore
                 var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
                 var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
                 var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 1, double.MaxValue);
-                var sync = MpActive && IsServer;
 
                 if (tRadius > 5) objHp *= 5;
                 if (scaledDamage < objHp)
@@ -540,7 +550,7 @@ namespace WeaponCore
 
                     dRadius /= reduceBy;
                     if (dRadius < 1.5) dRadius = 1.5f;
-                   if (sync) destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
+                   if (canDamage) destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
                 }
             }
         }

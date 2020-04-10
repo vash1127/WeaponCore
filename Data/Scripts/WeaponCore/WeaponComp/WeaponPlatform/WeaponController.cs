@@ -31,7 +31,7 @@ namespace WeaponCore.Platform
                 }
             }
             else
-            {
+            {   
                 if (moveEl)
                     Comp.TurretBase.Elevation = (float)Elevation;
 
@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
                         Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
 
-                    AimBarrel(oldAz != Azimuth, oldEl != Elevation);
+                    AimBarrel(oldAz != Azimuth , oldEl != Elevation);
                 }
 
                 if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
@@ -171,11 +171,11 @@ namespace WeaponCore.Platform
 
                         var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
 
-                        for (int i = 0; i < HeatingParts.Count; i++)
+                        for(int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", color, intensity);
                     }
                     else if (set)
-                        for (int i = 0; i < HeatingParts.Count; i++)
+                        for(int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                     LastHeat = currentHeat;
@@ -219,7 +219,7 @@ namespace WeaponCore.Platform
                         //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         if (CurLgstAnimPlaying != null)
                             Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
-
+                        
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
                         State.Sync.Overheated = false;
                     }
@@ -333,7 +333,7 @@ namespace WeaponCore.Platform
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-            {
+            { 
                 RotateEmitter?.PlaySound(RotateSound, true, false, false, false, false, false);
             }
 

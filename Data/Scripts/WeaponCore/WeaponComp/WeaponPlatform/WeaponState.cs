@@ -279,6 +279,8 @@ namespace WeaponCore.Platform
             }
             else
                 RequiredPower = Comp.IdlePower;
+
+            Log.Line($"RequiredPower: {RequiredPower}");
         }
 
         internal void UpdateShotEnergy()
@@ -504,6 +506,8 @@ namespace WeaponCore.Platform
 
             Comp.Ai.RequestedWeaponsDraw += RequiredPower;
 
+            Log.Line($"Comp.Ai.RequestedWeaponsDraw: {Comp.Ai.RequestedWeaponsDraw} Comp.Ai.GridMaxPower: {Comp.Ai.GridMaxPower}");
+
             Timings.ChargeUntilTick = syncCharge ? Timings.ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
         }
@@ -699,8 +703,6 @@ namespace WeaponCore.Platform
                         }
                         else
                         {
-
-                            Log.Line($"set emissive currentEmissive.CurrentColor: {currentEmissive.CurrentColor} currentEmissive.CurrentIntensity: {currentEmissive.CurrentIntensity} currentEmissive.EmissiveParts.Length: {currentEmissive.EmissiveParts.Length}");
                             for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
                                 animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[j], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
                         }

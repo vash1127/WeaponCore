@@ -51,6 +51,8 @@ namespace WeaponCore.Support
         internal bool EwarActive;
         internal bool ModelOnly;
         internal bool LockOnFireState;
+        internal bool IsFiringPlayer;
+        internal bool ClientSent;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)

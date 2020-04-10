@@ -210,8 +210,8 @@ namespace WeaponCore.Platform
                     {
                         var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model);
 
-                        var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
-                        var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
+                        var muzzlePartPosTo = MatrixD.CreateTranslation(-muzzlePartLocation);
+                        var muzzlePartPosFrom = MatrixD.CreateTranslation(muzzlePartLocation);
 
                         weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
                         weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
@@ -228,10 +228,10 @@ namespace WeaponCore.Platform
                             var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
 
-                            var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
-                            var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
+                            var azPartPosTo = MatrixD.CreateTranslation(-azimuthPartLocation);
+                            var azPrtPosFrom = MatrixD.CreateTranslation(azimuthPartLocation);
                             var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, - m.Value.AzStep) * azPrtPosFrom;
-                            var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
+                            var rFullStepAzRotation = MatrixD.Invert(fullStepAzRotation);
 
                             weapon.AzimuthPart.RotationAxis = partDummy.Matrix.Up;
                             weapon.AzimuthPart.ToTransformation = azPartPosTo;
@@ -243,10 +243,10 @@ namespace WeaponCore.Platform
                         else
                         {
                             weapon.AzimuthPart.RotationAxis = Vector3.Zero;
-                            weapon.AzimuthPart.ToTransformation = Matrix.Zero;
-                            weapon.AzimuthPart.FromTransformation = Matrix.Zero;
-                            weapon.AzimuthPart.FullRotationStep = Matrix.Zero;
-                            weapon.AzimuthPart.RevFullRotationStep = Matrix.Zero;
+                            weapon.AzimuthPart.ToTransformation = MatrixD.Zero;
+                            weapon.AzimuthPart.FromTransformation = MatrixD.Zero;
+                            weapon.AzimuthPart.FullRotationStep = MatrixD.Zero;
+                            weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
                         }
 
@@ -256,12 +256,12 @@ namespace WeaponCore.Platform
                             var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
 
-                            var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
-                            var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
+                            var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
+                            var elPartPosFrom = MatrixD.CreateTranslation(elevationPartLocation);
 
                             var fullStepElRotation = elPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Left, m.Value.ElStep) * elPartPosFrom;
 
-                            var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
+                            var rFullStepElRotation = MatrixD.Invert(fullStepElRotation);
 
                             weapon.ElevationPart.RotationAxis = partDummy.Matrix.Left;
                             weapon.ElevationPart.ToTransformation = elPartPosTo;
@@ -273,10 +273,10 @@ namespace WeaponCore.Platform
                         else if (elevationPartName == "None")
                         {
                             weapon.ElevationPart.RotationAxis = Vector3.Zero;
-                            weapon.ElevationPart.ToTransformation = Matrix.Zero;
-                            weapon.ElevationPart.FromTransformation = Matrix.Zero;
-                            weapon.ElevationPart.FullRotationStep = Matrix.Zero;
-                            weapon.ElevationPart.RevFullRotationStep = Matrix.Zero;
+                            weapon.ElevationPart.ToTransformation = MatrixD.Zero;
+                            weapon.ElevationPart.FromTransformation = MatrixD.Zero;
+                            weapon.ElevationPart.FullRotationStep = MatrixD.Zero;
+                            weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
                         }
                     }
@@ -298,7 +298,7 @@ namespace WeaponCore.Platform
                             weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                             weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
 
-                            if (comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
+                            if (comp.BaseType == Turret && comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
                                 weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.UpdateParts;
                         }
                         else
@@ -383,11 +383,17 @@ namespace WeaponCore.Platform
                     {
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
+                        //weapon.AzimuthPart.Entity.InvalidateOnMove = false;
+                        //weapon.AzimuthPart.Entity.NeedsWorldMatrix = false;
                     }
 
                     MyEntity elevationPartEntity;
                     if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
+                    {
                         weapon.ElevationPart.Entity = elevationPartEntity;
+                        //weapon.ElevationPart.Entity.InvalidateOnMove = false;
+                        //weapon.ElevationPart.Entity.NeedsWorldMatrix = false;
+                    }
 
                     if (m.Value.DesignatorWeapon)
                         muzzlePart = weapon.ElevationPart.Entity;

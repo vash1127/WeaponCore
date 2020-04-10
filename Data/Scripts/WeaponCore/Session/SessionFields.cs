@@ -82,7 +82,7 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
-        internal readonly Dictionary<long, MouseStateData> PlayerMouseStates = new Dictionary<long, MouseStateData>();
+        internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>(){[-1] = new InputStateData()};
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsCheck = new Dictionary<Weapon, int>();
 
