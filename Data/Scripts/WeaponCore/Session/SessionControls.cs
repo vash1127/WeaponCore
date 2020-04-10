@@ -108,8 +108,8 @@ namespace WeaponCore
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
 
+                    CreateShootActionSet<T>();
                     CreateShootClick<T>();
-
                 }
 
                 TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.SetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
@@ -246,165 +246,94 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal static void CreateShootActionSet<T>(string name, int id) where T : IMyTerminalBlock
+        internal static void CreateShootActionSet<T>() where T : IMyTerminalBlock
         {
-            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"Shoot");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action0.Name = new StringBuilder($"{name} Shoot On/Off");
+            action0.Name = new StringBuilder($"Shoot On/Off");
             action0.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
-                
-                var w = comp.Platform.Weapons[weaponId];
+                    var comp = blk?.Components?.Get<WeaponComponent>();
+                    if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        return;
 
-                if (w.State.ManualShoot == ShootOn)
-                    w.State.ManualShoot = ShootOff;
-                else
-                {
-                    w.State.ManualShoot = ShootOn;
+                    var cState = comp.State.Value;
 
-                    var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
-                    comp.Set.Value.Overrides.ManualControl = false;
-                    comp.Set.Value.Overrides.TargetPainter = false;
-
-                    if (update && comp.Session.MpActive)
+                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
-                        comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                        comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                        var w = comp.Platform.Weapons[j];
 
-                        comp.Session.SendControlingPlayer(comp);
-                        comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                        if (cState.ShootOn)
+                            w.State.ManualShoot = ShootOff;
+                        else
+                        {
+                            w.State.ManualShoot = ShootOn;
+
+                            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+                            comp.Set.Value.Overrides.ManualControl = false;
+                            comp.Set.Value.Overrides.TargetPainter = false;
+
+                            if (update && comp.Session.MpActive)
+                            {
+                                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+
+                                comp.Session.SendControlingPlayer(comp);
+                                comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                            }
+                        }
                     }
-                }
 
-                if (comp.Session.MpActive)
-                    comp.Session.SendActionShootUpdate(comp, w.State.ManualShoot, w.WeaponId);
+                    if (comp.Session.MpActive)
+                        comp.Session.SendActionShootUpdate(comp, (cState.ShootOn ? ShootOff : ShootOn));
+
+                    cState.ShootOn = !cState.ShootOn;
+                    cState.ClickShoot = !cState.ShootOn && cState.ClickShoot;
 
             };
-            action0.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
+            action0.Writer = (blk, sb) => 
+            {
+                var comp = blk.Components.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                if (comp.State.Value.ShootOn)
+                    sb.Append("On");
+                else
+                    sb.Append("Off");
+            };
+
             action0.Enabled = (b) =>
             {
-                var comp = b?.Components?.Get<WeaponComponent>();
-                int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
-
-                return comp.Platform.Weapons[weaponId].System.WeaponIdHash == id;
+                return b.Components.Has<WeaponComponent>();
             };
 
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
 
-            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On");
-            action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action1.Name = new StringBuilder($"{name} Shoot On");
-            action1.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                
-                int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
-
-                var w = comp.Platform.Weapons[weaponId];
-
-                comp.State.Value.Weapons[weaponId].ManualShoot = ShootOn;
-
-                var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
-                comp.Set.Value.Overrides.ManualControl = false;
-                comp.Set.Value.Overrides.TargetPainter = false;
-
-                if (update && comp.Session.MpActive)
-                {
-                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-                    comp.Session.SendControlingPlayer(comp);
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
-                }
-
-                if (comp.Session.MpActive)
-                    comp.Session.SendActionShootUpdate(comp, ShootOn, weaponId);
-            };
-
-            action1.Writer = (b, t) => t.Append("On");
-            action1.Enabled = (b) =>
-            {
-                var comp = b?.Components?.Get<WeaponComponent>();
-                int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
-                
-                return comp.Platform.Weapons[weaponId].System.WeaponIdHash == id;
-            };
-            action1.ValidForGroups = false;
-
-            MyAPIGateway.TerminalControls.AddAction<T>(action1);
-
-            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Off");
-            action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action2.Name = new StringBuilder($"{name} Shoot Off");
-            action2.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-
-                int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
-
-                comp.Platform.Weapons[weaponId].State.ManualShoot = ShootOff;
-
-                if (comp.Session.MpActive)
-                    comp.Session.SendActionShootUpdate(comp, ShootOff, weaponId);
-
-            };
-            action2.Writer = (b, t) => t.Append("Off");
-            action2.Enabled = (b) =>
-            {
-
-                var comp = b?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
-                {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponIdHash == id)
-                        return true;
-                }
-                return false;
-            };
-            action2.ValidForGroups = false;
-
-            MyAPIGateway.TerminalControls.AddAction<T>(action2);
-
-            var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Once");
-            action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action3.Name = new StringBuilder($"{name} Shoot Once");
+            var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"ShootOnce");
+            action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
+            action3.Name = new StringBuilder($"Shoot Once");
             action3.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
-                {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponIdHash == id)
-                    {
-                        var cState = comp.State.Value;
-                        cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
-                        cState.Weapons[comp.Platform.Weapons[weaponId].WeaponId].SingleShotCounter++;
+                var cState = comp.State.Value;
 
-                        if (comp.Session.MpActive)
-                            comp.Session.SendActionShootUpdate(comp, ShootOnce, weaponId);
-                    }
+                for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                {
+                    cState.Weapons[comp.Platform.Weapons[j].WeaponId].SingleShotCounter++;
+                    cState.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                 }
+
+                cState.ClickShoot = false;
+                cState.ShootOn = false;
+
+                if (comp.Session.MpActive)
+                    comp.Session.SendActionShootUpdate(comp, ShootOnce);
             };
             action3.Writer = (b, t) => t.Append("");
             action3.Enabled = (b) =>
             {
-
-                var comp = b?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
-                {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponIdHash == id)
-                        return true;
-                }
-                return false;
+                return b.Components.Has<WeaponComponent>();
             };
             action3.ValidForGroups = false;
 
