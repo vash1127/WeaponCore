@@ -114,6 +114,7 @@ namespace WeaponCore.Platform
                 Projectile vProjectile = null;
                 if (ActiveAmmoDef.AmmoDef.Const.VirtualBeams) vProjectile = CreateVirtualProjectile();
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
+                var firingPlayer = Comp.State.Value.CurrentPlayerControl.PlayerId == Comp.Session.PlayerId;
 
                 for (int i = 0; i < bps; i++)
                 {
@@ -214,6 +215,7 @@ namespace WeaponCore.Platform
                                 p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
                                 p.Info.System = System;
                                 p.Info.Ai = Comp.Ai;
+                                p.Info.IsFiringPlayer = firingPlayer;
                                 p.Info.AmmoDef = ammoPattern;
                                 p.Info.Overrides = Comp.Set.Value.Overrides;
                                 p.Info.Target.Entity = Target.Entity;
