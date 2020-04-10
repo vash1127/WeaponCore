@@ -370,6 +370,8 @@ namespace WeaponCore.Support
         public readonly MyConcurrentPool<MyEntity> PrimeEntityPool;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly MyAmmoMagazineDefinition MagazineDef;
+        public readonly AmmoDef[] AmmoPattern;
+        public readonly int[] AmmoShufflePattern;
         public readonly MyStringId TracerMaterial;
         public readonly MyStringId TrailMaterial;
         public readonly MyPhysicalInventoryItem AmmoItem;
@@ -386,6 +388,7 @@ namespace WeaponCore.Support
         public readonly int ShrapnelId = -1;
         public readonly int MaxChaseTime;
         public readonly int MagazineSize;
+        public readonly int PatternIndex;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -519,7 +522,9 @@ namespace WeaponCore.Support
             HasBackKickForce = ammo.AmmoDef.BackKickForce > 0;
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
-            
+
+            ComputeAmmoPattern(ammo, wDef, out AmmoPattern, out PatternIndex, out AmmoShufflePattern);
+
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
 
@@ -536,6 +541,46 @@ namespace WeaponCore.Support
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
 
+        }
+
+        private void ComputeAmmoPattern(WeaponAmmoTypes ammo, WeaponDefinition wDef, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern)
+        {
+            var pattern = ammo.AmmoDef.Pattern;
+            var indexPos = 0;
+            
+            int indexCount;
+            if (!pattern.Enable)
+                indexCount = 1;
+            else
+            {
+                indexCount = pattern.Ammos.Length;
+                if (!pattern.SkipParent) indexCount += 1;
+            }
+
+            patternIndex = indexCount;
+
+            ammoPattern = new AmmoDef[indexCount];
+
+            ammoShufflePattern = new int[indexCount];
+            for (int i = 0; i < indexCount; i++)
+                ammoShufflePattern[i] = i;
+
+            if (!pattern.Enable || !pattern.SkipParent)
+                ammoPattern[indexPos++] = ammo.AmmoDef;
+
+            if (pattern.Enable)
+            {
+                for (int i = 0; i < wDef.Ammos.Length; i++)
+                {
+                    var ammoDef = wDef.Ammos[i];
+                    for (int j = 0; j < ammo.AmmoDef.Pattern.Ammos.Length; j++)
+                    {
+                        var aPattern = ammo.AmmoDef.Pattern.Ammos[j];
+                        if (aPattern.Equals(ammoDef.AmmoRound))
+                            ammoPattern[indexPos++] = ammoDef;
+                    }
+                }
+            }
         }
 
         private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)

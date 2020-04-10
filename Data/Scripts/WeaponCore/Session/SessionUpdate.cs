@@ -438,13 +438,9 @@ namespace WeaponCore
                 {
                     var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
                     var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
-                    var quickRemove = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot; 
-                    if (quickRemove)
-                    {
+                    var quickSkip = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot; 
+                    if (quickSkip) continue;
 
-                        ShootingWeapons.RemoveAtFast(i);
-                        continue;
-                    }
                     //TODO add logic for power priority
                     if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                     {

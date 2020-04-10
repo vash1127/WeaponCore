@@ -192,6 +192,7 @@ namespace WeaponCore.Support
                 [ProtoMember(13)] internal bool DegradeRof;
                 [ProtoMember(14)] internal int BarrelSpinRate;
                 [ProtoMember(15)] internal bool FireFullBurst;
+                [ProtoMember(16)] internal bool GiveUpAfterBurst;
             }
 
 
@@ -279,6 +280,7 @@ namespace WeaponCore.Support
             [ProtoMember(16)] internal GraphicDef AmmoGraphics;
             [ProtoMember(17)] internal AmmoAudioDef AmmoAudio;
             [ProtoMember(18)] internal bool HardPointUsable;
+            [ProtoMember(19)] internal AmmoPatternDef Pattern;
 
             internal AmmoConstants Const;
 
@@ -452,6 +454,17 @@ namespace WeaponCore.Support
                 [ProtoMember(7)] internal bool RandomizeDir;
             }
 
+            [ProtoContract]
+            public struct AmmoPatternDef
+            {
+                [ProtoMember(1)] internal string[] Ammos;
+                [ProtoMember(2)] internal bool Enable;
+                [ProtoMember(3)] internal float TriggerChance;
+                [ProtoMember(4)] internal bool SkipParent;
+                [ProtoMember(5)] internal bool Random;
+                [ProtoMember(6)] internal int RandomMin;
+                [ProtoMember(7)] internal int RandomMax;
+            }
 
             [ProtoContract]
             public struct AreaDamageDef

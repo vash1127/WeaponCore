@@ -1004,7 +1004,7 @@ namespace WeaponCore.Support
                 }
             }
 
-                foreach (var cubeComp in WeaponBase)
+            foreach (var cubeComp in WeaponBase)
             {
                 var comp = cubeComp.Value;
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
@@ -1013,7 +1013,6 @@ namespace WeaponCore.Support
                 if (currPlayer.PlayerId != Session.PlayerId) continue;
 
                 var cState = comp.State.Value;
-                var origState = cState;
                 var overRides = comp.Set.Value.Overrides;
 
                 currPlayer.ControlType = ControlType.None;

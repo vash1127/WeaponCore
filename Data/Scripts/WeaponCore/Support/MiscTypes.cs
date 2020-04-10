@@ -47,6 +47,7 @@ namespace WeaponCore.Support
             Transfered,
             Invalid,
             Fake,
+            FiredBurst,
         }
 
         internal Target(MyCubeBlock firingCube = null)
