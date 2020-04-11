@@ -281,6 +281,7 @@ namespace WeaponCore.Support
             [ProtoMember(17)] internal AmmoAudioDef AmmoAudio;
             [ProtoMember(18)] internal bool HardPointUsable;
             [ProtoMember(19)] internal AmmoPatternDef Pattern;
+            [ProtoMember(20)] internal int EnergyMagazineSize;
 
             internal AmmoConstants Const;
 

@@ -295,7 +295,7 @@ namespace WeaponCore
 
                     if (Tick60 && w.DrawingPower)
                     {
-                        if ((cState.CurrentCharge + w.UseablePower) < w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize)
+                        if ((cState.CurrentCharge + w.UseablePower) < w.ActiveAmmoDef.AmmoDef.Const.ChargeSize)
                         {
                             wState.Sync.CurrentCharge += w.UseablePower;
                             cState.CurrentCharge += w.UseablePower;
@@ -303,8 +303,8 @@ namespace WeaponCore
                         }
                         else
                         {
-                            w.Comp.State.Value.CurrentCharge += (w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge);
-                            wState.Sync.CurrentCharge = w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                            w.Comp.State.Value.CurrentCharge += (w.ActiveAmmoDef.AmmoDef.Const.ChargeSize - wState.Sync.CurrentCharge);
+                            wState.Sync.CurrentCharge = w.ActiveAmmoDef.AmmoDef.Const.ChargeSize;
                         }
                     }
 
@@ -350,7 +350,7 @@ namespace WeaponCore
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.EnergyMagSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                        w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargeSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                         w.Timings.ChargeUntilTick = w.Timings.ChargeDelayTicks + Tick;
 
                         if (!w.DrawingPower)

@@ -386,6 +386,7 @@ namespace WeaponCore.Support
         public readonly int PulseInterval;
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
+        public readonly int ChargeSize;
         public readonly int ShrapnelId = -1;
         public readonly int MaxChaseTime;
         public readonly int MagazineSize;
@@ -533,7 +534,7 @@ namespace WeaponCore.Support
             CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
             PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
-            Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out BurstMode, out HasShotReloadDelay);
+            Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out ChargeSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
@@ -744,7 +745,7 @@ namespace WeaponCore.Support
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
         }
 
-        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out bool burstMode, out bool shotReload)
+        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
@@ -761,10 +762,12 @@ namespace WeaponCore.Support
                 var shotEnergyCost = ewar ? ammoPair.AmmoDef.EnergyCost * AreaEffectDamage : ammoPair.AmmoDef.EnergyCost * BaseDamage;
                 var requiredPower = (((shotEnergyCost * ((system.RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * wDef.HardPoint.Loading.BarrelsPerShot) * wDef.HardPoint.Loading.TrajectilesPerBarrel);
 
-                energyMagSize = (int)Math.Ceiling(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+                chargeSize = (int)Math.Ceiling(requiredPower * (system.ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+
+                energyMagSize = ammoPair.AmmoDef.EnergyMagazineSize > 0 ? ammoPair.AmmoDef.EnergyMagazineSize : chargeSize;
                 return;
             }
-
+            chargeSize = 0;
             energyMagSize = int.MaxValue;
 
         }
