@@ -286,7 +286,7 @@ namespace WeaponCore.Platform
             var oldMaxCharge = MaxCharge;
 
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargeSize * mulitplier;
+                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * mulitplier;
 
             Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
 

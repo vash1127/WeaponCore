@@ -87,7 +87,7 @@ namespace WeaponCore.Platform
                         return;
                     }
                 }
-
+                
                 if (ShootTick > tick)
                     return;
 
@@ -125,7 +125,7 @@ namespace WeaponCore.Platform
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
                 var firingPlayer = Comp.State.Value.CurrentPlayerControl.PlayerId == Comp.Session.PlayerId;
 
-
+                
                 for (int i = 0; i < bps; i++)
                 {
                     var current = NextMuzzle;
@@ -313,7 +313,7 @@ namespace WeaponCore.Platform
                                 delay = (uint)System.CeaseFireDelay;
                             }
 
-                            session.FutureEvents.Schedule(o =>
+                            session.FutureEvents.Schedule(o => 
                             {
                                 EventTriggerStateChanged(EventTriggers.BurstReload, true);
                                 ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
@@ -322,7 +322,7 @@ namespace WeaponCore.Platform
                             }, null, delay);
                         }
                         else
-                            EventTriggerStateChanged(EventTriggers.BurstReload, true);
+                            EventTriggerStateChanged(EventTriggers.BurstReload, true);                        
 
                         if (IsShooting && !System.DelayCeaseFire)
                         {
@@ -336,7 +336,7 @@ namespace WeaponCore.Platform
                     else if (System.AlwaysFireFullBurst && State.ShotsFired < System.ShotsPerBurst)
                         FinishBurst = true;
                 }
-
+                
 
                 if (State.ManualShoot == ManualShootActionState.ShootOnce && --State.SingleShotCounter <= 0)
                     State.ManualShoot = ManualShootActionState.ShootOff;
