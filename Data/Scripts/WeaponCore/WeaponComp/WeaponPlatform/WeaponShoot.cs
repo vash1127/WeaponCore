@@ -91,7 +91,7 @@ namespace WeaponCore.Platform
                 if (ShootTick > tick)
                     return;
 
-                if (LockOnFireState && (Target.Entity != Comp.Ai.Focus.Target[0] || Target.Entity != Comp.Ai.Focus.Target[1])) 
+                if (LockOnFireState && (Target.Entity != Comp.Ai.Focus.Target[0] || Target.Entity != Comp.Ai.Focus.Target[1]))
                     Comp.Ai.Focus.GetPriorityTarget(out Target.Entity);
 
                 ShootTick = tick + TicksPerShot;
@@ -265,9 +265,10 @@ namespace WeaponCore.Platform
 
                     if (HeatPShot > 0)
                     {
-                        if (!HeatLoopRunning) { 
+                        if (!HeatLoopRunning)
+                        {
                             Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
-                           HeatLoopRunning = true;
+                            HeatLoopRunning = true;
                         }
 
                         State.Sync.Heat += HeatPShot;
@@ -284,7 +285,7 @@ namespace WeaponCore.Platform
                             StopShooting();
                             break;
                         }
-                    }                    
+                    }
 
                     if (i == bps) NextMuzzle++;
 
@@ -399,14 +400,14 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed,!Comp.TrackReticle);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.TrackReticle);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.TrackReticle);
                     return false;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
             }
             Comp.LastRayCastTick = tick;
-            
+
             if (Target.IsFakeTarget)
             {
                 Casting = true;
@@ -441,7 +442,7 @@ namespace WeaponCore.Platform
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     return false;
-                }  
+                }
                 var topMostEnt = Target.Entity.GetTopMostParent();
                 if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
                 {
@@ -455,7 +456,7 @@ namespace WeaponCore.Platform
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > MaxTargetDistanceSqr)
             {
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                if (masterWeapon !=  this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 return false;
             }
             Casting = true;
