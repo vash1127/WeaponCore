@@ -312,7 +312,13 @@ namespace WeaponCore.Platform
                                 delay = (uint)System.CeaseFireDelay;
                             }
 
-                            session.FutureEvents.Schedule(o => { EventTriggerStateChanged(EventTriggers.BurstReload, true); }, null, delay);
+                            session.FutureEvents.Schedule(o => 
+                            {
+                                EventTriggerStateChanged(EventTriggers.BurstReload, true);
+                                ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
+                                StopShooting();
+
+                            }, null, delay);
                         }
                         else
                             EventTriggerStateChanged(EventTriggers.BurstReload, true);                        
