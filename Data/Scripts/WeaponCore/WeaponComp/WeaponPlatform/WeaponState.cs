@@ -32,8 +32,8 @@ namespace WeaponCore.Platform
             var matrix = AzimuthPart.Entity.WorldMatrix;
             foreach (var part in AzimuthPart.Entity.Subparts)
             {
-                if(!part.Key.Contains(System.AzimuthPartName.String))
-                    part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
+                //if(!part.Key.Contains(System.AzimuthPartName.String))
+                    //part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
             }
         }
 
