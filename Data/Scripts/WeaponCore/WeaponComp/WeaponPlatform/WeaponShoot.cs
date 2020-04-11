@@ -322,12 +322,11 @@ namespace WeaponCore.Platform
                             }, null, delay);
                         }
                         else
-                            EventTriggerStateChanged(EventTriggers.BurstReload, true);                        
-
-                        if (IsShooting && !System.DelayCeaseFire)
-                        {
+                        { 
+                            EventTriggerStateChanged(EventTriggers.BurstReload, true);
                             ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
-                            StopShooting();
+                            if(IsShooting)
+                                StopShooting();
                         }
 
                         if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
