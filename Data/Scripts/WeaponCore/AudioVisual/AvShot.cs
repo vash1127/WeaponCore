@@ -23,14 +23,12 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal MyParticleEffect HitEffect;
         internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>(64);
         internal Queue<Shrinks> TracerShrinks = new Queue<Shrinks>(64);
         internal List<Vector3D> Offsets = new List<Vector3D>(64);
 
         internal WeaponComponent FiringWeapon;
         internal WeaponSystem.FiringSoundState FiringSoundState;
-
         internal bool Offset;
         internal bool AmmoSound;
         internal bool HasTravelSound;
@@ -484,23 +482,13 @@ namespace WeaponCore.Support
             if (FiringWeapon != null)
             {
                 var weapon = FiringWeapon.Platform.Weapons[WeaponId];
-                var effect = weapon.HitEffects[MuzzleId];
                 if (OnScreen != Screen.None)
                 {
-                    if (effect != null)
-                    {
-                        var elapsedTime = effect.GetElapsedTime();
-                        if (elapsedTime <= 0 || elapsedTime >= 1)
-                        {
-                            effect.Stop(true);
-                            effect = null;
-                        }
-                    }
                     MatrixD matrix;
                     MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
-                    if (effect == null)
+                    if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !Ai.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
                     {
-                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out effect))
+                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
                         {
                             if (weapon.HitEffects[MuzzleId] != null)
                             {
@@ -510,22 +498,36 @@ namespace WeaponCore.Support
                             return;
                         }
 
-                        effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
-                        effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                        effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * 1;
+                        weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
+                        weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        effect.UserScale = scale;
-                    }
-                    else if (effect.IsEmittingStopped)
-                        effect.Play();
+                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
+                        weapon.HitEffects[MuzzleId].UserScale = scale;
+                        Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
 
-                    effect.WorldMatrix = matrix;
-                    effect.Velocity = HitVelocity;
-                    weapon.HitEffects[MuzzleId] = effect;
+                        var mess = Ai.Session.Av.KeenMessPool.Get();
+                        mess.Effect = weapon.HitEffects[MuzzleId];
+                        mess.AmmoDef = AmmoDef;
+                        mess.Velocity = HitVelocity;
+                        mess.LastTick = Ai.Session.Tick;
+                        mess.Looping = mess.Effect.Loop;
+                        Ai.Session.Av.KeensBrokenParticles.Add(mess);
+                        Ai.Session.Av.RipMap.Add(mess.Effect, mess);
+                    }
+                    else if (weapon.HitEffects[MuzzleId] != null)
+                    {
+                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = Ai.Session.Tick;
+                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
+
+                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                        weapon.HitEffects[MuzzleId].UserScale = scale;
+                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
+                    }
+
                 }
-                else if (effect != null)
+                else if (weapon.HitEffects[MuzzleId] != null)
                 {
-                    effect.Stop(effect.Loop);
+                    weapon.HitEffects[MuzzleId].Stop(weapon.HitEffects[MuzzleId].Loop);
                     weapon.HitEffects[MuzzleId] = null;
                 }
             }
@@ -692,9 +694,6 @@ namespace WeaponCore.Support
             GlowSteps.Clear();
             Offsets.Clear();
             //
-
-            HitEffect?.Stop(false);
-            HitEffect = null;
             FiringWeapon = null;
             PrimeEntity = null;
             TriggerEntity = null;

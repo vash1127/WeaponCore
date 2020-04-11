@@ -254,7 +254,7 @@ namespace WeaponCore
         private uint _lastDrawTick;
         private bool _paused;
 
-        class HackEqualityComparer : System.Collections.IEqualityComparer
+        internal class HackEqualityComparer : System.Collections.IEqualityComparer
         {
             internal MyObjectBuilder_Definitions Def;
             public bool Equals(object a, object b) => false;
