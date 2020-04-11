@@ -66,6 +66,9 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.PreFire, false);
                     _muzzlesToFire.Clear();
                     PreFired = false;
+
+                    if (AvCapable && System.PreFireSound && PreFiringEmitter.IsPlaying)
+                        StopPreFiringSound(false);
                 }
 
                 #endregion
@@ -301,17 +304,24 @@ namespace WeaponCore.Platform
                     {
                         uint delay = 0;
                         FinishBurst = false;
-                        if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
+                        if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) || System.DelayCeaseFire)
+                        {
+                            if (System.DelayCeaseFire)
+                            {
+                                CeaseFireDelayTick = tick + (uint)System.CeaseFireDelay;
+                                delay = (uint)System.CeaseFireDelay;
+                            }
+
                             session.FutureEvents.Schedule(o => { EventTriggerStateChanged(EventTriggers.BurstReload, true); }, null, delay);
+                        }
                         else
-                            EventTriggerStateChanged(EventTriggers.BurstReload, true);
-
-                        if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
-
-                        ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
+                            EventTriggerStateChanged(EventTriggers.BurstReload, true);                        
 
                         if (IsShooting && !System.DelayCeaseFire)
+                        {
+                            ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                             StopShooting();
+                        }
 
                         if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
                             Target.Reset(Comp.Session.Tick, Target.States.FiredBurst);
