@@ -279,8 +279,6 @@ namespace WeaponCore.Platform
             }
             else
                 RequiredPower = Comp.IdlePower;
-
-            Log.Line($"RequiredPower: {RequiredPower}");
         }
 
         internal void UpdateShotEnergy()

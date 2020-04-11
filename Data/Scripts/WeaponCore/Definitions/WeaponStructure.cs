@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Definitions;
@@ -488,7 +489,6 @@ namespace WeaponCore.Support
             IsHybrid = ammo.AmmoDef.HybridRound;
             IsTurretSelectable = !ammo.IsShrapnel || ammo.AmmoDef.HardPointUsable;
 
-
             AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
             HitParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Hit.ShrinkByDistance;
@@ -537,10 +537,37 @@ namespace WeaponCore.Support
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+            //GetParticleInfo(ammo, wDef, session);
 
             DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
 
+        }
+
+        internal void GetParticleInfo(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
+        {
+            var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
+            var comparer = new Session.HackEqualityComparer();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var tuple = (IStructuralEquatable)list[i];
+                if (tuple != null)
+                {
+                    tuple.GetHashCode(comparer);
+                    var hacked = comparer.Def;
+                    if (hacked != null)
+                    {
+                        if (hacked.ParticleEffects != null)
+                        {
+                            foreach (var particle in hacked.ParticleEffects)
+                            {
+                                if (particle.Id.SubtypeId.Contains("Spark"))
+                                    Log.Line($"test: {particle.Id.SubtypeId} - {ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name}");
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void ComputeAmmoPattern(WeaponAmmoTypes ammo, WeaponDefinition wDef, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern)
