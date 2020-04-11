@@ -11,8 +11,12 @@ namespace WeaponCore.Support
     class RunAv
     {
         internal readonly MyConcurrentPool<AvShot> AvShotPool = new MyConcurrentPool<AvShot>(128, shot => shot.Close());
+        internal readonly MyConcurrentPool<KeensMess> KeenMessPool = new MyConcurrentPool<KeensMess>(128, mess => mess.Clean());
+
         internal readonly List<AvBarrel> AvBarrels1 = new List<AvBarrel>(128);
         internal readonly List<AvBarrel> AvBarrels2 = new List<AvBarrel>(128);
+        internal readonly List<KeensMess> KeensBrokenParticles = new List<KeensMess>();
+        internal readonly Dictionary<MyParticleEffect, KeensMess> RipMap = new Dictionary<MyParticleEffect, KeensMess>();
 
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
         internal readonly List<AvShot> HitSounds = new List<AvShot>(128);
@@ -40,6 +44,26 @@ namespace WeaponCore.Support
             Session = session;
         }
 
+        internal void RipParticles()
+        {
+            for (int i = KeensBrokenParticles.Count - 1; i >= 0; i--)
+            {
+                var rip = KeensBrokenParticles[i];
+                var effect = rip.Effect;
+                if (effect.IsEmittingStopped || effect.IsStopped || !effect.Enabled || effect.GetElapsedTime() >= effect.DurationMax)
+                {
+                    KeensBrokenParticles.RemoveAtFast(i);
+                    RipMap.Remove(rip.Effect);
+                    KeenMessPool.Return(rip);
+                }
+                else if (Session.Tick != rip.LastTick)
+                {
+                    var velSimulation = effect.WorldMatrix.Translation + (rip.Velocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
+                    effect.SetTranslation(ref velSimulation);
+                }
+            }
+        }
+
         private int _onScreens = 0;
         private int _shrinks = 0;
         private int _glows = 0;
@@ -47,7 +71,7 @@ namespace WeaponCore.Support
 
         internal void End()
         {
-            
+            if (KeensBrokenParticles.Count > 0) RipParticles();
             if (AvBarrels1.Count > 0) RunAvBarrels1();
             if (AvBarrels2.Count > 0) RunAvBarrels2();
             if (HitSounds.Count > 0) RunHitSounds();
@@ -112,17 +136,21 @@ namespace WeaponCore.Support
                             var pos = !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
                             var matrix = MatrixD.CreateTranslation(pos);
 
-                            if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out av.HitEffect)) {
+                            MyParticleEffect hitEffect;
+                            if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
 
-                                av.HitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                                hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                                 var scaler = 1;
-                                av.HitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
+                                hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
 
-                                av.HitEffect.UserScale = scale * scaler;
-                                var hitVel = av.Hit.HitVelocity;
-                                Vector3D.ClampToSphere(ref hitVel, (float)av.MaxSpeed);
-                                av.HitEffect.Velocity = hitVel;
+                                hitEffect.UserScale = scale * scaler;
+                                if (!MyUtils.IsZero(av.Hit.HitVelocity, 1E-01F))
+                                {
+                                    var hitVel = av.Hit.HitVelocity;
+                                    Vector3D.ClampToSphere(ref hitVel, (float)av.MaxSpeed);
+                                    KeensBrokenParticles.Add(new KeensMess { Effect = hitEffect, AmmoDef = av.AmmoDef, Velocity = hitVel, LastTick = Session.Tick });
+                                }
                             }
                         }
                     }
@@ -418,5 +446,24 @@ namespace WeaponCore.Support
         internal Weapon Weapon;
         internal Weapon.Muzzle Muzzle;
         internal uint StartTick;
+    }
+
+    internal class KeensMess
+    {
+        internal MyParticleEffect Effect;
+        internal WeaponDefinition.AmmoDef AmmoDef;
+        internal Vector3D Velocity;
+        internal uint LastTick;
+        internal bool Looping;
+
+        public void Clean()
+        {
+            Effect?.Stop();
+            Effect = null;
+            AmmoDef = null;
+            Velocity = Vector3D.Zero;
+            LastTick = 0;
+            Looping = false;
+        }
     }
 }
