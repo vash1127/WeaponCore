@@ -461,7 +461,7 @@ namespace WeaponCore.Projectiles
                 if (p.LineOrNotModel)
                 {
                     if (p.State == ProjectileState.OneAndDone)
-                        DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = 0, VisualLength = p.MaxTrajectory, TracerFront = p.Position});
+                        DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.MaxTrajectory, VisualLength = p.MaxTrajectory, TracerFront = p.Position});
                     else if (p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine)
                     {
                         if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
