@@ -390,6 +390,7 @@ namespace WeaponCore.Projectiles
                         line = true;
                 }
                 else {
+                    sphere = true;
                     p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
                     if (p.PruneSphere.Radius < p.Info.AmmoDef.Const.CollisionSize) {
                         p.PruneSphere.Center = p.Position;
@@ -404,7 +405,6 @@ namespace WeaponCore.Projectiles
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList, p.PruneQuery);
                     for (int i = 0; i < p.CheckList.Count; i++)
                         p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = p.CheckList[i] });
-
                     p.CheckList.Clear();
                 }
                 else if (line) {
