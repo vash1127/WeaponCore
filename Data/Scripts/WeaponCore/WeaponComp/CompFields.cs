@@ -42,7 +42,6 @@ namespace WeaponCore.Support
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
-        internal int Seed;
         //internal float MaxInventoryVolume;
         internal float PeakDps;
         internal float ShotsPerSec;
@@ -104,7 +103,6 @@ namespace WeaponCore.Support
             Ai = ai;
             Session = session;
             MyCube = myCube;
-            Seed = MyCube.EntityId.GetHashCode();
             Slim = myCube.SlimBlock;
             SubtypeHash = subtype;
 

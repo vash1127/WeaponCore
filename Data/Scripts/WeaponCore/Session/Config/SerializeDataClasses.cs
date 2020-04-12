@@ -404,6 +404,7 @@ namespace WeaponCore
         [ProtoMember(2)] internal long CompEntityId;
         [ProtoMember(3)] internal WeaponSyncValues SyncData;
         [ProtoMember(4)] internal WeaponTimings Timmings;
+        [ProtoMember(5)] internal WeaponRandomGenerator WeaponRng;
 
         public WeaponData() { }
     }

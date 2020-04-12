@@ -11,6 +11,8 @@ using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
+using System;
+
 namespace WeaponCore.Support
 {
     internal class ProInfo
@@ -30,12 +32,12 @@ namespace WeaponCore.Support
         internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D VisualDir;
+        internal Random WeaponRng;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
         internal int ObjectsHit;
         internal int Age;
-        internal int Seed;
         internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
@@ -302,7 +304,7 @@ namespace WeaponCore.Support
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Hit.HitPos) ? p.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
-                frag.Seed = p.Info.Seed;
+                frag.WeaponRng = p.Info.WeaponRng;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 frag.DeadSphere = p.DeadSphere;
@@ -357,7 +359,7 @@ namespace WeaponCore.Support
                 p.Info.MuzzleId = frag.MuzzleId;
                 p.Info.Origin = frag.Origin;
                 p.Info.OriginUp = frag.OriginUp;
-                p.Info.Seed = frag.Seed;
+                p.Info.WeaponRng = frag.WeaponRng;
                 p.Info.BaseDamagePool = frag.AmmoDef.BaseDamage;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Info.Direction = frag.Direction;
@@ -396,7 +398,7 @@ namespace WeaponCore.Support
         public BoundingSphereD DeadSphere;
         public int WeaponId;
         public int MuzzleId;
-        public int Seed;
+        public Random WeaponRng;
         internal bool Guidance;
     }
 }

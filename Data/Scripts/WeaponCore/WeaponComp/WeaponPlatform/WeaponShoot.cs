@@ -170,10 +170,12 @@ namespace WeaponCore.Platform
                         if (System.Values.HardPoint.DeviateShotAngle > 0)
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var randomFloat1 = MyUtils.GetRandomFloat(-System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
-                            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
+                            var rnd = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
+                            var angle = (double)System.Values.HardPoint.DeviateShotAngle;
+                            var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) - angle);
+                            var randomFloat2 = (float)(rnd.NextDouble() * MathHelper.TwoPi);
 
-                            muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3(
+                            muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(
                                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
                                     MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
                                     MyMath.FastCos(randomFloat1)), dirMatrix);
@@ -241,7 +243,7 @@ namespace WeaponCore.Platform
                                 p.Info.AreaEffectDamage = ammoPattern.Const.AreaEffectDamage;
                                 p.Info.WeaponCache = WeaponCache;
                                 p.Info.WeaponCache.VirutalId = -1;
-                                p.Info.Seed = Comp.Seed;
+                                p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
                                 p.Info.LockOnFireState = LockOnFireState;
                                 p.Info.ShooterVel = Comp.Ai.GridVel;
                                 p.Info.Origin = muzzle.Position;
@@ -368,7 +370,7 @@ namespace WeaponCore.Platform
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
             p.Info.DetonationDamage = ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
             p.Info.AreaEffectDamage = ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
-            p.Info.Seed = Comp.Seed;
+            p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
             p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;
 

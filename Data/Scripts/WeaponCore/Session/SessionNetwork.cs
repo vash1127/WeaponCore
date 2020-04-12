@@ -98,11 +98,13 @@ namespace WeaponCore
 
                                 Weapon weapon;
 
-                                if (weaponData.Timmings != null && weaponData.SyncData != null)
+                                if (weaponData.Timmings != null && weaponData.SyncData != null && weaponData.WeaponRng != null)
                                 {
                                     weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
                                     var timings = weaponData.Timmings.SyncOffsetClient(Tick);
                                     SyncWeapon(weapon, timings, ref weaponData.SyncData);
+
+                                    weapon.Comp.WeaponValues.WeaponRandom[weapon.WeaponId].Sync(weaponData.WeaponRng);
                                 }
 
                                 if (weaponData.TargetData != null)
@@ -941,6 +943,7 @@ namespace WeaponCore
                                             SyncData = w.State.Sync,
                                             Timmings = w.Timings.SyncOffsetServer(Tick),
                                             TargetData = comp.WeaponValues.Targets[j],
+                                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
                                         };
                                         
                                         gridPacket.Data.Add(weaponData);
@@ -1160,6 +1163,7 @@ namespace WeaponCore
                                             SyncData = w.State.Sync,
                                             Timmings = w.Timings.SyncOffsetServer(Tick),
                                             TargetData = comp.WeaponValues.Targets[j],
+                                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
                                         };
 
                                         gridPacket.Data.Add(weaponData);
@@ -1609,7 +1613,8 @@ namespace WeaponCore
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = null,
                     Timmings = null,
-                    SyncData = null
+                    SyncData = null,
+                    WeaponRng = null,
                 };
 
                 if (w.SendTarget && w.Comp.WeaponValues.Targets != null)
@@ -1617,10 +1622,17 @@ namespace WeaponCore
                 else if (w.SendTarget)
                     continue;
 
-                if (w.SendSync && w.Timings != null && w.State.Sync != null)
+                if (w.SendSync && w.Timings != null && w.State.Sync != null && w.Comp.WeaponValues.WeaponRandom != null)
                 {
                     weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
                     weaponSync.SyncData = w.State.Sync;
+
+                    var rand = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
+                    rand.RandomCurrentCounter = 0;
+                    rand.CurrentSeed = new Guid().GetHashCode();
+                    rand.WeaponRandom = new Random(rand.CurrentSeed);
+
+                    weaponSync.WeaponRng = rand;
                 }
                 else if(w.SendSync)
                     continue;

@@ -35,6 +35,7 @@ namespace WeaponCore
         [ProtoMember(11)] public int Version = Session.VersionControl;
         [ProtoMember(12)] public string CurrentBlockGroup;
         [ProtoMember(13)] public bool OtherPlayerTrackingReticle;
+        [ProtoMember(14)] public int RandIncAmount;
 
         public void Sync(CompStateValues syncFrom)
         {
@@ -222,12 +223,13 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public TransferTarget[] Targets;
         [ProtoMember(2)] public WeaponTimings[] Timings;
+        [ProtoMember(3)] public WeaponRandomGenerator[] WeaponRandom;
 
         public void Save(WeaponComponent comp)
         {
             if (comp.MyCube?.Storage == null) return;
 
-            var sv = new WeaponValues {Targets = Targets, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
+            var sv = new WeaponValues {Targets = Targets, WeaponRandom = WeaponRandom, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -257,6 +259,13 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[i];
                         var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
 
+                        var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
+                        rand.WeaponRandom = new Random(rand.CurrentSeed);
+                        for (int j = 0; j < rand.RandomCurrentCounter; j++)
+                            rand.WeaponRandom.Next();
+
+
+
                         comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false); }, null, 1);
                     }
                     return;
@@ -271,7 +280,8 @@ namespace WeaponCore
             comp.WeaponValues = new WeaponValues
             {
                 Targets = new TransferTarget[comp.Platform.Weapons.Length],
-                Timings = new WeaponTimings[comp.Platform.Weapons.Length]
+                Timings = new WeaponTimings[comp.Platform.Weapons.Length],
+                WeaponRandom = new WeaponRandomGenerator[comp.Platform.Weapons.Length],
             };
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -279,7 +289,10 @@ namespace WeaponCore
 
                 comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
                 w.Timings = comp.WeaponValues.Timings[w.WeaponId] = new WeaponTimings();
+                comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
 
+                var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
+                rand.WeaponRandom = new Random(rand.CurrentSeed);
 
                 comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false); }, null, 1);
             }
@@ -387,5 +400,22 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public long PlayerId;
         [ProtoMember(2)] public long EntityId;
+    }
+
+    [ProtoContract]
+    public class WeaponRandomGenerator
+    {
+        [ProtoMember(1)] public int RandomCurrentCounter;
+        [ProtoMember(2)] public int CurrentSeed;
+        public Random WeaponRandom;
+
+        public WeaponRandomGenerator() { }
+
+        public void Sync(WeaponRandomGenerator syncFrom)
+        {
+            RandomCurrentCounter = syncFrom.RandomCurrentCounter;
+            CurrentSeed = syncFrom.CurrentSeed;
+            WeaponRandom = new Random(CurrentSeed);
+        }
     }
 }
