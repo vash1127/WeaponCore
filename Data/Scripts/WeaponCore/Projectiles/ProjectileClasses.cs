@@ -13,6 +13,7 @@ using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.WeaponRandomGenerator.RandomType;
 using System;
+using System.Net.Configuration;
 
 namespace WeaponCore.Support
 {
@@ -316,6 +317,9 @@ namespace WeaponCore.Support
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 frag.DeadSphere = p.DeadSphere;
+                frag.LockOnFireState = p.Info.LockOnFireState;
+                frag.MaxTrajectory = p.Info.MaxTrajectory;
+                frag.ShotFade = p.Info.ShotFade;
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
@@ -374,6 +378,9 @@ namespace WeaponCore.Support
                 p.Info.Direction = frag.Direction;
                 p.DeadSphere = frag.DeadSphere;
                 p.StartSpeed = frag.Velocity;
+                p.Info.LockOnFireState = frag.LockOnFireState;
+                p.Info.MaxTrajectory = frag.MaxTrajectory;
+                p.Info.ShotFade = frag.ShotFade;
                 p.State = Projectiles.Projectile.ProjectileState.Start;
 
                 frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
@@ -410,6 +417,8 @@ namespace WeaponCore.Support
         public WeaponRandomGenerator WeaponRng;
         public bool Guidance;
         public bool ClientSent;
-
+        public bool LockOnFireState;
+        public double MaxTrajectory;
+        public float ShotFade;
     }
 }

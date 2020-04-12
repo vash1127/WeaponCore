@@ -186,7 +186,7 @@ namespace WeaponCore.Platform
 
                         if (!pattern.Enable || !pattern.Random)
                             patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndex;
-                        else{
+                        else {
                             if (pattern.TriggerChance >= rnd.TurretRandom.NextDouble() || pattern.TriggerChance >= 1)
                             {
                                 patternIndex = rnd.TurretRandom.Next(pattern.RandomMin, pattern.RandomMax);
@@ -194,7 +194,7 @@ namespace WeaponCore.Platform
                             }
                             else
                                 rnd.TurretCurrentCounter++;
-                            }
+                        }
 
 
                         if (pattern.Random)
