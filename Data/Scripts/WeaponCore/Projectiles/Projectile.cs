@@ -46,7 +46,7 @@ namespace WeaponCore.Projectiles
         internal BoundingSphereD DeadSphere;
         internal double AccelLength;
         internal double DistanceToTravelSqr;
-        internal double TracerLength;
+        //internal double TracerLength;
         internal double VelocityLengthSqr;
         internal double DistanceFromCameraSqr;
         internal double OffsetSqr;
@@ -57,7 +57,6 @@ namespace WeaponCore.Projectiles
         internal double MaxTrajectorySqr;
         internal double PrevEndPointToCenterSqr;
         internal float DesiredSpeed;
-        internal float MaxTrajectory;
         internal float BaseAmmoParticleScale;
         internal int ChaseAge;
         internal int FieldTime;
@@ -187,31 +186,31 @@ namespace WeaponCore.Projectiles
             }
             PrevTargetOffset = Vector3D.Zero;
 
+            var targetSpeed = (float)(!Info.AmmoDef.Const.IsBeamWeapon ? Info.AmmoDef.Trajectory.DesiredSpeed : Info.MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             if (Info.AmmoDef.Const.SpeedVariance && !Info.AmmoDef.Const.IsBeamWeapon)
             {
                 var min = Info.AmmoDef.Trajectory.SpeedVariance.Start;
                 var max = Info.AmmoDef.Trajectory.SpeedVariance.End;
                 var speedVariance = MyUtils.GetRandomFloat(min, max);
-                DesiredSpeed = Info.AmmoDef.Const.DesiredProjectileSpeed + speedVariance;
+                DesiredSpeed = targetSpeed + speedVariance;
             }
-            else DesiredSpeed = Info.AmmoDef.Const.DesiredProjectileSpeed;
+            else DesiredSpeed = targetSpeed;
 
             if (Info.AmmoDef.Const.RangeVariance)
             {
                 var min = Info.AmmoDef.Trajectory.RangeVariance.Start;
                 var max = Info.AmmoDef.Trajectory.RangeVariance.End;
-                MaxTrajectory = Info.AmmoDef.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
+                Info.MaxTrajectory = Info.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
             }
-            else MaxTrajectory = Info.AmmoDef.Trajectory.MaxTrajectory;
 
-            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Info.Direction * MaxTrajectory);
+            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Info.Direction * Info.MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
             Info.BaseHealthPool = Info.AmmoDef.Health;
-            TracerLength = Info.AmmoDef.Const.TracerLength;
+            Info.TracerLength = Info.AmmoDef.Const.TracerLength <= Info.MaxTrajectory ? Info.AmmoDef.Const.TracerLength : Info.MaxTrajectory;
 
-            MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
+            MaxTrajectorySqr = Info.MaxTrajectory * Info.MaxTrajectory;
 
             if (!Info.IsShrapnel) StartSpeed = Info.ShooterVel;
 
@@ -310,7 +309,7 @@ namespace WeaponCore.Projectiles
         {
             var ai = Info.Ai;
             LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
-            var lineTest = new LineD(Position, Position + (Info.Direction * MaxTrajectory));
+            var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory));
 
             for (int i = 0; i < Info.Ai.StaticsInRange.Count; i++)
             {
@@ -409,9 +408,9 @@ namespace WeaponCore.Projectiles
 
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
-            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - MaxTrajectory) : Position;
+            var endPos = hit ? Hit.HitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - Info.MaxTrajectory) : Position;
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
-            var avSize = useCollisionSize ? Info.AmmoDef.Const.CollisionSize : TracerLength;
+            var avSize = useCollisionSize ? Info.AmmoDef.Const.CollisionSize : Info.TracerLength;
             double remainingTracer;
             double stepSizeToHit;
             if (Info.AmmoDef.Const.IsBeamWeapon)
@@ -462,7 +461,7 @@ namespace WeaponCore.Projectiles
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
-                        beamEnd = vs.Origin + (vp.Info.Direction * MaxTrajectory);
+                        beamEnd = vs.Origin + (vp.Info.Direction * Info.MaxTrajectory);
                     else
                         beamEnd = vs.Origin + (vp.Info.Direction * Info.WeaponCache.HitDistance);
 

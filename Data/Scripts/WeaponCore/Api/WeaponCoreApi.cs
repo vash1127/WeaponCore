@@ -457,6 +457,7 @@ namespace WeaponCore.Api
                     [ProtoMember(4)] internal bool MuzzleCheck;
                     [ProtoMember(5)] internal bool Debug;
                 }
+
                 [ProtoContract]
                 public struct HardPointParticleDef
                 {
@@ -620,6 +621,8 @@ namespace WeaponCore.Api
                             [ProtoMember(2)] internal float Length;
                             [ProtoMember(3)] internal float Width;
                             [ProtoMember(4)] internal Vector4 Color;
+                            [ProtoMember(5)] internal uint VisualFadeStart;
+                            [ProtoMember(6)] internal uint VisualFadeEnd;
                         }
 
                         [ProtoContract]
@@ -776,6 +779,7 @@ namespace WeaponCore.Api
                     [ProtoMember(11)] internal SmartsDef Smarts;
                     [ProtoMember(12)] internal MinesDef Mines;
                     [ProtoMember(13)] internal float GravityMultiplier;
+                    [ProtoMember(14)] internal uint MaxTrajectoryTime;
 
                     [ProtoContract]
                     public struct SmartsDef

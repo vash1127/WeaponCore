@@ -40,10 +40,13 @@ namespace WeaponCore.Support
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal double ProjectileDisplacement;
+        internal double MaxTrajectory;
+        internal float ShotFade;
         internal float BaseDamagePool;
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
+        internal double TracerLength;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool LastHitShield;
@@ -103,6 +106,9 @@ namespace WeaponCore.Support
             MuzzleId = 0;
             Age = 0;
             ProjectileDisplacement = 0;
+            MaxTrajectory = 0;
+            ShotFade = 0;
+            TracerLength = 0;
             EnableGuidance = true;
             Direction = Vector3D.Zero;
             VisualDir = Vector3D.Zero;

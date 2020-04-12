@@ -43,6 +43,7 @@ namespace WeaponCore.Platform
         internal uint LastSyncTick;
         internal uint PosChangedTick = 1;
         internal double TimePerShot;
+
         internal int LoadId;
         internal int ShortLoadId;
         internal int BarrelRate;
@@ -107,11 +108,13 @@ namespace WeaponCore.Platform
         internal float Dps;
         internal float ShotEnergyCost;
         internal float LastHeat;
-        internal uint CeaseFireDelayTick = int.MaxValue;
+        internal uint CeaseFireDelayTick = uint.MaxValue;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
+        internal uint ShotExtentCount;
+        internal int FireCounter;
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;

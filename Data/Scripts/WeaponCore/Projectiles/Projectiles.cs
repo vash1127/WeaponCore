@@ -206,7 +206,7 @@ namespace WeaponCore.Projectiles
                         Vector3D newVel;
                         if (p.FieldTime > 0)
                         {
-                            var distToMax = p.MaxTrajectory - p.Info.DistanceTraveled;
+                            var distToMax = p.Info.MaxTrajectory - p.Info.DistanceTraveled;
 
                             var stopDist = p.VelocityLengthSqr / 2 / (p.StepPerSec);
                             if (distToMax <= stopDist)
@@ -236,7 +236,7 @@ namespace WeaponCore.Projectiles
                 if (p.State == ProjectileState.OneAndDone)
                 {
                     p.LastPosition = p.Position;
-                    var beamEnd = p.Position + (p.Info.Direction * p.MaxTrajectory);
+                    var beamEnd = p.Position + (p.Info.Direction * p.Info.MaxTrajectory);
                     p.TravelMagnitude = p.Position - beamEnd;
                     p.Position = beamEnd;
                 }
@@ -461,7 +461,7 @@ namespace WeaponCore.Projectiles
                 if (p.LineOrNotModel)
                 {
                     if (p.State == ProjectileState.OneAndDone)
-                        DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.MaxTrajectory, VisualLength = p.MaxTrajectory, TracerFront = p.Position});
+                        DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position});
                     else if (p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine)
                     {
                         if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
@@ -471,8 +471,8 @@ namespace WeaponCore.Projectiles
                     else
                     {
                         p.Info.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Info.Direction, (p.Velocity - p.StartSpeed) * StepConst));
-                        var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
-                        if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
+                        var displaceDiff = p.Info.ProjectileDisplacement - p.Info.TracerLength;
+                        if (p.Info.ProjectileDisplacement < p.Info.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
                             if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
                             else
@@ -484,13 +484,13 @@ namespace WeaponCore.Projectiles
                         {
                             if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
                             else
-                                DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.TracerLength, TracerFront = p.Position });
+                                DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position });
                         }
                     }
                 }
 
                 if (p.Info.ModelOnly)
-                    DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.TracerLength, TracerFront = p.Position});
+                    DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position});
 
                 if (p.Info.AmmoDef.Const.AmmoParticle)
                 {

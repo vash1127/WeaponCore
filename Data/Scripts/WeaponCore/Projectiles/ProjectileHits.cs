@@ -25,7 +25,7 @@ namespace WeaponCore.Projectiles
             var found = false;
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
             var planetBeam = beam;
-            planetBeam.To = p.Info.AmmoDef.Const.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
+            planetBeam.To = p.Info.AmmoDef.Const.IsBeamWeapon && p.Info.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
             p.EntitiesNear = false;
             bool projetileInShield = false;
             for (int i = 0; i < p.SegmentList.Count; i++) {
