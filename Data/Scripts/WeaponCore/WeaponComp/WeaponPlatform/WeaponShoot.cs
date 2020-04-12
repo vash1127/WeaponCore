@@ -172,7 +172,7 @@ namespace WeaponCore.Platform
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
                             
-                            var angle = (double)System.Values.HardPoint.DeviateShotAngle;
+                            var angle = System.Values.HardPoint.DeviateShotAngle;
                             var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) + angle);
                             var randomFloat2 = (float)(rnd.NextDouble() * MathHelper.TwoPi);
 
@@ -188,7 +188,7 @@ namespace WeaponCore.Platform
                         {
                             for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
                             {
-                                var y = MyUtils.GetRandomInt(w + 1);
+                                var y = rnd.Next(w + 1);
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[w] = ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y];
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y] = w;
                             }

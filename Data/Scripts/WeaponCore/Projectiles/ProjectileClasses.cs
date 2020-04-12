@@ -317,9 +317,8 @@ namespace WeaponCore.Support
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
-                var randomFloat1 = MyUtils.GetRandomFloat(0.0f, posValue);
-                var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
-
+                var randomFloat1 = (float)(frag.WeaponRng.NextDouble() * posValue);
+                var randomFloat2 = (float)(frag.WeaponRng.NextDouble() * MathHelper.TwoPi);
                 var mutli = p.Info.AmmoDef.Shrapnel.Reverse ? -1 : 1;
 
                 var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(
