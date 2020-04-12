@@ -164,7 +164,7 @@ namespace WeaponCore.Support
 
             [ProtoMember(1)] internal string WeaponName;
             [ProtoMember(2)] internal int DelayCeaseFire;
-            [ProtoMember(3)] internal float DeviateShotAngle;
+            [ProtoMember(3)] internal double DeviateShotAngle;
             [ProtoMember(4)] internal double AimingTolerance;
             [ProtoMember(5)] internal Prediction AimLeadingPrediction;
             [ProtoMember(6)] internal LoadingDef Loading;

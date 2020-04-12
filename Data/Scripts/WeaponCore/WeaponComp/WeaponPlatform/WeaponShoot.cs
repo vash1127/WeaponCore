@@ -171,8 +171,8 @@ namespace WeaponCore.Platform
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
                             var rnd = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
-                            var angle = (double)System.Values.HardPoint.DeviateShotAngle;
-                            var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) - angle);
+                            var angle = System.Values.HardPoint.DeviateShotAngle;
+                            var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) + angle);
                             var randomFloat2 = (float)(rnd.NextDouble() * MathHelper.TwoPi);
 
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(
