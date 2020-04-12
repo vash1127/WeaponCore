@@ -436,6 +436,8 @@ namespace WeaponCore.Support
         public readonly bool IsTurretSelectable;
         public readonly bool CanZombie;
         public readonly bool FeelsGravity;
+        public readonly bool MaxTrajectoryGrows;
+        public readonly bool HasShotFade;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -453,9 +455,10 @@ namespace WeaponCore.Support
         public readonly float DetDps;
         public readonly float PeakDps;
         public readonly float ShotsPerSec;
+        public readonly float MaxTrajectory;
+        public readonly float ShotFadeStep;
+        public readonly float TrajectoryStep;
 
-        public readonly double MaxTrajectory;
-        public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
         public readonly double AreaRadiusLarge;
         public readonly double AreaEffectSize;
@@ -519,7 +522,6 @@ namespace WeaponCore.Support
             FeelsGravity = ammo.AmmoDef.Trajectory.GravityMultiplier > 0;
 
             MaxTrajectory = ammo.AmmoDef.Trajectory.MaxTrajectory;
-            MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = ammo.AmmoDef.BackKickForce > 0;
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
@@ -540,9 +542,11 @@ namespace WeaponCore.Support
             GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             //GetParticleInfo(ammo, wDef, session);
 
-            DesiredProjectileSpeed = (float)(!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+            DesiredProjectileSpeed = (!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;
-
+            HasShotFade =  ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
+            MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
+            ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
         }
 
         internal void GetParticleInfo(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
@@ -569,6 +573,14 @@ namespace WeaponCore.Support
                     }
                 }
             }
+        }
+
+        private void ComputeSteps(WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
+        {
+            var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
+            shotFadeStep = 1f / changeFadeSteps;
+
+            trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
         private void ComputeAmmoPattern(WeaponAmmoTypes ammo, WeaponDefinition wDef, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern)

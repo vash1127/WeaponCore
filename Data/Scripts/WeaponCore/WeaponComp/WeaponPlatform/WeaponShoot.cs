@@ -124,7 +124,7 @@ namespace WeaponCore.Platform
                 if (ActiveAmmoDef.AmmoDef.Const.VirtualBeams) vProjectile = CreateVirtualProjectile();
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
                 var firingPlayer = Comp.State.Value.CurrentPlayerControl.PlayerId == Comp.Session.PlayerId;
-
+                FireCounter++;
                 
                 for (int i = 0; i < bps; i++)
                 {
@@ -248,13 +248,16 @@ namespace WeaponCore.Platform
                                 p.Info.ShooterVel = Comp.Ai.GridVel;
                                 p.Info.Origin = muzzle.Position;
                                 p.Info.OriginUp = MyPivotUp;
-                                p.PredictedTargetPos = Target.TargetPos;
                                 p.Info.Direction = muzzle.DeviatedDir;
+                                p.Info.MaxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
+                                p.Info.ShotFade = ammoPattern.Const.HasShotFade && FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart ? MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1) : 0;
+                                p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
+                                p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
+                                p.PredictedTargetPos = Target.TargetPos;
                                 p.DeadSphere.Center = MyPivotPos;
                                 p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
                                 p.State = Projectile.ProjectileState.Start;
-                                p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
-                                p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
+
                                 Comp.Session.Projectiles.ActiveProjetiles.Add(p);
 
                                 if (targetable)
@@ -307,14 +310,16 @@ namespace WeaponCore.Platform
                     {
                         uint delay = 0;
                         FinishBurst = false;
-                        if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) || System.DelayCeaseFire)
+                        //if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) || System.DelayCeaseFire)
+                        if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
                         {
+                            /*
                             if (System.DelayCeaseFire)
                             {
                                 CeaseFireDelayTick = tick + (uint)System.CeaseFireDelay;
                                 delay = (uint)System.CeaseFireDelay;
                             }
-
+                            */
                             session.FutureEvents.Schedule(o => 
                             {
                                 EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -324,11 +329,13 @@ namespace WeaponCore.Platform
                             }, null, delay);
                         }
                         else
-                        { 
                             EventTriggerStateChanged(EventTriggers.BurstReload, true);
+
+                        //if (IsShooting && !System.DelayCeaseFire)
+                        if (IsShooting)
+                        {
                             ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
-                            if(IsShooting)
-                                StopShooting();
+                            StopShooting();
                         }
 
                         if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
@@ -347,10 +354,7 @@ namespace WeaponCore.Platform
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
             }
-            catch (Exception e)
-            {
-                Log.Line($"Error in shoot: {e}");
-            }
+            catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
         }
 
         private Projectile CreateVirtualProjectile()
@@ -373,21 +377,23 @@ namespace WeaponCore.Platform
             p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
             p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;
+            p.Info.MaxTrajectory = ActiveAmmoDef.AmmoDef.Const.MaxTrajectoryGrows && FireCounter < ActiveAmmoDef.AmmoDef.Trajectory.MaxTrajectoryTime ? ActiveAmmoDef.AmmoDef.Const.TrajectoryStep * FireCounter : ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
+            p.Info.ShotFade = ActiveAmmoDef.AmmoDef.Const.HasShotFade && FireCounter >= ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart ? MathHelper.Clamp(FireCounter * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0 , 1) : 0;
+            p.Info.WeaponId = WeaponId;
+            p.Info.MuzzleId = -1;
+            p.Info.ShooterVel = Comp.Ai.GridVel;
+            p.Info.Origin = MyPivotPos;
+            p.Info.OriginUp = MyPivotUp;
+            p.Info.Direction = MyPivotDir;
+
+            p.PredictedTargetPos = Target.TargetPos;
+            p.DeadSphere.Center = MyPivotPos;
+            p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
+            p.State = Projectile.ProjectileState.Start;
 
             WeaponCache.VirtualHit = false;
             WeaponCache.Hits = 0;
             WeaponCache.HitEntity.Entity = null;
-            p.Info.WeaponId = WeaponId;
-            p.Info.MuzzleId = -1;
-
-            p.Info.ShooterVel = Comp.Ai.GridVel;
-            p.Info.Origin = MyPivotPos;
-            p.Info.OriginUp = MyPivotUp;
-            p.PredictedTargetPos = Target.TargetPos;
-            p.Info.Direction = MyPivotDir;
-            p.DeadSphere.Center = MyPivotPos;
-            p.DeadSphere.Radius = Comp.Ai.MyGrid.GridSizeHalf + 0.1;
-            p.State = Projectile.ProjectileState.Start;
 
             return p;
         }

@@ -320,7 +320,6 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-            CeaseFireDelayTick = Comp.Session.Tick;
             if (FiringEmitter != null) StartFiringSound();
             if (!IsShooting && !System.DesignatorWeapon)
             {
@@ -339,6 +338,7 @@ namespace WeaponCore.Platform
             StopPreFiringSound(false);
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
             CeaseFireDelayTick = uint.MaxValue;
+            FireCounter = 0;
             if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
             {
@@ -398,8 +398,9 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {
+            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
             if (reset) State.Sync.Reloading = false;
-            if (State.Sync.Reloading || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             FinishBurst = false;
             State.Sync.Reloading = true;
@@ -456,13 +457,13 @@ namespace WeaponCore.Platform
                 }
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+
                 if (ReloadSound == null)
                 {
                     Log.Line($"ReloadSound is null");
                     return;
                 }
                 ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
-
             }
         }
 

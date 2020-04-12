@@ -211,17 +211,20 @@ namespace WeaponCore
                                 /// Determine if its time to shoot
                                 ///
                                 /// 
-                                w.AiShooting = (w.Target.TargetLock || w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay) && !comp.UserControlled;
+                                w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                                 var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
                                 var canShoot = !w.State.Sync.Overheated && !reloading;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                                 var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
-                                var shoot = (validShootStates || manualShot || w.FinishBurst);
+                                var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
+                                var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
 
                                 w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus;
-
-                                if (canShoot && (shoot || w.LockOnFireState)) {
+                                if (canShoot && (shoot || w.LockOnFireState))
+                                {
+                                    if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
+                                        w.CeaseFireDelayTick = Tick;
 
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
@@ -247,13 +250,8 @@ namespace WeaponCore
                                         w.StopShooting(false, false);
                                     }
                                 }
-                                else if (w.IsShooting)  {
-
-                                    if (!w.System.DelayCeaseFire || !w.Target.IsAligned && Tick - w.CeaseFireDelayTick > w.System.CeaseFireDelay) 
-                                        w.StopShooting();
-                                    else if (w.System.DelayCeaseFire && w.Target.IsAligned) 
-                                        w.CeaseFireDelayTick = Tick;
-                                }
+                                else if (w.IsShooting)  
+                                    w.StopShooting();
                                 else if (w.BarrelSpinning)
                                     w.SpinBarrel(true);
 
