@@ -191,7 +191,7 @@ namespace WeaponCore.Projectiles
             {
                 var min = Info.AmmoDef.Trajectory.SpeedVariance.Start;
                 var max = Info.AmmoDef.Trajectory.SpeedVariance.End;
-                var speedVariance = MyUtils.GetRandomFloat(min, max);
+                var speedVariance = (float)Info.WeaponRng.NextDouble() * (max - min) + min;
                 DesiredSpeed = targetSpeed + speedVariance;
             }
             else DesiredSpeed = targetSpeed;
@@ -200,7 +200,7 @@ namespace WeaponCore.Projectiles
             {
                 var min = Info.AmmoDef.Trajectory.RangeVariance.Start;
                 var max = Info.AmmoDef.Trajectory.RangeVariance.End;
-                Info.MaxTrajectory = Info.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
+                Info.MaxTrajectory -= (float)Info.WeaponRng.NextDouble() * (max - min) + min;
             }
 
             if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Info.Direction * Info.MaxTrajectory);
@@ -741,7 +741,7 @@ namespace WeaponCore.Projectiles
                     {
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai == Info.Ai || netted.Info.Target.IsProjectile) continue;
-                        if (!Info.AmmoDef.Const.Pulse || MyUtils.GetRandomInt(0, 100) < Info.AmmoDef.Const.PulseChance)
+                        if (!Info.AmmoDef.Const.Pulse || Info.WeaponRng.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance)
                         {
                             Info.EwarActive = true;
                             netted.Info.Target.Projectile = this;
@@ -752,39 +752,39 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.PushField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() *  100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && MyUtils.GetRandomInt(0, 100) <= Info.AmmoDef.Const.PulseChance) {
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance) {
                         Info.EwarActive = true;
                     }
                     break;
@@ -867,8 +867,8 @@ namespace WeaponCore.Projectiles
 
         internal void OffSetTarget(bool roam = false)
         {
-            var randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
-            var randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
+            var randAzimuth = (Info.WeaponRng.NextDouble() * 1) * 2 * Math.PI;
+            var randElevation = ((Info.WeaponRng.NextDouble() * 1) * 2 - 1) * 0.5 * Math.PI;
 
             var offsetAmount = roam ? 100 : Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
             Vector3D randomDirection;
