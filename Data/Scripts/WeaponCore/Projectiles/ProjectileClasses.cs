@@ -357,6 +357,7 @@ namespace WeaponCore.Support
                 var p = frag.Ai.Session.Projectiles.ProjectilePool.Count > 0 ? frag.Ai.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
+                p.Info.Id = frag.Ai.Session.Projectiles.CurrentProjectileId++;
                 p.Info.AmmoDef = frag.AmmoDef;
                 p.Info.PrimeEntity = frag.PrimeEntity;
                 p.Info.TriggerEntity = frag.TriggerEntity;
