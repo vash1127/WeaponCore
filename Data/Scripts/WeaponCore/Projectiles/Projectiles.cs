@@ -40,34 +40,47 @@ namespace WeaponCore.Projectiles
 
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
+            Session.StallReporter.Start("FragmentsNeedingEntities", 32);
             if (Session.FragmentsNeedingEntities.Count > 0)
                 PrepFragmentEntities();
+            Session.StallReporter.End();
 
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
 
+            Session.StallReporter.Start("Clean&Spawn", 32);
             Clean();
             SpawnFragments();
 
             ActiveProjetiles.ApplyChanges();
+            Session.StallReporter.End();
 
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
 
+            Session.StallReporter.Start("UpdateState", 32);
             UpdateState();
+            Session.StallReporter.End();
 
+            Session.StallReporter.Start("CheckHits", 32);
             Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
+            Session.StallReporter.End();
         }
 
         internal void Stage2() // Methods highly inlined due to keen's mod profiler
         {
+            Session.StallReporter.Start("Stage2-TaskWait", 32);
             if (!Session.PTask.IsComplete)
                 Session.PTask.Wait();
 
             if (Session.PTask.IsComplete && Session.PTask.valid && Session.PTask.Exceptions != null)
                 Session.TaskHasErrors(ref Session.PTask, "PTask");
+            Session.StallReporter.End();
 
+            Session.StallReporter.Start("ConfirmHit", 32);
             ConfirmHit();
+            Session.StallReporter.End();
+
             if (!Session.DedicatedServer)
                 UpdateAv();
         }

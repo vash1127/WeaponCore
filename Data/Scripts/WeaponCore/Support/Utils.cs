@@ -4,10 +4,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Sandbox.Game.Entities;
-using VRage.Game.Entity;
-using static VRage.FastResourceLockExtensions;
-using VRage.Library.Collections;
 
 namespace WeaponCore.Support
 {
@@ -571,6 +567,39 @@ namespace WeaponCore.Support
         public List<T>.Enumerator GetEnumerator()
         {
             return _list.GetEnumerator();
+        }
+    }
+
+    internal class StallReporter
+    {
+        internal StallReporter(Session session)
+        {
+            Session = session;
+        }
+
+        private readonly Stopwatch Watch = new Stopwatch();
+        private readonly Session Session;
+        internal string Name;
+        internal double MaxMs;
+
+        public void Start(string name, double maxMs)
+        {
+            Name = name;
+            MaxMs = maxMs;
+            Watch.Restart();
+        }
+
+        public void End()
+        {
+            Watch.Stop();
+            var ticks = Watch.ElapsedTicks;
+            var ns = 1000000000.0 * ticks / Stopwatch.Frequency;
+            var ms = ns / 1000000.0;
+            if (ms > MaxMs)
+            {
+                var message = $"[Warning] {ms} milisecond delay detected in {Name}: ";
+                Log.LineShortDate(message);
+            }
         }
     }
 
