@@ -32,7 +32,7 @@ namespace WeaponCore.Support
         internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D VisualDir;
-        internal Random WeaponRng;
+        internal WeaponRandomGenerator WeaponRng;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
@@ -404,7 +404,7 @@ namespace WeaponCore.Support
         public BoundingSphereD DeadSphere;
         public int WeaponId;
         public int MuzzleId;
-        public Random WeaponRng;
+        public WeaponRandomGenerator WeaponRng;
         internal bool Guidance;
     }
 }

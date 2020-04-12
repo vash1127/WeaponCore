@@ -239,7 +239,8 @@ namespace WeaponCore
                                     if (w.Timings.ChargeDelayTicks == 0 || w.Timings.ChargeUntilTick <= Tick) {
 
                                         if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge && !w.System.DesignatorWeapon) {
-                                            gridAi.RequestedWeaponsDraw += w.RequiredPower;
+                                            if (!comp.UnlimitedPower)
+                                                gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
                                         }
 
@@ -326,7 +327,9 @@ namespace WeaponCore
                         {
                             w.OldUseablePower = w.UseablePower;
                             w.UseablePower = w.RequiredPower;
-                            w.DrawPower();
+                            if(!w.Comp.UnlimitedPower)
+                                w.DrawPower();
+
                             w.Timings.ChargeDelayTicks = 0;
                         }
 
@@ -350,10 +353,13 @@ namespace WeaponCore
                         w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                         w.Timings.ChargeUntilTick = w.Timings.ChargeDelayTicks + Tick;
 
-                        if (!w.DrawingPower)
-                            w.DrawPower();
-                        else
-                            w.DrawPower(true);
+                        if (!w.Comp.UnlimitedPower)
+                        {
+                            if (!w.DrawingPower)
+                                w.DrawPower();
+                            else
+                                w.DrawPower(true);
+                        }
                     }
                 }
             }
@@ -436,48 +442,51 @@ namespace WeaponCore
                 {
                     var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
                     var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
-                    var quickSkip = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot; 
+                    var quickSkip = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot;
                     if (quickSkip) continue;
 
-                    //TODO add logic for power priority
-                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                    if (!w.Comp.UnlimitedPower)
                     {
-
-                        if (w.Timings.ChargeDelayTicks == 0)
+                        //TODO add logic for power priority
+                        if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         {
-                            var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+
+                            if (w.Timings.ChargeDelayTicks == 0)
+                            {
+                                var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+                                w.OldUseablePower = w.UseablePower;
+                                w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
+
+                                if (w.DrawingPower)
+                                    w.DrawPower(true);
+                                else
+                                    w.DrawPower();
+
+                                w.Timings.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                                w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
+                                w.State.Sync.Charging = true;
+                            }
+                            else if (w.Timings.ChargeUntilTick <= Tick)
+                            {
+
+                                w.State.Sync.Charging = false;
+                                w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
+                            }
+                        }
+                        else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
+                        {
+
                             w.OldUseablePower = w.UseablePower;
-                            w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
-
-                            if (w.DrawingPower)
-                                w.DrawPower(true);
-                            else
-                                w.DrawPower();
-
-                            w.Timings.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                            w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
-                            w.State.Sync.Charging = true;
-                        }
-                        else if (w.Timings.ChargeUntilTick <= Tick)
-                        {
-
+                            w.UseablePower = w.RequiredPower;
+                            w.DrawPower(true);
+                            w.Timings.ChargeDelayTicks = 0;
                             w.State.Sync.Charging = false;
-                            w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
+                            w.ResetPower = false;
                         }
-                    }
-                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
-                    {
 
-                        w.OldUseablePower = w.UseablePower;
-                        w.UseablePower = w.RequiredPower;
-                        w.DrawPower(true);
-                        w.Timings.ChargeDelayTicks = 0;
-                        w.State.Sync.Charging = false;
-                        w.ResetPower = false;
+                        if (w.State.Sync.Charging)
+                            continue;
                     }
-
-                    if (w.State.Sync.Charging)
-                        continue;
 
                     if (w.Timings.ShootDelayTick <= Tick) w.Shoot();
 

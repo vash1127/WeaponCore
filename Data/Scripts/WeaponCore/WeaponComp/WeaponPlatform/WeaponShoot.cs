@@ -8,7 +8,7 @@ using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.WeaponRandomGenerator.RandomType;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 using System;
@@ -170,10 +170,9 @@ namespace WeaponCore.Platform
                         if (System.Values.HardPoint.DeviateShotAngle > 0)
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var rnd = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
-                            var angle = System.Values.HardPoint.DeviateShotAngle;
-                            var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) + angle);
-                            var randomFloat2 = (float)(rnd.NextDouble() * MathHelper.TwoPi);
+                            var rnd = Comp.WeaponValues.WeaponRandom[WeaponId];
+                            var randomFloat1 = rnd.GetRandomFloat(Deviation, -System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
+                            var randomFloat2 = rnd.GetRandomFloat(Deviation, 0, MathHelper.TwoPi);
 
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(
                                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
@@ -243,7 +242,7 @@ namespace WeaponCore.Platform
                                 p.Info.AreaEffectDamage = ammoPattern.Const.AreaEffectDamage;
                                 p.Info.WeaponCache = WeaponCache;
                                 p.Info.WeaponCache.VirutalId = -1;
-                                p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
+                                p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId];
                                 p.Info.LockOnFireState = LockOnFireState;
                                 p.Info.ShooterVel = Comp.Ai.GridVel;
                                 p.Info.Origin = muzzle.Position;
@@ -374,7 +373,7 @@ namespace WeaponCore.Platform
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
             p.Info.DetonationDamage = ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
             p.Info.AreaEffectDamage = ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
-            p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
+            p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId];
             p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;
             p.Info.MaxTrajectory = ActiveAmmoDef.AmmoDef.Const.MaxTrajectoryGrows && FireCounter < ActiveAmmoDef.AmmoDef.Trajectory.MaxTrajectoryTime ? ActiveAmmoDef.AmmoDef.Const.TrajectoryStep * FireCounter : ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;

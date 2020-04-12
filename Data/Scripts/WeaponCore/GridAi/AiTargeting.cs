@@ -14,6 +14,9 @@ using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using static WeaponCore.WeaponRandomGenerator.RandomType;
+using static WeaponCore.WeaponRandomGenerator;
+
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -85,7 +88,7 @@ namespace WeaponCore.Support
             var numOfTargets = ai.SortedTargets.Count;
             var hasOffset = offset > 0;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets, p.Info.WeaponRng);
+            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets, p.Info.WeaponRng, ReAcquire);
 
             for (int i = 0; i < adjTargetCount; i++)
             {
@@ -114,7 +117,7 @@ namespace WeaponCore.Support
                 {
                     if (!focusTarget && info.FatCount < 2) continue;
 
-                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, null, !focusTarget, p.Info.WeaponRng)) continue;
+                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, null, !focusTarget)) continue;
                     return true;
                 }
 
@@ -172,7 +175,7 @@ namespace WeaponCore.Support
             var hasOffset = offset > 0;
             var numOfTargets = ai.SortedTargets.Count;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.Comp.WeaponValues.WeaponRandom[w.WeaponId].WeaponRandom);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.Comp.WeaponValues.WeaponRandom[w.WeaponId], Acquire);
             try
             {
                 for (int x = 0; x < adjTargetCount; x++)
@@ -215,7 +218,7 @@ namespace WeaponCore.Support
                         }
                         else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w, true, w.Comp.WeaponValues.WeaponRandom[w.WeaponId].WeaponRandom)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.Comp.WeaponValues.WeaponRandom[w.WeaponId], Acquire, w, true)) continue;
 
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
@@ -253,7 +256,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null, bool checkPower = true, Random wRng = null)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -279,7 +282,7 @@ namespace WeaponCore.Support
                             target.LastBlockType = bt;
                             if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w, checkPower)) return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, checkPower)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type, checkPower)) return true;
                     }
 
                     if (focusSubSystem) break;
@@ -288,10 +291,10 @@ namespace WeaponCore.Support
                 if (system.OnlySubSystems || focusSubSystem && w.Comp.Set.Value.Overrides.SubSystem != Any) return false;
             }
             FatMap fatMap;
-            return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, checkPower);
+            return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, type, checkPower);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, Random wRng, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -319,7 +322,7 @@ namespace WeaponCore.Support
             }
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, wRng);
+            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, wRng, type);
             var physics = ai.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;
@@ -588,7 +591,7 @@ namespace WeaponCore.Support
             var weaponRangeSqr = w.MaxTargetDistanceSqr;
 
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.Comp.WeaponValues.WeaponRandom[w.WeaponId].WeaponRandom);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.Comp.WeaponValues.WeaponRandom[w.WeaponId], Acquire);
 
             for (int x = 0; x < numOfTargets; x++)
             {

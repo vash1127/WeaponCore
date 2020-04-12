@@ -798,7 +798,7 @@ namespace WeaponCore
             p.Info.AreaEffectDamage = weapon.ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
             p.Info.WeaponCache = weapon.WeaponCache;
             p.Info.WeaponCache.VirutalId = -1;
-            p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId].WeaponRandom;
+            p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
             p.Info.LockOnFireState = false;
             p.Info.ShooterVel = comp.Ai.GridVel;
             p.Info.Origin = origin;

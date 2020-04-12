@@ -17,6 +17,7 @@ using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.WeaponRandomGenerator;
 
 namespace WeaponCore.Support
 {
@@ -568,7 +569,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, Random rng)
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
         {
             var count = cardsToSort - firstCard;
             if (prevDeckLen < count)
@@ -579,7 +580,7 @@ namespace WeaponCore.Support
             
             for (int i = 0; i < count; i++)
             {
-                var j = i < cardsToShuffle ? rng.Next(i + 1) : i;
+                var j = i < cardsToShuffle ? rng.GetRandomInt(type, 0, i + 1) : i;
 
                 deck[i] = deck[j];
                 deck[j] = firstCard + i;

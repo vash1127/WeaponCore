@@ -1628,9 +1628,11 @@ namespace WeaponCore
                     weaponSync.SyncData = w.State.Sync;
 
                     var rand = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
-                    rand.RandomCurrentCounter = 0;
+                    rand.DeviationCurrentCounter = 0;
+                    rand.ReAcquireCurrentCounter = 0;
                     rand.CurrentSeed = new Guid().GetHashCode();
-                    rand.WeaponRandom = new Random(rand.CurrentSeed);
+                    rand.DeviationRandom = new Random(rand.CurrentSeed);
+                    rand.ReAcquireRandom = new Random(rand.CurrentSeed);
 
                     weaponSync.WeaponRng = rand;
                 }

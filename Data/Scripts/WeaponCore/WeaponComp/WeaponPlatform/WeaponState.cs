@@ -506,9 +506,8 @@ namespace WeaponCore.Platform
             Comp.Session.ChargingWeapons.Add(this);
             Comp.Session.ChargingWeaponsCheck.Add(this, Comp.Session.ChargingWeapons.Count - 1);
 
-            Comp.Ai.RequestedWeaponsDraw += RequiredPower;
-
-            Log.Line($"Comp.Ai.RequestedWeaponsDraw: {Comp.Ai.RequestedWeaponsDraw} Comp.Ai.GridMaxPower: {Comp.Ai.GridMaxPower}");
+            if(!Comp.UnlimitedPower)
+                Comp.Ai.RequestedWeaponsDraw += RequiredPower;
 
             Timings.ChargeUntilTick = syncCharge ? Timings.ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
