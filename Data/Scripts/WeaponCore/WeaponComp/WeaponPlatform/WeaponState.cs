@@ -398,8 +398,9 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {
+            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
             if (reset) State.Sync.Reloading = false;
-            if (State.Sync.Reloading || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             FinishBurst = false;
             State.Sync.Reloading = true;
@@ -456,13 +457,13 @@ namespace WeaponCore.Platform
                 }
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+
                 if (ReloadSound == null)
                 {
                     Log.Line($"ReloadSound is null");
                     return;
                 }
                 ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
-
             }
         }
 

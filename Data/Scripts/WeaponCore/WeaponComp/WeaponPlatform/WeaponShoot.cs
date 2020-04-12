@@ -352,10 +352,7 @@ namespace WeaponCore.Platform
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
             }
-            catch (Exception e)
-            {
-                Log.Line($"Error in shoot: {e}");
-            }
+            catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
         }
 
         private Projectile CreateVirtualProjectile()
