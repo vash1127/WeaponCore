@@ -26,7 +26,7 @@ namespace WeaponCore.Platform
                 var tick = session.Tick;
                 var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
                 var targetable = ActiveAmmoDef.AmmoDef.Health > 0 && !ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
-                var rnd = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
+                var rnd = Comp.WeaponValues.WeaponRandom[WeaponId];
 
                 #region Prefire
                 if (_ticksUntilShoot++ < System.DelayToFire)
@@ -171,7 +171,6 @@ namespace WeaponCore.Platform
                         if (System.Values.HardPoint.DeviateShotAngle > 0)
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var rnd = Comp.WeaponValues.WeaponRandom[WeaponId];
                             var randomFloat1 = rnd.GetRandomFloat(Deviation, -System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
                             var randomFloat2 = rnd.GetRandomFloat(Deviation, 0, MathHelper.TwoPi);
 
@@ -182,12 +181,12 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        var patternIndex = !pattern.Enable || !pattern.Random ? ActiveAmmoDef.AmmoDef.Const.PatternIndex : pattern.TriggerChance >= 1 || pattern.TriggerChance >= rnd.NextDouble() * 1f ? rnd.Next(pattern.RandomMin, pattern.RandomMax) : 1;
+                        var patternIndex = !pattern.Enable || !pattern.Random ? ActiveAmmoDef.AmmoDef.Const.PatternIndex : pattern.TriggerChance >= 1 || pattern.TriggerChance >= rnd.GetRandomFloat(Deviation, 0, 1) ? rnd.GetRandomInt(Deviation, pattern.RandomMin, pattern.RandomMax) : 1;
                         if (pattern.Random)
                         {
                             for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
                             {
-                                var y = rnd.Next(w + 1);
+                                var y = rnd.GetRandomInt(Deviation, 0, w + 1);
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[w] = ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y];
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y] = w;
                             }

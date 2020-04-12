@@ -11,6 +11,7 @@ using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.WeaponRandomGenerator.RandomType;
 using System;
 
 namespace WeaponCore.Support
@@ -317,8 +318,8 @@ namespace WeaponCore.Support
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
-                var randomFloat1 = (float)(frag.WeaponRng.NextDouble() * posValue);
-                var randomFloat2 = (float)(frag.WeaponRng.NextDouble() * MathHelper.TwoPi);
+                var randomFloat1 = frag.WeaponRng.GetRandomFloat(ReAcquire, 0, posValue);
+                var randomFloat2 = frag.WeaponRng.GetRandomFloat(ReAcquire, 0, MathHelper.TwoPi);
                 var mutli = p.Info.AmmoDef.Shrapnel.Reverse ? -1 : 1;
 
                 var shrapnelDir = Vector3.TransformNormal(mutli  * -new Vector3(
