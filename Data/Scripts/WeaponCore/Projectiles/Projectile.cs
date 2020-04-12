@@ -191,7 +191,8 @@ namespace WeaponCore.Projectiles
             {
                 var min = Info.AmmoDef.Trajectory.SpeedVariance.Start;
                 var max = Info.AmmoDef.Trajectory.SpeedVariance.End;
-                var speedVariance = (float)Info.WeaponRng.NextDouble() * (max - min) + min;
+                var speedVariance = (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
+                Info.WeaponRng.ClientProjectileCurrentCounter++;
                 DesiredSpeed = targetSpeed + speedVariance;
             }
             else DesiredSpeed = targetSpeed;
@@ -200,7 +201,8 @@ namespace WeaponCore.Projectiles
             {
                 var min = Info.AmmoDef.Trajectory.RangeVariance.Start;
                 var max = Info.AmmoDef.Trajectory.RangeVariance.End;
-                Info.MaxTrajectory -= (float)Info.WeaponRng.NextDouble() * (max - min) + min;
+                Info.MaxTrajectory -= (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
+                Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
 
             if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Info.Direction * Info.MaxTrajectory);
@@ -741,54 +743,57 @@ namespace WeaponCore.Projectiles
                     {
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai == Info.Ai || netted.Info.Target.IsProjectile) continue;
-                        if (!Info.AmmoDef.Const.Pulse || Info.WeaponRng.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance)
-                        {
+                        if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                        {                            
                             Info.EwarActive = true;
                             netted.Info.Target.Projectile = this;
                             netted.Info.Target.IsProjectile = true;
                             Seekers.Add(netted);
                         }
+
+                        Info.WeaponRng.ClientProjectileCurrentCounter++;
                     }
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.PushField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() *  100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() *  100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance) {
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse) {
                         Info.EwarActive = true;
                     }
                     break;
             }
+            Info.WeaponRng.ClientProjectileCurrentCounter++;
         }
 
 
@@ -867,8 +872,10 @@ namespace WeaponCore.Projectiles
 
         internal void OffSetTarget(bool roam = false)
         {
-            var randAzimuth = (Info.WeaponRng.NextDouble() * 1) * 2 * Math.PI;
-            var randElevation = ((Info.WeaponRng.NextDouble() * 1) * 2 - 1) * 0.5 * Math.PI;
+            var randAzimuth = (Info.WeaponRng.TurretRandom.NextDouble() * 1) * 2 * Math.PI;
+            var randElevation = ((Info.WeaponRng.TurretRandom.NextDouble() * 1) * 2 - 1) * 0.5 * Math.PI;
+
+            Info.WeaponRng.TurretCurrentCounter += 2;
 
             var offsetAmount = roam ? 100 : Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
             Vector3D randomDirection;

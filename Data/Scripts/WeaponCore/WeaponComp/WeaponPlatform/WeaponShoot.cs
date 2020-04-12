@@ -171,8 +171,9 @@ namespace WeaponCore.Platform
                         if (System.Values.HardPoint.DeviateShotAngle > 0)
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var randomFloat1 = rnd.GetRandomFloat(Deviation, -System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
-                            var randomFloat2 = rnd.GetRandomFloat(Deviation, 0, MathHelper.TwoPi);
+                            var randomFloat1 = (float)(rnd.TurretRandom.NextDouble() * (System.Values.HardPoint.DeviateShotAngle + System.Values.HardPoint.DeviateShotAngle) - System.Values.HardPoint.DeviateShotAngle);
+                            var randomFloat2 = (float)(rnd.TurretRandom.NextDouble() * MathHelper.TwoPi);
+                            rnd.TurretCurrentCounter += 2;
 
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(
                                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
@@ -181,12 +182,26 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        var patternIndex = !pattern.Enable || !pattern.Random ? ActiveAmmoDef.AmmoDef.Const.PatternIndex : pattern.TriggerChance >= 1 || pattern.TriggerChance >= rnd.GetRandomFloat(Deviation, 0, 1) ? rnd.GetRandomInt(Deviation, pattern.RandomMin, pattern.RandomMax) : 1;
+                        var patternIndex = 1;
+
+                        if (!pattern.Enable || !pattern.Random)
+                            patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndex;
+                        else{
+                            if (pattern.TriggerChance >= rnd.TurretRandom.NextDouble() || pattern.TriggerChance >= 1)
+                            {
+                                patternIndex = rnd.TurretRandom.Next(pattern.RandomMin, pattern.RandomMax);
+                                rnd.TurretCurrentCounter += 2;
+                            }
+                            else
+                                rnd.TurretCurrentCounter++;
+                            }
+
+
                         if (pattern.Random)
                         {
                             for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
                             {
-                                var y = rnd.GetRandomInt(Deviation, 0, w + 1);
+                                var y = rnd.TurretRandom.Next(w + 1);
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[w] = ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y];
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y] = w;
                             }

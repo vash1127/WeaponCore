@@ -577,10 +577,19 @@ namespace WeaponCore.Support
                 deck = new int[count];
                 prevDeckLen = count;
             }
-            
+
+            Random rnd;
+            if (type == RandomType.Acquire)
+                rnd = rng.AcquireRandom;
+            else
+            {
+                rnd = rng.ClientProjectileRandom;
+                rng.ClientProjectileCurrentCounter += count;
+            }
+
             for (int i = 0; i < count; i++)
             {
-                var j = i < cardsToShuffle ? rng.GetRandomInt(type, 0, i + 1) : i;
+                var j = i < cardsToShuffle ? rnd.Next(i + 1) : i;
 
                 deck[i] = deck[j];
                 deck[j] = firstCard + i;

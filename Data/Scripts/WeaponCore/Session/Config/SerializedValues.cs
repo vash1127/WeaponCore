@@ -260,14 +260,14 @@ namespace WeaponCore
                         var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
 
                         var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
-                        rand.ReAcquireRandom = new Random(rand.CurrentSeed);
-                        rand.DeviationRandom = new Random(rand.CurrentSeed);
+                        rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+                        rand.TurretRandom = new Random(rand.CurrentSeed);
 
-                        for (int j = 0; j < rand.DeviationCurrentCounter; j++)
-                            rand.DeviationRandom.Next();
+                        for (int j = 0; j < rand.TurretCurrentCounter; j++)
+                            rand.TurretRandom.Next();
 
-                        for (int j = 0; j < rand.ReAcquireCurrentCounter; j++)
-                            rand.ReAcquireRandom.Next();
+                        for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
+                            rand.ClientProjectileRandom.Next();
 
                         comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, wTiming, ref w.State.Sync, false); }, null, 1);
                     }
@@ -296,8 +296,8 @@ namespace WeaponCore
 
                 var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
                 rand.CurrentSeed = new Guid().GetHashCode();
-                rand.ReAcquireRandom = new Random(rand.CurrentSeed);
-                rand.DeviationRandom = new Random(rand.CurrentSeed);
+                rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+                rand.TurretRandom = new Random(rand.CurrentSeed);
                 rand.AcquireRandom = new Random(rand.CurrentSeed);
 
                 comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false); }, null, 1);
@@ -411,11 +411,11 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponRandomGenerator
     {
-        [ProtoMember(1)] public int DeviationCurrentCounter;
-        [ProtoMember(2)] public int ReAcquireCurrentCounter;
+        [ProtoMember(1)] public int TurretCurrentCounter;
+        [ProtoMember(2)] public int ClientProjectileCurrentCounter;
         [ProtoMember(3)] public int CurrentSeed;
-        public Random DeviationRandom = new Random();
-        public Random ReAcquireRandom = new Random();
+        public Random TurretRandom = new Random();
+        public Random ClientProjectileRandom = new Random();
         public Random AcquireRandom = new Random();
 
         public enum RandomType
@@ -431,64 +431,11 @@ namespace WeaponCore
         {
             CurrentSeed = syncFrom.CurrentSeed;
 
-            DeviationCurrentCounter = syncFrom.DeviationCurrentCounter;
-            ReAcquireCurrentCounter = syncFrom.ReAcquireCurrentCounter;
+            TurretCurrentCounter = syncFrom.TurretCurrentCounter;
+            ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
 
-            DeviationRandom = new Random(CurrentSeed);
-            ReAcquireRandom = new Random(CurrentSeed);
+            TurretRandom = new Random(CurrentSeed);
+            ClientProjectileRandom = new Random(CurrentSeed);
         }
-
-        public int GetRandomInt(RandomType type, int min = 0, int max = 0)
-        {
-            switch (type)
-            {
-                case RandomType.Deviation:
-                    DeviationCurrentCounter++;
-                    return DeviationRandom.Next(min, max);
-                case RandomType.ReAcquire:
-                    ReAcquireCurrentCounter++;
-                    return ReAcquireRandom.Next(min, max);
-                case RandomType.Acquire:
-                    return AcquireRandom.Next(min, max);
-                default:
-                    return 0;
-            }
-        }
-
-        public float GetRandomFloat (RandomType type, float min = 0, float max = 0)
-        {
-            switch (type)
-            {                
-                case RandomType.Deviation:
-                    DeviationCurrentCounter++;
-                    return (float)(DeviationRandom.NextDouble() * (max - min) + min);
-                case RandomType.ReAcquire:
-                    ReAcquireCurrentCounter++;
-                    return (float)(DeviationRandom.NextDouble() * (max - min) + min);
-                case RandomType.Acquire:
-                    return (float)(DeviationRandom.NextDouble() * (max - min) + min);
-                default:
-                    return 0;
-            }
-        }
-
-        public double GetRandomDouble(RandomType type, double min = 0, double max = 0)
-        {
-            switch (type)
-            {
-                case RandomType.Deviation:
-                    DeviationCurrentCounter++;
-                    return (DeviationRandom.NextDouble() * (max - min) + min);
-                case RandomType.ReAcquire:
-                    ReAcquireCurrentCounter++;
-                    return (DeviationRandom.NextDouble() * (max - min) + min);
-                case RandomType.Acquire:
-                    return (DeviationRandom.NextDouble() * (max - min) + min);
-                default:
-                    return 0;
-            }
-        }
-
-
     }
 }
