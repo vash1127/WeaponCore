@@ -26,6 +26,7 @@ namespace WeaponCore.Platform
                 var tick = session.Tick;
                 var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
                 var targetable = ActiveAmmoDef.AmmoDef.Health > 0 && !ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
+                var rnd = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
 
                 #region Prefire
                 if (_ticksUntilShoot++ < System.DelayToFire)
@@ -170,9 +171,9 @@ namespace WeaponCore.Platform
                         if (System.Values.HardPoint.DeviateShotAngle > 0)
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var rnd = Comp.WeaponValues.WeaponRandom[WeaponId].WeaponRandom;
+                            
                             var angle = (double)System.Values.HardPoint.DeviateShotAngle;
-                            var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) - angle);
+                            var randomFloat1 = (float)(rnd.NextDouble() * (angle + angle) + angle);
                             var randomFloat2 = (float)(rnd.NextDouble() * MathHelper.TwoPi);
 
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(
@@ -182,7 +183,7 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        var patternIndex = !pattern.Enable || !pattern.Random ? ActiveAmmoDef.AmmoDef.Const.PatternIndex : pattern.TriggerChance >= 1 || pattern.TriggerChance >= MyUtils.GetRandomDouble(0.0f, 1f) ? MyUtils.GetRandomInt(pattern.RandomMin, pattern.RandomMax) : 1;
+                        var patternIndex = !pattern.Enable || !pattern.Random ? ActiveAmmoDef.AmmoDef.Const.PatternIndex : pattern.TriggerChance >= 1 || pattern.TriggerChance >= rnd.NextDouble() * 1f ? rnd.Next(pattern.RandomMin, pattern.RandomMax) : 1;
                         if (pattern.Random)
                         {
                             for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)

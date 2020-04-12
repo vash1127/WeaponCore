@@ -213,7 +213,8 @@ namespace WeaponCore.Platform
                 }
                 else
                 {
-                    var topMostEnt = target.Entity?.GetTopMostParent();
+                    var cube = target.Entity as MyCubeBlock;
+                    var topMostEnt = cube != null ? cube.CubeGrid : target.Entity;
                     if (target.Projectile != null)
                     {
                         targetLinVel = target.Projectile.Velocity;
