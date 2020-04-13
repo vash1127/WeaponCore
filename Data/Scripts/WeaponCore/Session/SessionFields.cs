@@ -292,6 +292,7 @@ namespace WeaponCore
             LoadVanillaData();
 
             CoreWorkOpt.TaskType = CastProhibit(CoreWorkOpt.TaskType, 5);
+            CoreWorkOpt.MaximumThreads = 1;
 
             foreach (var suit in (PacketType[])Enum.GetValues(typeof(PacketType)))
                 PacketPools.Add(suit, new MyConcurrentPool<Packet>(128, packet => packet.CleanUp()));
