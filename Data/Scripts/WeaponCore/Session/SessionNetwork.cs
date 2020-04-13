@@ -1630,9 +1630,10 @@ namespace WeaponCore
                     var rand = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
                     rand.TurretCurrentCounter = 0;
                     rand.ClientProjectileCurrentCounter = 0;
-                    rand.CurrentSeed = new Guid().GetHashCode();
+                    rand.CurrentSeed = Guid.NewGuid().GetHashCode();
                     rand.TurretRandom = new Random(rand.CurrentSeed);
                     rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+                    rand.AcquireRandom = new Random(rand.CurrentSeed);
 
                     weaponSync.WeaponRng = rand;
                 }
