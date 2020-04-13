@@ -153,7 +153,6 @@ namespace WeaponCore.Support
             session.TargetRequests++;
             var physics = session.Physics;
             var weaponPos = w.MyPivotPos;
-            var weaponRange = w.MaxTargetDistance;
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -201,7 +200,8 @@ namespace WeaponCore.Support
 
                     if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
-                    if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > ((weaponRange + info.TargetRadius) * (weaponRange + info.TargetRadius))) continue;
+                    var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);
+                    if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
@@ -332,7 +332,7 @@ namespace WeaponCore.Support
             var foundBlock = false;
             var blocksChecked = 0;
             var blocksSighted = 0;
-            var weaponRangeSqr = turretCheck ? w.MaxTargetDistanceSqr : 0;
+
             for (int i = 0; i < totalBlocks; i++)
             {
                 if (turretCheck && (blocksChecked > lastBlocks || isPriroity && (blocksSighted > 100 || blocksChecked > 50 && ai.Session.RandomRayCasts > 500 || blocksChecked > 25 && ai.Session.RandomRayCasts > 1000) ))
@@ -351,7 +351,7 @@ namespace WeaponCore.Support
                 {
                     double distSqr;
                     Vector3D.DistanceSquared(ref blockPos, ref weaponPos, out distSqr);
-                    if (distSqr > weaponRangeSqr)
+                    if (distSqr > w.MaxTargetDistanceSqr || distSqr < w.MinTargetDistanceSqr)
                         continue;
 
                     blocksChecked++;
@@ -588,8 +588,6 @@ namespace WeaponCore.Support
                 }
             }
 
-            var weaponRangeSqr = w.MaxTargetDistanceSqr;
-
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.Comp.WeaponValues.WeaponRandom[w.WeaponId], Acquire);
 
@@ -597,7 +595,7 @@ namespace WeaponCore.Support
             {
                 var card = deck[x];
                 var lp = collection[card];
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > weaponRangeSqr) continue;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) < w.MinTargetDistanceSqr) continue;
 
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))

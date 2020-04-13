@@ -96,6 +96,7 @@ namespace WeaponCore.Projectiles
         internal bool LineOrNotModel;
         internal bool EntitiesNear;
         internal bool FakeGravityNear;
+        internal bool HadTarget;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -143,6 +144,7 @@ namespace WeaponCore.Projectiles
             AtMaxRange = false;
             ShieldBypassed = false;
             FakeGravityNear = false;
+            HadTarget = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -587,6 +589,7 @@ namespace WeaponCore.Projectiles
                 var isZombie = Info.AmmoDef.Const.CanZombie && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((PickTarget || gaveUpChase && validTarget || isZombie) && NewTarget() || validTarget)
                 {
+                    HadTarget = true;
                     if (ZombieLifeTime > 0)
                     {
                         ZombieLifeTime = 0;
@@ -638,14 +641,13 @@ namespace WeaponCore.Projectiles
                 else
                 {
                     PrevTargetPos = PredictedTargetPos;
-
-                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime)
+                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget))
                     {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
                         EarlyEnd = true;
                     }
 
-                    if (Info.Age - LastOffsetTime > 300)
+                    if (Info.Age - LastOffsetTime > 300 && HadTarget)
                     {
                         double dist;
                         Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);

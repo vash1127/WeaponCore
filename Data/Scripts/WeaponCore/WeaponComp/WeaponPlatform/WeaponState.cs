@@ -622,6 +622,8 @@ namespace WeaponCore.Platform
             var weaponRange = Math.Min(hardPointMax, ammoMax);
             MaxTargetDistance = Math.Min(range, weaponRange);
             MaxTargetDistanceSqr = MaxTargetDistance * MaxTargetDistance;
+            MinTargetDistance = System.Values.Targeting.MinTargetDistance;
+            MinTargetDistanceSqr = MinTargetDistance * MinTargetDistance;
         }
 
         public void StartPreFiringSound()

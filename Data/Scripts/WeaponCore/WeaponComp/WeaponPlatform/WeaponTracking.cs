@@ -29,7 +29,7 @@ namespace WeaponCore.Platform
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
-            var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr;
+            var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
             bool canTrack;
 
@@ -82,14 +82,17 @@ namespace WeaponCore.Platform
             obb.Center = targetPos;
             weapon.TargetBox = obb;
 
-            var maxRangeSqr = obb.HalfExtent.AbsMax() + weapon.MaxTargetDistance;
+            var obbAbsMax = obb.HalfExtent.AbsMax();
+            var maxRangeSqr = obbAbsMax + weapon.MaxTargetDistance;
+            var minRangeSqr = obbAbsMax + weapon.MinTargetDistance;
 
             maxRangeSqr *= maxRangeSqr;
+            minRangeSqr *= minRangeSqr;
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
             bool canTrack = false;
-            if (rangeToTarget <= maxRangeSqr)
+            if (rangeToTarget <= maxRangeSqr && rangeToTarget >= minRangeSqr)
             {
                 var targetDir = targetPos - weapon.MyPivotPos;
                 if (weapon == trackingWeapon)
@@ -168,7 +171,7 @@ namespace WeaponCore.Platform
 
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
-            var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr;
+            var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
             var isAligned = (inRange || weapon.Comp.TrackReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
@@ -230,7 +233,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
             var targetDir = targetPos - weapon.MyPivotPos;
             var locked = true;
-            if (weapon.Comp.TrackReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr)
+            if (weapon.Comp.TrackReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr)
             {
                 var maxAzimuthStep = system.AzStep;
                 var maxElevationStep = system.ElStep;

@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                 var comp = w.Comp;
                 var ai = comp.Ai;
 
-                return ThreatRangeSqr <= w.MaxTargetDistanceSqr || ai.Focus.HasFocus;
+                return ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr || ai.Focus.HasFocus;
             }
 
             internal void Clean()
@@ -483,28 +483,6 @@ namespace WeaponCore.Support
             var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
             if (topMostParent != null)
             {
-                /*
-                var hasOwner = topMostParent.BigOwners.Count != 0;
-                MyRelationsBetweenPlayerAndBlock relationship;
-                
-                if (hasOwner)
-                {
-                    var topOwner = topMostParent.BigOwners[0];
-                    relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction);
-
-                    if (relationship == MyRelationsBetweenPlayerAndBlock.Neutral)
-                    {
-                        var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
-                        if (topFaction != null)
-                        {
-                            var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(gridOwner);
-                            if (aiFaction != null && MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(aiFaction.FactionId, topFaction.FactionId) < -500)
-                                relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
-                        }
-                    }
-                }
-                else relationship = MyRelationsBetweenPlayerAndBlock.Owner;
-                */
                 MyRelationsBetweenPlayerAndBlock relationship;
                 if (topMostParent.BigOwners.Count > 0)
                 {
@@ -521,7 +499,7 @@ namespace WeaponCore.Support
                                 relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
                             else if (rep < -500)
                                 relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
-                            else if (rep <= 0)
+                            else if (rep <= 500)
                                 relationship = MyRelationsBetweenPlayerAndBlock.Neutral;
                             else relationship = MyRelationsBetweenPlayerAndBlock.Friends;
                         }
@@ -899,59 +877,53 @@ namespace WeaponCore.Support
                     }
                 }
 
-                try
+                if (Weapons.Count > 0)
                 {
-                    using (FakeShipController.CubeGrid?.Pin())
+                    var cube = Weapons[Weapons.Count - 1].MyCube;
+                    using (cube.Pin())
                     {
-                        if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
+                        if (cube.MarkedForClose || cube.SlimBlock == null || ((IMySlimBlock)cube.SlimBlock).IsDestroyed)
                         {
-                            try
-                            {
-                                if (Weapons.Count > 0)
-                                {
-                                    var cube = Weapons[Weapons.Count - 1].MyCube;
-                                    if (cube != null)
-                                    {
-                                        using (cube.Pin())
-                                        {
-                                            if (cube.MarkedForClose || cube.CubeGrid.MarkedForClose && cube.SlimBlock != null)
-                                            {
-                                                Log.Line($"powerDist cube is not ready");
-                                                return;
-                                            }
-                                            FakeShipController.SlimBlock = cube.SlimBlock;
-                                            PowerDistributor = FakeShipController.GridResourceDistributor;
-                                            if (PowerDistributor == null)
-                                                return;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Log.Line($"powerDist cube is null");
-                                        return;
-                                    }
-                                }
-                                else return;
-                            }
-                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - probable null!"); }
-                        }
-
-                        if (PowerDistributor == null)
-                        {
-                            Log.Line($"powerDist is null - check 1");
+                            Log.Line($"powerDist cube is not ready");
                             return;
                         }
 
-                        try
+                        using (cube.CubeGrid.Pin())
                         {
-                            GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
-                            GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                            if (cube.CubeGrid.MarkedForClose)
+                            {
+                                Log.Line("cubes cubegrid is marked for close");
+                                return;
+                            }
+                            try
+                            {
+                                if (FakeShipController.CubeGrid != cube.CubeGrid || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
+                                {
+                                    FakeShipController.SlimBlock = cube.SlimBlock;
+                                    PowerDistributor = FakeShipController.GridResourceDistributor;
+                                }
+                                if (PowerDistributor == null)
+                                {
+                                    Log.Line($"powerDist is null");
+                                    return;
+                                }
+
+                                try
+                                {
+                                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                                }
+                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
+                            }
+                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - unlikely null!"); }
                         }
-                        catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
                     }
                 }
-                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - unlikely null!"); }
-
+                else
+                {
+                    Log.Line($"no valid weapon in powerDist");
+                    return;
+                }
 
                 GridAvailablePower = GridMaxPower - GridCurrentPower;
 

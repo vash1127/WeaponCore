@@ -364,6 +364,9 @@ namespace WeaponCore.Projectiles
                     }
                     else
                         p.State = ProjectileState.Detonate;
+                    
+                    p.Hit.HitPos = p.Position;
+
                 }
 
                 var sphere = false;

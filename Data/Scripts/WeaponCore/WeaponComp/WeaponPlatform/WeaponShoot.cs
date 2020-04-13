@@ -264,7 +264,19 @@ namespace WeaponCore.Platform
                                 p.Info.OriginUp = MyPivotUp;
                                 p.Info.Direction = muzzle.DeviatedDir;
                                 p.Info.MaxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
-                                p.Info.ShotFade = ammoPattern.Const.HasShotFade && FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart ? MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1) : 0;
+                                
+                                float shotFade;
+                                if (ammoPattern.Const.HasShotFade)
+                                {
+                                    if (FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                                        shotFade = MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
+                                    else if (System.DelayCeaseFire && CeaseFireDelayTick != tick)
+                                        shotFade = MathHelper.Clamp(((tick - CeaseFireDelayTick) - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart) * ammoPattern.Const.ShotFadeStep, 0, 1);
+                                    else shotFade = 0;
+                                }
+                                else shotFade = 0;
+                                p.Info.ShotFade = shotFade;
+
                                 p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
                                 p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                                 p.PredictedTargetPos = Target.TargetPos;
@@ -392,7 +404,19 @@ namespace WeaponCore.Platform
             p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;
             p.Info.MaxTrajectory = ActiveAmmoDef.AmmoDef.Const.MaxTrajectoryGrows && FireCounter < ActiveAmmoDef.AmmoDef.Trajectory.MaxTrajectoryTime ? ActiveAmmoDef.AmmoDef.Const.TrajectoryStep * FireCounter : ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
-            p.Info.ShotFade = ActiveAmmoDef.AmmoDef.Const.HasShotFade && FireCounter >= ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart ? MathHelper.Clamp(FireCounter * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0 , 1) : 0;
+            
+            float shotFade;
+            if (ActiveAmmoDef.AmmoDef.Const.HasShotFade)
+            {
+                if (FireCounter > ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                    shotFade = MathHelper.Clamp(((FireCounter - ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0, 1);
+                else if (System.DelayCeaseFire && CeaseFireDelayTick != Comp.Ai.Session.Tick)
+                    shotFade = MathHelper.Clamp(((Comp.Ai.Session.Tick - CeaseFireDelayTick) - ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart) * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0, 1);
+                else shotFade = 0;
+            }
+            else shotFade = 0;
+            p.Info.ShotFade = shotFade;
+
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
             p.Info.ShooterVel = Comp.Ai.GridVel;
@@ -474,7 +498,8 @@ namespace WeaponCore.Platform
             }
 
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
-            if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > MaxTargetDistanceSqr)
+            var distToTargetSqr = Vector3D.DistanceSquared(targetPos, MyPivotPos);
+            if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);

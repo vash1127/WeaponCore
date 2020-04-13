@@ -65,6 +65,7 @@ namespace WeaponCore.Support
             [ProtoMember(7)] internal BlockTypes[] SubSystems;
             [ProtoMember(8)] internal Threat[] Threats;
             [ProtoMember(9)] internal float MaxTargetDistance;
+            [ProtoMember(10)] internal float MinTargetDistance;
         }
 
 
@@ -588,6 +589,7 @@ namespace WeaponCore.Support
                     [ProtoMember(5)] internal int MaxChaseTime;
                     [ProtoMember(6)] internal bool OverideTarget;
                     [ProtoMember(7)] internal int MaxTargets;
+                    [ProtoMember(8)] internal bool NoTargetExpire;
                 }
 
                 [ProtoContract]
