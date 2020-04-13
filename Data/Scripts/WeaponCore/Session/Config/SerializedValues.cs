@@ -295,7 +295,7 @@ namespace WeaponCore
                 comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
 
                 var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
-                rand.CurrentSeed = new Guid().GetHashCode();
+                rand.CurrentSeed = Guid.NewGuid().GetHashCode();
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
                 rand.AcquireRandom = new Random(rand.CurrentSeed);
