@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using ParallelTasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Profiler;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -63,7 +65,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 32);
-            Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
+            Session.PTask = MyAPIGateway.Parallel.Start(CheckHits, Session.CoreWorkOpt);
             Session.StallReporter.End();
         }
 

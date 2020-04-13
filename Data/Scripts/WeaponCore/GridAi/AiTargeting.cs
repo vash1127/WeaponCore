@@ -229,7 +229,7 @@ namespace WeaponCore.Support
                     if (meteor != null && !s.TrackMeteors) continue;
 
                     var character = info.Target as IMyCharacter;
-                    if (character != null && !s.TrackCharacters || character.IsDead || session.AdminMap.ContainsKey(character)) continue;
+                    if (character != null && !s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character)) continue;
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
