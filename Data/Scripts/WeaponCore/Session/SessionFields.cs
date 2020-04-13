@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using ParallelTasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -176,7 +177,7 @@ namespace WeaponCore
         internal Task NTask = new Task();
         internal Task MTask = new Task();
         internal Task CTask = new Task();
-
+        internal WorkOptions CoreWorkOpt = new WorkOptions();
         internal string TriggerEntityModel;
         internal object InitObj = new object();
 
@@ -268,6 +269,8 @@ namespace WeaponCore
             }
         }
 
+        public T CastProhibit<T>(T ptr, object val) => (T)val;
+
         public Session()
         {
             UiInput = new UiInput(this);
@@ -287,6 +290,9 @@ namespace WeaponCore
             HeatEmissives = CreateHeatEmissive();
 
             LoadVanillaData();
+
+            CoreWorkOpt.TaskType = CastProhibit(CoreWorkOpt.TaskType, 5);
+            CoreWorkOpt.MaximumThreads = 1;
 
             foreach (var suit in (PacketType[])Enum.GetValues(typeof(PacketType)))
                 PacketPools.Add(suit, new MyConcurrentPool<Packet>(128, packet => packet.CleanUp()));

@@ -318,8 +318,6 @@ namespace WeaponCore.Support
                 frag.Velocity = p.Velocity;
                 frag.DeadSphere = p.DeadSphere;
                 frag.LockOnFireState = p.Info.LockOnFireState;
-                frag.MaxTrajectory = p.Info.MaxTrajectory;
-                frag.ShotFade = p.Info.ShotFade;
                 var dirMatrix = Matrix.CreateFromDir(p.Info.Direction);
                 var posValue = MathHelper.ToRadians(MathHelper.Clamp(p.Info.AmmoDef.Shrapnel.Degrees, 0, 360));
                 posValue *= 0.5f;
@@ -359,6 +357,7 @@ namespace WeaponCore.Support
                 var p = frag.Ai.Session.Projectiles.ProjectilePool.Count > 0 ? frag.Ai.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
+                p.Info.Id = frag.Ai.Session.Projectiles.CurrentProjectileId++;
                 p.Info.AmmoDef = frag.AmmoDef;
                 p.Info.PrimeEntity = frag.PrimeEntity;
                 p.Info.TriggerEntity = frag.TriggerEntity;
@@ -379,8 +378,8 @@ namespace WeaponCore.Support
                 p.DeadSphere = frag.DeadSphere;
                 p.StartSpeed = frag.Velocity;
                 p.Info.LockOnFireState = frag.LockOnFireState;
-                p.Info.MaxTrajectory = frag.MaxTrajectory;
-                p.Info.ShotFade = frag.ShotFade;
+                p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
+                p.Info.ShotFade = 0;
                 p.State = Projectiles.Projectile.ProjectileState.Start;
 
                 frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
@@ -418,7 +417,5 @@ namespace WeaponCore.Support
         public bool Guidance;
         public bool ClientSent;
         public bool LockOnFireState;
-        public double MaxTrajectory;
-        public float ShotFade;
     }
 }

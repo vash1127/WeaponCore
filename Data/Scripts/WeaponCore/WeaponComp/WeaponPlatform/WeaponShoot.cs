@@ -450,7 +450,7 @@ namespace WeaponCore.Platform
             if (!Target.IsProjectile)
             {
                 var character = Target.Entity as IMyCharacter;
-                if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && (Comp.Session.AdminMap.ContainsKey(character) || character.IsDead))
+                if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && (Comp.Session.AdminMap.ContainsKey(character) || character.IsDead || character.Integrity <= 0))
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);

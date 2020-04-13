@@ -71,7 +71,7 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
-            var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
+            var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrixRef);
             var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
             if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
@@ -122,12 +122,20 @@ namespace WeaponCore.Platform
         {
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
+            Vector3D targetCenter;
 
-            var targetCenter = weapon.Comp.TrackReticle ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
-            var needsPrediction = weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0);
+            if (weapon.Comp.TrackReticle)
+                targetCenter = weapon.Comp.Ai.DummyTarget.Position;
+            else if (target.IsProjectile)
+                targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
+            else if (!target.IsFakeTarget)
+                targetCenter = target.Entity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
+            else
+                targetCenter = Vector3D.Zero;
 
-            if (needsPrediction)
+            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
+
                 if (weapon.Comp.TrackReticle)
                 {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
@@ -135,7 +143,9 @@ namespace WeaponCore.Platform
                 }
                 else
                 {
-                    var topMostEnt = target.Entity?.GetTopMostParent();
+                    var cube = target.Entity as MyCubeBlock;
+                    var topMostEnt = cube != null ? cube.CubeGrid : target.Entity;
+
                     if (target.Projectile != null)
                     {
                         targetLinVel = target.Projectile.Velocity;
@@ -147,7 +157,6 @@ namespace WeaponCore.Platform
                         targetAccel = topMostEnt.Physics.LinearAcceleration;
                     }
                 }
-
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel);
@@ -183,45 +192,27 @@ namespace WeaponCore.Platform
             if (weapon.Comp.TrackReticle)
                 targetCenter = weapon.Comp.Ai.DummyTarget.Position;
             else if (target.IsProjectile)
-            {
-                if (target.Projectile == null)
-                {
-                    Log.Line($"TrackingTarget: is projectile and it is null");
-                    targetCenter = Vector3D.Zero;
-                }
-                else targetCenter = target.Projectile.Position;
-            }
+                targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
-            {
-                if (target.Entity == null)
-                {
-                    Log.Line($"TrackingTarget: is entity and it is null");
-                    targetCenter = Vector3D.Zero;
-                }
-                else targetCenter = target.Entity.PositionComp.WorldAABB.Center;
-            }
+                targetCenter = target.Entity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
             else
                 targetCenter = Vector3D.Zero;
+            
+            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)) {
 
-            var needsPrediction = weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0);
-            if (needsPrediction)
-            {
-                if (weapon.Comp.TrackReticle)
-                {
+                if (weapon.Comp.TrackReticle) {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
                     targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
                 }
-                else
-                {
+                else {
                     var cube = target.Entity as MyCubeBlock;
                     var topMostEnt = cube != null ? cube.CubeGrid : target.Entity;
-                    if (target.Projectile != null)
-                    {
+                    
+                    if (target.Projectile != null) {
                         targetLinVel = target.Projectile.Velocity;
                         targetAccel = target.Projectile.AccelVelocity;
                     }
-                    else if (topMostEnt?.Physics != null)
-                    {
+                    else if (topMostEnt?.Physics != null) {
                         targetLinVel = topMostEnt.Physics.LinearVelocity;
                         targetAccel = topMostEnt.Physics.LinearAcceleration;
                     }

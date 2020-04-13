@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using ParallelTasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Profiler;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -63,7 +65,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 32);
-            Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
+            Session.PTask = MyAPIGateway.Parallel.Start(CheckHits, Session.CoreWorkOpt);
             Session.StallReporter.End();
         }
 
@@ -390,6 +392,7 @@ namespace WeaponCore.Projectiles
                         line = true;
                 }
                 else {
+                    sphere = true;
                     p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
                     if (p.PruneSphere.Radius < p.Info.AmmoDef.Const.CollisionSize) {
                         p.PruneSphere.Center = p.Position;
@@ -404,7 +407,6 @@ namespace WeaponCore.Projectiles
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList, p.PruneQuery);
                     for (int i = 0; i < p.CheckList.Count; i++)
                         p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = p.CheckList[i] });
-
                     p.CheckList.Clear();
                 }
                 else if (line) {
