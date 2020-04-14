@@ -746,7 +746,7 @@ namespace WeaponCore.Projectiles
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai == Info.Ai || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
-                        {                            
+                        {                  
                             Info.EwarActive = true;
                             netted.Info.Target.Projectile = this;
                             netted.Info.Target.IsProjectile = true;

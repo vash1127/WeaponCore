@@ -103,7 +103,6 @@ namespace WeaponCore.Projectiles
                             }
 
                             if (p.LinePlanetCheck) {
-                                var check = false;
                                 var surfacePos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
                                 var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
                                 double surfaceToCenter;
@@ -116,9 +115,7 @@ namespace WeaponCore.Projectiles
                                 var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
                                 Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
 
-                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
-                                
-                                if (check) {
+                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
                                     using (voxel.Pin())
                                         voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit);
                                 }
