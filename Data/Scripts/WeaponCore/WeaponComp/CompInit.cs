@@ -99,7 +99,7 @@ namespace WeaponCore.Support
         {
             using (MyCube?.Pin())
             {
-                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose || Platform.State == MyWeaponPlatform.PlatformState.Invalid || Platform?.Weapons?.Length == 0 || BlockInventory == null) return;
+                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose || Platform == null || Platform.State == MyWeaponPlatform.PlatformState.Invalid || Platform.Weapons?.Length == 0 || BlockInventory == null) return;
                 
 
                 if (MyCube is IMyConveyorSorter || BlockInventory.Constraint == null) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
@@ -107,20 +107,23 @@ namespace WeaponCore.Support
                 BlockInventory.Constraint.m_useDefaultIcon = false;
                 BlockInventory.ResetVolume();
                 BlockInventory.Refresh();
-
                 BlockInventory.Constraint.Clear();
 
                 var maxInventoryVolume = 0f;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
+                    
                     var w = Platform.Weapons[i];
 
                     if (w == null) continue;
 
-                    for (int j = 0; j < w.System.WeaponAmmoTypes.Length; j++)
-                        BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+                    for (int j = 0; j < w.System?.WeaponAmmoTypes?.Length; j++)
+                    {
+                        if(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef != null)
+                            BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+                    }
 
-                    maxInventoryVolume += w.System.MaxAmmoVolume;
+                    maxInventoryVolume += w.System?.MaxAmmoVolume ?? 0;
                 }
 
                 BlockInventory.FixInventoryVolume(maxInventoryVolume);

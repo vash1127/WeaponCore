@@ -308,11 +308,11 @@ namespace WeaponCore
             {
                 if (Session?.Player == null) return false;
 
-                MultiplayerId = MyAPIGateway.Multiplayer.MyId;
-                PlayerId = Session.Player.IdentityId;
-
                 if (HandlesInput)
                 {
+                    MultiplayerId = MyAPIGateway.Multiplayer.MyId;
+                    PlayerId = Session.Player.IdentityId;
+
                     List<IMyPlayer> players = new List<IMyPlayer>();
                     MyAPIGateway.Multiplayer.Players.GetPlayers(players);
 
@@ -320,6 +320,7 @@ namespace WeaponCore
                         PlayerConnected(players[i].IdentityId);
 
                     PlayerMouseStates[PlayerId] = UiInput.ClientInputState;
+                    Log.Line($"PlayerId: {PlayerId} input set");
                 }
                 
 
