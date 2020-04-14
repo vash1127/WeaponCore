@@ -231,10 +231,13 @@ namespace WeaponCore.Support
 
                 Ai.OptimalDps += PeakDps;
                 Ai.UpdateConstruct();
-                
+
                 if (!FunctionalBlock.Enabled)
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
-                        Platform.Weapons[i].EventTriggerStateChanged(EventTriggers.TurnOff, true);
+                    Session.FutureEvents.Schedule(o =>
+                    {
+                        for (int i = 0; i < Platform.Weapons.Length; i++)
+                            Platform.Weapons[i].EventTriggerStateChanged(EventTriggers.TurnOff, true);
+                    }, null, 1);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

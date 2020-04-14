@@ -65,211 +65,219 @@ namespace WeaponCore.Platform
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
             if (Comp?.State == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-            var session = Comp.Session;
-            var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
-
-            switch (state)
+            try
             {
-                case EventTriggers.StopFiring:
-                case EventTriggers.PreFire:
-                case EventTriggers.Firing:
-                    if (AnimationsSet.ContainsKey(state))
-                    {
-                        var addToFiring = AnimationsSet.ContainsKey(EventTriggers.StopFiring) && state == EventTriggers.Firing;
-                        uint delay = 0;
-                        if (active)
+                var session = Comp.Session;
+                var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
+
+                switch (state)
+                {
+                    case EventTriggers.StopFiring:
+                    case EventTriggers.PreFire:
+                    case EventTriggers.Firing:
+                        if (AnimationsSet.ContainsKey(state))
                         {
-                            if (state == EventTriggers.StopFiring)
+                            var addToFiring = AnimationsSet.ContainsKey(EventTriggers.StopFiring) && state == EventTriggers.Firing;
+                            uint delay = 0;
+                            if (active)
                             {
-                                // Fix this properly
-                                var stopLen = 0u;
-                                System.WeaponAnimationLengths.TryGetValue(EventTriggers.StopFiring, out stopLen);
-                                Timings.ShootDelayTick = stopLen + session.Tick;
-                                if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
+                                if (state == EventTriggers.StopFiring)
                                 {
-                                    if (CurLgstAnimPlaying != null && CurLgstAnimPlaying.Running)
+                                    // Fix this properly
+                                    var stopLen = 0u;
+                                    System.WeaponAnimationLengths.TryGetValue(EventTriggers.StopFiring, out stopLen);
+                                    Timings.ShootDelayTick = stopLen + session.Tick;
+                                    if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                     {
-                                        delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                                        Timings.ShootDelayTick += delay;
+                                        if (CurLgstAnimPlaying != null && CurLgstAnimPlaying.Running)
+                                        {
+                                            delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                                            Timings.ShootDelayTick += delay;
+                                        }
                                     }
                                 }
                             }
-                        }
 
-                        for (int i = 0; i < AnimationsSet[state].Length; i++)
-                        {
-                            var animation = AnimationsSet[state][i];
-
-                            if (active && !animation.Running && (animation.Muzzle == "Any" || (muzzles != null && muzzles.Contains(animation.Muzzle))))
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
-                                if (animation.TriggerOnce && animation.Triggered) continue;
-                                animation.Triggered = true;
+                                var animation = AnimationsSet[state][i];
 
-                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
-                                    CurLgstAnimPlaying = animation;
-
-                                if (animation.Muzzle != "Any" && addToFiring) _muzzlesFiring.Add(animation.Muzzle);
-
-                                animation.StartTick = session.Tick + animation.MotionDelay + delay;
-                                Comp.Session.AnimationsToProcess.Add(animation);
-                                animation.Running = true;
-                                //animation.Paused = Comp.ResettingSubparts;
-                                animation.CanPlay = canPlay;
-
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                            else if (active && animation.DoesLoop)
-                                animation.Looping = true;
-                            else if (!active)
-                            {
-                                animation.Looping = false;
-                                animation.Triggered = false;
-                            }
-                        }
-                        if (active && state == EventTriggers.StopFiring)
-                            _muzzlesFiring.Clear();
-                    }
-                    break;
-                case EventTriggers.StopTracking:
-                case EventTriggers.Tracking:
-                    if (AnimationsSet.ContainsKey(state))
-                    {
-                        var oppositeEvnt = state == EventTriggers.Tracking ? EventTriggers.StopTracking : EventTriggers.Tracking;
-                        //if (active) LastEvent = state;
-                        for (int i = 0; i < AnimationsSet[state].Length; i++)
-                        {
-                            var animation = AnimationsSet[state][i];
-                            if (active && !animation.Running)
-                            {
-                                if (animation.TriggerOnce && animation.Triggered) continue;
-                                animation.Triggered = true;
-
-                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
-                                    CurLgstAnimPlaying = animation;
-
-                                PartAnimation animCheck;
-                                animation.Running = true;
-                                //animation.Paused = Comp.ResettingSubparts;
-                                animation.CanPlay = canPlay;
-                                string opEvent = "";
-                                if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out opEvent) && AnimationLookup.TryGetValue(opEvent, out animCheck) && animCheck.Running)
+                                if (active && !animation.Running && (animation.Muzzle == "Any" || (muzzles != null && muzzles.Contains(animation.Muzzle))))
                                 {
-                                    animCheck.Reverse = true;
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+                                    animation.Triggered = true;
 
-                                    if (!animation.DoesLoop)
-                                        animation.Running = false;
-                                    else
-                                    {
-                                        animation.StartTick = Comp.Session.Tick + (uint)animCheck.CurrentMove + animation.MotionDelay;
-                                        Comp.Session.AnimationsToProcess.Add(animation);
-                                    }
-                                }
-                                else
-                                {
+                                    if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                        CurLgstAnimPlaying = animation;
+
+                                    if (animation.Muzzle != "Any" && addToFiring) _muzzlesFiring.Add(animation.Muzzle);
+
+                                    animation.StartTick = session.Tick + animation.MotionDelay + delay;
                                     Comp.Session.AnimationsToProcess.Add(animation);
-                                    animation.StartTick = session.Tick + animation.MotionDelay;
+                                    animation.Running = true;
+                                    //animation.Paused = Comp.ResettingSubparts;
+                                    animation.CanPlay = canPlay;
+
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
                                 }
-
-                                if (animation.DoesLoop)
+                                else if (active && animation.DoesLoop)
                                     animation.Looping = true;
-                            }
-                            else if (active && animation.DoesLoop)
-                                animation.Looping = true;
-                            else if (!active)
-                            {
-                                animation.Looping = false;
-                                animation.Triggered = false;
-                            }
-                        }
-                    }
-                    break;
-                case EventTriggers.TurnOn:
-                case EventTriggers.TurnOff:
-                    if (active && AnimationsSet.ContainsKey(state))
-                    {
-                        var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
-
-                        if ((state == EventTriggers.TurnOn && !Comp.State.Value.Online) || state == EventTriggers.TurnOff && Comp.State.Value.Online) return;
-
-                        //LastEvent = state;
-                        for (int i = 0; i < AnimationsSet[state].Length; i++)
-                        {
-                            var animation = AnimationsSet[state][i];
-                            if (!animation.Running)
-                            {
-                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
-                                    CurLgstAnimPlaying = animation;
-
-                                PartAnimation animCheck;
-                                animation.Running = true;
-                                animation.CanPlay = true;
-                                //animation.Paused = Comp.ResettingSubparts;
-                                string eventName;
-                                if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out eventName) && AnimationLookup.TryGetValue(eventName, out animCheck))
+                                else if (!active)
                                 {
-                                    if (animCheck.Running)
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+                            }
+                            if (active && state == EventTriggers.StopFiring)
+                                _muzzlesFiring.Clear();
+                        }
+                        break;
+                    case EventTriggers.StopTracking:
+                    case EventTriggers.Tracking:
+                        if (AnimationsSet.ContainsKey(state))
+                        {
+                            var oppositeEvnt = state == EventTriggers.Tracking ? EventTriggers.StopTracking : EventTriggers.Tracking;
+                            //if (active) LastEvent = state;
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
+                            {
+                                var animation = AnimationsSet[state][i];
+                                if (active && !animation.Running)
+                                {
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+                                    animation.Triggered = true;
+
+                                    if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                        CurLgstAnimPlaying = animation;
+
+                                    PartAnimation animCheck;
+                                    animation.Running = true;
+                                    //animation.Paused = Comp.ResettingSubparts;
+                                    animation.CanPlay = canPlay;
+                                    string opEvent = "";
+                                    if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out opEvent) && AnimationLookup.TryGetValue(opEvent, out animCheck) && animCheck.Running)
                                     {
                                         animCheck.Reverse = true;
-                                        animation.Running = false;
+
+                                        if (!animation.DoesLoop)
+                                            animation.Running = false;
+                                        else
+                                        {
+                                            animation.StartTick = Comp.Session.Tick + (uint)animCheck.CurrentMove + animation.MotionDelay;
+                                            Comp.Session.AnimationsToProcess.Add(animation);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Comp.Session.AnimationsToProcess.Add(animation);
+                                        animation.StartTick = session.Tick + animation.MotionDelay;
+                                    }
+
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else if (active && animation.DoesLoop)
+                                    animation.Looping = true;
+                                else if (!active)
+                                {
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+                            }
+                        }
+                        break;
+                    case EventTriggers.TurnOn:
+                    case EventTriggers.TurnOff:
+                        if (active && AnimationsSet.ContainsKey(state))
+                        {
+                            var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
+
+                            if ((state == EventTriggers.TurnOn && !Comp.State.Value.Online) || state == EventTriggers.TurnOff && Comp.State.Value.Online) return;
+
+                            //LastEvent = state;
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
+                            {
+                                var animation = AnimationsSet[state][i];
+                                if (!animation.Running)
+                                {
+                                    if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                        CurLgstAnimPlaying = animation;
+
+                                    PartAnimation animCheck;
+                                    animation.Running = true;
+                                    animation.CanPlay = true;
+                                    //animation.Paused = Comp.ResettingSubparts;
+                                    string eventName;
+                                    if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out eventName) && AnimationLookup.TryGetValue(eventName, out animCheck))
+                                    {
+                                        if (animCheck.Running)
+                                        {
+                                            animCheck.Reverse = true;
+                                            animation.Running = false;
+                                        }
+                                        else
+                                            session.ThreadedAnimations.Enqueue(animation);
                                     }
                                     else
                                         session.ThreadedAnimations.Enqueue(animation);
+
+                                    animation.StartTick = session.Tick + animation.MotionDelay;
+                                    if (state == EventTriggers.TurnOff) animation.StartTick += Timings.OffDelay;
                                 }
                                 else
-                                    session.ThreadedAnimations.Enqueue(animation);
-
-                                animation.StartTick = session.Tick + animation.MotionDelay;
-                                if (state == EventTriggers.TurnOff) animation.StartTick += Timings.OffDelay;
+                                    animation.Reverse = false;
                             }
-                            else
-                                animation.Reverse = false;
                         }
-                    }
-                    break;
-                case EventTriggers.EmptyOnGameLoad:
-                case EventTriggers.Overheated:
-                case EventTriggers.OutOfAmmo:
-                case EventTriggers.BurstReload:
-                case EventTriggers.Reloading:
-                    if (AnimationsSet.ContainsKey(state))
-                    {
-                        //if (active) LastEvent = state;
-                        for (int i = 0; i < AnimationsSet[state].Length; i++)
+                        break;
+                    case EventTriggers.EmptyOnGameLoad:
+                    case EventTriggers.Overheated:
+                    case EventTriggers.OutOfAmmo:
+                    case EventTriggers.BurstReload:
+                    case EventTriggers.Reloading:
+                        if (AnimationsSet.ContainsKey(state))
                         {
-                            var animation = AnimationsSet[state][i];
-                            if (active && !animation.Running)
+                            //if (active) LastEvent = state;
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
-                                if (animation.TriggerOnce && animation.Triggered) continue;
-                                animation.Triggered = true;
+                                var animation = AnimationsSet[state][i];
+                                if (animation == null) continue;
 
-                                if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
-                                    CurLgstAnimPlaying = animation;
+                                if (active && !animation.Running)
+                                {
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+                                    animation.Triggered = true;
 
-                                animation.StartTick = session.Tick + animation.MotionDelay;
-                                session.ThreadedAnimations.Enqueue(animation);
+                                    if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                        CurLgstAnimPlaying = animation;
 
-                                animation.Running = true;
-                                animation.CanPlay = canPlay;
-                                //animation.Paused = Comp.ResettingSubparts;
+                                    animation.StartTick = session.Tick + animation.MotionDelay;
+                                    session?.ThreadedAnimations?.Enqueue(animation);
 
-                                if (animation.DoesLoop)
+                                    animation.Running = true;
+                                    animation.CanPlay = canPlay;
+                                    //animation.Paused = Comp.ResettingSubparts;
+
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else if (active && animation.DoesLoop)
                                     animation.Looping = true;
-                            }
-                            else if (active && animation.DoesLoop)
-                                animation.Looping = true;
-                            else if (!active)
-                            {
-                                animation.Looping = false;
-                                animation.Triggered = false;
+                                else if (!active)
+                                {
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
                             }
                         }
-                    }
-                    break;
+                        break;
+                }
+                if (active)
+                    LastEvent = state;
             }
-            if(active)
-                LastEvent = state;
+            catch (Exception e)
+            {
+                Log.Line($"Exception in Event Triggered: {e}");
+            }
         }
 
         internal void UpdateRequiredPower()
