@@ -238,15 +238,15 @@ namespace WeaponCore
                 if (radiate)
                 {
                     if (nova) GetBlockSphereDb(grid, detonateRadius, out radiatedBlocks);
-                    if (radiatedBlocks != null) ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
+                    if (radiatedBlocks != null) ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, SlimsSortedList);
 
                     done = nova;
-                    dmgCount = _slimsSortedList.Count;
+                    dmgCount = SlimsSortedList.Count;
                 }
 
                 for (int j = 0; j < dmgCount; j++)
                 {
-                    var block = radiate ? _slimsSortedList[j].Slim : rootBlock;
+                    var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
                     var blockHp = !IsClient ? block.Integrity : _slimHealthClient.ContainsKey(block) ? _slimHealthClient[block] : block.Integrity;
                     float damageScale = 1;
 
@@ -386,7 +386,7 @@ namespace WeaponCore
                 t.BaseDamagePool = damagePool;
                 t.ObjectsHit = objectsHit;
             }
-            if (radiantCascade || nova) _slimsSortedList.Clear();
+            if (radiantCascade || nova) SlimsSortedList.Clear();
             hitEnt.Blocks.Clear();
         }
 
@@ -680,7 +680,7 @@ namespace WeaponCore
 
         private void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius)
         {
-            _slimsSortedList.Clear();
+            SlimsSortedList.Clear();
             radius *= grid.GridSizeR;
             var gridMin = grid.Min;
             var gridMax = grid.Max;
@@ -707,20 +707,20 @@ namespace WeaponCore
                                 {
                                     Center = center, Slim = slim, Position = vector3I
                                 };
-                                _slimsSortedList.Add(radiatedBlock);
+                                SlimsSortedList.Add(radiatedBlock);
                             }
                         }
                     }
                 }
             }
-            _slimsSortedList.Sort((a, b) => Vector3I.Dot(a.Position, a.Position).CompareTo(Vector3I.Dot(b.Position, b.Position)));
+            SlimsSortedList.Sort((a, b) => Vector3I.Dot(a.Position, a.Position).CompareTo(Vector3I.Dot(b.Position, b.Position)));
         }
 
         public void GetBlocksInsideSphere(MyCubeGrid grid, Dictionary<Vector3I, IMySlimBlock> cubes, ref BoundingSphereD sphere, bool sorted, Vector3I center, bool checkTriangles = false)
         {
             if (grid.PositionComp == null) return;
 
-            if (sorted) _slimsSortedList.Clear();
+            if (sorted) SlimsSortedList.Clear();
             else _slimsSet.Clear();
 
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
@@ -751,7 +751,7 @@ namespace WeaponCore
                                 Slim = cube,
                                 Position = cube.Position,
                             };
-                            if (sorted) _slimsSortedList.Add(radiatedBlock);
+                            if (sorted) SlimsSortedList.Add(radiatedBlock);
                             else _slimsSet.Add(cube);
                         }
                     }
@@ -770,13 +770,13 @@ namespace WeaponCore
                             Slim = cube,
                             Position = cube.Position,
                         };
-                        if (sorted) _slimsSortedList.Add(radiatedBlock);
+                        if (sorted) SlimsSortedList.Add(radiatedBlock);
                         else _slimsSet.Add(cube);
                     }
                 }
             }
             if (sorted)
-                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
+                SlimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
         }
 
         public static void GetBlocksInsideSphereFast(MyCubeGrid grid, ref BoundingSphereD sphere, bool checkDestroyed, List<IMySlimBlock> blocks)
@@ -824,7 +824,7 @@ namespace WeaponCore
         {
             if (grid.PositionComp == null) return;
 
-            if (sorted) _slimsSortedList.Clear();
+            if (sorted) SlimsSortedList.Clear();
             else _slimsSet.Clear();
 
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
@@ -841,12 +841,12 @@ namespace WeaponCore
                         Slim = cube,
                         Position = cube.Position,
                     };
-                    if (sorted) _slimsSortedList.Add(radiatedBlock);
+                    if (sorted) SlimsSortedList.Add(radiatedBlock);
                     else _slimsSet.Add(cube);
                 }
             }
             if (sorted)
-                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
+                SlimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
         }
 
 

@@ -1,4 +1,6 @@
-﻿using WeaponCore.Support;
+﻿using System;
+using VRage.Collections;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -29,6 +31,28 @@ namespace WeaponCore
         {
             FutureEvents.Purge((int)Tick);
             PurgeTerminalSystem();
+
+            foreach (var reports in Reporter.ReportData.Values)
+            {
+                foreach (var report in reports)
+                {
+                    report.Clean();
+                    Reporter.ReportPool.Return(report);
+                }
+                reports.Clear();
+            }
+            Reporter.ReportData.Clear();
+            Reporter.ReportPool.Clean();
+
+            PacketsToClient.Clear();
+            PacketsToServer.Clear();
+
+            foreach (var suit in (PacketType[]) Enum.GetValues(typeof(PacketType)))
+            {
+                foreach (var pool in PacketPools.Values)
+                    pool.Clean();
+                PacketPools.Clear();
+            }
 
             foreach (var item in _effectedCubes)
             {
@@ -116,13 +140,30 @@ namespace WeaponCore
             AnimationsToProcess.Clear();
             _subTypeIdToWeaponDefs.Clear();
             WeaponDefinitions.Clear();
-            _slimsSortedList.Clear();
+            SlimsSortedList.Clear();
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             _slimHealthClient.Clear();
             _slimsSet.Clear();
             _turretDefinitions.Clear();
+            
+            foreach (var comp in CompsToStart)
+            {
+                PlatFormPool.Return(comp.Platform);
+                comp.Platform = null;
+            }
 
+            foreach (var readd in CompReAdds)
+            {
+                PlatFormPool.Return(readd.Comp.Platform);
+                readd.Comp.Platform = null;
+            }
+            foreach (var comp in CompsDelayed)
+            {
+                PlatFormPool.Return(comp.Platform);
+                comp.Platform = null;
+            }
+            PlatFormPool.Clean();
             CompsToStart.ClearImmediate();
 
             CompsDelayed.Clear();
@@ -141,6 +182,14 @@ namespace WeaponCore
                 Av.AvShotPool.Return(av);
             }
             Av.AvShotPool.Clean();
+            Av.AvBarrels1.Clear();
+            Av.AvBarrels2.Clear();
+            Av.AvShots.Clear();
+            Av.HitSounds.Clear();
+
+            foreach (var errorpkt in ClientSideErrorPktList)
+                errorpkt.Packet.CleanUp();
+            ClientSideErrorPktList.Clear();
 
             GridEffectPool.Clean();
             GridEffectsPool.Clean();
@@ -173,6 +222,14 @@ namespace WeaponCore
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();
 
+            DsUtil = null;
+            DsUtil2 = null;
+            SlimsSortedList = null;
+            Enforced = null;
+            StallReporter = null;
+            Proccessor = null;
+            Physics = null;
+            Camera = null;
             Projectiles = null;
             TrackingAi = null;
             UiInput = null;
@@ -184,15 +241,16 @@ namespace WeaponCore
             SApi = null;
             Api = null;
             ApiServer = null;
-
+            Reporter = null;
             WeaponDefinitions = null;
             AnimationsToProcess = null;
             ProjectileTree.Clear();
             ProjectileTree = null;
-
+            Av = null;
             AllDefinitions = null;
             SoundDefinitions = null;
             ActiveCockPit = null;
+            ActiveControlBlock = null;
             ControlledEntity = null;
         }
     }
