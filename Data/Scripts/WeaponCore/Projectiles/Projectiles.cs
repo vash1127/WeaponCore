@@ -386,7 +386,8 @@ namespace WeaponCore.Projectiles
                     else
                         p.PruneSphere = new BoundingSphereD(p.Position, triggerRange);
 
-                    sphere = true;
+                    if (p.PruneSphere.Contains(p.DeadSphere) == ContainmentType.Disjoint)
+                        sphere = true;
                 }
                 else if (p.Info.AmmoDef.Const.CollisionIsLine) {
                     p.PruneSphere.Center = p.Position;

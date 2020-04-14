@@ -10,6 +10,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -759,6 +760,7 @@ namespace WeaponCore.Support
         {
             foreach (var grid in AddSubGrids)
             {
+                grid.Flags |= (EntityFlags)(1 << 31);
                 if (grid == MyGrid) continue;
 
                 grid.OnFatBlockAdded += FatBlockAdded;
