@@ -38,7 +38,7 @@ namespace WeaponCore
                 if (tInvalid) info.Target.Reset(info.Ai.Session.Tick, Target.States.ProjectileClosed);
                 var skip = pInvalid || tInvalid;
                 var fixedFire = p.Info.System.TurretMovement == Fixed && p.Guidance == None && !p.Info.AmmoDef.Const.IsBeamWeapon;
-                var canDamage = !MpActive || !IsClient && (!fixedFire || ((p.Info.IsFiringPlayer || p.Info.ClientSent) && fixedFire));
+                var canDamage = !MpActive || !IsClient && (!fixedFire || (p.Info.IsFiringPlayer || p.Info.ClientSent));
 
                 if (IsClient && p.Info.IsFiringPlayer && fixedFire)
                 {

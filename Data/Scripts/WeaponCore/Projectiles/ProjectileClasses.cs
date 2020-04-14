@@ -313,6 +313,7 @@ namespace WeaponCore.Support
                 frag.Origin = !Vector3D.IsZero(p.Hit.HitPos) ? p.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.WeaponRng = p.Info.WeaponRng;
+                frag.IsFiringPlayer = p.Info.IsFiringPlayer;
                 frag.ClientSent = p.Info.ClientSent;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
@@ -372,6 +373,7 @@ namespace WeaponCore.Support
                 p.Info.OriginUp = frag.OriginUp;
                 p.Info.WeaponRng = frag.WeaponRng;
                 p.Info.ClientSent = frag.ClientSent;
+                p.Info.IsFiringPlayer = frag.IsFiringPlayer;
                 p.Info.BaseDamagePool = frag.AmmoDef.BaseDamage;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Info.Direction = frag.Direction;
@@ -416,6 +418,7 @@ namespace WeaponCore.Support
         public WeaponRandomGenerator WeaponRng;
         public bool Guidance;
         public bool ClientSent;
+        public bool IsFiringPlayer;
         public bool LockOnFireState;
     }
 }

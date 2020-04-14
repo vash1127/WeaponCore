@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
@@ -383,6 +384,23 @@ namespace WeaponCore
 
                             comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
 
+                            switch (shootStatePacket.Data)
+                            {
+                                case ManualShootActionState.ShootClick:
+                                    TerminalHelpers.WCShootClickAction(comp, true);
+                                    break;
+                                case ManualShootActionState.ShootOff:
+                                    TerminalHelpers.WCShootOffAction(comp, true);
+                                    break;
+                                case ManualShootActionState.ShootOn:
+                                    TerminalHelpers.WCShootOnAction(comp, true);
+                                    break;
+                                case ManualShootActionState.ShootOnce:
+                                    TerminalHelpers.WCShootOnceAction(comp, true);
+                                    break;
+                            }
+
+                            /*
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                             {
                                 var w = comp.Platform.Weapons[i];
@@ -391,7 +409,7 @@ namespace WeaponCore
                                     w.State.SingleShotCounter++;
 
                                 w.State.ManualShoot = shootStatePacket.Data;
-                            }
+                            }*/
 
                             report.PacketValid = true;
                             break;
@@ -1237,7 +1255,25 @@ namespace WeaponCore
                             if (comp.SyncIds.MIds[(int)packet.PType] < shootStatePacket.MId)
                             {
                                 comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
-                                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+
+
+                                switch (shootStatePacket.Data)
+                                {
+                                    case ManualShootActionState.ShootClick:
+                                        TerminalHelpers.WCShootClickAction(comp, true);
+                                        break;
+                                    case ManualShootActionState.ShootOff:
+                                        TerminalHelpers.WCShootOffAction(comp, true);
+                                        break;
+                                    case ManualShootActionState.ShootOn:
+                                        TerminalHelpers.WCShootOnAction(comp, true);
+                                        break;
+                                    case ManualShootActionState.ShootOnce:
+                                        TerminalHelpers.WCShootOnceAction(comp, true);
+                                        break;
+                                }
+
+                                /*for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                                 {
                                     var w = comp.Platform.Weapons[i];
 
@@ -1245,7 +1281,7 @@ namespace WeaponCore
                                         w.State.SingleShotCounter++;
 
                                     w.State.ManualShoot = shootStatePacket.Data;
-                                }
+                                }*/
 
                                 PacketsToClient.Add(new PacketInfo
                                 {

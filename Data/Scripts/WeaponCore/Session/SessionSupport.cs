@@ -306,10 +306,9 @@ namespace WeaponCore
         {
             try
             {
-                if (Session?.Player == null) return false;
-
                 if (HandlesInput)
                 {
+                    if (Session?.Player == null) return false;
                     MultiplayerId = MyAPIGateway.Multiplayer.MyId;
                     PlayerId = Session.Player.IdentityId;
 
@@ -320,12 +319,10 @@ namespace WeaponCore
                         PlayerConnected(players[i].IdentityId);
 
                     PlayerMouseStates[PlayerId] = UiInput.ClientInputState;
-                    Log.Line($"PlayerId: {PlayerId} input set");
-                }
-                
 
-                if (IsClient)
-                    SendUpdateRequest(-1, PacketType.RequestMouseStates);
+                    if (IsClient)
+                        SendUpdateRequest(-1, PacketType.RequestMouseStates);
+                }
 
                 return true;
             }

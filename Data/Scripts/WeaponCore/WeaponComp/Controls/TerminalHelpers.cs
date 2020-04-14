@@ -47,19 +47,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        var cState = comp.State.Value;
-
-                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                        {
-                            cState.Weapons[comp.Platform.Weapons[j].WeaponId].SingleShotCounter++;
-                            cState.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-                        }
-
-                        cState.ClickShoot = false;
-                        cState.ShootOn = false;
-
-                        if (comp.Session.MpActive)
-                            comp.Session.SendActionShootUpdate(comp, ShootOnce);
+                        WCShootOnceAction(comp);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -76,38 +64,71 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        var cState = comp.State.Value;
+                        WCShootToggleAction(comp);
+                    };
 
-                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                    var oldWriter = a.Writer;
+                    a.Writer = (blk, sb) =>
+                    {
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
-                            var w = comp.Platform.Weapons[j];
+                            oldWriter(blk, sb);
+                            return;
+                        }
+                        if (comp.State.Value.ShootOn)
+                            sb.Append("On");
+                        else
+                            sb.Append("Off");
+                    };
+                }
+                else if (a.Id.Equals("Shoot_On"))
+                {
+                    var oldAction = a.Action;
+                    a.Action = blk =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        {
+                            if (comp == null)
+                                oldAction(blk);
 
-                            if (cState.ShootOn)
-                                w.State.ManualShoot = ShootOff;
-                            else
-                            {
-                                w.State.ManualShoot = ShootOn;
-
-                                var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
-                                comp.Set.Value.Overrides.ManualControl = false;
-                                comp.Set.Value.Overrides.TargetPainter = false;
-
-                                if (update && comp.Session.MpActive)
-                                {
-                                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-
-                                    comp.Session.SendControlingPlayer(comp);
-                                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
-                                }
-                            }
+                            return;
                         }
 
-                        if (comp.Session.MpActive)
-                            comp.Session.SendActionShootUpdate(comp, (cState.ShootOn ? ShootOff : ShootOn));
+                        WCShootOnAction(comp);
+                    };
 
-                        cState.ShootOn = !cState.ShootOn;
-                        cState.ClickShoot = !cState.ShootOn && cState.ClickShoot;
+                    var oldWriter = a.Writer;
+                    a.Writer = (blk, sb) =>
+                    {
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        {
+                            oldWriter(blk, sb);
+                            return;
+                        }
+                        if (comp.State.Value.ShootOn)
+                            sb.Append("On");
+                        else
+                            sb.Append("Off");
+                    };
+                }
+                else if (a.Id.Equals("Shoot_Off"))
+                {
+                    var oldAction = a.Action;
+                    a.Action = blk =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        {
+                            if (comp == null)
+                                oldAction(blk);
+
+                            return;
+                        }
+
+                        WCShootOffAction(comp);
                     };
 
                     var oldWriter = a.Writer;
@@ -172,43 +193,6 @@ namespace WeaponCore.Control
                                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                                 OnOffAnimations(comp, On);
                             };
-                            break;
-                        }
-
-                    case "Range":
-                        {
-                            /*
-                            var oldRangeSetter = ((IMyTerminalControlSlider)c).Setter;
-                            ((IMyTerminalControlSlider)c).Setter = (blk, Value) =>
-                            {
-                                var comp = blk?.Components?.Get<WeaponComponent>();
-                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                                {
-                                    oldRangeSetter(blk, Value);
-                                    return;
-                                }
-
-                                comp.Set.Value.Range = Value;
-
-                                if (comp.Session.MpActive)
-                                    comp.Session.SendRangeUpdate(comp, Value);
-
-                            };
-
-                            var oldRangeGetter = ((IMyTerminalControlSlider)c).Getter;
-                            ((IMyTerminalControlSlider)c).Getter = (blk) =>
-                            {
-                                var comp = blk?.Components?.Get<WeaponComponent>();
-                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                                    return oldRangeGetter(blk);
-
-                                Log.Line($"Range: {comp.Set.Value.Range}");
-                                return comp.Set.Value.Range;
-                            };
-
-                            ((IMyTerminalControlSlider)c).SetLimits(WepUi.GetMinRange, WepUi.GetMaxRange);
-
-                            */
                             break;
                         }
                 }  
@@ -315,6 +299,133 @@ namespace WeaponCore.Control
 
                 w.Set.Enable = On;
             }
+        }
+
+        internal static void WCShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
+        {
+            var cState = comp.State.Value;
+
+            if (cState.ShootOn)
+                WCShootOffAction(comp, alreadySynced);
+            else
+                WCShootOnAction(comp, alreadySynced);
+        }
+
+        internal static void WCShootOnAction(WeaponComponent comp, bool alreadySynced = false)
+        {
+            var cState = comp.State.Value;
+
+            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                comp.Platform.Weapons[j].State.ManualShoot = ShootOn;
+
+            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+            comp.Set.Value.Overrides.ManualControl = false;
+            comp.Set.Value.Overrides.TargetPainter = false;
+
+            comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+
+            cState.ShootOn = true;
+            cState.ClickShoot = false;
+
+            if (comp.Session.MpActive && !alreadySynced)
+            {
+                comp.Session.SendControlingPlayer(comp);
+                comp.Session.SendActionShootUpdate(comp, ShootOn);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+            }
+        }
+
+        internal static void WCShootOffAction(WeaponComponent comp, bool alreadySynced = false)
+        {
+            var cState = comp.State.Value;
+
+            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                comp.Platform.Weapons[j].State.ManualShoot = ShootOff;
+
+            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+            comp.Set.Value.Overrides.ManualControl = false;
+            comp.Set.Value.Overrides.TargetPainter = false;
+
+            comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+
+            cState.ShootOn = false;
+            cState.ClickShoot = false;
+
+            if (comp.Session.MpActive && !alreadySynced)
+            {
+                comp.Session.SendControlingPlayer(comp);
+                comp.Session.SendActionShootUpdate(comp, ShootOff);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+            }
+        }
+
+        internal static void WCShootOnceAction(WeaponComponent comp, bool alreadySynced = false)
+        {
+            var cState = comp.State.Value;
+
+            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+            {
+                cState.Weapons[comp.Platform.Weapons[j].WeaponId].SingleShotCounter++;
+                cState.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
+            }
+
+            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+            comp.Set.Value.Overrides.ManualControl = false;
+            comp.Set.Value.Overrides.TargetPainter = false;
+
+            comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+
+            cState.ClickShoot = false;
+            cState.ShootOn = false;
+
+            if (comp.Session.MpActive && !alreadySynced)
+            {
+                comp.Session.SendControlingPlayer(comp);
+                comp.Session.SendActionShootUpdate(comp, ShootOnce);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+            }
+        }
+
+        internal static void WCShootClickAction(WeaponComponent comp, bool alreadySynced = false)
+        {
+            var cState = comp.State.Value;
+
+            if (cState.ClickShoot)
+            {
+                cState.CurrentPlayerControl.PlayerId = -1;
+                cState.CurrentPlayerControl.ControlType = ControlType.None;
+            }
+            else
+            {
+                cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                cState.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            }
+
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var w = comp.Platform.Weapons[i];
+
+                if (cState.ClickShoot)
+                    w.State.ManualShoot = ShootOff;
+                else
+                    w.State.ManualShoot = ShootClick;
+            }
+
+            if (comp.Session.MpActive && !alreadySynced)
+            {
+                comp.Session.SendControlingPlayer(comp);
+                comp.Session.SendActionShootUpdate(comp, (cState.ClickShoot ? ShootOff : ShootClick));
+            }
+
+            cState.ClickShoot = !cState.ClickShoot;
+            cState.ShootOn = !cState.ClickShoot && cState.ShootOn;
         }
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, int, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock

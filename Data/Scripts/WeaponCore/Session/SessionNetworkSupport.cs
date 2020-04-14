@@ -59,6 +59,8 @@ namespace WeaponCore
 
         internal void SendMouseUpdate(MyEntity entity)
         {
+            if (!HandlesInput) return;
+
             if (IsClient)
             {
                 PacketsToServer.Add(new InputPacket
@@ -69,7 +71,7 @@ namespace WeaponCore
                     Data = UiInput.ClientInputState
                 });
             }
-            else if (MpActive && IsServer)
+            else
             {
                 PacketsToClient.Add(new PacketInfo
                 {
