@@ -178,7 +178,7 @@ namespace WeaponCore.Platform
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(
                                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
                                     MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
-                                    muzzle.Direction.Z), dirMatrix);
+                                    MyMath.FastCos(randomFloat1)), dirMatrix);
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
