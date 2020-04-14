@@ -8,6 +8,7 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -153,6 +154,8 @@ namespace WeaponCore.Support
         internal void Init(MyCubeGrid grid, Session session)
         {
             MyGrid = grid;
+            MyGrid.Flags |= (EntityFlags)(1 << 31);
+
             Session = session;
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
