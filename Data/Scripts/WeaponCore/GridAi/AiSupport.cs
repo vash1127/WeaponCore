@@ -81,7 +81,7 @@ namespace WeaponCore.Support
         {
             internal float OptimalDps;
             internal int BlockCount;
-            internal MyCubeGrid RootGrid;
+            internal GridAi RootAi;
 
             internal void Update(GridAi ai)
             {
@@ -90,11 +90,11 @@ namespace WeaponCore.Support
                 {
                     BlockCount = fatMap.MostBlocks;
                     OptimalDps = ai.OptimalDps;
-                    MyCubeGrid tmpGrid = null;
+                    GridAi tmpAi = null;
                     foreach (var grid in ai.SubGrids)
                     {
-                        if (tmpGrid == null) tmpGrid = grid;
-                        else if (tmpGrid.EntityId > grid.EntityId) tmpGrid = grid;
+                        GridAi checkAi;
+                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi) && (tmpAi == null || tmpAi.MyGrid.EntityId > grid.EntityId)) tmpAi = checkAi;
 
                         if (grid == ai.MyGrid) continue;
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
@@ -103,20 +103,21 @@ namespace WeaponCore.Support
                             OptimalDps += ai.OptimalDps;
                         }
                     }
-                    RootGrid = tmpGrid;
+                    RootAi = tmpAi;
+                    
                     return;
                 }
 
                 OptimalDps = 0;
                 BlockCount = 0;
-                RootGrid = null;
+                RootAi = null;
             }
 
             internal void Clean()
             {
                 OptimalDps = 0;
                 BlockCount = 0;
-                RootGrid = null;
+                RootAi = null;
             }
         }
 
@@ -789,10 +790,18 @@ namespace WeaponCore.Support
                 SubGrids.Remove(grid);
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
+                GridAi removeAi;
+                Session.GridToMasterAi.TryRemove(grid, out removeAi);
             }
             RemSubGrids.Clear();
 
             Construct.Update(this);
+
+            foreach(var grid in SubGrids)
+            {
+                if (Construct?.RootAi != null)
+                    Session.GridToMasterAi.AddOrUpdate(grid, Construct.RootAi, (oldKey, value) => Construct.RootAi);
+            }
         }
 
         #region Power

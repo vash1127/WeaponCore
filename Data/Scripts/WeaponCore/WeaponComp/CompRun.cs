@@ -230,7 +230,7 @@ namespace WeaponCore.Support
                 }
 
                 Ai.OptimalDps += PeakDps;
-                Ai.UpdateConstruct();
+                Ai.Construct.Update(Ai);
 
                 if (!FunctionalBlock.Enabled)
                     Session.FutureEvents.Schedule(o =>

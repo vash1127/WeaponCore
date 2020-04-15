@@ -22,7 +22,7 @@ namespace WeaponCore
             ActiveCockPit = ActiveControlBlock as MyCockpit;
 
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
-            if (activeBlock != null && GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
+            if (activeBlock != null && (GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi) || GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi)))
             {
                 InGridAiBlock = true;
                 MyCubeBlock oldBlock;
