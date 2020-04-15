@@ -90,8 +90,12 @@ namespace WeaponCore.Support
                 {
                     BlockCount = fatMap.MostBlocks;
                     OptimalDps = ai.OptimalDps;
+                    MyCubeGrid tmpGrid = null;
                     foreach (var grid in ai.SubGrids)
                     {
+                        if (tmpGrid == null) tmpGrid = grid;
+                        else if (tmpGrid.EntityId > grid.EntityId) tmpGrid = grid;
+
                         if (grid == ai.MyGrid) continue;
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
                         {
