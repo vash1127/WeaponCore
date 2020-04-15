@@ -119,7 +119,7 @@ namespace WeaponCore.Support
 
                     for (int j = 0; j < w.System?.WeaponAmmoTypes?.Length; j++)
                     {
-                        if(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef != null)
+                        if (w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef != null)
                             BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
                     }
 

@@ -517,8 +517,6 @@ namespace WeaponCore
 
             var comp = firingCube.Components.Get<WeaponComponent>();
 
-            Log.Line($"firingCube.EntityId: {firingCube.EntityId} hitEnt.EntityId: {hitEnt.EntityId}");
-
             int weaponId;
             if(comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(systemId, out weaponId))
             {
