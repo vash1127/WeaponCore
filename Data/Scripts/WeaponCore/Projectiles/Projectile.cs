@@ -755,7 +755,7 @@ namespace WeaponCore.Projectiles
                         Info.WeaponRng.ClientProjectileCurrentCounter++;
                     }
                     EwaredProjectiles.Clear();
-                    break;
+                    return;
                 case AreaEffectType.PushField:
                     if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() *  100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
