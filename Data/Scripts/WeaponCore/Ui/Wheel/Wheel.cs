@@ -69,7 +69,6 @@ namespace WeaponCore
 
         internal void DrawWheel()
         {
-            Log.Line($"DrawWheel");
             var position = new Vector3D(_wheelPosition.X, _wheelPosition.Y, 0);
             var fov = Session.Camera.FovWithZoom;
             double aspectratio = Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
