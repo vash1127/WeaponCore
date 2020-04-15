@@ -46,7 +46,6 @@ namespace WeaponCore.Projectiles
         internal BoundingSphereD DeadSphere;
         internal double AccelLength;
         internal double DistanceToTravelSqr;
-        //internal double TracerLength;
         internal double VelocityLengthSqr;
         internal double DistanceFromCameraSqr;
         internal double OffsetSqr;
@@ -744,7 +743,7 @@ namespace WeaponCore.Projectiles
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
-                        if (netted.Info.Ai == Info.Ai || netted.Info.Target.IsProjectile) continue;
+                        if (netted.Info.Ai.MyGrid.IsSameConstructAs(Info.Ai.MyGrid) || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         {                  
                             Info.EwarActive = true;
