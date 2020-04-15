@@ -82,6 +82,7 @@ namespace WeaponCore
             Av.AvShotPool.Clean();
 
             DeferedUpBlockTypeCleanUp(true);
+            BlockTypeCleanUp.Clear();
 
             foreach (var map in GridToFatMap.Keys)
                 RemoveGridFromMap(map);
