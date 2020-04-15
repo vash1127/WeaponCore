@@ -112,7 +112,7 @@ namespace WeaponCore
 
                 FutureEvents.Tick(Tick);
 
-                if (!DedicatedServer && UiInput.PlayerCamera && !InMenu) WheelUi.UpdatePosition();
+                if (!DedicatedServer && ActiveControlBlock != null && !InMenu) WheelUi.UpdatePosition();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -196,7 +196,7 @@ namespace WeaponCore
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-                if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();
                     TargetUi.DrawTargetUi();

@@ -22,10 +22,8 @@ namespace WeaponCore
                     OpenWheel();
                 else if (s.UiInput.ClientInputState.MouseButtonMiddle && ChangeState == State.Close) 
                     CloseWheel();
-
-
             }
-            else if (WheelActive && !(Session.Session.ControlledObject is MyCockpit)) CloseWheel();
+            else if (WheelActive && Session.ActiveControlBlock == null) CloseWheel();
             
             if (!WheelActive && _currentMenu != string.Empty)
                 _currentMenu = string.Empty;
@@ -71,6 +69,7 @@ namespace WeaponCore
 
         internal void DrawWheel()
         {
+            Log.Line($"DrawWheel");
             var position = new Vector3D(_wheelPosition.X, _wheelPosition.Y, 0);
             var fov = Session.Camera.FovWithZoom;
             double aspectratio = Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
