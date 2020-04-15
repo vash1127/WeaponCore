@@ -103,6 +103,7 @@ namespace WeaponCore.Support
                             OptimalDps += ai.OptimalDps;
                         }
                     }
+                    RootGrid = tmpGrid;
                     return;
                 }
 
