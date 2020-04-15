@@ -77,19 +77,13 @@ namespace WeaponCore.Support
             }
         }
 
-
-
-        internal void UpdateConstruct()
+        internal class Constructs
         {
-            Construct = new Constructs(this);
-        }
+            internal float OptimalDps;
+            internal int BlockCount;
+            internal MyCubeGrid RootGrid;
 
-        internal struct Constructs
-        {
-            internal readonly float OptimalDps;
-            internal readonly int BlockCount;
-
-            internal Constructs(GridAi ai)
+            internal void Update(GridAi ai)
             {
                 FatMap fatMap;
                 if (ai?.MyGrid != null && ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap))
@@ -110,6 +104,14 @@ namespace WeaponCore.Support
 
                 OptimalDps = 0;
                 BlockCount = 0;
+                RootGrid = null;
+            }
+
+            internal void Clean()
+            {
+                OptimalDps = 0;
+                BlockCount = 0;
+                RootGrid = null;
             }
         }
 
@@ -785,7 +787,7 @@ namespace WeaponCore.Support
             }
             RemSubGrids.Clear();
 
-            UpdateConstruct();
+            Construct.Update(this);
         }
 
         #region Power
@@ -807,6 +809,7 @@ namespace WeaponCore.Support
                 if (grid == MyGrid) continue;
                 RemSubGrids.Add(grid);
             }
+            Construct.Clean();
             AddSubGrids.Clear();
             SubGridChanges();
             SubGrids.Clear();

@@ -63,7 +63,7 @@ namespace WeaponCore.Support
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
-        internal Constructs Construct;
+        internal Constructs Construct = new Constructs();
         //internal GridAIValues AIValues = new GridAIValues();
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
