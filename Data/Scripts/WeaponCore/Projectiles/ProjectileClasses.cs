@@ -105,6 +105,8 @@ namespace WeaponCore.Support
             EwarActive = false;
             ModelOnly = false;
             LockOnFireState = false;
+            IsFiringPlayer = false;
+            ClientSent = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
