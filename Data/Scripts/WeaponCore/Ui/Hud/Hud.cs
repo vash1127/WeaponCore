@@ -41,23 +41,19 @@ namespace WeaponCore
             TexturesToAdd++;
         }
 
-        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height)
+        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float scale)
         {
-            /*var position = new Vector3D(x, y, -.1);
+            var position = new Vector3D(x, y, -.1);
             var tdd = _textureDrawPool.Get();
 
             tdd.Material = material;
             tdd.Color = color;
             tdd.Position = position;
-            tdd.Width = width / _pixelsInMeter;
-            tdd.Height = height / _pixelsInMeter;
-            tdd.UvOffset = new Vector2(uvOffsetX, uvOffsetY);
-            tdd.UvSize = new Vector2(uvSizeX, uvSizeY);
-            tdd.TextureSize = textureSize;
+            tdd.Height = scale;
 
-            TextureAddList.Add(tdd);
+            SimpleDrawList.Add(tdd);
 
-            TexturesToAdd++;*/
+            TexturesToAdd++;
         }
 
         internal void DrawTextures()
@@ -66,6 +62,7 @@ namespace WeaponCore
             _cameraWorldMatrix = _session.Camera.WorldMatrix;
             _scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * .5f);
 
+            #region UV Offset based draws
             for (int i = 0; i < TextAddList.Count; i++)
             {
                 var textAdd = TextAddList[i];
@@ -94,7 +91,7 @@ namespace WeaponCore
                     tdd.UvSize = cm.UvSize;
                     tdd.TextureSize = cm.TextureSize;
 
-                    DrawList.Add(tdd);
+                    UvDrawList.Add(tdd);
 
                     textPos -= (_cameraWorldMatrix.Left * width * _aspectratio);
                 }
@@ -111,12 +108,12 @@ namespace WeaponCore
                 tdd.Position = Vector3D.Transform(tdd.Position, _cameraWorldMatrix);
                 tdd.Up = _cameraWorldMatrix.Up;
                 tdd.Left = _cameraWorldMatrix.Left;
-                DrawList.Add(tdd);
+                UvDrawList.Add(tdd);
             }
 
-            for (int i = 0; i < DrawList.Count; i++)
+            for (int i = 0; i < UvDrawList.Count; i++)
             {
-                var textureToDraw = DrawList[i];
+                var textureToDraw = UvDrawList[i];
                 var p0 = new Vector2(textureToDraw.UvOffset.X, textureToDraw.UvOffset.Y) / textureToDraw.TextureSize;
                 var p1 = new Vector2(textureToDraw.UvOffset.X + textureToDraw.UvSize.X, textureToDraw.UvOffset.Y) / textureToDraw.TextureSize;
                 var p2 = new Vector2(textureToDraw.UvOffset.X, textureToDraw.UvOffset.Y + textureToDraw.UvSize.Y) / textureToDraw.TextureSize;
@@ -127,12 +124,29 @@ namespace WeaponCore
 
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p1, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p2, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
+
+                _textureDrawPool.Return(textureToDraw);
+            }
+            #endregion
+
+            for (int i = 0; i < SimpleDrawList.Count; i++)
+            {
+                var textureToDraw = SimpleDrawList[i];
+                var scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * textureToDraw.Height);
+                
+                textureToDraw.Position.X *= _scale * _aspectratio;
+                textureToDraw.Position.Y *= _scale;
+                textureToDraw.Position = Vector3D.Transform(textureToDraw.Position, _cameraWorldMatrix);                
+                scale = 1 * scale;
+
+                MyTransparentGeometry.AddBillboardOriented(textureToDraw.Material, textureToDraw.Color, textureToDraw.Position, _cameraWorldMatrix.Left, _cameraWorldMatrix.Up, (float)scale, textureToDraw.Blend);
+
                 _textureDrawPool.Return(textureToDraw);
             }
 
             TextAddList.Clear();
             TextureAddList.Clear();
-            DrawList.Clear();
+            UvDrawList.Clear();
             TexturesToAdd = 0;
         }
     }

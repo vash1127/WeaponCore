@@ -16,7 +16,7 @@ namespace WeaponCore
     partial class Hud
     {
         private const float _pixelsInMeter = 3779.52f;
-        private readonly MyConcurrentPool<TextureDrawData> _textureDrawPool = new MyConcurrentPool<TextureDrawData>(256, tdd => tdd.Clean());
+        private readonly MyConcurrentPool<TextureDrawData> _textureDrawPool = new MyConcurrentPool<TextureDrawData>(512, tdd => tdd.Clean());
 
         private readonly MyConcurrentPool<TextDrawRequest> _textDrawPool = new MyConcurrentPool<TextDrawRequest>(256, tdr => tdr.Clean());
 
@@ -27,10 +27,15 @@ namespace WeaponCore
         private float _aspectratio;
         private double _scale;
 
-        public List<TextureDrawData> DrawList = new List<TextureDrawData>();
+        public int TexturesToAdd;
+
         public List<TextureDrawData> TextureAddList = new List<TextureDrawData>();
         public List<TextDrawRequest> TextAddList = new List<TextDrawRequest>();
-        public int TexturesToAdd;
+
+        public List<TextureDrawData> UvDrawList = new List<TextureDrawData>();
+        public List<TextureDrawData> SimpleDrawList = new List<TextureDrawData>();
+
+        
 
         internal struct TextureMap
         {
