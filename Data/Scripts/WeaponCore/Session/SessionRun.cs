@@ -193,6 +193,9 @@ namespace WeaponCore
                 if (DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
+
+                if (HudUi.DrawList.Count > 0) HudUi.DrawTextures();
+
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);

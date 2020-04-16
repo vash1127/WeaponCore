@@ -17,6 +17,7 @@ using WeaponCore.Api;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using static WeaponCore.Hud;
 using static WeaponCore.Support.GridAi;
 using Task = ParallelTasks.Task;
 
@@ -160,6 +161,7 @@ namespace WeaponCore
         internal UiInput UiInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
+        internal Hud HudUi;
         internal Enforcements Enforced;
         internal NetworkProccessor Proccessor;
 
@@ -277,6 +279,7 @@ namespace WeaponCore
             UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
             WheelUi = new Wheel(this);
+            HudUi = new Hud(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
             StallReporter = new StallReporter(this);
