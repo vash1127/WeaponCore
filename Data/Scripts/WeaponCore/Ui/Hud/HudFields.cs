@@ -15,6 +15,7 @@ namespace WeaponCore
 {
     partial class Hud
     {
+        private const float _pixelsInMeter = 3779.52f;
         private readonly MyConcurrentPool<TextureDrawData> _textureDrawPool = new MyConcurrentPool<TextureDrawData>(256, tdd => tdd.Clean());
 
         private readonly MyConcurrentPool<TextDrawRequest> _textDrawPool = new MyConcurrentPool<TextDrawRequest>(256, tdr => tdr.Clean());
@@ -22,10 +23,15 @@ namespace WeaponCore
         private Session _session;
         private Dictionary<char, TextureMap> _characterMap;
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
+        private MatrixD _cameraWorldMatrix;
+        private uint _lastPostionUpdateTick;
+        private float _aspectratio;
+        private double _scale;
 
         public List<TextureDrawData> DrawList = new List<TextureDrawData>();
+        public List<TextureDrawData> TextureAddList = new List<TextureDrawData>();
         public List<TextDrawRequest> TextAddList = new List<TextDrawRequest>();
-        public const float pixelsInMeter = 3779.52f;
+        public int TexturesToAdd;
 
         internal struct TextureMap
         {
