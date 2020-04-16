@@ -22,6 +22,7 @@ namespace WeaponCore
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
 
         public List<TextureDrawData> DrawList = new List<TextureDrawData>();
+        public const float pixelsInMeter = 3779.52f;
 
         internal struct TextureMap
         {

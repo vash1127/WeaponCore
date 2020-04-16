@@ -11,9 +11,10 @@ namespace WeaponCore
 {
     partial class Hud
     {
-        internal void DrawText(string text, Vector4 color, Vector2 pos, float fontSize = 10f)
+        internal void DrawText(string text, Vector4 color, float x, float y, float fontSize = 10f)
         {
-            var position = new Vector3D(pos.X, pos.Y, 0);
+
+            var position = new Vector3D(x, y, -.1);
             var fov = _session.Camera.FovWithZoom;
             var aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
             var cameraWorldMatrix = _session.Camera.WorldMatrix;
@@ -21,12 +22,12 @@ namespace WeaponCore
 
             position.X *= scale * aspectratio;
             position.Y *= scale;
-            position = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), cameraWorldMatrix);
+            position = Vector3D.Transform(position, cameraWorldMatrix);
 
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
 
-            var height = fontSize / 3779.52f;// magic number, pixels in a meter
+            var height = fontSize / pixelsInMeter;// magic number, pixels in a meter
             var width = height * (aspectratio * .25f);
 
             var chars = text.ToCharArray();
