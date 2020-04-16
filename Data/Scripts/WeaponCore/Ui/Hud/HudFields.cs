@@ -1,5 +1,7 @@
-﻿using Sandbox.ModAPI;
+﻿using ParallelTasks;
+using Sandbox.ModAPI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,9 +18,10 @@ namespace WeaponCore
     partial class Hud
     {
         private const float _pixelsInMeter = 3779.52f;
-        private readonly MyConcurrentPool<TextureDrawData> _textureDrawPool = new MyConcurrentPool<TextureDrawData>(512, tdd => tdd.Clean());
+        private const int _initialPoolCapacity = 512;
 
-        private readonly MyConcurrentPool<TextDrawRequest> _textDrawPool = new MyConcurrentPool<TextDrawRequest>(256, tdr => tdr.Clean());
+        private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
+        private readonly ConcurrentQueue<TextDrawRequest> _textDrawPool = new ConcurrentQueue<TextDrawRequest>();
 
         private Session _session;
         private Dictionary<char, TextureMap> _characterMap;
@@ -49,6 +52,10 @@ namespace WeaponCore
         {
             _session = session;
             LoadTextMaps(out _characterMap); // possible translations in future
+
+            for (int i = 0; i < _initialPoolCapacity; i++)
+                _textureDrawPool.Enqueue(new TextureDrawData());
+
         }
 
         public class TextDrawRequest
@@ -58,15 +65,6 @@ namespace WeaponCore
             public float X;
             public float Y;
             public float FontSize = 10f;
-
-            public void Clean()
-            {
-                Text = null;
-                Color = Vector4.Zero;
-                X = 0;
-                Y = 0;
-                FontSize = 10f;
-            }
         }
 
         public class TextureDrawData
@@ -82,23 +80,6 @@ namespace WeaponCore
             public Vector2 UvSize;
             public float TextureSize;
             public MyBillboard.BlendTypeEnum Blend = PostPP;
-
-            public TextureDrawData() { }
-
-            public void Clean()
-            {
-                Material = MyStringId.NullOrEmpty;
-                Color = Color.Transparent;
-                Position = Vector3D.Zero;
-                Up = Vector3.Zero;
-                Left = Vector3.Zero;
-                Width = 0;
-                Height = 0;
-                UvOffset = Vector2.Zero;
-                UvSize = Vector2.Zero;
-                TextureSize = 0;
-                Blend = PostPP;
-            }
         }
     }
 }

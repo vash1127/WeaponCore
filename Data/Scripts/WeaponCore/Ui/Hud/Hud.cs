@@ -11,7 +11,11 @@ namespace WeaponCore
         
         internal void AddText(string text, Vector4 color, float x, float y, float fontSize = 10f)
         {
-            var textInfo = _textDrawPool.Get();
+            TextDrawRequest textInfo;
+
+            if (!_textDrawPool.TryDequeue(out textInfo))
+                textInfo = new TextDrawRequest();
+
             textInfo.Text = text;
             textInfo.Color = color;
             textInfo.X = x;
@@ -25,7 +29,10 @@ namespace WeaponCore
         internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSize, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
         {
             var position = new Vector3D(x, y, -.1);
-            var tdd = _textureDrawPool.Get();
+            TextureDrawData tdd;
+
+            if (!_textureDrawPool.TryDequeue(out tdd))
+                tdd = new TextureDrawData();
 
             tdd.Material = material;
             tdd.Color = color;
@@ -44,7 +51,10 @@ namespace WeaponCore
         internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float scale)
         {
             var position = new Vector3D(x, y, -.1);
-            var tdd = _textureDrawPool.Get();
+            TextureDrawData tdd;
+
+            if (!_textureDrawPool.TryDequeue(out tdd))
+                tdd = new TextureDrawData();
 
             tdd.Material = material;
             tdd.Color = color;
@@ -78,7 +88,10 @@ namespace WeaponCore
                 for (int j = 0; j < textAdd.Text.Length; j++)
                 {
                     var cm = _characterMap[textAdd.Text[j]];
-                    var tdd = _textureDrawPool.Get();
+                    TextureDrawData tdd;
+
+                    if (!_textureDrawPool.TryDequeue(out tdd))
+                        tdd = new TextureDrawData();
 
                     tdd.Material = cm.Material;
                     tdd.Color = textAdd.Color;
@@ -96,7 +109,7 @@ namespace WeaponCore
                     textPos -= (_cameraWorldMatrix.Left * width * _aspectratio);
                 }
 
-                _textDrawPool.Return(textAdd);
+                _textDrawPool.Enqueue(textAdd);
             }
 
             for (int i = 0; i < TextureAddList.Count; i++)
@@ -125,7 +138,7 @@ namespace WeaponCore
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p1, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p2, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
 
-                _textureDrawPool.Return(textureToDraw);
+                _textureDrawPool.Enqueue(textureToDraw);
             }
             #endregion
 
@@ -141,7 +154,7 @@ namespace WeaponCore
 
                 MyTransparentGeometry.AddBillboardOriented(textureToDraw.Material, textureToDraw.Color, textureToDraw.Position, _cameraWorldMatrix.Left, _cameraWorldMatrix.Up, (float)scale, textureToDraw.Blend);
 
-                _textureDrawPool.Return(textureToDraw);
+                _textureDrawPool.Enqueue(textureToDraw);
             }
 
             TextAddList.Clear();
