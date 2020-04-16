@@ -17,11 +17,14 @@ namespace WeaponCore
     {
         private readonly MyConcurrentPool<TextureDrawData> _textureDrawPool = new MyConcurrentPool<TextureDrawData>(256, tdd => tdd.Clean());
 
+        private readonly MyConcurrentPool<TextDrawRequest> _textDrawPool = new MyConcurrentPool<TextDrawRequest>(256, tdr => tdr.Clean());
+
         private Session _session;
         private Dictionary<char, TextureMap> _characterMap;
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
 
         public List<TextureDrawData> DrawList = new List<TextureDrawData>();
+        public List<TextDrawRequest> TextAddList = new List<TextDrawRequest>();
         public const float pixelsInMeter = 3779.52f;
 
         internal struct TextureMap
@@ -133,6 +136,24 @@ namespace WeaponCore
                 ['}'] = new TextureMap { Material = _monoFontAtlas1, UvOffset = new Vector2(750, 88), UvSize = new Vector2(30, 42), TextureSize = 1024 },
                 ['~'] = new TextureMap { Material = _monoFontAtlas1, UvOffset = new Vector2(780, 88), UvSize = new Vector2(30, 42), TextureSize = 1024 },
             };
+        }
+
+        public class TextDrawRequest
+        {
+            public string Text;
+            public Vector4 Color;
+            public float X;
+            public float Y;
+            public float FontSize = 10f;
+
+            public void Clean()
+            {
+                Text = null;
+                Color = Vector4.Zero;
+                X = 0;
+                Y = 0;
+                FontSize = 10f;
+            }
         }
 
         public class TextureDrawData

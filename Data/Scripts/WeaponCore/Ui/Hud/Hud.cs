@@ -11,47 +11,65 @@ namespace WeaponCore
 {
     partial class Hud
     {
-        internal void DrawText(string text, Vector4 color, float x, float y, float fontSize = 10f)
+
+        internal void AddText(string text, Vector4 color, float x, float y, float fontSize = 10f)
         {
-            var position = new Vector3D(x, y, -.1);
-            var fov = _session.Camera.FovWithZoom;
-            var aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
-            var cameraWorldMatrix = _session.Camera.WorldMatrix;
-            var scale = 0.075 * Math.Tan(fov * .5f);
+            var textRequest = _textDrawPool.Get();
+            textRequest.Text = text;
+            textRequest.Color = color;
+            textRequest.X = x;
+            textRequest.Y = y;
+            textRequest.FontSize = fontSize;
+            TextAddList.Add(textRequest);
+        }
 
-            position.X *= scale * aspectratio;
-            position.Y *= scale;
-            position = Vector3D.Transform(position, cameraWorldMatrix);
-
-            var left = cameraWorldMatrix.Left;
-            var up = cameraWorldMatrix.Up;
-
-            var height = fontSize / pixelsInMeter;
-            var width = height * (aspectratio * .25f);
-
-            var textPos = position;
-            for (int i = 0; i < text.Length; i++)
+        internal void CreateText()
+        {
+            for (int i = 0; i < TextAddList.Count; i++)
             {
-                var cm = _characterMap[text[i]];
+                var tdr = TextAddList[i];
+                
+                var fov = _session.Camera.FovWithZoom;
+                var aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
+                var cameraWorldMatrix = _session.Camera.WorldMatrix;
+                var scale = 0.075 * Math.Tan(fov * .5f);
+                var position = new Vector3D(tdr.X, tdr.Y, -.1);
 
-                var tdd = _textureDrawPool.Get();
+                position.X *= scale * aspectratio;
+                position.Y *= scale;
+                position = Vector3D.Transform(position, cameraWorldMatrix);
+                
+                var left = cameraWorldMatrix.Left;
+                var up = cameraWorldMatrix.Up;
 
-                tdd.Material = cm.Material;
-                tdd.Color = color;
-                tdd.Position = textPos;
-                tdd.Up = up;
-                tdd.Left = left;
-                tdd.Width = width;
-                tdd.Height = height;
-                tdd.UvOffset = cm.UvOffset;
-                tdd.UvSize = cm.UvSize;
-                tdd.TextureSize = cm.TextureSize;
+                var height = tdr.FontSize / pixelsInMeter;
+                var width = height * (aspectratio * .25f);
+                var textPos = position;
 
-                DrawList.Add(tdd);
+                for (int j = 0; j < tdr.Text.Length; j++)
+                {
+                    var cm = _characterMap[tdr.Text[j]];
 
-                textPos -= (left * width * aspectratio);
+                    var tdd = _textureDrawPool.Get();
+
+                    tdd.Material = cm.Material;
+                    tdd.Color = tdr.Color;
+                    tdd.Position = textPos;
+                    tdd.Up = up;
+                    tdd.Left = left;
+                    tdd.Width = width;
+                    tdd.Height = height;
+                    tdd.UvOffset = cm.UvOffset;
+                    tdd.UvSize = cm.UvSize;
+                    tdd.TextureSize = cm.TextureSize;
+
+                    DrawList.Add(tdd);
+
+                    textPos -= (left * width * aspectratio);
+                }
+                _textDrawPool.Return(tdr);
             }
-
+            TextAddList.Clear();
         }
 
         internal void DrawTextures()
