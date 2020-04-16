@@ -30,12 +30,10 @@ namespace WeaponCore
             var height = fontSize / pixelsInMeter;// magic number, pixels in a meter
             var width = height * (aspectratio * .25f);
 
-            var chars = text.ToCharArray();
-
             var textPos = position;
-            for (int i = 0; i < chars.Length; i++)
+            for (int i = 0; i < text.Length; i++)
             {
-                var cm = _characterMap[chars[i]];
+                var cm = _characterMap[text[i]];
 
                 var tdd = _textureDrawPool.Get();
 

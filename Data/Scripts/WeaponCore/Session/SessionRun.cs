@@ -159,6 +159,7 @@ namespace WeaponCore
                 DsUtil.Start("projectiles1");
                 Projectiles.Stage1();
                 DsUtil.Complete("projectiles1", true);
+                HudUi.DrawText("test", Color.Red, 0.5f, 0.5f, 10f);
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -194,11 +195,12 @@ namespace WeaponCore
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
 
-                if (HudUi.DrawList.Count > 0) HudUi.DrawTextures();
-
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
+                
+                if (HudUi.DrawList.Count > 0) HudUi.DrawTextures();
+
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();
