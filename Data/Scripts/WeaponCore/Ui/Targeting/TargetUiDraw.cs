@@ -64,7 +64,8 @@ namespace WeaponCore
             _delay = 0;
             _lastDrawTick = s.Tick;
 
-            //_session.HudUi.AddTexture(_cross, _reticleColor, _pointerPosition.X, _pointerPosition.Y, .02f);
+            //_session.HudUi.AddTexture(_cross, _reticleColor, _pointerPosition.X, _pointerPosition.Y);
+            //_session.HudUi.AddTexture(_cross, _reticleColor, _pointerPosition.X, _pointerPosition.Y, .03f);
 
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
             DrawReticle = true;
