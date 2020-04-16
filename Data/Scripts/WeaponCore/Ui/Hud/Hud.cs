@@ -74,7 +74,7 @@ namespace WeaponCore
 
         internal void DrawTextures()
         {
-            for(int i = DrawList.Count - 1; i >= 0 ; i--)
+            for(int i = 0; i < DrawList.Count; i++)
             {
                 var textureToDraw = DrawList[i];
                 var p0 = new Vector2(textureToDraw.UvOffset.X, textureToDraw.UvOffset.Y) / textureToDraw.TextureSize;
