@@ -199,9 +199,8 @@ namespace WeaponCore
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-
-                if (HudUi.TexturesToAdd > 0) HudUi.CreateTextures();
-                if (HudUi.DrawList.Count > 0) HudUi.DrawTextures();
+                
+                if (HudUi.TexturesToAdd > 0) HudUi.DrawTextures();
 
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {

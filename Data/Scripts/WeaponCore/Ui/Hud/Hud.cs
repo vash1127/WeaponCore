@@ -41,8 +41,27 @@ namespace WeaponCore
             TexturesToAdd++;
         }
 
-        internal void CreateTextures()
-        { 
+        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height)
+        {
+            /*var position = new Vector3D(x, y, -.1);
+            var tdd = _textureDrawPool.Get();
+
+            tdd.Material = material;
+            tdd.Color = color;
+            tdd.Position = position;
+            tdd.Width = width / _pixelsInMeter;
+            tdd.Height = height / _pixelsInMeter;
+            tdd.UvOffset = new Vector2(uvOffsetX, uvOffsetY);
+            tdd.UvSize = new Vector2(uvSizeX, uvSizeY);
+            tdd.TextureSize = textureSize;
+
+            TextureAddList.Add(tdd);
+
+            TexturesToAdd++;*/
+        }
+
+        internal void DrawTextures()
+        {
             _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
             _cameraWorldMatrix = _session.Camera.WorldMatrix;
             _scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * .5f);
@@ -82,7 +101,6 @@ namespace WeaponCore
 
                 _textDrawPool.Return(textAdd);
             }
-            TextAddList.Clear();
 
             for (int i = 0; i < TextureAddList.Count; i++)
             {
@@ -95,14 +113,8 @@ namespace WeaponCore
                 tdd.Left = _cameraWorldMatrix.Left;
                 DrawList.Add(tdd);
             }
-            TextureAddList.Clear();
 
-            TexturesToAdd = 0;
-        }
-
-        internal void DrawTextures()
-        {
-            for(int i = 0; i < DrawList.Count; i++)
+            for (int i = 0; i < DrawList.Count; i++)
             {
                 var textureToDraw = DrawList[i];
                 var p0 = new Vector2(textureToDraw.UvOffset.X, textureToDraw.UvOffset.Y) / textureToDraw.TextureSize;
@@ -117,7 +129,11 @@ namespace WeaponCore
                 MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p2, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
                 _textureDrawPool.Return(textureToDraw);
             }
+
+            TextAddList.Clear();
+            TextureAddList.Clear();
             DrawList.Clear();
+            TexturesToAdd = 0;
         }
     }
 }
