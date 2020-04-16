@@ -95,9 +95,10 @@ namespace WeaponCore.Support
                 var status = GetSystemStatus();
 
                 stringBuilder.Append(status +
-                    "\n[Construct DPS]: " + Ai.OptimalDps.ToString("0.0") +
+                    "\n[Construct DPS]: " + Ai.EffectiveDps.ToString("0.0") +
                     "\n[ShotsPerSec  ]: " + ShotsPerSec.ToString("0.000") +
                     "\n" +
+                    "\n[RealDps]: " + EffectiveDps.ToString("0.0") +
                     "\n[PeakDps]: " + PeakDps.ToString("0.0") +
                     "\n[BaseDps]: " + BaseDps.ToString("0.0") +
                     "\n[AreaDps]: " + AreaDps.ToString("0.0") +

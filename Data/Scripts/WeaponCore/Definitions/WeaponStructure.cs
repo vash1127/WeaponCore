@@ -452,6 +452,7 @@ namespace WeaponCore.Support
         public readonly float AmmoSoundMaxDistSqr;
         public readonly float BaseDps;
         public readonly float AreaDps;
+        public readonly float EffectiveDps;
         public readonly float DetDps;
         public readonly float PeakDps;
         public readonly float ShotsPerSec;
@@ -539,7 +540,7 @@ namespace WeaponCore.Support
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out ChargSize, out BurstMode, out HasShotReloadDelay);
             Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
-            GetPeakDps(ammo, system, wDef, out PeakDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
+            GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             //GetParticleInfo(ammo, wDef, session);
 
             DesiredProjectileSpeed = (!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
@@ -622,7 +623,191 @@ namespace WeaponCore.Support
                 }
             }
         }
+        private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        {
+            var s = system;
+            var a = ammoDef.AmmoDef;
+            var hasShrapnel = ShrapnelId > -1;
+            var l = wDef.HardPoint.Loading;
 
+            var mexLogLevel = 1; //dirty log levels :P
+
+
+            if (mexLogLevel >= 1) Log.Line($"-----");
+            if (mexLogLevel >= 1) Log.Line($"Name = {s.WeaponName}"); //a.EnergyMagazineSize
+            if (mexLogLevel >= 2) Log.Line($"EnergyMag = {a.EnergyMagazineSize}");
+
+            var baselineRange = 1000;
+
+            //Inaccuracy
+            var inaccuracyRadius = Math.Tan(wDef.HardPoint.DeviateShotAngle / 2) * baselineRange;
+
+            var inaccuracyScore = ((Math.PI * 10 * 10) / (Math.PI * inaccuracyRadius * inaccuracyRadius));
+            inaccuracyScore = inaccuracyScore > 1 ? 1 : inaccuracyScore;
+            inaccuracyScore = wDef.HardPoint.DeviateShotAngle <= 0 ? 1 : inaccuracyScore;
+
+
+            //EffectiveRange
+            var effectiveRangeScore = 1 / (baselineRange / a.Trajectory.DesiredSpeed);
+            effectiveRangeScore = effectiveRangeScore > 1 ? 1 : effectiveRangeScore;
+            effectiveRangeScore = a.Beams.Enable ? 1 : effectiveRangeScore;
+            effectiveRangeScore = 1;
+
+
+            //TrackingScore
+            var coverageScore = ((Math.Abs(s.MinElevation) + (float)Math.Abs(s.MaxElevation)) * ((Math.Abs(s.MinAzimuth) + Math.Abs(s.MaxAzimuth)))) / (360 * 90);
+            coverageScore = coverageScore > 1 ? 1 : coverageScore;
+
+            var speedEl = (wDef.HardPoint.HardWare.ElevateRate * (180 / Math.PI)) * 60;
+            var coverageElevateScore = speedEl / (180d / 5d);
+            var speedAz = (wDef.HardPoint.HardWare.RotateRate * (180 / Math.PI)) * 60;
+            var coverageRotateScore = speedAz / (180d / 5d);
+
+
+
+
+            var trackingScore = (coverageScore + ((coverageRotateScore + coverageElevateScore) * 0.5d)) * 0.5d;
+            //if a sorter weapon use several barrels with only elevation or rotation the score should be uneffected since its designer to work
+            if (MyUtils.IsZero(Math.Abs(s.MinElevation) + (float)Math.Abs(s.MaxElevation)))
+                trackingScore = (coverageScore + ((coverageRotateScore + 1) * 0.5d)) * 0.5d;
+
+            if ((Math.Abs(s.MinAzimuth) + Math.Abs(s.MaxAzimuth)) == 0)
+                trackingScore = (coverageScore + ((coverageElevateScore + 1) * 0.5d)) * 0.5d;
+
+            if (MyUtils.IsZero(Math.Abs(s.MinElevation) + (float)Math.Abs(s.MaxElevation) + (Math.Abs(s.MinAzimuth) + Math.Abs(s.MaxAzimuth))))
+                trackingScore = 1.0d;
+
+            trackingScore = trackingScore > 1 ? 1 : trackingScore;
+
+            //FinalScore
+            var effectiveModifier = ((effectiveRangeScore * inaccuracyScore) * trackingScore);
+
+            //Logs for effective dps
+            if (mexLogLevel >= 2) Log.Line($"newInaccuracyRadius = {inaccuracyRadius}");
+            if (mexLogLevel >= 2) Log.Line($"DeviationAngle = { wDef.HardPoint.DeviateShotAngle}");
+            if (mexLogLevel >= 1) Log.Line($"InaccuracyScore = {inaccuracyScore}");
+            if (mexLogLevel >= 1) Log.Line($"effectiveRangeScore = {effectiveRangeScore}");
+            if (mexLogLevel >= 2) Log.Line($"coverageScore = {coverageScore}");
+            if (mexLogLevel >= 2) Log.Line($"ElevateRate = {(wDef.HardPoint.HardWare.ElevateRate * (180 / Math.PI))}");
+            if (mexLogLevel >= 2) Log.Line($"coverageElevate = {speedEl}");
+            if (mexLogLevel >= 2) Log.Line($"coverageElevateScore = {coverageElevateScore}");
+            if (mexLogLevel >= 2) Log.Line($"RotateRate = {(wDef.HardPoint.HardWare.RotateRate * (180 / Math.PI))}");
+            if (mexLogLevel >= 2) Log.Line($"coverageRotate = {speedAz}");
+            if (mexLogLevel >= 2) Log.Line($"coverageRotateScore = {coverageRotateScore}");
+
+            if (mexLogLevel >= 2) Log.Line($"CoverageScore = {(coverageScore + ((coverageRotateScore + coverageElevateScore) * 0.5d)) * 0.5d}");
+            if (mexLogLevel >= 1) Log.Line($"trackingScore = {trackingScore}");
+            if (mexLogLevel >= 1) Log.Line($"effectiveModifier = {effectiveModifier}");
+
+
+            //DPS Calc
+
+
+            if (!EnergyAmmo && MagazineSize > 0 || IsHybrid)
+            {
+                Log.Line($"Physical Mag");
+                if (IsHybrid) Log.Line($"IsHybrid");
+                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
+                burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
+
+                var drainPerMin = ((MagazineSize / (double)s.RateOfFire) / s.BarrelsPerShot) * 3600d;
+                drainPerMin = MagazineSize >= 1 ? drainPerMin : 1;
+
+                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
+                var timePerMag = drainPerMin + s.ReloadTime + timeSpentOnBurst;
+
+                shotsPerSec = (float) (((3600d / timePerMag) * MagazineSize) / 60 * l.TrajectilesPerBarrel);
+            }
+
+
+
+            else if (EnergyAmmo && a.EnergyMagazineSize > 0)
+            {
+                Log.Line($"Energy Mag");
+                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(a.EnergyMagazineSize / l.ShotsInBurst)) : 0;
+                burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
+
+                var drainPerMin = ((a.EnergyMagazineSize / (double)s.RateOfFire) / s.BarrelsPerShot) * 3600d;
+                drainPerMin = a.EnergyMagazineSize >= 1 ? drainPerMin : 1;
+
+                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
+                var timePerMag = drainPerMin + s.ReloadTime + timeSpentOnBurst;
+
+                shotsPerSec = (float) (((3600d / timePerMag) * a.EnergyMagazineSize) / 60 * l.TrajectilesPerBarrel);
+
+            }
+            else
+            {
+                Log.Line($"Burst Fire");
+                var shotyPerBurst = s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1;
+                var burstTime = ((((3600f / s.RateOfFire) * shotyPerBurst) + l.DelayAfterBurst) + s.ReloadTime) / 60;
+                Log.Line($"BURST - burstTime = {burstTime}");
+                var projectilesInBurst = ((s.BarrelsPerShot * l.TrajectilesPerBarrel) * (s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1));
+                Log.Line($"BURST - projectilesInBurst = {projectilesInBurst}");
+                var burstPerMin = (60 / burstTime);
+                var burstProjectilesPerMin = burstPerMin * projectilesInBurst;
+                var burstPerSec = burstProjectilesPerMin / 60;
+                Log.Line($"BURST - shotsPerSec = {burstPerSec}");
+                shotsPerSec = burstPerSec;
+            }
+            var shotsPerSecPower = shotsPerSec; //save for power calc
+
+            if (s.HeatPerShot > 0)
+            {
+
+
+                var heatGenPerSec = (l.HeatPerShot * shotsPerSec) - l.HeatSinkRate; //heat - cooldown
+
+
+
+                if (heatGenPerSec > 0)
+                {
+
+                    var safeToOverheat = (l.MaxHeat - (l.MaxHeat * l.Cooldown)) / heatGenPerSec;
+                    var cooldownTime = (l.MaxHeat - (l.MaxHeat * l.Cooldown)) / l.HeatSinkRate;
+
+                    var timeHeatCycle = (safeToOverheat + cooldownTime);
+
+
+                    shotsPerSec = ((safeToOverheat / timeHeatCycle) * shotsPerSec);
+
+                    Log.Line($"Name = {s.WeaponName}");
+                    Log.Line($"HeatPerShot = {l.HeatPerShot}");
+                    Log.Line($"HeatGenPerSec = {heatGenPerSec}");
+
+                    Log.Line($"WepCoolDown = {l.Cooldown}");
+
+                    Log.Line($"safeToOverheat = {safeToOverheat}");
+                    Log.Line($"cooldownTime = {cooldownTime}");
+
+
+                    Log.Line($"timeHeatCycle = {timeHeatCycle}s");
+
+                    Log.Line($"shotsPerSec wHeat = {shotsPerSec}");
+
+                }
+
+            }
+
+            baseDps = BaseDamage * shotsPerSec;
+            areaDps = (float)(!AmmoAreaEffect ? 0 : ((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5d)) * shotsPerSec));
+            detDps = (float)(a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d)) * shotsPerSec : 0);
+
+            if (hasShrapnel)
+            {
+                var sAmmo = wDef.Ammos[ShrapnelId];
+                var fragments = a.Shrapnel.Fragments;
+                baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
+                areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5d)) * fragments) * shotsPerSec;
+                detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? ((sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments) * shotsPerSec : 0;
+            }
+            peakDps = (baseDps + areaDps + detDps);
+            effectiveDps = (float) (peakDps * effectiveModifier);
+            if (mexLogLevel >= 1) Log.Line($"peakDps= {peakDps}");
+
+            if (mexLogLevel >= 1) Log.Line($"Effecetive DPS(mult) = {effectiveDps}");
+        }
+        /*
         private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
@@ -664,7 +849,7 @@ namespace WeaponCore.Support
             }
             peakDps = (baseDps + areaDps + detDps);
         }
-
+        */
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse)
         {
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;

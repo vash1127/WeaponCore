@@ -137,6 +137,7 @@ namespace WeaponCore.Support
         internal float LastRequestedPower;
         internal float LastAvailablePower;
         internal float OptimalDps;
+        internal float EffectiveDps;
         internal enum TargetType
         {
             Projectile,
