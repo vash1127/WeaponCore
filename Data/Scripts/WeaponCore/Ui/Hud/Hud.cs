@@ -13,7 +13,6 @@ namespace WeaponCore
     {
         internal void DrawText(string text, Vector4 color, float x, float y, float fontSize = 10f)
         {
-
             var position = new Vector3D(x, y, -.1);
             var fov = _session.Camera.FovWithZoom;
             var aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
@@ -27,7 +26,7 @@ namespace WeaponCore
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
 
-            var height = fontSize / pixelsInMeter;// magic number, pixels in a meter
+            var height = fontSize / pixelsInMeter;
             var width = height * (aspectratio * .25f);
 
             var chars = text.ToCharArray();
