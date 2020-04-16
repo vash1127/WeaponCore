@@ -16,7 +16,6 @@ namespace WeaponCore
     {
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
-            HudUi.DrawText("Hello Goodbye", Color.CadetBlue, .5f, .5f);
             foreach (var aiPair in GridTargetingAIs)
             {
                 ///
