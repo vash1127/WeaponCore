@@ -43,6 +43,7 @@ namespace WeaponCore.Support
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
         //internal float MaxInventoryVolume;
+        internal float EffectiveDps;
         internal float PeakDps;
         internal float ShotsPerSec;
         internal float BaseDps;

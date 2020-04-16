@@ -28,6 +28,7 @@ namespace WeaponCore.Support
                 {
                     Ai.CompChange(false, this);
                     Ai.OptimalDps -= PeakDps;
+                    Ai.EffectiveDps -= EffectiveDps;
                     WeaponComponent comp;
                     if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                     {

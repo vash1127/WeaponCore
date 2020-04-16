@@ -230,6 +230,7 @@ namespace WeaponCore.Support
                 }
 
                 Ai.OptimalDps += PeakDps;
+                Ai.EffectiveDps += EffectiveDps;
                 Ai.Construct.Update(Ai);
 
                 if (!FunctionalBlock.Enabled)

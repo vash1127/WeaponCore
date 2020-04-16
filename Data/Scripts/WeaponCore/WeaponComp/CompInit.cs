@@ -81,6 +81,7 @@ namespace WeaponCore.Support
             if (!weapon.System.DesignatorWeapon)
             {
                 PeakDps += weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps;
+                EffectiveDps += weapon.ActiveAmmoDef.AmmoDef.Const.EffectiveDps;
                 ShotsPerSec += weapon.ActiveAmmoDef.AmmoDef.Const.ShotsPerSec;
                 BaseDps += weapon.ActiveAmmoDef.AmmoDef.Const.BaseDps;
                 AreaDps += weapon.ActiveAmmoDef.AmmoDef.Const.AreaDps;
