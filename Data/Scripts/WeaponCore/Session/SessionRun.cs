@@ -159,8 +159,6 @@ namespace WeaponCore
                 DsUtil.Start("projectiles1");
                 Projectiles.Stage1();
                 DsUtil.Complete("projectiles1", true);
-                HudUi.AddText("Stop Breaking Things", Color.Red, -0.3f, 0.5f, 20f);
-                HudUi.AddText("Pilfit", Color.Blue, -0.1f, 0f, 20f);
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -204,6 +202,7 @@ namespace WeaponCore
 
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
+
                     if (WheelUi.WheelActive) WheelUi.DrawWheel();
                     TargetUi.DrawTargetUi();
                 }
