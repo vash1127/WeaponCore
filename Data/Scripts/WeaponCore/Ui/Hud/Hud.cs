@@ -43,14 +43,9 @@ namespace WeaponCore
 
         internal void CreateTextures()
         { 
-            if (_lastPostionUpdateTick != _session.Tick)
-            {
-                _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
-                _cameraWorldMatrix = _session.Camera.WorldMatrix;
-                _scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * .5f);
-                _lastPostionUpdateTick = _session.Tick;
-            }
-
+            _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
+            _cameraWorldMatrix = _session.Camera.WorldMatrix;
+            _scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * .5f);
 
             for (int i = 0; i < TextAddList.Count; i++)
             {

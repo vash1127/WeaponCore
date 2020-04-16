@@ -24,7 +24,6 @@ namespace WeaponCore
         private Dictionary<char, TextureMap> _characterMap;
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
         private MatrixD _cameraWorldMatrix;
-        private uint _lastPostionUpdateTick;
         private float _aspectratio;
         private double _scale;
 
