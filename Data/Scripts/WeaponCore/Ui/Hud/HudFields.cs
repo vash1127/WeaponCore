@@ -54,7 +54,10 @@ namespace WeaponCore
             LoadTextMaps(out _characterMap); // possible translations in future
 
             for (int i = 0; i < _initialPoolCapacity; i++)
+            {
                 _textureDrawPool.Enqueue(new TextureDrawData());
+                _textDrawPool.Enqueue(new TextDrawRequest());
+            }
 
         }
 
