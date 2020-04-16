@@ -147,6 +147,7 @@ namespace WeaponCore
             TextAddList.Clear();
             TextureAddList.Clear();
             UvDrawList.Clear();
+            SimpleDrawList.Clear();
             TexturesToAdd = 0;
         }
     }
