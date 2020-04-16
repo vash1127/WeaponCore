@@ -57,6 +57,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VersionControl.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\Hud.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudTextMaps.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\SupportClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiBlockGroups.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />

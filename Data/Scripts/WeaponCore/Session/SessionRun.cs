@@ -159,7 +159,8 @@ namespace WeaponCore
                 DsUtil.Start("projectiles1");
                 Projectiles.Stage1();
                 DsUtil.Complete("projectiles1", true);
-                HudUi.AddText("test", Color.Red, 0.5f, 0.5f, 10f);
+                HudUi.AddText("Stop Breaking Things", Color.Red, -0.3f, 0.5f, 20f);
+                HudUi.AddText("Pilfit", Color.Blue, -0.1f, 0f, 20f);
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
