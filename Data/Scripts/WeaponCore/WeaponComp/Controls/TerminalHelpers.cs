@@ -404,7 +404,7 @@ namespace WeaponCore.Control
             else
             {
                 cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.None : ControlType.Toolbar;
+                cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
             }
 
 
