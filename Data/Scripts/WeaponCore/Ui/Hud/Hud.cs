@@ -2,6 +2,7 @@
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 using static VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore
@@ -26,7 +27,7 @@ namespace WeaponCore
             TexturesToAdd++;
         }
 
-        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSize, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
+        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
         {
             var position = new Vector3D(x, y, -.1);
             TextureDrawData tdd;
@@ -37,11 +38,11 @@ namespace WeaponCore
             tdd.Material = material;
             tdd.Color = color;
             tdd.Position = position;
-            tdd.Width = width / _pixelsInMeter;
-            tdd.Height = height / _pixelsInMeter;
+            tdd.Width = width * _metersInPixel;
+            tdd.Height = height * _metersInPixel;
             tdd.UvOffset = new Vector2(uvOffsetX, uvOffsetY);
             tdd.UvSize = new Vector2(uvSizeX, uvSizeY);
-            tdd.TextureSize = textureSize;
+            tdd.TextureSize = new Vector2(textureSizeX, textureSizeY);
 
             TextureAddList.Add(tdd);
 
@@ -68,21 +69,79 @@ namespace WeaponCore
 
         internal void DrawTextures()
         {
-            _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
+            _aspectratio = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
             _cameraWorldMatrix = _session.Camera.WorldMatrix;
-            _scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * .5f);
+
+            CurrWeaponDisplayPos = new Vector2((_session.Camera.ViewportSize.X * .25f) * _metersInPixel, (_session.Camera.ViewportSize.Y * .125f) * _metersInPixel);
+
+            #region WeaponHudDisplay
+
+            for (int i = 0; i < WeaponsToDisplay.Count; i++)
+            {
+                TextDrawRequest textInfo;
+                TextureDrawData tdd;
+                TextureDrawData tdd2;
+
+                var weapon = WeaponsToDisplay[i];
+                var name = weapon.System.WeaponName + ": ";
+                var textOffset = name.Length * _WeaponHudFontHeight;
+                if (weapon.State.Sync.Reloading)
+                {
+                    textOffset += _reloadWidthOffset * 1.5f;
+
+                    if (!_textureDrawPool.TryDequeue(out tdd))
+                        tdd = new TextureDrawData();
+
+                    tdd.Material = MyStringId.GetOrCompute("ReloadingText");
+                    tdd.Color = Color.Red;
+                    tdd.Position = new Vector3D(CurrWeaponDisplayPos.X - _reloadWidthOffset, CurrWeaponDisplayPos.Y + _reloadHeightOffset, -.1f);
+                    tdd.Width = _reloadWidth;
+                    tdd.Height = _reloadHeight;
+                    tdd.UvOffset = new Vector2(0, 0);
+                    tdd.UvSize = new Vector2(128, 128);
+                    tdd.TextureSize = new Vector2(128, 128);
+
+                    TextureAddList.Add(tdd);
+                }
+
+                /* heat texture
+                if (!_textDrawPool.TryDequeue(out textInfo))
+                    textInfo = new TextDrawRequest();
+
+                textInfo.Text = name;
+                textInfo.Color = Color.White;
+                textInfo.X = CurrWeaponDisplayPos.X - textOffset;
+                textInfo.Y = CurrWeaponDisplayPos.Y;
+                textInfo.FontSize = _WeaponHudFontSize;
+                TextAddList.Add(textInfo);
+
+                if (!_textureDrawPool.TryDequeue(out tdd2))
+                    tdd2 = new TextureDrawData();
+
+                tdd2.Material = _heatAtlas;
+                tdd2.Color = Color.Red;
+                tdd2.Position = new Vector3D(0, 0, -.1f);
+                tdd2.Width = 100;
+                tdd2.Height = 100;
+                tdd2.UvOffset = new Vector2(0, 0);
+                tdd2.UvSize = new Vector2(640, 71);
+                tdd2.TextureSize = new Vector2(640, 71);
+
+                TextureAddList.Add(tdd2);*/
+
+                CurrWeaponDisplayPos.Y -= _WeaponHudFontHeight * 1.7f;
+            }
+            #endregion
 
             #region UV Offset based draws
             for (int i = 0; i < TextAddList.Count; i++)
             {
                 var textAdd = TextAddList[i];
                 var position = new Vector3D(textAdd.X, textAdd.Y, -.1);
-                position.X *= _scale * _aspectratio;
-                position.Y *= _scale;
                 position = Vector3D.Transform(position, _cameraWorldMatrix);
 
-                var height = textAdd.FontSize / _pixelsInMeter;
-                var width = height * (_aspectratio * .25f);
+                var height = textAdd.FontSize * _metersInPixel;
+                var width = height * _aspectratio;
                 var textPos = position;
 
                 for (int j = 0; j < textAdd.Text.Length; j++)
@@ -106,7 +165,7 @@ namespace WeaponCore
 
                     UvDrawList.Add(tdd);
 
-                    textPos -= (_cameraWorldMatrix.Left * width * _aspectratio);
+                    textPos -= (_cameraWorldMatrix.Left * height);
                 }
 
                 _textDrawPool.Enqueue(textAdd);
@@ -115,9 +174,7 @@ namespace WeaponCore
             for (int i = 0; i < TextureAddList.Count; i++)
             {
                 var tdd = TextureAddList[i];
-
-                tdd.Position.X *= _scale * _aspectratio;
-                tdd.Position.Y *= _scale;
+                
                 tdd.Position = Vector3D.Transform(tdd.Position, _cameraWorldMatrix);
                 tdd.Up = _cameraWorldMatrix.Up;
                 tdd.Left = _cameraWorldMatrix.Left;
@@ -142,13 +199,12 @@ namespace WeaponCore
             }
             #endregion
 
+            #region Simple based draws
             for (int i = 0; i < SimpleDrawList.Count; i++)
             {
                 var textureToDraw = SimpleDrawList[i];
                 var scale = 0.075 * Math.Tan(_session.Camera.FovWithZoom * textureToDraw.Height);
                 
-                textureToDraw.Position.X *= _scale * _aspectratio;
-                textureToDraw.Position.Y *= _scale;
                 textureToDraw.Position = Vector3D.Transform(textureToDraw.Position, _cameraWorldMatrix);                
                 scale = 1 * scale;
 
@@ -156,7 +212,10 @@ namespace WeaponCore
 
                 _textureDrawPool.Enqueue(textureToDraw);
             }
+            #endregion
 
+            WeaponsToDisplayCheck.Clear();
+            WeaponsToDisplay.Clear();
             TextAddList.Clear();
             TextureAddList.Clear();
             UvDrawList.Clear();
