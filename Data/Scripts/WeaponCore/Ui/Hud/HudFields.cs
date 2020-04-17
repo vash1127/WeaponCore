@@ -83,7 +83,7 @@ namespace WeaponCore
         internal class TextDrawRequest
         {
             internal string Text;
-            internal Vector4 Color;
+            internal Color Color;
             internal float X;
             internal float Y;
             internal float FontSize = 10f;

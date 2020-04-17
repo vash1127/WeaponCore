@@ -537,6 +537,8 @@ namespace WeaponCore.Platform
 
             if (State?.Sync == null || Comp?.State?.Value == null  || Comp.Ai == null|| Timings == null|| !State.Sync.Reloading || State.Sync.CurrentAmmo > 0) return;
 
+            LastLoadedTick = Comp.Session.Tick;
+
             using (Comp.MyCube?.Pin())
             {
                 if (Comp.MyCube != null && Comp.MyCube.MarkedForClose) return;

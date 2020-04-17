@@ -114,6 +114,7 @@ namespace WeaponCore.Platform
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
         internal uint ShotExtentCount;
+        internal uint LastLoadedTick;
         internal int FireCounter;
         internal int RateOfFire;
         internal int BarrelSpinRate;

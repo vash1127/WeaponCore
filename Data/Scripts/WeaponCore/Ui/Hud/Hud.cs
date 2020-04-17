@@ -91,13 +91,13 @@ namespace WeaponCore
                 var textOffset = name.Length * _WeaponHudFontHeight;
                 textOffset += _reloadWidthOffset + (_padding * 1.5f);
 
-                if (weapon.State.Sync.Reloading)
+                if (weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30)
                 {
                     if (!_textureDrawPool.TryDequeue(out reloadTexture))
                         reloadTexture = new TextureDrawData();
 
                     reloadTexture.Material = _reloadingTexture.Material;
-                    reloadTexture.Color = Color.Red;
+                    reloadTexture.Color = Color.Red * _session.UiOpacity;
                     reloadTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - _reloadWidthOffset, CurrWeaponDisplayPos.Y + _reloadHeightOffset, -.1f);
                     reloadTexture.Width = _reloadWidth;
                     reloadTexture.Height = _reloadHeight;
@@ -113,7 +113,7 @@ namespace WeaponCore
                     textInfo = new TextDrawRequest();
 
                 textInfo.Text = name;
-                textInfo.Color = Color.White;
+                textInfo.Color = Color.White * _session.UiOpacity;
                 textInfo.X = CurrWeaponDisplayPos.X - textOffset;
                 textInfo.Y = CurrWeaponDisplayPos.Y;
                 textInfo.FontSize = _WeaponHudFontSize;
@@ -131,7 +131,7 @@ namespace WeaponCore
                         heatBarIndex = (int)(weapon.HeatPerc * 10);
 
                     heatTexture.Material = _heatBarTexture[heatBarIndex].Material;
-                    heatTexture.Color = Color.Transparent;
+                    heatTexture.Color = Color.Transparent ;
                     heatTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - (_heatWidth * 1.5f), CurrWeaponDisplayPos.Y - _heatHeightOffset, -.1f);
                     heatTexture.Width = _heatWidth;
                     heatTexture.Height = _heatHeight;
