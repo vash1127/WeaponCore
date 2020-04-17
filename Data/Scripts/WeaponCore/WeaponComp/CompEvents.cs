@@ -109,7 +109,7 @@ namespace WeaponCore.Support
                     stringBuilder.Append("\n__________________________________" +
                     "\n[Heat Generated / s]: " + HeatPerSecond.ToString("0.0") + " W" +
                     "\n[Heat Dissipated / s]: " + HeatSinkRate.ToString("0.0") + " W" +
-                    "\n[Current Heat]: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat /MaxHeat).ToString("P")+")");
+                    "\n[Current Heat]: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat / MaxHeat).ToString("P")+")");
 
                 if (HeatPerSecond > 0 && HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");

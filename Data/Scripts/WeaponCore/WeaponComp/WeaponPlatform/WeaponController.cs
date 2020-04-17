@@ -151,25 +151,26 @@ namespace WeaponCore.Platform
         {
             try
             {
-                var currentHeat = State.Sync.Heat;
-                currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
-                var set = currentHeat - LastHeat > 0.001 || currentHeat - LastHeat < 0.001;
+                Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
+                State.Sync.Heat = State.Sync.Heat >= HsRate ? State.Sync.Heat - HsRate : 0;
+
+                var set = State.Sync.Heat - LastHeat > 0.001 || State.Sync.Heat - LastHeat < 0.001;
 
                 Timings.LastHeatUpdateTick = Comp.Session.Tick;
 
                 if (!Comp.Session.DedicatedServer)
                 {
-                    var heatPercent = currentHeat / System.MaxHeat;
+                    var heatOffset = HeatPerc = State.Sync.Heat / System.MaxHeat;
 
-                    if (set && heatPercent > .33)
+                    if (set && heatOffset > .33)
                     {
-                        if (heatPercent > 1) heatPercent = 1;
+                        if (heatOffset > 1) heatOffset = 1;
 
-                        heatPercent -= .33f;
+                        heatOffset -= .33f;
 
-                        var intensity = .7f * heatPercent;
+                        var intensity = .7f * heatOffset;
 
-                        var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
+                        var color = Comp.Session.HeatEmissives[(int)(heatOffset * 100)];
 
                         for(int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", color, intensity);
@@ -178,7 +179,7 @@ namespace WeaponCore.Platform
                         for(int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
-                    LastHeat = currentHeat;
+                    LastHeat = State.Sync.Heat;
                 }
 
                 if (set && System.DegRof && State.Sync.Heat >= (System.MaxHeat * .8))
@@ -209,34 +210,22 @@ namespace WeaponCore.Platform
                     if (System.HasBarrelRotation) UpdateBarrelRotation();
                 }
 
-                if (_fakeHeatTick * 30 == 60)
+                if (State.Sync.Overheated && State.Sync.Heat <= (System.MaxHeat * System.WepCoolDown))
                 {
-                    Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
-                    State.Sync.Heat = State.Sync.Heat >= HsRate ? State.Sync.Heat - HsRate : 0;
-
-                    if (State.Sync.Overheated && State.Sync.Heat <= (System.MaxHeat * System.WepCoolDown))
-                    {
-                        //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                        if (CurLgstAnimPlaying != null)
-                            Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
+                    if (CurLgstAnimPlaying != null)
+                        Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
                         
-                        EventTriggerStateChanged(EventTriggers.Overheated, false);
-                        State.Sync.Overheated = false;
-                    }
-
-                    _fakeHeatTick = -1;
+                    EventTriggerStateChanged(EventTriggers.Overheated, false);
+                    State.Sync.Overheated = false;
                 }
 
-                //Log.Line($"currentHeat :{currentHeat} _fakeHeatTick: {_fakeHeatTick}");
+                if (!Comp.State.Value.Online)
+                    Comp.TerminalRefresh();
 
                 if (State.Sync.Heat > 0)
-                {
-                    _fakeHeatTick++;
                     Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
-                }
                 else
                 {
-                    _fakeHeatTick = 0;
                     HeatLoopRunning = false;
                     Timings.LastHeatUpdateTick = 0;
                 }

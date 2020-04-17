@@ -6726,14 +6726,14 @@
 	<TransparentMaterial>
     <Id>
       <TypeId>TransparentMaterialDefinition</TypeId>
-      <SubtypeId>HeatAtlas</SubtypeId>
+      <SubtypeId>HeatAtlasBar</SubtypeId>
     </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\HeatAtlas.dds</Texture>
+      <Texture>Textures\GUI\HeatAtlas_bar.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <UVOffset>
         <X>0</X>

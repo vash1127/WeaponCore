@@ -35,14 +35,17 @@ namespace WeaponCore
             if (!_textureDrawPool.TryDequeue(out tdd))
                 tdd = new TextureDrawData();
 
+            var textureSize = new Vector2(textureSizeX, textureSizeY);
+
             tdd.Material = material;
             tdd.Color = color;
             tdd.Position = position;
             tdd.Width = width * _metersInPixel;
             tdd.Height = height * _metersInPixel;
-            tdd.UvOffset = new Vector2(uvOffsetX, uvOffsetY);
-            tdd.UvSize = new Vector2(uvSizeX, uvSizeY);
-            tdd.TextureSize = new Vector2(textureSizeX, textureSizeY);
+            tdd.P0 = new Vector2(uvOffsetX, uvOffsetY) / textureSize;
+            tdd.P1 = new Vector2(uvOffsetX + uvSizeX, uvOffsetY) / textureSize;
+            tdd.P2 = new Vector2(uvOffsetX, uvOffsetY + uvSizeY) / textureSize;
+            tdd.P3 = new Vector2(uvOffsetX + uvSizeX, uvOffsetY + uvSizeY) / textureSize;
 
             TextureAddList.Add(tdd);
 
@@ -72,38 +75,39 @@ namespace WeaponCore
             _aspectratio = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
             _cameraWorldMatrix = _session.Camera.WorldMatrix;
 
-            CurrWeaponDisplayPos = new Vector2((_session.Camera.ViewportSize.X * .25f) * _metersInPixel, (_session.Camera.ViewportSize.Y * .125f) * _metersInPixel);
-
             #region WeaponHudDisplay
+
+            if(WeaponsToDisplay.Count > 0)
+                CurrWeaponDisplayPos = new Vector2((_session.Camera.ViewportSize.X * .25f) * _metersInPixel, (_session.Camera.ViewportSize.Y * .125f) * _metersInPixel);
 
             for (int i = 0; i < WeaponsToDisplay.Count; i++)
             {
                 TextDrawRequest textInfo;
-                TextureDrawData tdd;
-                TextureDrawData tdd2;
+                TextureDrawData reloadTexture;
+                TextureDrawData heatTexture;
 
                 var weapon = WeaponsToDisplay[i];
                 var name = weapon.System.WeaponName + ": ";
                 var textOffset = name.Length * _WeaponHudFontHeight;
+                textOffset += _reloadWidthOffset + (_padding * 1.5f);
+
                 if (weapon.State.Sync.Reloading)
                 {
-                    textOffset += _reloadWidthOffset * 1.5f;
+                    if (!_textureDrawPool.TryDequeue(out reloadTexture))
+                        reloadTexture = new TextureDrawData();
 
-                    if (!_textureDrawPool.TryDequeue(out tdd))
-                        tdd = new TextureDrawData();
+                    reloadTexture.Material = _reloadingTexture.Material;
+                    reloadTexture.Color = Color.Red;
+                    reloadTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - _reloadWidthOffset, CurrWeaponDisplayPos.Y + _reloadHeightOffset, -.1f);
+                    reloadTexture.Width = _reloadWidth;
+                    reloadTexture.Height = _reloadHeight;
+                    reloadTexture.P0 = _reloadingTexture.P0;
+                    reloadTexture.P1 = _reloadingTexture.P1;
+                    reloadTexture.P2 = _reloadingTexture.P2;
+                    reloadTexture.P3 = _reloadingTexture.P3;
 
-                    tdd.Material = MyStringId.GetOrCompute("ReloadingText");
-                    tdd.Color = Color.Red;
-                    tdd.Position = new Vector3D(CurrWeaponDisplayPos.X - _reloadWidthOffset, CurrWeaponDisplayPos.Y + _reloadHeightOffset, -.1f);
-                    tdd.Width = _reloadWidth;
-                    tdd.Height = _reloadHeight;
-                    tdd.UvOffset = new Vector2(0, 0);
-                    tdd.UvSize = new Vector2(128, 128);
-                    tdd.TextureSize = new Vector2(128, 128);
-
-                    TextureAddList.Add(tdd);
+                    TextureAddList.Add(reloadTexture);
                 }
-
                 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();
@@ -115,22 +119,29 @@ namespace WeaponCore
                 textInfo.FontSize = _WeaponHudFontSize;
                 TextAddList.Add(textInfo);
 
-                /* heat texture
-                if (!_textureDrawPool.TryDequeue(out tdd2))
-                    tdd2 = new TextureDrawData();
+                
+                if (weapon.HeatPerc > 0)
+                {
+                    if (!_textureDrawPool.TryDequeue(out heatTexture))
+                        heatTexture = new TextureDrawData();
 
-                tdd2.Material = _heatAtlas;
-                tdd2.Color = Color.Red;
-                tdd2.Position = new Vector3D(0, 0, -.1f);
-                tdd2.Width = 100;
-                tdd2.Height = 100;
-                tdd2.UvOffset = new Vector2(0, 0);
-                tdd2.UvSize = new Vector2(640, 71);
-                tdd2.TextureSize = new Vector2(640, 71);
+                    var heatBarIndex = (int)(weapon.HeatPerc * 10);
+                    if (heatBarIndex > 9) heatBarIndex = 9;
 
-                TextureAddList.Add(tdd2);*/
+                    heatTexture.Material = _heatBarTexture[heatBarIndex].Material;
+                    heatTexture.Color = Color.Transparent;
+                    heatTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - (_heatWidth * 1.5f), CurrWeaponDisplayPos.Y - _heatHeightOffset, -.1f);
+                    heatTexture.Width = _heatWidth;
+                    heatTexture.Height = _heatHeight;
+                    heatTexture.P0 = _heatBarTexture[heatBarIndex].P0;
+                    heatTexture.P1 = _heatBarTexture[heatBarIndex].P1;
+                    heatTexture.P2 = _heatBarTexture[heatBarIndex].P2;
+                    heatTexture.P3 = _heatBarTexture[heatBarIndex].P3;
 
-                CurrWeaponDisplayPos.Y -= _WeaponHudFontHeight * 1.7f;
+                    TextureAddList.Add(heatTexture);
+                }
+
+                CurrWeaponDisplayPos.Y -= (_WeaponHudFontHeight + _heatHeightOffset) * 1.5f;
             }
             #endregion
 
@@ -160,9 +171,10 @@ namespace WeaponCore
                     tdd.Left = _cameraWorldMatrix.Left;
                     tdd.Width = width;
                     tdd.Height = height;
-                    tdd.UvOffset = cm.UvOffset;
-                    tdd.UvSize = cm.UvSize;
-                    tdd.TextureSize = cm.TextureSize;
+                    tdd.P0 = cm.P0;
+                    tdd.P1 = cm.P1;
+                    tdd.P2 = cm.P2;
+                    tdd.P3 = cm.P3;
 
                     UvDrawList.Add(tdd);
 
@@ -185,16 +197,20 @@ namespace WeaponCore
             for (int i = 0; i < UvDrawList.Count; i++)
             {
                 var textureToDraw = UvDrawList[i];
-                var p0 = new Vector2(textureToDraw.UvOffset.X, textureToDraw.UvOffset.Y) / textureToDraw.TextureSize;
-                var p1 = new Vector2(textureToDraw.UvOffset.X + textureToDraw.UvSize.X, textureToDraw.UvOffset.Y) / textureToDraw.TextureSize;
-                var p2 = new Vector2(textureToDraw.UvOffset.X, textureToDraw.UvOffset.Y + textureToDraw.UvSize.Y) / textureToDraw.TextureSize;
-                var p3 = new Vector2(textureToDraw.UvOffset.X + textureToDraw.UvSize.X, textureToDraw.UvOffset.Y + textureToDraw.UvSize.Y) / textureToDraw.TextureSize;
 
                 MyQuadD quad;
                 MyUtils.GetBillboardQuadOriented(out quad, ref textureToDraw.Position, textureToDraw.Width, textureToDraw.Height, ref textureToDraw.Left, ref textureToDraw.Up);
 
-                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p1, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
-                MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, p0, p2, p3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
+                if (textureToDraw.Color != Color.Transparent)
+                {
+                    MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P1, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
+                    MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P2, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Color, textureToDraw.Blend);
+                }
+                else
+                {
+                    MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P1, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Blend);
+                    MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, textureToDraw.P0, textureToDraw.P2, textureToDraw.P3, textureToDraw.Material, 0, textureToDraw.Position, textureToDraw.Blend);
+                }
 
                 _textureDrawPool.Enqueue(textureToDraw);
             }
@@ -214,8 +230,7 @@ namespace WeaponCore
                 _textureDrawPool.Enqueue(textureToDraw);
             }
             #endregion
-
-            WeaponsToDisplayCheck.Clear();
+            
             WeaponsToDisplay.Clear();
             TextAddList.Clear();
             TextureAddList.Clear();

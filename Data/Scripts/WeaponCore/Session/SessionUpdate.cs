@@ -211,7 +211,7 @@ namespace WeaponCore
                                 /// 
 
                                 //if (HandlesInput && (w.State.Sync.Heat > 0 || w.State.Sync.Reloading) && HudUi.WeaponsToDisplayCheck.Add(w))
-                                if (HandlesInput && w.State.Sync.Reloading && HudUi.WeaponsToDisplayCheck.Add(w))
+                                if (HandlesInput && (w.State.Sync.Reloading || w.State.Sync.Heat > 0))
                                 {
                                     HudUi.TexturesToAdd++;
                                     HudUi.WeaponsToDisplay.Add(w);
