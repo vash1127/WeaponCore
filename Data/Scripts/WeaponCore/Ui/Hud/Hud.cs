@@ -104,7 +104,7 @@ namespace WeaponCore
                     TextureAddList.Add(tdd);
                 }
 
-                /* heat texture
+                
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();
 
@@ -115,6 +115,7 @@ namespace WeaponCore
                 textInfo.FontSize = _WeaponHudFontSize;
                 TextAddList.Add(textInfo);
 
+                /* heat texture
                 if (!_textureDrawPool.TryDequeue(out tdd2))
                     tdd2 = new TextureDrawData();
 
