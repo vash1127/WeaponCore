@@ -75,9 +75,9 @@ namespace WeaponCore
             _aspectratio = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
             _cameraWorldMatrix = _session.Camera.WorldMatrix;
 
-            #region WeaponHudDisplay
-
-            if(WeaponsToDisplay.Count > 0)
+            #region WeaponHudDisplay 
+            //inlined becuase there can be many and too many method calls
+            if (WeaponsToDisplay.Count > 0)
                 CurrWeaponDisplayPos = new Vector2((_session.Camera.ViewportSize.X * .25f) * _metersInPixel, (_session.Camera.ViewportSize.Y * .125f) * _metersInPixel);
 
             for (int i = 0; i < WeaponsToDisplay.Count; i++)
@@ -124,9 +124,11 @@ namespace WeaponCore
                 {
                     if (!_textureDrawPool.TryDequeue(out heatTexture))
                         heatTexture = new TextureDrawData();
-
-                    var heatBarIndex = (int)(weapon.HeatPerc * 10);
-                    if (heatBarIndex > 9) heatBarIndex = 9;
+                    int heatBarIndex;
+                    if (weapon.State.Sync.Overheated)
+                        heatBarIndex = 10;
+                    else
+                        heatBarIndex = (int)(weapon.HeatPerc * 10);
 
                     heatTexture.Material = _heatBarTexture[heatBarIndex].Material;
                     heatTexture.Color = Color.Transparent;

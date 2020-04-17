@@ -211,7 +211,7 @@ namespace WeaponCore
                                 /// 
 
                                 //if (HandlesInput && (w.State.Sync.Heat > 0 || w.State.Sync.Reloading) && HudUi.WeaponsToDisplayCheck.Add(w))
-                                if (HandlesInput && (w.State.Sync.Reloading || w.State.Sync.Heat > 0))
+                                if (HandlesInput && (w.State.Sync.Reloading || w.State.Sync.Heat > 0) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid))
                                 {
                                     HudUi.TexturesToAdd++;
                                     HudUi.WeaponsToDisplay.Add(w);

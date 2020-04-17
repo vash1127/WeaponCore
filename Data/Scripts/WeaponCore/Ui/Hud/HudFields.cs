@@ -38,7 +38,7 @@ namespace WeaponCore
 
         private readonly Vector2 _heatTexutureSize = new Vector2(1024, 128);
         private readonly TextureMap _reloadingTexture;
-        private readonly TextureMap[] _heatBarTexture = new TextureMap[10];
+        private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
         ///
         /// 
         ///
@@ -67,7 +67,7 @@ namespace WeaponCore
             LoadTextMaps(out _characterMap); // possible translations in future
             _reloadingTexture = GenerateMap(MyStringId.GetOrCompute("ReloadingText"), 0, 0, 128, 128, 128, 128);
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < _heatBarTexture.Length; i++)
             {
                 var offset = 64f * i;
                 _heatBarTexture[i] = GenerateMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, offset, 1024, 64, 1024, 1024);
