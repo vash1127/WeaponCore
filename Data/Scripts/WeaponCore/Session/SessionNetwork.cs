@@ -387,7 +387,7 @@ namespace WeaponCore
                             switch (shootStatePacket.Data)
                             {
                                 case ManualShootActionState.ShootClick:
-                                    TerminalHelpers.WCShootClickAction(comp, true);
+                                    TerminalHelpers.WCShootClickAction(comp, comp.HasTurret, true);
                                     break;
                                 case ManualShootActionState.ShootOff:
                                     TerminalHelpers.WCShootOffAction(comp, true);
@@ -1260,7 +1260,7 @@ namespace WeaponCore
                                 switch (shootStatePacket.Data)
                                 {
                                     case ManualShootActionState.ShootClick:
-                                        TerminalHelpers.WCShootClickAction(comp, true);
+                                        TerminalHelpers.WCShootClickAction(comp, comp.HasTurret, true);
                                         break;
                                     case ManualShootActionState.ShootOff:
                                         TerminalHelpers.WCShootOffAction(comp, true);
