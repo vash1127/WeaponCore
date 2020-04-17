@@ -76,7 +76,8 @@ namespace WeaponCore
                         session.BaseControlsActions = true;
                     }
 
-                    CreateShootClick<T>();
+                    CreateFixedShootClick<T>();
+                    CreateTurretShootClick<T>();
 
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
@@ -95,7 +96,8 @@ namespace WeaponCore
                         session.BaseControlsActions = true;
                     }
 
-                    CreateShootClick<T>();
+                    CreateFixedShootClick<T>();
+                    CreateTurretShootClick<T>();
 
 
                     obs.Add(new MyObjectBuilder_SmallMissileLauncher().GetType());
@@ -109,7 +111,8 @@ namespace WeaponCore
                     TerminalHelpers.AlterControls<T>();
 
                     CreateShootActionSet<T>();
-                    CreateShootClick<T>();
+                    CreateFixedShootClick<T>();
+                    CreateTurretShootClick<T>();
                 }
 
                 TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.SetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
@@ -183,16 +186,16 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
 
-        internal static void CreateShootClick<T>()
+        internal static void CreateFixedShootClick<T>()
         {
-            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click_Fixed");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder($"Toggle Mouse Shoot");
+            action.Name = new StringBuilder($"Toggle Fixed Fire");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                TerminalHelpers.WCShootClickAction(comp);
+                TerminalHelpers.WCShootClickAction(comp, false);
             };
             action.Writer = (blk, sb) =>
             {
@@ -207,6 +210,36 @@ namespace WeaponCore
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
                 return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && !comp.HasTurret;
+            };
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+        }
+
+        internal static void CreateTurretShootClick<T>()
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click_Turret");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder($"Toggle Click To Fire");
+            action.Action = delegate (IMyTerminalBlock blk) {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+                TerminalHelpers.WCShootClickAction(comp, true);
+            };
+            action.Writer = (blk, sb) =>
+            {
+                var on = blk.Components.Get<WeaponComponent>()?.State.Value.ClickShoot ?? false;
+
+                if (on)
+                    sb.Append("On");
+                else
+                    sb.Append("Off");
+            };
+            action.Enabled = (b) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.HasTurret;
             };
             action.ValidForGroups = true;
 
@@ -391,23 +424,6 @@ namespace WeaponCore
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
-        }
-
-        internal static bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
-            {
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
-                {
-                    var w = comp.Platform.Weapons[weaponId];
-                    if (weaponHash == w.System.WeaponIdHash && w.State.ManualShoot == ShootOn)
-                        return true;
-                }
-            }
-
-            return false;
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)

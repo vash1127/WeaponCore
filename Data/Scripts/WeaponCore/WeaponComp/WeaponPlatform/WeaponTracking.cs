@@ -188,7 +188,7 @@ namespace WeaponCore.Platform
             var system = weapon.System;
             Vector3D targetCenter;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None || weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
 
