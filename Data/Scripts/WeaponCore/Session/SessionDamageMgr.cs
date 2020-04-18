@@ -354,13 +354,9 @@ namespace WeaponCore
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        var rootPos = grid.GridIntegerToWorld(rootBlock.Position);
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, hitEnt.Intersection.To, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
-                        {
-                            Log.Line($"detOnEnd: damage:{detonateDmg * damageScale}({detonateDmg}[{damageScale}])<{t.AmmoDef.Const.DetonationDamage}> - radius:{detonateRadius} - pos:{rootPos} - {hitEnt.Intersection.Direction} {attacker != null}");
-                            SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
-                        }
+                            SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, hitEnt.Intersection.To, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
