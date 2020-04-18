@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.AI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -229,13 +231,16 @@ namespace WeaponCore.Support
                     if (meteor != null && !s.TrackMeteors) continue;
 
                     var character = info.Target as IMyCharacter;
+
                     if (character != null && !s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character)) continue;
                     Vector3D predictedPos;
+
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
+
                     if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
                         double rayDist;
