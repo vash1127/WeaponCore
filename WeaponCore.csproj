@@ -182,6 +182,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.XmlSerializers.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="VRage, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>

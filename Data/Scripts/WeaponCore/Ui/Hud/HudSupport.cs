@@ -72,6 +72,7 @@ namespace WeaponCore
         internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)
         {
             int length = list.Count;
+            int finalCount = 0;
             List<StackedWeaponInfo> finalList;
             if (!_weaponInfoListPool.TryDequeue(out finalList))
                 finalList = new List<StackedWeaponInfo>();
@@ -186,6 +187,7 @@ namespace WeaponCore
                         swi.WeaponStack = subL.Count;
 
                         finalList.Add(swi);
+                        finalCount++;
 
                         subL.Clear();
                         _weaponSortingListPool.Enqueue(subL);
@@ -203,10 +205,13 @@ namespace WeaponCore
                     swi.HighestValueWeapon = weapons[0];
                     swi.WeaponStack = 1;
                     finalList.Add(swi);
+                    finalCount++;
 
                     weapons.Clear();
                     _weaponSortingListPool.Enqueue(weapons);
                 }
+
+                if (finalCount >= 12) return finalList;
             }
 
             return finalList;
