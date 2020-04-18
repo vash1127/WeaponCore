@@ -95,6 +95,24 @@ namespace WeaponCore
 
             if(list.Count > 50) //limit to top 50 based on heat
                 list.RemoveRange(50, list.Count - 50);
+            else if (list.Count <= 12)
+            {
+                for(int i = 0; i < list.Count; i++)
+                {
+                    var w = list[i];
+                    if (w.System.WeaponName.Length > _currentLargestName) _currentLargestName = w.System.WeaponName.Length;
+
+                    StackedWeaponInfo swi;
+                    if (!_weaponStackedInfoPool.TryDequeue(out swi))
+                        swi = new StackedWeaponInfo();
+
+                    swi.HighestValueWeapon = w;
+                    swi.WeaponStack = 1;
+                    finalList.Add(swi);
+                }
+                return finalList;
+            }
+
 
             Dictionary<int, List<Weapon>> weaponTypes = new Dictionary<int, List<Weapon>>();
             for (int i = 0; i < list.Count; i++) //sort list into groups of same weapon type
