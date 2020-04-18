@@ -29,7 +29,7 @@ namespace WeaponCore
         private const float _heatHeightOffset = _heatHeight * 2f;
         private const float _infoPanelOffset = (_WeaponHudFontHeight + _heatHeightOffset) * 1.5f;
         private const float _textOffset = _reloadWidthOffset + (_padding * 1.5f);
-        private const uint _minUpdateTicks = 20;
+        private const uint _minUpdateTicks = 60;
 
 
         private readonly TextureMap _reloadingTexture;
