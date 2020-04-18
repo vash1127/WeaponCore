@@ -250,6 +250,10 @@ namespace WeaponCore
                     var blockHp = !IsClient ? block.Integrity : _slimHealthClient.ContainsKey(block) ? _slimHealthClient[block] : block.Integrity;
                     float damageScale = 1;
 
+                    var cube = block.FatBlock as MyCubeBlock;
+                    if (cube != null && cube.Components.Has<WeaponComponent>())
+                        damageScale = 0.25f;
+
                     if (t.AmmoDef.Const.DamageScaling)
                     {
                         var d = t.AmmoDef.DamageScales;

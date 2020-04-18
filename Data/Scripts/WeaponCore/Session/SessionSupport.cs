@@ -182,6 +182,8 @@ namespace WeaponCore
 
         private void CheckAdminRights()
         {
+            const string spider = "Space_spider";
+            const string wolf = "SpaceWolf";
             foreach (var item in Players) {
 
                 var pLevel = item.Value.PromoteLevel;
@@ -193,7 +195,8 @@ namespace WeaponCore
 
                     var character = player.Character;
                     var isAdmin = false;
-                    if (character != null) {
+                    if (character != null ) {
+                        if (character.Definition.Id.SubtypeName.Equals(wolf) || character.Definition.Id.SubtypeName.StartsWith(spider)) continue;
 
                         if (MySafeZone.CheckAdminIgnoreSafezones(player.SteamUserId))
                             isAdmin = true;
