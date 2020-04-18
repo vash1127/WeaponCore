@@ -248,6 +248,7 @@ namespace WeaponCore
             ProjectileTree.Clear();
             ProjectileTree = null;
             Av = null;
+            HudUi = null;
             AllDefinitions = null;
             SoundDefinitions = null;
             ActiveCockPit = null;
