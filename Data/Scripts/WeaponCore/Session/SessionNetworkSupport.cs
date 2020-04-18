@@ -794,8 +794,6 @@ namespace WeaponCore
             p.Info.MuzzleId = muzzleId;
             p.Info.BaseDamagePool = weapon.BaseDamage;
             p.Info.EnableGuidance = false;
-            p.Info.DetonationDamage = weapon.ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
-            p.Info.AreaEffectDamage = weapon.ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
             p.Info.WeaponCache = weapon.WeaponCache;
             p.Info.WeaponCache.VirutalId = -1;
             p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
