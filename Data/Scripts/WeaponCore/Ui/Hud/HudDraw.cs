@@ -49,9 +49,9 @@ namespace WeaponCore
                 var bgStartPosX = CurrWeaponDisplayPos.X - (bgWidth + _padding * 1.5f);                
 
                 var bgBorderHeight = bgWidth * .166f;
-                var bgCenterHeight = _weapontoDraw.Count > 4 ? ((_weapontoDraw.Count - 2) * _infoPanelOffset) : _infoPanelOffset * 2;
+                var bgCenterHeight = _weapontoDraw.Count > 3 ? ((_weapontoDraw.Count - 2) * _infoPanelOffset) : _infoPanelOffset * 2;
 
-                var bgStartPoxY = CurrWeaponDisplayPos.Y - (bgCenterHeight + _infoPanelOffset);
+                var bgStartPoxY = CurrWeaponDisplayPos.Y - (bgCenterHeight + _padding);
 
                 backgroundTextureCenter.Material = _infoBackground[1].Material;
                 backgroundTextureCenter.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
