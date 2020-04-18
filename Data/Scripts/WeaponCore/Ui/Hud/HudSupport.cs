@@ -144,7 +144,7 @@ namespace WeaponCore
                                     subList = new List<Weapon>();
                             }
 
-                            last = list[i];
+                            last = w;
                             subList.Add(w);
 
                             if(i == weapons.Count - 1)
