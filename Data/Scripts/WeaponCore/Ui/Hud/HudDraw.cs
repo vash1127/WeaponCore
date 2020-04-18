@@ -3,6 +3,7 @@ using System.Linq;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -20,6 +21,25 @@ namespace WeaponCore
                 CurrWeaponDisplayPos = new Vector2((_session.Camera.ViewportSize.X * .25f) * _metersInPixel, (_session.Camera.ViewportSize.Y * .125f) * _metersInPixel);
 
                 var weapontoDraw = SortDisplayedWeapons(WeaponsToDisplay);
+
+                TextureDrawData backgroundTexture;
+                if (!_textureDrawPool.TryDequeue(out backgroundTexture))
+                        backgroundTexture = new TextureDrawData();
+
+                var bgWidth = (_currentLargestName * _metersInPixel) + _textOffset;
+                var bgHeight = bgWidth * 1.33f;
+
+                backgroundTexture.Material = _infoBackground.Material;
+                backgroundTexture.Color = new Color(40, 54, 62, _session.UiBkOpacity);
+                backgroundTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - (bgWidth + _padding * 1.5f), CurrWeaponDisplayPos.Y - (bgHeight * .5f) - _infoPanelOffset * 2, -.1f);
+                backgroundTexture.Width = bgWidth;
+                backgroundTexture.Height = bgHeight;
+                backgroundTexture.P0 = _infoBackground.P0;
+                backgroundTexture.P1 = _infoBackground.P1;
+                backgroundTexture.P2 = _infoBackground.P2;
+                backgroundTexture.P3 = _infoBackground.P3;
+
+                TextureAddList.Add(backgroundTexture);
                 
                 for (int i = 0; i < weapontoDraw.Count; i++)
                 {
@@ -30,7 +50,7 @@ namespace WeaponCore
                     var weapon = weapontoDraw[i].HighestValueWeapon;
                     var name = weapon.System.WeaponName + ": ";
                     var textOffset = name.Length * _WeaponHudFontHeight;
-                    textOffset += _reloadWidthOffset + (_padding * 1.5f);
+                    textOffset += _textOffset;
 
                     if (weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30)
                     {
@@ -88,15 +108,15 @@ namespace WeaponCore
                         if (!_textDrawPool.TryDequeue(out textInfo))
                             textInfo = new TextDrawRequest();
 
-                        textInfo.Text = $"x{weapontoDraw[i].WeaponStack}";
-                        textInfo.Color = Color.DarkBlue * _session.UiOpacity;
-                        textInfo.X = CurrWeaponDisplayPos.X - textOffset;
-                        textInfo.Y = CurrWeaponDisplayPos.Y - _heatHeightOffset;
-                        textInfo.FontSize = _WeaponHudFontSize;
+                        textInfo.Text = $"(x{weapontoDraw[i].WeaponStack})";
+                        textInfo.Color = Color.LightSteelBlue * _session.UiOpacity;
+                        textInfo.X = CurrWeaponDisplayPos.X - (textOffset + ((textInfo.Text.Length * _metersInPixel) * 1.1f) + _padding);
+                        textInfo.Y = CurrWeaponDisplayPos.Y;
+                        textInfo.FontSize = _WeaponHudFontSize * .75f;
                         TextAddList.Add(textInfo);
                     }
 
-                    CurrWeaponDisplayPos.Y -= (_WeaponHudFontHeight + _heatHeightOffset) * 1.5f;
+                    CurrWeaponDisplayPos.Y -= _infoPanelOffset;
 
                     _weaponStackedInfoPool.Enqueue(weapontoDraw[i]);
                 }
@@ -197,6 +217,7 @@ namespace WeaponCore
             UvDrawList.Clear();
             SimpleDrawList.Clear();
             TexturesToAdd = 0;
+            _currentLargestName = 0;
         }
 
     }

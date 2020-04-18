@@ -116,7 +116,9 @@ namespace WeaponCore
             foreach (var weaponType in weaponTypes)
             {
                 var weapons = weaponType.Value;
-                
+                if (weapons[0].System.WeaponName.Length > _currentLargestName) _currentLargestName = weapons[0].System.WeaponName.Length;
+
+
                 if (weapons.Count > 1)
                 {
                     List<List<Weapon>> subLists;
@@ -137,7 +139,7 @@ namespace WeaponCore
                             subList.Add(w);
                         else
                         {
-                            if (last.HeatPerc - w.HeatPerc > .15f || last.State.Sync.Reloading != w.State.Sync.Reloading)
+                            if (last.HeatPerc - w.HeatPerc > .15f || last.State.Sync.Reloading != w.State.Sync.Reloading || last.State.Sync.Overheated != w.State.Sync.Overheated)
                             {
                                 subLists.Add(subList);
                                 if (!_weaponSortingListPool.TryDequeue(out subList))
