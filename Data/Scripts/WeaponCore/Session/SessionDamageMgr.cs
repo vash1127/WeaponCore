@@ -520,7 +520,8 @@ namespace WeaponCore
                 var oRadius = info.AmmoDef.AreaEffect.AreaEffectRadius;
                 var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
                 var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
-                var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 1, double.MaxValue);
+                var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 5000, double.MaxValue);
+
 
                 if (tRadius > 5) objHp *= 5;
                 if (scaledDamage < objHp)
@@ -536,22 +537,42 @@ namespace WeaponCore
                     info.BaseDamagePool -= objHp;
                     if (oRadius < minTestRadius) oRadius = minTestRadius;
                 }
-                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)oRadius, true);
 
-                if (detonateOnEnd)
+                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)oRadius, true);
+                //Log.Line($"TestHealth: {objHp} - tRadius:{tRadius} - oRadius:{oRadius} - travel:{minTestRadius} - base:{info.BaseDamagePool} - det:{detonateOnEnd}");
+
+                if (detonateOnEnd && info.BaseDamagePool <= 0)
                 {
                     var det = info.AmmoDef.AreaEffect.Detonation;
                     var dRadius = det.DetonationRadius;
-                    var dObjHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(dRadius)), 1, double.MaxValue);
-                    if (dRadius > 5) dObjHp *= 5;
-                    dObjHp *= 5;
                     var dDamage = det.DetonationDamage;
-                    var reduceBy = dObjHp / dDamage;
 
-                    dRadius /= reduceBy;
+                    //var dObjHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(dRadius)), 5000, double.MaxValue);
+                    //if (dRadius > 5) dObjHp *= 5;
+                    //dObjHp *= 5;
+                    //var reduceBy = dObjHp / dDamage;
+                    //dRadius /= reduceBy;
+
                     if (dRadius < 1.5) dRadius = 1.5f;
-                   if (canDamage) destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
+
+                    //Log.Line($"radius: {det.DetonationRadius} - dRadius:{dRadius} - reduceBy:{reduceBy} - dObjHp:{dObjHp}");
+                    if (canDamage)
+                    {
+                        //destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
+                        SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.FiringCube, destObj, info.AmmoDef, true);
+                    }
                 }
+            }
+        }
+
+        private readonly List<MyEntity> _detList = new List<MyEntity>();
+        private void Detonate(HitEntity hitEnt, ProInfo info, float radius)
+        {
+            var detSphere = new BoundingSphereD(hitEnt.Intersection.To, radius);
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref detSphere, _detList);
+            for (int i = 0; i < _detList.Count; i++)
+            {
+                
             }
         }
 

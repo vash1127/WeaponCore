@@ -211,7 +211,7 @@ namespace WeaponCore.Support
                 ParticleScale = eInfo.Scale,
                 OwnerEntity = owner,
                 Direction = direction,
-                VoxelExplosionCenter = sphere.Center + radius * direction * 0.25,
+                VoxelExplosionCenter = sphere.Center,
                 ExplosionFlags = eFlags,
                 VoxelCutoutScale = 0.3f,
                 PlaySound = playSound,
