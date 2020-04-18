@@ -253,8 +253,6 @@ namespace WeaponCore.Platform
                                 p.Info.MuzzleId = muzzle.MuzzleId;
                                 p.Info.BaseDamagePool = BaseDamage;
                                 p.Info.EnableGuidance = Comp.Set.Value.Guidance;
-                                p.Info.DetonationDamage = ammoPattern.Const.DetonationDamage;
-                                p.Info.AreaEffectDamage = ammoPattern.Const.AreaEffectDamage;
                                 p.Info.WeaponCache = WeaponCache;
                                 p.Info.WeaponCache.VirutalId = -1;
                                 p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId];
@@ -398,8 +396,6 @@ namespace WeaponCore.Platform
             p.Info.Target.FiringCube = Comp.MyCube;
             p.Info.BaseDamagePool = BaseDamage;
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
-            p.Info.DetonationDamage = ActiveAmmoDef.AmmoDef.Const.DetonationDamage;
-            p.Info.AreaEffectDamage = ActiveAmmoDef.AmmoDef.Const.AreaEffectDamage;
             p.Info.WeaponRng = Comp.WeaponValues.WeaponRandom[WeaponId];
             p.Info.LockOnFireState = LockOnFireState;
             p.Info.WeaponCache = WeaponCache;

@@ -46,7 +46,7 @@ namespace WeaponCore
             {
                 var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
                 GetAndSortBlocksInSphere(info.AmmoDef, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
-                ComputeEffects(grid, info.AmmoDef, info.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
+                ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
             }
 
             if (depletable) info.BaseHealthPool -= healthPool;
@@ -65,7 +65,7 @@ namespace WeaponCore
                 if (effects.TryGetValue(info.AmmoDef.AreaEffect.AreaEffect, out gridEffect))
                 {
                     found = true;
-                    gridEffect.Damage += info.AreaEffectDamage;
+                    gridEffect.Damage += info.AmmoDef.Const.AreaEffectDamage;
                     gridEffect.Ai = info.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
@@ -79,7 +79,7 @@ namespace WeaponCore
                 GridEffect gridEffect;
                 if (effects.TryGetValue(info.AmmoDef.AreaEffect.AreaEffect, out gridEffect))
                 {
-                    gridEffect.Damage += info.AreaEffectDamage;
+                    gridEffect.Damage += info.AmmoDef.Const.AreaEffectDamage;
                     gridEffect.Ai = info.Ai;
                     gridEffect.AmmoDef = info.AmmoDef;
                     gridEffect.AttackerId = attackerId;
@@ -90,7 +90,7 @@ namespace WeaponCore
                 {
                     gridEffect = GridEffectPool.Get();
                     gridEffect.System = info.System;
-                    gridEffect.Damage = info.AreaEffectDamage;
+                    gridEffect.Damage = info.AmmoDef.Const.AreaEffectDamage;
                     gridEffect.Ai = info.Ai;
                     gridEffect.AmmoDef = info.AmmoDef;
                     gridEffect.AttackerId = attackerId;

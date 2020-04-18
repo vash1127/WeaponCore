@@ -4,16 +4,11 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.WeaponRandomGenerator.RandomType;
-using System;
-using System.Net.Configuration;
 
 namespace WeaponCore.Support
 {
@@ -47,8 +42,6 @@ namespace WeaponCore.Support
         internal double MaxTrajectory;
         internal float ShotFade;
         internal float BaseDamagePool;
-        internal float AreaEffectDamage;
-        internal float DetonationDamage;
         internal float BaseHealthPool;
         internal double TracerLength;
         internal bool IsShrapnel;

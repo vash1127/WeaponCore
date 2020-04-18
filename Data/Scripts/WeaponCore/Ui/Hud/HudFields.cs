@@ -27,13 +27,15 @@ namespace WeaponCore
         private const float _heatWidthOffset = _heatWidth + _padding;
         private const float _heatHeight = _heatWidth * 0.0625f;
         private const float _heatHeightOffset = _heatHeight * 2f;
-        private const float _infoPanelOffset = (_WeaponHudFontHeight + _heatHeightOffset) * 1.5f;
+        private const float _infoPanelOffset = _WeaponHudFontHeight + _heatHeightOffset;
         private const float _textOffset = _reloadWidthOffset + (_padding * 1.5f);
+        private const uint _minUpdateTicks = 60;
 
 
         private readonly TextureMap _reloadingTexture;
-        private readonly TextureMap _infoBackground;
+        private readonly TextureMap[] _infoBackground = new TextureMap[3];
         private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
+        private readonly Color _bgColor = new Color(40, 54, 62, 1);
         private int _currentLargestName;
         ///
         /// 
@@ -50,11 +52,13 @@ namespace WeaponCore
         private Dictionary<char, TextureMap> _characterMap;
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
         private MatrixD _cameraWorldMatrix;
-        private List<TextureDrawData> TextureAddList = new List<TextureDrawData>(256);
-        private List<TextDrawRequest> TextAddList = new List<TextDrawRequest>(256);
-        private List<TextureDrawData> UvDrawList = new List<TextureDrawData>(_initialPoolCapacity);
-        private List<TextureDrawData> SimpleDrawList = new List<TextureDrawData>(256);
+        private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
+        private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
+        private List<TextureDrawData> _uvDrawList = new List<TextureDrawData>(_initialPoolCapacity);
+        private List<TextureDrawData> _simpleDrawList = new List<TextureDrawData>(256);
+        private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
         private float _aspectratio;
+        private uint _lastHudUpdateTick;
 
         internal int TexturesToAdd;
         internal Vector2 CurrWeaponDisplayPos;
@@ -66,7 +70,10 @@ namespace WeaponCore
             _session = session;
             LoadTextMaps(out _characterMap); // possible translations in future
             _reloadingTexture = GenerateMap(MyStringId.GetOrCompute("ReloadingText"), 0, 0, 128, 128, 128, 128);
-            _infoBackground = GenerateMap(MyStringId.GetOrCompute("InfoBackground"), 0, 0, 768, 1024, 768, 1024);
+
+            _infoBackground[0] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 768, 128, 768, 384);
+            _infoBackground[1] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 128, 768, 128, 768, 384);
+            _infoBackground[2] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 256, 768, 128, 768, 384);
 
             for (int i = 0; i < _heatBarTexture.Length; i++)
             {
