@@ -354,9 +354,9 @@ namespace WeaponCore
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, hitEnt.Intersection.To, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
-                            SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, hitEnt.Intersection.To, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                            SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
