@@ -30,7 +30,7 @@ namespace WeaponCore
                 var bgHeight = bgWidth * 1.33f;
 
                 backgroundTexture.Material = _infoBackground.Material;
-                backgroundTexture.Color = new Color(40, 54, 62, _session.UiBkOpacity);
+                backgroundTexture.Color = new Color(40, 54, 62, 1) * (_session.Session.Config.HUDBkOpacity * 1.8f);
                 backgroundTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - (bgWidth + _padding * 1.5f), CurrWeaponDisplayPos.Y - (bgHeight * .5f) - _infoPanelOffset * 2, -.1f);
                 backgroundTexture.Width = bgWidth;
                 backgroundTexture.Height = bgHeight;
