@@ -2,6 +2,7 @@
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -68,9 +69,12 @@ namespace WeaponCore
             TexturesToAdd++;
         }
 
-        static void ShellSort(List<Weapon> list)
+        internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)
         {
             int length = list.Count;
+            List<StackedWeaponInfo> finalList;
+            if (!_weaponInfoListPool.TryDequeue(out finalList))
+                finalList = new List<StackedWeaponInfo>();
 
             for (int h = length / 2; h > 0; h /= 2)
             {
@@ -88,6 +92,104 @@ namespace WeaponCore
                     list[j] = tempValue;
                 }
             }
+
+            if(list.Count > 50) //limit to top 50 based on heat
+                list.RemoveRange(50, list.Count - 50);
+
+            Dictionary<int, List<Weapon>> weaponTypes = new Dictionary<int, List<Weapon>>();
+            for (int i = 0; i < list.Count; i++) //sort list into groups of same weapon type
+            {
+                var w = list[i];
+
+                if (!weaponTypes.ContainsKey(w.System.WeaponIdHash))
+                {
+                    List<Weapon> tmp;
+                    if (!_weaponSortingListPool.TryDequeue(out tmp))
+                        tmp = new List<Weapon>();
+
+                    weaponTypes[w.System.WeaponIdHash] = tmp;
+                }
+
+                weaponTypes[w.System.WeaponIdHash].Add(w);
+            }
+
+            foreach (var weaponType in weaponTypes)
+            {
+                var weapons = weaponType.Value;
+                
+                if (weapons.Count > 1)
+                {
+                    List<List<Weapon>> subLists;
+                    List<Weapon> subList;
+                    var last = weapons[0];
+
+                    if (!_weaponSubListsPool.TryDequeue(out subLists))
+                        subLists = new List<List<Weapon>>();
+
+                    if (!_weaponSortingListPool.TryDequeue(out subList))
+                        subList = new List<Weapon>();
+
+                    for (int i = 0; i < weapons.Count; i++)
+                    {
+                        var w = weapons[i];
+
+                        if (i == 0)
+                            subList.Add(w);
+                        else
+                        {
+                            if (last.HeatPerc - list[i].HeatPerc > .15f)
+                            {
+                                subLists.Add(subList);
+                                if (!_weaponSortingListPool.TryDequeue(out subList))
+                                    subList = new List<Weapon>();
+                            }
+
+                            last = list[i];
+                            subList.Add(w);
+
+                            if(i == weapons.Count - 1)
+                                subLists.Add(subList);
+                        }
+                    }
+
+                    weapons.Clear();
+                    _weaponSortingListPool.Enqueue(weapons);
+
+                    for (int i = 0; i < subLists.Count; i++)
+                    {
+                        var subL = subLists[i];
+                        StackedWeaponInfo swi;
+                        if (!_weaponStackedInfoPool.TryDequeue(out swi))
+                            swi = new StackedWeaponInfo();
+
+                        swi.HighestValueWeapon = subL[0];
+                        swi.WeaponStack = subL.Count;
+
+                        finalList.Add(swi);
+
+                        subL.Clear();
+                        _weaponSortingListPool.Enqueue(subL);
+                    }
+
+                    subLists.Clear();
+                    _weaponSubListsPool.Enqueue(subLists);
+                }
+                else
+                {
+                    StackedWeaponInfo swi;
+                    if (!_weaponStackedInfoPool.TryDequeue(out swi))
+                        swi = new StackedWeaponInfo();
+
+                    swi.HighestValueWeapon = weapons[0];
+                    swi.WeaponStack = 1;
+                    finalList.Add(swi);
+
+                    weapons.Clear();
+                    _weaponSortingListPool.Enqueue(weapons);
+                }
+            }
+
+            return finalList;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -18,15 +19,15 @@ namespace WeaponCore
             {
                 CurrWeaponDisplayPos = new Vector2((_session.Camera.ViewportSize.X * .25f) * _metersInPixel, (_session.Camera.ViewportSize.Y * .125f) * _metersInPixel);
 
-                ShellSort(WeaponsToDisplay);
-
-                for (int i = 0; i < WeaponsToDisplay.Count; i++)
+                var weapontoDraw = SortDisplayedWeapons(WeaponsToDisplay);
+                
+                for (int i = 0; i < weapontoDraw.Count; i++)
                 {
                     TextDrawRequest textInfo;
                     TextureDrawData reloadTexture;
                     TextureDrawData heatTexture;
 
-                    var weapon = WeaponsToDisplay[i];
+                    var weapon = weapontoDraw[i].HighestValueWeapon;
                     var name = weapon.System.WeaponName + ": ";
                     var textOffset = name.Length * _WeaponHudFontHeight;
                     textOffset += _reloadWidthOffset + (_padding * 1.5f);
@@ -83,8 +84,24 @@ namespace WeaponCore
                         TextureAddList.Add(heatTexture);
                     }
 
+                    if (weapontoDraw[i].WeaponStack > 1) {
+                        if (!_textDrawPool.TryDequeue(out textInfo))
+                            textInfo = new TextDrawRequest();
+
+                        textInfo.Text = $"x{weapontoDraw[i].WeaponStack}";
+                        textInfo.Color = Color.DarkBlue * _session.UiOpacity;
+                        textInfo.X = CurrWeaponDisplayPos.X - textOffset;
+                        textInfo.Y = CurrWeaponDisplayPos.Y - _heatHeightOffset;
+                        textInfo.FontSize = _WeaponHudFontSize;
+                        TextAddList.Add(textInfo);
+                    }
+
                     CurrWeaponDisplayPos.Y -= (_WeaponHudFontHeight + _heatHeightOffset) * 1.5f;
+
+                    _weaponStackedInfoPool.Enqueue(weapontoDraw[i]);
                 }
+                weapontoDraw.Clear();
+                _weaponInfoListPool.Enqueue(weapontoDraw);
             }
             #endregion
 
