@@ -21,7 +21,7 @@ namespace WeaponCore
             textInfo.X = x;
             textInfo.Y = y;
             textInfo.FontSize = fontSize;
-            TextAddList.Add(textInfo);
+            _textAddList.Add(textInfo);
 
             TexturesToAdd++;
         }
@@ -46,7 +46,7 @@ namespace WeaponCore
             tdd.P2 = new Vector2(uvOffsetX, uvOffsetY + uvSizeY) / textureSize;
             tdd.P3 = new Vector2(uvOffsetX + uvSizeX, uvOffsetY + uvSizeY) / textureSize;
 
-            TextureAddList.Add(tdd);
+            _textureAddList.Add(tdd);
 
             TexturesToAdd++;
         }
@@ -64,7 +64,7 @@ namespace WeaponCore
             tdd.Position = position;
             tdd.Height = scale;
 
-            SimpleDrawList.Add(tdd);
+            _simpleDrawList.Add(tdd);
 
             TexturesToAdd++;
         }

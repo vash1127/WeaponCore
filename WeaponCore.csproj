@@ -142,29 +142,32 @@
     <Analyzer Include="..\..\..\..\..\Downloads\SEWhitelistChecker.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="HavokWrapper">
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\HavokWrapper.dll</HintPath>
+    </Reference>
     <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\netstandard.dll</HintPath>
     </Reference>
     <Reference Include="ProtoBuf.Net.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.Core.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.Core.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Common.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Game, Version=0.1.1.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Game.XmlSerializers, Version=0.1.1.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.XmlSerializers.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Game.XmlSerializers.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.Graphics, Version=0.1.1.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Graphics.dll</HintPath>
+      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Graphics.dll</HintPath>
     </Reference>
     <Reference Include="Sandbox.RenderDirect, Version=1.0.0.0, Culture=neutral, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
