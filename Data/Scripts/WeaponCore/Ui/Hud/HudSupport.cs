@@ -178,16 +178,20 @@ namespace WeaponCore
 
                     for (int i = 0; i < subLists.Count; i++)
                     {
-                        var subL = subLists[i];
-                        StackedWeaponInfo swi;
-                        if (!_weaponStackedInfoPool.TryDequeue(out swi))
-                            swi = new StackedWeaponInfo();
+                        var subL = subLists[i];                        
 
-                        swi.HighestValueWeapon = subL[0];
-                        swi.WeaponStack = subL.Count;
+                        if (finalCount < 12)
+                        {
+                            StackedWeaponInfo swi;
+                            if (!_weaponStackedInfoPool.TryDequeue(out swi))
+                                swi = new StackedWeaponInfo();
 
-                        finalList.Add(swi);
-                        finalCount++;
+                            swi.HighestValueWeapon = subL[0];
+                            swi.WeaponStack = subL.Count;
+
+                            finalList.Add(swi);
+                            finalCount++;
+                        }
 
                         subL.Clear();
                         _weaponSortingListPool.Enqueue(subL);
@@ -198,20 +202,23 @@ namespace WeaponCore
                 }
                 else
                 {
-                    StackedWeaponInfo swi;
-                    if (!_weaponStackedInfoPool.TryDequeue(out swi))
-                        swi = new StackedWeaponInfo();
+                    if (finalCount < 12)
+                    {
+                        StackedWeaponInfo swi;
+                        if (!_weaponStackedInfoPool.TryDequeue(out swi))
+                            swi = new StackedWeaponInfo();
 
-                    swi.HighestValueWeapon = weapons[0];
-                    swi.WeaponStack = 1;
-                    finalList.Add(swi);
-                    finalCount++;
+                        swi.HighestValueWeapon = weapons[0];
+                        swi.WeaponStack = 1;
+
+                    
+                        finalList.Add(swi);
+                        finalCount++;
+                    }
 
                     weapons.Clear();
                     _weaponSortingListPool.Enqueue(weapons);
                 }
-
-                if (finalCount >= 12) return finalList;
             }
 
             return finalList;
