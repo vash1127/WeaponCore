@@ -139,7 +139,7 @@ namespace WeaponCore
                             subList.Add(w);
                         else
                         {
-                            if (last.HeatPerc - w.HeatPerc > .15f || last.State.Sync.Reloading != w.State.Sync.Reloading || last.State.Sync.Overheated != w.State.Sync.Overheated)
+                            if (last.HeatPerc - w.HeatPerc > .1f || last.State.Sync.Reloading != w.State.Sync.Reloading || last.State.Sync.Overheated != w.State.Sync.Overheated)
                             {
                                 subLists.Add(subList);
                                 if (!_weaponSortingListPool.TryDequeue(out subList))
