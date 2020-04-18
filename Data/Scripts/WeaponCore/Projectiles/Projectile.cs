@@ -330,7 +330,8 @@ namespace WeaponCore.Projectiles
                         {
                             if (!Info.AmmoDef.Const.IsBeamWeapon)
                             {
-                                Info.Ai.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
+                                //Info.Ai.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
+                                LinePlanetCheck = true;
                             }
                             else if (!Info.WeaponCache.VoxelHits[CachedId].Cached(lineTest, Info))
                             {
