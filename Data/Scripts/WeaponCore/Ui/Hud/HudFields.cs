@@ -1,13 +1,5 @@
-﻿using ParallelTasks;
-using Sandbox.ModAPI;
-using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VRage.Collections;
-using VRage.Game;
 using VRage.Utils;
 using VRageMath;
 using VRageRender;
@@ -45,6 +37,10 @@ namespace WeaponCore
 
         private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
         private readonly ConcurrentQueue<TextDrawRequest> _textDrawPool = new ConcurrentQueue<TextDrawRequest>();
+        private readonly Queue<List<Weapon>> _weaponSortingListPool = new Queue<List<Weapon>>(_initialPoolCapacity);
+        private readonly Queue<StackedWeaponInfo> _weaponStackedInfoPool = new Queue<StackedWeaponInfo>(_initialPoolCapacity);
+        private readonly Queue<List<StackedWeaponInfo>> _weaponInfoListPool = new Queue<List<StackedWeaponInfo>>(_initialPoolCapacity);
+        private readonly Queue<List<List<Weapon>>> _weaponSubListsPool = new Queue<List<List<Weapon>>>(_initialPoolCapacity);
 
         private Session _session;
         private Dictionary<char, TextureMap> _characterMap;
@@ -52,7 +48,7 @@ namespace WeaponCore
         private MatrixD _cameraWorldMatrix;
         private List<TextureDrawData> TextureAddList = new List<TextureDrawData>(256);
         private List<TextDrawRequest> TextAddList = new List<TextDrawRequest>(256);
-        private List<TextureDrawData> UvDrawList = new List<TextureDrawData>(512);
+        private List<TextureDrawData> UvDrawList = new List<TextureDrawData>(_initialPoolCapacity);
         private List<TextureDrawData> SimpleDrawList = new List<TextureDrawData>(256);
         private float _aspectratio;
 
@@ -77,16 +73,20 @@ namespace WeaponCore
             {
                 _textureDrawPool.Enqueue(new TextureDrawData());
                 _textDrawPool.Enqueue(new TextDrawRequest());
+                _weaponSortingListPool.Enqueue(new List<Weapon>());
+                _weaponStackedInfoPool.Enqueue(new StackedWeaponInfo());
+                _weaponInfoListPool.Enqueue(new List<StackedWeaponInfo>());
+                _weaponSubListsPool.Enqueue(new List<List<Weapon>>());
             }
         }
 
-        internal class TextDrawRequest
+        internal struct TextDrawRequest
         {
             internal string Text;
             internal Color Color;
             internal float X;
             internal float Y;
-            internal float FontSize = 10f;
+            internal float FontSize;
         }
 
         internal class TextureDrawData
@@ -113,6 +113,12 @@ namespace WeaponCore
             internal Vector2 P1;
             internal Vector2 P2;
             internal Vector2 P3;
+        }
+
+        internal struct StackedWeaponInfo
+        {
+            internal Weapon HighestValueWeapon;
+            internal int WeaponStack;
         }
     }
 }
