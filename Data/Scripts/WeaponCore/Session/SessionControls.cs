@@ -187,12 +187,12 @@ namespace WeaponCore
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder($"Toggle Mouse Shoot");
+            action.Name = new StringBuilder($"Toggle Click To Fire");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                TerminalHelpers.WCShootClickAction(comp);
+                TerminalHelpers.WCShootClickAction(comp, comp.HasTurret);
             };
             action.Writer = (blk, sb) =>
             {
@@ -206,7 +206,7 @@ namespace WeaponCore
             action.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
-                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && !comp.HasTurret;
+                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
             };
             action.ValidForGroups = true;
 
@@ -391,23 +391,6 @@ namespace WeaponCore
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
-        }
-
-        internal static bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
-            {
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
-                {
-                    var w = comp.Platform.Weapons[weaponId];
-                    if (weaponHash == w.System.WeaponIdHash && w.State.ManualShoot == ShootOn)
-                        return true;
-                }
-            }
-
-            return false;
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)

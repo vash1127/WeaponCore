@@ -23,7 +23,6 @@ namespace WeaponCore.Platform
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;
         private int _nextVirtual;
-        private int _fakeHeatTick;
         private uint _ticksUntilShoot;
         private uint _azimuthSubpartUpdateTick;
         private uint _prefiredTick;
@@ -43,6 +42,7 @@ namespace WeaponCore.Platform
         internal uint LastSyncTick;
         internal uint PosChangedTick = 1;
         internal double TimePerShot;
+        internal float HeatPerc;
 
         internal int LoadId;
         internal int ShortLoadId;
@@ -114,14 +114,15 @@ namespace WeaponCore.Platform
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
         internal uint ShotExtentCount;
+        internal uint LastLoadedTick;
         internal int FireCounter;
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;
-        internal int HsRate;
         internal int EnergyPriority;
         internal int LastBlockCount;
         internal float HeatPShot;
+        internal float HsRate;
         internal float CurrentAmmoVolume;
         internal double Azimuth;
         internal double Elevation;
@@ -309,7 +310,7 @@ namespace WeaponCore.Platform
                 FixedOffset = System.Values.HardPoint.HardWare.FixedOffset;
             }
 
-            HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
+            HsRate = System.Values.HardPoint.Loading.HeatSinkRate / 3;
             EnergyPriority = System.Values.HardPoint.Other.EnergyPriority;
             var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;

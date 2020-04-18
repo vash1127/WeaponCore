@@ -392,7 +392,7 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static void WCShootClickAction(WeaponComponent comp, bool alreadySynced = false)
+        internal static void WCShootClickAction(WeaponComponent comp, bool isTurret, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
@@ -404,7 +404,7 @@ namespace WeaponCore.Control
             else
             {
                 cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                cState.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+                cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
             }
 
 

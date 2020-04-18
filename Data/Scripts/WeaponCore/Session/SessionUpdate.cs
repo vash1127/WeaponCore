@@ -83,7 +83,7 @@ namespace WeaponCore
                             }
 
                             comp.WasControlled = comp.UserControlled;
-                            comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
+                            comp.UserControlled = compCurPlayer.ControlType != ControlType.None && compCurPlayer.ControlType != ControlType.Ui;
 
                             var leftClick = false;
                             var rightClick = false;
@@ -205,6 +205,17 @@ namespace WeaponCore
 
                                 if (w.TurretMode && (!w.Target.HasTarget && !w.ReturingHome && !w.IsHome && Tick - w.Target.ExpiredTick > 300) || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
                                     w.TurretHomePosition(comp.WasControlled);
+
+                                ///
+                                /// Update Weapon Hud Info
+                                /// 
+
+                                //if (HandlesInput && (w.State.Sync.Heat > 0 || w.State.Sync.Reloading) && HudUi.WeaponsToDisplayCheck.Add(w))
+                                if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid))
+                                {
+                                    HudUi.TexturesToAdd++;
+                                    HudUi.WeaponsToDisplay.Add(w);
+                                }
 
                                 ///
                                 /// Determine if its time to shoot
