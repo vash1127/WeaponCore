@@ -75,7 +75,7 @@ namespace WeaponCore.Support
                     if (Batteries.Remove(battery)) SourceCount--;
                     UpdatePowerSources = true;
                 }
-                else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
+                else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector || myCubeBlock is MyCockpit)
                 {
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Contains(inventory))

@@ -83,7 +83,7 @@ namespace WeaponCore
                             }
 
                             comp.WasControlled = comp.UserControlled;
-                            comp.UserControlled = compCurPlayer.ControlType != ControlType.None && compCurPlayer.ControlType != ControlType.Ui;
+                            comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
 
                             var leftClick = false;
                             var rightClick = false;
@@ -167,7 +167,7 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && !comp.UserControlled) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && (!comp.UserControlled || w.State.ManualShoot == ShootClick)) || comp.TrackReticle && !w.Target.IsFakeTarget;
                                 if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
 

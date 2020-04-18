@@ -1430,8 +1430,6 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            Log.Line($"packet.EntityId: {packet.EntityId} hitPacket: {hitPacket.HitEnt}");
-
                             if (comp == null || comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
                                 errorPacket.Error = $"comp is null: {comp == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
