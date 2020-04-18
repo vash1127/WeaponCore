@@ -57,6 +57,7 @@ namespace WeaponCore.Api
                 ["SetActiveAmmo"] = new Action<IMyTerminalBlock, int, string>(SetActiveAmmo),
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectile"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
+                ["GetConstructEffectiveDps"] = new Func<IMyEntity, float>(GetConstructEffectiveDps),
             };
         }
 
@@ -454,6 +455,16 @@ namespace WeaponCore.Api
             {
                 Log.Line($"Cannot remove Action, Action is not registered: {e}");
             }
+        }
+
+        private float GetConstructEffectiveDps(IMyEntity entity)
+        {
+            var grid = entity.GetTopMostParent() as MyCubeGrid;
+            GridAi gridAi;
+            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+                return gridAi.EffectiveDps;
+
+            return 0;
         }
     }
 }
