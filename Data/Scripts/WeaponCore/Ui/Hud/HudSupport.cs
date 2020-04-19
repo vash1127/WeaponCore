@@ -20,7 +20,7 @@ namespace WeaponCore
             textInfo.Color = color;
             textInfo.X = x;
             textInfo.Y = y;
-            textInfo.FontSize = fontSize;
+            textInfo.FontSize = fontSize * _metersInPixel;
             _textAddList.Add(textInfo);
 
             TexturesToAdd++;

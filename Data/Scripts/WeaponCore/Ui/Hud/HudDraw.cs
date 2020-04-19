@@ -43,7 +43,12 @@ namespace WeaponCore
                     backgroundTexture = new TextureDrawData();
 
                 var padding = _padding * fovModifier;
-                var bgWidth = (_currentLargestName * _WeaponHudFontHeight) * fovModifier;
+                var reloadWidth = _reloadWidth * fovModifier;
+                var reloadOffset = reloadWidth * (1.6f * fovModifier) + padding;
+                var heatOffsetX = _heatWidthOffset * fovModifier;
+                var heatOffsetY = _heatHeightOffset * fovModifier;
+
+                var bgWidth = (((_currentLargestName + 6) * _WeaponHudFontHeight) + reloadWidth) * fovModifier;
                 var bgBorderHeight = bgWidth * _bgBorderRatio;
                 var bgCenterHeight = _weapontoDraw.Count > 3 ? (_weapontoDraw.Count - 2) * _infoPanelOffset : _infoPanelOffset * 2;
 
@@ -104,37 +109,17 @@ namespace WeaponCore
 
                     var weapon = _weapontoDraw[i].HighestValueWeapon;
                     var name = weapon.System.WeaponName + ": ";
-                    var textOffset = (name.Length * (_WeaponHudFontHeight * _aspectratio)) * fovModifier;
-
-                    if (weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30)
-                    {
-                        if (!_textureDrawPool.TryDequeue(out reloadTexture))
-                            reloadTexture = new TextureDrawData();
-
-                        var reloadWidth = _reloadWidth * fovModifier;
-                        var reloadHeight = _reloadHeight * fovModifier;
-
-                        reloadTexture.Material = _reloadingTexture.Material;
-                        reloadTexture.Color = Color.DarkRed * _session.UiOpacity;
-                        reloadTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - ((_reloadWidth * (1.6f * fovModifier)) + padding), CurrWeaponDisplayPos.Y, -.1f);
-                        reloadTexture.Width = reloadWidth;
-                        reloadTexture.Height = reloadHeight;
-                        reloadTexture.P0 = _reloadingTexture.P0;
-                        reloadTexture.P1 = _reloadingTexture.P1;
-                        reloadTexture.P2 = _reloadingTexture.P2;
-                        reloadTexture.P3 = _reloadingTexture.P3;
-
-                        _textureAddList.Add(reloadTexture);
-                    }
+                    var textSize = _WeaponHudFontHeight * fovModifier;
+                    var textOffset = ((name.Length * (textSize * _aspectratio)) + padding);
 
                     if (!_textDrawPool.TryDequeue(out textInfo))
                         textInfo = new TextDrawRequest();
 
                     textInfo.Text = name;
                     textInfo.Color = Color.White * _session.UiOpacity;
-                    textInfo.X = (CurrWeaponDisplayPos.X - textOffset) + padding;
+                    textInfo.X = (CurrWeaponDisplayPos.X - textOffset);
                     textInfo.Y = CurrWeaponDisplayPos.Y;
-                    textInfo.FontSize = _WeaponHudFontSize * fovModifier;
+                    textInfo.FontSize = textSize;
                     _textAddList.Add(textInfo);
 
 
@@ -143,11 +128,13 @@ namespace WeaponCore
                         if (!_textDrawPool.TryDequeue(out textInfo))
                             textInfo = new TextDrawRequest();
 
+                        var stextSize = textSize * .75f;
+
                         textInfo.Text = $"(x{_weapontoDraw[i].WeaponStack})";
                         textInfo.Color = Color.LightSteelBlue * _session.UiOpacity;
-                        textInfo.X = CurrWeaponDisplayPos.X - (textOffset + (textInfo.Text.Length * _metersInPixel));
+                        textInfo.X = CurrWeaponDisplayPos.X - (textOffset + ((stextSize * _aspectratio) * textInfo.Text.Length));
                         textInfo.Y = CurrWeaponDisplayPos.Y;
-                        textInfo.FontSize = (_WeaponHudFontSize * .75f) * fovModifier;
+                        textInfo.FontSize = stextSize;
                         _textAddList.Add(textInfo);
                     }
 
@@ -165,7 +152,7 @@ namespace WeaponCore
                         
                         heatTexture.Material = _heatBarTexture[heatBarIndex].Material;
                         heatTexture.Color = Color.Transparent;
-                        heatTexture.Position = new Vector3D((CurrWeaponDisplayPos.X - (_heatWidthOffset * fovModifier)) , CurrWeaponDisplayPos.Y - (_heatHeightOffset * fovModifier), -.1f);
+                        heatTexture.Position = new Vector3D(CurrWeaponDisplayPos.X -  heatOffsetX, CurrWeaponDisplayPos.Y - heatOffsetY, -.1f);
                         heatTexture.Width = _heatWidth * fovModifier;
                         heatTexture.Height = _heatHeight * fovModifier;
                         heatTexture.P0 = _heatBarTexture[heatBarIndex].P0;
@@ -174,6 +161,29 @@ namespace WeaponCore
                         heatTexture.P3 = _heatBarTexture[heatBarIndex].P3;
 
                         _textureAddList.Add(heatTexture);
+                    }
+
+                    if (weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30)
+                    {
+                        if (!_textureDrawPool.TryDequeue(out reloadTexture))
+                            reloadTexture = new TextureDrawData();
+
+
+                        var reloadHeight = _reloadHeight * fovModifier;
+
+                        var offsetX = weapon.HeatPerc > 0 ? reloadWidth + _heatWidth + heatOffsetX : reloadOffset + padding;
+
+                        reloadTexture.Material = _reloadingTexture.Material;
+                        reloadTexture.Color = Color.DarkRed * _session.UiOpacity;
+                        reloadTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - offsetX, CurrWeaponDisplayPos.Y - heatOffsetY, -.1f);
+                        reloadTexture.Width = reloadWidth;
+                        reloadTexture.Height = reloadHeight;
+                        reloadTexture.P0 = _reloadingTexture.P0;
+                        reloadTexture.P1 = _reloadingTexture.P1;
+                        reloadTexture.P2 = _reloadingTexture.P2;
+                        reloadTexture.P3 = _reloadingTexture.P3;
+
+                        _textureAddList.Add(reloadTexture);
                     }
 
                     CurrWeaponDisplayPos.Y -= _infoPanelOffset + (padding * .5f);
@@ -197,8 +207,8 @@ namespace WeaponCore
                 var position = new Vector3D(textAdd.X, textAdd.Y, -.1);
                 position = Vector3D.Transform(position, _cameraWorldMatrix);
 
-                var height = textAdd.FontSize * _metersInPixel;
-                var width = height / _aspectratio;
+                var height = textAdd.FontSize;
+                var width = textAdd.FontSize;
                 var textPos = position;
 
                 for (int j = 0; j < textAdd.Text.Length; j++)
@@ -223,7 +233,7 @@ namespace WeaponCore
 
                     _uvDrawList.Add(tdd);
 
-                    textPos -= (_cameraWorldMatrix.Left * height);
+                    textPos -= (_cameraWorldMatrix.Left * (height * _aspectratio));
                 }
 
                 _textDrawPool.Enqueue(textAdd);
