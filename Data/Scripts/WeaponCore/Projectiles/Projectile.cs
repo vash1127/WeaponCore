@@ -96,6 +96,7 @@ namespace WeaponCore.Projectiles
         internal bool EntitiesNear;
         internal bool FakeGravityNear;
         internal bool HadTarget;
+        internal bool WasTracking;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -144,6 +145,7 @@ namespace WeaponCore.Projectiles
             ShieldBypassed = false;
             FakeGravityNear = false;
             HadTarget = false;
+            WasTracking = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -623,16 +625,19 @@ namespace WeaponCore.Projectiles
                     if (fake) tVel = Info.Ai.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
-                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Info.Ai.Session.Tick20 && Info.Age > 240)
+                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr)
                     {
-                        if (!MyUtils.IsZero(tVel, 1E-02F))
+                        if (!MyUtils.IsZero(tVel, 1E-02F) && (WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0) || !WasTracking))
                         {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
                             if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
                             {
-                                PickTarget = true;
+                                if (WasTracking) 
+                                    PickTarget = true;
                             }
+                            else if (!WasTracking) 
+                                WasTracking = true;
                         }
                     }
 
