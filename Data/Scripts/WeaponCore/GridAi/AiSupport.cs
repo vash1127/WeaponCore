@@ -824,14 +824,10 @@ namespace WeaponCore.Support
         }
 
         #region Power
-        internal void InitFakeShipController()
+        internal void InitFakeShipController(WeaponComponent comp)
         {
-            FatMap fatMap;
-            if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
-            {
-                FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
-                PowerDistributor = FakeShipController.GridResourceDistributor;
-            }
+            FakeShipController.SlimBlock = comp.MyCube.SlimBlock;
+            PowerDistributor = FakeShipController.GridResourceDistributor;
         }
 
         internal void CleanUp()
@@ -935,11 +931,20 @@ namespace WeaponCore.Support
                             }
                             try
                             {
-                                if (FakeShipController.CubeGrid != cube.CubeGrid || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
+                                if (FakeShipController == null)
+                                    throw new Exception("FakeShipController is null");
+
+                                if (cube.SlimBlock == null)
+                                    throw new Exception("cube.SlimBlock is null");
+
+                                FakeShipController.SlimBlock = cube.SlimBlock;
+
+                                try
                                 {
-                                    FakeShipController.SlimBlock = cube.SlimBlock;
                                     PowerDistributor = FakeShipController.GridResourceDistributor;
                                 }
+                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - GridResourceDistributor!!!!"); }
+
                                 if (PowerDistributor == null)
                                 {
                                     Log.Line($"powerDist is null");
@@ -953,7 +958,7 @@ namespace WeaponCore.Support
                                 }
                                 catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
                             }
-                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - unlikely null!"); }
+                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch"); }
                         }
                     }
                 }

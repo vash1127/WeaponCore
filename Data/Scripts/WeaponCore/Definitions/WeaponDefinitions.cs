@@ -195,6 +195,8 @@ namespace WeaponCore.Support
                 [ProtoMember(14)] internal int BarrelSpinRate;
                 [ProtoMember(15)] internal bool FireFullBurst;
                 [ProtoMember(16)] internal bool GiveUpAfterBurst;
+                [ProtoMember(17)] internal bool IgnoreDumbProjectiles;
+                [ProtoMember(18)] internal bool LockedSmartOnly;
             }
 
 
@@ -590,6 +592,7 @@ namespace WeaponCore.Support
                     [ProtoMember(6)] internal bool OverideTarget;
                     [ProtoMember(7)] internal int MaxTargets;
                     [ProtoMember(8)] internal bool NoTargetExpire;
+                    [ProtoMember(9)] internal bool Roam;
                 }
 
                 [ProtoContract]

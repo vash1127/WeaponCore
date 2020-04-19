@@ -174,11 +174,11 @@ namespace WeaponCore
             var explosive = areaEffect == AreaEffectType.Explosive;
             var radiant = areaEffect == AreaEffectType.Radiant;
             var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd;
-            var detonateDmg = t.DetonationDamage;
+            var detonateDmg = t.AmmoDef.Const.DetonationDamage;
             var shieldBypass = t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var attackerId = shieldBypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
-            var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AreaEffectDamage : 0;
+            var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
             var hasAreaDmg = areaEffectDmg > 0;
@@ -354,9 +354,9 @@ namespace WeaponCore
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        var rootPos = grid.GridIntegerToWorld(rootBlock.Position);
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
-                        if (detonateOnEnd && theEnd) SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if (detonateOnEnd && theEnd)
+                            SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
@@ -474,19 +474,19 @@ namespace WeaponCore
                 attacker.BaseDamagePool = 0;
                 pTarget.Info.BaseHealthPool -= scaledDamage;
 
-                if (attacker.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
+                if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
                 {
                     var areaSphere = new BoundingSphereD(pTarget.Position, attacker.AmmoDef.AreaEffect.Detonation.DetonationRadius);
                     foreach (var sTarget in attacker.Ai.LiveProjectile)
                     {
                         if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint)
                         {
-                            if (attacker.DetonationDamage >= sTarget.Info.BaseHealthPool)
+                            if (attacker.AmmoDef.Const.DetonationDamage >= sTarget.Info.BaseHealthPool)
                             {
                                 sTarget.Info.BaseHealthPool = 0;
                                 sTarget.State = Projectile.ProjectileState.Destroy;
                             }
-                            else sTarget.Info.BaseHealthPool -= attacker.DetonationDamage;
+                            else sTarget.Info.BaseHealthPool -= attacker.AmmoDef.Const.DetonationDamage;
                         }
                     }
                 }
@@ -566,17 +566,6 @@ namespace WeaponCore
                         SUtils.CreateMissileExplosion(this, dDamage, dRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.Target.FiringCube, destObj, info.AmmoDef, true);
                     }
                 }
-            }
-        }
-
-        private readonly List<MyEntity> _detList = new List<MyEntity>();
-        private void Detonate(HitEntity hitEnt, ProInfo info, float radius)
-        {
-            var detSphere = new BoundingSphereD(hitEnt.Intersection.To, radius);
-            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref detSphere, _detList);
-            for (int i = 0; i < _detList.Count; i++)
-            {
-                
             }
         }
 

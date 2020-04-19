@@ -96,6 +96,7 @@ namespace WeaponCore.Projectiles
         internal bool EntitiesNear;
         internal bool FakeGravityNear;
         internal bool HadTarget;
+        internal bool WasTracking;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -144,6 +145,7 @@ namespace WeaponCore.Projectiles
             ShieldBypassed = false;
             FakeGravityNear = false;
             HadTarget = false;
+            WasTracking = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -487,7 +489,7 @@ namespace WeaponCore.Projectiles
 
         internal bool NewTarget()
         {
-            var giveUp = !PickTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
+            var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
 
@@ -614,6 +616,8 @@ namespace WeaponCore.Projectiles
                         targetPos += TargetOffSet;
                     }
 
+                    PredictedTargetPos = targetPos;
+
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
                     if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
                         PrevTargetPos = PredictedTargetPos;
@@ -623,16 +627,19 @@ namespace WeaponCore.Projectiles
                     if (fake) tVel = Info.Ai.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
-                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Info.Ai.Session.Tick20 && Info.Age > 240)
+                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr)
                     {
-                        if (!MyUtils.IsZero(tVel, 1E-02F))
+                        if (((WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0)) || !WasTracking))
                         {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
                             if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
                             {
-                                PickTarget = true;
+                                if (WasTracking) 
+                                    PickTarget = true;
                             }
+                            else if (!WasTracking) 
+                                WasTracking = true;
                         }
                     }
 
@@ -640,14 +647,15 @@ namespace WeaponCore.Projectiles
                 }
                 else
                 {
-                    PrevTargetPos = PredictedTargetPos;
+                    var roam = Info.AmmoDef.Trajectory.Smarts.Roam;
+                    PrevTargetPos = roam ? PredictedTargetPos : Position + (Info.Direction * Info.MaxTrajectory);
                     if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget))
                     {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
                         EarlyEnd = true;
                     }
 
-                    if (Info.Age - LastOffsetTime > 300 && HadTarget)
+                    if (roam && Info.Age - LastOffsetTime > 300 && HadTarget)
                     {
                         double dist;
                         Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
@@ -978,7 +986,7 @@ namespace WeaponCore.Projectiles
             if (State == ProjectileState.Destroy)
             {
                 ForceHitParticle = true;
-                Hit = new Hit {Block = null, Entity = null, HitPos = Position, HitVelocity = Velocity};
+                Hit = new Hit {Block = null, Entity = null, HitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick};
                 if (EnableAv || Info.AmmoDef.Const.VirtualBeams) Info.AvShot.Hit = Hit;
                 Intersected(false);
             }
