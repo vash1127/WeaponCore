@@ -569,17 +569,6 @@ namespace WeaponCore
             }
         }
 
-        private readonly List<MyEntity> _detList = new List<MyEntity>();
-        private void Detonate(HitEntity hitEnt, ProInfo info, float radius)
-        {
-            var detSphere = new BoundingSphereD(hitEnt.Intersection.To, radius);
-            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref detSphere, _detList);
-            for (int i = 0; i < _detList.Count; i++)
-            {
-                
-            }
-        }
-
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)
         {
             if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic || entity.Physics.Mass / impulse > 500)

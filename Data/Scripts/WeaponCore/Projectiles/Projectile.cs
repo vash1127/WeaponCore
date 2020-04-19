@@ -487,7 +487,7 @@ namespace WeaponCore.Projectiles
 
         internal bool NewTarget()
         {
-            var giveUp = !PickTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
+            var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
 
