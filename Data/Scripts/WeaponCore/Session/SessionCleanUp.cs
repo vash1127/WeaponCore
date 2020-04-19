@@ -131,6 +131,7 @@ namespace WeaponCore
             WeaponAmmoPullQueue.Clear();
             AmmoToPullQueue.Clear();
             Hits.Clear();
+
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
@@ -147,23 +148,25 @@ namespace WeaponCore
             _slimHealthClient.Clear();
             _slimsSet.Clear();
             _turretDefinitions.Clear();
-            
+
             foreach (var comp in CompsToStart)
             {
-                PlatFormPool.Return(comp.Platform);
-                comp.Platform = null;
+                if (comp?.Platform != null)
+                    PlatFormPool.Return(comp.Platform);
             }
 
             foreach (var readd in CompReAdds)
             {
-                PlatFormPool.Return(readd.Comp.Platform);
-                readd.Comp.Platform = null;
+                if (readd.Comp?.Platform != null)
+                    PlatFormPool.Return(readd.Comp.Platform);
             }
+
             foreach (var comp in CompsDelayed)
             {
-                PlatFormPool.Return(comp.Platform);
-                comp.Platform = null;
+                if (comp?.Platform != null) 
+                    PlatFormPool.Return(comp.Platform);
             }
+
             PlatFormPool.Clean();
             CompsToStart.ClearImmediate();
 
