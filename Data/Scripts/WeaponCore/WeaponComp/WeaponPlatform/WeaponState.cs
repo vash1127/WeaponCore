@@ -554,7 +554,8 @@ namespace WeaponCore.Platform
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
-                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                    if(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
                     Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
 
