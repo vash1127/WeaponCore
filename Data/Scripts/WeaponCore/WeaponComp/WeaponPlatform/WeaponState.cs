@@ -437,6 +437,14 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
                     OutOfAmmo = true;
                 }
+                else if(++_failedAttempts > Session.FailsBeforeScan && Comp.Session.Tick - Comp.Ai.LastInventoryScanTick > Session.MinTicksBetweenScan)
+                {
+                    Comp.Ai.ScanInventories = true;
+                    Comp.Ai.LastInventoryScanTick = Comp.Session.Tick;
+                    _failedAttempts = 0;
+                }
+
+
                 State.Sync.Reloading = false;
             }
             else
@@ -445,6 +453,7 @@ namespace WeaponCore.Platform
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
                     OutOfAmmo = false;
+                    _failedAttempts = 0;
                 }
 
                 uint delay;

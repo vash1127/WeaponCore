@@ -21,7 +21,7 @@ namespace WeaponCore.Support
         internal volatile bool Scanning;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
-        
+
         internal readonly Focus Focus = new Focus(2);
         internal readonly FakeTarget DummyTarget = new FakeTarget();
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
@@ -88,6 +88,7 @@ namespace WeaponCore.Support
         internal bool ScanBlockGroups = true;
         internal bool ScanBlockGroupSettings;
         internal bool Registered;
+        internal bool ScanInventories;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
@@ -97,6 +98,7 @@ namespace WeaponCore.Support
         internal uint LastSerializedTick;
         internal uint TurnOffManualTick;
         internal uint UiMId;
+        internal uint LastInventoryScanTick;
         internal int SourceCount;
         internal int BlockCount;
         internal int NumSyncWeapons;

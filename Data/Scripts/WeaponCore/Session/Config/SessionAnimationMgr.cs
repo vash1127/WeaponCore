@@ -877,10 +877,5 @@ namespace WeaponCore
 
             }
         }
-
-        private void testing(MyEntity obj)
-        {
-            Log.Line("Closed");
-        }
     }
 }

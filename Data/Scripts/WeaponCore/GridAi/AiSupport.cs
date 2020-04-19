@@ -333,6 +333,25 @@ namespace WeaponCore.Support
             ScanBlockGroupSettings = false;
         }
 
+        internal void RescanInventories()
+        {
+            foreach (var inventoryToClear in AmmoInventories)
+                inventoryToClear.Value.Clear();
+
+            foreach (var inventory in Inventories)
+            {
+                var items = inventory.GetItems();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    var item = items[i];
+                    var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
+                    if (ammoMag != null && AmmoInventories.ContainsKey(ammoMag.GetObjectId()))
+                        CheckAmmoInventory(inventory, item, item.Amount);
+                }
+            }
+            ScanInventories = false;
+        }
+
         internal void CompChange(bool add, WeaponComponent comp)
         {
             if (add)
