@@ -575,7 +575,8 @@ namespace WeaponCore.Support
 
             var collection = ai.GetProCache();
             var numOfTargets = collection.Count;
-            
+            var lockedOnly = w.System.Values.HardPoint.Loading.LockedSmartOnly;
+            var smartOnly = w.System.Values.HardPoint.Loading.IgnoreDumbProjectiles;
             if (s.ClosestFirst) {
                 int length = collection.Count;
                 for (int h = length / 2; h > 0; h /= 2) {
@@ -600,7 +601,8 @@ namespace WeaponCore.Support
             {
                 var card = deck[x];
                 var lp = collection[card];
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) < w.MinTargetDistanceSqr) continue;
+                var cube = lp.Info.Target.Entity as MyCubeBlock;
+                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.MyGrid)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) < w.MinTargetDistanceSqr) continue;
 
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
