@@ -275,6 +275,8 @@ namespace WeaponCore.Api
                 [ProtoMember(8)] internal Threat[] Threats;
                 [ProtoMember(9)] internal float MaxTargetDistance;
                 [ProtoMember(10)] internal float MinTargetDistance;
+                [ProtoMember(11)] internal bool IgnoreDumbProjectiles;
+                [ProtoMember(12)] internal bool LockedSmartOnly;
             }
 
 
@@ -404,8 +406,6 @@ namespace WeaponCore.Api
                     [ProtoMember(14)] internal int BarrelSpinRate;
                     [ProtoMember(15)] internal bool FireFullBurst;
                     [ProtoMember(16)] internal bool GiveUpAfterBurst;
-                    [ProtoMember(17)] internal bool IgnoreDumbProjectiles;
-                    [ProtoMember(18)] internal bool LockedSmartOnly;
                 }
 
 

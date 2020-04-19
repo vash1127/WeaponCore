@@ -575,8 +575,8 @@ namespace WeaponCore.Support
 
             var collection = ai.GetProCache();
             var numOfTargets = collection.Count;
-            var lockedOnly = w.System.Values.HardPoint.Loading.LockedSmartOnly;
-            var smartOnly = w.System.Values.HardPoint.Loading.IgnoreDumbProjectiles;
+            var lockedOnly = w.System.Values.Targeting.LockedSmartOnly;
+            var smartOnly = w.System.Values.Targeting.IgnoreDumbProjectiles;
             if (s.ClosestFirst) {
                 int length = collection.Count;
                 for (int h = length / 2; h > 0; h /= 2) {
