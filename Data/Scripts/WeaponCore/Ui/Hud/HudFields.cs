@@ -19,8 +19,8 @@ namespace WeaponCore
         private const float _padding = 10 * _metersInPixel;
         private const float _WeaponHudFontSize = 3.8f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
-        private const float _reloadHeight = 2f * _metersInPixel;
-        private const float _reloadWidth = _reloadHeight * (114 / 12);//size of reloading texture
+        private const float _reloadHeight = 1.8f * _metersInPixel;
+        private const float _reloadWidth = _reloadHeight * (128 / 12);//size of reloading texture
         private const float _reloadHeightOffset = _reloadHeight * .625f;
         private const float _heatWidth = 40 * _metersInPixel;
         private const float _heatWidthOffset = _heatWidth + (_padding * 1.8f);
