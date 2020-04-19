@@ -225,7 +225,7 @@ namespace WeaponCore
                                 var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
                                 var canShoot = !w.State.Sync.Overheated && !reloading;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
-                                var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
+                                var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || (w.State.ManualShoot == ShootOnce && w.State.SingleShotCounter > 0) || w.AiShooting && w.State.ManualShoot == ShootOff;
                                 var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                                 var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
