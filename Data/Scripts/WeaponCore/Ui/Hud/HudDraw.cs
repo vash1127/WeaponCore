@@ -19,8 +19,6 @@ namespace WeaponCore
             _viewPortSize.X = (frustHeight * (_session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y));
             _viewPortSize.Y = frustHeight;
 
-            AddText($"x: {_viewPortSize.X} y: {_viewPortSize.Y} _aspectratio: {_aspectratio}", Color.Red, 0, 0, 5f);
-
             #region WeaponHudDisplay 
             //inlined becuase there can be many and too many method calls
             if (WeaponsToDisplay.Count > 0)
