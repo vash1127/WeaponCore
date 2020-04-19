@@ -2,6 +2,7 @@
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
@@ -120,14 +121,14 @@ namespace WeaponCore.Projectiles
                                     {
                                         if (VoxelIntersect.PosHasVoxel(voxel, planetBeam.From))
                                             voxelHit = planetBeam.From;
-                                        else voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit);
+                                        else voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
                                     }
                                 }
                             }
                         }
                         else
                             using (voxel.Pin())
-                                voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                                voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
 
                         if (!voxelHit.HasValue)
                             continue;

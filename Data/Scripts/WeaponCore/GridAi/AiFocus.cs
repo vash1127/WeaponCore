@@ -1,4 +1,7 @@
 ﻿using VRage.Game.Entity;
+using VRage.Utils;
+using VRageMath;
+using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore.Support
@@ -21,6 +24,7 @@ namespace WeaponCore.Support
         internal MyEntity[] Target;
         internal int ActiveId;
         internal bool HasFocus;
+        internal double DistToNearestFocusSqr;
 
         internal void AddFocus(MyEntity target, GridAi ai, bool alreadySynced = false)
         {
@@ -140,6 +144,24 @@ namespace WeaponCore.Support
                     }
                 }
             }
+        }
+
+        internal bool FocusInRange(Weapon w)
+        {
+            DistToNearestFocusSqr = float.MaxValue;
+            for (int i = 0; i < Target.Length; i++)
+            {
+                if (Target[i] == null)
+                    continue;
+
+                var target = Target[i];
+                var sphere = target.PositionComp.WorldVolume;
+                var distSqr = MyUtils.GetSmallestDistanceToSphere(ref w.MyPivotPos, ref sphere);
+                distSqr *= distSqr;
+                if (distSqr < DistToNearestFocusSqr)
+                    DistToNearestFocusSqr = distSqr;
+            }
+            return DistToNearestFocusSqr <= w.MaxTargetDistanceSqr;
         }
 
         internal void Clean()

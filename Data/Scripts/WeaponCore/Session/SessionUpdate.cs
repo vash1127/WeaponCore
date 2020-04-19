@@ -230,7 +230,7 @@ namespace WeaponCore
                                 var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                                 var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
 
-                                w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus;
+                                w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus && gridAi.Focus.FocusInRange(w);
                                 if (canShoot && (shoot || w.LockOnFireState))
                                 {
                                     if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))

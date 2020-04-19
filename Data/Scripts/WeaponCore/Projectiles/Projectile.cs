@@ -228,7 +228,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget || Info.LockOnFireState;
+            PickTarget = Info.AmmoDef.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget && !Info.LockOnFireState;
             if (PickTarget || LockedTarget) NewTargets++;
 
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
@@ -492,7 +492,6 @@ namespace WeaponCore.Projectiles
             var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
-
             if (giveUp || !GridAi.ReacquireTarget(this))
             {
                 Info.Target.Entity = null;
@@ -501,7 +500,6 @@ namespace WeaponCore.Projectiles
             }
 
             if (Info.Target.IsProjectile) UnAssignProjectile(false);
-
             return true;
         }
 
@@ -586,10 +584,12 @@ namespace WeaponCore.Projectiles
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr))
             {
                 var fake = Info.Target.IsFakeTarget;
-                var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime;
+                var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime && HadTarget;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
-                var isZombie = Info.AmmoDef.Const.CanZombie && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
-                if ((PickTarget || gaveUpChase && validTarget || isZombie) && NewTarget() || validTarget)
+                var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
+                var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && Info.Age % 30 == 0;
+
+                if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
                 {
                     HadTarget = true;
                     if (ZombieLifeTime > 0)
@@ -604,7 +604,7 @@ namespace WeaponCore.Projectiles
                     else if (Info.Target.Entity != null) targetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
 
 
-                    if (Info.AmmoDef.Const.TargetOffSet)
+                    if (Info.AmmoDef.Const.TargetOffSet && WasTracking)
                     {
                         if (Info.Age - LastOffsetTime > 300)
                         {
@@ -619,9 +619,12 @@ namespace WeaponCore.Projectiles
                     PredictedTargetPos = targetPos;
 
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
-                    if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
+                    if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos))) {
                         PrevTargetPos = PredictedTargetPos;
-                    else PrevTargetPos = targetPos;
+                    }
+                    else {
+                        PrevTargetPos = targetPos;
+                    }
 
                     var tVel = Vector3.Zero;
                     if (fake) tVel = Info.Ai.DummyTarget.LinearVelocity;
@@ -633,13 +636,13 @@ namespace WeaponCore.Projectiles
                         {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
-                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
-                            {
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree)) {
                                 if (WasTracking) 
                                     PickTarget = true;
                             }
-                            else if (!WasTracking) 
+                            else if (!WasTracking) {
                                 WasTracking = true;
+                            }
                         }
                     }
 
