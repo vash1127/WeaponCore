@@ -133,7 +133,7 @@ namespace WeaponCore.Support
 
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (av.OnScreen != AvShot.Screen.None) {
-                            var pos = !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
+                            var pos = av.Hit.HitTick == Session.Tick && !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
                             var matrix = MatrixD.CreateTranslation(pos);
 
                             MyParticleEffect hitEffect;

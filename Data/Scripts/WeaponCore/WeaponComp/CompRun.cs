@@ -196,7 +196,7 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit) {
 
                     Ai.GridInit = true;
-                    Ai.InitFakeShipController();
+                    Ai.InitFakeShipController(this);
                     Ai.ScanBlockGroups = true;
                     var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
                     

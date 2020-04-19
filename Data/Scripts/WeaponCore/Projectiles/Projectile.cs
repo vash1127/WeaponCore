@@ -978,7 +978,7 @@ namespace WeaponCore.Projectiles
             if (State == ProjectileState.Destroy)
             {
                 ForceHitParticle = true;
-                Hit = new Hit {Block = null, Entity = null, HitPos = Position, HitVelocity = Velocity};
+                Hit = new Hit {Block = null, Entity = null, HitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick};
                 if (EnableAv || Info.AmmoDef.Const.VirtualBeams) Info.AvShot.Hit = Hit;
                 Intersected(false);
             }

@@ -277,7 +277,7 @@ namespace WeaponCore.Projectiles
                 IMySlimBlock hitBlock = null;
                 if (p.Info.AmmoDef.Const.VirtualBeams && hitEntity.Entity is MyCubeGrid)
                     hitBlock = hitEntity.Blocks[0];
-                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero };
+                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
                 if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
 
                 return true;
