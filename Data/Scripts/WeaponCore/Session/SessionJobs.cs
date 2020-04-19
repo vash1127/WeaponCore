@@ -123,6 +123,7 @@ namespace WeaponCore
 
                     if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
                     if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();
+                    if (db.ScanInventories) db.RescanInventories();
 
                     db.FirstRun = false;
                 }
