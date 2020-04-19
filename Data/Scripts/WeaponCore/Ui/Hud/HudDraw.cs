@@ -116,7 +116,7 @@ namespace WeaponCore
 
                         reloadTexture.Material = _reloadingTexture.Material;
                         reloadTexture.Color = Color.DarkRed * _session.UiOpacity;
-                        reloadTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - ((_reloadWidth * (2 * fovModifier)) + padding), CurrWeaponDisplayPos.Y, -.1f);
+                        reloadTexture.Position = new Vector3D(CurrWeaponDisplayPos.X - ((_reloadWidth * (1.6f * fovModifier)) + padding), CurrWeaponDisplayPos.Y, -.1f);
                         reloadTexture.Width = reloadWidth;
                         reloadTexture.Height = reloadHeight;
                         reloadTexture.P0 = _reloadingTexture.P0;

@@ -19,8 +19,8 @@ namespace WeaponCore
         private const float _padding = 10 * _metersInPixel;
         private const float _WeaponHudFontSize = 3.8f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
-        private const float _reloadHeight = 2.2f * _metersInPixel;
-        private const float _reloadWidth = _reloadHeight * (118 / 19);//size of reloading texture
+        private const float _reloadHeight = 2f * _metersInPixel;
+        private const float _reloadWidth = _reloadHeight * (114 / 12);//size of reloading texture
         private const float _reloadHeightOffset = _reloadHeight * .625f;
         private const float _heatWidth = 40 * _metersInPixel;
         private const float _heatWidthOffset = _heatWidth + (_padding * 1.8f);
@@ -69,7 +69,7 @@ namespace WeaponCore
         {
             _session = session;
             LoadTextMaps(out _characterMap); // possible translations in future
-            _reloadingTexture = GenerateMap(MyStringId.GetOrCompute("ReloadingText"), 0, 0, 118, 19, 128, 64);
+            _reloadingTexture = GenerateMap(MyStringId.GetOrCompute("ReloadingText"), 0, 0, 114, 12, 128, 64);
 
             _infoBackground[0] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 768, 128, 768, 384);
             _infoBackground[1] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 128, 768, 128, 768, 384);
