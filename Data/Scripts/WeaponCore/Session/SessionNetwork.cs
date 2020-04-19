@@ -465,6 +465,7 @@ namespace WeaponCore
                             {
                                 ai.UiMId = midPacket.MId;
 
+                                ai.RescanInventories();
                                 report.PacketValid = true;
                             }
                             break;
