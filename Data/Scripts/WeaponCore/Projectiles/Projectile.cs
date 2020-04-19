@@ -627,7 +627,7 @@ namespace WeaponCore.Projectiles
                     else if (physics != null) tVel = physics.LinearVelocity;
                     if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr)
                     {
-                        if (!MyUtils.IsZero(tVel, 1E-02F) && (WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0)) || !WasTracking)
+                        if (!MyUtils.IsZero(tVel, 1E-02F) && ((WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0)) || !WasTracking))
                         {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
