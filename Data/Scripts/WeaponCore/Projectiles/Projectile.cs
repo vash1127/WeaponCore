@@ -616,6 +616,8 @@ namespace WeaponCore.Projectiles
                         targetPos += TargetOffSet;
                     }
 
+                    PredictedTargetPos = targetPos;
+
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
                     if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
                         PrevTargetPos = PredictedTargetPos;
@@ -627,7 +629,7 @@ namespace WeaponCore.Projectiles
                     else if (physics != null) tVel = physics.LinearVelocity;
                     if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr)
                     {
-                        if (!MyUtils.IsZero(tVel, 1E-02F) && ((WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0)) || !WasTracking))
+                        if (((WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0)) || !WasTracking))
                         {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
@@ -645,14 +647,15 @@ namespace WeaponCore.Projectiles
                 }
                 else
                 {
-                    PrevTargetPos = PredictedTargetPos;
+                    var roam = Info.AmmoDef.Trajectory.Smarts.Roam;
+                    PrevTargetPos = roam ? PredictedTargetPos : Position + (Info.Direction * Info.MaxTrajectory);
                     if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget))
                     {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
                         EarlyEnd = true;
                     }
 
-                    if (Info.Age - LastOffsetTime > 300 && HadTarget)
+                    if (roam && Info.Age - LastOffsetTime > 300 && HadTarget)
                     {
                         double dist;
                         Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);

@@ -797,6 +797,7 @@ namespace WeaponCore.Api
                         [ProtoMember(6)] internal bool OverideTarget;
                         [ProtoMember(7)] internal int MaxTargets;
                         [ProtoMember(8)] internal bool NoTargetExpire;
+                        [ProtoMember(9)] internal bool Roam;
                     }
 
                     [ProtoContract]
