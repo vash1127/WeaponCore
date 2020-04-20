@@ -357,22 +357,30 @@ namespace WeaponCore.Support
             if (add)
             {
                 if (WeaponsIdx.ContainsKey(comp))
+                {
+                    Log.Line($"CompAddFailed:<{comp.MyCube.EntityId}> - comp({comp.MyCube.DebugName}[{comp.MyCube.BlockDefinition.Id.SubtypeName}]) already existed in {MyGrid.DebugName}");
                     return;
+                }
                 WeaponsIdx.Add(comp, Weapons.Count);
                 Weapons.Add(comp);
+                Log.Line($"CompAdd: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
             }
             else
             {
 
                 int idx;
                 if (!WeaponsIdx.TryGetValue(comp, out idx))
+                {
+                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count}");
                     return;
+                }
 
                 Weapons.RemoveAtFast(idx);
                 if (idx < Weapons.Count)
                     WeaponsIdx[Weapons[idx]] = idx;
 
                 WeaponsIdx.Remove(comp);
+                Log.Line($"CompRemove: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
             }
         }
 
@@ -879,6 +887,7 @@ namespace WeaponCore.Support
             LastWeaponTerminal = null;
             LastTerminal = null;
             PowerDistributor = null;
+            PowerBlock = null;
         }
         internal void UpdateGridPower()
         {
@@ -913,18 +922,39 @@ namespace WeaponCore.Support
 
                 if (Weapons.Count > 0)
                 {
-                    var cube = Weapons[Weapons.Count - 1].MyCube;
-                    using (cube.Pin())
+                    //var cube = Weapons[Weapons.Count - 1].MyCube;
+                    if (PowerDirty || PowerBlock == null)
                     {
-                        if (cube.MarkedForClose || cube.SlimBlock == null || ((IMySlimBlock)cube.SlimBlock).IsDestroyed)
+                        for (int i = 0; i < Weapons.Count; i++)
                         {
-                            Log.Line($"powerDist cube is not ready");
+                            var comp = Weapons[i];
+                            if (comp.MyCube.MarkedForClose || comp.MyCube.SlimBlock == null || ((IMySlimBlock)comp.MyCube.SlimBlock).IsDestroyed)
+                                continue;
+                            PowerBlock = comp.MyCube;
+                            PowerDirty = false;
+                            break;
+                        }
+                    }
+
+                    if (PowerDirty || PowerBlock == null)
+                    {
+                        Log.Line($"Power Still Dirty");
+                        return;
+                    }
+
+                    using (PowerBlock.Pin())
+                    {
+                        if (PowerBlock.MarkedForClose || PowerBlock.SlimBlock == null || ((IMySlimBlock)PowerBlock.SlimBlock).IsDestroyed)
+                        {
+                            PowerBlock = null;
+                            PowerDirty = true;
+                            Log.Line($"powerDist cube is not ready: {Weapons.Count}");
                             return;
                         }
 
-                        using (cube.CubeGrid.Pin())
+                        using (PowerBlock.CubeGrid.Pin())
                         {
-                            if (cube.CubeGrid.MarkedForClose)
+                            if (PowerBlock.CubeGrid.MarkedForClose)
                             {
                                 Log.Line("cubes cubegrid is marked for close");
                                 return;
@@ -934,10 +964,10 @@ namespace WeaponCore.Support
                                 if (FakeShipController == null)
                                     throw new Exception("FakeShipController is null");
 
-                                if (cube.SlimBlock == null)
+                                if (PowerBlock.SlimBlock == null)
                                     throw new Exception("cube.SlimBlock is null");
 
-                                FakeShipController.SlimBlock = cube.SlimBlock;
+                                FakeShipController.SlimBlock = PowerBlock.SlimBlock;
 
                                 try
                                 {

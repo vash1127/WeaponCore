@@ -77,7 +77,6 @@ namespace WeaponCore.Support
                     StorageSetup();
                     InventoryInit();
                     PowerInit();
-                    Ai.CompChange(true, this);
                     RegisterEvents();
 
                     if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
@@ -164,7 +163,6 @@ namespace WeaponCore.Support
                             Ai.WeaponCounter.TryAdd(blockDef, Session.WeaponCountPool.Get());
 
                         Ai.WeaponCounter[blockDef].Current++;
-                        Ai.CompChange(true, this);
                         RegisterEvents();
 
 
@@ -196,7 +194,7 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit) {
 
                     Ai.GridInit = true;
-                    Ai.InitFakeShipController(this);
+                    //Ai.InitFakeShipController(this);
                     Ai.ScanBlockGroups = true;
                     var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
                     
@@ -231,6 +229,8 @@ namespace WeaponCore.Support
 
                 Ai.OptimalDps += PeakDps;
                 Ai.EffectiveDps += EffectiveDps;
+                Ai.CompChange(true, this);
+
                 Ai.Construct.Update(Ai);
 
                 if (!FunctionalBlock.Enabled)
