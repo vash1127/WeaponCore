@@ -62,7 +62,7 @@ namespace WeaponCore
                     tdd.P2 = cm.P2;
                     tdd.P3 = cm.P3;
                     tdd.UvDraw = true;
-                    tdd.Simple = textAdd.scaled;
+                    tdd.Simple = textAdd.Simple;
 
                     _drawList.Add(tdd);
 
@@ -86,6 +86,14 @@ namespace WeaponCore
             for (int i = 0; i < _drawList.Count; i++)
             {
                 var textureToDraw = _drawList[i];
+
+                if (textureToDraw.Simple)
+                {
+                    textureToDraw.Position.X = (textureToDraw.Position.X / (-_viewPortSize.X) * (_viewPortSize.X - 100) + 100);
+                    textureToDraw.Position.Y = (textureToDraw.Position.Y / (-_viewPortSize.Y) * (_viewPortSize.Y - 100) + 100);
+                }
+
+
                 if (textureToDraw.UvDraw)
                 {
                     MyQuadD quad;
@@ -104,9 +112,6 @@ namespace WeaponCore
                 }
                 else
                 {
-                    textureToDraw.Position.X = (textureToDraw.Position.X / (-_viewPortSize.X) * (_viewPortSize.X - 100) + 100);
-                    textureToDraw.Position.Y = (textureToDraw.Position.Y / (-_viewPortSize.Y) * (_viewPortSize.Y - 100) + 100);
-
                     textureToDraw.Position = Vector3D.Transform(textureToDraw.Position, _cameraWorldMatrix);
 
                     MyTransparentGeometry.AddBillboardOriented(textureToDraw.Material, textureToDraw.Color, textureToDraw.Position, _cameraWorldMatrix.Left, _cameraWorldMatrix.Up, textureToDraw.Height, textureToDraw.Blend);
@@ -125,12 +130,15 @@ namespace WeaponCore
         {
             var CurrWeaponDisplayPos = _currWeaponDisplayPos;
 
-            var bgWidth = ((_currentLargestName * _textWidth) + _stackPadding + _reloadWidth);
-            var bgBorderHeight = bgWidth * _bgBorderRatio;
-            var bgCenterHeight = _weapontoDraw.Count > 3 ? (_weapontoDraw.Count - 2) * _infoPaneloffset : _infoPaneloffset * 2;
+            if (_lastHudUpdateTick == _session.Tick)
+            {
+                _bgWidth = ((_currentLargestName * _textWidth) + _stackPadding + _reloadWidth);
+                _bgBorderHeight = _bgWidth * _bgBorderRatio;
+                _bgCenterHeight = _weapontoDraw.Count > 3 ? (_weapontoDraw.Count - 2) * _infoPaneloffset : _infoPaneloffset * 2;
+            }
 
-            var bgStartPosX = CurrWeaponDisplayPos.X - bgWidth - _padding;
-            var bgStartPosY = CurrWeaponDisplayPos.Y - bgCenterHeight;
+            var bgStartPosX = CurrWeaponDisplayPos.X - _bgWidth - _padding;
+            var bgStartPosY = CurrWeaponDisplayPos.Y - _bgCenterHeight;
 
             #region Background draw
             TextureDrawData backgroundTexture;
@@ -141,8 +149,8 @@ namespace WeaponCore
             backgroundTexture.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
             backgroundTexture.Position.X = bgStartPosX;
             backgroundTexture.Position.Y = bgStartPosY;
-            backgroundTexture.Width = bgWidth;
-            backgroundTexture.Height = bgCenterHeight;
+            backgroundTexture.Width = _bgWidth;
+            backgroundTexture.Height = _bgCenterHeight;
             backgroundTexture.P0 = _infoBackground[1].P0;
             backgroundTexture.P1 = _infoBackground[1].P1;
             backgroundTexture.P2 = _infoBackground[1].P2;
@@ -157,9 +165,9 @@ namespace WeaponCore
             backgroundTexture.Material = _infoBackground[0].Material;
             backgroundTexture.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
             backgroundTexture.Position.X = bgStartPosX;
-            backgroundTexture.Position.Y = bgStartPosY + bgBorderHeight + bgCenterHeight;
-            backgroundTexture.Width = bgWidth;
-            backgroundTexture.Height = bgBorderHeight;
+            backgroundTexture.Position.Y = bgStartPosY + _bgBorderHeight + _bgCenterHeight;
+            backgroundTexture.Width = _bgWidth;
+            backgroundTexture.Height = _bgBorderHeight;
             backgroundTexture.P0 = _infoBackground[0].P0;
             backgroundTexture.P1 = _infoBackground[0].P1;
             backgroundTexture.P2 = _infoBackground[0].P2;
@@ -174,9 +182,9 @@ namespace WeaponCore
             backgroundTexture.Material = _infoBackground[2].Material;
             backgroundTexture.Color = _bgColor * (_session.Session.Config.HUDBkOpacity * 1.8f);
             backgroundTexture.Position.X = bgStartPosX;
-            backgroundTexture.Position.Y = bgStartPosY - (bgBorderHeight + bgCenterHeight);
-            backgroundTexture.Width = bgWidth;
-            backgroundTexture.Height = bgBorderHeight;
+            backgroundTexture.Position.Y = bgStartPosY - (_bgBorderHeight + _bgCenterHeight);
+            backgroundTexture.Width = _bgWidth;
+            backgroundTexture.Height = _bgBorderHeight;
             backgroundTexture.P0 = _infoBackground[2].P0;
             backgroundTexture.P1 = _infoBackground[2].P1;
             backgroundTexture.P2 = _infoBackground[2].P2;
@@ -207,6 +215,7 @@ namespace WeaponCore
                 textInfo.Position.X = CurrWeaponDisplayPos.X - textOffset;
                 textInfo.Position.Y = CurrWeaponDisplayPos.Y;
                 textInfo.FontSize = _textSize;
+                textInfo.Simple = false;
                 _textAddList.Add(textInfo);
 
 
@@ -220,6 +229,7 @@ namespace WeaponCore
                     textInfo.Position.X = CurrWeaponDisplayPos.X - (textOffset + (_stextWidth * textInfo.Text.Length) + (_padding *.5f));
                     textInfo.Position.Y = CurrWeaponDisplayPos.Y;
                     textInfo.FontSize = _sTextSize;
+                    textInfo.Simple = false;
                     _textAddList.Add(textInfo);
                 }
 

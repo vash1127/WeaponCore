@@ -22,7 +22,7 @@ namespace WeaponCore
             textInfo.Position.X = x;
             textInfo.Position.Y = y;
             textInfo.FontSize = fontSize * _metersInPixel;
-            textInfo.scaled = false;
+            textInfo.Simple = false;
             _textAddList.Add(textInfo);
 
             TexturesToAdd++;
@@ -40,7 +40,7 @@ namespace WeaponCore
             textInfo.Position.X = x;
             textInfo.Position.Y = y;
             textInfo.FontSize = fontSize * _metersInPixel;
-            textInfo.scaled = true;
+            textInfo.Simple = true;
             _textAddList.Add(textInfo);
 
             TexturesToAdd++;

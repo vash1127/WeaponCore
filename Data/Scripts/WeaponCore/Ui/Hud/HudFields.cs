@@ -74,6 +74,9 @@ namespace WeaponCore
         private float _heatWidth;
         private float _heatHeight;
         private float _infoPaneloffset;
+        private float _bgWidth;
+        private float _bgBorderHeight;
+        private float _bgCenterHeight;
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
@@ -128,7 +131,7 @@ namespace WeaponCore
             internal Color Color;
             internal Vector3D Position;
             internal float FontSize;
-            internal bool scaled;
+            internal bool Simple;
         }
 
         internal struct TextureDrawData
