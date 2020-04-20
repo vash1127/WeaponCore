@@ -61,7 +61,7 @@ namespace WeaponCore
         private uint _lastHudUpdateTick;
 
         internal int TexturesToAdd;
-        internal Vector2 CurrWeaponDisplayPos;
+        internal Vector2 CurrWeaponDisplayPos = new Vector2();
         internal List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
 
 
