@@ -159,8 +159,6 @@ namespace WeaponCore
                                         tmpDirVec[j] = dv;
                                     }
 
-                                    Log.Line($"move.MovementType: {move.MovementType}");
-
                                     if (move.MovementType == RelMove.MoveType.ExpoDecay)
                                     {
                                         var traveled = 0d;
@@ -240,7 +238,6 @@ namespace WeaponCore
                                                 vectorCount++;
 
                                         }
-                                        Log.Line($"vecTotalMoved: {vecTotalMoved} distance: {distance}");
                                     }
                                     else if (move.MovementType == RelMove.MoveType.ExpoGrowth)
                                     {
@@ -318,7 +315,6 @@ namespace WeaponCore
                                             if (remaining > 0)
                                                 vectorCount++;
                                         }
-                                        Log.Line($"vecTotalMoved: {vecTotalMoved} distance: {distance}");
                                     }
                                     else if (move.MovementType == RelMove.MoveType.Linear)
                                     {
@@ -387,7 +383,6 @@ namespace WeaponCore
                                             if (remaining > 0)
                                                 vectorCount++;
                                         }
-                                        Log.Line($"totalChanged: {totalChanged} distance: {distance}");
                                     }
                                 }
                                 else
