@@ -134,6 +134,7 @@ namespace WeaponCore
 
         internal void UpdateHudSettings()
         {
+            //runs once on first draw then only again if a menu is closed
             var fovModifier = _session.Camera.FovWithZoom / _defaultFov;
             NeedsUpdate = false;
 
