@@ -159,6 +159,8 @@ namespace WeaponCore
                                         tmpDirVec[j] = dv;
                                     }
 
+                                    Log.Line($"move.MovementType: {move.MovementType}");
+
                                     if (move.MovementType == RelMove.MoveType.ExpoDecay)
                                     {
                                         var traveled = 0d;
@@ -238,6 +240,7 @@ namespace WeaponCore
                                                 vectorCount++;
 
                                         }
+                                        Log.Line($"vecTotalMoved: {vecTotalMoved} distance: {distance}");
                                     }
                                     else if (move.MovementType == RelMove.MoveType.ExpoGrowth)
                                     {
@@ -315,6 +318,7 @@ namespace WeaponCore
                                             if (remaining > 0)
                                                 vectorCount++;
                                         }
+                                        Log.Line($"vecTotalMoved: {vecTotalMoved} distance: {distance}");
                                     }
                                     else if (move.MovementType == RelMove.MoveType.Linear)
                                     {
@@ -322,6 +326,7 @@ namespace WeaponCore
                                         var vectorCount = 0;
                                         var remaining = 0d;
                                         var vecTotalMoved = 0d;
+                                        var totalChanged = 0d;
 
                                         CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
 
@@ -340,6 +345,14 @@ namespace WeaponCore
                                                 vecTotalMoved += changed;
                                                 remaining = 0;
                                             }
+
+                                            if (j == move.TicksToMove - 1)
+                                            {
+                                                if (totalChanged + changed != distance)
+                                                    changed += (distance - (totalChanged + changed));
+                                            }
+
+                                            totalChanged += changed;
 
                                             var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
                                                 tmpDirVec[vectorCount][2] * changed,
@@ -374,6 +387,7 @@ namespace WeaponCore
                                             if (remaining > 0)
                                                 vectorCount++;
                                         }
+                                        Log.Line($"totalChanged: {totalChanged} distance: {distance}");
                                     }
                                 }
                                 else
