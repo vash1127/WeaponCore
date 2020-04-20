@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -18,34 +19,76 @@ namespace WeaponCore
 
             textInfo.Text = text;
             textInfo.Color = color;
-            textInfo.X = x;
-            textInfo.Y = y;
+            textInfo.Position.X = x;
+            textInfo.Position.Y = y;
             textInfo.FontSize = fontSize * _metersInPixel;
+            textInfo.scaled = false;
             _textAddList.Add(textInfo);
+
+            TexturesToAdd++;
+        }
+
+        internal void AddTextSimple(string text, Vector4 color, float x, float y, float fontSize = 10f)
+        {
+            TextDrawRequest textInfo;
+
+            if (!_textDrawPool.TryDequeue(out textInfo))
+                textInfo = new TextDrawRequest();
+
+            textInfo.Text = text;
+            textInfo.Color = color;
+            textInfo.Position.X = x;
+            textInfo.Position.Y = y;
+            textInfo.FontSize = fontSize * _metersInPixel;
+            textInfo.scaled = true;
+            _textAddList.Add(textInfo);
+
+            TexturesToAdd++;
+        }
+
+        internal void AddTextureUVSimple(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
+        {
+            TextureDrawData tdd;
+            if (!_textureDrawPool.TryDequeue(out tdd))
+                tdd = new TextureDrawData();
+
+            tdd.Material = material;
+            tdd.Color = color;
+            tdd.Position.X = x;
+            tdd.Position.Y = y;
+            tdd.Width = width * _metersInPixel;
+            tdd.Height = height * _metersInPixel;
+            tdd.P0 = new Vector2(uvOffsetX / textureSizeX, uvOffsetY / textureSizeY);
+            tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
+            tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
+            tdd.P3 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
+            tdd.Simple = false;
+            tdd.UvDraw = true;
+            _textureAddList.Add(tdd);
+
+            TexturesToAdd++;
 
             TexturesToAdd++;
         }
 
         internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
         {
-            var position = new Vector3D(x, y, -.1);
             TextureDrawData tdd;
-
             if (!_textureDrawPool.TryDequeue(out tdd))
                 tdd = new TextureDrawData();
 
-            var textureSize = new Vector2(textureSizeX, textureSizeY);
-
             tdd.Material = material;
             tdd.Color = color;
-            tdd.Position = position;
+            tdd.Position.X = x;
+            tdd.Position.Y = y;
             tdd.Width = width * _metersInPixel;
             tdd.Height = height * _metersInPixel;
-            tdd.P0 = new Vector2(uvOffsetX, uvOffsetY) / textureSize;
-            tdd.P1 = new Vector2(uvOffsetX + uvSizeX, uvOffsetY) / textureSize;
-            tdd.P2 = new Vector2(uvOffsetX, uvOffsetY + uvSizeY) / textureSize;
-            tdd.P3 = new Vector2(uvOffsetX + uvSizeX, uvOffsetY + uvSizeY) / textureSize;
-
+            tdd.P0 = new Vector2(uvOffsetX / textureSizeX, uvOffsetY / textureSizeY);
+            tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
+            tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
+            tdd.P3 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
+            tdd.Simple = false;
+            tdd.UvDraw = true;
             _textureAddList.Add(tdd);
 
             TexturesToAdd++;
@@ -53,7 +96,25 @@ namespace WeaponCore
 
         internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float scale)
         {
-            var position = new Vector3D(x, y, -.1);
+            TextureDrawData tdd;
+            if (!_textureDrawPool.TryDequeue(out tdd))
+                tdd = new TextureDrawData();
+
+            tdd.Material = material;
+            tdd.Color = color;
+            tdd.Position.X = x;
+            tdd.Position.Y = y;
+            tdd.Height = scale * _metersInPixel;
+            tdd.Simple = false;
+            tdd.UvDraw = false;
+            _textureAddList.Add(tdd);
+
+            TexturesToAdd++;
+        }
+
+
+        internal void AddTextureSimple(MyStringId material, Vector4 color, float x, float y, float scale)
+        {
             TextureDrawData tdd;
 
             if (!_textureDrawPool.TryDequeue(out tdd))
@@ -61,12 +122,45 @@ namespace WeaponCore
 
             tdd.Material = material;
             tdd.Color = color;
-            tdd.Position = position;
-            tdd.Height = scale;
-
-            _simpleDrawList.Add(tdd);
+            tdd.Position.X = x;
+            tdd.Position.Y = y;
+            tdd.Height = scale * _metersInPixel;
+            tdd.Simple = true;
+            tdd.UvDraw = false;
+            _textureAddList.Add(tdd);
 
             TexturesToAdd++;
+        }
+
+        internal void UpdateHudSettings()
+        {
+            var fovModifier = _session.Camera.FovWithZoom / _defaultFov;
+            NeedsUpdate = false;
+
+            _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
+            _aspectratioInv = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
+            _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * Math.Tan(_session.Camera.FovWithZoom * 0.5f);
+            _viewPortSize.X = (_viewPortSize.Y * _aspectratio);
+            _viewPortSize.Z = -(_session.Camera.NearPlaneDistance * 2);
+
+            _currWeaponDisplayPos.X = _viewPortSize.X;
+            _currWeaponDisplayPos.Y = _viewPortSize.Y * .6f;
+
+            _padding = _paddingConst * fovModifier;
+            _reloadWidth = _reloadWidthConst * fovModifier;
+            _reloadHeight = _reloadHeightConst * fovModifier;
+            _reloadOffset = _reloadWidth * (1.6f * fovModifier) + _padding;
+            _heatOffsetX = _heatWidthOffset * fovModifier;
+            _heatOffsetY = _heatHeightOffset * fovModifier;
+            _textSize = _WeaponHudFontHeight * fovModifier;
+            _sTextSize = _textSize * .75f;
+            _textWidth = (_WeaponHudFontHeight * _aspectratioInv) * fovModifier;
+            _stextWidth = (_textWidth * .75f);
+            _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
+            _heatWidth = _heatWidthConst * fovModifier;
+            _heatHeight = _heatHeightConst * fovModifier;
+            _infoPaneloffset = _infoPanelOffset * fovModifier;
+
         }
 
         internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)
@@ -234,8 +328,7 @@ namespace WeaponCore
             _characterMap.Clear();
             _textureAddList.Clear();
             _textAddList.Clear();
-            _uvDrawList.Clear();
-            _simpleDrawList.Clear();
+            _drawList.Clear();
             _weapontoDraw.Clear();
             WeaponsToDisplay.Clear();
 

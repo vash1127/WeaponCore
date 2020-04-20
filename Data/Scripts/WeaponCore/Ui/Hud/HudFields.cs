@@ -16,16 +16,16 @@ namespace WeaponCore
         ///
         ///weapon Hud Settings
         ///
-        private const float _padding = 10 * _metersInPixel;
-        private const float _WeaponHudFontSize = 3f;
+        private const float _paddingConst = 10 * _metersInPixel;
+        private const float _WeaponHudFontSize = 4f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
-        private const float _reloadHeight = 3f * _metersInPixel;
-        private const float _reloadWidth = _reloadHeight;
-        private const float _reloadHeightOffset = _reloadHeight * .625f;
-        private const float _heatWidth = 40 * _metersInPixel;
-        private const float _heatWidthOffset = _heatWidth + (_padding * 1.8f);
-        private const float _heatHeight = _heatWidth * 0.0625f;
-        private const float _heatHeightOffset = _heatHeight * 2f;
+        private const float _reloadHeightConst = 3f * _metersInPixel;
+        private const float _reloadWidthConst = _reloadHeightConst;
+        private const float _reloadHeightOffset = _reloadHeightConst * .625f;
+        private const float _heatWidthConst = 40 * _metersInPixel;
+        private const float _heatWidthOffset = _heatWidthConst + (_paddingConst * 1.8f);
+        private const float _heatHeightConst = _heatWidthConst * 0.0625f;
+        private const float _heatHeightOffset = _heatHeightConst * 2f;
         private const float _infoPanelOffset = _WeaponHudFontHeight + _heatHeightOffset;
         private const float _defaultFov = 1.22f;
         private const float _bgBorderRatio = .166f;
@@ -51,17 +51,32 @@ namespace WeaponCore
         private Dictionary<char, TextureMap> _characterMap;
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
         private MatrixD _cameraWorldMatrix;
-        private Vector2 _viewPortSize = new Vector2();
+        private Vector3D _viewPortSize = new Vector3D();
         private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
         private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
-        private List<TextureDrawData> _uvDrawList = new List<TextureDrawData>(_initialPoolCapacity);
-        private List<TextureDrawData> _simpleDrawList = new List<TextureDrawData>(256);
+        private List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
+        private Vector2D _currWeaponDisplayPos = new Vector2D();
         private float _aspectratio;
+        private float _aspectratioInv;
         private uint _lastHudUpdateTick;
+        private float _padding;
+        private float _reloadHeight;
+        private float _reloadWidth;
+        private float _reloadOffset;
+        private float _heatOffsetX;
+        private float _heatOffsetY;
+        private float _textSize;
+        private float _sTextSize;
+        private float _textWidth;
+        private float _stextWidth;
+        private float _stackPadding;
+        private float _heatWidth;
+        private float _heatHeight;
+        private float _infoPaneloffset;
 
         internal int TexturesToAdd;
-        internal Vector2 CurrWeaponDisplayPos = new Vector2();
+        internal bool NeedsUpdate = true;
         internal List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
 
 
@@ -83,39 +98,13 @@ namespace WeaponCore
 
             for (int i = 0; i < _initialPoolCapacity; i++)
             {
-                _textureDrawPool.Enqueue(new TextureDrawData());
-                _textDrawPool.Enqueue(new TextDrawRequest());
+                _textureDrawPool.Enqueue(new TextureDrawData() { Position = new Vector3D(), Blend = PostPP });
+                _textDrawPool.Enqueue(new TextDrawRequest() { Position = new Vector3D() });
                 _weaponSortingListPool.Enqueue(new List<Weapon>());
                 _weaponStackedInfoPool.Enqueue(new StackedWeaponInfo());
                 _weaponInfoListPool.Enqueue(new List<StackedWeaponInfo>());
                 _weaponSubListsPool.Enqueue(new List<List<Weapon>>());
             }
-        }
-
-        internal struct TextDrawRequest
-        {
-            internal string Text;
-            internal Color Color;
-            internal float X;
-            internal float Y;
-            internal float FontSize;
-        }
-
-        internal class TextureDrawData
-        {
-            internal MyStringId Material;
-            internal Color Color;
-            internal Vector3D Position;
-            internal Vector3 Up;
-            internal Vector3 Left;
-            internal Vector2 P0;
-            internal Vector2 P1;
-            internal Vector2 P2;
-            internal Vector2 P3;
-            internal float Width;
-            internal float Height;
-            internal bool Persistant;
-            internal MyBillboard.BlendTypeEnum Blend = PostPP;
         }
 
         internal struct TextureMap
@@ -131,6 +120,34 @@ namespace WeaponCore
         {
             internal Weapon HighestValueWeapon;
             internal int WeaponStack;
+        }
+
+        internal struct TextDrawRequest
+        {
+            internal string Text;
+            internal Color Color;
+            internal Vector3D Position;
+            internal float FontSize;
+            internal bool scaled;
+        }
+
+        internal struct TextureDrawData
+        {
+            internal MyStringId Material;
+            internal Color Color;
+            internal Vector3D Position;
+            internal Vector3 Up;
+            internal Vector3 Left;
+            internal Vector2 P0;
+            internal Vector2 P1;
+            internal Vector2 P2;
+            internal Vector2 P3;
+            internal float Width;
+            internal float Height;
+            internal bool Persistant;
+            internal bool Simple;
+            internal bool UvDraw;
+            internal MyBillboard.BlendTypeEnum Blend;
         }
     }
 }

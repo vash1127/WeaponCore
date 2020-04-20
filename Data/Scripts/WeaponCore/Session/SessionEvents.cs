@@ -149,6 +149,7 @@ namespace WeaponCore
             try
             {
                 InMenu = false;
+                HudUi.NeedsUpdate = true;
             }
             catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}"); }
         }
