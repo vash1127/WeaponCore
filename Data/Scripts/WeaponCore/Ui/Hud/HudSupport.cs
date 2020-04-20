@@ -62,7 +62,7 @@ namespace WeaponCore
             tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
             tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
             tdd.P3 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
-            tdd.Simple = false;
+            tdd.Simple = true;
             tdd.UvDraw = true;
             _textureAddList.Add(tdd);
 
@@ -71,7 +71,7 @@ namespace WeaponCore
             TexturesToAdd++;
         }
 
-        internal void AddTexture(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
+        internal void AddTextureUV(MyStringId material, Vector4 color, float x, float y, float width, float height, int textureSizeX, int textureSizeY, int uvOffsetX = 0, int uvOffsetY = 0, int uvSizeX = 1, int uvSizeY = 1)
         {
             TextureDrawData tdd;
             if (!_textureDrawPool.TryDequeue(out tdd))
