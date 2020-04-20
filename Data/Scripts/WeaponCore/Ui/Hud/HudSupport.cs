@@ -248,6 +248,8 @@ namespace WeaponCore
             {
                 for (int i = 0; i < removeList1.Count; i++)
                     removeList1[i].Clear();
+
+                removeList1.Clear();
             }
         }
     }
