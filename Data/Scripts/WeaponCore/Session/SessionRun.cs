@@ -103,13 +103,13 @@ namespace WeaponCore
 
                 if (CompReAdds.Count > 0)
                     ChangeReAdds();
-
+                /*
                 if (Tick3600 && MpActive) 
                     NetReport();
 
                 if (Tick180) 
                     ProfilePerformance();
-
+                */
                 FutureEvents.Tick(Tick);
 
                 if (!DedicatedServer && ActiveControlBlock != null && !InMenu) WheelUi.UpdatePosition();

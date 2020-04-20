@@ -21,7 +21,7 @@ namespace WeaponCore.Support
         internal volatile bool Scanning;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
-
+        internal volatile bool PowerDirty = true;
         internal readonly Focus Focus = new Focus(2);
         internal readonly FakeTarget DummyTarget = new FakeTarget();
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
@@ -64,6 +64,7 @@ namespace WeaponCore.Support
         internal Session Session;
         internal MyCubeGrid MyGrid;
         internal Constructs Construct = new Constructs();
+        internal MyCubeBlock PowerBlock;
         //internal GridAIValues AIValues = new GridAIValues();
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

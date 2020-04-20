@@ -26,7 +26,6 @@ namespace WeaponCore.Support
                 RegisterEvents(false);
                 if (Ai != null)
                 {
-                    Ai.CompChange(false, this);
                     Ai.OptimalDps -= PeakDps;
                     Ai.EffectiveDps -= EffectiveDps;
                     WeaponComponent comp;
@@ -51,21 +50,24 @@ namespace WeaponCore.Support
                                     w.StopPowerDraw();
                             }
                         }
+                        
+                        if (Ai.WeaponBase.Count == 0)
+                        {
+                            WeaponCount wCount;
+                            if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                                Session.WeaponCountPool.Return(wCount);
+
+                            GridAi gridAi;
+                            Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
+                        }
+                        Ai.CompChange(false, this);
                     }
                     else
                         Log.Line($"RemoveComp Weaponbase didn't have my comp");
 
-                    if (Ai.WeaponBase.Count == 0)
-                    {
-                        WeaponCount wCount;
-                        if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
-                            Session.WeaponCountPool.Return(wCount);
-
-                        GridAi gridAi;
-                        Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
-                    }
                     Ai = null;
                 }
+                else Log.Line("Ai already null");
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }

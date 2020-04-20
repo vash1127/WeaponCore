@@ -17,6 +17,7 @@ namespace WeaponCore.Support
                 TerminalBlock.AppendingCustomInfo += AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
+                MyCube.OnMarkForClose += OnMarkForClose;
                 IsWorkingChanged(MyCube);
 
                 BlockInventory.ContentsChanged += OnContentsChanged;
@@ -31,6 +32,7 @@ namespace WeaponCore.Support
                     TerminalBlock.AppendingCustomInfo -= AppendingCustomInfo;
 
                     MyCube.IsWorkingChanged -= IsWorkingChanged;
+                    MyCube.OnMarkForClose -= OnMarkForClose;
 
                     if (BlockInventory == null) Log.Line($"BlockInventory is null");
                     else
@@ -56,6 +58,17 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsChanged: {ex}");
+            }
+        }
+
+        private void OnMarkForClose(MyEntity myEntity)
+        {
+            var cube = (MyCubeBlock)myEntity;
+            
+            var comp = cube.Components.Get<WeaponComponent>();
+            if (comp.Slim == comp.Ai.FakeShipController.SlimBlock)
+            {
+                comp.Ai.PowerDirty = true;
             }
         }
 
