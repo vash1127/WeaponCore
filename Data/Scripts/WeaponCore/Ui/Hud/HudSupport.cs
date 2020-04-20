@@ -223,5 +223,32 @@ namespace WeaponCore
 
             return finalList;
         }
+
+        internal void Purge()
+        {
+
+            _textureDrawPool.Clear();
+            _textDrawPool.Clear();
+            _weaponSortingListPool.Clear();
+            _weaponStackedInfoPool.Clear();
+            _characterMap.Clear();
+            _textureAddList.Clear();
+            _textAddList.Clear();
+            _uvDrawList.Clear();
+            _simpleDrawList.Clear();
+            _weapontoDraw.Clear();
+            WeaponsToDisplay.Clear();
+
+            List<StackedWeaponInfo> removeList;
+            while (_weaponInfoListPool.TryDequeue(out removeList))
+                removeList.Clear();
+
+            List<List<Weapon>> removeList1;
+            while (_weaponSubListsPool.TryDequeue(out removeList1))
+            {
+                for (int i = 0; i < removeList1.Count; i++)
+                    removeList1[i].Clear();
+            }
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace WeaponCore
         private const float _WeaponHudFontSize = 3f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
         private const float _reloadHeight = 3f * _metersInPixel;
-        private const float _reloadWidth = _reloadHeight;//size of reloading texture
+        private const float _reloadWidth = _reloadHeight;
         private const float _reloadHeightOffset = _reloadHeight * .625f;
         private const float _heatWidth = 40 * _metersInPixel;
         private const float _heatWidthOffset = _heatWidth + (_padding * 1.8f);
@@ -51,7 +51,7 @@ namespace WeaponCore
         private Dictionary<char, TextureMap> _characterMap;
         private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
         private MatrixD _cameraWorldMatrix;
-        private Vector4 _viewPortSize = new Vector4();
+        private Vector2 _viewPortSize = new Vector2();
         private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
         private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
         private List<TextureDrawData> _uvDrawList = new List<TextureDrawData>(_initialPoolCapacity);

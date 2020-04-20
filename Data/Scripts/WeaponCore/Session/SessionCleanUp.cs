@@ -31,6 +31,7 @@ namespace WeaponCore
         {
             FutureEvents.Purge((int)Tick);
             PurgeTerminalSystem();
+            HudUi.Purge();
 
             foreach (var reports in Reporter.ReportData.Values)
             {

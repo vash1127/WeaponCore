@@ -11,15 +11,13 @@ namespace WeaponCore
     {
         internal void DrawTextures()
         {
-            var frustHalfHeight = (float)(.1f * Math.Tan(_session.Camera.FovWithZoom * 0.5f));
             var ticksSinceUpdate = _session.Tick - _lastHudUpdateTick;
             var reset = false;
 
             _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
             _cameraWorldMatrix = _session.Camera.WorldMatrix;
-
-            _viewPortSize.X = (frustHalfHeight * (_session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y));
-            _viewPortSize.Y = frustHalfHeight;
+            _viewPortSize.Y = (float)(2 * _session.Camera.NearPlaneDistance * Math.Tan(_session.Camera.FovWithZoom * 0.5f));
+            _viewPortSize.X = (_viewPortSize.Y * _aspectratio);
 
             if (WeaponsToDisplay.Count > 0)
             {
@@ -34,9 +32,7 @@ namespace WeaponCore
                 DrawHud(reset);
             }
 
-
-
-            #region UV Offset based draws
+            #region Proccess Custom Additions
             for (int i = 0; i < _textAddList.Count; i++)
             {
                 var textAdd = _textAddList[i];
@@ -84,7 +80,9 @@ namespace WeaponCore
                 tdd.Left = _cameraWorldMatrix.Left;
                 _uvDrawList.Add(tdd);
             }
+            #endregion
 
+            #region UV Offset based draws
             for (int i = 0; i < _uvDrawList.Count; i++)
             {
                 var textureToDraw = _uvDrawList[i];
