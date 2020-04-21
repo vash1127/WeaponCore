@@ -161,7 +161,7 @@ namespace WeaponCore
             _heatWidth = _heatWidthConst * fovModifier;
             _heatHeight = _heatHeightConst * fovModifier;
             _infoPaneloffset = _infoPanelOffset * fovModifier;
-
+            _symbolWidth = _heatWidth + _reloadWidth + _padding;
         }
 
         internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)

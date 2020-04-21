@@ -34,7 +34,7 @@ namespace WeaponCore
         internal const uint ResyncMinDelayTicks = 720;
         internal const uint ServerTickOffset = 4;
         internal const uint MinTicksBetweenScan = 1800;
-        internal const int FailsBeforeScan = 20;
+        internal const int FailsBeforeScan = 5;
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;

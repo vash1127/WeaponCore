@@ -77,6 +77,7 @@ namespace WeaponCore
         private float _bgWidth;
         private float _bgBorderHeight;
         private float _bgCenterHeight;
+        private float _symbolWidth;
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
