@@ -132,7 +132,9 @@ namespace WeaponCore
 
             if (_lastHudUpdateTick == _session.Tick)
             {
-                _bgWidth = ((_currentLargestName * _textWidth) + _stackPadding + _reloadWidth);
+                var largestName = (_currentLargestName * _textWidth) + _stackPadding;
+                var symbolWidth = _heatWidth + _reloadWidth + _padding;
+                _bgWidth = largestName > symbolWidth ? largestName : symbolWidth;
                 _bgBorderHeight = _bgWidth * _bgBorderRatio;
                 _bgCenterHeight = _weapontoDraw.Count > 3 ? (_weapontoDraw.Count - 2) * _infoPaneloffset : _infoPaneloffset * 2;
             }
