@@ -61,13 +61,17 @@ namespace WeaponCore.Platform
                 Log.Line("closed, init platform invalid, I am crashing now Dave.");
                 return State;
             }
-
+            /*
             if (!comp.MyCube.IsFunctional)
             {
                 State = PlatformState.Delay;
                 return State;
             }
-
+            */
+            var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId;
+            if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
+                Comp.Ai.WeaponCounter.TryAdd(blockDef, Comp.Session.WeaponCountPool.Get());
+            Comp.Ai.WeaponCounter[blockDef].Current++;
 
             var wCounter = comp.Ai.WeaponCounter[comp.SubtypeHash];
             wCounter.Max = Structure.GridWeaponCap;

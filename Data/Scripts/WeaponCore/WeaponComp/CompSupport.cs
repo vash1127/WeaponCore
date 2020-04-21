@@ -63,7 +63,7 @@ namespace WeaponCore.Support
                         Ai.CompChange(false, this);
                     }
                     else
-                        Log.Line($"RemoveComp Weaponbase didn't have my comp");
+                        Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)}");
 
                     Ai = null;
                 }

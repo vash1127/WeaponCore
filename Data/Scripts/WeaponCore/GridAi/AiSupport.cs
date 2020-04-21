@@ -371,7 +371,7 @@ namespace WeaponCore.Support
                 int idx;
                 if (!WeaponsIdx.TryGetValue(comp, out idx))
                 {
-                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count}");
+                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count} - {TmpComps.Contains(comp)}");
                     return;
                 }
 
@@ -893,24 +893,79 @@ namespace WeaponCore.Support
         {
             try
             {
-                LastPowerUpdateTick = Session.Tick;
-                GridAvailablePower = 0;
-                GridMaxPower = 0;
+                if (Weapons.Count == 0) {
+                    Log.Line($"no valid weapon in powerDist");
+                    return;
+                }
+                
                 GridCurrentPower = 0;
-                BatteryMaxPower = 0;
-                BatteryCurrentOutput = 0;
-                BatteryCurrentInput = 0;
+                GridMaxPower = 0;
+                for (int i = -1, j = 0; i < Weapons.Count; i++, j++) {
 
-                if (Session.Tick60)
-                {
-                    foreach (var battery in Batteries)
-                    {
+                    var powerBlock = j == 0 ? PowerBlock : Weapons[i].MyCube;
+                    if (powerBlock == null || j == 0 && PowerDirty) continue;
+                    
+                    using (powerBlock.Pin())  {
+                        using (powerBlock.CubeGrid.Pin())  {
+                            try {
+                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null || ((IMySlimBlock)powerBlock.SlimBlock).IsDestroyed || powerBlock.CubeGrid.MarkedForClose) {
+                                    Log.Line($"skipping bad power block");
+                                    continue;
+                                }
+
+                                if (FakeShipController == null)
+                                    throw new Exception("FakeShipController is null");
+
+                                if (powerBlock.SlimBlock == null)
+                                    throw new Exception("cube.SlimBlock is null");
+
+                                try {
+                                    if (PowerBlock != powerBlock) {
+
+                                        Log.Line("changing power block");
+                                        PowerBlock = powerBlock;
+                                        FakeShipController.SlimBlock = powerBlock.SlimBlock;
+                                        PowerDistributor = FakeShipController.GridResourceDistributor;
+                                        PowerDirty = false;
+                                    }
+                                }
+                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - Changed PowerBlock!"); }
+
+                                if (PowerDistributor == null) {
+                                    Log.Line($"powerDist is null");
+                                    return;
+                                }
+
+                                try {
+                                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                                    break;
+                                }
+                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
+
+                            }
+                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch"); }
+                        }
+
+                    }
+                    Log.Line($"no valid power blocks");
+                    return;
+                }
+
+                if (Session.Tick60) {
+
+                    BatteryMaxPower = 0;
+                    BatteryCurrentOutput = 0;
+                    BatteryCurrentInput = 0;
+                    
+                    foreach (var battery in Batteries) {
+
                         if (!battery.IsWorking) continue;
                         var currentInput = battery.CurrentInput;
                         var currentOutput = battery.CurrentOutput;
                         var maxOutput = battery.MaxOutput;
-                        if (currentInput > 0)
-                        {
+
+                        if (currentInput > 0) {
                             BatteryCurrentInput += currentInput;
                             if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
                             else BatteryCurrentOutput -= currentInput;
@@ -918,84 +973,6 @@ namespace WeaponCore.Support
                         BatteryMaxPower += maxOutput;
                         BatteryCurrentOutput += currentOutput;
                     }
-                }
-
-                if (Weapons.Count > 0)
-                {
-                    //var cube = Weapons[Weapons.Count - 1].MyCube;
-                    if (PowerDirty || PowerBlock == null)
-                    {
-                        for (int i = 0; i < Weapons.Count; i++)
-                        {
-                            var comp = Weapons[i];
-                            if (comp.MyCube.MarkedForClose || comp.MyCube.SlimBlock == null || ((IMySlimBlock)comp.MyCube.SlimBlock).IsDestroyed)
-                                continue;
-                            PowerBlock = comp.MyCube;
-                            PowerDirty = false;
-                            break;
-                        }
-                    }
-
-                    if (PowerDirty || PowerBlock == null)
-                    {
-                        Log.Line($"Power Still Dirty");
-                        return;
-                    }
-
-                    using (PowerBlock.Pin())
-                    {
-                        if (PowerBlock.MarkedForClose || PowerBlock.SlimBlock == null || ((IMySlimBlock)PowerBlock.SlimBlock).IsDestroyed)
-                        {
-                            PowerBlock = null;
-                            PowerDirty = true;
-                            Log.Line($"powerDist cube is not ready: {Weapons.Count}");
-                            return;
-                        }
-
-                        using (PowerBlock.CubeGrid.Pin())
-                        {
-                            if (PowerBlock.CubeGrid.MarkedForClose)
-                            {
-                                Log.Line("cubes cubegrid is marked for close");
-                                return;
-                            }
-                            try
-                            {
-                                if (FakeShipController == null)
-                                    throw new Exception("FakeShipController is null");
-
-                                if (PowerBlock.SlimBlock == null)
-                                    throw new Exception("cube.SlimBlock is null");
-
-                                FakeShipController.SlimBlock = PowerBlock.SlimBlock;
-
-                                try
-                                {
-                                    PowerDistributor = FakeShipController.GridResourceDistributor;
-                                }
-                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - GridResourceDistributor!!!!"); }
-
-                                if (PowerDistributor == null)
-                                {
-                                    Log.Line($"powerDist is null");
-                                    return;
-                                }
-
-                                try
-                                {
-                                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
-                                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
-                                }
-                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
-                            }
-                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch"); }
-                        }
-                    }
-                }
-                else
-                {
-                    Log.Line($"no valid weapon in powerDist");
-                    return;
                 }
 
                 GridAvailablePower = GridMaxPower - GridCurrentPower;
@@ -1017,6 +994,8 @@ namespace WeaponCore.Support
                 HasPower = GridMaxPower > 0;
                 if (!WasPowered && HasPower) 
                     WasPowered = true;
+
+                LastPowerUpdateTick = Session.Tick;
 
                 if (HasPower) return;
                 if (HadPower)

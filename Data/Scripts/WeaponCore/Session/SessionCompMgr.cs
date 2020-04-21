@@ -90,11 +90,8 @@ namespace WeaponCore
                 var blockDef = ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) ? VanillaIds[cube.BlockDefinition.Id] : cube.BlockDefinition.Id.SubtypeId;
                 
                 var weaponComp = new WeaponComponent(this, gridAi, cube, blockDef);
-                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
+                if (gridAi != null)
                 {                    
-                    if (!gridAi.WeaponCounter.ContainsKey(blockDef))
-                        gridAi.WeaponCounter.TryAdd(blockDef, WeaponCountPool.Get());
-
                     CompsToStart.Add(weaponComp);
                     if (thread) CompsToStart.ApplyAdditions();
                 }

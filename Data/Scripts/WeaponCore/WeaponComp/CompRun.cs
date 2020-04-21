@@ -48,6 +48,8 @@ namespace WeaponCore.Support
 
         internal void PlatformInit()
         {
+            Ai.TmpComps.Add(this);
+
             switch (Platform.Init(this)) {
 
                 case MyWeaponPlatform.PlatformState.Invalid:
@@ -154,15 +156,17 @@ namespace WeaponCore.Support
                         Ai = ai;
                     }
 
-                    if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this)) {
+                    if (Ai != null) {
 
                         Ai.FirstRun = true;
+                        /*
                         var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
 
                         if (!Ai.WeaponCounter.ContainsKey(blockDef))
                             Ai.WeaponCounter.TryAdd(blockDef, Session.WeaponCountPool.Get());
 
                         Ai.WeaponCounter[blockDef].Current++;
+                        */
                         RegisterEvents();
 
 
@@ -229,6 +233,13 @@ namespace WeaponCore.Support
 
                 Ai.OptimalDps += PeakDps;
                 Ai.EffectiveDps += EffectiveDps;
+
+
+                if (!Ai.WeaponBase.TryAdd(MyCube, this))
+                    Log.Line($"failed to add cube to gridAi");
+
+
+
                 Ai.CompChange(true, this);
 
                 Ai.Construct.Update(Ai);
