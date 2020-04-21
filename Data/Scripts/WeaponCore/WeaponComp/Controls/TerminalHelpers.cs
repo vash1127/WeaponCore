@@ -148,7 +148,7 @@ namespace WeaponCore.Control
                 }
             }
         }
-        
+
         internal static void AlterControls<T>() where T : IMyTerminalBlock
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
@@ -172,7 +172,7 @@ namespace WeaponCore.Control
             {
                 var c = controls[i];
 
-                if(!visibleControls.Contains(c.Id))
+                if (!visibleControls.Contains(c.Id))
                     c.Visible = b => !b.Components.Has<WeaponComponent>();
 
                 switch (c.Id)
@@ -195,41 +195,47 @@ namespace WeaponCore.Control
                             };
                             break;
                         }
-                }  
+                }
             }
+        }
 
-            if (!isTurretType)
-            {
-                Separator<T>(0, "WC_sep1");
+        internal static void AddUiControls<T>() where T : IMyTerminalBlock
+        {
+            Separator<T>(0, "WC_sep1", HasExtraUi);
 
-                AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.HasGuidanceToggle;
-                    });
-                
-                AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.SetDpsFromTerminal,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.HasDamageSlider;
-                    });
+            AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasGuidanceToggle;
+                });
 
-                AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.SetRof,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.HasRofSlider;
-                    } );
+            AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.SetDpsFromTerminal,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasDamageSlider;
+                });
 
-                AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, true,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.CanOverload;
-                    });
-            }
+            AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.SetRof,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasRofSlider;
+                });
+
+            AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.CanOverload;
+                });
+        }
+
+        internal static bool HasExtraUi(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.CanOverload && comp.HasRofSlider && comp.HasDamageSlider && comp.HasGuidanceToggle;
         }
 
         private static void OnOffAnimations(WeaponComponent comp, bool On)
@@ -447,12 +453,12 @@ namespace WeaponCore.Control
             return c;
         }
 
-        internal static IMyTerminalControlSeparator Separator<T>(int id, string name) where T : IMyTerminalBlock
+        internal static IMyTerminalControlSeparator Separator<T>(int id, string name, Func<IMyTerminalBlock,bool> visibleGettter) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSeparator, T>(name);
 
             c.Enabled = x => true;
-            c.Visible = x => true;
+            c.Visible = visibleGettter;
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
             return c;

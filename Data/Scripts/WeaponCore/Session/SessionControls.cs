@@ -73,6 +73,7 @@ namespace WeaponCore
                     {
                         TerminalHelpers.AlterActions<IMyUserControllableGun>();
                         TerminalHelpers.AlterControls<IMyUserControllableGun>();
+                        TerminalHelpers.AddUiControls<T>();
                         session.BaseControlsActions = true;
                     }
 
@@ -91,7 +92,7 @@ namespace WeaponCore
                     {
                         TerminalHelpers.AlterActions<IMyUserControllableGun>();
                         TerminalHelpers.AlterControls<IMyUserControllableGun>();
-                        
+                        TerminalHelpers.AddUiControls<T>();
                         session.BaseControlsActions = true;
                     }
 
@@ -107,7 +108,7 @@ namespace WeaponCore
                     obs.Add(new MyObjectBuilder_ConveyorSorter().GetType());
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
-
+                    TerminalHelpers.AddUiControls<T>();
                     CreateShootActionSet<T>();
                     CreateShootClick<T>();
                 }
