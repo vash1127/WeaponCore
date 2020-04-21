@@ -41,7 +41,6 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<GroupInfo> GroupsToCheck = new HashSet<GroupInfo>();
-        internal readonly HashSet<WeaponComponent> TmpComps = new HashSet<WeaponComponent>();
         internal readonly MyConcurrentHashSet<MyInventory> Inventories = new MyConcurrentHashSet<MyInventory>();
 
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);

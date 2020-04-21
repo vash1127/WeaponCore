@@ -371,7 +371,7 @@ namespace WeaponCore.Support
                 int idx;
                 if (!WeaponsIdx.TryGetValue(comp, out idx))
                 {
-                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count} - {TmpComps.Contains(comp)}");
+                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count} ");
                     return;
                 }
 
