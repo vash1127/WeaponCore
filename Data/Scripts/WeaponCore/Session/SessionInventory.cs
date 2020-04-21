@@ -73,43 +73,40 @@ namespace WeaponCore
                         magsNeeded = 1;
 
                     var magsAdded = 0;
-                    lock (weapon.Comp.Ai.AmmoInventories[def])
+                    List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
+
+                    if(!cachedInv.ContainsKey(def))
+                        cachedInv[def] = weapon.Comp.Ai.AmmoInventories[def].ToDictionary(kvp => kvp.Key, kvp => kvp.Value, new InventoryCompare());
+
+                    foreach (var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
                     {
-                        List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
+                        var inventory = currentInventory.Key;
+                        var magsAvailable = (int)cachedInv[def][inventory];
 
-                        if(!cachedInv.ContainsKey(def))
-                            cachedInv[def] = weapon.Comp.Ai.AmmoInventories[def].ToDictionary(kvp => kvp.Key, kvp => kvp.Value, new InventoryCompare());
-
-                        foreach (var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
+                        if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                         {
-                            var inventory = currentInventory.Key;
-                            var magsAvailable = (int)cachedInv[def][inventory];
-
-                            if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
+                            if (magsAvailable >= magsNeeded)
                             {
-                                if (magsAvailable >= magsNeeded)
-                                {
-                                    inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
-                                    magsAdded += magsNeeded;
-                                    magsNeeded = 0;                                    
-                                }
-                                else
-                                {
-                                    inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
-                                    magsNeeded -= magsAvailable;
-                                    magsAdded += magsAvailable;
-                                }
-
-                                cachedInv[def][inventory] -= magsAdded;
+                                inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
+                                magsAdded += magsNeeded;
+                                magsNeeded = 0;                                    
                             }
+                            else
+                            {
+                                inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
+                                magsNeeded -= magsAvailable;
+                                magsAdded += magsAvailable;
+                            }
+
+                            cachedInv[def][inventory] -= magsAdded;
                         }
-                        weapon.CurrentAmmoVolume += magsAdded * itemVolume;
-
-                        if (inventories.Count > 0)
-                            AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });
-
-                        weapon.Comp.Session.AmmoPulls++;
                     }
+                    weapon.CurrentAmmoVolume += magsAdded * itemVolume;
+
+                    if (inventories.Count > 0)
+                        AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });
+
+                    weapon.Comp.Session.AmmoPulls++;
                 }
             }
             cachedInv.Clear();
