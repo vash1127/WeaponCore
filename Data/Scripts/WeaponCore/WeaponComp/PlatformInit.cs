@@ -27,6 +27,7 @@ namespace WeaponCore.Platform
             Valid,
             Inited,
             Ready,
+            Incomplete
         }
 
         internal void Setup(WeaponComponent comp)
@@ -61,13 +62,12 @@ namespace WeaponCore.Platform
                 Log.Line("closed, init platform invalid, I am crashing now Dave.");
                 return State;
             }
-            /*
+            
             if (!comp.MyCube.IsFunctional)
             {
-                State = PlatformState.Delay;
+                State = PlatformState.Incomplete;
                 return State;
             }
-            */
             var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId;
             if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
                 Comp.Ai.WeaponCounter.TryAdd(blockDef, Comp.Session.WeaponCountPool.Get());
@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                 else
                 {
                     State = PlatformState.Invalid;
-                    Log.Line("init platform invalid, I am crashing now Dave.");
+                    Log.Line($"{blockDef.String} over block limits.");
                     return State;
                 }
             }
@@ -112,8 +112,6 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     return State;
                 }
-
-                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
 
                 var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
@@ -151,6 +149,8 @@ namespace WeaponCore.Platform
                     return State;
                 }
 
+                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
+
                 foreach (var triggerSet in wepAnimationSet)
                     for(int j = 0; j < triggerSet.Value.Length; j++)
                         comp.AllAnimations.Add(triggerSet.Value[j]);
@@ -162,7 +162,7 @@ namespace WeaponCore.Platform
                     AzimuthPart = new PartInfo { Entity = azimuthPart },
                     ElevationPart = new PartInfo { Entity = elevationPart },
                     AzimuthOnBase = azimuthPart.Parent == comp.MyCube,
-                    AiOnlyWeapon = comp.BaseType != Turret || (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2")
+                    AiOnlyWeapon = comp.BaseType != Turret || (comp.BaseType == Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"))
                 };
 
                 var weapon = Weapons[i];

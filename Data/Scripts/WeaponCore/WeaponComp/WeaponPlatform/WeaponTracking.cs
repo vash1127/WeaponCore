@@ -252,22 +252,23 @@ namespace WeaponCore.Platform
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
 
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
-                var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
-                var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+                var desiredAzAbs = desiredAzimuth + weapon.Azimuth;
+                var desiredElAbs = desiredElevation + weapon.Elevation;
+
+                var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzimuthRadians, weapon.MaxAzimuthRadians);
+                var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElevationRadians, weapon.MaxElevationRadians);
+                var elConstrained = Math.Abs(elConstraint - desiredElAbs) > 0.0000001;
+                var azConstrained = Math.Abs(azConstraint - desiredAzAbs) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
 
                 if (weapon.Target.IsTracking && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera && !weapon.Comp.ResettingSubparts)
                 {
-                    var oldAz = weapon.Azimuth;
-                    var oldEl = weapon.Elevation;
                     var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
                     var az = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
                     var el = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
 
-                    var azDiff = oldAz - az;
-                    var elDiff = oldEl - el;
+                    var azDiff = weapon.Azimuth - az;
+                    var elDiff = weapon.Elevation - el;
                     var azLocked = MyUtils.IsZero(azDiff, (float)epsilon);
                     var elLocked = MyUtils.IsZero(elDiff, (float)epsilon);
 

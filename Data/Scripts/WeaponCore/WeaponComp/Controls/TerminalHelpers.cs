@@ -239,10 +239,13 @@ namespace WeaponCore.Control
         }
 
         private static void OnOffAnimations(WeaponComponent comp, bool On)
-        {            
+        {   
+            if(comp != null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
+
                 var w = comp.Platform.Weapons[i];
+                if (w == null) continue;
 
                 if (!On)
                 {
