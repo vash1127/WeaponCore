@@ -48,8 +48,6 @@ namespace WeaponCore.Support
 
         internal void PlatformInit()
         {
-            Ai.TmpComps.Add(this);
-
             switch (Platform.Init(this)) {
 
                 case MyWeaponPlatform.PlatformState.Invalid:
