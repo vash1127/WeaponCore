@@ -65,9 +65,18 @@ namespace WeaponCore.Platform
             
             if (!comp.MyCube.IsFunctional)
             {
-                State = PlatformState.Incomplete;
+                State = PlatformState.Delay;
                 return State;
             }
+
+            //Get or init Ai
+            if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.MyCube.CubeGrid, out Comp.Ai))
+            {
+                Comp.Ai = Comp.Session.GridAiPool.Get();
+                Comp.Ai.Init(Comp.MyCube.CubeGrid, Comp.Session);
+                Comp.Session.GridTargetingAIs.TryAdd(Comp.MyCube.CubeGrid, Comp.Ai);
+            }
+
             var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId;
             if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
                 Comp.Ai.WeaponCounter.TryAdd(blockDef, Comp.Session.WeaponCountPool.Get());

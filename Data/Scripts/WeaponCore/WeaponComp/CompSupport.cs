@@ -23,7 +23,9 @@ namespace WeaponCore.Support
         {
             try
             {
-                RegisterEvents(false);
+                if (Registered) 
+                    RegisterEvents(false);
+
                 if (Ai != null)
                 {
                     Ai.OptimalDps -= PeakDps;
@@ -67,7 +69,7 @@ namespace WeaponCore.Support
 
                     Ai = null;
                 }
-                else Log.Line("Ai already null");
+                else Log.Line($"CompRemove: Ai already null: {Platform.State}");
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }

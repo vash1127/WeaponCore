@@ -41,9 +41,6 @@ namespace WeaponCore.Support
                         BlockInventory.ContentsChanged -= OnContentsChanged;
                 }
             }
-
-            if (BuildCompEventAttached)
-                MyCube.IsWorkingChanged -= BuildFinished;
         }
 
         private void OnContentsChanged(MyInventoryBase obj)
