@@ -264,9 +264,9 @@ namespace WeaponCore.Platform
                 if (weapon.Target.IsTracking && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera && !weapon.Comp.ResettingSubparts)
                 {
                     var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
-                    var az = MathHelperD.Clamp(weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep), weapon.MinAzimuthRadians, weapon.MaxAzimuthRadians);
+                    var az = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
 
-                    var el = MathHelperD.Clamp(weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep), weapon.MinElevationRadians, weapon.MaxElevationRadians);
+                    var el = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
 
                     var azDiff = weapon.Azimuth - az;
                     var elDiff = weapon.Elevation - el;

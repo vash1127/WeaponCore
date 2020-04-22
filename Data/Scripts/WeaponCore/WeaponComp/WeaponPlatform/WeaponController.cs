@@ -11,6 +11,9 @@ namespace WeaponCore.Platform
         {
             LastTrackedTick = Comp.Session.Tick;
 
+            //Azimuth = MathHelper.Clamp(Azimuth, MinAzimuthRadians, MaxAzimuthRadians);
+            //Elevation = MathHelper.Clamp(Elevation, MinElevationRadians, MaxElevationRadians);
+
             if (AiOnlyWeapon)
             {
                 if (moveAz && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
