@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
@@ -118,27 +119,6 @@ namespace WeaponCore
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
-                        foreach (var def in AllDefinitions)
-                        {
-                            MyDefinitionId defid;
-                            if (def.Id.SubtypeName == subTypeId || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(subTypeId), out defid) && defid == def.Id)) {
-                                var gunDef = def as MyLargeTurretBaseDefinition;
-                                if (gunDef != null)
-                                {
-                                    var blockDefs = weaponDef.HardPoint.HardWare;
-
-                                    gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
-                                    gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
-                                    gunDef.MinElevationDegrees = blockDefs.MinElevation;
-                                    gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
-                                    gunDef.RotationSpeed = blockDefs.RotateRate / 60;
-                                    gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
-                                    gunDef.AiEnabled = false;
-                                }
-
-                                WeaponCoreBlockDefs[subTypeId] = def.Id;
-                            }
-                        }
                         _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string>>
                         {
                             [muzzlePartId] = extraInfo
@@ -159,12 +139,59 @@ namespace WeaponCore
                 SubTypeIdHashMap[tDef.Key] = subTypeIdHash;
 
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];
-
                 var hasTurret = false;
+                var firstWeapon = true;
+
                 foreach (var wepDef in weapons)
                 {
                     if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
+
+                    foreach (var def in AllDefinitions)
+                    {
+
+                        MyDefinitionId defid;
+                        var matchingDef = def.Id.SubtypeName == tDef.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(tDef.Key), out defid) && defid == def.Id);
+
+                        if (matchingDef)
+                        {
+                            if (def is MyWeaponBlockDefinition)
+                            {
+                                if (firstWeapon)
+                                    ((MyWeaponBlockDefinition)def).InventoryMaxVolume = 0;
+
+                                ((MyWeaponBlockDefinition)def).InventoryMaxVolume += wepDef.HardPoint.HardWare.InventorySize;
+                            }
+                            else if(def is MyConveyorSorterDefinition)
+                            {
+                                if (firstWeapon)
+                                    ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
+
+                                var size = Math.Pow(wepDef.HardPoint.HardWare.InventorySize, 1d / 3d);
+
+                                ((MyConveyorSorterDefinition)def).InventorySize += new Vector3(size, size, size);
+                            }
+
+                            firstWeapon = false;
+                        }
+
+                        for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
+                        {
+                            if (matchingDef && def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(wepDef.Assignments.MountPoints[i].AzimuthPartId) || VanillaSubpartNames.Contains(wepDef.Assignments.MountPoints[i].ElevationPartId)))
+                            {
+                                var gunDef = (MyLargeTurretBaseDefinition)def;
+                                var blockDefs = wepDef.HardPoint.HardWare;
+
+                                gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
+                                gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
+                                gunDef.MinElevationDegrees = blockDefs.MinElevation;
+                                gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
+                                gunDef.RotationSpeed = blockDefs.RotateRate / 60;
+                                gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
+                                gunDef.AiEnabled = false;
+                            }
+                        }
+                    }
                 }
 
                 MyDefinitionId defId;
