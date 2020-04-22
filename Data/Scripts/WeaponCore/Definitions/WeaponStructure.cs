@@ -1079,10 +1079,10 @@ namespace WeaponCore.Support
                     var ammoEnergy = ammo.AmmoMagazine == string.Empty || ammo.AmmoMagazine == "Energy";
                     foreach (var def in Session.AllDefinitions)
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine)
+                        {
+                            Session.ammoDefIds.Add(ammoDefId);
                             ammoDefId = def.Id;
-
-                        Session.ammoDefIds.Add(ammoDefId);
-                        weaponAmmo[i] = new WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };                    
+                        }
                 }
 
                 var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();

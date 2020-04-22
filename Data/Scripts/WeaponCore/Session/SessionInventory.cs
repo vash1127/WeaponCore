@@ -51,7 +51,6 @@ namespace WeaponCore
             var cachedInv = new Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>();
 
             Weapon weapon;
-            List<MyInventory> tmpInventories = new List<MyInventory>();
             while (WeaponAmmoPullQueue.TryDequeue(out weapon))
             {
                 using (weapon.Comp.Ai?.MyGrid.Pin())
@@ -82,17 +81,14 @@ namespace WeaponCore
                                 var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
 
                                 if (ammoMag.GetObjectId() == def)
-                                {
                                     cachedInv[def][inventory] = item.Amount;
-                                    tmpInventories.Add(inventory);
-                                }
                             }
                         }
                     }
 
-                    for (int i = 0; i < tmpInventories.Count; i++)
+                    foreach (var currentInventory in cachedInv[def])
                     {
-                        var inventory = tmpInventories[i];
+                        var inventory = currentInventory.Key;
                         var magsAvailable = (int)cachedInv[def][inventory];
 
                         if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
@@ -113,9 +109,6 @@ namespace WeaponCore
                             cachedInv[def][inventory] -= magsAdded;
                         }
                     }
-
-                    tmpInventories.Clear();
-
                     weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
                     if (inventories.Count > 0)
