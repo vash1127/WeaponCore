@@ -21,7 +21,7 @@ namespace WeaponCore
 
         private void StartComps()
         {
-            var reassign = false;
+            //var reassign = false;
             for (int i = 0; i < CompsToStart.Count; i++)
             {
                 var weaponComp = CompsToStart[i];
@@ -36,6 +36,7 @@ namespace WeaponCore
                 }
                 if (weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose && weaponComp.MyCube.BlockDefinition.HasPhysics)
                     continue;
+                /*
                 if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
@@ -46,7 +47,8 @@ namespace WeaponCore
                     reassign = true;
                     CompsToStart.Remove(weaponComp);
                 }
-                else if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
+                */
+                if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                 {
                     if (weaponComp.MyCube.MarkedForClose)
                     {
@@ -66,11 +68,13 @@ namespace WeaponCore
                 }
             }
             CompsToStart.ApplyRemovals();
+            /*
             if (reassign)
             {
                 CompsToStart.ApplyAdditions();
                 StartComps();
             }
+            */
         }
 
         private void InitComp(MyCubeBlock cube, bool thread = true)
@@ -79,22 +83,12 @@ namespace WeaponCore
             {
                 if (cube.MarkedForClose)
                     return;
-                GridAi gridAi;
-                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                {
-                    gridAi = GridAiPool.Get();
-                    gridAi.Init(cube.CubeGrid, this);
-                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
-                }
 
                 var blockDef = ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) ? VanillaIds[cube.BlockDefinition.Id] : cube.BlockDefinition.Id.SubtypeId;
                 
-                var weaponComp = new WeaponComponent(this, gridAi, cube, blockDef);
-                if (gridAi != null)
-                {                    
-                    CompsToStart.Add(weaponComp);
-                    if (thread) CompsToStart.ApplyAdditions();
-                }
+                var weaponComp = new WeaponComponent(this, cube, blockDef);
+                CompsToStart.Add(weaponComp);
+                if (thread) CompsToStart.ApplyAdditions();
             }
         }
 

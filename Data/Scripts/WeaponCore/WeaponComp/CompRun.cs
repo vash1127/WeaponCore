@@ -62,27 +62,6 @@ namespace WeaponCore.Support
                 case MyWeaponPlatform.PlatformState.Inited:
                     Init();
                     break;
-                case MyWeaponPlatform.PlatformState.Incomplete:
-                    MyCube.IsWorkingChanged += BuildFinished;
-                    BuildCompEventAttached = true;
-                    break;
-            }
-        }
-
-        private void BuildFinished(MyCubeBlock obj)
-        {
-            if (Platform.State == MyWeaponPlatform.PlatformState.Incomplete && MyCube.IsFunctional)
-            {
-                MyCube.IsWorkingChanged -= BuildFinished;
-                BuildCompEventAttached = false;
-
-                MyAPIGateway.Utilities.InvokeOnGameThread(()=> {
-                    if (Platform.Init(this) == MyWeaponPlatform.PlatformState.Inited)
-                        Init();
-                    else
-                        Log.Line("Prblem with build complete re-init");
-                });
-                
             }
         }
 

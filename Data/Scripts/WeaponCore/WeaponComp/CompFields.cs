@@ -100,9 +100,8 @@ namespace WeaponCore.Support
             Sorter
         }
 
-        public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube, MyStringHash subtype)
+        public WeaponComponent(Session session,  MyCubeBlock myCube, MyStringHash subtype)
         {
-            Ai = ai;
             Session = session;
             MyCube = myCube;
             Slim = myCube.SlimBlock;
