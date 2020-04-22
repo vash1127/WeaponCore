@@ -217,7 +217,6 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit) {
 
                     Ai.GridInit = true;
-                    //Ai.InitFakeShipController(this);
                     Ai.ScanBlockGroups = true;
                     var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
                     
@@ -230,7 +229,6 @@ namespace WeaponCore.Support
                 }
 
                 var maxTrajectory = 0d;
-                var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
 
                 for (int i = 0; i < Platform.Weapons.Length; i++) {
                     
@@ -238,7 +236,7 @@ namespace WeaponCore.Support
                     weapon.InitTracking();
                     
                     double weaponMaxRange;
-                    DpsAndHeatInit(weapon, ob, out weaponMaxRange);
+                    DpsAndHeatInit(weapon, out weaponMaxRange);
 
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
