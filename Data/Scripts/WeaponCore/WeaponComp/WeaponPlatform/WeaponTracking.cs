@@ -255,8 +255,8 @@ namespace WeaponCore.Platform
                 var desiredAzAbs = desiredAzimuth + weapon.Azimuth;
                 var desiredElAbs = desiredElevation + weapon.Elevation;
 
-                var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzimuthRadians, weapon.MaxAzimuthRadians);
-                var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElevationRadians, weapon.MaxElevationRadians);
+                var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzToleranceRadians, weapon.MaxAzToleranceRadians);
+                var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElToleranceRadians, weapon.MaxAzToleranceRadians);
                 var elConstrained = Math.Abs(elConstraint - desiredElAbs) > 0.0000001;
                 var azConstrained = Math.Abs(azConstraint - desiredAzAbs) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
@@ -264,8 +264,9 @@ namespace WeaponCore.Platform
                 if (weapon.Target.IsTracking && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera && !weapon.Comp.ResettingSubparts)
                 {
                     var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
-                    var az = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                    var el = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                    var az = MathHelperD.Clamp(weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep), weapon.MinAzimuthRadians, weapon.MaxAzimuthRadians);
+
+                    var el = MathHelperD.Clamp(weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep), weapon.MinElevationRadians, weapon.MaxElevationRadians);
 
                     var azDiff = weapon.Azimuth - az;
                     var elDiff = weapon.Elevation - el;
