@@ -6541,14 +6541,14 @@
 		<TransparentMaterial>
 			<Id>
 				<TypeId>TransparentMaterialDefinition</TypeId>
-				<SubtypeId>RechargingText</SubtypeId>
+				<SubtypeId>RechargingIcons</SubtypeId>
 			</Id>
 			<AlphaMistingEnable>false</AlphaMistingEnable>
 			<AlphaSaturation>1</AlphaSaturation>
 			<CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
 			<IgnoreDepth>false</IgnoreDepth>
 			<SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-			<Texture>Textures\GUI\Recharging.dds</Texture>
+			<Texture>Textures\GUI\Icons\RechargeAtlas.dds</Texture>
 			<UseAtlas>false</UseAtlas>
 			<NeedSort>true</NeedSort>
 			<UVOffset>

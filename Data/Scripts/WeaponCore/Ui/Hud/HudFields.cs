@@ -17,21 +17,22 @@ namespace WeaponCore
         ///weapon Hud Settings
         ///
         private const float _paddingConst = 10 * _metersInPixel;
-        private const float _WeaponHudFontSize = 4f;
+        private const float _WeaponHudFontSize = 3.7f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
-        private const float _reloadHeightConst = 3f * _metersInPixel;
+        private const float _reloadHeightConst = 3.5f * _metersInPixel;
         private const float _reloadWidthConst = _reloadHeightConst;
-        private const float _reloadHeightOffset = _reloadHeightConst * .625f;
-        private const float _heatWidthConst = 40 * _metersInPixel;
+        private const float _reloadHeightOffsetConst = _reloadHeightConst;
+        private const float _heatWidthConst = 35 * _metersInPixel;
         private const float _heatWidthOffset = _heatWidthConst + (_paddingConst * 1.8f);
         private const float _heatHeightConst = _heatWidthConst * 0.0625f;
-        private const float _heatHeightOffset = _heatHeightConst * 2f;
-        private const float _infoPanelOffset = _WeaponHudFontHeight + _heatHeightOffset;
+        private const float _infoPanelOffset = _WeaponHudFontHeight + (_heatHeightConst * 2f);
         private const float _defaultFov = 1.22f;
         private const float _bgBorderRatio = .166f;
         private const uint _minUpdateTicks = 60;
 
-        private readonly TextureMap _reloadingTexture;
+        private readonly TextureMap[] _reloadingTexture = new TextureMap[6];
+        private readonly TextureMap[] _outofAmmoTexture = new TextureMap[2];
+        private readonly TextureMap[] _chargingTexture = new TextureMap[10];
         private readonly TextureMap[] _infoBackground = new TextureMap[3];
         private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
         private readonly Color _bgColor = new Color(40, 54, 62, 1);
@@ -78,6 +79,7 @@ namespace WeaponCore
         private float _bgBorderHeight;
         private float _bgCenterHeight;
         private float _symbolWidth;
+        private float _reloadHeightOffset;
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
@@ -88,17 +90,15 @@ namespace WeaponCore
         {
             _session = session;
             LoadTextMaps(out _characterMap); // possible translations in future
-            _reloadingTexture = GenerateMap(MyStringId.GetOrCompute("ReloadingText"), 0, 0, 256, 256, 256, 256);
 
-            _infoBackground[0] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 768, 128, 768, 384);
-            _infoBackground[1] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 128, 768, 128, 768, 384);
-            _infoBackground[2] = GenerateMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 256, 768, 128, 768, 384);
+            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 128, 768, 128, 768, 384, ref _infoBackground);
+            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 64, 1024, 64, 1024, 1024, ref _heatBarTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 64, 64, 64, 64, 512, ref _reloadingTexture);
+            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 64, 64, 64, 64, 640, ref _chargingTexture);
 
-            for (int i = 0; i < _heatBarTexture.Length; i++)
-            {
-                var offset = 64f * i;
-                _heatBarTexture[i] = GenerateMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, offset, 1024, 64, 1024, 1024);
-            }
+            _outofAmmoTexture[0] = GenerateMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 64, 64, 64, 512);
+            _outofAmmoTexture[1] = GenerateMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 448, 64, 64, 64, 512);
+            
 
             for (int i = 0; i < _initialPoolCapacity; i++)
             {
@@ -111,6 +111,16 @@ namespace WeaponCore
             }
         }
 
+        internal void BuildMap(MyStringId material, float offsetX, float OffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY, ref TextureMap[] textureArr)
+        {
+            for (int i = 0; i < textureArr.Length; i++)
+            {
+                var offX = offsetX * i;
+                var offY = OffsetY * i;
+                textureArr[i] = GenerateMap(material, offX, offY, uvSizeX, uvSizeY, textureSizeX, textureSizeY);
+            }
+        }
+
         internal struct TextureMap
         {
             internal MyStringId Material;
@@ -120,10 +130,13 @@ namespace WeaponCore
             internal Vector2 P3;
         }
 
-        internal struct StackedWeaponInfo
+        internal class StackedWeaponInfo
         {
             internal Weapon HighestValueWeapon;
             internal int WeaponStack;
+            internal TextureDrawData CachedReloadTexture;
+            internal TextureDrawData CachedHeatTexture;
+            internal int ReloadIndex;
         }
 
         internal struct TextDrawRequest
@@ -135,11 +148,11 @@ namespace WeaponCore
             internal bool Simple;
         }
 
-        internal struct TextureDrawData
+        internal class TextureDrawData
         {
             internal MyStringId Material;
             internal Color Color;
-            internal Vector3D Position;
+            internal Vector3D Position = new Vector3D();
             internal Vector3 Up;
             internal Vector3 Left;
             internal Vector2 P0;
@@ -151,7 +164,7 @@ namespace WeaponCore
             internal bool Persistant;
             internal bool Simple;
             internal bool UvDraw;
-            internal MyBillboard.BlendTypeEnum Blend;
+            internal MyBillboard.BlendTypeEnum Blend = PostPP;
         }
     }
 }

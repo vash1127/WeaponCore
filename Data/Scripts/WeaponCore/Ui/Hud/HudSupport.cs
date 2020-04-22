@@ -148,18 +148,23 @@ namespace WeaponCore
             _currWeaponDisplayPos.Y = _viewPortSize.Y * .6f;
 
             _padding = _paddingConst * fovModifier;
+
             _reloadWidth = _reloadWidthConst * fovModifier;
             _reloadHeight = _reloadHeightConst * fovModifier;
             _reloadOffset = _reloadWidth * (1.6f * fovModifier) + _padding;
-            _heatOffsetX = _heatWidthOffset * fovModifier;
-            _heatOffsetY = _heatHeightOffset * fovModifier;
+            _reloadHeightOffset = (_reloadHeightOffsetConst * (2 * fovModifier)) * fovModifier;
+
             _textSize = _WeaponHudFontHeight * fovModifier;
             _sTextSize = _textSize * .75f;
             _textWidth = (_WeaponHudFontHeight * _aspectratioInv) * fovModifier;
             _stextWidth = (_textWidth * .75f);
             _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
+
             _heatWidth = _heatWidthConst * fovModifier;
             _heatHeight = _heatHeightConst * fovModifier;
+            _heatOffsetX = _heatWidthOffset * fovModifier;
+            _heatOffsetY = (_heatHeight * 3f) * fovModifier;
+
             _infoPaneloffset = _infoPanelOffset * fovModifier;
             _symbolWidth = _heatWidth + _reloadWidth + _padding;
         }
@@ -202,6 +207,15 @@ namespace WeaponCore
                     if (!_weaponStackedInfoPool.TryDequeue(out swi))
                         swi = new StackedWeaponInfo();
 
+                    if (!_textureDrawPool.TryDequeue(out swi.CachedReloadTexture))
+                        swi.CachedReloadTexture = new TextureDrawData();
+
+                    if (!_textureDrawPool.TryDequeue(out swi.CachedHeatTexture))
+                        swi.CachedHeatTexture = new TextureDrawData();
+
+                    swi.CachedHeatTexture.Persistant = true;
+                    swi.CachedReloadTexture.Persistant = true;
+                    swi.ReloadIndex = 0;
                     swi.HighestValueWeapon = w;
                     swi.WeaponStack = 1;
                     finalList.Add(swi);
@@ -281,6 +295,15 @@ namespace WeaponCore
                             if (!_weaponStackedInfoPool.TryDequeue(out swi))
                                 swi = new StackedWeaponInfo();
 
+                            if (!_textureDrawPool.TryDequeue(out swi.CachedReloadTexture))
+                                swi.CachedReloadTexture = new TextureDrawData();
+
+                            if (!_textureDrawPool.TryDequeue(out swi.CachedHeatTexture))
+                                swi.CachedHeatTexture = new TextureDrawData();
+
+                            swi.CachedHeatTexture.Persistant = true;
+                            swi.CachedReloadTexture.Persistant = true;
+                            swi.ReloadIndex = 0;
                             swi.HighestValueWeapon = subL[0];
                             swi.WeaponStack = subL.Count;
 
@@ -302,6 +325,16 @@ namespace WeaponCore
                         StackedWeaponInfo swi;
                         if (!_weaponStackedInfoPool.TryDequeue(out swi))
                             swi = new StackedWeaponInfo();
+
+                        if (!_textureDrawPool.TryDequeue(out swi.CachedReloadTexture))
+                            swi.CachedReloadTexture = new TextureDrawData();
+
+                        if (!_textureDrawPool.TryDequeue(out swi.CachedHeatTexture))
+                            swi.CachedHeatTexture = new TextureDrawData();
+
+                        swi.CachedHeatTexture.Persistant = true;
+                        swi.CachedReloadTexture.Persistant = true;
+                        swi.ReloadIndex = 0;
 
                         swi.HighestValueWeapon = weapons[0];
                         swi.WeaponStack = 1;

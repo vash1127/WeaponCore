@@ -4,6 +4,7 @@ using VRage.Game;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
+using static VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore
 {
@@ -116,7 +117,8 @@ namespace WeaponCore
 
                     MyTransparentGeometry.AddBillboardOriented(textureToDraw.Material, textureToDraw.Color, textureToDraw.Position, _cameraWorldMatrix.Left, _cameraWorldMatrix.Up, textureToDraw.Height, textureToDraw.Blend);
                 }
-                _textureDrawPool.Enqueue(textureToDraw);
+                if(!textureToDraw.Persistant)
+                    _textureDrawPool.Enqueue(textureToDraw);
             }
 
             WeaponsToDisplay.Clear();
@@ -202,10 +204,8 @@ namespace WeaponCore
             for (int i = 0; i < _weapontoDraw.Count; i++)
             {
                 TextDrawRequest textInfo;
-                TextureDrawData reloadTexture;
-                TextureDrawData heatTexture;
-
-                var weapon = _weapontoDraw[i].HighestValueWeapon;
+                var stackedInfo = _weapontoDraw[i];
+                var weapon = stackedInfo.HighestValueWeapon;
                 var name = weapon.System.WeaponName + ": ";
                 var textOffset = ((name.Length * _textSize) + (_padding * 1.5));
 
@@ -221,12 +221,12 @@ namespace WeaponCore
                 _textAddList.Add(textInfo);
 
 
-                if (_weapontoDraw[i].WeaponStack > 1)
+                if (stackedInfo.WeaponStack > 1)
                 {
                     if (!_textDrawPool.TryDequeue(out textInfo))
                         textInfo = new TextDrawRequest();
 
-                    textInfo.Text = $"(x{_weapontoDraw[i].WeaponStack})";
+                    textInfo.Text = $"(x{stackedInfo.WeaponStack})";
                     textInfo.Color = Color.LightSteelBlue * _session.UiOpacity;
                     textInfo.Position.X = CurrWeaponDisplayPos.X - (textOffset + (_stextWidth * textInfo.Text.Length) + (_padding *.5f));
                     textInfo.Position.Y = CurrWeaponDisplayPos.Y;
@@ -238,54 +238,62 @@ namespace WeaponCore
 
                 if (weapon.HeatPerc > 0)
                 {
-                    if (!_textureDrawPool.TryDequeue(out heatTexture))
-                        heatTexture = new TextureDrawData();
                     int heatBarIndex;
                     if (weapon.State.Sync.Overheated)
                         heatBarIndex = 10;
                     else
                         heatBarIndex = (int)(weapon.HeatPerc * 10);
 
+                    stackedInfo.CachedHeatTexture.Material = _heatBarTexture[heatBarIndex].Material;
+                    stackedInfo.CachedHeatTexture.Color = Color.Transparent;
+                    stackedInfo.CachedHeatTexture.Position.X = CurrWeaponDisplayPos.X - _heatOffsetX;
+                    stackedInfo.CachedHeatTexture.Position.Y = CurrWeaponDisplayPos.Y - _heatOffsetY;
+                    stackedInfo.CachedHeatTexture.Width = _heatWidth;
+                    stackedInfo.CachedHeatTexture.Height = _heatHeight;
+                    stackedInfo.CachedHeatTexture.P0 = _heatBarTexture[heatBarIndex].P0;
+                    stackedInfo.CachedHeatTexture.P1 = _heatBarTexture[heatBarIndex].P1;
+                    stackedInfo.CachedHeatTexture.P2 = _heatBarTexture[heatBarIndex].P2;
+                    stackedInfo.CachedHeatTexture.P3 = _heatBarTexture[heatBarIndex].P3;
 
-                    heatTexture.Material = _heatBarTexture[heatBarIndex].Material;
-                    heatTexture.Color = Color.Transparent;
-                    heatTexture.Position.X = CurrWeaponDisplayPos.X - _heatOffsetX;
-                    heatTexture.Position.Y = CurrWeaponDisplayPos.Y - _heatOffsetY;
-                    heatTexture.Width = _heatWidth;
-                    heatTexture.Height = _heatHeight;
-                    heatTexture.P0 = _heatBarTexture[heatBarIndex].P0;
-                    heatTexture.P1 = _heatBarTexture[heatBarIndex].P1;
-                    heatTexture.P2 = _heatBarTexture[heatBarIndex].P2;
-                    heatTexture.P3 = _heatBarTexture[heatBarIndex].P3;
+                    if (reset)
+                        stackedInfo.CachedHeatTexture.Persistant = false;
 
-                    _textureAddList.Add(heatTexture);
+                    _textureAddList.Add(stackedInfo.CachedHeatTexture);
                 }
 
                 if (weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30)
                 {
-                    if (!_textureDrawPool.TryDequeue(out reloadTexture))
-                        reloadTexture = new TextureDrawData();
-
                     var offsetX = weapon.HeatPerc > 0 ? _reloadWidth + _heatWidth + _heatOffsetX : _reloadOffset + _padding;
+                    var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
+                    var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
-                    reloadTexture.Material = _reloadingTexture.Material;
-                    reloadTexture.Color = Color.DarkRed * _session.UiOpacity;
-                    reloadTexture.Position.X = CurrWeaponDisplayPos.X - offsetX;
-                    reloadTexture.Position.Y = CurrWeaponDisplayPos.Y - _heatOffsetY;
-                    reloadTexture.Width = _reloadWidth;
-                    reloadTexture.Height = _reloadHeight;
-                    reloadTexture.P0 = _reloadingTexture.P0;
-                    reloadTexture.P1 = _reloadingTexture.P1;
-                    reloadTexture.P2 = _reloadingTexture.P2;
-                    reloadTexture.P3 = _reloadingTexture.P3;
+                    if (mustCharge)
+                        stackedInfo.ReloadIndex = (int)MathHelper.Lerp(0, _chargingTexture.Length - 1, weapon.State.Sync.CurrentCharge / weapon.MaxCharge);
 
-                    _textureAddList.Add(reloadTexture);
+                    stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
+                    stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
+                    stackedInfo.CachedReloadTexture.Position.X = CurrWeaponDisplayPos.X - offsetX;
+                    stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y - _reloadHeightOffset;
+                    stackedInfo.CachedReloadTexture.Width = _reloadWidth;
+                    stackedInfo.CachedReloadTexture.Height = _reloadHeight;
+                    stackedInfo.CachedReloadTexture.P0 = texture[stackedInfo.ReloadIndex].P0;
+                    stackedInfo.CachedReloadTexture.P1 = texture[stackedInfo.ReloadIndex].P1;
+                    stackedInfo.CachedReloadTexture.P2 = texture[stackedInfo.ReloadIndex].P2;
+                    stackedInfo.CachedReloadTexture.P3 = texture[stackedInfo.ReloadIndex].P3;
+                    
+                    if(!mustCharge && _session.Tick10 && ++stackedInfo.ReloadIndex > texture.Length - 1)
+                        stackedInfo.ReloadIndex = 0;
+
+                    if (reset)
+                        stackedInfo.CachedReloadTexture.Persistant = false;
+
+                    _textureAddList.Add(stackedInfo.CachedReloadTexture);
                 }
 
                 CurrWeaponDisplayPos.Y -= _infoPaneloffset + (_padding * .5f);
 
                 if (reset)
-                    _weaponStackedInfoPool.Enqueue(_weapontoDraw[i]);
+                    _weaponStackedInfoPool.Enqueue(stackedInfo);
             }
 
             if (reset)
