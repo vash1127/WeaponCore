@@ -342,7 +342,10 @@ namespace WeaponCore.Platform
 
         public void StopShooting(bool avOnly = false, bool power = true)
         {
-            StopFiringSound(false);
+            if (System.Values.HardPoint.Audio.FireSoundEndDelay > 0)
+                Comp.Session.FutureEvents.Schedule(StopFiringSound, false, System.Values.HardPoint.Audio.FireSoundEndDelay);
+            else StopFiringSound(false);
+
             StopPreFiringSound(false);
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
             CeaseFireDelayTick = uint.MaxValue;
@@ -671,8 +674,9 @@ namespace WeaponCore.Platform
             FiringEmitter?.PlaySound(FiringSound);
         }
 
-        public void StopFiringSound(bool force)
+        public void StopFiringSound(object o = null)
         {
+            var force = o as bool? ?? false;
             FiringEmitter?.StopSound(force);
         }
 

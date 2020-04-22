@@ -244,6 +244,7 @@ namespace WeaponCore.Support
                 [ProtoMember(5)] internal string FiringSound;
                 [ProtoMember(6)] internal bool FiringSoundPerShot;
                 [ProtoMember(7)] internal string PreFiringSound;
+                [ProtoMember(8)] internal uint FireSoundEndDelay;
             }
 
             [ProtoContract]
