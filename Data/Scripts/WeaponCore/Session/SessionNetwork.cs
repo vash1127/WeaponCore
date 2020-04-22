@@ -464,8 +464,6 @@ namespace WeaponCore
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.UiMId = midPacket.MId;
-
-                                ai.RescanInventories();
                                 report.PacketValid = true;
                             }
                             break;

@@ -47,15 +47,8 @@ namespace WeaponCore.Support
 
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Add(inventory))
-                    {
                         inventory.InventoryContentChanged += CheckAmmoInventory;
-                        foreach (var item in inventory.GetItems())
-                        {
-                            var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
-                            if (ammoMag != null && AmmoInventories.ContainsKey(ammoMag.GetObjectId()))
-                                CheckAmmoInventory(inventory, item, item.Amount);
-                        }
-                    }
+                    
                 }
                 else if (myCubeBlock is IMyUserControllableGun || myCubeBlock is MyConveyorSorter) ScanBlockGroups = true;
             }
@@ -78,17 +71,8 @@ namespace WeaponCore.Support
                 else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector || myCubeBlock is MyCockpit)
                 {
                     MyInventory inventory;
-                    if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Contains(inventory))
-                    {
-                        Inventories.Remove(inventory);
+                    if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Remove(inventory))
                         inventory.InventoryContentChanged -= CheckAmmoInventory;
-                        foreach (var ammoInvetory in AmmoInventories)
-                        {
-                            MyFixedPoint pointRemoved;
-                            if (ammoInvetory.Value.ContainsKey(inventory))
-                                ammoInvetory.Value.TryRemove(inventory, out pointRemoved);
-                        }
-                    }
                 }
                 else if (myCubeBlock.Components.TryGet(out comp))
                 {
@@ -101,37 +85,9 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
-            if (ammoMag != null)
-            {
-                var myInventory = inventory as MyInventory;
-                if (myInventory == null) return;
-                var magId = ammoMag.GetObjectId();
-                if (AmmoInventories.ContainsKey(magId))
-                {
-                    lock (AmmoInventories[magId])
-                    {
-                        var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
-
-                        if (!hasIntentory && amount > 0)
-                        {
-                            AmmoInventories[magId][myInventory] = amount;
-                            Session.FutureEvents.Schedule(CheckReload, magId, 1);
-                        }
-                        else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
-                        {
-                            AmmoInventories[magId][myInventory] += amount;
-                            Session.FutureEvents.Schedule(CheckReload, magId, 1);
-                        }
-                        else if (hasIntentory)
-                        {
-                            MyFixedPoint pointRemoved;
-                            AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);
-                        }
-                    }
-                }
-            }
-            Session.AmmoMoveTriggered++;
+            var itemDef = item.Content.GetObjectId();
+            if (Session.ammoDefIds.Contains(itemDef))
+                Session.FutureEvents.Schedule(CheckReload, itemDef, 1);
         }
 
         internal void GridClose(MyEntity myEntity)

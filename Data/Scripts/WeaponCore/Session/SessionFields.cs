@@ -33,8 +33,6 @@ namespace WeaponCore
         internal const int VersionControl = 2;
         internal const uint ResyncMinDelayTicks = 720;
         internal const uint ServerTickOffset = 4;
-        internal const uint MinTicksBetweenScan = 1800;
-        internal const int FailsBeforeScan = 5;
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;
@@ -63,7 +61,6 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
-        internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
         internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridToMasterAi = new ConcurrentDictionary<MyCubeGrid, GridAi>();
 
@@ -95,6 +92,7 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();        
         internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
+        internal readonly HashSet<MyDefinitionId> ammoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
 
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();

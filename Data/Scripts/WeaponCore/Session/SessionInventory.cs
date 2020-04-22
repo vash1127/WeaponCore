@@ -27,13 +27,11 @@ namespace WeaponCore
                 {
                     if (!comp.Session.IsCreative)
                     {
-                        var invWithMagsAvailable = comp.Ai.AmmoInventories[ammo.AmmoDefinitionId];
-
                         weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
 
                         weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
-                        if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
+                        if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume)
                             weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
                         else if (weapon.CanReload)
                             weapon.StartReload();
@@ -60,25 +58,35 @@ namespace WeaponCore
                 {
                     if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) continue;
                     var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
-                    float itemMass;
-                    float itemVolume;
-
-                    MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
 
                     var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
                     var weaponInventory = weapon.Comp.BlockInventory;
-                    var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / itemVolume);
+                    var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
 
-                    if (magsNeeded == 0 && weapon.System.MaxAmmoVolume > itemVolume)
+                    if (magsNeeded == 0 && weapon.System.MaxAmmoVolume > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume)
                         magsNeeded = 1;
 
                     var magsAdded = 0;
                     List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
 
-                    if(!cachedInv.ContainsKey(def))
-                        cachedInv[def] = weapon.Comp.Ai.AmmoInventories[def].ToDictionary(kvp => kvp.Key, kvp => kvp.Value, new InventoryCompare());
+                    if (!cachedInv.ContainsKey(def))
+                    {
+                        cachedInv[def] = new Dictionary<MyInventory, MyFixedPoint>();
+                        foreach(var inventory in weapon.Comp.Ai.Inventories)
+                        {
+                            var items = inventory.GetItems();
+                            for(int i = 0; i < items.Count; i++)
+                            {
+                                var item = items[i];
+                                var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
 
-                    foreach (var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
+                                if (ammoMag.GetObjectId() == def)
+                                    cachedInv[def][inventory] = item.Amount;
+                            }
+                        }
+                    }
+
+                    foreach (var currentInventory in cachedInv[def])
                     {
                         var inventory = currentInventory.Key;
                         var magsAvailable = (int)cachedInv[def][inventory];
@@ -101,7 +109,7 @@ namespace WeaponCore
                             cachedInv[def][inventory] -= magsAdded;
                         }
                     }
-                    weapon.CurrentAmmoVolume += magsAdded * itemVolume;
+                    weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
                     if (inventories.Count > 0)
                         AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });

@@ -29,6 +29,7 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
+        internal readonly MyConcurrentHashSet<MyInventory> Inventories = new MyConcurrentHashSet<MyInventory>();
 
         internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
@@ -41,7 +42,6 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<GroupInfo> GroupsToCheck = new HashSet<GroupInfo>();
-        internal readonly MyConcurrentHashSet<MyInventory> Inventories = new MyConcurrentHashSet<MyInventory>();
 
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
@@ -82,14 +82,12 @@ namespace WeaponCore.Support
         internal Vector3D PlanetClosestPoint;
         internal Vector3D NaturalGravity;
         internal BoundingSphereD GridVolume;
-        //internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
         internal bool FirstRun = true;
         internal bool ScanBlockGroups = true;
         internal bool ScanBlockGroupSettings;
         internal bool Registered;
-        internal bool ScanInventories;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
@@ -99,7 +97,6 @@ namespace WeaponCore.Support
         internal uint LastSerializedTick;
         internal uint TurnOffManualTick;
         internal uint UiMId;
-        internal uint LastInventoryScanTick;
         internal int SourceCount;
         internal int BlockCount;
         internal int NumSyncWeapons;
@@ -148,8 +145,6 @@ namespace WeaponCore.Support
             None,
         }
 
-        internal ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventories;
-
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private readonly FastResourceLock _scanLock = new FastResourceLock();
         private uint _lastScan;
@@ -163,7 +158,7 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
-            AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
+
             if (Session.IsClient)
                 session.SendUpdateRequest(grid.EntityId, PacketType.GridSyncRequestUpdate);
         }

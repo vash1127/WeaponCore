@@ -23,7 +23,6 @@ namespace WeaponCore.Platform
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;
         private int _nextVirtual;
-        private int _failedAttempts;
         private uint _ticksUntilShoot;
         private uint _azimuthSubpartUpdateTick;
         private uint _prefiredTick;
