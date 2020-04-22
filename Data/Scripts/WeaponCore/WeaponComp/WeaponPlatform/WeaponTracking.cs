@@ -51,8 +51,8 @@ namespace WeaponCore.Platform
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+                var azConstraint = Math.Min(weapon.MaxAzToleranceRadians, Math.Max(weapon.MinAzToleranceRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElToleranceRadians, Math.Max(weapon.MinElToleranceRadians, desiredElevation));
                 var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                 var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 canTrack = !azConstrained && !elConstrained;
@@ -102,8 +102,8 @@ namespace WeaponCore.Platform
 
                     MathFuncs.GetRotationAngles(ref targetDir, ref weapon.WeaponConstMatrix, out checkAzimuth, out checkElevation);
 
-                    var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, checkAzimuth));
-                    var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, checkElevation));
+                    var azConstraint = Math.Min(weapon.MaxAzToleranceRadians, Math.Max(weapon.MinAzToleranceRadians, checkAzimuth));
+                    var elConstraint = Math.Min(weapon.MaxElToleranceRadians, Math.Max(weapon.MinElToleranceRadians, checkElevation));
 
                     Vector3D constraintVector;
                     Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out constraintVector);
@@ -256,7 +256,7 @@ namespace WeaponCore.Platform
                 var desiredElAbs = desiredElevation + weapon.Elevation;
 
                 var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzToleranceRadians, weapon.MaxAzToleranceRadians);
-                var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElToleranceRadians, weapon.MaxAzToleranceRadians);
+                var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElToleranceRadians, weapon.MaxElToleranceRadians);
                 var elConstrained = Math.Abs(elConstraint - desiredElAbs) > 0.0000001;
                 var azConstrained = Math.Abs(azConstraint - desiredAzAbs) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
@@ -534,30 +534,30 @@ namespace WeaponCore.Platform
             var maxAz = System.MaxAzimuth;
             var minEl = System.MinElevation;
             var maxEl = System.MaxElevation;
-
-            MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minEl));
-            MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxEl));
-
             var toleranceRads = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
 
-            if (MinElevationRadians > MaxElevationRadians)
-                MinElevationRadians -= 6.283185f;
-            MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
-            MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
+            MinElevationRadians = MinElToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minEl));
+            MaxElevationRadians = MaxElToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxEl));
 
-            if (System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
+            MinAzimuthRadians = MinAzToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
+            MaxAzimuthRadians = MaxAzToleranceRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
+
+            if (System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly || System.Values.HardPoint.AddToleranceToTracking)
             {
-                MinElevationRadians -= toleranceRads;
-                MaxElevationRadians += toleranceRads;
+                MinElToleranceRadians -= toleranceRads;
+                MaxElToleranceRadians += toleranceRads;
             }
-            else if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
+            else if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly || System.Values.HardPoint.AddToleranceToTracking)
             {
-                MinAzimuthRadians -= toleranceRads;
-                MaxAzimuthRadians += toleranceRads;
+                MinAzToleranceRadians -= toleranceRads;
+                MaxAzToleranceRadians += toleranceRads;
             }
 
-            if (MinAzimuthRadians > MaxAzimuthRadians)
-                MinAzimuthRadians -= 6.283185f;
+            if (MinElToleranceRadians > MaxElToleranceRadians)
+                MinElToleranceRadians -= 6.283185f;
+
+            if (MinAzToleranceRadians > MaxAzToleranceRadians)
+                MinAzToleranceRadians -= 6.283185f;
         }
     }
 }

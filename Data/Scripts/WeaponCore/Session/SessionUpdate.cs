@@ -405,7 +405,7 @@ namespace WeaponCore
                     var sinceCheck = Tick - w.Target.CheckTick;
                     var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && gridAi.CheckProjectiles;
 
-                    var checkTime = w.Target.TargetChanged || sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || seekProjectile;
+                    var checkTime = true; // w.Target.TargetChanged || sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || seekProjectile;
 
                     if (checkTime || gridAi.TargetResetTick == Tick && w.Target.HasTarget)
                     {

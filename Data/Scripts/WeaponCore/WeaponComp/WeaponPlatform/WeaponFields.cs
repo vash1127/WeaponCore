@@ -129,6 +129,10 @@ namespace WeaponCore.Platform
         internal double AimingTolerance;
         internal double RotationSpeed;
         internal double ElevationSpeed;
+        internal double MaxAzToleranceRadians;
+        internal double MinAzToleranceRadians;
+        internal double MaxElToleranceRadians;
+        internal double MinElToleranceRadians;
         internal double MaxAzimuthRadians;
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;

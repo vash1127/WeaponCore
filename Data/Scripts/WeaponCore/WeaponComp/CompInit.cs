@@ -97,6 +97,9 @@ namespace WeaponCore.Support
 
             if (weapon.State.Sync.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
                 weapon.State.Sync.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+
+            if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                Session.ComputeStorage(weapon);
         }
 
         private void InventoryInit()
