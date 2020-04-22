@@ -44,7 +44,7 @@ namespace WeaponCore
 
                 for (int j = 0; j < textAdd.Text.Length; j++)
                 {
-                    var cm = _characterMap[textAdd.Text[j]];
+                    var cm = _characterMap[textAdd.Font][textAdd.Text[j]];
 
                     TextureDrawData tdd;
 
@@ -134,7 +134,7 @@ namespace WeaponCore
 
             if (_lastHudUpdateTick == _session.Tick)
             {
-                var largestName = (_currentLargestName * _textWidth) + _stackPadding;
+                var largestName = (_currentLargestName * _textWidth) + _reloadWidth + _stackPadding;
                 
                 _bgWidth = largestName > _symbolWidth ? largestName : _symbolWidth;
                 _bgBorderHeight = _bgWidth * _bgBorderRatio;
@@ -207,17 +207,20 @@ namespace WeaponCore
                 var stackedInfo = _weapontoDraw[i];
                 var weapon = stackedInfo.HighestValueWeapon;
                 var name = weapon.System.WeaponName + ": ";
-                var textOffset = ((name.Length * _textSize) + (_padding * 1.5));
+                var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
+                var hasHeat = weapon.HeatPerc > 0;
+                var reloading = weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30;
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();
 
                 textInfo.Text = name;
                 textInfo.Color = Color.White * _session.UiOpacity;
-                textInfo.Position.X = CurrWeaponDisplayPos.X - textOffset;
+                textInfo.Position.X = textOffset;
                 textInfo.Position.Y = CurrWeaponDisplayPos.Y;
                 textInfo.FontSize = _textSize;
                 textInfo.Simple = false;
+                textInfo.Font = _hudFont;
                 _textAddList.Add(textInfo);
 
 
@@ -228,15 +231,17 @@ namespace WeaponCore
 
                     textInfo.Text = $"(x{stackedInfo.WeaponStack})";
                     textInfo.Color = Color.LightSteelBlue * _session.UiOpacity;
-                    textInfo.Position.X = CurrWeaponDisplayPos.X - (textOffset + (_stextWidth * textInfo.Text.Length) + (_padding *.5f));
-                    textInfo.Position.Y = CurrWeaponDisplayPos.Y;
+                    textInfo.Position.X = textOffset + (name.Length * _textSize) - (_padding * .5f);
+
+                    textInfo.Position.Y = CurrWeaponDisplayPos.Y - (_sTextSize * .5f);
                     textInfo.FontSize = _sTextSize;
                     textInfo.Simple = false;
+                    textInfo.Font = FontType.Mono;
                     _textAddList.Add(textInfo);
                 }
 
 
-                if (weapon.HeatPerc > 0)
+                if (hasHeat)
                 {
                     int heatBarIndex;
                     if (weapon.State.Sync.Overheated)
@@ -261,9 +266,8 @@ namespace WeaponCore
                     _textureAddList.Add(stackedInfo.CachedHeatTexture);
                 }
 
-                if (weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30)
+                if (reloading)
                 {
-                    var offsetX = weapon.HeatPerc > 0 ? _reloadWidth + _heatWidth + _heatOffsetX : _reloadOffset + _padding;
                     var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
                     var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
@@ -272,8 +276,8 @@ namespace WeaponCore
 
                     stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                     stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
-                    stackedInfo.CachedReloadTexture.Position.X = CurrWeaponDisplayPos.X - offsetX;
-                    stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y - _reloadHeightOffset;
+                    stackedInfo.CachedReloadTexture.Position.X = textOffset - _reloadOffset;
+                    stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y;
                     stackedInfo.CachedReloadTexture.Width = _reloadWidth;
                     stackedInfo.CachedReloadTexture.Height = _reloadHeight;
                     stackedInfo.CachedReloadTexture.P0 = texture[stackedInfo.ReloadIndex].P0;

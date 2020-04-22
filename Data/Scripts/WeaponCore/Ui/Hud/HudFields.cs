@@ -13,11 +13,33 @@ namespace WeaponCore
         private const float _metersInPixel = 0.0002645833f;
         private const int _initialPoolCapacity = 512;
 
+        private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
+        private readonly ConcurrentQueue<TextDrawRequest> _textDrawPool = new ConcurrentQueue<TextDrawRequest>();
+        private readonly Queue<List<Weapon>> _weaponSortingListPool = new Queue<List<Weapon>>(_initialPoolCapacity);
+        private readonly Queue<StackedWeaponInfo> _weaponStackedInfoPool = new Queue<StackedWeaponInfo>(_initialPoolCapacity);
+        private readonly Queue<List<StackedWeaponInfo>> _weaponInfoListPool = new Queue<List<StackedWeaponInfo>>(_initialPoolCapacity);
+        private readonly Queue<List<List<Weapon>>> _weaponSubListsPool = new Queue<List<List<Weapon>>>(_initialPoolCapacity);
+
+        private Session _session;
+        private Dictionary<FontType, Dictionary<char, TextureMap>> _characterMap;
+        private MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
+        private MyStringId _shadowEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontShadow");
+        private MatrixD _cameraWorldMatrix;
+        private Vector3D _viewPortSize = new Vector3D();
+        private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
+        private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
+        private List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
+        private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
+        private Vector2D _currWeaponDisplayPos = new Vector2D();
+        private float _aspectratio;
+        private float _aspectratioInv;
+        private uint _lastHudUpdateTick;
+
         ///
         ///weapon Hud Settings
         ///
         private const float _paddingConst = 10 * _metersInPixel;
-        private const float _WeaponHudFontSize = 3.7f;
+        private const float _WeaponHudFontSize = 4.5f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
         private const float _reloadHeightConst = 3.5f * _metersInPixel;
         private const float _reloadWidthConst = _reloadHeightConst;
@@ -36,31 +58,8 @@ namespace WeaponCore
         private readonly TextureMap[] _infoBackground = new TextureMap[3];
         private readonly TextureMap[] _heatBarTexture = new TextureMap[11];
         private readonly Color _bgColor = new Color(40, 54, 62, 1);
+        private readonly FontType _hudFont = FontType.Shadow;
         private int _currentLargestName;
-        ///
-        /// 
-        ///
-
-        private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
-        private readonly ConcurrentQueue<TextDrawRequest> _textDrawPool = new ConcurrentQueue<TextDrawRequest>();
-        private readonly Queue<List<Weapon>> _weaponSortingListPool = new Queue<List<Weapon>>(_initialPoolCapacity);
-        private readonly Queue<StackedWeaponInfo> _weaponStackedInfoPool = new Queue<StackedWeaponInfo>(_initialPoolCapacity);
-        private readonly Queue<List<StackedWeaponInfo>> _weaponInfoListPool = new Queue<List<StackedWeaponInfo>>(_initialPoolCapacity);
-        private readonly Queue<List<List<Weapon>>> _weaponSubListsPool = new Queue<List<List<Weapon>>>(_initialPoolCapacity);
-
-        private Session _session;
-        private Dictionary<char, TextureMap> _characterMap;
-        private MyStringId _monoFontAtlas1 = MyStringId.GetOrCompute("MonoFontAtlas");
-        private MatrixD _cameraWorldMatrix;
-        private Vector3D _viewPortSize = new Vector3D();
-        private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
-        private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
-        private List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
-        private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
-        private Vector2D _currWeaponDisplayPos = new Vector2D();
-        private float _aspectratio;
-        private float _aspectratioInv;
-        private uint _lastHudUpdateTick;
         private float _padding;
         private float _reloadHeight;
         private float _reloadWidth;
@@ -81,23 +80,34 @@ namespace WeaponCore
         private float _symbolWidth;
         private float _reloadHeightOffset;
 
+        ///
+        /// 
+        ///
+
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
         internal List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
+
+        internal enum FontType
+        {
+            Mono,
+            Shadow,
+            Whitespace
+        }
 
 
         internal Hud(Session session)
         {
             _session = session;
-            LoadTextMaps(out _characterMap); // possible translations in future
 
-            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 128, 768, 128, 768, 384, ref _infoBackground);
-            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 64, 1024, 64, 1024, 1024, ref _heatBarTexture);
-            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 64, 64, 64, 64, 512, ref _reloadingTexture);
-            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 64, 64, 64, 64, 640, ref _chargingTexture);
 
-            _outofAmmoTexture[0] = GenerateMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 64, 64, 64, 512);
-            _outofAmmoTexture[1] = GenerateMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 448, 64, 64, 64, 512);
+            LoadTextMaps("EN", out _characterMap); // possible translations in future
+
+            BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 0, 128, 768, 128, 768, 384, ref _infoBackground);
+            BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref _heatBarTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 0, 0, 64, 64, 64, 64, 512, ref _reloadingTexture);
+            BuildMap(MyStringId.GetOrCompute("ReloadingIcons"), 0, 384, 0, 64, 64, 64, 64, 512, ref _outofAmmoTexture);
+            BuildMap(MyStringId.GetOrCompute("RechargingIcons"), 0, 0, 0, 64, 64, 64, 64, 640, ref _chargingTexture);
             
 
             for (int i = 0; i < _initialPoolCapacity; i++)
@@ -111,12 +121,12 @@ namespace WeaponCore
             }
         }
 
-        internal void BuildMap(MyStringId material, float offsetX, float OffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY, ref TextureMap[] textureArr)
+        internal void BuildMap(MyStringId material,float initOffsetX, float initOffsetY, float offsetX, float OffsetY, float uvSizeX, float uvSizeY, float textureSizeX, float textureSizeY, ref TextureMap[] textureArr)
         {
             for (int i = 0; i < textureArr.Length; i++)
             {
-                var offX = offsetX * i;
-                var offY = OffsetY * i;
+                var offX = initOffsetX + (offsetX * i);
+                var offY = initOffsetY + (OffsetY * i);
                 textureArr[i] = GenerateMap(material, offX, offY, uvSizeX, uvSizeY, textureSizeX, textureSizeY);
             }
         }
@@ -146,6 +156,7 @@ namespace WeaponCore
             internal Vector3D Position;
             internal float FontSize;
             internal bool Simple;
+            internal FontType Font;
         }
 
         internal class TextureDrawData

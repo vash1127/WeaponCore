@@ -151,11 +151,11 @@ namespace WeaponCore
 
             _reloadWidth = _reloadWidthConst * fovModifier;
             _reloadHeight = _reloadHeightConst * fovModifier;
-            _reloadOffset = _reloadWidth * (1.6f * fovModifier) + _padding;
+            _reloadOffset = _reloadWidth * (1.7f * fovModifier);
             _reloadHeightOffset = (_reloadHeightOffsetConst * (2 * fovModifier)) * fovModifier;
 
             _textSize = _WeaponHudFontHeight * fovModifier;
-            _sTextSize = _textSize * .75f;
+            _sTextSize = _textSize * .5f;
             _textWidth = (_WeaponHudFontHeight * _aspectratioInv) * fovModifier;
             _stextWidth = (_textWidth * .75f);
             _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
@@ -166,7 +166,7 @@ namespace WeaponCore
             _heatOffsetY = (_heatHeight * 3f) * fovModifier;
 
             _infoPaneloffset = _infoPanelOffset * fovModifier;
-            _symbolWidth = _heatWidth + _reloadWidth + _padding;
+            _symbolWidth = _heatWidth + _padding;
         }
 
         internal List<StackedWeaponInfo> SortDisplayedWeapons(List<Weapon> list)

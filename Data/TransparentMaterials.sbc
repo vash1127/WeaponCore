@@ -6672,14 +6672,36 @@
 	<TransparentMaterial>
     <Id>
       <TypeId>TransparentMaterialDefinition</TypeId>
-      <SubtypeId>MonoFontAtlas</SubtypeId>
+      <SubtypeId>EnglishFontMono</SubtypeId>
     </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\FontDataPA_0.dds</Texture>
+      <Texture>Textures\GUI\EnglishFontMono.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <UVOffset>
+        <X>0</X>
+        <Y>0</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+    </TransparentMaterial>
+	
+	<TransparentMaterial>
+    <Id>
+      <TypeId>TransparentMaterialDefinition</TypeId>
+      <SubtypeId>EnglishFontShadow</SubtypeId>
+    </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\EnglishFontShadow.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <UVOffset>
         <X>0</X>
