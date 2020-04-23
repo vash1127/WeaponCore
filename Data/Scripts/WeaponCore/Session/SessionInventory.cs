@@ -25,7 +25,6 @@ namespace WeaponCore
 
                 if (!ammo.AmmoDef.Const.EnergyAmmo)
                 {
-                    Log.Line($"weapon.CanReload: {weapon.CanReload}");
                     if (!comp.Session.IsCreative)
                     {
                         weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
