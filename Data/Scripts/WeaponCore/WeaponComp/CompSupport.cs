@@ -1,6 +1,5 @@
 ﻿using System;
 using WeaponCore.Platform;
-using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
 {
@@ -123,6 +122,18 @@ namespace WeaponCore.Support
                     }
                 }
             }
+        }
+
+        public int GetSyncHash()
+        {
+            var hash = State.Value.ClickShoot.GetHashCode() + State.Value.ClickShoot.GetHashCode();
+            for(int i = 0; i < State.Value.Weapons.Length; i++)
+            {
+                var wState = State.Value.Weapons[i];
+                hash += wState.ShotsFired + wState.SingleShotCounter;
+            }
+
+            return hash;
         }
 
         public void StopAllAv()

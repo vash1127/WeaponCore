@@ -151,7 +151,7 @@ namespace WeaponCore
 
             _reloadWidth = _reloadWidthConst * fovModifier;
             _reloadHeight = _reloadHeightConst * fovModifier;
-            _reloadOffset = _reloadWidth * (1.7f * fovModifier);
+            _reloadOffset = _reloadWidth * (1.9f * fovModifier);
             _reloadHeightOffset = (_reloadHeightOffsetConst * (2 * fovModifier)) * fovModifier;
 
             _textSize = _WeaponHudFontHeight * fovModifier;

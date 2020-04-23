@@ -49,9 +49,10 @@ namespace WeaponCore
         internal void AmmoPull() {
 
             var cachedInv = new Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>();
+            var tmpInventories = new List<MyInventory>();
 
             Weapon weapon;
-            var tmpInventories = new List<MyInventory>();
+            
             while (WeaponAmmoPullQueue.TryDequeue(out weapon))
             {
                 using (weapon.Comp.Ai?.MyGrid.Pin())

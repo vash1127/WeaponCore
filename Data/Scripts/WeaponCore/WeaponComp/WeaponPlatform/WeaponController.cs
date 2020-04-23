@@ -319,8 +319,6 @@ namespace WeaponCore.Platform
             Comp.HeatPerSecond -= heatDif;
             Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
 
-            Log.Line($"chargeDif: {chargeDif} Comp.MaxRequiredPower: {Comp.MaxRequiredPower}");
-
         }
 
         internal void SpinBarrel(bool spinDown = false)

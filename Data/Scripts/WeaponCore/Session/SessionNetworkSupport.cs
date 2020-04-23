@@ -218,22 +218,13 @@ namespace WeaponCore
             }
         }
 
-        internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state, int weaponId = -1)
+        internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state)
         {
             if (!HandlesInput) return;
 
-                var mId = 0u;
-
-            if (weaponId == -1)
-            {
-                comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState]++;
-                mId = comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState];
-            }
-            else
-            {
-                comp.SyncIds.MIds[(int)PacketType.WeaponToolbarShootState]++;
-                mId = comp.SyncIds.MIds[(int)PacketType.WeaponToolbarShootState];
-            }
+                
+            comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState]++;
+            var mId = comp.SyncIds.MIds[(int)PacketType.CompToolbarShootState];
 
             if (IsClient)
             {
@@ -241,10 +232,9 @@ namespace WeaponCore
                 {
                     EntityId = comp.MyCube.EntityId,
                     SenderId = comp.Session.MultiplayerId,
-                    PType = weaponId == -1 ? PacketType.CompToolbarShootState : PacketType.WeaponToolbarShootState,
+                    PType = PacketType.CompToolbarShootState,
                     MId = mId,
                     Data = state,
-                    WeaponId = weaponId,
                 });
             }
             else
@@ -256,10 +246,9 @@ namespace WeaponCore
                     {
                         EntityId = comp.MyCube.EntityId,
                         SenderId = comp.Session.MultiplayerId,
-                        PType = weaponId == -1 ? PacketType.CompToolbarShootState : PacketType.WeaponToolbarShootState,
+                        PType = PacketType.CompToolbarShootState,
                         MId = mId,
                         Data = state,
-                        WeaponId = weaponId,
                     }
                 });
             }
@@ -533,6 +522,38 @@ namespace WeaponCore
                     WeaponId = weaponId
                 });
             }
+        }
+
+        internal void SendMidResync(PacketType type, uint mid, ulong playerId, MyEntity ent, WeaponComponent comp)
+        {
+            var hash = -1;
+            if (comp != null)
+                hash = comp.GetSyncHash();
+
+            PacketsToClient.Add(new PacketInfo
+            {
+                Entity = ent,
+                Packet = new ClientMIdUpdatePacket
+                {
+                    EntityId = ent.EntityId,
+                    SenderId = playerId,
+                    PType = PacketType.ClientMidUpdate,
+                    MidType = type,
+                    MId = mid,
+                    HashCheck = hash,
+                },
+                SingleClient = true,
+            });
+        }
+
+        internal void RequestCompSync(WeaponComponent comp)
+        {
+            PacketsToServer.Add(new Packet
+            {
+                EntityId = comp.MyCube.EntityId,
+                SenderId = MultiplayerId,
+                PType = PacketType.CompSyncRequest,
+            });
         }
 
         #region AIFocus packets

@@ -36,7 +36,6 @@ namespace WeaponCore
         RequestMouseStates,
         FullMouseUpdate,
         CompToolbarShootState,
-        WeaponToolbarShootState,
         RangeUpdate,
         GridAiUiMidUpdate,
         CycleAmmo,
@@ -47,6 +46,8 @@ namespace WeaponCore
         RescanGroupRequest,
         GridFocusListSync,
         FixedWeaponHitEvent,
+        ClientMidUpdate,
+        CompSyncRequest
     }
 
     #region packets
@@ -64,6 +65,7 @@ namespace WeaponCore
     [ProtoInclude(14, typeof(GridFocusListPacket))]
     [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(16, typeof(MIdPacket))]
+    [ProtoInclude(17, typeof(ClientMIdUpdatePacket))]
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -166,7 +168,7 @@ namespace WeaponCore
     public class FocusPacket : Packet
     {
         [ProtoMember(1)] internal long TargetId;
-        [ProtoMember(2), DefaultValue(-1)] internal int FocusId;
+        [ProtoMember(2)] internal int FocusId;
         [ProtoMember(3)] internal bool AddSecondary;
         public FocusPacket() { }
 
@@ -174,7 +176,7 @@ namespace WeaponCore
         {
             base.CleanUp();
             TargetId = 0;
-            FocusId = -1;
+            FocusId = 0;
             AddSecondary = false;
         }
     }
@@ -182,14 +184,14 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponIdPacket : Packet
     {
-        [ProtoMember(1), DefaultValue(-1)] internal int WeaponId = -1;
+        [ProtoMember(1)] internal int WeaponId;
 
         public WeaponIdPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            WeaponId = -1;
+            WeaponId = 0;
         }
     }
 
@@ -249,37 +251,53 @@ namespace WeaponCore
     [ProtoContract]
     public class FixedWeaponHitPacket : Packet
     {
-        [ProtoMember(1), DefaultValue(-1)] internal long HitEnt;
+        [ProtoMember(1)] internal long HitEnt;
         [ProtoMember(2)] internal Vector3 HitDirection;
         [ProtoMember(3)] internal Vector3 HitOffset;
         [ProtoMember(4)] internal Vector3 Up;
         [ProtoMember(5)] internal int MuzzleId;
-        [ProtoMember(6), DefaultValue(-1)] internal int WeaponId;
+        [ProtoMember(6)] internal int WeaponId;
 
         public FixedWeaponHitPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            HitEnt = -1;
+            HitEnt = 0;
             HitDirection = Vector3.Zero;
             HitOffset = Vector3.Zero;
             Up = Vector3.Zero;
-            MuzzleId = -1;
-            WeaponId = -1;
+            MuzzleId = 0;
+            WeaponId = 0;
+        }
+    }
+
+    public class ClientMIdUpdatePacket : Packet
+    {
+        [ProtoMember(1)] internal uint MId;
+        [ProtoMember(2)] internal PacketType MidType;
+        [ProtoMember(2)] internal int HashCheck;
+
+        public ClientMIdUpdatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            MId = 0;
+            MidType = PacketType.Invalid;
         }
     }
     #endregion
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(21, typeof(RangePacket))]
-    [ProtoInclude(22, typeof(CycleAmmoPacket))]
-    [ProtoInclude(23, typeof(ShootStatePacket))]
-    [ProtoInclude(24, typeof(OverRidesPacket))]
-    [ProtoInclude(25, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(26, typeof(StatePacket))]
-    [ProtoInclude(27, typeof(SettingPacket))]
+    [ProtoInclude(22, typeof(RangePacket))]
+    [ProtoInclude(23, typeof(CycleAmmoPacket))]
+    [ProtoInclude(24, typeof(ShootStatePacket))]
+    [ProtoInclude(25, typeof(OverRidesPacket))]
+    [ProtoInclude(26, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(27, typeof(StatePacket))]
+    [ProtoInclude(28, typeof(SettingPacket))]
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;
@@ -309,15 +327,15 @@ namespace WeaponCore
     [ProtoContract]
     public class CycleAmmoPacket : MIdPacket
     {
-        [ProtoMember(1), DefaultValue(-1)] internal int AmmoId = -1;
-        [ProtoMember(2), DefaultValue(-1)] internal int WeaponId = -1;
+        [ProtoMember(1)] internal int AmmoId;
+        [ProtoMember(2)] internal int WeaponId;
         public CycleAmmoPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            AmmoId = -1;
-            WeaponId = -1;
+            AmmoId = 0;
+            WeaponId = 0;
         }
     }
 
@@ -325,14 +343,12 @@ namespace WeaponCore
     public class ShootStatePacket : MIdPacket
     {
         [ProtoMember(1)] internal ManualShootActionState Data = ManualShootActionState.ShootOff;
-        [ProtoMember(2), DefaultValue(-1)] internal int WeaponId = -1;
         public ShootStatePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
             Data = ManualShootActionState.ShootOff;
-            WeaponId = -1;
         }
     }
 
