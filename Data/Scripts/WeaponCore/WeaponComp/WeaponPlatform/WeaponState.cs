@@ -457,6 +457,9 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
+                if (!Comp.Session.IsClient)
+                    Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content);
+
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
                     ChargeReload();
                 else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
@@ -568,9 +571,7 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                var hasMags = (State.Sync.CurrentMags > 0 || Comp.Session.IsCreative);
-                
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && hasMags && (Comp.Session.IsClient || !Comp.Session.IsClient && (Comp.Session.IsCreative || Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content))))
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                     State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
 
                 State.Sync.Reloading = false;
