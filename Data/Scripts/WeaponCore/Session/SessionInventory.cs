@@ -60,14 +60,12 @@ namespace WeaponCore
                 {
                     if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) continue;
                     var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
-
                     var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
                     var weaponInventory = weapon.Comp.BlockInventory;
                     var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
 
                     if (magsNeeded == 0 && weapon.System.MaxAmmoVolume > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume)
                         magsNeeded = 1;
-
                     var magsAdded = 0;
                     List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
 
@@ -81,8 +79,7 @@ namespace WeaponCore
                             {
                                 var item = items[i];
                                 var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
-
-                                if (ammoMag.GetObjectId() == def)
+                                if (ammoMag != null && ammoMag.GetObjectId() == def)
                                 {
                                     cachedInv[def][inventory] = item.Amount;
                                     tmpInventories.Add(inventory);
