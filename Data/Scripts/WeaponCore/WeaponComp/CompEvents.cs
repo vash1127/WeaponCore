@@ -102,7 +102,7 @@ namespace WeaponCore.Support
                     IsWorkingChangedTick = Session.Tick;
                 }
             }
-            catch (Exception ex) { Log.ThreadedWrite($"Exception in IsWorkingChanged: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
         }
 
         internal string GetSystemStatus()
