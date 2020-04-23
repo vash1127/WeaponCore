@@ -321,7 +321,7 @@ namespace WeaponCore
                         }
                         else
                         {
-                            w.Comp.State.Value.CurrentCharge -= (w.MaxCharge - wState.Sync.CurrentCharge);
+                            w.Comp.State.Value.CurrentCharge -= (wState.Sync.CurrentCharge - w.MaxCharge);
                             wState.Sync.CurrentCharge = w.MaxCharge;
                         }
                     }
