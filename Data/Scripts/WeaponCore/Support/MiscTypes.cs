@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
@@ -153,5 +155,17 @@ namespace WeaponCore.Support
 
             return AmmoDef.Equals(((WeaponAmmoTypes)obj).AmmoDef);
         }
+    }
+
+    public class WeaponAmmoMoveRequest
+    {
+        public Weapon weapon;
+        public List<InventoryMags> Inventories = new List<InventoryMags>();
+    }
+
+    public struct InventoryMags
+    {
+        public MyInventory Inventory;
+        public int Amount;
     }
 }

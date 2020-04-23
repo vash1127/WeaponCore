@@ -157,7 +157,17 @@ namespace WeaponCore
                         MyDefinitionId defid;
                         var matchingDef = def.Id.SubtypeName == tDef.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(tDef.Key), out defid) && defid == def.Id);
 
-                        if (matchingDef)
+                        var designator = false;
+                        for(int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
+                        {
+                            if (wepDef.Assignments.MountPoints[i].MuzzlePartId == "Designator")
+                            {
+                                designator = true;
+                                break;
+                            }
+                        }
+
+                        if (matchingDef && !designator)
                         {
                             if (def is MyWeaponBlockDefinition)
                             {
