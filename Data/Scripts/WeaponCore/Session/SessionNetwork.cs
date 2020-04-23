@@ -380,7 +380,11 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (comp == null) break;
+                            if (ent == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
+                                break;
+                            }
 
                             comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
 
