@@ -15,6 +15,7 @@ namespace WeaponCore.Support
     public partial class WeaponComponent
     {
         internal volatile bool InventoryInited;
+        internal volatile bool IgnoreInvChange;
         internal volatile BlockType BaseType;
 
         internal readonly MyCubeBlock MyCube;
@@ -63,7 +64,6 @@ namespace WeaponCore.Support
         internal bool IsFunctional;
         internal bool IsWorking;
         internal bool HasEnergyWeapon;
-        internal bool IgnoreInvChange;
         internal bool HasGuidanceToggle;
         internal bool HasDamageSlider;
         internal bool HasRofSlider;

@@ -409,12 +409,13 @@ namespace WeaponCore.Platform
 
         public void StartReload(bool reset = false)
         {
-            if (reset && State?.Sync != null) State.Sync.Reloading = false;
+            if (reset && State?.Sync != null) State.Sync.Reloading = false;            
 
-            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;            
+            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            State.Sync.Reloading = true;
 
             FinishBurst = false;
-            State.Sync.Reloading = true;
 
             if (IsShooting)
                 StopShooting();

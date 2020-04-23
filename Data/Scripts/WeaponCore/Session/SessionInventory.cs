@@ -65,10 +65,10 @@ namespace WeaponCore
                     var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
                     var weaponInventory = weapon.Comp.BlockInventory;
                     var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    var magsAdded = 0;
 
                     if (magsNeeded == 0 && weapon.System.MaxAmmoVolume > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume)
                         magsNeeded = 1;
-                    var magsAdded = 0;
 
                     if (!cachedInv.ContainsKey(def))
                     {
@@ -101,6 +101,8 @@ namespace WeaponCore
                         var inventory = tmpInventories[i];
                         var magsAvailable = (int)cachedInv[def][inventory];
 
+                        Log.Line($"magsAvailable: {magsAvailable}");
+
                         if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                         {
                             var invMags = InventoryMoveInvMagsPool.Get();
@@ -119,15 +121,20 @@ namespace WeaponCore
                                 ammoPullRequests.Inventories.Add(invMags);
                                 magsNeeded -= magsAvailable;
                                 magsAdded += magsAvailable;
+                                cachedInv[def].Remove(inventory);
                             }
+                            weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+
+                            Log.Line($"weapon.CurrentAmmoVolume: {weapon.CurrentAmmoVolume}");
 
                             cachedInv[def][inventory] -= magsAdded;
                         }
+
+                        if (magsNeeded <= 0)
+                            break;
                     }
 
                     tmpInventories.Clear();
-
-                    weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
                     if (ammoPullRequests.Inventories.Count > 0)
                         AmmoToPullQueue.Enqueue(ammoPullRequests);
