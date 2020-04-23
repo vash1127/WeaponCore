@@ -457,7 +457,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative) && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
                     ChargeReload();
                 else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
                 {
@@ -554,6 +554,7 @@ namespace WeaponCore.Platform
                     Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
 
                     State.Sync.CurrentCharge = MaxCharge;
+
                     Comp.State.Value.CurrentCharge += MaxCharge;
 
                     Timings.ChargeUntilTick = 0;

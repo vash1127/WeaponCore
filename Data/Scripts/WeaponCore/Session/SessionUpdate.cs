@@ -232,7 +232,7 @@ namespace WeaponCore
                                 /// 
                                 w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                                 var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
-                                var canShoot = !w.State.Sync.Overheated && !reloading;
+                                var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                                 var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
@@ -313,7 +313,7 @@ namespace WeaponCore
 
                     if (Tick60 && w.DrawingPower)
                     {
-                        if ((cState.CurrentCharge + w.UseablePower) < w.ActiveAmmoDef.AmmoDef.Const.ChargSize)
+                        if ((wState.Sync.CurrentCharge + w.UseablePower) < w.MaxCharge)
                         {
                             wState.Sync.CurrentCharge += w.UseablePower;
                             cState.CurrentCharge += w.UseablePower;
@@ -321,8 +321,8 @@ namespace WeaponCore
                         }
                         else
                         {
-                            w.Comp.State.Value.CurrentCharge += (w.ActiveAmmoDef.AmmoDef.Const.ChargSize - wState.Sync.CurrentCharge);
-                            wState.Sync.CurrentCharge = w.ActiveAmmoDef.AmmoDef.Const.ChargSize;
+                            w.Comp.State.Value.CurrentCharge -= (w.MaxCharge - wState.Sync.CurrentCharge);
+                            wState.Sync.CurrentCharge = w.MaxCharge;
                         }
                     }
 

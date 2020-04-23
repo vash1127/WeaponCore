@@ -238,6 +238,8 @@ namespace WeaponCore.Platform
 
         internal void SetWeaponDps(object o = null)
         {
+            if (System.DesignatorWeapon) return;
+
             var newBase = 0f;
 
             if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
@@ -316,6 +318,8 @@ namespace WeaponCore.Platform
 
             Comp.HeatPerSecond -= heatDif;
             Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
+
+            Log.Line($"chargeDif: {chargeDif} Comp.MaxRequiredPower: {Comp.MaxRequiredPower}");
 
         }
 

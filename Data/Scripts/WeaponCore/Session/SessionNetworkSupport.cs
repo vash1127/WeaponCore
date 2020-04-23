@@ -654,6 +654,8 @@ namespace WeaponCore
         #region Misc Network Methods
         internal void SyncWeapon(Weapon weapon, WeaponTimings timings, ref WeaponSyncValues weaponData, bool setState = true)
         {
+            if (weapon.System.DesignatorWeapon) return;
+
             var comp = weapon.Comp;
             var cState = comp.State.Value;
             var wState = weapon.State;
@@ -672,8 +674,8 @@ namespace WeaponCore
                 cState.CurrentCharge += weapon.State.Sync.CurrentCharge;
             }
 
-            comp.WeaponValues.Timings[weapon.WeaponId] = timings;
-            weapon.Timings = timings;
+            comp.WeaponValues.Timings[weapon.WeaponId].Sync(timings);
+            weapon.Timings.Sync(timings);
 
             var hasMags = weapon.State.Sync.CurrentMags > 0 || IsCreative;
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;

@@ -285,7 +285,7 @@ namespace WeaponCore.Control
                         w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
 
                     if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        Session.ComputeStorage(w);
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() => { Session.ComputeStorage(w); });
                 }
 
                 

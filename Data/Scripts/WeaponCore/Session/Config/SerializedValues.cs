@@ -216,6 +216,18 @@ namespace WeaponCore
                 ReloadedTick = ReloadedTick,
             };
         }
+
+        public void Sync(WeaponTimings syncFrom)
+        {
+            ChargeDelayTicks = syncFrom.ChargeDelayTicks;
+            ChargeUntilTick = syncFrom.ChargeUntilTick;
+            AnimationDelayTick = syncFrom.AnimationDelayTick;
+            OffDelay = syncFrom.OffDelay;
+            ShootDelayTick = syncFrom.ShootDelayTick;
+            WeaponReadyTick = syncFrom.WeaponReadyTick;
+            LastHeatUpdateTick = syncFrom.LastHeatUpdateTick;
+            ReloadedTick = syncFrom.ReloadedTick;
+        }
     }
 
     [ProtoContract]

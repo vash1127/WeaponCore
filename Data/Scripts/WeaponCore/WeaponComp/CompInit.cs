@@ -94,12 +94,6 @@ namespace WeaponCore.Support
 
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
-
-            if (weapon.State.Sync.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                weapon.State.Sync.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
-            if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                Session.ComputeStorage(weapon);
         }
 
         private void InventoryInit()

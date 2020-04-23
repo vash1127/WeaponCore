@@ -219,6 +219,12 @@ namespace WeaponCore.Support
 
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
+
+                    if (weapon.State.Sync.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                        weapon.State.Sync.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+
+                    if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                        ComputeStorage(weapon);
                 }
 
                 if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {

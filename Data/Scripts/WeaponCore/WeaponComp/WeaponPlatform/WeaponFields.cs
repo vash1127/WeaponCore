@@ -186,7 +186,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                return !State.Sync.Reloading && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative);
+                return !State.Sync.Reloading && Comp.State.Value.Online && !System.DesignatorWeapon && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || Comp.Session.IsCreative);
             }
         }
 
@@ -223,6 +223,7 @@ namespace WeaponCore.Platform
             ShortLoadId = comp.Session.ShortLoadAssigner();
             MuzzlePart = new PartInfo { Entity = entity };
             AnimationsSet = animationSets;
+            Timings = new WeaponTimings();
 
             if (AnimationsSet != null)
             {
