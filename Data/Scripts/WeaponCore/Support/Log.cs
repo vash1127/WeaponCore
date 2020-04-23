@@ -27,17 +27,33 @@ namespace WeaponCore.Support
         {
             try
             {
+                var filename = name + ".log";
                 if (_instances.ContainsKey(name)) return;
+                //RenameFile(name, "old" + name);
 
                 if (defaultInstance) _defaultInstance = name;
                 var instance = _logPool.Get();
                 _instances[name] = instance;
-                MyAPIGateway.Utilities.ShowNotification(name, 5000);
-                instance.TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(name, typeof(LogInstance));
+                instance.TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(filename, typeof(LogInstance));
             }
             catch (Exception e)
             {
                 MyAPIGateway.Utilities.ShowNotification(e.Message, 5000);
+            }
+        }
+
+        public static void RenameFile(string oldFile, string newFile)
+        {
+            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(oldFile, typeof(LogInstance)))
+                return;
+
+            if (MyAPIGateway.Utilities.FileExistsInLocalStorage(newFile, typeof(LogInstance)))
+                MyAPIGateway.Utilities.DeleteFileInLocalStorage(newFile, typeof(LogInstance));
+            using (var r = MyAPIGateway.Utilities.ReadBinaryFileInGlobalStorage(oldFile))
+            using (var w = MyAPIGateway.Utilities.WriteBinaryFileInGlobalStorage(newFile))
+            {
+                w.Write(r.ReadBytes((int)r.BaseStream.Length));
+                w.Flush();
             }
         }
 

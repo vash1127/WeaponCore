@@ -68,8 +68,12 @@ namespace WeaponCore
         {
             if (Inited) return;
             Inited = true;
-            Log.Init("debugdevelop.log");
+            Log.Init("debug");
+            Log.Init("perf", false);
+            Log.Init("stats", false);
             Log.Line($"Logging Started");
+            Log.Line($"Logging Started", "perf");
+            Log.Line($"Logging Started", "stats");
 
             foreach (var x in WeaponDefinitions)
             {
