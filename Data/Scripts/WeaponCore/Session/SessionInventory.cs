@@ -72,11 +72,11 @@ namespace WeaponCore
 
                     if (!cachedInv.ContainsKey(def))
                     {
-                        cachedInv[def] = new Dictionary<MyInventory, MyFixedPoint>();
-                        foreach(var inventory in weapon.Comp.Ai.Inventories)
+                        cachedInv[def] = CachedInvDictPool.Get();
+                        foreach (var inventory in weapon.Comp.Ai.Inventories)
                         {
                             var items = inventory.GetItems();
-                            for(int i = 0; i < items.Count; i++)
+                            for (int i = 0; i < items.Count; i++)
                             {
                                 var item = items[i];
                                 var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
@@ -88,6 +88,8 @@ namespace WeaponCore
                             }
                         }
                     }
+                    else
+                        tmpInventories = cachedInv[def].Keys.ToList();
 
                     if (tmpInventories.Count <= 0) continue;
 
@@ -101,7 +103,7 @@ namespace WeaponCore
 
                         if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                         {
-                            var invMags = InventoryMoveKvPool.Get();
+                            var invMags = InventoryMoveInvMagsPool.Get();
                             if (magsAvailable >= magsNeeded)
                             {                                
                                 invMags.Inventory = inventory;
@@ -135,6 +137,12 @@ namespace WeaponCore
                     weapon.Comp.Session.AmmoPulls++;
                 }
             }
+
+            foreach (var returnDict in cachedInv)
+            {
+                returnDict.Value.Clear();
+                CachedInvDictPool.Return(returnDict.Value);
+            }
             cachedInv.Clear();
         }
 
@@ -148,7 +156,7 @@ namespace WeaponCore
                 if (!weapon.Comp.InventoryInited || weapon == null || weapon.Comp == null || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 {
                     for (int i = 0; i < inventoriesToPull.Count; i++)
-                        InventoryMoveKvPool.Return(inventoriesToPull[i]);
+                        InventoryMoveInvMagsPool.Return(inventoriesToPull[i]);
 
                     inventoriesToPull.Clear();
                     weaponAmmoToPull.weapon = null;
@@ -168,7 +176,7 @@ namespace WeaponCore
                     inventoriesToPull[i].Inventory.RemoveItemsOfType(amt, def);
                     weapon.Comp.BlockInventory.Add(magItem, amt);
 
-                    InventoryMoveKvPool.Return(inventoriesToPull[i]);
+                    InventoryMoveInvMagsPool.Return(inventoriesToPull[i]);
                 }
 
                 if (inventoriesToPull.Count > 0)
