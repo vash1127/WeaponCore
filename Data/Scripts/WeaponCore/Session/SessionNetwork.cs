@@ -544,12 +544,17 @@ namespace WeaponCore
                                 comp.SyncIds.MIds[(int)midPacket.MidType] = midPacket.MId;
                                 if (comp.GetSyncHash() != midPacket.HashCheck)
                                     RequestCompSync(comp);
+
+                                report.PacketValid = true;
                             }
                             else if (ent is MyCubeGrid)
                             {
                                 GridAi ai;
                                 if (GridTargetingAIs.TryGetValue((MyCubeGrid)ent, out ai))
+                                {
                                     ai.UiMId = midPacket.MId;
+                                    report.PacketValid = true;
+                                }
                                 else
                                     errorPacket.Error = $"GridTargetingAI not found";
                             }
