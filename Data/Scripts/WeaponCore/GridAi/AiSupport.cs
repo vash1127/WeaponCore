@@ -1076,11 +1076,14 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < Weapons.Count; i++)
             {
-                for(int j = 0; j < Weapons[i].Platform.Weapons.Length; j++)
+                if (!Weapons[i].IgnoreInvChange)
                 {
-                    var w = Weapons[i].Platform.Weapons[j];
-                    if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
-                        ComputeStorage(w);
+                    for (int j = 0; j < Weapons[i].Platform.Weapons.Length; j++)
+                    {
+                        var w = Weapons[i].Platform.Weapons[j];
+                        if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
+                            ComputeStorage(w);
+                    }
                 }
             }
         }

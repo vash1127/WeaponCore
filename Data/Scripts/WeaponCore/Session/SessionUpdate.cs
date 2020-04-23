@@ -220,7 +220,7 @@ namespace WeaponCore
                                 ///
                                 ///Check Reload
                                 ///
-                                if (!w.OutOfAmmo && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                                if (w.State.Sync.CurrentMags > 0 && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                                     w.StartReload();
                                 ///
                                 ///

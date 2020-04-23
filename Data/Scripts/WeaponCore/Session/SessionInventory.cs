@@ -186,12 +186,7 @@ namespace WeaponCore
                     InventoryMoveInvMagsPool.Return(inventoriesToPull[i]);
                 }
 
-                if (inventoriesToPull.Count > 0)
-                {
-                    weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-                    if (weapon.CanReload)
-                        weapon.StartReload();
-                }
+                weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
 
                 inventoriesToPull.Clear();
                 weaponAmmoToPull.weapon = null;

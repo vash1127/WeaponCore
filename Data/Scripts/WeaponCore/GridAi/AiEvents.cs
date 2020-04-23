@@ -85,6 +85,7 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
+            if (amount <= 0) return;
             var itemDef = item.Content.GetObjectId();
             if (Session.ammoDefIds.Contains(itemDef))
                 Session.FutureEvents.Schedule(CheckReload, itemDef, 1);

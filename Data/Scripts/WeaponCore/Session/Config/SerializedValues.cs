@@ -125,7 +125,7 @@ namespace WeaponCore
         [ProtoMember(2)] public int CurrentAmmo;
         [ProtoMember(3)] public float CurrentCharge;
         [ProtoMember(4)] public bool Overheated;
-        [ProtoMember(5)] public volatile bool Reloading;
+        [ProtoMember(5)] public bool Reloading;
         [ProtoMember(6)] public bool Charging;
         [ProtoMember(7)] public int WeaponId;
         [ProtoMember(8)] public MyFixedPoint CurrentMags;
