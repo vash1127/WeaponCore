@@ -630,7 +630,7 @@ namespace WeaponCore.Support
             var hasShrapnel = ShrapnelId > -1;
             var l = wDef.HardPoint.Loading;
 
-            var mexLogLevel = 1; //dirty log levels :P
+            var mexLogLevel = 0; //dirty log levels :P
 
 
             if (mexLogLevel >= 1) Log.Line($"-----");
@@ -705,7 +705,6 @@ namespace WeaponCore.Support
 
             if (!EnergyAmmo && MagazineSize > 0 || IsHybrid)
             {
-                Log.Line($"Physical Mag");
                 if (IsHybrid) Log.Line($"IsHybrid");
                 var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
                 burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
@@ -723,7 +722,6 @@ namespace WeaponCore.Support
 
             else if (EnergyAmmo && a.EnergyMagazineSize > 0)
             {
-                Log.Line($"Energy Mag");
                 var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(a.EnergyMagazineSize / l.ShotsInBurst)) : 0;
                 burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
 
