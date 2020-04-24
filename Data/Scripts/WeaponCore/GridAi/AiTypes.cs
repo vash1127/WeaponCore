@@ -148,6 +148,7 @@ namespace WeaponCore.Support
                 OptimalDps = 0;
                 BlockCount = 0;
                 RootAi = null;
+                Counter.Clear();
             }
         }
 
