@@ -38,8 +38,7 @@ namespace WeaponCore.Support
                             if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
                             {
                                 wCount.Current--;
-                                WeaponCount cntRemoved;
-                                if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
+                                if (wCount.Current == 0) Ai.WeaponCounter.Remove(MyCube.BlockDefinition.Id.SubtypeId);
                             }
 
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
