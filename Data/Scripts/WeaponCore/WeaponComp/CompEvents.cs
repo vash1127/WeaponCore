@@ -53,7 +53,7 @@ namespace WeaponCore.Support
                     {
                         var w = Platform.Weapons[i];
                         if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                            Session.ComputeStorage(w);
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => { Session.ComputeStorage(w); });
                     }
                     
                     LastInventoryChangedTick = Session.Tick;

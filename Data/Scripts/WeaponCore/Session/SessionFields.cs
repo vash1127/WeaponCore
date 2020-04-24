@@ -48,8 +48,9 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256);
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>(128);
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128);
-        internal readonly MyConcurrentPool<InventoryMags> InventoryMoveInvMagsPool = new MyConcurrentPool<InventoryMags>(128);
-        internal readonly MyConcurrentPool<Dictionary<MyInventory, MyFixedPoint>> CachedInvDictPool = new MyConcurrentPool<Dictionary<MyInventory, MyFixedPoint>>(128);
+        internal readonly MyConcurrentPool<Dictionary<MyInventory, MyFixedPoint>> CachedInvDefDictPool = new MyConcurrentPool<Dictionary<MyInventory, MyFixedPoint>>(128);
+        internal readonly MyConcurrentPool<Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>> CachedInvDictPool = new MyConcurrentPool<Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>>(128);
+        internal readonly MyConcurrentPool<List<MyInventory>> TmpInventoryListPool = new MyConcurrentPool<List<MyInventory>>(128);
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100);
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128);
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
@@ -70,11 +71,12 @@ namespace WeaponCore
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
+        internal readonly ConcurrentCachingList<Weapon> WeaponToPullAmmo = new ConcurrentCachingList<Weapon>();
+        internal readonly ConcurrentCachingList<Weapon> WeaponsToRemoveAmmo = new ConcurrentCachingList<Weapon>();
+        internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
+        internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToPullQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
+        internal readonly ConcurrentCachingList<Weapon> ClientAmmoCheck = new ConcurrentCachingList<Weapon>();
 
-        internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
-        internal readonly ConcurrentQueue<Weapon> WeaponAmmoRemoveQueue = new ConcurrentQueue<Weapon>();
-        internal readonly ConcurrentQueue<WeaponAmmoMoveRequest> AmmoToPullQueue = new ConcurrentQueue<WeaponAmmoMoveRequest>();
-        internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToRemoveQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
@@ -180,9 +182,8 @@ namespace WeaponCore
         internal Task GridTask = new Task();
         internal Task DbTask = new Task();
         internal Task ITask = new Task();
-        internal Task NTask = new Task();
-        internal Task MTask = new Task();
         internal Task CTask = new Task();
+        internal Task NTask = new Task();
         internal WorkOptions CoreWorkOpt = new WorkOptions();
         internal string TriggerEntityModel;
         internal object InitObj = new object();

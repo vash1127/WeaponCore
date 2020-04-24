@@ -459,7 +459,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
-                if (!Comp.Session.IsClient)
+                if (!Comp.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                     Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content);
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
@@ -488,12 +488,15 @@ namespace WeaponCore.Platform
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
             {
                 if (Comp.Session.IsServer && !Comp.Session.IsCreative)
-                    Comp.Session.WeaponAmmoRemoveQueue.Enqueue(this);
+                {
+                    Comp.Session.WeaponsToRemoveAmmo.Add(this);
+                    Comp.Session.WeaponsToRemoveAmmo.ApplyAdditions();
+                }
                 else
                 {
                     if (Comp.Session.IsCreative)
                         ActiveAmmoDef = newAmmo;
-                    
+
                     Session.ComputeStorage(this);
                 }
                 return;
@@ -527,17 +530,6 @@ namespace WeaponCore.Platform
 
             Timings.ChargeUntilTick = syncCharge ? Timings.ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-        }
-
-        internal void GetAmmoClient()
-        {
-            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
-        }
-
-        internal void ReloadClient()
-        {
-            if (CanReload)
-                StartReload();
         }
 
         internal void Reloaded(object o = null)

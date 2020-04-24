@@ -129,7 +129,7 @@ namespace WeaponCore
             ShootingWeapons.Clear();
             AcquireTargets.Clear();
             RemoveEffectsFromGrid.Clear();
-            WeaponAmmoPullQueue.Clear();
+            WeaponToPullAmmo.Clear();
             AmmoToPullQueue.Clear();
             Hits.Clear();
 

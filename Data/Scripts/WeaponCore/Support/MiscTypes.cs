@@ -159,7 +159,7 @@ namespace WeaponCore.Support
 
     public class WeaponAmmoMoveRequest
     {
-        public Weapon weapon;
+        public Weapon Weapon;
         public List<InventoryMags> Inventories = new List<InventoryMags>();
     }
 
