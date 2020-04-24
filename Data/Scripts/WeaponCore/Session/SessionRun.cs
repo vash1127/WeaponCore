@@ -87,7 +87,7 @@ namespace WeaponCore
                     CTask = MyAPIGateway.Parallel.StartBackground(ProccessClientAmmoUpdates, ProccessClientReload);
                 }
 
-                if ((!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete)
+                if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete)
                 {
                     if (ITask.valid && ITask.Exceptions != null)
                         TaskHasErrors(ref ITask, "ITask");
