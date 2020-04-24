@@ -129,8 +129,10 @@ namespace WeaponCore
             ShootingWeapons.Clear();
             AcquireTargets.Clear();
             RemoveEffectsFromGrid.Clear();
-            WeaponToPullAmmo.Clear();
-            AmmoToPullQueue.Clear();
+            WeaponToPullAmmo.ClearList();
+            AmmoToPullQueue.ClearList();
+            WeaponToPullAmmo.ApplyChanges();
+            AmmoToPullQueue.ApplyChanges();
             Hits.Clear();
 
             AllArmorBaseDefinitions.Clear();
