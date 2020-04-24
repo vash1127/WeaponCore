@@ -79,21 +79,22 @@ namespace WeaponCore
                 //
                 Timings();
 
-                if (!WeaponAmmoRemoveQueue.IsEmpty && CTask.IsComplete)
+                if (IsClient && !ClientAmmoCheck.IsEmpty && CTask.IsComplete)
                 {
                     if (CTask.valid && CTask.Exceptions != null)
-                        TaskHasErrors(ref CTask, "CTask");
+                        TaskHasErrors(ref CTask, "ITask");
 
-                    CTask = MyAPIGateway.Parallel.StartBackground(AmmoToRemove, RemoveAmmo);
+                    CTask = MyAPIGateway.Parallel.StartBackground(ProccessClientAmmoUpdates, ProccessClientReload);
                 }
 
-                if (!WeaponAmmoPullQueue.IsEmpty && ITask.IsComplete)
+                if ((!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete)
                 {
                     if (ITask.valid && ITask.Exceptions != null)
                         TaskHasErrors(ref ITask, "ITask");
 
-                    ITask = MyAPIGateway.Parallel.StartBackground(AmmoPull, MoveAmmo);
+                    ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
                 }
+
 
                 if (!CompsToStart.IsEmpty)
                     StartComps();
@@ -171,15 +172,6 @@ namespace WeaponCore
 
                 if (GridTask.IsComplete)
                     CheckDirtyGrids();
-
-                if (IsClient)
-                {
-                    if (!MTask.IsComplete)
-                        MTask.Wait();
-
-                    if (MTask.IsComplete && MTask.valid && MTask.Exceptions != null)
-                        TaskHasErrors(ref MTask, "MTask");
-                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

@@ -249,6 +249,39 @@ namespace WeaponCore
             */
         }
 
+        internal void ProccessAmmoMoves()
+        {
+            AmmoToRemove();
+            AmmoPull();
+        }
+
+        internal void ProccessAmmoCallback()
+        {
+            RemoveAmmo();
+            MoveAmmo();
+        }
+
+        internal void ProccessClientAmmoUpdates()
+        {
+            for (int i = 0; i < ClientAmmoCheck.Count; i++)
+            {
+                var weapon = ClientAmmoCheck[i];
+                weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
+            }
+        }
+
+        internal void ProccessClientReload()
+        {
+            for (int i = 0; i < ClientAmmoCheck.Count; i++)
+            {
+                var weapon = ClientAmmoCheck[i];
+                if (weapon.CanReload)
+                    weapon.StartReload();
+                ClientAmmoCheck.Remove(weapon);
+            }
+            ClientAmmoCheck.ApplyRemovals();
+        }
+
         //Would use DSUnique but to many profiler hits
         internal bool RemoveChargeWeapon(Weapon weapon)
         {
