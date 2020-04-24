@@ -8,11 +8,36 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using WeaponCore.Projectiles;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Support
 {
     internal static class SUtils
     {
+        static void ShellSort(List<Projectile> list, Vector3D weaponPos)
+        {
+            int length = list.Count;
+
+            for (int h = length / 2; h > 0; h /= 2)
+            {
+                for (int i = h; i < length; i += 1)
+                {
+                    var tempValue = list[i];
+                    double temp;
+                    Vector3D.DistanceSquared(ref list[i].Position, ref weaponPos, out temp);
+
+                    int j;
+                    for (j = i; j >= h && Vector3D.DistanceSquared(list[j - h].Position, weaponPos) > temp; j -= h)
+                    {
+                        list[j] = list[j - h];
+                    }
+
+                    list[j] = tempValue;
+                }
+            }
+        }
+
+
         public static void UpdateTerminal(this MyCubeBlock block)
         {
             MyOwnershipShareModeEnum shareMode;

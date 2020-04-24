@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ProtoBuf;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -14,242 +10,127 @@ using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-using WeaponCore.Support;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.WeaponRandomGenerator;
 
 namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-
-        internal class WeaponCount
-        {
-            internal int Current;
-            internal int Max;
-        }
-
-        [ProtoContract]
-        public class FakeTarget
-        {
-            [ProtoMember(1)] public Vector3D Position;
-            [ProtoMember(2)] public Vector3 LinearVelocity;
-            [ProtoMember(3)] public Vector3 Acceleration;
-            [ProtoMember(4)] public bool ClearTarget;
-
-            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, bool networkUpdate = false)
-            {
-                Position = hitPos;
-                if (ent != null)
-                {
-                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
-                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
-                }
-
-                if (ai.Session.MpActive && !networkUpdate)
-                    ai.Session.SendFakeTargetUpdate(ai, hitPos);
-
-                ClearTarget = false;
-            }
-
-            internal FakeTarget() { }
-        }
-
-        internal class AiTargetingInfo
-        {
-            internal bool TargetInRange;
-            internal double ThreatRangeSqr;
-
-            internal bool ValidTargetExists(Weapon w)
-            {
-                var comp = w.Comp;
-                var ai = comp.Ai;
-
-                return ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr || ai.Focus.HasFocus;
-            }
-
-            internal void Clean()
-            {
-                ThreatRangeSqr = double.MaxValue;
-                TargetInRange = false;
-            }
-        }
-
-        internal class Constructs
-        {
-            internal float OptimalDps;
-            internal int BlockCount;
-            internal GridAi RootAi;
-
-            internal void Update(GridAi ai)
-            {
-                FatMap fatMap;
-                if (ai?.MyGrid != null && ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap))
-                {
-                    BlockCount = fatMap.MostBlocks;
-                    OptimalDps = ai.OptimalDps;
-                    GridAi tmpAi = null;
-                    foreach (var grid in ai.SubGrids)
-                    {
-                        GridAi checkAi;
-                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi) && (tmpAi == null || tmpAi.MyGrid.EntityId > grid.EntityId)) tmpAi = checkAi;
-
-                        if (grid == ai.MyGrid) continue;
-                        if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
-                        {
-                            BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
-                            OptimalDps += ai.OptimalDps;
-                        }
-                    }
-                    RootAi = tmpAi;
-                    
-                    return;
-                }
-
-                OptimalDps = 0;
-                BlockCount = 0;
-                RootAi = null;
-            }
-
-            internal void Clean()
-            {
-                OptimalDps = 0;
-                BlockCount = 0;
-                RootAi = null;
-            }
-        }
-
-        internal struct DetectInfo
-        {
-            internal readonly MyEntity Parent;
-            internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal readonly int PartCount;
-            internal readonly int FatCount;
-            internal readonly bool Armed;
-            internal readonly bool IsGrid;
-            internal readonly bool LargeGrid;
-
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount)
-            {
-                Parent = parent;
-                EntInfo = entInfo;
-                PartCount = partCount;
-                FatCount = fatCount;
-                var armed = false;
-                var isGrid = false;
-                var largeGrid = false;
-                var grid = parent as MyCubeGrid;
-                if (grid != null)
-                {
-                    isGrid = true;
-                    largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
-                    if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
-                    {
-                        ConcurrentCachingList<MyCubeBlock> weaponBlocks;
-                        if (blockTypeMap.TryGetValue(BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
-                            armed = true;
-                    }
-                }
-                else if (parent is MyMeteor || parent is IMyCharacter) armed = true;
-
-                Armed = armed;
-                IsGrid = isGrid;
-                LargeGrid = largeGrid;
-            }
-        }
-
-        internal class TargetCompare : IComparer<TargetInfo>
-        {
-            public int Compare(TargetInfo x, TargetInfo y)
-            {
-                var gridCompare = (x.Target is MyCubeGrid).CompareTo(y.Target is MyCubeGrid);
-                if (gridCompare != 0) return -gridCompare;
-                var xCollision = x.Approaching && x.DistSqr < 90000 && x.VelLenSqr > 100;
-                var yCollision = y.Approaching && y.DistSqr < 90000 && y.VelLenSqr > 100;
-                var collisionRisk = xCollision.CompareTo(yCollision);
-                if (collisionRisk != 0) return collisionRisk;
-
-                var xIsImminentThreat = x.Approaching && x.DistSqr < 640000 && x.OffenseRating > 0;
-                var yIsImminentThreat = y.Approaching && y.DistSqr < 640000 && y.OffenseRating > 0;
-                var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);
-                if (imminentThreat != 0) return imminentThreat;
-
-                var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
-                return -compareOffense;
-            }
-        }
-
-        internal class TargetInfo
-        {
-            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal Vector3D TargetDir;
-            internal Vector3D TargetPos;
-            internal Vector3 Velocity;
-            internal double DistSqr;
-            internal float VelLenSqr;
-            internal double TargetRadius;
-            internal bool IsGrid;
-            internal bool LargeGrid;
-            internal bool Approaching;
-            internal int PartCount;
-            internal int FatCount;
-            internal float OffenseRating;
-            internal MyEntity Target;
-            internal MyCubeGrid MyGrid;
-            internal GridAi MyAi;
-            internal GridAi TargetAi;
-
-            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
-            {
-                EntInfo = detectInfo.EntInfo;
-                Target = detectInfo.Parent;
-                PartCount = detectInfo.PartCount;
-                FatCount = detectInfo.FatCount;
-                IsGrid = detectInfo.IsGrid;
-                LargeGrid = detectInfo.LargeGrid;
-                MyGrid = myGrid;
-                MyAi = myAi;
-                TargetAi = targetAi;
-                Velocity = Target.Physics.LinearVelocity;
-                VelLenSqr = Velocity.LengthSquared();
-                var targetSphere = Target.PositionComp.WorldVolume;
-                TargetPos = targetSphere.Center;
-                TargetRadius = targetSphere.Radius;
-                if (!MyUtils.IsZero(Velocity, 1E-02F))
-                {
-                    TargetDir = Vector3D.Normalize(Velocity);
-                    var refDir = Vector3D.Normalize(myAi.GridVolume.Center - TargetPos);
-                    Approaching = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
-                }
-                else
-                {
-                    TargetDir = Vector3D.Zero;
-                    Approaching = false;
-                }
-
-                if (targetAi != null)
-                {
-                    OffenseRating = targetAi.Construct.OptimalDps / myAi.Construct.OptimalDps;
-                }
-                else if (detectInfo.Armed) OffenseRating = 0.0001f;
-                else OffenseRating = 0;
-
-                var targetDist = Vector3D.Distance(myAi.GridVolume.Center, TargetPos) - TargetRadius;
-                targetDist -= myAi.GridVolume.Radius;
-                if (targetDist < 0) targetDist = 0;
-                DistSqr = targetDist * targetDist;
-            }
-        }
-
         internal void RequestDbUpdate()
         {
             GridVolume = MyGrid.PositionComp.WorldVolume;
             Session.DbsToUpdate.Add(this);
             TargetsUpdatedTick = Session.Tick;
         }
+
+        internal bool UpdateOwner()
+        {
+            using (MyGrid.Pin())
+            {
+                if (MyGrid == null || MyGrid.MarkedForClose || !MyGrid.InScene)
+                    return false;
+
+                var bigOwners = MyGrid.BigOwners;
+                MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
+                return true;
+            }
+        }
+
+        public void SubGridDetect()
+        {
+            if (PrevSubGrids.Count == 0) return;
+
+            AddSubGrids.Clear();
+            foreach (var sub in PrevSubGrids)
+            {
+                AddSubGrids.Add(sub);
+                TmpSubGrids.Add(sub);
+            }
+
+            TmpSubGrids.IntersectWith(RemSubGrids);
+            RemSubGrids.ExceptWith(AddSubGrids);
+            AddSubGrids.ExceptWith(TmpSubGrids);
+            TmpSubGrids.Clear();
+
+            SubGridsChanged = AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
+        }
+
+        public void SubGridChanges()
+        {
+            foreach (var grid in AddSubGrids)
+            {
+                grid.Flags |= (EntityFlags)(1 << 31);
+                if (grid == MyGrid) continue;
+
+                grid.OnFatBlockAdded += FatBlockAdded;
+                grid.OnFatBlockRemoved += FatBlockRemoved;
+
+                FatMap fatMap;
+                if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
+                {
+                    var blocks = fatMap.MyCubeBocks;
+                    for (int i = 0; i < blocks.Count; i++)
+                        FatBlockAdded(blocks[i]);
+                }
+            }
+            AddSubGrids.Clear();
+
+            foreach (var grid in RemSubGrids)
+            {
+                if (grid == MyGrid) continue;
+                SubGrids.Remove(grid);
+                grid.OnFatBlockAdded -= FatBlockAdded;
+                grid.OnFatBlockRemoved -= FatBlockRemoved;
+                GridAi removeAi;
+                Session.GridToMasterAi.TryRemove(grid, out removeAi);
+            }
+            RemSubGrids.Clear();
+
+            Construct.Update(this);
+
+            foreach (var grid in SubGrids)
+            {
+                if (Construct?.RootAi != null)
+                    //Session.GridToMasterAi.AddOrUpdate(grid, Construct.RootAi, (oldKey, value) => Construct.RootAi);
+                    Session.GridToMasterAi[grid] = Construct.RootAi;
+            }
+        }
+
+
+        internal void CompChange(bool add, WeaponComponent comp)
+        {
+            if (add)
+            {
+                if (WeaponsIdx.ContainsKey(comp))
+                {
+                    Log.Line($"CompAddFailed:<{comp.MyCube.EntityId}> - comp({comp.MyCube.DebugName}[{comp.MyCube.BlockDefinition.Id.SubtypeName}]) already existed in {MyGrid.DebugName}");
+                    return;
+                }
+                WeaponsIdx.Add(comp, Weapons.Count);
+                Weapons.Add(comp);
+                Log.Line($"CompAdd: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
+            }
+            else
+            {
+
+                int idx;
+                if (!WeaponsIdx.TryGetValue(comp, out idx))
+                {
+                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count} ");
+                    return;
+                }
+
+                Weapons.RemoveAtFast(idx);
+                if (idx < Weapons.Count)
+                    WeaponsIdx[Weapons[idx]] = idx;
+
+                WeaponsIdx.Remove(comp);
+                Log.Line($"CompRemove: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
+            }
+        }
+
 
         internal void ReScanBlockGroups(bool networkSync = false)
         {
@@ -333,38 +214,6 @@ namespace WeaponCore.Support
             ScanBlockGroupSettings = false;
         }
 
-        internal void CompChange(bool add, WeaponComponent comp)
-        {
-            if (add)
-            {
-                if (WeaponsIdx.ContainsKey(comp))
-                {
-                    Log.Line($"CompAddFailed:<{comp.MyCube.EntityId}> - comp({comp.MyCube.DebugName}[{comp.MyCube.BlockDefinition.Id.SubtypeName}]) already existed in {MyGrid.DebugName}");
-                    return;
-                }
-                WeaponsIdx.Add(comp, Weapons.Count);
-                Weapons.Add(comp);
-                Log.Line($"CompAdd: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
-            }
-            else
-            {
-
-                int idx;
-                if (!WeaponsIdx.TryGetValue(comp, out idx))
-                {
-                    Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count} ");
-                    return;
-                }
-
-                Weapons.RemoveAtFast(idx);
-                if (idx < Weapons.Count)
-                    WeaponsIdx[Weapons[idx]] = idx;
-
-                WeaponsIdx.Remove(comp);
-                Log.Line($"CompRemove: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
-            }
-        }
-
 
         internal bool WeaponTerminalReleased()
         {
@@ -375,19 +224,6 @@ namespace WeaponCore.Support
                 return true;
             }
             return false;
-        }
-
-        internal bool UpdateOwner()
-        {
-            using (MyGrid.Pin())
-            {
-                if (MyGrid == null || MyGrid.MarkedForClose || !MyGrid.InScene)
-                    return false;
-
-                var bigOwners = MyGrid.BigOwners;
-                MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
-                return true;
-            }
         }
 
         internal void MyPlanetInfo(bool clear = false)
@@ -592,29 +428,6 @@ namespace WeaponCore.Support
             return deck;
         }
 
-        static void ShellSort(List<Projectile> list, Vector3D weaponPos)
-        {
-            int length = list.Count;
-
-            for (int h = length / 2; h > 0; h /= 2)
-            {
-                for (int i = h; i < length; i += 1)
-                {
-                    var tempValue = list[i];
-                    double temp;
-                    Vector3D.DistanceSquared(ref list[i].Position, ref weaponPos, out temp);
-
-                    int j;
-                    for (j = i; j >= h && Vector3D.DistanceSquared(list[j - h].Position, weaponPos) > temp; j -= h)
-                    {
-                        list[j] = list[j - h];
-                    }
-
-                    list[j] = tempValue;
-                }
-            }
-        }
-
         internal List<Projectile> GetProCache()
         {
             if (LiveProjectileTick > _pCacheTick)
@@ -753,237 +566,6 @@ namespace WeaponCore.Support
             return validFocus;
         }
 
-        public void SubGridDetect()
-        {
-            if (PrevSubGrids.Count == 0) return;
-
-            AddSubGrids.Clear();
-            foreach (var sub in PrevSubGrids)
-            {
-                AddSubGrids.Add(sub);
-                TmpSubGrids.Add(sub);
-            }
-
-            TmpSubGrids.IntersectWith(RemSubGrids);
-            RemSubGrids.ExceptWith(AddSubGrids);
-            AddSubGrids.ExceptWith(TmpSubGrids);
-            TmpSubGrids.Clear();
-
-            SubGridsChanged =  AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
-        }
-
-        public void SubGridChanges()
-        {
-            foreach (var grid in AddSubGrids)
-            {
-                grid.Flags |= (EntityFlags)(1 << 31);
-                if (grid == MyGrid) continue;
-
-                grid.OnFatBlockAdded += FatBlockAdded;
-                grid.OnFatBlockRemoved += FatBlockRemoved;
-
-                FatMap fatMap;
-                if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
-                {
-                    var blocks = fatMap.MyCubeBocks;
-                    for (int i = 0; i < blocks.Count; i++)
-                        FatBlockAdded(blocks[i]);
-                }
-            }
-            AddSubGrids.Clear();
-
-            foreach (var grid in RemSubGrids)
-            {
-                if (grid == MyGrid) continue;
-                SubGrids.Remove(grid);
-                grid.OnFatBlockAdded -= FatBlockAdded;
-                grid.OnFatBlockRemoved -= FatBlockRemoved;
-                GridAi removeAi;
-                Session.GridToMasterAi.TryRemove(grid, out removeAi);
-            }
-            RemSubGrids.Clear();
-
-            Construct.Update(this);
-
-            foreach(var grid in SubGrids)
-            {
-                if (Construct?.RootAi != null)
-                    Session.GridToMasterAi.AddOrUpdate(grid, Construct.RootAi, (oldKey, value) => Construct.RootAi);
-            }
-        }
-
-        #region Power
-        internal void InitFakeShipController(WeaponComponent comp)
-        {
-            FakeShipController.SlimBlock = comp.MyCube.SlimBlock;
-            PowerDistributor = FakeShipController.GridResourceDistributor;
-        }
-
-        internal void CleanUp()
-        {
-            RegisterMyGridEvents(false);
-            foreach (var grid in SubGrids)
-            {
-                if (grid == MyGrid) continue;
-                RemSubGrids.Add(grid);
-            }
-            Construct.Clean();
-            AddSubGrids.Clear();
-            SubGridChanges();
-            SubGrids.Clear();
-            Obstructions.Clear();
-            TargetAis.Clear();
-            EntitiesInRange.Clear();
-            Batteries.Clear();
-            Targets.Clear();
-            SortedTargets.Clear();
-            BlockGroups.Clear();
-            Weapons.Clear();
-            WeaponsIdx.Clear();
-            WeaponBase.Clear();
-            Inventories.Clear();
-            LiveProjectile.Clear();
-            DeadProjectiles.Clear();
-            ControllingPlayers.Clear();
-            SourceCount = 0;
-            BlockCount = 0;
-            MyOwner = 0;
-            PointDefense = false;
-            FadeOut = false;
-            SupressMouseShoot = false;
-            OverPowered = false;
-            UpdatePowerSources = false;
-            AvailablePowerChanged = false;
-            PowerIncrease = false;
-            RequestedPowerChanged = false;
-            RequestIncrease = false;
-            DbReady = false;
-            Focus.Clean();
-            MyShieldTmp = null;
-            MyShield = null;
-            MyPlanetTmp = null;
-            MyPlanet = null;
-            TerminalSystem = null;
-            LastWeaponTerminal = null;
-            LastTerminal = null;
-            PowerDistributor = null;
-            PowerBlock = null;
-        }
-        internal void UpdateGridPower()
-        {
-            try
-            {
-                if (Weapons.Count == 0) {
-                    Log.Line($"no valid weapon in powerDist");
-                    return;
-                }
-                
-                GridCurrentPower = 0;
-                GridMaxPower = 0;
-                for (int i = -1, j = 0; i < Weapons.Count; i++, j++) {
-
-                    var powerBlock = j == 0 ? PowerBlock : Weapons[i].MyCube;
-                    if (powerBlock == null || j == 0 && PowerDirty) continue;
-                    
-                    using (powerBlock.Pin())  {
-                        using (powerBlock.CubeGrid.Pin())  {
-                            try {
-                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null || ((IMySlimBlock)powerBlock.SlimBlock).IsDestroyed || powerBlock.CubeGrid.MarkedForClose) {
-                                    Log.Line($"skipping bad power block");
-                                    continue;
-                                }
-
-                                if (FakeShipController == null)
-                                    throw new Exception("FakeShipController is null");
-
-                                if (powerBlock.SlimBlock == null)
-                                    throw new Exception("cube.SlimBlock is null");
-
-                                try {
-                                    if (PowerBlock != powerBlock) {
-
-                                        Log.Line("changing power block");
-                                        PowerBlock = powerBlock;
-                                        FakeShipController.SlimBlock = powerBlock.SlimBlock;
-                                        PowerDistributor = FakeShipController.GridResourceDistributor;
-                                        PowerDirty = false;
-                                    }
-                                }
-                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - Changed PowerBlock!"); }
-
-                                if (PowerDistributor == null) {
-                                    Log.Line($"powerDist is null");
-                                    return;
-                                }
-
-                                try {
-                                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
-                                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
-                                    break;
-                                }
-                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
-
-                            }
-                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch"); }
-                        }
-
-                    }
-                    Log.Line($"no valid power blocks");
-                    return;
-                }
-
-                if (Session.Tick60) {
-
-                    BatteryMaxPower = 0;
-                    BatteryCurrentOutput = 0;
-                    BatteryCurrentInput = 0;
-                    
-                    foreach (var battery in Batteries) {
-
-                        if (!battery.IsWorking) continue;
-                        var currentInput = battery.CurrentInput;
-                        var currentOutput = battery.CurrentOutput;
-                        var maxOutput = battery.MaxOutput;
-
-                        if (currentInput > 0) {
-                            BatteryCurrentInput += currentInput;
-                            if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
-                            else BatteryCurrentOutput -= currentInput;
-                        }
-                        BatteryMaxPower += maxOutput;
-                        BatteryCurrentOutput += currentOutput;
-                    }
-                }
-
-                GridAvailablePower = GridMaxPower - GridCurrentPower;
-
-                GridCurrentPower += BatteryCurrentInput;
-                GridAvailablePower -= BatteryCurrentInput;
-                UpdatePowerSources = false;
-
-                RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
-                AvailablePowerChanged = Math.Abs(GridMaxPower - LastAvailablePower) > 0.001 && LastAvailablePower > 0;
-
-                RequestIncrease = LastRequestedPower < RequestedWeaponsDraw;
-                PowerIncrease = LastAvailablePower < GridMaxPower;
-
-                LastAvailablePower = GridMaxPower;
-                LastRequestedPower = RequestedWeaponsDraw;
-
-                HadPower = HasPower;
-                HasPower = GridMaxPower > 0;
-                if (!WasPowered && HasPower) 
-                    WasPowered = true;
-
-                LastPowerUpdateTick = Session.Tick;
-
-                if (HasPower) return;
-                if (HadPower)
-                    WeaponShootOff();
-            }
-            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{MyGrid == null}"); }
-        }
-
         private void WeaponShootOff()
         {
 
@@ -998,7 +580,6 @@ namespace WeaponCore.Support
                 }
             }
         }
-
 
         internal void TurnManualShootOff(bool isCallingGrid = true)
         {
@@ -1088,6 +669,183 @@ namespace WeaponCore.Support
             }
         }
 
-        #endregion
+        internal void UpdateGridPower()
+        {
+            try
+            {
+                if (Weapons.Count == 0)
+                {
+                    Log.Line($"no valid weapon in powerDist");
+                    return;
+                }
+
+                GridCurrentPower = 0;
+                GridMaxPower = 0;
+                for (int i = -1, j = 0; i < Weapons.Count; i++, j++)
+                {
+
+                    var powerBlock = j == 0 ? PowerBlock : Weapons[i].MyCube;
+                    if (powerBlock == null || j == 0 && PowerDirty) continue;
+
+                    using (powerBlock.Pin())
+                    {
+                        using (powerBlock.CubeGrid.Pin())
+                        {
+                            try
+                            {
+                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null || ((IMySlimBlock)powerBlock.SlimBlock).IsDestroyed || powerBlock.CubeGrid.MarkedForClose)
+                                {
+                                    Log.Line($"skipping bad power block");
+                                    continue;
+                                }
+
+                                if (FakeShipController == null)
+                                    throw new Exception("FakeShipController is null");
+
+                                if (powerBlock.SlimBlock == null)
+                                    throw new Exception("cube.SlimBlock is null");
+
+                                try
+                                {
+                                    if (PowerBlock != powerBlock)
+                                    {
+
+                                        Log.Line("changing power block");
+                                        PowerBlock = powerBlock;
+                                        FakeShipController.SlimBlock = powerBlock.SlimBlock;
+                                        PowerDistributor = FakeShipController.GridResourceDistributor;
+                                        PowerDirty = false;
+                                    }
+                                }
+                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - Changed PowerBlock!"); }
+
+                                if (PowerDistributor == null)
+                                {
+                                    Log.Line($"powerDist is null");
+                                    return;
+                                }
+
+                                try
+                                {
+                                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                                    break;
+                                }
+                                catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - impossible null!"); }
+
+                            }
+                            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - main null catch"); }
+                        }
+
+                    }
+                    Log.Line($"no valid power blocks");
+                    return;
+                }
+
+                if (Session.Tick60)
+                {
+
+                    BatteryMaxPower = 0;
+                    BatteryCurrentOutput = 0;
+                    BatteryCurrentInput = 0;
+
+                    foreach (var battery in Batteries)
+                    {
+
+                        if (!battery.IsWorking) continue;
+                        var currentInput = battery.CurrentInput;
+                        var currentOutput = battery.CurrentOutput;
+                        var maxOutput = battery.MaxOutput;
+
+                        if (currentInput > 0)
+                        {
+                            BatteryCurrentInput += currentInput;
+                            if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
+                            else BatteryCurrentOutput -= currentInput;
+                        }
+                        BatteryMaxPower += maxOutput;
+                        BatteryCurrentOutput += currentOutput;
+                    }
+                }
+
+                GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+                GridCurrentPower += BatteryCurrentInput;
+                GridAvailablePower -= BatteryCurrentInput;
+                UpdatePowerSources = false;
+
+                RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
+                AvailablePowerChanged = Math.Abs(GridMaxPower - LastAvailablePower) > 0.001 && LastAvailablePower > 0;
+
+                RequestIncrease = LastRequestedPower < RequestedWeaponsDraw;
+                PowerIncrease = LastAvailablePower < GridMaxPower;
+
+                LastAvailablePower = GridMaxPower;
+                LastRequestedPower = RequestedWeaponsDraw;
+
+                HadPower = HasPower;
+                HasPower = GridMaxPower > 0;
+                if (!WasPowered && HasPower)
+                    WasPowered = true;
+
+                LastPowerUpdateTick = Session.Tick;
+
+                if (HasPower) return;
+                if (HadPower)
+                    WeaponShootOff();
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{MyGrid == null}"); }
+        }
+
+        internal void CleanUp()
+        {
+            RegisterMyGridEvents(false);
+            foreach (var grid in SubGrids)
+            {
+                if (grid == MyGrid) continue;
+                RemSubGrids.Add(grid);
+            }
+            Construct.Clean();
+            AddSubGrids.Clear();
+            SubGridChanges();
+            SubGrids.Clear();
+            Obstructions.Clear();
+            TargetAis.Clear();
+            EntitiesInRange.Clear();
+            Batteries.Clear();
+            Targets.Clear();
+            SortedTargets.Clear();
+            BlockGroups.Clear();
+            Weapons.Clear();
+            WeaponsIdx.Clear();
+            WeaponBase.Clear();
+            Inventories.Clear();
+            LiveProjectile.Clear();
+            DeadProjectiles.Clear();
+            ControllingPlayers.Clear();
+            SourceCount = 0;
+            BlockCount = 0;
+            MyOwner = 0;
+            PointDefense = false;
+            FadeOut = false;
+            SupressMouseShoot = false;
+            OverPowered = false;
+            UpdatePowerSources = false;
+            AvailablePowerChanged = false;
+            PowerIncrease = false;
+            RequestedPowerChanged = false;
+            RequestIncrease = false;
+            DbReady = false;
+            Focus.Clean();
+            MyShieldTmp = null;
+            MyShield = null;
+            MyPlanetTmp = null;
+            MyPlanet = null;
+            TerminalSystem = null;
+            LastWeaponTerminal = null;
+            LastTerminal = null;
+            PowerDistributor = null;
+            PowerBlock = null;
+        }
     }
 }

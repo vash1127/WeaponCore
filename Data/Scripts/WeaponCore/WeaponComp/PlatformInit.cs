@@ -4,6 +4,8 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
 using System.Collections.Generic;
+using Sandbox.ModAPI;
+using VRage.Game.ModAPI;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
@@ -74,21 +76,32 @@ namespace WeaponCore.Platform
             {
                 Comp.Ai = Comp.Session.GridAiPool.Get();
                 Comp.Ai.Init(Comp.MyCube.CubeGrid, Comp.Session);
+                var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
+                for (int i = 0; i < subgrids.Count; i++)
+                {
+                    var grid = (MyCubeGrid) subgrids[i];
+                    Comp.Ai.PrevSubGrids.Add(grid);
+                    Comp.Ai.SubGrids.Add(grid);
+                }
                 Comp.Session.GridTargetingAIs.TryAdd(Comp.MyCube.CubeGrid, Comp.Ai);
+                Comp.Ai.SubGridDetect();
+                Comp.Ai.SubGridChanges();
             }
 
             var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId;
             if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
-                Comp.Ai.WeaponCounter.TryAdd(blockDef, Comp.Session.WeaponCountPool.Get());
+                Comp.Ai.WeaponCounter[blockDef] = Comp.Session.WeaponCountPool.Get();
             //Comp.Ai.WeaponCounter[blockDef].Current++;
 
             var wCounter = comp.Ai.WeaponCounter[comp.SubtypeHash];
             wCounter.Max = Structure.GridWeaponCap;
+            Comp.Ai.Construct.UpdateWeaponCounters(Comp.Ai);
             if (wCounter.Max > 0)
             {
-                if (wCounter.Current + 1 <= wCounter.Max)
+                if (Comp.Ai.Construct.GetWeaponCount(comp.SubtypeHash) + 1 <= wCounter.Max)
                 {
                     wCounter.Current++;
+                    Comp.Ai.Construct.AddWeaponCount(comp.SubtypeHash);
                     State = PlatformState.Valid;
                 }
                 else
@@ -100,6 +113,7 @@ namespace WeaponCore.Platform
             }
             else
                 State = PlatformState.Valid;
+            Log.Line($"cCount:{Comp.Ai.Construct.Counter[comp.SubtypeHash]} - wCount:{wCounter.Current} - subGrids:{Comp.Ai.SubGrids.Count}");
 
             Parts.Entity = comp.Entity as MyEntity;
 
