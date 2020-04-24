@@ -22,7 +22,7 @@ namespace WeaponCore
             ActiveCockPit = ActiveControlBlock as MyCockpit;
 
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
-            if (activeBlock != null && (GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi) || GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi)))
+            if (activeBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
                 MyCubeBlock oldBlock;
@@ -127,7 +127,7 @@ namespace WeaponCore
                 var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
                 var grid = hit.HitEntity as MyCubeGrid;
                 GridAi gridAi;
-                if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi))
+                if (grid != null && GridToMasterAi.TryGetValue(grid, out gridAi))
                 {
                     if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
                     {
@@ -135,7 +135,7 @@ namespace WeaponCore
                         WeaponCount weaponCount;
                         if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
                         {
-                            if (weaponCount.Current >= weaponCount.Max && weaponCount.Max > 0)
+                            if (weaponCount.Max > 0 && gridAi.Construct.GetWeaponCount(subtypeIdHash) >= weaponCount.Max)
                             {
                                 MyCubeBuilder.Static.NotifyPlacementUnable();
                                 MyCubeBuilder.Static.Deactivate();

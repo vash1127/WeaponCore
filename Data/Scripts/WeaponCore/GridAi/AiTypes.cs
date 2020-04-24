@@ -69,7 +69,7 @@ namespace WeaponCore.Support
 
         internal class Constructs
         {
-            internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>();
+            internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
             internal float OptimalDps;
             internal int BlockCount;
             internal GridAi RootAi;
@@ -107,29 +107,17 @@ namespace WeaponCore.Support
             internal void UpdateWeaponCounters(GridAi ai)
             {
                 Counter.Clear();
-                if (ai.SubGrids.Count > 0)
+                foreach (var grid in ai.SubGrids)
                 {
-                    foreach (var grid in ai.SubGrids)
+                    GridAi checkAi;
+                    if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi))
                     {
-                        GridAi checkAi;
-                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi))
+                        foreach (var wc in checkAi.WeaponCounter)
                         {
-                            foreach (var wc in checkAi.WeaponCounter)
-                            {
-                                if (Counter.ContainsKey(wc.Key))
-                                    Counter[wc.Key] += wc.Value.Current;
-                                else Counter.Add(wc.Key, wc.Value.Current);
-                            }
+                            if (Counter.ContainsKey(wc.Key))
+                                Counter[wc.Key] += wc.Value.Current;
+                            else Counter.Add(wc.Key, wc.Value.Current);
                         }
-                    }
-                }
-                else
-                {
-                    foreach (var wc in ai.WeaponCounter)
-                    {
-                        if (Counter.ContainsKey(wc.Key))
-                            Counter[wc.Key] += wc.Value.Current;
-                        else Counter.Add(wc.Key, wc.Value.Current);
                     }
                 }
             }
