@@ -574,11 +574,9 @@ namespace WeaponCore.Support
     {
         internal StallReporter(Session session)
         {
-            Session = session;
         }
 
         private readonly Stopwatch Watch = new Stopwatch();
-        private readonly Session Session;
         internal string Name;
         internal double MaxMs;
 
@@ -598,7 +596,7 @@ namespace WeaponCore.Support
             if (ms > MaxMs)
             {
                 var message = $"[Warning] {ms} milisecond delay detected in {Name}: ";
-                Log.LineShortDate(message);
+                Log.LineShortDate(message, "perf");
             }
         }
     }
