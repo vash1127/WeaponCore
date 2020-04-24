@@ -56,7 +56,7 @@ namespace WeaponCore
 
         internal void AmmoPull() {
 
-            var cachedInv = CachedInvDictPool.Get();
+            var cachedInv = CachedInvPullDictPool.Get();
             var tmpInventories = TmpInventoryListPool.Get();
 
             for(int i = 0; i < WeaponToPullAmmo.Count; i++)
@@ -152,7 +152,7 @@ namespace WeaponCore
                 CachedInvDefDictPool.Return(returnDict.Value);
             }
             cachedInv.Clear();
-            CachedInvDictPool.Return(cachedInv);
+            CachedInvPullDictPool.Return(cachedInv);
         }
 
         internal void MoveAmmo()
@@ -203,7 +203,7 @@ namespace WeaponCore
 
         internal void AmmoToRemove()
         {
-            var cachedInventories = new Dictionary<MyInventory, float>();
+            var cachedInventories = CachedInvRemoveDictPool.Get();
             
             for (int i = 0; i < WeaponsToRemoveAmmo.Count; i++)
             {
@@ -249,6 +249,7 @@ namespace WeaponCore
             AmmoToRemoveQueue.ApplyAdditions();
             WeaponsToRemoveAmmo.ApplyRemovals();
             cachedInventories.Clear();
+            CachedInvRemoveDictPool.Return(cachedInventories);
         }
 
         internal void RemoveAmmo()
