@@ -72,30 +72,35 @@ namespace WeaponCore.Platform
             }
 
             //Get or init Ai
+            var newAi = false;
             if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.MyCube.CubeGrid, out Comp.Ai))
             {
+                newAi = true;
                 Comp.Ai = Comp.Session.GridAiPool.Get();
                 Comp.Ai.Init(Comp.MyCube.CubeGrid, Comp.Session);
-                var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-                for (int i = 0; i < subgrids.Count; i++)
-                {
-                    var grid = (MyCubeGrid) subgrids[i];
-                    Comp.Ai.PrevSubGrids.Add(grid);
-                    Comp.Ai.SubGrids.Add(grid);
-                }
                 Comp.Session.GridTargetingAIs.TryAdd(Comp.MyCube.CubeGrid, Comp.Ai);
-                Comp.Ai.SubGridDetect();
-                Comp.Ai.SubGridChanges();
             }
 
             var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId;
             if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
                 Comp.Ai.WeaponCounter[blockDef] = Comp.Session.WeaponCountPool.Get();
-            //Comp.Ai.WeaponCounter[blockDef].Current++;
 
             var wCounter = comp.Ai.WeaponCounter[comp.SubtypeHash];
             wCounter.Max = Structure.GridWeaponCap;
-            Comp.Ai.Construct.UpdateWeaponCounters(Comp.Ai);
+            
+            if (newAi)
+            {
+                var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
+                for (int i = 0; i < subgrids.Count; i++)
+                {
+                    var grid = (MyCubeGrid)subgrids[i];
+                    Comp.Ai.PrevSubGrids.Add(grid);
+                    Comp.Ai.SubGrids.Add(grid);
+                }
+                Comp.Ai.SubGridDetect();
+                Comp.Ai.SubGridChanges();
+            }
+
             if (wCounter.Max > 0)
             {
                 if (Comp.Ai.Construct.GetWeaponCount(comp.SubtypeHash) + 1 <= wCounter.Max)
@@ -113,7 +118,6 @@ namespace WeaponCore.Platform
             }
             else
                 State = PlatformState.Valid;
-            Log.Line($"cCount:{Comp.Ai.Construct.Counter[comp.SubtypeHash]} - wCount:{wCounter.Current} - subGrids:{Comp.Ai.SubGrids.Count}");
 
             Parts.Entity = comp.Entity as MyEntity;
 

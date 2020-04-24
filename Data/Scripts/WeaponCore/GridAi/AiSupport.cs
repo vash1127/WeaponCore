@@ -93,7 +93,6 @@ namespace WeaponCore.Support
             foreach (var grid in SubGrids)
             {
                 if (Construct?.RootAi != null)
-                    //Session.GridToMasterAi.AddOrUpdate(grid, Construct.RootAi, (oldKey, value) => Construct.RootAi);
                     Session.GridToMasterAi[grid] = Construct.RootAi;
             }
         }
