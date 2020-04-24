@@ -193,6 +193,7 @@ namespace WeaponCore
                             long playerId;
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
+                                Log.Line($"Mouse: Left: {mousePacket.Data.MouseButtonLeft} Right: {mousePacket.Data.MouseButtonRight}");
                                 PlayerMouseStates[playerId] = mousePacket.Data;
 
                                 report.PacketValid = true;
@@ -391,7 +392,7 @@ namespace WeaponCore
                             switch (shootStatePacket.Data)
                             {
                                 case ManualShootActionState.ShootClick:
-                                    TerminalHelpers.WCShootClickAction(comp, comp.HasTurret, true);
+                                    TerminalHelpers.WCShootClickAction(comp, true, comp.HasTurret, true);
                                     break;
                                 case ManualShootActionState.ShootOff:
                                     TerminalHelpers.WCShootOffAction(comp, true);
@@ -834,7 +835,11 @@ namespace WeaponCore
 
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
-                                PlayerMouseStates[playerId] = inputPacket.Data;
+                                if (PlayerMouseStates.ContainsKey(playerId))
+                                    PlayerMouseStates[playerId].Sync(inputPacket.Data);
+                                else
+                                    PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
+
                                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
 
                                 report.PacketValid = true;
@@ -1165,7 +1170,6 @@ namespace WeaponCore
 
                             if (comp.SyncIds.MIds[(int)packet.PType] < cPlayerPacket.MId)
                             {
-                                comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                                 comp.SyncIds.MIds[(int)packet.PType] = cPlayerPacket.MId;
                                 report.PacketValid = true;
                                 PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
@@ -1296,7 +1300,7 @@ namespace WeaponCore
                                 switch (shootStatePacket.Data)
                                 {
                                     case ManualShootActionState.ShootClick:
-                                        TerminalHelpers.WCShootClickAction(comp, comp.HasTurret, true);
+                                        TerminalHelpers.WCShootClickAction(comp, true, comp.HasTurret, true);
                                         break;
                                     case ManualShootActionState.ShootOff:
                                         TerminalHelpers.WCShootOffAction(comp, true);

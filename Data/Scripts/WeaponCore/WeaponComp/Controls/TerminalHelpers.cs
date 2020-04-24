@@ -331,8 +331,11 @@ namespace WeaponCore.Control
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
 
-            comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            if (!alreadySynced)
+            {
+                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            }
 
             cState.ShootOn = true;
             cState.ClickShoot = false;
@@ -386,8 +389,11 @@ namespace WeaponCore.Control
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
 
-            comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            if (!alreadySynced)
+            {
+                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            }
 
             cState.ClickShoot = false;
             cState.ShootOn = false;
@@ -401,19 +407,19 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static void WCShootClickAction(WeaponComponent comp, bool isTurret, bool alreadySynced = false)
+        internal static void WCShootClickAction(WeaponComponent comp, bool on, bool isTurret, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
-            if (cState.ClickShoot)
-            {
-                cState.CurrentPlayerControl.PlayerId = -1;
-                cState.CurrentPlayerControl.ControlType = ControlType.None;
-            }
-            else
+            if (on && !alreadySynced)
             {
                 cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                 cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
+            }
+            else if (!alreadySynced)
+            {
+                cState.CurrentPlayerControl.PlayerId = -1;
+                cState.CurrentPlayerControl.ControlType = ControlType.None;
             }
 
 
@@ -421,20 +427,21 @@ namespace WeaponCore.Control
             {
                 var w = comp.Platform.Weapons[i];
 
-                if (cState.ClickShoot)
-                    w.State.ManualShoot = ShootOff;
-                else
+                if (on)
                     w.State.ManualShoot = ShootClick;
+                else
+                    w.State.ManualShoot = ShootOff;
+                
             }
 
             if (comp.Session.MpActive && !alreadySynced)
             {
                 comp.Session.SendControlingPlayer(comp);
-                comp.Session.SendActionShootUpdate(comp, (cState.ClickShoot ? ShootOff : ShootClick));
+                comp.Session.SendActionShootUpdate(comp, (on ? ShootClick : ShootOff));
             }
 
-            cState.ClickShoot = !cState.ClickShoot;
-            cState.ShootOn = !cState.ClickShoot && cState.ShootOn;
+            cState.ClickShoot = on;
+            cState.ShootOn = !on && cState.ShootOn;
         }
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, int, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock

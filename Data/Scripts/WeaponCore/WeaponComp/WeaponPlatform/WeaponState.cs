@@ -460,7 +460,7 @@ namespace WeaponCore.Platform
                 }
 
                 if (!Comp.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                    Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content);
+                    Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsCheck.ContainsKey(this))
                     ChargeReload();
