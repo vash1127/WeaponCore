@@ -325,7 +325,10 @@ namespace WeaponCore.Control
             var cState = comp.State.Value;
 
             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+            {
                 comp.Platform.Weapons[j].State.ManualShoot = ShootOn;
+                comp.Platform.Weapons[j].State.SingleShotCounter = 0;
+            }
 
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
@@ -354,8 +357,11 @@ namespace WeaponCore.Control
             var cState = comp.State.Value;
 
             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+            {
                 comp.Platform.Weapons[j].State.ManualShoot = ShootOff;
-
+                comp.Platform.Weapons[j].State.SingleShotCounter = 0;
+            }
+                
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
@@ -429,6 +435,7 @@ namespace WeaponCore.Control
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
+                w.State.SingleShotCounter = 0;
 
                 if (on)
                     w.State.ManualShoot = ShootClick;

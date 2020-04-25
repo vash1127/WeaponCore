@@ -421,6 +421,8 @@ namespace WeaponCore.Platform
             if (IsShooting)
                 StopShooting();
 
+            State.SingleShotCounter = 0;
+
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
                 State.ShotsFired = 0;
 
