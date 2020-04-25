@@ -54,30 +54,33 @@ namespace WeaponCore.Projectiles
                     var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
 
-                        double? dist = null;
-                        if (ent.Physics != null && ent.Physics.IsPhantom) {
-                            p.EntitiesNear = true;
-                            dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
-                            if (p.Info.Target.IsProjectile && Vector3D.Transform(p.Info.Target.Projectile.Position, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
-                                projetileInShield = true;
+                        if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
+                            double? dist = null;
+                            if (ent.Physics != null && ent.Physics.IsPhantom) {
+                                p.EntitiesNear = true;
+                                dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
+                                if (p.Info.Target.IsProjectile && Vector3D.Transform(p.Info.Target.Projectile.Position, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
+                                    projetileInShield = true;
+                            }
+
+                            if (dist != null && (dist.Value < beam.Length || p.Info.EwarActive)) {
+                                var hitEntity = HitEntityPool.Get();
+                                hitEntity.Info = p.Info;
+                                found = true;
+                                if (shieldByPass) p.ShieldBypassed = true;
+                                hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
+                                hitEntity.Intersection = beam;
+                                hitEntity.EventType = Shield;
+                                hitEntity.SphereCheck = !lineCheck;
+                                hitEntity.PruneSphere = p.PruneSphere;
+                                hitEntity.HitPos = beam.From + (beam.Direction * dist.Value);
+                                hitEntity.HitDist = dist;
+
+                                p.Info.HitList.Add(hitEntity);
+                            }
+                            else continue;
                         }
 
-                        if (dist != null && (dist.Value < beam.Length || p.Info.EwarActive) && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
-                            var hitEntity = HitEntityPool.Get();
-                            hitEntity.Info = p.Info;
-                            found = true;
-                            if (shieldByPass) p.ShieldBypassed = true;
-                            hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
-                            hitEntity.Intersection = beam;
-                            hitEntity.EventType = Shield;
-                            hitEntity.SphereCheck = !lineCheck;
-                            hitEntity.PruneSphere = p.PruneSphere;
-                            hitEntity.HitPos = beam.From + (beam.Direction * dist.Value);
-                            hitEntity.HitDist = dist;
-
-                            p.Info.HitList.Add(hitEntity);
-                        }
-                        else continue;
                     }
                 }
 
