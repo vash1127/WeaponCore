@@ -64,8 +64,8 @@ namespace WeaponCore
     [ProtoInclude(13, typeof(GridOverRidesSyncPacket))]
     [ProtoInclude(14, typeof(GridFocusListPacket))]
     [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
-    [ProtoInclude(16, typeof(MIdPacket))]
-    [ProtoInclude(17, typeof(ClientMIdUpdatePacket))]
+    [ProtoInclude(16, typeof(ClientMIdUpdatePacket))]
+    [ProtoInclude(17, typeof(MIdPacket))]    
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -254,9 +254,10 @@ namespace WeaponCore
         [ProtoMember(1)] internal long HitEnt;
         [ProtoMember(2)] internal Vector3 HitDirection;
         [ProtoMember(3)] internal Vector3 HitOffset;
-        [ProtoMember(4)] internal Vector3 Up;
-        [ProtoMember(5)] internal int MuzzleId;
-        [ProtoMember(6)] internal int WeaponId;
+        [ProtoMember(5)] internal Vector3 Up;
+        [ProtoMember(6)] internal Vector3 Velocity;
+        [ProtoMember(7)] internal int MuzzleId;
+        [ProtoMember(8)] internal int WeaponId;
 
         public FixedWeaponHitPacket() { }
 
@@ -432,6 +433,21 @@ namespace WeaponCore
         [ProtoMember(2)] internal bool MouseButtonMiddle;
         [ProtoMember(3)] internal bool MouseButtonRight;
         [ProtoMember(4)] internal bool InMenu;
+
+        internal InputStateData() { }
+
+        internal InputStateData(InputStateData createFrom)
+        {
+            Sync(createFrom);
+        }
+
+        internal void Sync(InputStateData syncFrom)
+        {
+            MouseButtonLeft = syncFrom.MouseButtonLeft;
+            MouseButtonMiddle = syncFrom.MouseButtonMiddle;
+            MouseButtonRight = syncFrom.MouseButtonRight;
+            InMenu = syncFrom.InMenu;
+        }
     }
 
     [ProtoContract]

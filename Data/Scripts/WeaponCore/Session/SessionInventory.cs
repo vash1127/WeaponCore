@@ -32,13 +32,14 @@ namespace WeaponCore
 
                         weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
+                        if (weapon.CanReload)
+                            weapon.StartReload();
+
                         if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume)
                         {
                             weapon.Comp.Session.WeaponToPullAmmo.Add(weapon);
                             weapon.Comp.Session.WeaponToPullAmmo.ApplyAdditions();
                         }
-                        else if (weapon.CanReload)
-                            weapon.StartReload();
                     }
                     else if (weapon.CanReload)
                         weapon.StartReload();
@@ -186,6 +187,9 @@ namespace WeaponCore
                     inventoriesToPull[j].Inventory.RemoveItemsOfType(amt, def);
                     weapon.Comp.BlockInventory.Add(magItem, amt);
                 }
+
+                if (inventoriesToPull.Count > 0 && weapon.CanReload)
+                    weapon.StartReload();
 
                 weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
 

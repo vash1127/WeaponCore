@@ -210,7 +210,7 @@ namespace WeaponCore
                                 /// Update Weapon Hud Info
                                 /// 
 
-                                //if (HandlesInput && (w.State.Sync.Heat > 0 || w.State.Sync.Reloading) && HudUi.WeaponsToDisplayCheck.Add(w))
+                                
                                 if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid))
                                 {
                                     HudUi.TexturesToAdd++;
@@ -229,7 +229,11 @@ namespace WeaponCore
                                 ///
                                 /// Determine if its time to shoot
                                 ///
-                                /// 
+                                ///
+
+                                //if(IsServer && Tick10)
+                                    //Log.Line($"w.State.ManualShoot: {w.State.ManualShoot} leftClick: {leftClick} rightClick: {rightClick}");
+
                                 w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                                 var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
                                 var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;

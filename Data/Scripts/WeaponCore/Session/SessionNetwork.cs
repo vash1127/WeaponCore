@@ -391,7 +391,7 @@ namespace WeaponCore
                             switch (shootStatePacket.Data)
                             {
                                 case ManualShootActionState.ShootClick:
-                                    TerminalHelpers.WCShootClickAction(comp, comp.HasTurret, true);
+                                    TerminalHelpers.WCShootClickAction(comp, true, comp.HasTurret, true);
                                     break;
                                 case ManualShootActionState.ShootOff:
                                     TerminalHelpers.WCShootOffAction(comp, true);
@@ -834,7 +834,11 @@ namespace WeaponCore
 
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
-                                PlayerMouseStates[playerId] = inputPacket.Data;
+                                if (PlayerMouseStates.ContainsKey(playerId))
+                                    PlayerMouseStates[playerId].Sync(inputPacket.Data);
+                                else
+                                    PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
+
                                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
 
                                 report.PacketValid = true;
@@ -1296,7 +1300,7 @@ namespace WeaponCore
                                 switch (shootStatePacket.Data)
                                 {
                                     case ManualShootActionState.ShootClick:
-                                        TerminalHelpers.WCShootClickAction(comp, comp.HasTurret, true);
+                                        TerminalHelpers.WCShootClickAction(comp, true, comp.HasTurret, true);
                                         break;
                                     case ManualShootActionState.ShootOff:
                                         TerminalHelpers.WCShootOffAction(comp, true);
@@ -1432,10 +1436,9 @@ namespace WeaponCore
                             var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
                             var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
                             
-                            var hitPos = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
-                            var origin = hitPos - hitPacket.HitDirection;
+                            var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
 
-                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Up, hitPacket.MuzzleId);
+                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId);
 
                             report.PacketValid = true;
                             break;

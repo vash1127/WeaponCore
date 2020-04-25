@@ -192,12 +192,12 @@ namespace WeaponCore
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-                TerminalHelpers.WCShootClickAction(comp, comp.HasTurret);
+                
+                TerminalHelpers.WCShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
             };
             action.Writer = (blk, sb) =>
             {
-                var on = blk.Components.Get<WeaponComponent>()?.State.Value.ClickShoot ?? false;
+                var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
 
                 if (on)
                     sb.Append("On");
