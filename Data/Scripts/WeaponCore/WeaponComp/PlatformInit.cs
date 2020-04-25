@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
             if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
                 Comp.Ai.WeaponCounter[blockDef] = Comp.Session.WeaponCountPool.Get();
 
-            var wCounter = comp.Ai.WeaponCounter[comp.SubtypeHash];
+            var wCounter = comp.Ai.WeaponCounter[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
             
             if (newAi)
@@ -103,10 +103,10 @@ namespace WeaponCore.Platform
 
             if (wCounter.Max > 0)
             {
-                if (Comp.Ai.Construct.GetWeaponCount(comp.SubtypeHash) + 1 <= wCounter.Max)
+                if (Comp.Ai.Construct.GetWeaponCount(blockDef) + 1 <= wCounter.Max)
                 {
                     wCounter.Current++;
-                    Comp.Ai.Construct.AddWeaponCount(comp.SubtypeHash);
+                    Comp.Ai.Construct.AddWeaponCount(blockDef);
                     State = PlatformState.Valid;
                 }
                 else

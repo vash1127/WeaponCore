@@ -11,6 +11,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRage.Profiler;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Api;
@@ -299,7 +300,6 @@ namespace WeaponCore
             HeatEmissives = CreateHeatEmissive();
 
             LoadVanillaData();
-
             CoreWorkOpt.TaskType = CastProhibit(CoreWorkOpt.TaskType, 5);
             CoreWorkOpt.MaximumThreads = 1;
 
