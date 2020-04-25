@@ -252,15 +252,13 @@ namespace WeaponCore
     public class FixedWeaponHitPacket : Packet
     {
         [ProtoMember(1)] internal long HitEnt;
-        [ProtoMember(2)] internal Vector3 HitDirection;
-        [ProtoMember(3)] internal Vector3 HitOffset;
-        [ProtoMember(5)] internal Vector3 Up;
-        [ProtoMember(6)] internal Vector3 Velocity;
-        [ProtoMember(7)] internal int MuzzleId;
-        [ProtoMember(8)] internal int WeaponId;
-        [ProtoMember(9)] internal int AmmoIndex;
-        [ProtoMember(10)] internal float MaxTrajectory;
-        [ProtoMember(11)] internal float DistanceTraveled;
+        [ProtoMember(2)] internal Vector3 HitOffset;
+        [ProtoMember(3)] internal Vector3 Up;
+        [ProtoMember(4)] internal Vector3 Velocity;
+        [ProtoMember(5)] internal int MuzzleId;
+        [ProtoMember(6)] internal int WeaponId;
+        [ProtoMember(7)] internal int AmmoIndex;
+        [ProtoMember(8)] internal float MaxTrajectory;
 
         public FixedWeaponHitPacket() { }
 
@@ -268,11 +266,12 @@ namespace WeaponCore
         {
             base.CleanUp();
             HitEnt = 0;
-            HitDirection = Vector3.Zero;
             HitOffset = Vector3.Zero;
             Up = Vector3.Zero;
             MuzzleId = 0;
             WeaponId = 0;
+            AmmoIndex = 0;
+            MaxTrajectory = 0;
         }
     }
 

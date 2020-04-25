@@ -1439,7 +1439,10 @@ namespace WeaponCore
                             
                             var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
 
-                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.WeaponAmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory, hitPacket.DistanceTraveled);
+                            var direction = hitPacket.Velocity;
+                            direction.Normalize();
+
+                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.WeaponAmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
 
                             report.PacketValid = true;
                             break;

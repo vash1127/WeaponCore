@@ -42,7 +42,7 @@ namespace WeaponCore
 
                 if (IsClient && p.Info.IsFiringPlayer && fixedFire)
                 {
-                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Hit.Entity, info.HitList[0].HitPos ??Vector3.Zero, info.Direction, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.System.AmmoLookup[p.Info.AmmoDef], (float)p.Info.MaxTrajectory, (float)p.Info.DistanceTraveled);
+                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.System.AmmoLookup[p.Info.AmmoDef], (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
                     p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                 }
 
