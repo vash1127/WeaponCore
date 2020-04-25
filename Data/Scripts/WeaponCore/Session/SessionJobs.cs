@@ -121,6 +121,9 @@ namespace WeaponCore
                     db.ShieldNear = db.ShieldNearTmp;
                     db.BlockCount = db.MyGrid.BlocksCount;
 
+                    if (!db.TargetingInfo.TargetInRange && db.LiveProjectile.Count > 0)
+                        db.TargetingInfo.TargetInRange = true;
+
                     if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
                     if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();
 

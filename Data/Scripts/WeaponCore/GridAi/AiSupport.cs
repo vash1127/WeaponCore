@@ -109,7 +109,6 @@ namespace WeaponCore.Support
                 }
                 WeaponsIdx.Add(comp, Weapons.Count);
                 Weapons.Add(comp);
-                Log.Line($"CompAdd: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
             }
             else
             {
@@ -126,7 +125,6 @@ namespace WeaponCore.Support
                     WeaponsIdx[Weapons[idx]] = idx;
 
                 WeaponsIdx.Remove(comp);
-                Log.Line($"CompRemove: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count})");
             }
         }
 

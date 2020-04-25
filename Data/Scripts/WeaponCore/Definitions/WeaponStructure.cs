@@ -435,6 +435,7 @@ namespace WeaponCore.Support
         public readonly bool MustCharge;
         public readonly bool HasShotReloadDelay;
         public readonly bool HitSound;
+        public readonly bool AltHitSounds;
         public readonly bool AmmoTravelSound;
         public readonly bool IsHybrid;
         public readonly bool IsTurretSelectable;
@@ -543,7 +544,7 @@ namespace WeaponCore.Support
             SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
             PrimeEntityPool = Models(ammo.AmmoDef, wDef, out PrimeModel, out TriggerModel, out ModelPath);
             Energy(ammo, system, wDef, out EnergyAmmo, out MustCharge, out Reloadable, out EnergyMagSize, out ChargSize, out BurstMode, out HasShotReloadDelay);
-            Sound(ammo.AmmoDef, session, out HitSound, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
+            Sound(ammo.AmmoDef, session, out HitSound, out AltHitSounds, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
             //GetParticleInfo(ammo, wDef, session);
@@ -741,16 +742,16 @@ namespace WeaponCore.Support
             }
             else
             {
-                Log.Line($"Burst Fire");
+                //Log.Line($"Burst Fire");
                 var shotyPerBurst = s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1;
                 var burstTime = ((((3600f / s.RateOfFire) * shotyPerBurst) + l.DelayAfterBurst) + s.ReloadTime) / 60;
-                Log.Line($"BURST - burstTime = {burstTime}");
+                //Log.Line($"BURST - burstTime = {burstTime}");
                 var projectilesInBurst = ((s.BarrelsPerShot * l.TrajectilesPerBarrel) * (s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1));
-                Log.Line($"BURST - projectilesInBurst = {projectilesInBurst}");
+                //Log.Line($"BURST - projectilesInBurst = {projectilesInBurst}");
                 var burstPerMin = (60 / burstTime);
                 var burstProjectilesPerMin = burstPerMin * projectilesInBurst;
                 var burstPerSec = burstProjectilesPerMin / 60;
-                Log.Line($"BURST - shotsPerSec = {burstPerSec}");
+                //Log.Line($"BURST - shotsPerSec = {burstPerSec}");
                 shotsPerSec = burstPerSec;
             }
             var shotsPerSecPower = shotsPerSec; //save for power calc
@@ -774,19 +775,22 @@ namespace WeaponCore.Support
 
                     shotsPerSec = ((safeToOverheat / timeHeatCycle) * shotsPerSec);
 
-                    Log.Line($"Name = {s.WeaponName}");
-                    Log.Line($"HeatPerShot = {l.HeatPerShot}");
-                    Log.Line($"HeatGenPerSec = {heatGenPerSec}");
+                    if ((mexLogLevel >= 1))
+                    {
+                        Log.Line($"Name = {s.WeaponName}");
+                        Log.Line($"HeatPerShot = {l.HeatPerShot}");
+                        Log.Line($"HeatGenPerSec = {heatGenPerSec}");
 
-                    Log.Line($"WepCoolDown = {l.Cooldown}");
+                        Log.Line($"WepCoolDown = {l.Cooldown}");
 
-                    Log.Line($"safeToOverheat = {safeToOverheat}");
-                    Log.Line($"cooldownTime = {cooldownTime}");
+                        Log.Line($"safeToOverheat = {safeToOverheat}");
+                        Log.Line($"cooldownTime = {cooldownTime}");
 
 
-                    Log.Line($"timeHeatCycle = {timeHeatCycle}s");
+                        Log.Line($"timeHeatCycle = {timeHeatCycle}s");
 
-                    Log.Line($"shotsPerSec wHeat = {shotsPerSec}");
+                        Log.Line($"shotsPerSec wHeat = {shotsPerSec}");
+                    }
 
                 }
 
@@ -972,9 +976,10 @@ namespace WeaponCore.Support
 
         }
 
-        private void Sound(AmmoDef ammoDef, Session session, out bool hitSound, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)
+        private void Sound(AmmoDef ammoDef, Session session, out bool hitSound, out bool altHitSounds, out bool ammoTravelSound, out float hitSoundDistSqr, out float ammoTravelSoundDistSqr, out float ammoSoundMaxDistSqr)
         {
             hitSound = ammoDef.AmmoAudio.HitSound != string.Empty;
+            altHitSounds = true; //ammoDef.AmmoAudio.VoxelHitSound != string.Empty || ammoDef.AmmoAudio.PlayerHitSound != string.Empty || ammoDef.AmmoAudio.FloatingHitSound != string.Empty;
             ammoTravelSound = ammoDef.AmmoAudio.TravelSound != string.Empty;
             var hitSoundStr = string.Concat(Arc, ammoDef.AmmoAudio.HitSound);
             var travelSoundStr = string.Concat(Arc, ammoDef.AmmoAudio.TravelSound);

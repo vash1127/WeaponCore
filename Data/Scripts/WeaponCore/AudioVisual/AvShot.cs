@@ -33,6 +33,7 @@ namespace WeaponCore.Support
         internal bool AmmoSound;
         internal bool HasTravelSound;
         internal bool HitSoundActive;
+        internal bool HitSoundInitted;
         internal bool StartSoundActived;
         internal bool Triggered;
         internal bool Cloaked;
@@ -623,8 +624,6 @@ namespace WeaponCore.Support
             {
                 var hitSoundChance = AmmoDef.AmmoAudio.HitPlayChance;
                 HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
-                if (HitSoundActive)
-                    HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
             }
 
             if (!IsShrapnel && FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
@@ -685,6 +684,7 @@ namespace WeaponCore.Support
             Dirty = false;
             AmmoSound = false;
             HitSoundActive = false;
+            HitSoundInitted = false;
             StartSoundActived = false;
             IsShrapnel = false;
             HasTravelSound = false;

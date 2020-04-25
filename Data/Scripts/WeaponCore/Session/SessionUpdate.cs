@@ -170,7 +170,6 @@ namespace WeaponCore
                                 w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && (!comp.UserControlled || w.State.ManualShoot == ShootClick)) || comp.TrackReticle && !w.Target.IsFakeTarget;
                                 if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
-
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }

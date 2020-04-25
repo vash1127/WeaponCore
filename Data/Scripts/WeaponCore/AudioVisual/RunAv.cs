@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -308,6 +311,27 @@ namespace WeaponCore.Support
             for (int i = 0; i < HitSounds.Count; i++)
             {
                 var av = HitSounds[i];
+                if (!av.HitSoundInitted)
+                {
+                    av.HitSoundInitted = true;
+                    if (!av.AmmoDef.Const.AltHitSounds)
+                        av.HitSound.Init(av.AmmoDef.AmmoAudio.HitSound, false);
+                    else
+                    {
+                        var ent = av.HitEmitter.Entity;
+                        if (ent is MyCubeGrid)
+                            av.HitSound.Init(av.AmmoDef.AmmoAudio.ShieldHitSound, false);
+                        else if (ent is IMyUpgradeModule && av.AmmoDef.AmmoAudio.ShieldHitSound != string.Empty)
+                            av.HitSound.Init(av.AmmoDef.AmmoAudio.HitSound, false);
+                        else if (ent is MyVoxelBase && av.AmmoDef.AmmoAudio.VoxelHitSound != string.Empty)
+                            av.HitSound.Init(av.AmmoDef.AmmoAudio.VoxelHitSound, false);
+                        else if (ent is IMyCharacter && av.AmmoDef.AmmoAudio.PlayerHitSound != string.Empty)
+                            av.HitSound.Init(av.AmmoDef.AmmoAudio.PlayerHitSound, false);
+                        else if (ent is MyFloatingObject && av.AmmoDef.AmmoAudio.FloatingHitSound != string.Empty)
+                            av.HitSound.Init(av.AmmoDef.AmmoAudio.FloatingHitSound, false);
+                        else av.HitSound.Init(av.AmmoDef.AmmoAudio.HitSound, false);
+                    }
+                }
                 av.HitEmitter.SetPosition(av.TracerFront);
                 av.HitEmitter.PlaySound(av.HitSound);
             }
