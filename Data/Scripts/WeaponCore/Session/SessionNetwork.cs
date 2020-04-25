@@ -193,7 +193,6 @@ namespace WeaponCore
                             long playerId;
                             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
-                                Log.Line($"Mouse: Left: {mousePacket.Data.MouseButtonLeft} Right: {mousePacket.Data.MouseButtonRight}");
                                 PlayerMouseStates[playerId] = mousePacket.Data;
 
                                 report.PacketValid = true;
@@ -1170,6 +1169,7 @@ namespace WeaponCore
 
                             if (comp.SyncIds.MIds[(int)packet.PType] < cPlayerPacket.MId)
                             {
+                                comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                                 comp.SyncIds.MIds[(int)packet.PType] = cPlayerPacket.MId;
                                 report.PacketValid = true;
                                 PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
@@ -1436,10 +1436,9 @@ namespace WeaponCore
                             var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
                             var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
                             
-                            var hitPos = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
-                            var origin = hitPos - hitPacket.HitDirection;
+                            var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
 
-                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Up, hitPacket.MuzzleId);
+                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId);
 
                             report.PacketValid = true;
                             break;

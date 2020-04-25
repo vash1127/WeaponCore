@@ -254,9 +254,10 @@ namespace WeaponCore
         [ProtoMember(1)] internal long HitEnt;
         [ProtoMember(2)] internal Vector3 HitDirection;
         [ProtoMember(3)] internal Vector3 HitOffset;
-        [ProtoMember(4)] internal Vector3 Up;
-        [ProtoMember(5)] internal int MuzzleId;
-        [ProtoMember(6)] internal int WeaponId;
+        [ProtoMember(5)] internal Vector3 Up;
+        [ProtoMember(6)] internal Vector3 Velocity;
+        [ProtoMember(7)] internal int MuzzleId;
+        [ProtoMember(8)] internal int WeaponId;
 
         public FixedWeaponHitPacket() { }
 

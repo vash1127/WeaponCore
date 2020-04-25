@@ -411,15 +411,18 @@ namespace WeaponCore.Control
         {
             var cState = comp.State.Value;
 
-            if (on && !alreadySynced)
+            if (!alreadySynced)
             {
-                cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
-            }
-            else if (!alreadySynced)
-            {
-                cState.CurrentPlayerControl.PlayerId = -1;
-                cState.CurrentPlayerControl.ControlType = ControlType.None;
+                if (on)
+                {
+                    cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                    cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
+                }
+                else
+                {
+                    cState.CurrentPlayerControl.PlayerId = -1;
+                    cState.CurrentPlayerControl.ControlType = ControlType.None;
+                }
             }
 
 

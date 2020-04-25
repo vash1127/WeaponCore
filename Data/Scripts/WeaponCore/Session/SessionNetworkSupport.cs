@@ -500,7 +500,7 @@ namespace WeaponCore
             }
         }
 
-        internal void SendFixedGunHitEvent(MyCubeBlock firingCube, MyEntity hitEnt, Vector3 hitPos, Vector3 hitDirection, Vector3 up, int muzzleId, int systemId)
+        internal void SendFixedGunHitEvent(MyCubeBlock firingCube, MyEntity hitEnt, Vector3 hitPos, Vector3 hitDirection, Vector3 velocity, Vector3 up, int muzzleId, int systemId)
         {
             if (firingCube == null) return;
 
@@ -519,7 +519,8 @@ namespace WeaponCore
                     HitOffset = hitEnt.PositionComp.WorldMatrixRef.Translation - hitPos,
                     Up = up,
                     MuzzleId = muzzleId,
-                    WeaponId = weaponId
+                    WeaponId = weaponId,
+                    Velocity = velocity,
                 });
             }
         }
@@ -797,10 +798,10 @@ namespace WeaponCore
             return o;
         }
 
-        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 originUp, int muzzleId)
+        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId)
         {
             var comp = weapon.Comp;
-
+            Log.Line("Create Projectile");
             var p = comp.Session.Projectiles.ProjectilePool.Count > 0 ? comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
             p.Info.Id = comp.Session.Projectiles.CurrentProjectileId++;
             p.Info.System = weapon.System;
@@ -822,6 +823,7 @@ namespace WeaponCore
             p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
             p.Info.LockOnFireState = false;
             p.Info.ShooterVel = comp.Ai.GridVel;
+            p.Velocity = velocity;
             p.Info.Origin = origin;
             p.Info.OriginUp = originUp;
             p.PredictedTargetPos = Vector3D.Zero;
@@ -829,6 +831,7 @@ namespace WeaponCore
             p.State = Projectile.ProjectileState.Start;
             p.Info.PrimeEntity = weapon.ActiveAmmoDef.AmmoDef.Const.PrimeModel ? weapon.ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
             p.Info.TriggerEntity = weapon.ActiveAmmoDef.AmmoDef.Const.TriggerModel ? comp.Session.TriggerEntityPool.Get() : null;
+
             comp.Session.Projectiles.ActiveProjetiles.Add(p);
         }
         #endregion
