@@ -40,7 +40,6 @@ namespace WeaponCore.Support
         public readonly HashSet<string> AnimationIdLookup;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
-        public readonly Dictionary<AmmoDef, int> AmmoLookup;
         public readonly Prediction Prediction;
         public readonly TurretType TurretMovement;
         public readonly FiringSoundState FiringSound;
@@ -124,7 +123,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, Dictionary<AmmoDef, int> ammoLookup, int weaponIdHash, int weaponId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -137,7 +136,6 @@ namespace WeaponCore.Support
             WeaponIdHash = weaponIdHash;
             WeaponId = weaponId;
             WeaponName = weaponName;
-            AmmoLookup = ammoLookup;
             WeaponAmmoTypes = weaponAmmoTypes;
             MaxAmmoVolume = Values.HardPoint.HardWare.InventorySize;
             CeaseFireDelay = values.HardPoint.DelayCeaseFire;
@@ -164,8 +162,11 @@ namespace WeaponCore.Support
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts);
 
-            foreach (var ammo in WeaponAmmoTypes)
-                ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this);
+            for (int i = 0; i < WeaponAmmoTypes.Length; i++)
+            {
+                var ammo = WeaponAmmoTypes[i];
+                ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
+            }
         }
 
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
@@ -393,6 +394,7 @@ namespace WeaponCore.Support
         public readonly int MaxChaseTime;
         public readonly int MagazineSize;
         public readonly int PatternIndex;
+        public readonly int AmmoIndex;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -474,8 +476,9 @@ namespace WeaponCore.Support
         public readonly double CollisionSize;
         public readonly double SmartsDelayDistSqr;
 
-        public AmmoConstants(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system)
+        public AmmoConstants(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
         {
+            AmmoIndex = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
 
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
@@ -1072,7 +1075,6 @@ namespace WeaponCore.Support
                     
 
                 var weaponAmmo = new WeaponAmmoTypes[weaponDef.Ammos.Length];
-                var ammoLookup = new Dictionary<AmmoDef, int>();
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
                     var ammo = weaponDef.Ammos[i];
@@ -1084,12 +1086,11 @@ namespace WeaponCore.Support
 
                     Session.ammoDefIds.Add(ammoDefId);
                     weaponAmmo[i] = new WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
-                    ammoLookup[ammo] = i;
                 }
 
                 var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponIdHash, weaponId);
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, ammoLookup, weaponIdHash, weaponId));
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
                 weaponId++;
             }
 
