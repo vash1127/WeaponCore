@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
+using static WeaponCore.Support.WeaponDefinition;
 
 namespace WeaponCore
 {
@@ -1438,7 +1439,7 @@ namespace WeaponCore
                             
                             var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
 
-                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId);
+                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, hitPacket.HitDirection, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.WeaponAmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory, hitPacket.DistanceTraveled);
 
                             report.PacketValid = true;
                             break;

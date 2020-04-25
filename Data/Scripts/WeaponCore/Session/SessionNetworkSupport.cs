@@ -5,6 +5,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
+using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
@@ -500,7 +501,7 @@ namespace WeaponCore
             }
         }
 
-        internal void SendFixedGunHitEvent(MyCubeBlock firingCube, MyEntity hitEnt, Vector3 hitPos, Vector3 hitDirection, Vector3 velocity, Vector3 up, int muzzleId, int systemId)
+        internal void SendFixedGunHitEvent(MyCubeBlock firingCube, MyEntity hitEnt, Vector3 origin, Vector3 hitDirection, Vector3 velocity, Vector3 up, int muzzleId, int systemId, int ammoIndex, float maxTrajectory, float distanceTraveled)
         {
             if (firingCube == null) return;
 
@@ -516,11 +517,14 @@ namespace WeaponCore
                     PType = PacketType.FixedWeaponHitEvent,
                     HitEnt = hitEnt.EntityId,
                     HitDirection = hitDirection,
-                    HitOffset = hitEnt.PositionComp.WorldMatrixRef.Translation - hitPos,
+                    HitOffset = hitEnt.PositionComp.WorldMatrixRef.Translation - origin,
                     Up = up,
                     MuzzleId = muzzleId,
                     WeaponId = weaponId,
                     Velocity = velocity,
+                    AmmoIndex = ammoIndex,
+                    MaxTrajectory = maxTrajectory,
+                    DistanceTraveled = distanceTraveled,
                 });
             }
         }
@@ -798,16 +802,15 @@ namespace WeaponCore
             return o;
         }
 
-        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId)
+        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory, float distanceTraveled)
         {
             var comp = weapon.Comp;
-            Log.Line("Create Projectile");
             var p = comp.Session.Projectiles.ProjectilePool.Count > 0 ? comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
             p.Info.Id = comp.Session.Projectiles.CurrentProjectileId++;
             p.Info.System = weapon.System;
             p.Info.Ai = comp.Ai;
             p.Info.ClientSent = true;
-            p.Info.AmmoDef = weapon.ActiveAmmoDef.AmmoDef;
+            p.Info.AmmoDef = ammoDef;
             p.Info.Overrides = comp.Set.Value.Overrides;
             p.Info.Target.Entity = targetEntity;
             p.Info.Target.Projectile = null;
@@ -831,6 +834,8 @@ namespace WeaponCore
             p.State = Projectile.ProjectileState.Start;
             p.Info.PrimeEntity = weapon.ActiveAmmoDef.AmmoDef.Const.PrimeModel ? weapon.ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
             p.Info.TriggerEntity = weapon.ActiveAmmoDef.AmmoDef.Const.TriggerModel ? comp.Session.TriggerEntityPool.Get() : null;
+            p.Info.MaxTrajectory = maxTrajectory;
+            p.Info.DistanceTraveled = distanceTraveled;
 
             comp.Session.Projectiles.ActiveProjetiles.Add(p);
         }

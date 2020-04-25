@@ -258,6 +258,9 @@ namespace WeaponCore
         [ProtoMember(6)] internal Vector3 Velocity;
         [ProtoMember(7)] internal int MuzzleId;
         [ProtoMember(8)] internal int WeaponId;
+        [ProtoMember(9)] internal int AmmoIndex;
+        [ProtoMember(10)] internal float MaxTrajectory;
+        [ProtoMember(11)] internal float DistanceTraveled;
 
         public FixedWeaponHitPacket() { }
 

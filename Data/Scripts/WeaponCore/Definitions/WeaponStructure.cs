@@ -40,6 +40,7 @@ namespace WeaponCore.Support
         public readonly HashSet<string> AnimationIdLookup;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
+        public readonly Dictionary<AmmoDef, int> AmmoLookup;
         public readonly Prediction Prediction;
         public readonly TurretType TurretMovement;
         public readonly FiringSoundState FiringSound;
@@ -123,7 +124,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, int weaponIdHash, int weaponId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, WeaponAmmoTypes[] weaponAmmoTypes, Dictionary<AmmoDef, int> ammoLookup, int weaponIdHash, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -136,6 +137,7 @@ namespace WeaponCore.Support
             WeaponIdHash = weaponIdHash;
             WeaponId = weaponId;
             WeaponName = weaponName;
+            AmmoLookup = ammoLookup;
             WeaponAmmoTypes = weaponAmmoTypes;
             MaxAmmoVolume = Values.HardPoint.HardWare.InventorySize;
             CeaseFireDelay = values.HardPoint.DelayCeaseFire;
@@ -1070,6 +1072,7 @@ namespace WeaponCore.Support
                     
 
                 var weaponAmmo = new WeaponAmmoTypes[weaponDef.Ammos.Length];
+                var ammoLookup = new Dictionary<AmmoDef, int>();
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
                     var ammo = weaponDef.Ammos[i];
@@ -1081,11 +1084,12 @@ namespace WeaponCore.Support
 
                     Session.ammoDefIds.Add(ammoDefId);
                     weaponAmmo[i] = new WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
+                    ammoLookup[ammo] = i;
                 }
 
                 var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponIdHash, weaponId);
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, ammoLookup, weaponIdHash, weaponId));
                 weaponId++;
             }
 
