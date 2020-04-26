@@ -309,11 +309,10 @@ namespace WeaponCore.Platform
             TrackTarget = System.Values.HardPoint.Ai.TrackTargets;
             
             if (System.Values.HardPoint.Ai.TurretController)
-            {
                 AiEnabled = true;
-                AimOffset = System.Values.HardPoint.HardWare.Offset;
-                FixedOffset = System.Values.HardPoint.HardWare.FixedOffset;
-            }
+
+            AimOffset = System.Values.HardPoint.HardWare.Offset;
+            FixedOffset = System.Values.HardPoint.HardWare.FixedOffset;
 
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate / 3;
             EnergyPriority = System.Values.HardPoint.Other.EnergyPriority;
