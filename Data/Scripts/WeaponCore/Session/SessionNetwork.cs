@@ -1437,6 +1437,11 @@ namespace WeaponCore
                             var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
                             var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
                             
+                            if(targetEnt == null)
+                            {
+                                errorPacket.Error = $"targetEnt: {targetEnt}";
+                                break;
+                            }
                             var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
 
                             var direction = hitPacket.Velocity;

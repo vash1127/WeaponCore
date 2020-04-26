@@ -57,7 +57,7 @@ namespace WeaponCore.Support
                 var comp = w.Comp;
                 var ai = comp.Ai;
 
-                return ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr || ai.Focus.HasFocus;
+                return ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr || ai.Focus.HasFocus || ai.LiveProjectile.Count > 0;
             }
 
             internal void Clean()

@@ -29,7 +29,7 @@ namespace WeaponCore.Support
             {
                 var filename = name + ".log";
                 if (_instances.ContainsKey(name)) return;
-                //RenameFile(name, "old" + name);
+                RenameFileInLocalStorage(filename, name + $"-{DateTime.Now:MM-dd-yy_HH-mm-ss}.log", typeof(LogInstance));
 
                 if (defaultInstance) _defaultInstance = name;
                 var instance = _logPool.Get();
@@ -42,19 +42,25 @@ namespace WeaponCore.Support
             }
         }
 
-        public static void RenameFile(string oldFile, string newFile)
+        public static void RenameFileInLocalStorage(string oldName, string newName, Type anyObjectInYourMod)
         {
-            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(oldFile, typeof(LogInstance)))
+            if (!MyAPIGateway.Utilities.FileExistsInLocalStorage(oldName, anyObjectInYourMod))
                 return;
 
-            if (MyAPIGateway.Utilities.FileExistsInLocalStorage(newFile, typeof(LogInstance)))
-                MyAPIGateway.Utilities.DeleteFileInLocalStorage(newFile, typeof(LogInstance));
-            using (var r = MyAPIGateway.Utilities.ReadBinaryFileInGlobalStorage(oldFile))
-            using (var w = MyAPIGateway.Utilities.WriteBinaryFileInGlobalStorage(newFile))
+            if (MyAPIGateway.Utilities.FileExistsInLocalStorage(newName, anyObjectInYourMod))
+                return;
+
+            using (var read = MyAPIGateway.Utilities.ReadFileInLocalStorage(oldName, anyObjectInYourMod))
             {
-                w.Write(r.ReadBytes((int)r.BaseStream.Length));
-                w.Flush();
+                using (var write = MyAPIGateway.Utilities.WriteFileInLocalStorage(newName, anyObjectInYourMod))
+                {
+                    write.Write(read.ReadToEnd());
+                    write.Flush();
+                    write.Dispose();
+                }
             }
+
+            MyAPIGateway.Utilities.DeleteFileInLocalStorage(oldName, anyObjectInYourMod);
         }
 
         public static void Line(string text, string instanceName = null)

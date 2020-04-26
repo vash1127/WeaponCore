@@ -35,7 +35,7 @@ namespace WeaponCore
 
             DbCallBackComplete = false;
 
-            DbTask = MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            DbTask = MyAPIGateway.Parallel.StartBackground(ProcessDbs, ProcessDbsCallBack);
         }
 
         private void ProcessDbs()
@@ -120,6 +120,9 @@ namespace WeaponCore
                     db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                     db.ShieldNear = db.ShieldNearTmp;
                     db.BlockCount = db.MyGrid.BlocksCount;
+
+                    if (!db.TargetingInfo.TargetInRange && db.LiveProjectile.Count > 0)
+                        db.TargetingInfo.TargetInRange = true;
 
                     if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
                     if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();

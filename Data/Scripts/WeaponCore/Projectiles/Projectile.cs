@@ -200,11 +200,13 @@ namespace WeaponCore.Projectiles
             }
             else DesiredSpeed = targetSpeed;
 
+            float variance = 0;
             if (Info.AmmoDef.Const.RangeVariance)
             {
                 var min = Info.AmmoDef.Trajectory.RangeVariance.Start;
                 var max = Info.AmmoDef.Trajectory.RangeVariance.End;
-                Info.MaxTrajectory -= (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
+                variance = (float)Info.WeaponRng.ClientProjectileRandom.NextDouble() * (max - min) + min;
+                Info.MaxTrajectory -= variance;
                 Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
 
@@ -224,6 +226,12 @@ namespace WeaponCore.Projectiles
             if (MoveToAndActivate)
             {
                 var distancePos = !Vector3D.IsZero(PredictedTargetPos) ? PredictedTargetPos : OriginTargetPos;
+                if (variance > 0)
+                {
+                    var forward = Info.WeaponRng.ClientProjectileRandom.Next(100) < 50;
+                    Info.WeaponRng.ClientProjectileCurrentCounter++;
+                    distancePos = forward ? distancePos + (Info.Direction * variance) : distancePos + (-Info.Direction * variance);
+                }
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;

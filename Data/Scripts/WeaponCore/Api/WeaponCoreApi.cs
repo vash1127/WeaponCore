@@ -758,6 +758,10 @@ namespace WeaponCore.Api
                     [ProtoMember(2)] internal string HitSound;
                     [ProtoMember(3)] internal float HitPlayChance;
                     [ProtoMember(4)] internal bool HitPlayShield;
+                    [ProtoMember(5)] internal string VoxelHitSound;
+                    [ProtoMember(6)] internal string PlayerHitSound;
+                    [ProtoMember(7)] internal string FloatingHitSound;
+                    [ProtoMember(8)] internal string ShieldHitSound;
                 }
 
                 [ProtoContract]

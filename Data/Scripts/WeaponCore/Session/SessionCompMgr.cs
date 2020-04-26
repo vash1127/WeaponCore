@@ -111,7 +111,7 @@ namespace WeaponCore
             for (int i = CompsDelayed.Count - 1; i >= 0; i--)
             {
                 var delayed = CompsDelayed[i];
-                if (delayed.MyCube.MarkedForClose || delayed.Ai == null || delayed.Entity == null || forceRemove)
+                if (delayed.MyCube.MarkedForClose || delayed.Entity == null || forceRemove)
                     CompsDelayed.RemoveAtFast(i);
                 else if (delayed.MyCube.IsFunctional)
                 {

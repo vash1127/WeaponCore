@@ -65,7 +65,8 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 32);
-            Session.PTask = MyAPIGateway.Parallel.Start(CheckHits, Session.CoreWorkOpt);
+            //Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
+            CheckHits();
             Session.StallReporter.End();
         }
 

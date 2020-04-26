@@ -49,9 +49,9 @@ namespace WeaponCore.Support
             return float.IsNaN(dist) ? (float?) null : dist;
         }
 
-        public static bool PointInEllipsoid(Vector3D point, MatrixD ellipsoidMatrix)
+        public static bool PointInEllipsoid(Vector3D point, MatrixD ellipsoidMatrixInv)
         {
-            return Vector3D.Transform(point, ellipsoidMatrix).LengthSquared() <= 1;
+            return Vector3D.Transform(point, ellipsoidMatrixInv).LengthSquared() <= 1;
         }
 
         internal static bool IsDotProductWithinTolerance(ref Vector3D targetDir, ref Vector3D refDir, double tolerance)
