@@ -197,13 +197,14 @@ namespace WeaponCore.Support
                         }
                         else info = ai.SortedTargets[deck[x - offset]];
                     }
-
                     if (info?.Target == null || info.Target.MarkedForClose || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
                     if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
+
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
+
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
@@ -232,10 +233,10 @@ namespace WeaponCore.Support
 
                     var character = info.Target as IMyCharacter;
 
-                    if (character != null && !s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character)) continue;
+                    if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
-
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
+
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
@@ -255,6 +256,7 @@ namespace WeaponCore.Support
                     }
                     if (forceTarget) break;
                 }
+
                 if (!attemptReset || !w.Target.HasTarget) targetType = TargetType.None;
                 else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
             }

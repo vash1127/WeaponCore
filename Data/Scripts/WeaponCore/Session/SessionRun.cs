@@ -244,6 +244,15 @@ namespace WeaponCore
         {
             try
             {
+                if (!PTask.IsComplete)
+                    PTask.Wait();
+
+                if (!CTask.IsComplete)
+                    CTask.Wait();
+
+                if (!ITask.IsComplete)
+                    ITask.Wait();
+
                 if (IsServer || DedicatedServer)
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ServerReceivedPacket);
                 else

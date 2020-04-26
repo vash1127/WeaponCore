@@ -102,7 +102,7 @@ namespace WeaponCore
                         var ammoPullRequests = InventoryMoveRequestPool.Get();
                         ammoPullRequests.Weapon = weapon;
 
-                        for (int j = 0; j < tmpInventories.Count; i++)
+                        for (int j = 0; j < tmpInventories.Count; j++)
                         {
                             var inventory = tmpInventories[j];
                             var magsAvailable = (int)cachedInv[def][inventory];
