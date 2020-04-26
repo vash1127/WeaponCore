@@ -66,7 +66,13 @@ namespace WeaponCore
                     using (weapon.Comp.Ai?.MyGrid.Pin())
                     using (weapon.Comp.MyCube.Pin())
                     {
-                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) continue;
+                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null)
+                        {
+                            tmpInventories.Clear();
+                            WeaponToPullAmmo.Remove(weapon);
+                            continue;
+                        }
+
                         var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
                         var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
                         var weaponInventory = weapon.Comp.BlockInventory;
@@ -94,10 +100,16 @@ namespace WeaponCore
                                 }
                             }
                         }
-                        else
+                        else if(cachedInv[def].Keys.Count > 0)
                             tmpInventories = cachedInv[def].Keys.ToList();
 
-                        if (tmpInventories.Count <= 0) continue;
+
+                        if (tmpInventories.Count <= 0)
+                        {
+                            tmpInventories.Clear();
+                            WeaponToPullAmmo.Remove(weapon);
+                            continue;
+                        }
 
                         var ammoPullRequests = InventoryMoveRequestPool.Get();
                         ammoPullRequests.Weapon = weapon;
@@ -158,6 +170,8 @@ namespace WeaponCore
             catch (Exception e)
             {
                 Log.ThreadedWrite($"Exception In Pull: {e}");
+                WeaponToPullAmmo.ClearList();
+                WeaponToPullAmmo.ApplyChanges();
             }
         }
 
@@ -267,7 +281,14 @@ namespace WeaponCore
             {
                 var request = AmmoToRemoveQueue[i];
                 var weapon = request.Weapon;
-                if (!weapon.Comp.InventoryInited) continue;
+                if (!weapon.Comp.InventoryInited)
+                {
+                    request.Inventories.Clear();
+                    request.Weapon = null;
+                    AmmoToRemoveQueue.Remove(request);
+                    continue;
+                }
+
                 var inventoriesToAddTo = request.Inventories;
                 var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
                 var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
