@@ -230,7 +230,6 @@ namespace WeaponCore.Support
                     }
                     var meteor = info.Target as MyMeteor;
                     if (meteor != null && !s.TrackMeteors) continue;
-
                     var character = info.Target as IMyCharacter;
 
                     if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
