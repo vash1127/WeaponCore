@@ -42,7 +42,7 @@ namespace WeaponCore.Projectiles
 
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("FragmentsNeedingEntities", 32);
+            Session.StallReporter.Start("FragmentsNeedingEntities", 1);
             if (Session.FragmentsNeedingEntities.Count > 0)
                 PrepFragmentEntities();
             Session.StallReporter.End();
@@ -65,7 +65,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 32);
-            //Session.PTask = MyAPIGateway.Parallel.Start(CheckHits, Session.CoreWorkOpt);
+            //Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
             CheckHits();
             Session.StallReporter.End();
         }

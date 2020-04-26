@@ -35,7 +35,7 @@ namespace WeaponCore
 
             DbCallBackComplete = false;
 
-            DbTask = MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            DbTask = MyAPIGateway.Parallel.StartBackground(ProcessDbs, ProcessDbsCallBack);
         }
 
         private void ProcessDbs()
