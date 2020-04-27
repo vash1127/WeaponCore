@@ -20,29 +20,27 @@ namespace WeaponCore.Support
 
         internal void RemoveComp()
         {
-            try
-            {
+            try {
+
                 if (Registered) 
                     RegisterEvents(false);
 
-                if (Ai != null)
-                {
+                if (Ai != null) {
+
                     Ai.OptimalDps -= PeakDps;
                     Ai.EffectiveDps -= EffectiveDps;
-                    WeaponComponent comp;
-                    if (Ai.WeaponBase.TryRemove(MyCube, out comp))
-                    {
-                        if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
-                        {
-                            WeaponCount wCount;
-                            if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
-                            {
-                                wCount.Current--;
-                                if (wCount.Current == 0) Ai.WeaponCounter.Remove(MyCube.BlockDefinition.Id.SubtypeId);
-                            }
 
-                            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                            {
+                    WeaponCount wCount;
+                    if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount)) {
+                        wCount.Current--;
+                        if (wCount.Current == 0) Ai.WeaponCounter.Remove(MyCube.BlockDefinition.Id.SubtypeId);
+                    }
+
+                    WeaponComponent comp;
+                    if (Ai.WeaponBase.TryRemove(MyCube, out comp)) {
+                        if (Platform.State == MyWeaponPlatform.PlatformState.Ready) {
+
+                            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                                 var w = comp.Platform.Weapons[i];
                                 w.StopShooting();
                                 w.WeaponCache.HitEntity.Clean();
@@ -50,20 +48,18 @@ namespace WeaponCore.Support
                                     w.StopPowerDraw();
                             }
                         }
-                        
-                        if (Ai.WeaponBase.Count == 0)
-                        {
-                            WeaponCount wCount;
-                            if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
-                                Session.WeaponCountPool.Return(wCount);
-
-                            GridAi gridAi;
-                            Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
-                        }
                         Ai.CompChange(false, this);
                     }
-                    else
-                        Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)}");
+                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)}");
+
+                    if (Ai.WeaponBase.Count == 0)
+                    {
+                        if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                            Session.WeaponCountPool.Return(wCount);
+
+                        GridAi gridAi;
+                        Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
+                    }
 
                     Ai = null;
                 }

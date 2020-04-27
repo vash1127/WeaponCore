@@ -60,13 +60,19 @@ namespace WeaponCore.Projectiles
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
 
+            var activeCount = ActiveProjetiles.Count;
+
             Session.StallReporter.Start("UpdateState", 32);
-            UpdateState();
+            if (activeCount > 0) 
+                UpdateState();
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 32);
             //Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
-            CheckHits();
+            if (activeCount > 350)
+                Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
+            else if (activeCount > 0)
+                CheckHits();
             Session.StallReporter.End();
         }
 
