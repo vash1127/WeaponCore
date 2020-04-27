@@ -122,7 +122,7 @@ namespace WeaponCore
 
             internal void PickMessage(Item item)
             {
-                if (Wheel.BlockGroups == null || Wheel.BlockGroups.Count == 0) return;
+                if (Wheel.BlockGroups == null || item == null || Wheel.BlockGroups.Count == 0) return;
 
                 GroupInfo groupInfo;
                 switch (Name)

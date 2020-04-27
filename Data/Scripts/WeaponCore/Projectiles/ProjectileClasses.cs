@@ -117,12 +117,6 @@ namespace WeaponCore.Support
         }
     }
 
-    internal struct VirtualProjectile
-    {
-        internal ProInfo Info;
-        internal AvShot VisualShot;
-    }
-
     internal class HitEntity
     {
         internal enum Type

@@ -101,7 +101,7 @@ namespace WeaponCore.Projectiles
         internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<MyEntity> CheckList = new List<MyEntity>();
-        internal readonly List<VirtualProjectile> VrPros = new List<VirtualProjectile>();
+        internal readonly List<ProInfo> VrPros = new List<ProInfo>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
         internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
@@ -392,6 +392,7 @@ namespace WeaponCore.Projectiles
         internal bool Intersected(bool add = true)
         {
             if (Vector3D.IsZero(Hit.HitPos)) return false;
+
             if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle && !Info.AmmoDef.Const.DrawLine;
@@ -411,7 +412,7 @@ namespace WeaponCore.Projectiles
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
                 if (add) Info.Ai.Session.Hits.Add(this);
-                if (EnableAv) CreateFakeBeams();
+                CreateFakeBeams(!add);
             }
 
             if (EnableAv)
@@ -456,34 +457,33 @@ namespace WeaponCore.Projectiles
         {
             Vector3D? hitPos = null;
             if (!Vector3D.IsZero(Hit.HitPos)) hitPos = Hit.HitPos;
-            for (int i = 0; i < VrPros.Count; i++)
-            { 
+            for (int i = 0; i < VrPros.Count; i++) {
+                
                 var vp = VrPros[i];
-                var vs = vp.VisualShot;
-                vs.Init(vp.Info, StepPerSec * StepConst, MaxSpeed);
+                var vs = vp.AvShot;
+                vs.Init(vp, StepPerSec * StepConst, MaxSpeed);
                 vs.Hit = Hit;
-
-                if (Info.AmmoDef.Const.ConvergeBeams)
-                {
-                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerBack, Position);
-                    vp.Info.Direction = beam.Direction;
-                    Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss });
-
+                if (Info.AmmoDef.Const.ConvergeBeams) {
+                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.Origin, Position);
+                    vp.Direction = beam.Direction;
+                    vp.VisualDir = beam.Direction;
+                    Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = vp, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss });
                 }
-                else
-                {
+                else {
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
-                        beamEnd = vs.Origin + (vp.Info.Direction * Info.MaxTrajectory);
+                        beamEnd = vs.Origin + (vp.Direction * Info.MaxTrajectory);
                     else
-                        beamEnd = vs.Origin + (vp.Info.Direction * Info.WeaponCache.HitDistance);
+                        beamEnd = vs.Origin + (vp.Direction * Info.WeaponCache.HitDistance);
 
                     var line = new LineD(vs.Origin, beamEnd);
+                    vp.VisualDir = line.Direction;
+
                     if (!miss && hitPos.HasValue)
-                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true });
+                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = vp, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true });
                     else
-                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false });
+                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = vp, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false });
                 }
             }
         }
@@ -1049,7 +1049,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (EnableAv)
                         for (int i = 0; i < VrPros.Count; i++)
-                            VrPros[i].VisualShot.AvClose(Position);
+                            VrPros[i].AvShot.AvClose(Position);
                 }
             }
         }

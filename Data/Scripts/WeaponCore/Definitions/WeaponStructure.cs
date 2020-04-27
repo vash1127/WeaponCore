@@ -814,49 +814,7 @@ namespace WeaponCore.Support
 
             if (mexLogLevel >= 1) Log.Line($"Effecetive DPS(mult) = {effectiveDps}");
         }
-        /*
-        private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
-        {
-            var s = system;
-            var a = ammoDef.AmmoDef;
-            var hasShrapnel = ShrapnelId > -1;
-            var l = wDef.HardPoint.Loading;
 
-            if (!EnergyAmmo && MagazineSize > 0)
-            {
-                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
-                burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
-
-                var drainPerMin = ((MagazineSize / (float)s.RateOfFire) / s.BarrelsPerShot) * 3600f;
-                drainPerMin = MagazineSize >= 1 ? drainPerMin : 1;
-
-                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
-                var timePerMag = drainPerMin + s.ReloadTime + timeSpentOnBurst;
-
-                shotsPerSec = ((3600f / timePerMag) * MagazineSize) / 60 * l.TrajectilesPerBarrel;
-            }
-            else
-            {
-                var burstTime = ((((3600f / s.RateOfFire) * (s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1)) + l.DelayAfterBurst) + s.ReloadTime) / 60;
-                var projectilesInBurst = ((s.BarrelsPerShot * l.TrajectilesPerBarrel) * (s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1));
-                shotsPerSec = 1 / (burstTime / projectilesInBurst);
-            }
-
-            baseDps = BaseDamage * shotsPerSec;
-            areaDps = !AmmoAreaEffect ? 0 : (float)((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5f)) * shotsPerSec);
-            detDps = a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5f)) * shotsPerSec : 0;
-
-            if (hasShrapnel)
-            {
-                var sAmmo = wDef.Ammos[ShrapnelId];
-                var fragments = a.Shrapnel.Fragments;
-                baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
-                areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5f)) * fragments) * shotsPerSec;
-                detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? ((sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments) * shotsPerSec : 0;
-            }
-            peakDps = (baseDps + areaDps + detDps);
-        }
-        */
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse)
         {
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;

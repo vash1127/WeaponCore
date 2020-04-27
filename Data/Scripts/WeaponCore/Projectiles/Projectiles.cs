@@ -102,8 +102,8 @@ namespace WeaponCore.Projectiles
                 for (int i = 0; i < p.VrPros.Count; i++)
                 {
                     var virtInfo = p.VrPros[i];
-                    virtInfo.Info.Clean(Session.Tick);
-                    VirtInfoPool.Return(virtInfo.Info);
+                    virtInfo.Clean(Session.Tick);
+                    VirtInfoPool.Return(virtInfo);
                 }
                 p.VrPros.Clear();
 

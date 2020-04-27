@@ -178,7 +178,6 @@ namespace WeaponCore.Support
                 var d = s.Projectiles.DeferedAvDraw[x];
                 var i = d.Info;
                 var a = i.AvShot;
-
                 var lineEffect = a.AmmoDef.Const.Trail || a.AmmoDef.Const.DrawLine;
                 var saveHit = d.Hit;
                 ++a.LifeTime;
@@ -193,7 +192,6 @@ namespace WeaponCore.Support
                 a.Direction = i.Direction;
                 a.PointDir = !saveHit && !a.Back && a.GlowSteps.Count > 0 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
                 a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
-
                 a.OnScreen = Screen.None; // clear OnScreen
                 if (i.ModelOnly)
                 {
@@ -240,9 +238,9 @@ namespace WeaponCore.Support
                             a.OnScreen = Screen.ModelOnly;
                     }
                 }
+
                 if (a.OnScreen == Screen.None && Vector3D.DistanceSquared(a.TracerFront, a.Ai.Session.CameraPos) <= 225) 
                     a.OnScreen = Screen.InProximity;
-
 
                 if (i.MuzzleId == -1)
                     return;
@@ -269,7 +267,6 @@ namespace WeaponCore.Support
                     else if (a.Tracer == TracerState.Grow && a.LastStep) {
                         a.Tracer = TracerState.Full;
                     }
-
                 }
 
                 var lineOnScreen = a.OnScreen > (Screen)2;

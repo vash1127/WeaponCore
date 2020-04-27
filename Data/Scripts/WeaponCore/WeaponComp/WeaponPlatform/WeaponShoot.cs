@@ -222,7 +222,8 @@ namespace WeaponCore.Platform
 
                                 var info = session.Projectiles.VirtInfoPool.Get();
                                 info.InitVirtual(System, Comp.Ai, ammoPattern, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
-                                vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.Av.AvShotPool.Get() });
+                                info.AvShot = session.Av.AvShotPool.Get();
+                                vProjectile.VrPros.Add(info);
 
                                 if (!ammoPattern.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
                                 else if (i == _nextVirtual)
@@ -334,16 +335,8 @@ namespace WeaponCore.Platform
                     {
                         uint delay = 0;
                         FinishBurst = false;
-                        //if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay) || System.DelayCeaseFire)
                         if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
                         {
-                            /*
-                            if (System.DelayCeaseFire)
-                            {
-                                CeaseFireDelayTick = tick + (uint)System.CeaseFireDelay;
-                                delay = (uint)System.CeaseFireDelay;
-                            }
-                            */
                             session.FutureEvents.Schedule(o => 
                             {
                                 EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -355,7 +348,6 @@ namespace WeaponCore.Platform
                         else
                             EventTriggerStateChanged(EventTriggers.BurstReload, true);
 
-                        //if (IsShooting && !System.DelayCeaseFire)
                         if (IsShooting)
                         {
                             ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
