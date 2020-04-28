@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -124,7 +125,8 @@ namespace WeaponCore.Projectiles
                                     {
                                         if (VoxelIntersect.PosHasVoxel(voxel, planetBeam.From))
                                             voxelHit = planetBeam.From;
-                                        else voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
+                                        else
+                                            voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
                                     }
                                 }
                             }
@@ -174,6 +176,7 @@ namespace WeaponCore.Projectiles
                                         continue;
 
                                     hitEntity.HitPos = hitInfo.Position;
+                                    hitEntity.Blocks.Add(grid.GetCubeBlock(hitEntity.Vector3ICache[0]));
                                 }
                             }
                         }
@@ -247,7 +250,6 @@ namespace WeaponCore.Projectiles
             var count = p.Info.HitList.Count;
             if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, p.Info));
             else GetEntityCompareDist(p.Info.HitList[0], null, p.Info);
-
             var pulseTrigger = false;
             for (int i = p.Info.HitList.Count - 1; i >= 0; i--) {
                 var ent = p.Info.HitList[i];
@@ -271,6 +273,7 @@ namespace WeaponCore.Projectiles
             }
 
             var finalCount = p.Info.HitList.Count;
+
             if (finalCount > 0) {
 
                 var hitEntity = p.Info.HitList[0];
@@ -281,6 +284,7 @@ namespace WeaponCore.Projectiles
                 IMySlimBlock hitBlock = null;
                 if (p.Info.AmmoDef.Const.VirtualBeams && hitEntity.Entity is MyCubeGrid)
                     hitBlock = hitEntity.Blocks[0];
+
                 p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
                 if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
 
