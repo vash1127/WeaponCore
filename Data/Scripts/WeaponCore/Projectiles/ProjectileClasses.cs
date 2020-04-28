@@ -43,6 +43,7 @@ namespace WeaponCore.Support
         internal float ShotFade;
         internal float BaseDamagePool;
         internal float BaseHealthPool;
+        internal float BaseEwarPool;
         internal double TracerLength;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;

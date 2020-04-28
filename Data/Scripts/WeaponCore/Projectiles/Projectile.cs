@@ -216,6 +216,7 @@ namespace WeaponCore.Projectiles
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
             Info.BaseHealthPool = Info.AmmoDef.Health;
+            Info.BaseEwarPool = Info.AmmoDef.Health;
             Info.TracerLength = Info.AmmoDef.Const.TracerLength <= Info.MaxTrajectory ? Info.AmmoDef.Const.TracerLength : Info.MaxTrajectory;
 
             MaxTrajectorySqr = Info.MaxTrajectory * Info.MaxTrajectory;
@@ -803,11 +804,15 @@ namespace WeaponCore.Projectiles
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai.MyGrid.IsSameConstructAs(Info.Ai.MyGrid) || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
-                        {                  
-                            Info.EwarActive = true;
-                            netted.Info.Target.Projectile = this;
-                            netted.Info.Target.IsProjectile = true;
-                            Seekers.Add(netted);
+                        {
+                            Info.BaseEwarPool -= Info.AmmoDef.AreaEffect.AreaEffectDamage;
+                            if (Info.BaseEwarPool <= 0)
+                            {
+                                Info.EwarActive = true;
+                                netted.Info.Target.Projectile = this;
+                                netted.Info.Target.IsProjectile = true;
+                                Seekers.Add(netted);
+                            }
                         }
 
                         Info.WeaponRng.ClientProjectileCurrentCounter++;
