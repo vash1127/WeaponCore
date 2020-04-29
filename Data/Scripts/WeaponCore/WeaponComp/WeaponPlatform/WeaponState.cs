@@ -349,7 +349,7 @@ namespace WeaponCore.Platform
 
             StopPreFiringSound(false);
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
-            CeaseFireDelayTick = uint.MaxValue;
+            CeaseFireDelayTick = uint.MaxValue / 2;
             FireCounter = 0;
             if (!power || avOnly) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
