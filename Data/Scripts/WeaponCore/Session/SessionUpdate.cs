@@ -238,7 +238,7 @@ namespace WeaponCore
                                 var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                                 var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                                var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
+                                var manualShot = (compCurPlayer.ControlType == ControlType.Camera && (comp.BaseType == WeaponComponent.BlockType.Turret || w.CameraControl) || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
                                 var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                                 var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
 

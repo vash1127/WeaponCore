@@ -1,4 +1,5 @@
 ﻿using System;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -42,6 +43,17 @@ namespace WeaponCore.Platform
                     Comp.TurretBase.Azimuth = (float)Azimuth;
             }
 
+
+            if (Comp.Session.WeaponCamActive && Comp.Session.LastCamUpdateTick != Comp.Session.Tick && Comp.Session.CurrentControlledWeapon == this)
+            {
+                Comp.Session.LastCamUpdateTick = Comp.Session.Tick;
+                var matrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
+                var translation = matrix.Translation;
+                translation += MyPivotUp;
+                matrix.Translation = translation;
+                Comp.Session.CameraGrid.PositionComp.SetWorldMatrix(ref matrix);
+            }
+
         }
 
         public void TurretHomePosition(object o = null)
@@ -81,6 +93,7 @@ namespace WeaponCore.Platform
                     else if (oldEl < 0)
                         Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
+                    Log.Line($"oldAz != Azimuth: {oldAz != Azimuth} oldEl != Elevation: {oldEl != Elevation}");
 
                     AimBarrel(oldAz != Azimuth , oldEl != Elevation);
                 }
@@ -114,6 +127,7 @@ namespace WeaponCore.Platform
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
+            MyElevationUp = elevationMatrix.Up;
 
             if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
@@ -136,7 +150,6 @@ namespace WeaponCore.Platform
                 var point1To2 = weaponCenter - centerTestPos;
                 MyPivotPos = centerTestPos + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(MyPivotUp, perpDir2) * MyPivotUp;
             }
-
 
             if (!Vector3D.IsZero(AimOffset))
                 MyPivotPos += Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up });
@@ -346,6 +359,32 @@ namespace WeaponCore.Platform
                     RotateEmitter.StopSound(true);
             }
             else BarrelSpinning = true;
+        }
+
+        internal void ManualAim()
+        {
+            var s = Comp.Session;
+            var hud = s.HudUi;
+
+            var moveX = Math.Abs(s.UiInput.MouseXMove) > 0;
+            var moveY = Math.Abs(s.UiInput.MouseYMove) > 0;
+
+            if (!moveX && !moveY) return;
+
+            if (moveX)
+            {
+
+                var azStep = MathFuncs.Map((s.UiInput.MouseXMove * Hud.MetersInPixel * hud.AspectRatio), -(hud.ViewPortSize.X * .25f), (hud.ViewPortSize.X * .25f), -System.AzStep, System.AzStep);
+                Azimuth -= azStep;
+            }
+
+            if (moveY)
+            {
+                var elStep = MathFuncs.Map(s.UiInput.MouseYMove * Hud.MetersInPixel, -(hud.ViewPortSize.Y * .25f), (hud.ViewPortSize.Y * .25f), -System.ElStep, System.ElStep);
+                Elevation -= elStep;
+            }
+
+            AimBarrel(moveX, moveY);
         }
     }
 }

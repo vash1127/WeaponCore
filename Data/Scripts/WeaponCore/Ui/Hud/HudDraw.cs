@@ -38,8 +38,8 @@ namespace WeaponCore
                 var textAdd = _textAddList[i];
 
                 var height = textAdd.FontSize;
-                var width = textAdd.FontSize * _aspectratioInv;
-                textAdd.Position.Z = _viewPortSize.Z;
+                var width = textAdd.FontSize * AspectRatioInv;
+                textAdd.Position.Z = ViewPortSize.Z;
                 var textPos = Vector3D.Transform(textAdd.Position, _cameraWorldMatrix);
 
                 for (int j = 0; j < textAdd.Text.Length; j++)
@@ -76,7 +76,7 @@ namespace WeaponCore
             for (int i = 0; i < _textureAddList.Count; i++)
             {
                 var tdd = _textureAddList[i];
-                tdd.Position.Z = _viewPortSize.Z;
+                tdd.Position.Z = ViewPortSize.Z;
                 tdd.Position = Vector3D.Transform(tdd.Position, _cameraWorldMatrix);
                 tdd.Up = _cameraWorldMatrix.Up;
                 tdd.Left = _cameraWorldMatrix.Left;
@@ -90,8 +90,8 @@ namespace WeaponCore
 
                 if (textureToDraw.Simple)
                 {
-                    textureToDraw.Position.X = (textureToDraw.Position.X / (-_viewPortSize.X) * (_viewPortSize.X - 100) + 100);
-                    textureToDraw.Position.Y = (textureToDraw.Position.Y / (-_viewPortSize.Y) * (_viewPortSize.Y - 100) + 100);
+                    textureToDraw.Position.X = (textureToDraw.Position.X / (-ViewPortSize.X) * (ViewPortSize.X - 100) + 100);
+                    textureToDraw.Position.Y = (textureToDraw.Position.Y / (-ViewPortSize.Y) * (ViewPortSize.Y - 100) + 100);
                 }
 
 

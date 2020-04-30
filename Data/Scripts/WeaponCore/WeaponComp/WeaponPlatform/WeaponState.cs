@@ -21,6 +21,16 @@ namespace WeaponCore.Platform
             {
                 if (PosChangedTick != Comp.Session.Tick)
                     UpdatePivotPos();
+
+                if (Comp.Session.WeaponCamActive && Comp.Session.LastCamUpdateTick != Comp.Session.Tick && Comp.Session.CurrentControlledWeapon == this)
+                {
+                    Comp.Session.LastCamUpdateTick = Comp.Session.Tick;
+                    var matrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
+                    var translation = matrix.Translation;
+                    translation += MyPivotUp;
+                    matrix.Translation = translation;
+                    Comp.Session.CameraGrid.PositionComp.SetWorldMatrix(ref matrix);
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
         }

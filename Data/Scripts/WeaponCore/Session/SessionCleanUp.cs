@@ -32,6 +32,8 @@ namespace WeaponCore
             FutureEvents.Purge((int)Tick);
             PurgeTerminalSystem();
             HudUi.Purge();
+            if(CameraGrid != null)
+                CameraGrid.Close();
 
             foreach (var reports in Reporter.ReportData.Values)
             {

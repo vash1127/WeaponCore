@@ -152,8 +152,11 @@ namespace WeaponCore
         internal GridAi TrackingAi;
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
+        internal MyRemoteControl ActiveRemote;
         internal MyCubeBlock ActiveControlBlock;
         internal MyEntity ControlledEntity;
+        internal MyEntity CameraGrid;
+        internal MyCameraBlock WeaponCamera;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
         internal Action<Vector3, float> ProjectileAddedCallback = (location, health) =>{ };
@@ -171,6 +174,7 @@ namespace WeaponCore
         internal Hud HudUi;
         internal Enforcements Enforced;
         internal NetworkProccessor Proccessor;
+        internal Weapon CurrentControlledWeapon;
 
 
         internal MatrixD CameraMatrix;
@@ -206,6 +210,7 @@ namespace WeaponCore
         internal int SCount;
 
         internal uint Tick;
+        internal uint LastCamUpdateTick;
 
         internal ulong AuthorSteamId = 76561197969691953;
         internal ulong MultiplayerId;
@@ -247,6 +252,8 @@ namespace WeaponCore
         internal bool IsCreative;
         internal bool IsClient;
         internal bool HandlesInput;
+        internal bool WeaponCamActive;
+        internal bool GyrosWereEnabled;
         internal enum AnimationType
         {
             Movement,

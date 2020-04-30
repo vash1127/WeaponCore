@@ -123,6 +123,46 @@ namespace WeaponCore.Support
             }
         }
 
+        internal static MyCubeGrid SpawnPrefabCameraSbc(string prefabName, out MyCameraBlock cameraBlock)
+        {
+            var prefab = MyDefinitionManager.Static.GetPrefabDefinition(prefabName);
+            MyCubeGrid camGrid = null;
+            cameraBlock = null;
+            if (prefab == null)
+            {
+                Log.Line("Prefab Not found");
+                return camGrid;
+            }
+
+            foreach (var grid in prefab.CubeGrids)
+            {
+                MyAPIGateway.Entities.RemapObjectBuilder(grid);
+                camGrid = MyAPIGateway.Entities.CreateFromObjectBuilderAndAdd(grid) as MyCubeGrid;
+                break;
+            }
+            IMySlimBlock slim = null;
+            if (camGrid != null)
+            {
+                camGrid.Physics.Enabled = false;
+                camGrid.Render.RemoveRenderObjects();
+                camGrid.IsPreview = true;
+                camGrid.SyncFlag = false;
+                camGrid.Save = false;
+
+                ((IMyCubeGrid)camGrid).GetBlocks(null, slimBlock =>
+                {
+                    if (slimBlock.FatBlock is MyCameraBlock)
+                        slim = slimBlock;
+
+                    return false;
+                });
+            }
+            if (slim?.FatBlock != null)
+                cameraBlock = slim.FatBlock as MyCameraBlock;
+
+            return camGrid;
+        }
+
         internal static MyEntity SpawnPrefab(string name, out IMyTextPanel lcd, bool isDisplay = false)
         {
             try
@@ -195,8 +235,10 @@ namespace WeaponCore.Support
                     return null;
                 }
                 PrefabCamera.SubtypeName = name;
+                //PrefabBattery.SubtypeName = "SmallBlockSmallBatteryBlock";
                 PrefabBuilder.CubeBlocks.Clear(); // need no leftovers from previous spawns
                 PrefabBuilder.CubeBlocks.Add(PrefabCamera);
+                //PrefabBuilder.CubeBlocks.Add(PrefabBattery);
                 MyEntities.RemapObjectBuilder(PrefabBuilder);
                 var ent = MyEntities.CreateFromObjectBuilder(PrefabBuilder, false);
                 ent.Render.CastShadows = false;
@@ -223,6 +265,7 @@ namespace WeaponCore.Support
 
         private static SerializableVector3 PrefabVector0 = new SerializableVector3(0, 0, 0);
         private static SerializableVector3I PrefabVectorI0 = new SerializableVector3I(0, 0, 0);
+        private static SerializableVector3I PrefabVectorI1 = new SerializableVector3I(0, 0, -1);
         private static SerializableBlockOrientation PrefabOrientation = new SerializableBlockOrientation(Base6Directions.Direction.Forward, Base6Directions.Direction.Up);
         private const float DISPLAY_FONT_SIZE = 1f;
 
@@ -281,6 +324,20 @@ namespace WeaponCore.Support
             //IsActive = true,
             Name = null,
             CustomName = null,
+        };
+
+        private static MyObjectBuilder_BatteryBlock PrefabBattery = new MyObjectBuilder_BatteryBlock()
+        {
+            EntityId = 2,
+            Min = PrefabVectorI1,
+            BlockOrientation = PrefabOrientation,
+            ShareMode = MyOwnershipShareModeEnum.None,
+            DeformationRatio = 0,
+            ShowOnHUD = false,
+            //IsActive = true,
+            Name = null,
+            CustomName = null,
+            CurrentStoredPower = 32,
         };
     }
 }

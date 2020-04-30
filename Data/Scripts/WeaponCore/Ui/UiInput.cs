@@ -11,6 +11,8 @@ namespace WeaponCore
         internal int PreviousWheel;
         internal int CurrentWheel;
         internal int ShiftTime;
+        internal int MouseXMove;
+        internal int MouseYMove;
         internal bool LeftMouseReleased;
         internal bool RightMouseReleased;
         internal bool MouseButtonPressed;
@@ -31,6 +33,7 @@ namespace WeaponCore
         internal bool UiKeyPressed;
         internal bool UiKeyWasPressed;
         internal bool PlayerCamera;
+        internal bool FPressed;
         internal bool FirstPersonView;
         private readonly Session _session;
         internal readonly InputStateData ClientInputState;
@@ -53,6 +56,9 @@ namespace WeaponCore
             {
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
 
+                MouseXMove = MyAPIGateway.Input.GetMouseXForGamePlay();
+                MouseYMove = MyAPIGateway.Input.GetMouseYForGamePlay();
+
                 MouseButtonLeftWasPressed = ClientInputState.MouseButtonLeft;
                 MouseButtonMiddleWasPressed = ClientInputState.MouseButtonMiddle;
                 MouseButtonRightWasPressed = ClientInputState.MouseButtonRight;
@@ -62,6 +68,7 @@ namespace WeaponCore
 
                 if (MouseButtonPressed)
                 {
+
                     ClientInputState.MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
                     ClientInputState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
                     ClientInputState.MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
@@ -91,6 +98,7 @@ namespace WeaponCore
 
                 AltPressed = MyAPIGateway.Input.IsAnyAltKeyPressed();
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
+                FPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.F);
                 KeyPrevPressed = AnyKeyPressed;
                 AnyKeyPressed = MyAPIGateway.Input.IsAnyKeyPress();
                 UiKeyWasPressed = UiKeyPressed;

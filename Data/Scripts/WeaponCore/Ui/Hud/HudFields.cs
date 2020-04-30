@@ -10,7 +10,7 @@ namespace WeaponCore
 {
     partial class Hud
     {
-        private const float _metersInPixel = 0.0002645833f;
+        public const float MetersInPixel = 0.0002645833f;
         private const int _initialPoolCapacity = 512;
 
         private readonly ConcurrentQueue<TextureDrawData> _textureDrawPool = new ConcurrentQueue<TextureDrawData>();
@@ -25,26 +25,23 @@ namespace WeaponCore
         private MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
         private MyStringId _shadowEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontShadow");
         private MatrixD _cameraWorldMatrix;
-        private Vector3D _viewPortSize = new Vector3D();
         private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
         private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
         private List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
         private Vector2D _currWeaponDisplayPos = new Vector2D();
-        private float _aspectratio;
-        private float _aspectratioInv;
         private uint _lastHudUpdateTick;
 
         ///
         ///weapon Hud Settings
         ///
-        private const float _paddingConst = 10 * _metersInPixel;
+        private const float _paddingConst = 10 * MetersInPixel;
         private const float _WeaponHudFontSize = 4.5f;
-        private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
-        private const float _reloadHeightConst = 3.5f * _metersInPixel;
+        private const float _WeaponHudFontHeight = _WeaponHudFontSize * MetersInPixel;
+        private const float _reloadHeightConst = 3.5f * MetersInPixel;
         private const float _reloadWidthConst = _reloadHeightConst;
         private const float _reloadHeightOffsetConst = _reloadHeightConst;
-        private const float _heatWidthConst = 35 * _metersInPixel;
+        private const float _heatWidthConst = 35 * MetersInPixel;
         private const float _heatWidthOffset = _heatWidthConst + (_paddingConst * 1.8f);
         private const float _heatHeightConst = _heatWidthConst * 0.0625f;
         private const float _infoPanelOffset = _WeaponHudFontHeight + (_heatHeightConst * 2f);
@@ -83,6 +80,10 @@ namespace WeaponCore
         ///
         /// 
         ///
+
+        internal float AspectRatio;
+        internal float AspectRatioInv;
+        internal Vector3D ViewPortSize = new Vector3D();
 
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;

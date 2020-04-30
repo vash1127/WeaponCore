@@ -21,7 +21,7 @@ namespace WeaponCore
             textInfo.Color = color;
             textInfo.Position.X = x;
             textInfo.Position.Y = y;
-            textInfo.FontSize = fontSize * _metersInPixel;
+            textInfo.FontSize = fontSize * MetersInPixel;
             textInfo.Simple = false;
             _textAddList.Add(textInfo);
 
@@ -39,7 +39,7 @@ namespace WeaponCore
             textInfo.Color = color;
             textInfo.Position.X = x;
             textInfo.Position.Y = y;
-            textInfo.FontSize = fontSize * _metersInPixel;
+            textInfo.FontSize = fontSize * MetersInPixel;
             textInfo.Simple = true;
             _textAddList.Add(textInfo);
 
@@ -56,8 +56,8 @@ namespace WeaponCore
             tdd.Color = color;
             tdd.Position.X = x;
             tdd.Position.Y = y;
-            tdd.Width = width * _metersInPixel;
-            tdd.Height = height * _metersInPixel;
+            tdd.Width = width * MetersInPixel;
+            tdd.Height = height * MetersInPixel;
             tdd.P0 = new Vector2(uvOffsetX / textureSizeX, uvOffsetY / textureSizeY);
             tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
             tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
@@ -81,8 +81,8 @@ namespace WeaponCore
             tdd.Color = color;
             tdd.Position.X = x;
             tdd.Position.Y = y;
-            tdd.Width = width * _metersInPixel;
-            tdd.Height = height * _metersInPixel;
+            tdd.Width = width * MetersInPixel;
+            tdd.Height = height * MetersInPixel;
             tdd.P0 = new Vector2(uvOffsetX / textureSizeX, uvOffsetY / textureSizeY);
             tdd.P1 = new Vector2((uvOffsetX + uvSizeX) / textureSizeX, uvOffsetY / textureSizeY);
             tdd.P2 = new Vector2(uvOffsetX / textureSizeX, (uvOffsetY + uvSizeY) / textureSizeY);
@@ -104,7 +104,7 @@ namespace WeaponCore
             tdd.Color = color;
             tdd.Position.X = x;
             tdd.Position.Y = y;
-            tdd.Height = scale * _metersInPixel;
+            tdd.Height = scale * MetersInPixel;
             tdd.Simple = false;
             tdd.UvDraw = false;
             _textureAddList.Add(tdd);
@@ -124,7 +124,7 @@ namespace WeaponCore
             tdd.Color = color;
             tdd.Position.X = x;
             tdd.Position.Y = y;
-            tdd.Height = scale * _metersInPixel;
+            tdd.Height = scale * MetersInPixel;
             tdd.Simple = true;
             tdd.UvDraw = false;
             _textureAddList.Add(tdd);
@@ -138,14 +138,14 @@ namespace WeaponCore
             var fovModifier = _session.Camera.FovWithZoom / _defaultFov;
             NeedsUpdate = false;
 
-            _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
-            _aspectratioInv = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
-            _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * Math.Tan(_session.Camera.FovWithZoom * 0.5f);
-            _viewPortSize.X = (_viewPortSize.Y * _aspectratio);
-            _viewPortSize.Z = -(_session.Camera.NearPlaneDistance * 2);
+            AspectRatio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
+            AspectRatioInv = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
+            ViewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * Math.Tan(_session.Camera.FovWithZoom * 0.5f);
+            ViewPortSize.X = (ViewPortSize.Y * AspectRatio);
+            ViewPortSize.Z = -(_session.Camera.NearPlaneDistance * 2);
 
-            _currWeaponDisplayPos.X = _viewPortSize.X;
-            _currWeaponDisplayPos.Y = _viewPortSize.Y * .6f;
+            _currWeaponDisplayPos.X = ViewPortSize.X;
+            _currWeaponDisplayPos.Y = ViewPortSize.Y * .6f;
 
             _padding = _paddingConst * fovModifier;
 
@@ -156,7 +156,7 @@ namespace WeaponCore
 
             _textSize = _WeaponHudFontHeight * fovModifier;
             _sTextSize = _textSize * .5f;
-            _textWidth = (_WeaponHudFontHeight * _aspectratioInv) * fovModifier;
+            _textWidth = (_WeaponHudFontHeight * AspectRatioInv) * fovModifier;
             _stextWidth = (_textWidth * .75f);
             _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
 

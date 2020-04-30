@@ -71,6 +71,11 @@ namespace WeaponCore
                     DsUtil.Complete("network1", true);
                 }
 
+                if (WeaponCamActive)
+                {
+                    RunWeaponCam();
+                }
+
                 DsUtil.Start("av");
                 if (!DedicatedServer) Av.End();
                 DsUtil.Complete("av", true);
@@ -119,6 +124,7 @@ namespace WeaponCore
 
         public override void Simulate()
         {
+
             try
             {
                 if (!DedicatedServer)
@@ -152,7 +158,7 @@ namespace WeaponCore
                 if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
                 {
                     UpdateLocalAiAndCockpit();
-                    if (UiInput.PlayerCamera && ActiveCockPit != null) 
+                    if (UiInput.PlayerCamera && (ActiveCockPit != null || ActiveRemote != null)) 
                         TargetSelection();
                 }
 

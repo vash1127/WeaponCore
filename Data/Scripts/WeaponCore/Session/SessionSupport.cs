@@ -84,6 +84,33 @@ namespace WeaponCore
                 ShieldApiLoaded = true;
         }
 
+        internal void RunWeaponCam()
+        {
+            if (UiInput.FPressed)
+                DisableWeaponCam();
+            else if (CurrentControlledWeapon != null)
+            {
+                CurrentControlledWeapon.UpdatePivotPos();
+                CurrentControlledWeapon.ManualAim();
+                WeaponCamera.RequestSetView();
+            }
+        }
+
+        internal void DisableWeaponCam()
+        {
+            WeaponCamActive = false;
+
+            if (ActiveCockPit != null)
+                ActiveCockPit.ControlGyros = GyrosWereEnabled;
+            else if (ActiveRemote != null)
+                ActiveRemote.ControlGyros = GyrosWereEnabled;
+
+            CurrentControlledWeapon.Comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+            CurrentControlledWeapon.Comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+            CurrentControlledWeapon.CameraControl = false;
+            CurrentControlledWeapon = null;
+        }
+
         internal void ProfilePerformance()
         {
             var netTime1 = DsUtil.GetValue("network1");

@@ -169,6 +169,12 @@ namespace WeaponCore
                                         }
                                         if(c > 1)
                                             CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
+
+                                        if (ws.Value.TurretMovement != WeaponSystem.TurretType.Fixed && obs.Contains(new MyObjectBuilder_ConveyorSorter().GetType()))
+                                        {
+                                            Log.Line("create");
+                                            CreateControlButton<T>(ws.Value.WeaponName, wepIdHash);
+                                        }
                                     }
                                 }
                             }
@@ -394,6 +400,51 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
         }
 
+        internal static void CreateControlButton<T>(string name, int id)
+        {
+            var button = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlButton, T>("WC_Control_" + id);
+
+            button.Title = MyStringId.GetOrCompute("Control");
+            button.Visible = (b) => 
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) && comp.Platform.Weapons[weaponId].System.WeaponIdHash == id;
+            };
+
+            button.Action = (b) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
+
+                var w = comp.Platform.Weapons[weaponId];
+
+                TerminalHelpers.WCCameraShootAction(w);
+
+            };
+
+            MyAPIGateway.TerminalControls.AddControl<T>(button);
+
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Control_{id}");
+            action0.Name = new StringBuilder($"{name} Control");
+            action0.Action = button.Action;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
+            /*if (WeaponCamActive)
+            {
+                if (WeaponCamera == null)
+                    CameraGrid = Spawn.SpawnCamera("SpyCam", out WeaponCamera);
+
+                if (WeaponCamera != null)
+                    WeaponCamera.SetView();
+            }
+            else
+            {
+                MyAPIGateway.Session.SetCameraController(VRage.Game.MyCameraControllerEnum.Entity, ActiveControlBlock, null);
+            }*/
+        }
+
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var cube = (MyCubeBlock)block;
@@ -407,8 +458,14 @@ namespace WeaponCore
                 {
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;
+                    List<IMyTerminalControl> controlsToReAdd = new List<IMyTerminalControl>();
+
+                    HashSet<string> idCheck = new HashSet<string>();
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                        idCheck.Add($"WC_Control_{comp.Platform.Weapons[i].System.WeaponIdHash}");
 
                     int rangeControl = -1;
+                    int cDataControl = -1;
                     IMyTerminalControl wcRangeControl = null;
                     for (int i = controls.Count - 1; i >= 0; i--)
                     {
@@ -422,6 +479,16 @@ namespace WeaponCore
                             wcRangeControl = controls[i];
                             controls.RemoveAt(i);
                         }
+                        else if (controls[i].Id.Contains("WC_Control_"))
+                        {
+                            if (idCheck.Contains(controls[i].Id))
+                                controlsToReAdd.Add(controls[i]);
+
+                            controls.RemoveAtFast(i);
+                        }
+                        else if (controls[i].Id.Equals("CustomData"))
+                            cDataControl = i + 1;
+                        
                     }
 
                     if (rangeControl != -1)
@@ -434,6 +501,12 @@ namespace WeaponCore
 
                         else
                             controls.Add(wcRangeControl);
+                    }
+
+                    for (int i = 0; i < controlsToReAdd.Count; i++)
+                    {
+                        controls.Insert(cDataControl, controlsToReAdd[i]);
+                        cDataControl++;
                     }
                 }
             }

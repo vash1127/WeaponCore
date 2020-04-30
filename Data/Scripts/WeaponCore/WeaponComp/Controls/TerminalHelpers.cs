@@ -10,6 +10,9 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
+using Sandbox.Game.Entities;
+using VRage.Game;
+
 namespace WeaponCore.Control
 {
     public static class TerminalHelpers
@@ -285,7 +288,13 @@ namespace WeaponCore.Control
                         w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
 
                     if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        MyAPIGateway.Utilities.InvokeOnGameThread(() => { Session.ComputeStorage(w); });
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() => 
+                        {
+                            if (w.CanReload)
+                                w.StartReload();
+                            else
+                                Session.ComputeStorage(w);
+                        });
                 }
 
                 
@@ -442,6 +451,125 @@ namespace WeaponCore.Control
                 else
                     w.State.ManualShoot = ShootOff;
                 
+            }
+
+            if (comp.Session.MpActive && !alreadySynced)
+            {
+                comp.Session.SendControlingPlayer(comp);
+                comp.Session.SendActionShootUpdate(comp, (on ? ShootClick : ShootOff));
+            }
+
+            cState.ClickShoot = on;
+            cState.ShootOn = !on && cState.ShootOn;
+        }
+
+        internal static void WCCameraShootAction(Weapon weapon, bool alreadySynced = false)
+        {
+            var session = weapon.Comp.Session;
+            var comp = weapon.Comp;
+
+            if (session.CurrentControlledWeapon != weapon)
+            {
+                if (session.CurrentControlledWeapon != null)
+                {
+                    if (session.CurrentControlledWeapon.CameraControl)
+                    {
+                        session.CurrentControlledWeapon.Comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                        session.CurrentControlledWeapon.Comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                        session.CurrentControlledWeapon.CameraControl = false;
+                    }
+                }
+
+                if (!session.WeaponCamActive)
+                {
+                    if (session.ActiveCockPit != null)
+                    {
+                        session.GyrosWereEnabled = session.ActiveCockPit.ControlGyros;
+                        session.ActiveCockPit.ControlGyros = false;
+                    }
+                    else if (session.ActiveRemote != null)
+                    {
+                        session.GyrosWereEnabled = session.ActiveRemote.ControlGyros;
+                        session.ActiveRemote.ControlGyros = false;
+                    }
+                }
+
+                if (session.WeaponCamera == null)
+                    session.CameraGrid = Spawn.SpawnPrefabCameraSbc("WeaponCam", out session.WeaponCamera);
+
+                if (session.WeaponCamera != null)
+                {
+                    session.CurrentControlledWeapon = weapon;
+                    weapon.CameraControl = true;
+                    comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Camera;
+
+                    var matrix = weapon.ElevationPart.Entity.PositionComp.WorldMatrixRef;
+                    var translation = matrix.Translation;
+                    translation += weapon.AzimuthPart.Entity.PositionComp.WorldMatrixRef.Up;
+                    matrix.Translation = translation;
+                    session.CameraGrid.PositionComp.SetWorldMatrix(ref matrix);
+
+                    session.WeaponCamActive = true;
+                }
+            }
+            else
+            {
+                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                session.CurrentControlledWeapon.CameraControl = false;
+
+                if (session.ActiveCockPit != null)
+                    session.ActiveCockPit.ControlGyros = session.GyrosWereEnabled;
+                else if (session.ActiveRemote != null)
+                    session.ActiveRemote.ControlGyros = session.GyrosWereEnabled;
+
+                session.WeaponCamActive = false;
+                session.CurrentControlledWeapon = null;
+            }
+
+            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
+            comp.Set.Value.Overrides.ManualControl = false;
+            comp.Set.Value.Overrides.TargetPainter = false;
+
+            if (session.MpActive && !alreadySynced)
+            {
+                session.SendControlingPlayer(comp);
+                comp.Session.SendActionShootUpdate(comp, ShootOnce);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+            }
+        }
+
+        internal static void WCShootControlAction(WeaponComponent comp, bool on, bool isTurret, bool alreadySynced = false)
+        {
+            var cState = comp.State.Value;
+
+            if (!alreadySynced)
+            {
+                if (on)
+                {
+                    cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                    cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
+                }
+                else
+                {
+                    cState.CurrentPlayerControl.PlayerId = -1;
+                    cState.CurrentPlayerControl.ControlType = ControlType.None;
+                }
+            }
+
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var w = comp.Platform.Weapons[i];
+                w.State.SingleShotCounter = 0;
+
+                if (on)
+                    w.State.ManualShoot = ShootClick;
+                else
+                    w.State.ManualShoot = ShootOff;
+
             }
 
             if (comp.Session.MpActive && !alreadySynced)

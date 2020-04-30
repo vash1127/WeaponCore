@@ -20,9 +20,9 @@ namespace WeaponCore
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
             ActiveCockPit = ActiveControlBlock as MyCockpit;
-
-            var activeBlock = ActiveCockPit ?? ActiveControlBlock;
-            if (activeBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
+            ActiveRemote = ActiveControlBlock as MyRemoteControl;
+            
+            if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
                 MyCubeBlock oldBlock;
@@ -31,7 +31,12 @@ namespace WeaponCore
                 TrackingAi.ControllingPlayers.ApplyAdditionsAndModifications();
 
                 if (HandlesInput && oldBlock != ActiveControlBlock)
-                    SendActiveControlUpdate(activeBlock, true);
+                {
+                    if (WeaponCamActive)
+                        DisableWeaponCam();
+
+                    SendActiveControlUpdate(ActiveControlBlock, true);
+                }
             }
             else
             {
@@ -49,6 +54,7 @@ namespace WeaponCore
 
                 TrackingAi = null;
                 ActiveCockPit = null;
+                ActiveRemote = null;
                 ActiveControlBlock = null;
             }
             return InGridAiBlock;

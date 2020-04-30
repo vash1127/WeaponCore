@@ -55,6 +55,7 @@ namespace WeaponCore.Platform
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
+        internal Vector3D MyElevationUp;
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
         internal MatrixD WeaponConstMatrix;
@@ -171,6 +172,7 @@ namespace WeaponCore.Platform
         internal bool CanUseChargeAmmo;
         internal bool CanUseBeams;
         internal bool PauseShoot;
+        internal bool CameraControl;
         internal bool ShotReady
         {
             get
