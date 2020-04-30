@@ -7,33 +7,30 @@ This "mod" by itself does not add new weapons to the game, it is the framework (
 # On Steam
 https://steamcommunity.com/sharedfiles/filedetails/?id=1918681825
 
-### Existing WeaponCore based Mods
-
-**A handy collection of WeaponCore weapons can be found here.**
-
-https://steamcommunity.com/sharedfiles/filedetails/?id=2070931906
-
-
-
-# Documentation
-
-Modder documentation will soon be available in the wiki tab, this mod has a lot of content, so it may take some time.
 
 # Player Guide
 
 https://steamcommunity.com/sharedfiles/filedetails/?id=1989583682
 
+# Master Collection
+
+https://steamcommunity.com/sharedfiles/filedetails/?id=2070931906
+
 # Modder Guide
 
 https://steamcommunity.com/sharedfiles/filedetails/?id=1998506274
+
+# Documentation
+
+Modder documentation will soon be available in the wiki tab, this mod has a lot of content, so it may take some time.
 
 # Thanks and Credits
 
 Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations, cockpit controls, and multiplayer support!
 
-Thanks to NukeGuard for the awesome GUI textures. 
+Thanks to [NukeGuard](https://github.com/nukeguard) for the awesome GUI textures. 
 
-Last but not least special thanks to the math wizard himself, WhipLash141 for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems is this mod.
+Last but not least special thanks to the math wizard himself, [WhipLash141](https://github.com/Whiplash141) for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems is this mod.
 
 # Patreon
 
