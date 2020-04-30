@@ -13,6 +13,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Profiler;
 using VRage.Utils;
+using VRage.Voxels;
 using VRageMath;
 using WeaponCore.Api;
 using WeaponCore.Platform;
@@ -157,9 +158,9 @@ namespace WeaponCore
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
         internal Action<Vector3, float> ProjectileAddedCallback = (location, health) =>{ };
-
         internal ShieldApi SApi = new ShieldApi();
         internal NetworkReporter Reporter = new NetworkReporter();
+        internal MyStorageData TmpStorage = new MyStorageData();
 
         internal RunAv Av;
         internal DSUtils DsUtil;

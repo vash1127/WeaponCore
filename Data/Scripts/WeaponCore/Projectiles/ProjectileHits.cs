@@ -7,6 +7,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Voxels;
 using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
@@ -123,10 +124,9 @@ namespace WeaponCore.Projectiles
                                 if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
                                     using (voxel.Pin())
                                     {
-                                        if (VoxelIntersect.PosHasVoxel(voxel, planetBeam.From))
+                                        if (!voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) 
+                                            && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, planetBeam.From))
                                             voxelHit = planetBeam.From;
-                                        else
-                                            voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
                                     }
                                 }
                             }

@@ -190,7 +190,7 @@ namespace WeaponCore.Support
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
                 a.Direction = i.Direction;
-                a.PointDir = !saveHit && !a.Back && a.GlowSteps.Count > 0 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
+                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
                 a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
                 if (i.ModelOnly)
