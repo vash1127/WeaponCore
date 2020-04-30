@@ -27,9 +27,6 @@ namespace WeaponCore.Projectiles
             var ai = p.Info.Ai;
             var found = false;
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
-            var planetBeam = beam;
-            //planetBeam.To = p.Info.AmmoDef.Const.IsBeamWeapon && p.Info.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
-            planetBeam.To = beam.To;
             p.EntitiesNear = false;
             bool projetileInShield = false;
             for (int i = 0; i < p.SegmentList.Count; i++) {
@@ -121,26 +118,31 @@ namespace WeaponCore.Projectiles
 
                                 var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
                                 Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
-                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
-                                    using (voxel.Pin())
-                                    {
-                                        if (planetBeam.Length > 50)
-                                        {
+                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (beam.Length * beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
+                                    using (voxel.Pin()) {
+                                        if (beam.Length > 50) {
                                             IHitInfo hit;
-                                            MyAPIGateway.Physics.CastLongRay(planetBeam.From, planetBeam.To, out hit, false);
+                                            p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
                                             if (hit?.HitEntity is MyVoxelBase)
                                                 voxelHit = hit.Position;
                                         }
-                                        else if (!voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) 
-                                            && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, planetBeam.From))
-                                            voxelHit = planetBeam.From;
+                                        else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES)  && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+                                            voxelHit = beam.From;
                                     }
                                 }
                             }
                         }
                         else
-                            using (voxel.Pin())
-                                voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
+                            using (voxel.Pin()) {
+                                if (beam.Length > 50) {
+                                    IHitInfo hit;
+                                    p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
+                                    if (hit?.HitEntity is MyVoxelBase)
+                                        voxelHit = hit.Position;
+                                }
+                                else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+                                    voxelHit = beam.From;
+                            }
 
                         if (!voxelHit.HasValue)
                             continue;
