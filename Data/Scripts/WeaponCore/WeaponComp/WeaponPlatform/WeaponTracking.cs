@@ -274,14 +274,14 @@ namespace WeaponCore.Platform
 
                     var aim = !azLocked || !elLocked;
                     locked = !aim;
-                    if (true)
+                    if (aim)
                     {
                         if (!azLocked)
                             weapon.Azimuth = az;
                         if (!elLocked)
                             weapon.Elevation = el;
                         weapon.IsHome = false;
-                        weapon.AimBarrel(true, true);
+                        weapon.AimBarrel(!azLocked, !elLocked);
                     }
                 }
             }
