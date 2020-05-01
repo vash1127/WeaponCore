@@ -245,9 +245,9 @@ namespace WeaponCore
                 {
                     int heatBarIndex;
                     if (weapon.State.Sync.Overheated)
-                        heatBarIndex = 10;
+                        heatBarIndex = _heatBarTexture.Length - 1;
                     else
-                        heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length);
+                        heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
 
                     stackedInfo.CachedHeatTexture.Material = _heatBarTexture[heatBarIndex].Material;
                     stackedInfo.CachedHeatTexture.Color = Color.Transparent;
