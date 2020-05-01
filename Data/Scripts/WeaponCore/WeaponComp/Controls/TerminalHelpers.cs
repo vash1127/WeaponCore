@@ -191,6 +191,8 @@ namespace WeaponCore.Control
                             {
                                 var comp = blk?.Components?.Get<WeaponComponent>();
                                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+                                Log.ThreadedWrite("OnOff");
                                 OnOffAnimations(comp, On);
                             };
                             break;
@@ -240,7 +242,7 @@ namespace WeaponCore.Control
 
         private static void OnOffAnimations(WeaponComponent comp, bool On)
         {   
-            if(comp != null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if(comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
 
@@ -293,7 +295,6 @@ namespace WeaponCore.Control
                         });
                 }
 
-                
                 if (w.Timings.AnimationDelayTick < comp.Session.Tick || w.LastEvent == TurnOn || w.LastEvent == TurnOff)
                 {
                     w.EventTriggerStateChanged(TurnOn, On);
