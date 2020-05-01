@@ -42,7 +42,7 @@ namespace WeaponCore
                     }
                     gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
 
-                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || !gridAi.WasPowered && gridAi.MyGrid.IsPowered || Tick10)
+                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || !gridAi.HadPower && gridAi.MyGrid.IsPowered || Tick10)
                         gridAi.UpdateGridPower();
 
                     if (!gridAi.HasPower)
@@ -207,31 +207,35 @@ namespace WeaponCore
 
                                 ///
                                 /// Update Weapon Hud Info
-                                /// 
-
-                                
+                                ///                                
                                 if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid))
                                 {
                                     HudUi.TexturesToAdd++;
                                     HudUi.WeaponsToDisplay.Add(w);
                                 }
 
+                                /// 
+                                ///Reset Charge Weapon after power out
+                                ///
+                                if (!gridAi.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.ManualShoot != ShootOff)
+                                {
+                                    w.State.ManualShoot = ShootOff;
+                                    w.FinishBurst = false;
+                                    w.State.Sync.CurrentAmmo = 0;
+                                    if (w.IsShooting)
+                                        w.StopShooting();
+                                }
+
                                 ///
                                 ///Check Reload
                                 ///
-                                if (w.State.Sync.CurrentMags > 0 && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                                if ((w.State.Sync.CurrentMags > 0 || w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && w.State.Sync.CurrentAmmo <= 0 && w.ActiveAmmoDef.AmmoDef.Const.Reloadable &&  w.CanReload)
                                     w.StartReload();
-                                ///
-                                ///
-                                ///
 
                                 ///
                                 /// Determine if its time to shoot
                                 ///
                                 ///
-
-                                //if(IsServer && Tick10)
-                                    //Log.Line($"w.State.ManualShoot: {w.State.ManualShoot} leftClick: {leftClick} rightClick: {rightClick}");
 
                                 w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                                 var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
@@ -308,6 +312,8 @@ namespace WeaponCore
                             w.StopPowerDraw();
 
                         w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+
+                        w.State.Sync.Reloading = false;
 
                         RemoveChargeWeapon(w);
                         continue;
