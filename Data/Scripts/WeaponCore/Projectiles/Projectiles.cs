@@ -20,7 +20,7 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal readonly Session Session;
-        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(128);
+        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(128, vInfo => vInfo.Clean());
         internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>(32);
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
         internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32, hitEnt => hitEnt.Clean());
@@ -100,11 +100,8 @@ namespace WeaponCore.Projectiles
             {
                 var p = CleanUp[j];
                 for (int i = 0; i < p.VrPros.Count; i++)
-                {
-                    var virtInfo = p.VrPros[i];
-                    virtInfo.Clean(Session.Tick);
-                    VirtInfoPool.Return(virtInfo);
-                }
+                    VirtInfoPool.Return(p.VrPros[i]);
+
                 p.VrPros.Clear();
 
                 if (p.DynamicGuidance)
@@ -112,7 +109,7 @@ namespace WeaponCore.Projectiles
 
                 p.PruningProxyId = -1;
 
-                p.Info.Clean(Session.Tick);
+                p.Info.Clean();
                 ProjectilePool.Push(p);
                 ActiveProjetiles.Remove(p);
             }
@@ -347,7 +344,6 @@ namespace WeaponCore.Projectiles
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
-                
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)) {
                     
                     var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;

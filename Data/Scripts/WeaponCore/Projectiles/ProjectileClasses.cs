@@ -43,6 +43,7 @@ namespace WeaponCore.Support
         internal float ShotFade;
         internal float BaseDamagePool;
         internal float BaseHealthPool;
+        internal float BaseEwarPool;
         internal double TracerLength;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
@@ -53,10 +54,12 @@ namespace WeaponCore.Support
         internal bool LockOnFireState;
         internal bool IsFiringPlayer;
         internal bool ClientSent;
+        internal bool IsVirtual;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection, double maxTrajectory, float shotFade)
         {
+            IsVirtual = true;
             System = system;
             Ai = ai;
             AmmoDef = ammodef;
@@ -69,11 +72,13 @@ namespace WeaponCore.Support
             MuzzleId = muzzleId;
             Direction = virDirection;
             Origin = origin;
+            MaxTrajectory = maxTrajectory;
+            ShotFade = shotFade;
         }
 
-        internal void Clean(uint expireTick)
+        internal void Clean()
         {
-            Target.Reset(expireTick, Target.States.ProjectileClosed);
+            Target.Reset(System.Session.Tick, Target.States.ProjectileClosed);
             HitList.Clear();
 
             if (PrimeEntity != null)
@@ -87,6 +92,7 @@ namespace WeaponCore.Support
                 Ai.Session.TriggerEntityPool.Return(TriggerEntity);
                 TriggerEntity = null;
             }
+
             AvShot = null;
             System = null;
             Ai = null;

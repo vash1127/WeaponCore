@@ -25,8 +25,6 @@ namespace WeaponCore.Projectiles
             var ai = p.Info.Ai;
             var found = false;
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
-            var planetBeam = beam;
-            planetBeam.To = p.Info.AmmoDef.Const.IsBeamWeapon && p.Info.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
             p.EntitiesNear = false;
             bool projetileInShield = false;
             for (int i = 0; i < p.SegmentList.Count; i++) {
@@ -118,20 +116,31 @@ namespace WeaponCore.Projectiles
 
                                 var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
                                 Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
+                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (beam.Length * beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
 
-                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (planetBeam.Length * planetBeam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
-                                    using (voxel.Pin())
-                                    {
-                                        if (VoxelIntersect.PosHasVoxel(voxel, planetBeam.From))
-                                            voxelHit = planetBeam.From;
-                                        else voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
+                                    using (voxel.Pin()) {
+                                        if (beam.Length > 50)
+                                        {
+                                            IHitInfo hit;
+                                            p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
+                                            if (hit?.HitEntity is MyVoxelBase)
+                                                voxelHit = hit.Position;
+                                        }
+                                        else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES)  && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+                                            voxelHit = beam.From;
                                     }
+
                                 }
                             }
                         }
-                        else
-                            using (voxel.Pin())
-                                voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES);
+                        else {
+                            using (voxel.Pin()) {
+
+                                if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+                                    voxelHit = beam.From;
+                            }
+                        }
+
 
                         if (!voxelHit.HasValue)
                             continue;
@@ -174,6 +183,7 @@ namespace WeaponCore.Projectiles
                                         continue;
 
                                     hitEntity.HitPos = hitInfo.Position;
+                                    hitEntity.Blocks.Add(grid.GetCubeBlock(hitEntity.Vector3ICache[0]));
                                 }
                             }
                         }
@@ -247,7 +257,6 @@ namespace WeaponCore.Projectiles
             var count = p.Info.HitList.Count;
             if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, p.Info));
             else GetEntityCompareDist(p.Info.HitList[0], null, p.Info);
-
             var pulseTrigger = false;
             for (int i = p.Info.HitList.Count - 1; i >= 0; i--) {
                 var ent = p.Info.HitList[i];
@@ -271,6 +280,7 @@ namespace WeaponCore.Projectiles
             }
 
             var finalCount = p.Info.HitList.Count;
+
             if (finalCount > 0) {
 
                 var hitEntity = p.Info.HitList[0];
@@ -281,6 +291,7 @@ namespace WeaponCore.Projectiles
                 IMySlimBlock hitBlock = null;
                 if (p.Info.AmmoDef.Const.VirtualBeams && hitEntity.Entity is MyCubeGrid)
                     hitBlock = hitEntity.Blocks[0];
+
                 p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
                 if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
 

@@ -169,6 +169,42 @@ namespace WeaponCore.Support
             return null;
         }
 
+        internal static bool PointInsideVoxel(MyVoxelBase voxel, MyStorageData tmpStorage, Vector3D pos)
+        {
+            var voxelMatrix = voxel.PositionComp.WorldMatrixInvScaled;
+            var vecMax = new Vector3I(int.MaxValue);
+            var vecMin = new Vector3I(int.MinValue);
+
+            var point = pos;
+            Vector3D result;
+            Vector3D.Transform(ref point, ref voxelMatrix, out result);
+            var r = result + (Vector3D)(voxel.Size / 2);
+            var v1 = Vector3D.Floor(r);
+            Vector3D.Fract(ref r, out r);
+            var v2 = v1 + voxel.StorageMin;
+            var v3 = v2 + 1;
+            if (v2 != vecMax && v3 != vecMin)
+            {
+                tmpStorage.Resize(v2, v3);
+                voxel.Storage.ReadRange(tmpStorage, MyStorageDataTypeFlags.Content, 0, v2, v3);
+            }
+            var num1 = tmpStorage.Content(0, 0, 0);
+            var num2 = tmpStorage.Content(1, 0, 0);
+            var num3 = tmpStorage.Content(0, 1, 0);
+            var num4 = tmpStorage.Content(1, 1, 0);
+            var num5 = tmpStorage.Content(0, 0, 1);
+            var num6 = tmpStorage.Content(1, 0, 1);
+            var num7 = tmpStorage.Content(0, 1, 1);
+            var num8 = tmpStorage.Content(1, 1, 1);
+            var num9 = num1 + (num2 - num1) * r.X;
+            var num10 = num3 + (num4 - num3) * r.X;
+            var num11 = num5 + (num6 - num5) * r.X;
+            var num12 = num7 + (num8 - num7) * r.X;
+            var num13 = num9 + (num10 - num9) * r.Y;
+            var num14 = num11 + (num12 - num11) * r.Y;
+            return num13 + (num14 - num13) * r.Z >= sbyte.MaxValue;
+        }
+
         internal static int PointsInsideVoxel(MyVoxelBase voxel, MyStorageData tmpStorage, List<Vector3D> points)
         {
             var voxelMatrix = voxel.PositionComp.WorldMatrixInvScaled;
@@ -212,7 +248,7 @@ namespace WeaponCore.Support
             }
             return results;
         }
-
+        
         // Math magic by Whiplash
         internal static void BresenhamLineDraw(Vector3I start, Vector3I end, List<Vector3I> points)
         {

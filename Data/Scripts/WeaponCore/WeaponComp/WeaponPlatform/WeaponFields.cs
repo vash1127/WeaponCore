@@ -109,7 +109,7 @@ namespace WeaponCore.Platform
         internal float Dps;
         internal float ShotEnergyCost;
         internal float LastHeat;
-        internal uint CeaseFireDelayTick = uint.MaxValue;
+        internal uint CeaseFireDelayTick = uint.MaxValue / 2;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;

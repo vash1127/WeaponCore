@@ -262,6 +262,7 @@ namespace WeaponCore
             ActiveCockPit = null;
             ActiveControlBlock = null;
             ControlledEntity = null;
+            TmpStorage = null;
         }
     }
 }

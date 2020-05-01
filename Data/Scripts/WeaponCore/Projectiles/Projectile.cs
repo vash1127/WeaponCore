@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -215,6 +216,7 @@ namespace WeaponCore.Projectiles
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
             Info.BaseHealthPool = Info.AmmoDef.Health;
+            Info.BaseEwarPool = Info.AmmoDef.Health;
             Info.TracerLength = Info.AmmoDef.Const.TracerLength <= Info.MaxTrajectory ? Info.AmmoDef.Const.TracerLength : Info.MaxTrajectory;
 
             MaxTrajectorySqr = Info.MaxTrajectory * Info.MaxTrajectory;
@@ -389,6 +391,41 @@ namespace WeaponCore.Projectiles
             }
         }
 
+        internal void LosTest(MyVoxelBase voxel, LineD beam, out Vector3D? voxelHit)
+        {
+
+            var planet = voxel as MyPlanet;
+            if (planet != null)
+            {
+                var dist = new BoundingSphereD(planet.PositionComp.GetPosition(), planet.MaximumRadius).Intersects(new RayD(beam.From, beam.Direction));
+                if (dist.HasValue && beam.Length >= dist.Value)
+                {
+                    voxelHit = null;
+                    Log.Line($"invalid length");
+                }
+                //Info.Ai.Session.Tick - Info.Ai.LastVoxelHit > 60 && 
+                if (((VRage.ModAPI.IMyStorage)planet.RootVoxel.Storage).Intersect(ref beam))
+                {
+                    Log.Line($"overTime and quickIntersection true");
+                }
+                if (planet.RootVoxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES))
+                {
+                    Log.Line("slowIntersection true");
+                    voxelHit = Vector3D.Zero;
+                }
+            }
+            else
+            {
+                Log.Line("non-Planet test");
+                if (((VRage.ModAPI.IMyStorage)voxel.Storage).Intersect(ref beam))
+                {
+                    Log.Line($"non-Planet intersection true");
+                }
+                voxelHit = Vector3D.Zero;
+            }
+            voxelHit = Vector3D.Zero;
+        }
+
         internal bool Intersected(bool add = true)
         {
             if (Vector3D.IsZero(Hit.HitPos)) return false;
@@ -461,6 +498,8 @@ namespace WeaponCore.Projectiles
                 
                 var vp = VrPros[i];
                 var vs = vp.AvShot;
+
+                vp.TracerLength = Info.TracerLength;
                 vs.Init(vp, StepPerSec * StepConst, MaxSpeed);
                 vs.Hit = Hit;
                 if (Info.AmmoDef.Const.ConvergeBeams) {
@@ -765,11 +804,15 @@ namespace WeaponCore.Projectiles
                         var netted = EwaredProjectiles[j];
                         if (netted.Info.Ai.MyGrid.IsSameConstructAs(Info.Ai.MyGrid) || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
-                        {                  
-                            Info.EwarActive = true;
-                            netted.Info.Target.Projectile = this;
-                            netted.Info.Target.IsProjectile = true;
-                            Seekers.Add(netted);
+                        {
+                            Info.BaseEwarPool -= Info.AmmoDef.AreaEffect.AreaEffectDamage;
+                            if (Info.BaseEwarPool <= 0)
+                            {
+                                Info.EwarActive = true;
+                                netted.Info.Target.Projectile = this;
+                                netted.Info.Target.IsProjectile = true;
+                                Seekers.Add(netted);
+                            }
                         }
 
                         Info.WeaponRng.ClientProjectileCurrentCounter++;
@@ -1043,14 +1086,10 @@ namespace WeaponCore.Projectiles
                     ModelState = EntityState.None;
                 Info.AvShot.AvClose(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
             }
-            else
+            else if (Info.AmmoDef.Const.VirtualBeams)
             {
-                if (Info.AmmoDef.Const.VirtualBeams)
-                {
-                    if (EnableAv)
-                        for (int i = 0; i < VrPros.Count; i++)
-                            VrPros[i].AvShot.AvClose(Position);
-                }
+                for (int i = 0; i < VrPros.Count; i++)
+                    VrPros[i].AvShot.AvClose(Position);
             }
         }
 

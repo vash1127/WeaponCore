@@ -247,6 +247,7 @@ namespace WeaponCore
                                 var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
 
                                 w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus && gridAi.Focus.FocusInRange(w);
+
                                 if (canShoot && (shoot || w.LockOnFireState))
                                 {
                                     if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
@@ -311,7 +312,7 @@ namespace WeaponCore
                         if (w.DrawingPower)
                             w.StopPowerDraw();
 
-                        w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+                        if (w.Comp?.Ai != null) w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
 
                         w.State.Sync.Reloading = false;
 

@@ -126,7 +126,7 @@ namespace WeaponCore.Platform
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
                 var firingPlayer = Comp.State.Value.CurrentPlayerControl.PlayerId == Comp.Session.PlayerId;
                 FireCounter++;
-                
+
                 for (int i = 0; i < bps; i++)
                 {
                     var current = NextMuzzle;
@@ -208,6 +208,7 @@ namespace WeaponCore.Platform
                         }
                         for (int k = 0; k < patternIndex; k++)
                         {
+                            float shotFade;
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
@@ -220,9 +221,20 @@ namespace WeaponCore.Platform
                                 if (ammoPattern.Const.TriggerModel)
                                     triggerE = session.TriggerEntityPool.Get();
 
+                                if (ammoPattern.Const.HasShotFade) {
+                                    if (FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                                        shotFade = MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
+                                    else if (System.DelayCeaseFire && CeaseFireDelayTick != tick)
+                                        shotFade = MathHelper.Clamp(((tick - CeaseFireDelayTick) - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart) * ammoPattern.Const.ShotFadeStep, 0, 1);
+                                    else shotFade = 0;
+                                }
+                                else shotFade = 0;
+
+                                var maxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
+
                                 var info = session.Projectiles.VirtInfoPool.Get();
-                                info.InitVirtual(System, Comp.Ai, ammoPattern, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                                 info.AvShot = session.Av.AvShotPool.Get();
+                                info.InitVirtual(System, Comp.Ai, ammoPattern, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir, maxTrajectory, shotFade);
                                 vProjectile.VrPros.Add(info);
 
                                 if (!ammoPattern.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
@@ -264,9 +276,7 @@ namespace WeaponCore.Platform
                                 p.Info.Direction = muzzle.DeviatedDir;
                                 p.Info.MaxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
                                 
-                                float shotFade;
-                                if (ammoPattern.Const.HasShotFade)
-                                {
+                                if (ammoPattern.Const.HasShotFade) {
                                     if (FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
                                         shotFade = MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
                                     else if (System.DelayCeaseFire && CeaseFireDelayTick != tick)

@@ -201,7 +201,7 @@ namespace WeaponCore.Platform
             else
                 targetCenter = Vector3D.Zero;
             
-            if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)) {
+            if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
                 if (weapon.Comp.TrackReticle) {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
@@ -253,14 +253,13 @@ namespace WeaponCore.Platform
                 MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
 
                 var desiredAzAbs = desiredAzimuth + weapon.Azimuth;
-                var desiredElAbs = desiredElevation + weapon.Elevation;
+                var desiredElAbs = desiredElevation - weapon.Elevation;
 
                 var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzToleranceRadians, weapon.MaxAzToleranceRadians);
                 var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElToleranceRadians, weapon.MaxElToleranceRadians);
                 var elConstrained = Math.Abs(elConstraint - desiredElAbs) > 0.0000001;
                 var azConstrained = Math.Abs(azConstraint - desiredAzAbs) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
-
                 if (weapon.Target.IsTracking && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera && !weapon.Comp.ResettingSubparts)
                 {
                     var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
@@ -343,13 +342,13 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
 
-            var gravityMultiplier = 0f;
             if (ActiveAmmoDef.AmmoDef.Const.FeelsGravity && Comp.Ai.Session.Tick - GravityTick > 119)
             {
                 GravityTick = Comp.Ai.Session.Tick;
-                gravityMultiplier = ActiveAmmoDef.AmmoDef.Trajectory.GravityMultiplier;
                 GravityPoint = MyParticlesManager.CalculateGravityInPoint(MyPivotPos);
             }
+            var gravityMultiplier = ActiveAmmoDef.AmmoDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.AmmoDef.Trajectory.GravityMultiplier : 0f;
+
             var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
 
             return predictedPos;
