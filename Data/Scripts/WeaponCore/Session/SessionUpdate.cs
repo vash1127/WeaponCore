@@ -42,7 +42,7 @@ namespace WeaponCore
                     }
                     gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
 
-                    if (!gridAi.HasPower && gridAi.HadPower || gridAi.UpdatePowerSources || !gridAi.WasPowered && gridAi.MyGrid.IsPowered || Tick10)
+                    if (gridAi.UpdatePowerSources || !gridAi.HadPower && gridAi.MyGrid.IsPowered || gridAi.HasPower && !gridAi.MyGrid.IsPowered || Tick10)
                         gridAi.UpdateGridPower();
 
                     if (!gridAi.HasPower)
@@ -215,6 +215,18 @@ namespace WeaponCore
                                     HudUi.TexturesToAdd++;
                                     HudUi.WeaponsToDisplay.Add(w);
                                 }
+
+                                if(!gridAi.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.ManualShoot != ShootOff)
+                                {
+                                    w.State.ManualShoot = ShootOff;
+                                    w.State.Sync.Reloading = false;
+                                    w.State.Sync.CurrentAmmo = 0;
+                                    w.FinishBurst = false;
+
+                                    if (w.IsShooting)
+                                        w.StopShooting();
+                                }
+
 
                                 ///
                                 ///Check Reload

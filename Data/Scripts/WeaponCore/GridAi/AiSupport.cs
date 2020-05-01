@@ -782,8 +782,6 @@ namespace WeaponCore.Support
 
                 HadPower = HasPower;
                 HasPower = GridMaxPower > 0;
-                if (!WasPowered && HasPower)
-                    WasPowered = true;
 
                 LastPowerUpdateTick = Session.Tick;
 
