@@ -19,6 +19,7 @@ namespace WeaponCore.Support
                     Status = Start.Started;
                     break;
             }
+
             //UpdateNetworkState();
         }
 
@@ -28,9 +29,13 @@ namespace WeaponCore.Support
             IsFunctional = MyCube.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
 
-            if(MyCube != null)
-                if (FunctionalBlock.Enabled) { FunctionalBlock.Enabled = false; FunctionalBlock.Enabled = true; }
-            
+            if (MyCube != null)
+                if (FunctionalBlock.Enabled)
+                {
+                    FunctionalBlock.Enabled = false;
+                    FunctionalBlock.Enabled = true;
+                }
+
             Status = Start.Started;
         }
 
@@ -52,6 +57,11 @@ namespace WeaponCore.Support
                         {
                             w.Azimuth = 0;
                             w.Elevation = 0;
+                            w.Elevation = 0;
+
+                            if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                                w.State.Sync.Reloading = false;
+
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(EventTriggers.TurnOff, true);
 
@@ -61,7 +71,8 @@ namespace WeaponCore.Support
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}");
+            }
         }
     }
 }
