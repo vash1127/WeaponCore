@@ -117,6 +117,9 @@ namespace WeaponCore
                         for (int j = 0; j < tmpInventories.Count; j++)
                         {
                             var inventory = tmpInventories[j];
+
+                            if (!cachedInv[def].ContainsKey(inventory)) continue;
+
                             var magsAvailable = (int)cachedInv[def][inventory];
 
                             if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
