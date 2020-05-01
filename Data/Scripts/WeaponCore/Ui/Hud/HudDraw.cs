@@ -272,7 +272,7 @@ namespace WeaponCore
                     var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
                     if (mustCharge)
-                        stackedInfo.ReloadIndex = (int)MathHelper.Lerp(0, _chargingTexture.Length - 1, weapon.State.Sync.CurrentCharge / weapon.MaxCharge);
+                        stackedInfo.ReloadIndex = (int)(MathHelper.Clamp(MathHelper.Lerp(0, _chargingTexture.Length - 1, weapon.State.Sync.CurrentCharge / weapon.MaxCharge), 0, _chargingTexture.Length - 1));
 
                     stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                     stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
