@@ -308,7 +308,9 @@ namespace WeaponCore
                         if (w.DrawingPower)
                             w.StopPowerDraw();
 
-                        if (w.Comp?.Ai != null) w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+                        if (w.Comp?.Ai != null) 
+                            w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+                        w.State.Sync.Reloading = false;
 
                         RemoveChargeWeapon(w);
                         continue;
