@@ -253,7 +253,7 @@ namespace WeaponCore.Platform
                 MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
 
                 var desiredAzAbs = desiredAzimuth + weapon.Azimuth;
-                var desiredElAbs = desiredElevation + weapon.Elevation;
+                var desiredElAbs = desiredElevation - weapon.Elevation;
 
                 var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzToleranceRadians, weapon.MaxAzToleranceRadians);
                 var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElToleranceRadians, weapon.MaxElToleranceRadians);

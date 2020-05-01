@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -7,7 +6,6 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.Voxels;
 using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
@@ -119,8 +117,10 @@ namespace WeaponCore.Projectiles
                                 var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
                                 Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
                                 if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (beam.Length * beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
+
                                     using (voxel.Pin()) {
-                                        if (beam.Length > 50) {
+                                        if (beam.Length > 50)
+                                        {
                                             IHitInfo hit;
                                             p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
                                             if (hit?.HitEntity is MyVoxelBase)
@@ -129,20 +129,18 @@ namespace WeaponCore.Projectiles
                                         else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES)  && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
                                             voxelHit = beam.From;
                                     }
+
                                 }
                             }
                         }
-                        else
+                        else {
                             using (voxel.Pin()) {
-                                if (beam.Length > 50) {
-                                    IHitInfo hit;
-                                    p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
-                                    if (hit?.HitEntity is MyVoxelBase)
-                                        voxelHit = hit.Position;
-                                }
-                                else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+
+                                if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
                                     voxelHit = beam.From;
                             }
+                        }
+
 
                         if (!voxelHit.HasValue)
                             continue;
