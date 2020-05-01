@@ -219,7 +219,7 @@ namespace WeaponCore
                                 ///
                                 ///Check Reload
                                 ///
-                                if (w.State.Sync.CurrentMags > 0 && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                                if ((w.State.Sync.CurrentMags > 0 || w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                                     w.StartReload();
                                 ///
                                 ///
@@ -231,7 +231,7 @@ namespace WeaponCore
                                 ///
 
                                 //if(IsServer && Tick10)
-                                    //Log.Line($"w.State.ManualShoot: {w.State.ManualShoot} leftClick: {leftClick} rightClick: {rightClick}");
+                                //Log.Line($"w.State.ManualShoot: {w.State.ManualShoot} leftClick: {leftClick} rightClick: {rightClick}");
 
                                 w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                                 var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
@@ -308,7 +308,7 @@ namespace WeaponCore
                         if (w.DrawingPower)
                             w.StopPowerDraw();
 
-                        w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+                        if (w.Comp?.Ai != null) w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
 
                         RemoveChargeWeapon(w);
                         continue;
