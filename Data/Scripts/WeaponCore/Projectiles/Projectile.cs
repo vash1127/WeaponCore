@@ -625,7 +625,6 @@ namespace WeaponCore.Projectiles
                 var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && Info.Age % 30 == 0;
 
-                if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget || validTarget))  Log.Line($"{PickTarget} - {gaveUpChase && validTarget} - {isZombie} - {seekFirstTarget} - {validTarget}");
                 if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
                 {
                     HadTarget = true;

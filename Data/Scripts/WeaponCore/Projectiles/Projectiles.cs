@@ -80,7 +80,7 @@ namespace WeaponCore.Projectiles
         {
             Session.StallReporter.Start("Stage2-TaskWait", 32);
             if (!Session.PTask.IsComplete)
-                Session.PTask.Wait();
+                Session.PTask.WaitOrExecute();
 
             if (Session.PTask.IsComplete && Session.PTask.valid && Session.PTask.Exceptions != null)
                 Session.TaskHasErrors(ref Session.PTask, "PTask");

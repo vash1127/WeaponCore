@@ -692,7 +692,6 @@ namespace WeaponCore.Support
                 AmmoEffect.UserScale = 1;
                 ParticleStopped = false;
                 ParticleInited = true;
-                Log.Line("spawn particle");
             }
         }
 
@@ -700,16 +699,12 @@ namespace WeaponCore.Support
         {
             if (AmmoEffect != null)
             {
-                Log.Line($"dispose");
                 AmmoEffect.Stop(instant);
                 AmmoEffect = null;
             }
 
             if (pause)
-            {
-                Log.Line($"particle paused");
                 ParticleStopped = true;
-            }
         }
 
         internal void ResetHit()
