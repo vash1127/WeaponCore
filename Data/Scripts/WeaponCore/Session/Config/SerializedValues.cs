@@ -242,7 +242,7 @@ namespace WeaponCore
         {
             if (comp.MyCube?.Storage == null) return;
 
-            var sv = new WeaponValues {Targets = Targets, WeaponRandom = WeaponRandom, MIds = MIds, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
+            var sv = new WeaponValues {Targets = Targets, WeaponRandom = WeaponRandom, MIds = comp.MIds, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -268,6 +268,7 @@ namespace WeaponCore
                     if (!comp.Session.IsClient)
                         comp.WeaponValues.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
+                    comp.MIds = comp.WeaponValues.MIds;
                     var timings = comp.WeaponValues.Timings;
 
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
@@ -303,6 +304,8 @@ namespace WeaponCore
                 WeaponRandom = new WeaponRandomGenerator[comp.Platform.Weapons.Length],
                 MIds = new uint[Enum.GetValues(typeof(PacketType)).Length]
             };
+
+            comp.MIds = comp.WeaponValues.MIds;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
