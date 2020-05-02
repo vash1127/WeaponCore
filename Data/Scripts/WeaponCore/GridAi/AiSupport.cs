@@ -594,9 +594,9 @@ namespace WeaponCore.Support
                 }
             }
 
-            foreach (var cubeComp in WeaponBase)
+            foreach (var cubeComp in Weapons)
             {
-                var comp = cubeComp.Value;
+                var comp = cubeComp;
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
                 var currPlayer = comp.State.Value.CurrentPlayerControl;
 
