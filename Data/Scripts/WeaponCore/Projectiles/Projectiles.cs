@@ -279,18 +279,6 @@ namespace WeaponCore.Projectiles
                         p.Info.AvShot.PrimeMatrix = matrix;
                     if (p.Info.AmmoDef.Const.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize)
                         p.Info.TriggerMatrix = matrix;
-
-                    if (p.EnableAv && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticle && p.Info.AmmoDef.Const.PrimeModel)
-                    {
-                        var offVec = p.Position + Vector3D.Rotate(p.Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, p.Info.AvShot.PrimeMatrix);
-                        p.AmmoEffect.WorldMatrix = p.Info.AvShot.PrimeMatrix;
-                        p.AmmoEffect.SetTranslation(ref offVec);
-                    }
-                }
-                else if (p.EnableAv && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticle)
-                {
-                    var translation = p.AmmoEffect.WorldMatrix.Translation + p.TravelMagnitude;
-                    p.AmmoEffect.SetTranslation(ref translation);
                 }
 
                 if (p.DynamicGuidance)
@@ -513,20 +501,6 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.ModelOnly)
                     DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position});
-
-                if (p.Info.AmmoDef.Const.AmmoParticle)
-                {
-                    p.TestSphere.Center = p.Position;
-                    if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
-                    {
-                        if (!p.Info.AmmoDef.Const.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.AmmoDef.Const.AmmoParticleShrinks)
-                            p.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, p.BaseAmmoParticleScale);
-                        if ((p.ParticleStopped || p.ParticleLateStart))
-                            p.PlayAmmoParticle();
-                    }
-                    else if (!p.ParticleStopped && p.AmmoEffect != null)
-                        p.DisposeAmmoEffect(false, true);
-                }
             }
         }
 

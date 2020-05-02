@@ -27,7 +27,7 @@ namespace WeaponCore.Support
         internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>(64);
         internal Queue<Shrinks> TracerShrinks = new Queue<Shrinks>(64);
         internal List<Vector3D> Offsets = new List<Vector3D>(64);
-
+        internal MyParticleEffect AmmoEffect;
         internal WeaponComponent FiringWeapon;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool Offset;
@@ -47,6 +47,8 @@ namespace WeaponCore.Support
         internal bool LastStep;
         internal bool Dirty;
         internal bool IsShrapnel;
+        internal bool ParticleStopped;
+        internal bool ParticleInited;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -80,6 +82,7 @@ namespace WeaponCore.Support
         internal Screen OnScreen;
         internal MatrixD OffsetMatrix;
         internal Vector3D Origin;
+        internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D PointDir;
         internal Vector3D HitVelocity;
@@ -93,6 +96,7 @@ namespace WeaponCore.Support
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal BoundingSphereD ModelSphereCurrent;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
+        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal Shrinks EmptyShrink;
 
         internal enum ParticleState
@@ -145,6 +149,7 @@ namespace WeaponCore.Support
             PrimeEntity = info.PrimeEntity;
             TriggerEntity = info.TriggerEntity;
             Origin = info.Origin;
+            OriginUp = info.OriginUp;
             Offset = AmmoDef.Const.OffsetEffect;
             MaxTracerLength = info.TracerLength;
             MuzzleId = info.MuzzleId;
@@ -193,6 +198,9 @@ namespace WeaponCore.Support
                 a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
                 a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
+
+
+
                 if (i.ModelOnly)
                 {
                     a.ModelSphereCurrent.Center = a.TracerFront;
@@ -202,10 +210,8 @@ namespace WeaponCore.Support
                     if (s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
                         a.OnScreen = Screen.ModelOnly;
                 }
-                else if (lineEffect || a.Model == ModelState.None && a.AmmoDef.Const.AmmoParticle)
+                else if (lineEffect || a.AmmoDef.Const.AmmoParticle)
                 {
-
-
                     var rayTracer = new RayD(a.TracerBack, a.PointDir);
                     var rayTrail = new RayD(a.TracerFront + (-a.Direction * a.ShortEstTravel), a.Direction);
 
@@ -239,8 +245,14 @@ namespace WeaponCore.Support
                     }
                 }
 
-                if (a.OnScreen == Screen.None && Vector3D.DistanceSquared(a.TracerFront, a.Ai.Session.CameraPos) <= 225) 
-                    a.OnScreen = Screen.InProximity;
+                if (a.OnScreen == Screen.None)
+                {
+                    a.TestSphere.Center = a.TracerFront;
+                    if (s.Camera.IsInFrustum(ref a.TestSphere))
+                        a.OnScreen = Screen.InProximity;
+                    else if (Vector3D.DistanceSquared(a.TracerFront, a.Ai.Session.CameraPos) <= 225)
+                        a.OnScreen = Screen.InProximity;
+                }
 
                 if (i.MuzzleId == -1)
                     return;
@@ -298,33 +310,24 @@ namespace WeaponCore.Support
                     a.Active = true;
                     s.Av.AvShots.Add(a);
                 }
+
+                if (a.AmmoDef.Const.AmmoParticle && a.Active)
+                {
+                    if (a.OnScreen != Screen.None)
+                    {
+                        if (!a.AmmoDef.Const.IsBeamWeapon && !a.ParticleStopped && a.AmmoEffect != null && a.AmmoDef.Const.AmmoParticleShrinks)
+                            a.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1f);
+
+                        if ((a.ParticleStopped || !a.ParticleInited))
+                            a.PlayAmmoParticle();
+                    }
+                    else if (!a.ParticleStopped && a.AmmoEffect != null)
+                        a.DisposeAmmoEffect(false, true);
+                }
+
                 a.Hitting = false;
             }
             s.Projectiles.DeferedAvDraw.Clear();
-        }
-
-        internal void AvClose(Vector3D endPos, bool detonateFakeExp = false)
-        {
-            if (Vector3D.IsZero(TracerFront)) TracerFront = endPos;
-            DetonateFakeExp = detonateFakeExp;
-            Dirty = true;
-
-            if (DetonateFakeExp)
-            {
-                HitParticle = ParticleState.Dirty;
-                if (Ai.Session.Av.ExplosionReady)
-                {
-
-                    if (OnScreen != Screen.None)
-                    {
-                        if (DetonateFakeExp) SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
-                        else SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.AreaEffectRadius, TracerFront, AmmoDef);
-                    }
-                }
-            }
-
-            if (!Active)
-                Ai.Session.Av.AvShotPool.Return(this);
         }
 
         internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
@@ -670,11 +673,78 @@ namespace WeaponCore.Support
             AmmoSound = true;
         }
 
+        internal void PlayAmmoParticle()
+        {
+            MatrixD matrix;
+            if (Model != ModelState.None && PrimeEntity != null)
+                matrix = PrimeMatrix;
+            else {
+                matrix = MatrixD.CreateWorld(TracerFront, PointDir, OriginUp);
+                var offVec = TracerFront + Vector3D.Rotate(AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
+                matrix.Translation = offVec;
+            }
+
+            var renderId = AmmoDef.Const.PrimeModel && PrimeEntity != null ? PrimeEntity.Render.GetRenderObjectID() : uint.MaxValue;
+            if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect)) {
+
+                AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
+                AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
+                AmmoEffect.UserScale = 1;
+                ParticleStopped = false;
+                ParticleInited = true;
+                Log.Line("spawn particle");
+            }
+        }
+
+        internal void DisposeAmmoEffect(bool instant, bool pause)
+        {
+            if (AmmoEffect != null)
+            {
+                Log.Line($"dispose");
+                AmmoEffect.Stop(instant);
+                AmmoEffect = null;
+            }
+
+            if (pause)
+            {
+                Log.Line($"particle paused");
+                ParticleStopped = true;
+            }
+        }
+
         internal void ResetHit()
         {
             ShrinkInited = false;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, MaxTrajectory);
         }
+
+        internal void AvClose(Vector3D endPos, bool detonateFakeExp = false)
+        {
+            if (Vector3D.IsZero(TracerFront)) TracerFront = endPos;
+            DetonateFakeExp = detonateFakeExp;
+            Dirty = true;
+
+            if (AmmoDef.Const.AmmoParticle)
+                DisposeAmmoEffect(false, false);
+
+            if (DetonateFakeExp)
+            {
+                HitParticle = ParticleState.Dirty;
+                if (Ai.Session.Av.ExplosionReady)
+                {
+
+                    if (OnScreen != Screen.None)
+                    {
+                        if (DetonateFakeExp) SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
+                        else SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.AreaEffectRadius, TracerFront, AmmoDef);
+                    }
+                }
+            }
+
+            if (!Active)
+                Ai.Session.Av.AvShotPool.Return(this);
+        }
+
 
         internal void Close()
         {
@@ -685,6 +755,10 @@ namespace WeaponCore.Support
                 TravelEmitter.StopSound(true);
                 AmmoSound = false;
             }
+
+            if (AmmoEffect != null)
+                DisposeAmmoEffect(true, false);
+            
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
@@ -720,6 +794,8 @@ namespace WeaponCore.Support
             Back = false;
             LastStep = false;
             DetonateFakeExp = false;
+            ParticleStopped = false;
+            ParticleInited = false;
             TracerShrinks.Clear();
             GlowSteps.Clear();
             Offsets.Clear();
@@ -730,6 +806,7 @@ namespace WeaponCore.Support
             Ai = null;
             AmmoDef = null;
             System = null;
+
         }
     }
 

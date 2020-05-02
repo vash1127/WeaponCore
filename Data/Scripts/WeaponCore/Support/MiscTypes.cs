@@ -105,6 +105,34 @@ namespace WeaponCore.Support
             StateChange(true, States.Acquired);
         }
 
+        internal void LockTarget(Weapon w, MyEntity ent)
+        {
+            double rayDist;
+            var targetPos = ent.PositionComp.WorldAABB.Center;
+            Vector3D.Distance(ref w.MyPivotPos, ref targetPos, out rayDist);
+            var shortDist = rayDist - 1;
+            var origDist = rayDist;
+            var topEntId = ent.GetTopMostParent().EntityId;
+
+            Set(ent, targetPos, shortDist, origDist, topEntId);
+
+            if (!w.System.Session.IsClient && w.System.Session.MpActive) {
+                SyncTarget(w.Comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
+
+                if (w.Comp.Session.WeaponsSyncCheck.Add(w)) {
+
+                    w.Comp.Session.WeaponsToSync.Add(w);
+                    w.Comp.Ai.NumSyncWeapons++;
+                    w.SendTarget = true;
+
+                    if (w.Comp.Session.Tick - w.LastSyncTick > 20)
+                        w.SendSync = true;
+
+                    w.LastSyncTick = w.Comp.Session.Tick;
+                }
+            }
+        }
+
         internal void SetFake(uint expiredTick, Vector3D pos)
         {
             Reset(expiredTick, States.Fake,false);

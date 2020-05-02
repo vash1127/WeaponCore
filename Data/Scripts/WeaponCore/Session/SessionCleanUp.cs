@@ -214,7 +214,7 @@ namespace WeaponCore
             WeaponCoreTurretBlockDefs.Clear();
 
             foreach (var p in Projectiles.ProjectilePool)
-                p.AmmoEffect?.Stop();
+                p.Info?.AvShot?.AmmoEffect?.Stop();
 
             Projectiles.ShrapnelToSpawn.Clear();
             Projectiles.ShrapnelPool.Clean();

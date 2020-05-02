@@ -167,6 +167,21 @@ namespace WeaponCore.Support
                             else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, pos, av.AmmoDef);
                         }
                     }
+
+                    if (av.Model != AvShot.ModelState.None)
+                    {
+                        if (av.AmmoEffect != null && av.AmmoDef.Const.AmmoParticle && av.AmmoDef.Const.PrimeModel)
+                        {
+                            var offVec = av.TracerFront + Vector3D.Rotate(av.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, av.PrimeMatrix);
+                            av.AmmoEffect.WorldMatrix = av.PrimeMatrix;
+                            av.AmmoEffect.SetTranslation(ref offVec);
+                        }
+                    }
+                    else if (av.AmmoEffect != null && av.AmmoDef.Const.AmmoParticle)
+                    {
+                        //var translation = a.AmmoEffect.WorldMatrix.Translation + a.VelStep;
+                        av.AmmoEffect.SetTranslation(ref av.TracerFront);
+                    }
                 }
 
                 if (noNextStep)

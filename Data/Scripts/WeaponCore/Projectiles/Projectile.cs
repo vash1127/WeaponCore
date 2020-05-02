@@ -42,7 +42,6 @@ namespace WeaponCore.Projectiles
         internal Vector3 Gravity;
         internal Hit Hit = new Hit();
         internal LineD Beam;
-        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal BoundingSphereD PruneSphere;
         internal BoundingSphereD DeadSphere;
         internal double AccelLength;
@@ -57,7 +56,6 @@ namespace WeaponCore.Projectiles
         internal double MaxTrajectorySqr;
         internal double PrevEndPointToCenterSqr;
         internal float DesiredSpeed;
-        internal float BaseAmmoParticleScale;
         internal int ChaseAge;
         internal int FieldTime;
         internal int EndStep;
@@ -74,8 +72,7 @@ namespace WeaponCore.Projectiles
         internal bool MoveToAndActivate;
         internal bool LockedTarget;
         internal bool DynamicGuidance;
-        internal bool ParticleStopped;
-        internal bool ParticleLateStart;
+
         internal bool GenerateShrapnel;
         internal bool Colliding;
         internal bool LinePlanetCheck;
@@ -99,7 +96,6 @@ namespace WeaponCore.Projectiles
         internal bool HadTarget;
         internal bool WasTracking;
         internal readonly ProInfo Info = new ProInfo();
-        internal MyParticleEffect AmmoEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<MyEntity> CheckList = new List<MyEntity>();
         internal readonly List<ProInfo> VrPros = new List<ProInfo>();
@@ -134,8 +130,6 @@ namespace WeaponCore.Projectiles
             Colliding = false;
             Active = false;
             CachedPlanetHit = false;
-            ParticleStopped = false;
-            ParticleLateStart = false;
             PositionChecked = false;
             MineSeeking = false;
             MineActivated = false;
@@ -283,11 +277,6 @@ namespace WeaponCore.Projectiles
             FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
 
             State = !Info.AmmoDef.Const.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
-            if (Info.AmmoDef.Const.AmmoParticle && EnableAv && !Info.AmmoDef.Const.IsBeamWeapon)
-            {
-                BaseAmmoParticleScale = 1f;
-                PlayAmmoParticle();
-            }
 
             if (EnableAv)
             {
@@ -433,7 +422,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle && !Info.AmmoDef.Const.DrawLine;
-                TestSphere.Center = Hit.HitPos;
+                Info.AvShot.TestSphere.Center = Hit.HitPos;
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
@@ -636,6 +625,7 @@ namespace WeaponCore.Projectiles
                 var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && Info.Age % 30 == 0;
 
+                if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget || validTarget))  Log.Line($"{PickTarget} - {gaveUpChase && validTarget} - {isZombie} - {seekFirstTarget} - {validTarget}");
                 if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
                 {
                     HadTarget = true;
@@ -981,60 +971,6 @@ namespace WeaponCore.Projectiles
             Colliding = false;
         }
 
-        internal void PlayAmmoParticle()
-        {
-            try
-            {
-                if (Info.Age == 0 && !ParticleLateStart)
-                {
-                    TestSphere.Center = Position;
-                    if (!Info.Ai.Session.Camera.IsInFrustum(ref TestSphere))
-                    {
-                        ParticleLateStart = true;
-                        return;
-                    }
-                }
-                MatrixD matrix;
-                if (ModelState == EntityState.Exists && Info.AvShot.PrimeEntity != null)
-                {
-                    matrix = MatrixD.CreateWorld(Position, AccelDir, Info.AvShot.PrimeEntity.PositionComp.WorldMatrixRef.Up);
-                    var offVec = Position + Vector3D.Rotate(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
-                    matrix.Translation = offVec;
-                    Info.AvShot.PrimeMatrix = matrix;
-                }
-                else
-                {
-                    matrix = MatrixD.CreateWorld(Position, AccelDir, Info.OriginUp);
-                    var offVec = Position + Vector3D.Rotate(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
-                    matrix.Translation = offVec;
-                }
-                var renderId = Info.AmmoDef.Const.PrimeModel ? Info.PrimeEntity.Render.GetRenderObjectID() : uint.MaxValue;
-                if (MyParticlesManager.TryCreateParticleEffect(Info.AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref Position, renderId, out AmmoEffect))
-                {
-                    AmmoEffect.UserColorMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Color;
-                    var scaler = 1;
-
-                    AmmoEffect.UserRadiusMultiplier = Info.AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale * scaler;
-                    AmmoEffect.UserScale = 1 * scaler;
-                    //if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
-                    ParticleStopped = false;
-                    ParticleLateStart = false;
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in PlayAmmoParticle: {ex} AmmoEffect:{AmmoEffect != null} - info:{Info != null} - AvShot:{Info?.AvShot != null} - Ai:{Info?.Ai != null} - Session:{Info?.Ai?.Session != null} - System:{Info?.System != null} - Model:{ModelState == EntityState.Exists} - PrimeEntity:{Info?.PrimeEntity != null}"); }
-        }
-
-        internal void DisposeAmmoEffect(bool instant, bool pause)
-        {
-            if (AmmoEffect != null)
-            {
-                AmmoEffect.Stop(instant);
-                AmmoEffect = null;
-            }
-
-            if (pause) ParticleStopped = true;
-        }
-
         internal void DestroyProjectile()
         {
             if (State == ProjectileState.Destroy)
@@ -1073,10 +1009,8 @@ namespace WeaponCore.Projectiles
             Seekers.Clear();
 
             if (EnableAv)
-            {
-                if (Info.AmmoDef.Const.AmmoParticle) DisposeAmmoEffect(false, false);
                 HitEffects();
-            }
+
             State = ProjectileState.Dead;
             Info.Ai.Session.Projectiles.CleanUp.Add(this);
 
