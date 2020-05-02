@@ -129,17 +129,17 @@ namespace WeaponCore
                                     ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = magsNeeded });
                                     magsAdded += magsNeeded;
                                     magsNeeded = 0;
+                                    cachedInv[def][inventory] -= magsAdded;
                                 }
                                 else
                                 {
                                     ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = magsAvailable });
                                     magsNeeded -= magsAvailable;
                                     magsAdded += magsAvailable;
+                                    cachedInv[def][inventory] -= magsAdded;
                                     cachedInv[def].Remove(inventory);
                                 }
                                 weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
-
-                                cachedInv[def][inventory] -= magsAdded;
                             }
 
                             if (magsNeeded <= 0)
