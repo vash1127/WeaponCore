@@ -392,16 +392,16 @@ namespace WeaponCore
                             switch (shootStatePacket.Data)
                             {
                                 case ManualShootActionState.ShootClick:
-                                    TerminalHelpers.WCShootClickAction(comp, true, comp.HasTurret, true);
+                                    TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
                                     break;
                                 case ManualShootActionState.ShootOff:
-                                    TerminalHelpers.WCShootOffAction(comp, true);
+                                    TerminalHelpers.WcShootOffAction(comp, true);
                                     break;
                                 case ManualShootActionState.ShootOn:
-                                    TerminalHelpers.WCShootOnAction(comp, true);
+                                    TerminalHelpers.WcShootOnAction(comp, true);
                                     break;
                                 case ManualShootActionState.ShootOnce:
-                                    TerminalHelpers.WCShootOnceAction(comp, true);
+                                    TerminalHelpers.WcShootOnceAction(comp, true);
                                     break;
                             }
 
@@ -1301,16 +1301,16 @@ namespace WeaponCore
                                 switch (shootStatePacket.Data)
                                 {
                                     case ManualShootActionState.ShootClick:
-                                        TerminalHelpers.WCShootClickAction(comp, true, comp.HasTurret, true);
+                                        TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
                                         break;
                                     case ManualShootActionState.ShootOff:
-                                        TerminalHelpers.WCShootOffAction(comp, true);
+                                        TerminalHelpers.WcShootOffAction(comp, true);
                                         break;
                                     case ManualShootActionState.ShootOn:
-                                        TerminalHelpers.WCShootOnAction(comp, true);
+                                        TerminalHelpers.WcShootOnAction(comp, true);
                                         break;
                                     case ManualShootActionState.ShootOnce:
-                                        TerminalHelpers.WCShootOnceAction(comp, true);
+                                        TerminalHelpers.WcShootOnceAction(comp, true);
                                         break;
                                 }
 

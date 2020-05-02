@@ -193,7 +193,7 @@ namespace WeaponCore
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                 
-                TerminalHelpers.WCShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
+                TerminalHelpers.WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
             };
             action.Writer = (blk, sb) =>
             {
@@ -225,7 +225,7 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     return;
 
-                TerminalHelpers.WCShootToggleAction(comp);
+                TerminalHelpers.WcShootToggleAction(comp);
             };
             action0.Writer = (blk, sb) => 
             {
@@ -252,7 +252,7 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     return;
 
-                TerminalHelpers.WCShootOnAction(comp);
+                TerminalHelpers.WcShootOnAction(comp);
 
             };
             action1.Writer = (blk, sb) =>
@@ -280,7 +280,7 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     return;
 
-                TerminalHelpers.WCShootOffAction(comp);
+                TerminalHelpers.WcShootOffAction(comp);
 
             };
             action2.Writer = (blk, sb) =>
@@ -307,7 +307,7 @@ namespace WeaponCore
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                TerminalHelpers.WCShootOnceAction(comp);
+                TerminalHelpers.WcShootOnceAction(comp);
             };
             action3.Writer = (b, t) => t.Append("");
             action3.Enabled = (b) =>
