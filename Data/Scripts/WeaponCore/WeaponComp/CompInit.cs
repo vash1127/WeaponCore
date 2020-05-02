@@ -25,7 +25,6 @@ namespace WeaponCore.Support
 
                 State.LoadState();
                 Set.LoadSettings();
-                CompMids.Load(this);
 
                 if (!Session.IsClient)
                 {

@@ -126,7 +126,6 @@ namespace WeaponCore
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Guid MpWeaponSyncGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
-        internal readonly Guid CompMIdGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811504");
 
         internal readonly double VisDirToleranceCosine;
         internal readonly double AimDirToleranceCosine;

@@ -38,7 +38,7 @@ namespace WeaponCore.Support
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
         internal WeaponValues WeaponValues = new WeaponValues();
-        internal CompMids SyncIds = new CompMids();
+        internal uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
