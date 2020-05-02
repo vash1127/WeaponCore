@@ -523,7 +523,7 @@ namespace WeaponCore
 
                 var oRadius = info.AmmoDef.AreaEffect.AreaEffectRadius;
                 var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
-                var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
+                var tRadius = oRadius < minTestRadius && !info.AmmoDef.Const.IsBeamWeapon ? minTestRadius : oRadius;
                 var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 5000, double.MaxValue);
 
 
