@@ -191,7 +191,11 @@ namespace WeaponCore
 
                         for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                         {
-                            if (matchingDef && def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(wepDef.Assignments.MountPoints[i].AzimuthPartId) || VanillaSubpartNames.Contains(wepDef.Assignments.MountPoints[i].ElevationPartId)))
+                            var az = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].AzimuthPartId) ? wepDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
+
+                            var el = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].ElevationPartId) ? wepDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
+
+                            if (matchingDef && def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(az) || VanillaSubpartNames.Contains(el)))
                             {
                                 var gunDef = (MyLargeTurretBaseDefinition)def;
                                 var blockDefs = wepDef.HardPoint.HardWare;
