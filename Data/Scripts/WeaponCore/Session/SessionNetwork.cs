@@ -59,7 +59,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.SyncIds.MIds[(int)packet.PType] = statePacket.MId;
+                            comp.MIds[(int)packet.PType] = statePacket.MId;
                             comp.State.Value.Sync(statePacket.Data);
 
                             report.PacketValid = true;
@@ -74,7 +74,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.SyncIds.MIds[(int)packet.PType] = setPacket.MId;
+                            comp.MIds[(int)packet.PType] = setPacket.MId;
                             comp.Set.Value.Sync(comp, setPacket.Data);
 
                             report.PacketValid = true;
@@ -278,10 +278,10 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp != null && comp.SyncIds.MIds[(int)packet.PType] < overRidesPacket.MId)
+                            if (comp != null && comp.MIds[(int)packet.PType] < overRidesPacket.MId)
                             {
                                 comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                                comp.SyncIds.MIds[(int)packet.PType] = overRidesPacket.MId;
+                                comp.MIds[(int)packet.PType] = overRidesPacket.MId;
 
                                 GroupInfo group;
                                 if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
@@ -335,7 +335,7 @@ namespace WeaponCore
                             }
 
                             comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                            comp.SyncIds.MIds[(int)packet.PType] = cPlayerPacket.MId;
+                            comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
                             report.PacketValid = true;
 
                             break;
@@ -387,7 +387,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
+                            comp.MIds[(int)packet.PType] = shootStatePacket.MId;
 
                             switch (shootStatePacket.Data)
                             {
@@ -416,7 +416,7 @@ namespace WeaponCore
 
                             if (comp == null) break;
 
-                            comp.SyncIds.MIds[(int)packet.PType] = rangePacket.MId;
+                            comp.MIds[(int)packet.PType] = rangePacket.MId;
                             comp.Set.Value.Range = rangePacket.Data;
 
                             report.PacketValid = true;
@@ -453,7 +453,7 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.SyncIds.MIds[(int)packet.PType] = cyclePacket.MId;
+                            comp.MIds[(int)packet.PType] = cyclePacket.MId;
                             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
                             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
 
@@ -546,7 +546,7 @@ namespace WeaponCore
 
                             if (comp != null)
                             {
-                                comp.SyncIds.MIds[(int)midPacket.MidType] = midPacket.MId;
+                                comp.MIds[(int)midPacket.MidType] = midPacket.MId;
                                 if (comp.GetSyncHash() != midPacket.HashCheck)
                                     RequestCompSync(comp);
 
@@ -778,9 +778,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (statePacket.MId > comp.SyncIds.MIds[(int)packet.PType])
+                            if (statePacket.MId > comp.MIds[(int)packet.PType])
                             {
-                                comp.SyncIds.MIds[(int)packet.PType] = statePacket.MId;
+                                comp.MIds[(int)packet.PType] = statePacket.MId;
                                 comp.State.Value.Sync(statePacket.Data);
                                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
 
@@ -788,7 +788,7 @@ namespace WeaponCore
                             }
                             else
                             {
-                                SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                             }
 
@@ -806,9 +806,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (setPacket.MId > comp.SyncIds.MIds[(int)packet.PType])
+                            if (setPacket.MId > comp.MIds[(int)packet.PType])
                             {
-                                comp.SyncIds.MIds[(int)packet.PType] = setPacket.MId;
+                                comp.MIds[(int)packet.PType] = setPacket.MId;
                                 comp.Set.Value.Sync(comp, setPacket.Data);
                                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
@@ -816,7 +816,7 @@ namespace WeaponCore
                             }
                             else
                             {
-                                SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                             }
 
@@ -1088,10 +1088,10 @@ namespace WeaponCore
 
                             if (comp != null)
                             {
-                                if (comp.SyncIds.MIds[(int)packet.PType] < overRidesPacket.MId)
+                                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId)
                                 {
                                     comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                                    comp.SyncIds.MIds[(int)packet.PType] = overRidesPacket.MId;
+                                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
 
                                     GroupInfo group;
                                     if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
@@ -1103,7 +1103,7 @@ namespace WeaponCore
                                 }
                                 else
                                 {
-                                    SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                     errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                                 }
                             }
@@ -1137,7 +1137,7 @@ namespace WeaponCore
                                     }
                                     else
                                     {
-                                        SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, myGrid, null);
+                                        SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, myGrid, null);
                                         errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                                     }
                                 }
@@ -1168,16 +1168,16 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp.SyncIds.MIds[(int)packet.PType] < cPlayerPacket.MId)
+                            if (comp.MIds[(int)packet.PType] < cPlayerPacket.MId)
                             {
                                 comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                                comp.SyncIds.MIds[(int)packet.PType] = cPlayerPacket.MId;
+                                comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
                                 report.PacketValid = true;
                                 PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
                             }
                             else
                             {
-                                SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                             }
 
@@ -1293,9 +1293,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp.SyncIds.MIds[(int)packet.PType] < shootStatePacket.MId)
+                            if (comp.MIds[(int)packet.PType] < shootStatePacket.MId)
                             {
-                                comp.SyncIds.MIds[(int)packet.PType] = shootStatePacket.MId;
+                                comp.MIds[(int)packet.PType] = shootStatePacket.MId;
 
 
                                 switch (shootStatePacket.Data)
@@ -1324,7 +1324,7 @@ namespace WeaponCore
                             }
                             else
                             {
-                                SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                             }
                             
@@ -1342,9 +1342,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (comp.SyncIds.MIds[(int)packet.PType] < rangePacket.MId)
+                            if (comp.MIds[(int)packet.PType] < rangePacket.MId)
                             {
-                                comp.SyncIds.MIds[(int)packet.PType] = rangePacket.MId;
+                                comp.MIds[(int)packet.PType] = rangePacket.MId;
                                 comp.Set.Value.Range = rangePacket.Data;
 
                                 PacketsToClient.Add(new PacketInfo
@@ -1357,7 +1357,7 @@ namespace WeaponCore
                             }
                             else
                             {
-                                SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                             }
 
@@ -1375,9 +1375,9 @@ namespace WeaponCore
                                 break;
                             }
 
-                            if (cyclePacket.MId > comp.SyncIds.MIds[(int)packet.PType])
+                            if (cyclePacket.MId > comp.MIds[(int)packet.PType])
                             {
-                                comp.SyncIds.MIds[(int)packet.PType] = cyclePacket.MId;
+                                comp.MIds[(int)packet.PType] = cyclePacket.MId;
 
                                 var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
 
@@ -1396,7 +1396,7 @@ namespace WeaponCore
                             }
                             else
                             {
-                                SendMidResync(packet.PType, comp.SyncIds.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                                 errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                             }
 

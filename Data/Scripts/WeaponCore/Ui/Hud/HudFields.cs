@@ -39,9 +39,9 @@ namespace WeaponCore
         ///weapon Hud Settings
         ///
         private const float _paddingConst = 10 * _metersInPixel;
-        private const float _WeaponHudFontSize = 3.5f;
+        private const float _WeaponHudFontSize = 4f;
         private const float _WeaponHudFontHeight = _WeaponHudFontSize * _metersInPixel;
-        private const float _reloadHeightConst = 3.5f * _metersInPixel;
+        private const float _reloadHeightConst = 4f * _metersInPixel;
         private const float _reloadWidthConst = _reloadHeightConst;
         private const float _reloadHeightOffsetConst = _reloadHeightConst;
         private const float _heatWidthConst = 35 * _metersInPixel;

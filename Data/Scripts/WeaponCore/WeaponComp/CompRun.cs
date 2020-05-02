@@ -276,8 +276,7 @@ namespace WeaponCore.Support
 
                     State.SaveState();
                     Set.SaveSettings();
-                    WeaponValues.Save(this);
-                    SyncIds.Save(this);                        
+                    WeaponValues.Save(this);                        
                 }
             }
             return false;

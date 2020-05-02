@@ -236,12 +236,13 @@ namespace WeaponCore
         [ProtoMember(1)] public TransferTarget[] Targets;
         [ProtoMember(2)] public WeaponTimings[] Timings;
         [ProtoMember(3)] public WeaponRandomGenerator[] WeaponRandom;
+        [ProtoMember(4)] public uint[] MIds;
 
         public void Save(WeaponComponent comp)
         {
             if (comp.MyCube?.Storage == null) return;
 
-            var sv = new WeaponValues {Targets = Targets, WeaponRandom = WeaponRandom, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
+            var sv = new WeaponValues {Targets = Targets, WeaponRandom = WeaponRandom, MIds = comp.MIds, Timings = new WeaponTimings[comp.Platform.Weapons.Length]};
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -264,6 +265,10 @@ namespace WeaponCore
                 {
                     comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
 
+                    if (!comp.Session.IsClient)
+                        comp.WeaponValues.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
+
+                    comp.MIds = comp.WeaponValues.MIds;
                     var timings = comp.WeaponValues.Timings;
 
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
@@ -297,7 +302,10 @@ namespace WeaponCore
                 Targets = new TransferTarget[comp.Platform.Weapons.Length],
                 Timings = new WeaponTimings[comp.Platform.Weapons.Length],
                 WeaponRandom = new WeaponRandomGenerator[comp.Platform.Weapons.Length],
+                MIds = new uint[Enum.GetValues(typeof(PacketType)).Length]
             };
+
+            comp.MIds = comp.WeaponValues.MIds;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
@@ -314,6 +322,8 @@ namespace WeaponCore
 
                 comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, w.Timings, ref w.State.Sync, false); }, null, 1);
             }
+
+
         }
 
         public WeaponValues() { }
@@ -376,35 +386,6 @@ namespace WeaponCore
                 compared.Projectiles.Equals(Projectiles)
             );
         }
-    }
-
-    [ProtoContract]
-    public class CompMids
-    {
-        [ProtoMember(1)] public uint[] MIds;
-
-        public void Save(WeaponComponent comp)
-        {
-            
-            if (comp.MyCube?.Storage == null) return;           
-
-            var binary = MyAPIGateway.Utilities.SerializeToBinary(this);
-            comp.MyCube.Storage[comp.Session.CompMIdGuid] = Convert.ToBase64String(binary);
-        }
-
-        public static void Load(WeaponComponent comp)
-        {
-            string rawData;
-            if (comp.Session.IsClient && comp.MyCube.Storage.TryGetValue(comp.Session.CompMIdGuid, out rawData))
-            {
-                var base64 = Convert.FromBase64String(rawData);
-                comp.SyncIds = MyAPIGateway.Utilities.SerializeFromBinary<CompMids>(base64);
-            }
-            else
-                comp.SyncIds = new CompMids { MIds = new uint [Enum.GetValues(typeof(PacketType)).Length] };
-        }
-
-        public CompMids() { }
     }
 
     [ProtoContract]
