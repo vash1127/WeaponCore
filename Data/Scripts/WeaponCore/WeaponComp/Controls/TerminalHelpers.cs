@@ -191,8 +191,7 @@ namespace WeaponCore.Control
                             {
                                 var comp = blk?.Components?.Get<WeaponComponent>();
                                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-                                Log.ThreadedWrite("OnOff");
+                                
                                 OnOffAnimations(comp, On);
                             };
                             break;
