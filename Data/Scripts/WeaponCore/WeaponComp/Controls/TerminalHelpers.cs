@@ -47,7 +47,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        WCShootOnceAction(comp);
+                        WcShootOnceAction(comp);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -64,7 +64,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WCShootToggleAction(comp);
+                        WcShootToggleAction(comp);
                     };
 
                     var oldWriter = a.Writer;
@@ -96,7 +96,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WCShootOnAction(comp);
+                        WcShootOnAction(comp);
                     };
 
                     var oldWriter = a.Writer;
@@ -128,7 +128,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WCShootOffAction(comp);
+                        WcShootOffAction(comp);
                     };
 
                     var oldWriter = a.Writer;
@@ -187,13 +187,12 @@ namespace WeaponCore.Control
 
                     case "OnOff":
                         {
-                            ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, On) =>
+                            ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, on) =>
                             {
                                 var comp = blk?.Components?.Get<WeaponComponent>();
                                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                                Log.ThreadedWrite("OnOff");
-                                OnOffAnimations(comp, On);
+                                OnOffAnimations(comp, on);
                             };
                             break;
                         }
@@ -316,17 +315,17 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static void WCShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
+        internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
             if (cState.ShootOn)
-                WCShootOffAction(comp, alreadySynced);
+                WcShootOffAction(comp, alreadySynced);
             else
-                WCShootOnAction(comp, alreadySynced);
+                WcShootOnAction(comp, alreadySynced);
         }
 
-        internal static void WCShootOnAction(WeaponComponent comp, bool alreadySynced = false)
+        internal static void WcShootOnAction(WeaponComponent comp, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
@@ -358,7 +357,7 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static void WCShootOffAction(WeaponComponent comp, bool alreadySynced = false)
+        internal static void WcShootOffAction(WeaponComponent comp, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
@@ -387,7 +386,7 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static void WCShootOnceAction(WeaponComponent comp, bool alreadySynced = false)
+        internal static void WcShootOnceAction(WeaponComponent comp, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
@@ -419,7 +418,7 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static void WCShootClickAction(WeaponComponent comp, bool on, bool isTurret, bool alreadySynced = false)
+        internal static void WcShootClickAction(WeaponComponent comp, bool on, bool isTurret, bool alreadySynced = false)
         {
             var cState = comp.State.Value;
 
