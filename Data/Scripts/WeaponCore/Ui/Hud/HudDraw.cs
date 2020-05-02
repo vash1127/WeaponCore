@@ -279,27 +279,31 @@ namespace WeaponCore
                         var mustCharge = weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge;
                         var texture = mustCharge ? _chargingTexture : _reloadingTexture;
 
-                        if (mustCharge)
-                            stackedInfo.ReloadIndex = (int)(MathHelper.Clamp(MathHelper.Lerp(0, texture.Length - 1, weapon.State.Sync.CurrentCharge / weapon.MaxCharge), 0, texture.Length - 1));
+                        if (texture.Length > 0)
+                        {
 
-                        stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
-                        stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
-                        stackedInfo.CachedReloadTexture.Position.X = textOffset - _reloadOffset;
-                        stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y;
-                        stackedInfo.CachedReloadTexture.Width = _reloadWidth;
-                        stackedInfo.CachedReloadTexture.Height = _reloadHeight;
-                        stackedInfo.CachedReloadTexture.P0 = texture[stackedInfo.ReloadIndex].P0;
-                        stackedInfo.CachedReloadTexture.P1 = texture[stackedInfo.ReloadIndex].P1;
-                        stackedInfo.CachedReloadTexture.P2 = texture[stackedInfo.ReloadIndex].P2;
-                        stackedInfo.CachedReloadTexture.P3 = texture[stackedInfo.ReloadIndex].P3;
+                            if (mustCharge)
+                                stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.State.Sync.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
 
-                        if (!mustCharge && _session.Tick10 && ++stackedInfo.ReloadIndex > texture.Length - 1)
-                            stackedInfo.ReloadIndex = 0;
+                            stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
+                            stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
+                            stackedInfo.CachedReloadTexture.Position.X = textOffset - _reloadOffset;
+                            stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y;
+                            stackedInfo.CachedReloadTexture.Width = _reloadWidth;
+                            stackedInfo.CachedReloadTexture.Height = _reloadHeight;
+                            stackedInfo.CachedReloadTexture.P0 = texture[stackedInfo.ReloadIndex].P0;
+                            stackedInfo.CachedReloadTexture.P1 = texture[stackedInfo.ReloadIndex].P1;
+                            stackedInfo.CachedReloadTexture.P2 = texture[stackedInfo.ReloadIndex].P2;
+                            stackedInfo.CachedReloadTexture.P3 = texture[stackedInfo.ReloadIndex].P3;
 
-                        if (reset)
-                            stackedInfo.CachedReloadTexture.Persistant = false;
+                            if (!mustCharge && _session.Tick10 && ++stackedInfo.ReloadIndex > texture.Length - 1)
+                                stackedInfo.ReloadIndex = 0;
 
-                        _textureAddList.Add(stackedInfo.CachedReloadTexture);
+                            if (reset)
+                                stackedInfo.CachedReloadTexture.Persistant = false;
+
+                            _textureAddList.Add(stackedInfo.CachedReloadTexture);
+                        }
                     }
                 }
                 catch (Exception e)
