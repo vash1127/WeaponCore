@@ -265,7 +265,7 @@ namespace WeaponCore
                 {
                     comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
 
-                    if (!comp.Session.IsClient)
+                    if (!comp.Session.IsClient || comp.WeaponValues.MIds == null || comp.WeaponValues.MIds?.Length != Enum.GetValues(typeof(PacketType)).Length)
                         comp.WeaponValues.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
                     comp.MIds = comp.WeaponValues.MIds;
