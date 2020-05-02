@@ -173,25 +173,11 @@ namespace WeaponCore
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
-                                else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange)
-                                {
-                                    if (w.Target != w.Comp.TrackingWeapon.Target)
-                                    {
+                                else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange) {
+
+                                    if (w.Target != w.Comp.TrackingWeapon.Target) {
                                         w.Target = w.Comp.TrackingWeapon.Target;
-
-                                        w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
-
-                                        if (WeaponsSyncCheck.Add(w))
-                                        {
-                                            WeaponsToSync.Add(w);
-                                            comp.Ai.NumSyncWeapons++;
-                                            w.SendTarget = true;
-
-                                            if (Tick - w.LastSyncTick > 20)
-                                                w.SendSync = true;
-
-                                            w.LastSyncTick = Tick;
-                                        }
+                                        if (MpActive) w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w);
                                     }
                                 }
 
@@ -453,21 +439,8 @@ namespace WeaponCore
 
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
-                            if (w.Target.HasTarget && MpActive)
-                            {
-                                w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
-
-                                if (WeaponsSyncCheck.Add(w))
-                                {
-                                    WeaponsToSync.Add(w);
-                                    comp.Ai.NumSyncWeapons++;
-                                    w.SendTarget = true;
-
-                                    if (Tick - w.LastSyncTick > 20)
-                                        w.SendSync = true;
-
-                                    w.LastSyncTick = Tick;
-                                }
+                            if (w.Target.HasTarget && MpActive) {
+                                w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w);
                             }
                         }
                     }

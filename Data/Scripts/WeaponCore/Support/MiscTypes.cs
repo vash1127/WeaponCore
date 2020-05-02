@@ -72,14 +72,17 @@ namespace WeaponCore.Support
             if (reset) Reset(expireTick, States.Transfered);
         }
 
-        internal void SyncTarget(TransferTarget target, int weaponId)
+        internal void SyncTarget(TransferTarget target, Weapon weapon)
         {
+            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
+                return;
+
             target.EntityId = Entity?.EntityId ?? -1;
             target.TargetPos = TargetPos;
             target.HitShortDist = (float)HitShortDist;
             target.OrigDistance = (float)OrigDistance;
             target.TopEntityId = TopEntityId;
-            target.WeaponId = weaponId;
+            target.WeaponId = weapon.WeaponId;
 
             if (IsProjectile)
                 target.State = TransferTarget.TargetInfo.IsProjectile;
@@ -90,6 +93,22 @@ namespace WeaponCore.Support
 
             if (!HasTarget)
                 target.State = TransferTarget.TargetInfo.Expired;
+
+            if (!weapon.System.Session.IsClient && weapon.System.Session.MpActive)
+            {
+                if (weapon.Comp.Session.WeaponsSyncCheck.Add(weapon))
+                {
+
+                    weapon.Comp.Session.WeaponsToSync.Add(weapon);
+                    weapon.Comp.Ai.NumSyncWeapons++;
+                    weapon.SendTarget = true;
+
+                    if (weapon.Comp.Session.Tick - weapon.LastSyncTick > 20)
+                        weapon.SendSync = true;
+
+                    weapon.LastSyncTick = weapon.Comp.Session.Tick;
+                }
+            }
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
@@ -115,22 +134,8 @@ namespace WeaponCore.Support
             var topEntId = ent.GetTopMostParent().EntityId;
 
             Set(ent, targetPos, shortDist, origDist, topEntId);
-
-            if (!w.System.Session.IsClient && w.System.Session.MpActive) {
-                SyncTarget(w.Comp.WeaponValues.Targets[w.WeaponId], w.WeaponId);
-
-                if (w.Comp.Session.WeaponsSyncCheck.Add(w)) {
-
-                    w.Comp.Session.WeaponsToSync.Add(w);
-                    w.Comp.Ai.NumSyncWeapons++;
-                    w.SendTarget = true;
-
-                    if (w.Comp.Session.Tick - w.LastSyncTick > 20)
-                        w.SendSync = true;
-
-                    w.LastSyncTick = w.Comp.Session.Tick;
-                }
-            }
+            if (w.System.Session.MpActive && !w.System.Session.IsClient) 
+                SyncTarget(w.Comp.WeaponValues.Targets[w.WeaponId], w);
         }
 
         internal void SetFake(uint expiredTick, Vector3D pos)
