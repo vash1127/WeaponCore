@@ -34,7 +34,7 @@ namespace WeaponCore
                     {
                         if (!SorterControls && myEntity is MyConveyorSorter)
                         {
-                            if (IsServer && !DedicatedServer)
+                            if (IsServer && MpActive && !DedicatedServer)
                                 CreateTerminalUi<IMyConveyorSorter>(this);
                             else
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
@@ -43,7 +43,7 @@ namespace WeaponCore
                         }
                         else if (!TurretControls && turret != null)
                         {
-                            if (IsServer && !DedicatedServer)
+                            if (IsServer && MpActive && !DedicatedServer)
                                 CreateTerminalUi<IMyLargeTurretBase>(this);
                             else
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
@@ -52,7 +52,7 @@ namespace WeaponCore
                         }
                         else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher)
                         {
-                            if (IsServer && !DedicatedServer)
+                            if (IsServer && MpActive && !DedicatedServer)
                                 CreateTerminalUi<IMySmallMissileLauncher>(this);
                             else
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
@@ -61,7 +61,7 @@ namespace WeaponCore
                         }
                         else if (!FixedGunControls && controllableGun is IMySmallGatlingGun)
                         {
-                            if (IsServer && !DedicatedServer)
+                            if (IsServer && MpActive && !DedicatedServer)
                                 CreateTerminalUi<IMySmallGatlingGun>(this);
                             else
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
