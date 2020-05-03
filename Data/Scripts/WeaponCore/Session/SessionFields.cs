@@ -95,12 +95,11 @@ namespace WeaponCore
         internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>(){[-1] = new InputStateData()};
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsCheck = new Dictionary<Weapon, int>();
-
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();        
         internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
-        internal readonly HashSet<MyDefinitionId> ammoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
+        internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
 
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();

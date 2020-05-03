@@ -179,6 +179,7 @@ namespace WeaponCore.Support
         internal IMySlimBlock Block;
         internal MyEntity Entity;
         internal Vector3D HitPos;
+        internal Vector3D VisualHitPos;
         internal Vector3D HitVelocity;
         internal uint HitTick;
     }

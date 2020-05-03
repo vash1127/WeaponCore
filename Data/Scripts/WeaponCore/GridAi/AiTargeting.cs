@@ -239,7 +239,7 @@ namespace WeaponCore.Support
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
+                    physics.CastRay(weaponPos, targetPos, out hitInfo, 15, false);
 
                     if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
@@ -372,7 +372,7 @@ namespace WeaponCore.Support
 
                     ai.Session.RandomRayCasts++;
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
+                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15, false);
 
                     if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                         notSelfHit = true;

@@ -1047,7 +1047,7 @@ namespace WeaponCore.Support
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine)
                             ammoDefId = def.Id;
 
-                    Session.ammoDefIds.Add(ammoDefId);
+                    Session.AmmoDefIds.Add(ammoDefId);
                     weaponAmmo[i] = new WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
