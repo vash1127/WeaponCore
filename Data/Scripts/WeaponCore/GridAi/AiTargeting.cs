@@ -239,7 +239,7 @@ namespace WeaponCore.Support
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, targetPos, out hitInfo, 15, false);
+                    physics.CastRay(weaponPos, targetPos, out hitInfo, 15);
 
                     if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
@@ -372,7 +372,7 @@ namespace WeaponCore.Support
 
                     ai.Session.RandomRayCasts++;
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15, false);
+                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15);
 
                     if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                         notSelfHit = true;
@@ -470,7 +470,7 @@ namespace WeaponCore.Support
                             if (castRay)
                             {
                                 ai.Session.ClosestRayCasts++;
-                                bestTest = MyAPIGateway.Physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                                bestTest = MyAPIGateway.Physics.CastRay(testPos, cubePos, out hit, 15) && hit?.HitEntity == cube.CubeGrid;
 
                                 if (hit == null && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()) || (hit.HitEntity != ai.MyGrid))
                                     notSelfHit = true;
@@ -632,7 +632,7 @@ namespace WeaponCore.Support
                     if (needsCast)
                     {
                         IHitInfo hitInfo;
-                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
+                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15);
                         if (hitInfo?.HitEntity == null && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                         {
                             double hitDist;
