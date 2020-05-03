@@ -136,7 +136,7 @@ namespace WeaponCore.Support
 
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (av.OnScreen != AvShot.Screen.None) {
-                            var pos = av.Hit.HitTick == Session.Tick && !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
+                            var pos = av.Hit.HitTick == Session.Tick && !MyUtils.IsZero(av.Hit.VisualHitPos) ? av.Hit.VisualHitPos : av.TracerFront;
                             var matrix = MatrixD.CreateTranslation(pos);
 
                             MyParticleEffect hitEffect;
@@ -162,7 +162,7 @@ namespace WeaponCore.Support
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
-                            var pos = !MyUtils.IsZero(av.Hit.HitPos) ? av.Hit.HitPos : av.TracerFront;
+                            var pos = !MyUtils.IsZero(av.Hit.VisualHitPos) ? av.Hit.VisualHitPos : av.TracerFront;
                             if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, pos, av.AmmoDef);
                             else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, pos, av.AmmoDef);
                         }

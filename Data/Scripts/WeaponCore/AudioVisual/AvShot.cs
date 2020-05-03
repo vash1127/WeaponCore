@@ -293,7 +293,7 @@ namespace WeaponCore.Support
                     else if (a.AmmoDef.Const.IsBeamWeapon && a.Hitting && a.AmmoDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.AmmoDef.Const.ConvergeBeams || a.AmmoDef.Const.OneHitParticle)))
                     {
                         ContainmentType containment;
-                        s.CameraFrustrum.Contains(ref a.Hit.HitPos, out containment);
+                        s.CameraFrustrum.Contains(ref a.Hit.VisualHitPos, out containment);
                         if (containment != ContainmentType.Disjoint) a.RunBeam();
                     }
 
@@ -340,7 +340,7 @@ namespace WeaponCore.Support
             Vector3D frontPos;
             Vector3D backPos;
             var velStep = ShootVelStep;
-            var hit = !MyUtils.IsZero(Hit.HitPos);
+            var hit = !MyUtils.IsZero(Hit.VisualHitPos);
             if (hit)
                 velStep = Vector3D.Zero;
 
@@ -437,8 +437,8 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                Hit.HitPos += ShootVelStep;
-                var newTracerFront = Hit.HitPos + -(PointDir * (TracerStep * StepSize));
+                Hit.VisualHitPos += ShootVelStep;
+                var newTracerFront = Hit.VisualHitPos + -(PointDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float) reduced);
             }
@@ -495,10 +495,10 @@ namespace WeaponCore.Support
                 if (OnScreen != Screen.None)
                 {
                     MatrixD matrix;
-                    MatrixD.CreateTranslation(ref Hit.HitPos, out matrix);
+                    MatrixD.CreateTranslation(ref Hit.VisualHitPos, out matrix);
                     if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !Ai.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
                     {
-                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.HitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
+                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.VisualHitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
                         {
                             if (weapon.HitEffects[MuzzleId] != null)
                             {

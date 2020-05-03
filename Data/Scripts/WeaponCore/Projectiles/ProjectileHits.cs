@@ -6,6 +6,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
@@ -275,6 +276,7 @@ namespace WeaponCore.Projectiles
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                 p.Velocity = Vector3D.Zero;
                 p.Hit.HitPos = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
+                p.Hit.VisualHitPos = p.Hit.HitPos;
                 p.Info.HitList.Clear();
                 return false;
             }
@@ -287,12 +289,29 @@ namespace WeaponCore.Projectiles
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Projectile?.Velocity ?? hitEntity.Entity?.Physics?.LinearVelocity ?? Vector3D.Zero;
                 p.Info.LastHitShield = hitEntity.EventType == Shield;
+                var grid = hitEntity.Entity as MyCubeGrid;
 
                 IMySlimBlock hitBlock = null;
-                if (p.Info.AmmoDef.Const.VirtualBeams && hitEntity.Entity is MyCubeGrid)
-                    hitBlock = hitEntity.Blocks[0];
+                Vector3D? visualHitPos;
+                if (grid != null)
+                {
+                    if (p.Info.AmmoDef.Const.VirtualBeams)
+                        hitBlock = hitEntity.Blocks[0];
 
-                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
+                    IHitInfo hitInfo = null;
+                    if (p.Info.System.Session.HandlesInput && hitEntity.HitPos.HasValue && Vector3D.DistanceSquared(hitEntity.HitPos.Value, p.Info.System.Session.CameraPos) < 22500 && p.Info.System.Session.CameraFrustrum.Contains(hitEntity.HitPos.Value) != ContainmentType.Disjoint)
+                    {
+                        var entSphere = hitEntity.Entity.PositionComp.WorldVolume;
+                        var from = hitEntity.Intersection.From + (hitEntity.Intersection.Direction * MyUtils.GetSmallestDistanceToSphere(ref hitEntity.Intersection.From, ref entSphere));
+                        var to = hitEntity.HitPos.Value + (hitEntity.Intersection.Direction * 3f);
+                        p.Info.System.Session.Physics.CastRay(from, to, out hitInfo, 15);
+                    }
+
+                    visualHitPos = hitInfo?.HitEntity != null ? hitInfo.Position : p.LastHitPos;
+                }
+                else visualHitPos = p.LastHitPos;
+
+                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, VisualHitPos = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
                 if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
 
                 return true;

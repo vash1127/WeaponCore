@@ -87,7 +87,7 @@ namespace WeaponCore.Support
         {
             if (amount <= 0) return;
             var itemDef = item.Content.GetObjectId();
-            if (Session.ammoDefIds.Contains(itemDef))
+            if (Session.AmmoDefIds.Contains(itemDef))
                 Session.FutureEvents.Schedule(CheckReload, itemDef, 1);
         }
 
