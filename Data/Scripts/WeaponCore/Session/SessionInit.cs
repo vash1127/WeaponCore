@@ -178,12 +178,18 @@ namespace WeaponCore
                         {
                             if (def is MyWeaponBlockDefinition)
                             {
+                                var wepBlockDef = def as MyWeaponBlockDefinition;
                                 if (firstWeapon)
-                                    ((MyWeaponBlockDefinition)def).InventoryMaxVolume = 0;
+                                    wepBlockDef.InventoryMaxVolume = 0;
 
-                                ((MyWeaponBlockDefinition)def).InventoryMaxVolume += wepDef.HardPoint.HardWare.InventorySize;
+                                wepBlockDef.InventoryMaxVolume += wepDef.HardPoint.HardWare.InventorySize;
+
+                                var weaponCsDef = MyDefinitionManager.Static.GetWeaponDefinition(wepBlockDef.WeaponDefinitionId);
+
+                                weaponCsDef.WeaponAmmoDatas[0].RateOfFire = wepDef.HardPoint.Loading.RateOfFire;
+                                weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = wepDef.HardPoint.Loading.ShotsInBurst;
                             }
-                            else if(def is MyConveyorSorterDefinition)
+                            else if (def is MyConveyorSorterDefinition)
                             {
                                 if (firstWeapon)
                                     ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
@@ -194,26 +200,27 @@ namespace WeaponCore
                             }
 
                             firstWeapon = false;
-                        }
 
-                        for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
-                        {
-                            var az = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].AzimuthPartId) ? wepDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
 
-                            var el = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].ElevationPartId) ? wepDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
-
-                            if (matchingDef && def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(az) || VanillaSubpartNames.Contains(el)))
+                            for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                             {
-                                var gunDef = (MyLargeTurretBaseDefinition)def;
-                                var blockDefs = wepDef.HardPoint.HardWare;
+                                var az = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].AzimuthPartId) ? wepDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
 
-                                gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
-                                gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
-                                gunDef.MinElevationDegrees = blockDefs.MinElevation;
-                                gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
-                                gunDef.RotationSpeed = blockDefs.RotateRate / 60;
-                                gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
-                                gunDef.AiEnabled = false;
+                                var el = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].ElevationPartId) ? wepDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
+
+                                if (def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(az) || VanillaSubpartNames.Contains(el)))
+                                {
+                                    var gunDef = (MyLargeTurretBaseDefinition)def;
+                                    var blockDefs = wepDef.HardPoint.HardWare;
+
+                                    gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
+                                    gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
+                                    gunDef.MinElevationDegrees = blockDefs.MinElevation;
+                                    gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
+                                    gunDef.RotationSpeed = blockDefs.RotateRate / 60;
+                                    gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
+                                    gunDef.AiEnabled = false;
+                                }
                             }
                         }
                     }
