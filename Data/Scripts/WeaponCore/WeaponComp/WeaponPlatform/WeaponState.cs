@@ -63,9 +63,14 @@ namespace WeaponCore.Platform
                 obj.PositionComp.OnPositionChanged -= UpdateParts;
         }
 
+        internal void DelayedStart(object o)
+        {
+            EventTriggerStateChanged(EventTriggers.TurnOff, true);
+        }
+
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            if (Comp?.State == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (Comp?.State == null || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             try
             {
                 var session = Comp.Session;
@@ -204,11 +209,12 @@ namespace WeaponCore.Platform
                                     if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                         CurLgstAnimPlaying = animation;
 
-                                    PartAnimation animCheck;
                                     animation.Running = true;
                                     animation.CanPlay = true;
                                     //animation.Paused = Comp.ResettingSubparts;
+                                    
                                     string eventName;
+                                    PartAnimation animCheck;
                                     if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out eventName) && AnimationLookup.TryGetValue(eventName, out animCheck))
                                     {
                                         if (animCheck.Running)

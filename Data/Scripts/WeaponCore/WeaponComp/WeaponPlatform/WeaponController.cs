@@ -11,8 +11,8 @@ namespace WeaponCore.Platform
         {
             LastTrackedTick = Comp.Session.Tick;
 
-            Azimuth = MathHelper.Clamp(Azimuth, MinAzimuthRadians, MaxAzimuthRadians);
-            Elevation = MathHelper.Clamp(Elevation, MinElevationRadians, MaxElevationRadians);
+            //Azimuth = MathHelper.Clamp(Azimuth, MinAzimuthRadians, MaxAzimuthRadians);
+            //Elevation = MathHelper.Clamp(Elevation, MinElevationRadians, MaxElevationRadians);
 
             if (AiOnlyWeapon)
             {

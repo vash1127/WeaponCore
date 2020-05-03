@@ -247,11 +247,8 @@ namespace WeaponCore.Support
                 Ai.Construct.Update(Ai);
 
                 if (!FunctionalBlock.Enabled)
-                    Session.FutureEvents.Schedule(o =>
-                    {
-                        for (int i = 0; i < Platform.Weapons.Length; i++)
-                            Platform.Weapons[i].EventTriggerStateChanged(EventTriggers.TurnOff, true);
-                    }, null, 1);
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                        Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

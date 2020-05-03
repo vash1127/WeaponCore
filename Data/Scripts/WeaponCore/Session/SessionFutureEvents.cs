@@ -50,7 +50,9 @@ namespace WeaponCore.Support
                     if (_lastTick == tick - 1 || purge)
                     {
                         var index = tick % _maxDelay;
-                        for (int i = 0; i < _callbacks[index].Count; i++) _callbacks[index][i].Callback(_callbacks[index][i].Arg1);
+                        for (int i = 0; i < _callbacks[index].Count; i++) 
+                            _callbacks[index][i].Callback(_callbacks[index][i].Arg1);
+
                         _callbacks[index].Clear();
                         _offset = tick + 1;
                     }
@@ -61,7 +63,9 @@ namespace WeaponCore.Support
                         for (int i = 0; i < tick - _lastTick; i++)
                         {
                             var pastIdx = (tick - --idx) % _maxDelay;
-                            for (int j = 0; j < _callbacks[pastIdx].Count; j++) _callbacks[pastIdx][j].Callback(_callbacks[pastIdx][j].Arg1);
+                            for (int j = 0; j < _callbacks[pastIdx].Count; j++) 
+                                _callbacks[pastIdx][j].Callback(_callbacks[pastIdx][j].Arg1);
+
                             _callbacks[pastIdx].Clear();
                             _offset = tick + 1;
                         }

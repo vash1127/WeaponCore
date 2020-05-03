@@ -252,13 +252,10 @@ namespace WeaponCore.Platform
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
 
-                var desiredAzAbs = desiredAzimuth + weapon.Azimuth;
-                var desiredElAbs = desiredElevation - weapon.Elevation;
-
-                var azConstraint = MathHelper.Clamp(desiredAzAbs, weapon.MinAzToleranceRadians, weapon.MaxAzToleranceRadians);
-                var elConstraint = MathHelper.Clamp(desiredElAbs, weapon.MinElToleranceRadians, weapon.MaxElToleranceRadians);
-                var elConstrained = Math.Abs(elConstraint - desiredElAbs) > 0.0000001;
-                var azConstrained = Math.Abs(azConstraint - desiredAzAbs) > 0.0000001;
+                var azConstraint = Math.Min(weapon.MaxAzToleranceRadians, Math.Max(weapon.MinAzToleranceRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElToleranceRadians, Math.Max(weapon.MinElToleranceRadians, desiredElevation));
+                var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
                 if (weapon.Target.IsTracking && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera && !weapon.Comp.ResettingSubparts)
                 {
