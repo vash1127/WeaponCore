@@ -34,23 +34,38 @@ namespace WeaponCore
                     {
                         if (!SorterControls && myEntity is MyConveyorSorter)
                         {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
+                            if (IsServer && !DedicatedServer)
+                                CreateTerminalUi<IMyConveyorSorter>(this);
+                            else
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
+
                             SorterControls = true;
                         }
                         else if (!TurretControls && turret != null)
                         {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
-                            TurretControls = true;
+                            if (IsServer && !DedicatedServer)
+                                CreateTerminalUi<IMyLargeTurretBase>(this);
+                            else
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
 
+                            TurretControls = true;
                         }
                         else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher)
                         {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
+                            if (IsServer && !DedicatedServer)
+                                CreateTerminalUi<IMySmallMissileLauncher>(this);
+                            else
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
+
                             FixedMissileControls = true;
                         }
                         else if (!FixedGunControls && controllableGun is IMySmallGatlingGun)
                         {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
+                            if (IsServer && !DedicatedServer)
+                                CreateTerminalUi<IMySmallGatlingGun>(this);
+                            else
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
+
                             FixedGunControls = true;
                         }
                     }

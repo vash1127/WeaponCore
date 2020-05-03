@@ -75,6 +75,13 @@ namespace WeaponCore
             Log.Line($"Logging Started", "perf");
             Log.Line($"Logging Started", "stats");
 
+            MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
+            IsServer = MyAPIGateway.Multiplayer.IsServer;
+            DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
+            IsCreative = MyAPIGateway.Session.CreativeMode;
+            IsClient = !IsServer && !DedicatedServer && MpActive;
+            HandlesInput = !IsServer || IsServer && !DedicatedServer;
+
             foreach (var x in WeaponDefinitions)
             {
                 foreach (var ammo in x.Ammos)
@@ -223,6 +230,7 @@ namespace WeaponCore
 
                 WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
             }
+
 
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
         }
