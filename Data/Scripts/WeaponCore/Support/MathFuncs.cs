@@ -125,15 +125,15 @@ namespace WeaponCore.Support
             // return result of desired values being in tolerances
             if (canSeeOnly)
             {
-                if (desiredAzimuth > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
-                    return false;
-                
-                if (desiredAzimuth < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > Math.PI) 
+                if (weapon.Azimuth + desiredAzimuth > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
                     return false;
 
-                if (desiredElevation < weapon.MinElToleranceRadians || desiredElevation > weapon.MaxElToleranceRadians ) 
+                if (weapon.Azimuth + desiredAzimuth < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > Math.PI)
                     return false;
-                
+
+                if (desiredElevation < weapon.MinElToleranceRadians || desiredElevation > weapon.MaxElToleranceRadians)
+                    return false;
+
                 return true;
             }
 

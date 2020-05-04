@@ -113,6 +113,8 @@ namespace WeaponCore
             AmmoMoveTriggered = 0;
             AmmoPulls = 0;
             Load = 0d;
+            Log.LineShortDate($"{NoTargets}");
+            NoTargets = 0;
             DsUtil.Clean();
         }
 
