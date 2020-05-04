@@ -42,7 +42,7 @@ namespace WeaponCore.Projectiles
 
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("FragmentsNeedingEntities", 32);
+            Session.StallReporter.Start("FragmentsNeedingEntities", 17);
             if (Session.FragmentsNeedingEntities.Count > 0)
                 PrepFragmentEntities();
             Session.StallReporter.End();
@@ -50,7 +50,7 @@ namespace WeaponCore.Projectiles
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
 
-            Session.StallReporter.Start("Clean&Spawn", 32);
+            Session.StallReporter.Start("Clean&Spawn", 17);
             Clean();
             SpawnFragments();
 
@@ -62,14 +62,13 @@ namespace WeaponCore.Projectiles
 
             var activeCount = ActiveProjetiles.Count;
 
-            Session.StallReporter.Start("UpdateState", 32);
+            Session.StallReporter.Start("UpdateState", 17);
             if (activeCount > 0) 
                 UpdateState();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("CheckHits", 32);
-            //Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
-            if (activeCount > 350)
+            Session.StallReporter.Start("CheckHits", 17);
+            if (activeCount > 150)
                 Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
             else if (activeCount > 0)
                 CheckHits();
@@ -78,7 +77,7 @@ namespace WeaponCore.Projectiles
 
         internal void Stage2() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("Stage2-TaskWait", 32);
+            Session.StallReporter.Start("Stage2-TaskWait", 17);
             if (!Session.PTask.IsComplete)
                 Session.PTask.WaitOrExecute();
 
@@ -86,7 +85,7 @@ namespace WeaponCore.Projectiles
                 Session.TaskHasErrors(ref Session.PTask, "PTask");
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("ConfirmHit", 32);
+            Session.StallReporter.Start("ConfirmHit", 17);
             ConfirmHit();
             Session.StallReporter.End();
 
