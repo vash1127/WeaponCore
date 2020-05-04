@@ -1,5 +1,7 @@
 ﻿using System;
+using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -84,6 +86,131 @@ namespace WeaponCore.Support
             double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
             var maxedDiff = Math.Max(0, diff);
             return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
+        }
+
+        internal static bool WeaponLookAt(Weapon weapon, ref Vector3D targetDir, double targetDistSqr, bool setWeapon)
+        {
+            var system = weapon.System;
+            var target = weapon.Target;
+
+            //Get weapon direction and orientation
+            Vector3D currentVector;
+            Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
+            currentVector = Vector3D.Rotate(currentVector, weapon.WeaponConstMatrix);
+
+            var up = weapon.MyPivotUp;
+            var left = Vector3D.Cross(up, currentVector);
+            if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left)) left.Normalize();
+            var forward = Vector3D.Cross(left, up);
+            var constraintMatrix = new MatrixD { Forward = forward, Left = left, Up = up, };
+
+            // ugly as sin inlined compute GetRotationAngles + AngleBetween, returning the desired az/el doubles;
+            var localTargetVector = Vector3D.TransformNormal(targetDir, MatrixD.Transpose(constraintMatrix));
+            var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
+            var azVecIsZero = Vector3D.IsZero(Vector3D.Forward) || Vector3D.IsZero(flattenedTargetVector);
+
+            var desiredAzimuth = azVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(Vector3D.Forward.Dot(flattenedTargetVector) / Math.Sqrt(Vector3D.Forward.LengthSquared() * flattenedTargetVector.LengthSquared()), -1, 1)) * -Math.Sign(localTargetVector.X); //right is positive;
+
+            if (Math.Abs(desiredAzimuth) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
+                desiredAzimuth = Math.PI;
+            
+            double desiredElevation;
+            if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
+                desiredElevation = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
+            else {
+                var elVecIsZero = Vector3D.IsZero(localTargetVector) || Vector3D.IsZero(flattenedTargetVector);
+                desiredElevation = elVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(localTargetVector.Dot(flattenedTargetVector) / Math.Sqrt(localTargetVector.LengthSquared() * flattenedTargetVector.LengthSquared()), -1, 1)) * Math.Sign(localTargetVector.Y); //up is positive
+            }
+
+            // check for backAround constraint
+            double azToTraverse;
+            if (weapon.MaxAzToleranceRadians < Math.PI && weapon.MinAzToleranceRadians > -Math.PI) {
+                
+                var azAngle = weapon.Azimuth + desiredAzimuth;
+                if (azAngle > Math.PI) {
+                    azAngle -= MathHelperD.TwoPi;
+                }
+                else if (azAngle < -Math.PI) {
+                    azAngle = MathHelperD.TwoPi + azAngle;
+                }
+                azToTraverse = azAngle - weapon.Azimuth;
+            }
+            else 
+                azToTraverse = desiredAzimuth;
+
+            // Clamp step within limits.
+            var azStep = MathHelperD.Clamp(azToTraverse, -system.AzStep, system.AzStep);
+            var elStep = MathHelperD.Clamp(desiredElevation - weapon.Elevation, -system.ElStep, system.ElStep);
+
+            // epsilon based on target type and distance
+            var epsilon = target.IsProjectile ? 1E-06d : targetDistSqr <= 640000 ? 1E-03d : targetDistSqr <= 3240000 ? 1E-04d : 1E-05d;
+
+            // check if step is within epsilon of zero;
+            var azLocked = MyUtils.IsZero(azStep, (float)epsilon);
+            var elLocked = MyUtils.IsZero(elStep, (float)epsilon);
+
+            // are az and el both within tolerance of target
+            var locked = azLocked && elLocked;
+
+            // Compute actual angle to rotate subparts
+            var az = weapon.Azimuth + azStep;
+            var el = weapon.Elevation + elStep;
+
+            // This is where we should clamp. az and el are measured relative the WorldMatrix.Forward.
+            // desiredAzimuth is measured off of the CURRENT heading of the barrel. The limits are based off of
+            // WorldMatrix.Forward as well.
+            var azHitLimit = false;
+            var elHitLimit = false;
+
+            // Check azimuth angles
+            if (az > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
+            {
+                // Hit upper azimuth limit
+                az = weapon.MaxAzToleranceRadians;
+                azHitLimit = true;
+            }
+            else if (az < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > Math.PI)
+            {
+                // Hit lower azimuth limit
+                az = weapon.MinAzToleranceRadians;
+                azHitLimit = true;
+            }
+
+            // Check elevation angles
+            if (el > weapon.MaxElToleranceRadians)
+            {
+                // Hit upper elevation limit
+                el = weapon.MaxElToleranceRadians;
+                elHitLimit = true;
+            }
+            else if (el < weapon.MinElToleranceRadians)
+            {
+                // Hit lower elevation limit
+                el = weapon.MinElToleranceRadians;
+                elHitLimit = true;
+            }
+
+
+            // Weapon has a degree of freedom to move towards target
+            var tracking = !azHitLimit && !elHitLimit;
+
+            if (setWeapon)
+            {
+                weapon.Target.IsTracking = tracking;
+
+                if (!azLocked) {
+                    weapon.Azimuth = az;
+                    weapon.AzimuthTick = system.Session.Tick;
+                }
+
+                if (!elLocked) {
+                    weapon.Elevation = el;
+                    weapon.ElevationTick = system.Session.Tick;
+                }
+            }
+
+
+            return !locked;
         }
 
         /*

@@ -1,4 +1,5 @@
 ﻿using System;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -7,25 +8,21 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        public void AimBarrel(bool moveAz, bool moveEl)
+        public void AimBarrel()
         {
             LastTrackedTick = Comp.Session.Tick;
+            IsHome = false;
 
-            //Azimuth = MathHelper.Clamp(Azimuth, MinAzimuthRadians, MaxAzimuthRadians);
-            //Elevation = MathHelper.Clamp(Elevation, MinElevationRadians, MaxElevationRadians);
+            if (AiOnlyWeapon) {
 
-            if (AiOnlyWeapon)
-            {
-                if (moveAz && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
-                {
+                if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
                     var azRotMatrix = Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)Azimuth);
                     azRotMatrix.Translation = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation;
 
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azRotMatrix, null, true);
                 }
 
-                if (moveEl && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly))
-                {
+                if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
 
                     var elRotMatrix = Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, -(float)Elevation);
                     elRotMatrix.Translation = ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
@@ -33,12 +30,11 @@ namespace WeaponCore.Platform
                     ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
                 }
             }
-            else
-            {   
-                if (moveEl)
+            else {   
+                if (ElevationTick == Comp.Session.Tick)
                     Comp.TurretBase.Elevation = (float)Elevation;
 
-                if (moveAz)
+                if (AzimuthTick == Comp.Session.Tick)
                     Comp.TurretBase.Azimuth = (float)Azimuth;
             }
 
@@ -81,8 +77,13 @@ namespace WeaponCore.Platform
                     else if (oldEl < 0)
                         Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
+                    if (MyUtils.IsEqual((float)oldAz, (float)Azimuth))
+                        AzimuthTick = Comp.Session.Tick;
 
-                    AimBarrel(oldAz != Azimuth , oldEl != Elevation);
+                    if (MyUtils.IsEqual((float)oldEl, (float)Elevation))
+                        ElevationTick = Comp.Session.Tick;
+
+                    AimBarrel();
                 }
 
                 if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)

@@ -214,7 +214,7 @@ namespace WeaponCore.Support
                         session.CanShoot++;
                         if (!w.AiEnabled)
                         {
-                            var newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
+                            var newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;

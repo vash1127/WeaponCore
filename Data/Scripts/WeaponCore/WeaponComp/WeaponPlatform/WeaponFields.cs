@@ -41,6 +41,9 @@ namespace WeaponCore.Platform
         internal uint TicksPerShot;
         internal uint LastSyncTick;
         internal uint PosChangedTick = 1;
+        internal uint ElevationTick;
+        internal uint AzimuthTick;
+
         internal double TimePerShot;
         internal float HeatPerc;
 
