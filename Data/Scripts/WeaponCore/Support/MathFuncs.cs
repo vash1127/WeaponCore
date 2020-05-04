@@ -88,7 +88,7 @@ namespace WeaponCore.Support
             return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
         }
 
-        internal static bool WeaponLookAt(Weapon weapon, ref Vector3D targetDir, double targetDistSqr, bool setWeapon)
+        internal static bool WeaponLookAt(Weapon weapon, ref Vector3D targetDir, double targetDistSqr, bool setWeapon, bool canSeeOnly)
         {
             var system = weapon.System;
             var target = weapon.Target;
@@ -120,6 +120,21 @@ namespace WeaponCore.Support
             else {
                 var elVecIsZero = Vector3D.IsZero(localTargetVector) || Vector3D.IsZero(flattenedTargetVector);
                 desiredElevation = elVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(localTargetVector.Dot(flattenedTargetVector) / Math.Sqrt(localTargetVector.LengthSquared() * flattenedTargetVector.LengthSquared()), -1, 1)) * Math.Sign(localTargetVector.Y); //up is positive
+            }
+
+            // return result of desired values being in tolerances
+            if (canSeeOnly)
+            {
+                if (desiredAzimuth > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
+                    return false;
+                
+                if (desiredAzimuth < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > Math.PI) 
+                    return false;
+
+                if (desiredElevation < weapon.MinElToleranceRadians || desiredElevation > weapon.MaxElToleranceRadians ) 
+                    return false;
+                
+                return true;
             }
 
             // check for backAround constraint

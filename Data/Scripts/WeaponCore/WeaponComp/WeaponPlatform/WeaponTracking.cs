@@ -34,7 +34,7 @@ namespace WeaponCore.Platform
             bool canTrack;
 
             if (weapon == trackingWeapon)
-                canTrack = MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false);
+                canTrack = MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false, true);
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
@@ -216,7 +216,7 @@ namespace WeaponCore.Platform
             weapon.Target.IsTracking = false;
             if (readyToTrack && weapon.Comp.State.Value.CurrentPlayerControl.ControlType != ControlType.Camera) {
 
-                if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true)) {
+                if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false)) {
 
                     locked = false;
                     weapon.AimBarrel();
