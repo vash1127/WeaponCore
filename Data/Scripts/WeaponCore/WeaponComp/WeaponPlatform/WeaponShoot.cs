@@ -92,11 +92,13 @@ namespace WeaponCore.Platform
                 if (ShootTick > tick)
                     return;
 
+
                 MyEntity focusTarget;
                 if (LockOnFireState && (Target.Entity != Comp.Ai.Focus.Target[0] || Target.Entity != Comp.Ai.Focus.Target[1]) && Comp.Ai.Focus.GetPriorityTarget(out focusTarget))
                     Target.LockTarget(this, focusTarget);
 
                 ShootTick = tick + TicksPerShot;
+                Target.CheckTick = 0;
 
                 if (!IsShooting) StartShooting();
 
