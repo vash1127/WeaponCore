@@ -130,7 +130,6 @@ namespace WeaponCore.Projectiles
                                         else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES)  && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
                                             voxelHit = beam.From;
                                     }
-
                                 }
                             }
                         }

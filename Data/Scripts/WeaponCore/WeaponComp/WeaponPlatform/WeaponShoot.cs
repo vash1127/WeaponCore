@@ -518,7 +518,9 @@ namespace WeaponCore.Platform
             if (hitTopEnt == null)
             {
                 if (ignoreTargets)
+                {
                     return;
+                }
 
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
@@ -527,13 +529,22 @@ namespace WeaponCore.Platform
 
             var targetTopEnt = Target.Entity?.GetTopMostParent();
             if (targetTopEnt == null)
+            {
                 return;
+            }
 
             var unexpectedHit = ignoreTargets || targetTopEnt != hitTopEnt;
             var topAsGrid = hitTopEnt as MyCubeGrid;
 
             if (unexpectedHit)
             {
+                if (hitTopEnt is MyVoxelBase)
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return;
+                }
+
                 if (topAsGrid == null)
                     return;
 

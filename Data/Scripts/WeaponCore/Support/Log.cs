@@ -35,6 +35,7 @@ namespace WeaponCore.Support
                 var instance = _logPool.Get();
                 _instances[name] = instance;
                 instance.TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(filename, typeof(LogInstance));
+                Line($"Logging Started", name);
             }
             catch (Exception e)
             {

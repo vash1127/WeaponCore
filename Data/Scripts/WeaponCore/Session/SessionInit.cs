@@ -71,9 +71,7 @@ namespace WeaponCore
             Log.Init("debug");
             Log.Init("perf", false);
             Log.Init("stats", false);
-            Log.Line($"Logging Started");
-            Log.Line($"Logging Started", "perf");
-            Log.Line($"Logging Started", "stats");
+
 
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;

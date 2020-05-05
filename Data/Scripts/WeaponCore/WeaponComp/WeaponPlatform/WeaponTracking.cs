@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.Game.Entities;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -45,6 +46,8 @@ namespace WeaponCore.Platform
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
+            var ai = weapon.Comp.Ai;
+
             Vector3D targetPos;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
@@ -168,7 +171,6 @@ namespace WeaponCore.Platform
             var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None || weapon.Comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
-
             if (weapon.Comp.TrackReticle)
                 targetCenter = weapon.Comp.Ai.DummyTarget.Position;
             else if (target.IsProjectile)
@@ -316,7 +318,6 @@ namespace WeaponCore.Platform
             var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
             var gravity = weapon.GravityPoint;
             var basic = weapon.System.Prediction != Prediction.Advanced;
-
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
 
@@ -338,10 +339,11 @@ namespace WeaponCore.Platform
             bool projectileAccelerates = projectileAccMag > 1e-6;
             bool hasGravity = gravityMultiplier > 1e-6;
             
-            if (projectileAccelerates)
+            if (!basic && projectileAccelerates)
                 shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
 
             Vector3D estimatedImpactPoint = targetPos + timeToIntercept * (targetVel - shooterVel * shooterVelScaleFactor);
+
             if (basic) return estimatedImpactPoint;
 
             Vector3D aimDirection = estimatedImpactPoint - shooterPos;

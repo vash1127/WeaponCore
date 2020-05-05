@@ -12,6 +12,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
@@ -235,11 +236,12 @@ namespace WeaponCore.Support
                     if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
+                    session.TopRayCasts++;
 
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                    session.TopRayCasts++;
+                    
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, targetPos, out hitInfo, 15);
+                    physics.CastRay(weaponPos, targetPos, out hitInfo, CollisionLayers.DefaultCollisionLayer);
 
                     if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
