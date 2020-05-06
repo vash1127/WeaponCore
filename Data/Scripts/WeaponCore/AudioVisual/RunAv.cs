@@ -56,7 +56,10 @@ namespace WeaponCore.Support
                 if (effect.IsEmittingStopped || effect.IsStopped || !effect.Enabled || effect.GetElapsedTime() >= effect.DurationMax)
                 {
                     KeensBrokenParticles.RemoveAtFast(i);
-                    RipMap.Remove(rip.Effect);
+
+                    if (rip.AmmoDef.Const.IsBeamWeapon) 
+                        RipMap.Remove(rip.Effect);
+
                     KeenMessPool.Return(rip);
                 }
                 else if (Session.Tick != rip.LastTick)
@@ -110,12 +113,15 @@ namespace WeaponCore.Support
                     }
                     if (av.Triggered && av.TriggerEntity != null)
                     {
-                        if ((!av.TriggerEntity.InScene))
+                        if (!av.AmmoDef.AreaEffect.Pulse.HideModel && (!av.TriggerEntity.InScene))
                         {
                             av.TriggerEntity.InScene = true;
                             av.TriggerEntity.Render.UpdateRenderObject(true, false);
                         }
                         av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
+
+                        if (av.OnScreen != AvShot.Screen.None && av.AmmoDef.Const.FieldParticle && av.FieldEffect != null)
+                            av.AmmoEffect.WorldMatrix = av.PrimeMatrix;
                     }
 
                     if (av.HasTravelSound)
@@ -152,7 +158,14 @@ namespace WeaponCore.Support
                                 {
                                     var hitVel = av.Hit.HitVelocity;
                                     Vector3D.ClampToSphere(ref hitVel, (float)av.MaxSpeed);
-                                    KeensBrokenParticles.Add(new KeensMess { Effect = hitEffect, AmmoDef = av.AmmoDef, Velocity = hitVel, LastTick = Session.Tick });
+                                    var keenMess = KeenMessPool.Get();
+                                    keenMess.Effect = hitEffect;
+                                    keenMess.AmmoDef = av.AmmoDef;
+                                    keenMess.Velocity = hitVel;
+                                    keenMess.LastTick = Session.Tick;
+                                    keenMess.Looping = false;
+
+                                    KeensBrokenParticles.Add(keenMess);
                                 }
                             }
                         }
@@ -179,7 +192,6 @@ namespace WeaponCore.Support
                     }
                     else if (av.AmmoEffect != null && av.AmmoDef.Const.AmmoParticle)
                     {
-                        //var translation = a.AmmoEffect.WorldMatrix.Translation + a.VelStep;
                         av.AmmoEffect.SetTranslation(ref av.TracerFront);
                     }
                 }
