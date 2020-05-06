@@ -388,7 +388,7 @@ namespace WeaponCore.Support
         public readonly int MaxTargets;
         public readonly int PulseInterval;
         public readonly int PulseChance;
-        public readonly int PulseMaxSteps;
+        public readonly int PulseGrowTime;
         public readonly int EnergyMagSize;
         public readonly int ChargSize;
         public readonly int ShrapnelId = -1;
@@ -540,7 +540,7 @@ namespace WeaponCore.Support
 
             ComputeAmmoPattern(ammo, wDef, out AmmoPattern, out PatternIndex, out AmmoShufflePattern);
 
-            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseMaxSteps);
+            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
 
             DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
@@ -820,10 +820,10 @@ namespace WeaponCore.Support
             if (mexLogLevel >= 1) Log.Line($"Effecetive DPS(mult) = {effectiveDps}");
         }
 
-        private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int pulseMaxSteps)
+        private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
         {
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;
-            pulseMaxSteps = ammoDef.AreaEffect.Pulse.MaxSteps;
+            growTime = ammoDef.AreaEffect.Pulse.GrowTime;
             pulseChance = ammoDef.AreaEffect.Pulse.PulseChance;
             pulse = pulseInterval > 0 && pulseChance > 0;
         }

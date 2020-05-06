@@ -511,7 +511,7 @@ namespace WeaponCore.Support
                 {
                     [ProtoMember(1)] internal int Interval;
                     [ProtoMember(2)] internal int PulseChance;
-                    [ProtoMember(3)] internal int MaxSteps;
+                    [ProtoMember(3)] internal int GrowTime;
                     [ProtoMember(4)] internal bool HideModel;
                     [ProtoMember(5)] internal bool ShowParticle;
                     [ProtoMember(6)] internal ParticleDef Particle;
