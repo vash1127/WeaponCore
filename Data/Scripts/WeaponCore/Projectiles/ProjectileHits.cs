@@ -286,8 +286,20 @@ namespace WeaponCore.Projectiles
 
                 var hitEntity = p.Info.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
-                p.LastHitEntVel = hitEntity.Projectile?.Velocity ?? hitEntity.Entity?.Physics?.LinearVelocity ?? Vector3D.Zero;
                 p.Info.LastHitShield = hitEntity.EventType == Shield;
+
+                if (p.Info.LastHitShield)
+                {
+                    var cube = hitEntity.Entity as MyCubeBlock;
+                    if (cube?.CubeGrid?.Physics != null)
+                        p.LastHitEntVel = cube.CubeGrid.Physics.LinearVelocity;
+                }
+                else if (hitEntity.Projectile != null)
+                    p.LastHitEntVel = hitEntity.Projectile?.Velocity;
+                else if (hitEntity.Entity?.Physics != null)
+                    p.LastHitEntVel = hitEntity.Entity?.Physics.LinearVelocity;
+                else p.LastHitEntVel = Vector3.Zero;
+
                 var grid = hitEntity.Entity as MyCubeGrid;
 
                 IMySlimBlock hitBlock = null;

@@ -64,7 +64,7 @@ namespace WeaponCore.Support
                 }
                 else if (Session.Tick != rip.LastTick)
                 {
-                    var velSimulation = effect.WorldMatrix.Translation + (rip.Velocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
+                    var velSimulation = effect.WorldMatrix.Translation + (rip.Velocity * (MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS));
                     effect.SetTranslation(ref velSimulation);
                 }
             }
