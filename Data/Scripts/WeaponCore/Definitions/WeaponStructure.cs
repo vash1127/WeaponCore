@@ -388,6 +388,7 @@ namespace WeaponCore.Support
         public readonly int MaxTargets;
         public readonly int PulseInterval;
         public readonly int PulseChance;
+        public readonly int PulseGrowTime;
         public readonly int EnergyMagSize;
         public readonly int ChargSize;
         public readonly int ShrapnelId = -1;
@@ -407,6 +408,7 @@ namespace WeaponCore.Support
         public readonly bool IsField;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
+        public readonly bool FieldParticle;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool LineWidthVariance;
@@ -423,6 +425,7 @@ namespace WeaponCore.Support
         public readonly bool ConvergeBeams;
         public readonly bool RotateRealBeam;
         public readonly bool AmmoParticleShrinks;
+        public readonly bool FieldParticleShrinks;
         public readonly bool HitParticleShrinks;
         public readonly bool DrawLine;
         public readonly bool Ewar;
@@ -500,12 +503,14 @@ namespace WeaponCore.Support
             IsHybrid = ammo.AmmoDef.HybridRound;
             IsTurretSelectable = !ammo.IsShrapnel || ammo.AmmoDef.HardPointUsable;
 
-            AmmoParticle = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Ammo.ShrinkByDistance;
             HitParticleShrinks = ammo.AmmoDef.AmmoGraphics.Particles.Hit.ShrinkByDistance;
+            FieldParticleShrinks = ammo.AmmoDef.AreaEffect.Pulse.Particle.ShrinkByDistance;
 
-            HitParticle = ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name != string.Empty;
-
+            AmmoParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name);
+            HitParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name);
+            FieldParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AreaEffect.Pulse.Particle.Name);
+            
             DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
             LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
             LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;
@@ -535,7 +540,7 @@ namespace WeaponCore.Support
 
             ComputeAmmoPattern(ammo, wDef, out AmmoPattern, out PatternIndex, out AmmoShufflePattern);
 
-            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse);
+            Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
 
             DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
@@ -815,9 +820,10 @@ namespace WeaponCore.Support
             if (mexLogLevel >= 1) Log.Line($"Effecetive DPS(mult) = {effectiveDps}");
         }
 
-        private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse)
+        private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
         {
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;
+            growTime = ammoDef.AreaEffect.Pulse.GrowTime;
             pulseChance = ammoDef.AreaEffect.Pulse.PulseChance;
             pulse = pulseInterval > 0 && pulseChance > 0;
         }

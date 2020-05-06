@@ -28,6 +28,7 @@ namespace WeaponCore.Support
         internal Queue<Shrinks> TracerShrinks = new Queue<Shrinks>(64);
         internal List<Vector3D> Offsets = new List<Vector3D>(64);
         internal MyParticleEffect AmmoEffect;
+        internal MyParticleEffect FieldEffect;
         internal WeaponComponent FiringWeapon;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool Offset;
@@ -47,8 +48,10 @@ namespace WeaponCore.Support
         internal bool LastStep;
         internal bool Dirty;
         internal bool IsShrapnel;
-        internal bool ParticleStopped;
-        internal bool ParticleInited;
+        internal bool AmmoParticleStopped;
+        internal bool AmmoParticleInited;
+        internal bool FieldParticleStopped;
+        internal bool FieldParticleInited;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -199,8 +202,6 @@ namespace WeaponCore.Support
                 a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
 
-
-
                 if (i.ModelOnly)
                 {
                     a.ModelSphereCurrent.Center = a.TracerFront;
@@ -315,14 +316,28 @@ namespace WeaponCore.Support
                 {
                     if (a.OnScreen != Screen.None)
                     {
-                        if (!a.AmmoDef.Const.IsBeamWeapon && !a.ParticleStopped && a.AmmoEffect != null && a.AmmoDef.Const.AmmoParticleShrinks)
+                        if (!a.AmmoDef.Const.IsBeamWeapon && !a.AmmoParticleStopped && a.AmmoEffect != null && a.AmmoDef.Const.AmmoParticleShrinks)
                             a.AmmoEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1f);
 
-                        if ((a.ParticleStopped || !a.ParticleInited))
+                        if ((a.AmmoParticleStopped || !a.AmmoParticleInited))
                             a.PlayAmmoParticle();
                     }
-                    else if (!a.ParticleStopped && a.AmmoEffect != null)
+                    else if (!a.AmmoParticleStopped && a.AmmoEffect != null)
                         a.DisposeAmmoEffect(false, true);
+                }
+
+                if (a.AmmoDef.Const.FieldParticle && a.Active)
+                {
+                    if (a.OnScreen != Screen.None)
+                    {
+                        if (!a.AmmoDef.Const.IsBeamWeapon && !a.FieldParticleStopped && a.FieldEffect != null && a.AmmoDef.Const.FieldParticleShrinks)
+                            a.FieldEffect.UserScale = MathHelper.Clamp(MathHelper.Lerp(1f, 0, a.DistanceToLine / a.AmmoDef.AreaEffect.Pulse.Particle.Extras.MaxDistance), 0.05f, 1f);
+
+                        if ((a.FieldParticleStopped || !a.FieldParticleInited))
+                            a.PlayFieldParticle();
+                    }
+                    else if (!a.FieldParticleStopped && a.FieldEffect != null)
+                        a.DisposeFieldEffect(false, true);
                 }
 
                 a.Hitting = false;
@@ -690,8 +705,21 @@ namespace WeaponCore.Support
                 AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                 AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
                 AmmoEffect.UserScale = 1;
-                ParticleStopped = false;
-                ParticleInited = true;
+                AmmoParticleStopped = false;
+                AmmoParticleInited = true;
+            }
+        }
+
+        internal void PlayFieldParticle()
+        {
+            var pos = TriggerEntity.PositionComp.WorldAABB.Center;
+            if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
+            {
+                AmmoEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
+                AmmoEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
+                AmmoEffect.UserScale = 1;
+                FieldParticleStopped = false;
+                FieldParticleInited = true;
             }
         }
 
@@ -704,7 +732,19 @@ namespace WeaponCore.Support
             }
 
             if (pause)
-                ParticleStopped = true;
+                AmmoParticleStopped = true;
+        }
+
+        internal void DisposeFieldEffect(bool instant, bool pause)
+        {
+            if (FieldEffect != null)
+            {
+                FieldEffect.Stop(instant);
+                FieldEffect = null;
+            }
+
+            if (pause)
+                FieldParticleStopped = true;
         }
 
         internal void ResetHit()
@@ -789,8 +829,10 @@ namespace WeaponCore.Support
             Back = false;
             LastStep = false;
             DetonateFakeExp = false;
-            ParticleStopped = false;
-            ParticleInited = false;
+            AmmoParticleStopped = false;
+            AmmoParticleInited = false;
+            FieldParticleStopped = false;
+            FieldParticleInited = false;
             TracerShrinks.Clear();
             GlowSteps.Clear();
             Offsets.Clear();

@@ -140,9 +140,9 @@ namespace WeaponCore.Support
 
                 if (HasEnergyWeapon)
                 {
-                    stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.00") + " Mw");
-                    if(HasChargeWeapon) stringBuilder.Append("\n[Current Charge]: " + State.Value.CurrentCharge.ToString("0.00") + " Mw");
-                    stringBuilder.Append("\n[Required Power]: " + MaxRequiredPower.ToString("0.00") + " Mw");
+                    stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.00") + " MWs");
+                    if(HasChargeWeapon) stringBuilder.Append("\n[Current Charge]: " + State.Value.CurrentCharge.ToString("0.00") + " MWs");
+                    stringBuilder.Append("\n[Required Power]: " + MaxRequiredPower.ToString("0.00") + " MWs");
                 }
 
                 stringBuilder.Append("\n\n** Use Weapon Wheel Menu\n** to control weapons using\n** MMB outside of this terminal");

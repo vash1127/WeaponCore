@@ -16,13 +16,11 @@ namespace WeaponCore
     {
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
-            foreach (var aiPair in GridTargetingAIs)
+            foreach (var gridAi in GridTargetingAIs.Values)
             {
                 ///
                 /// GridAi update section
                 ///
-                var gridAi = aiPair.Value;
-
                 using (gridAi.MyGrid.Pin())
                 {
                     gridAi.Concealed = ((uint) gridAi.MyGrid.Flags & 4) > 0;

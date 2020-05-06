@@ -751,10 +751,11 @@ namespace WeaponCore.Projectiles
             if (Info.TriggeredPulse)
             {
                 var areaSize = Info.AmmoDef.Const.AreaEffectSize;
+                var maxSteps = Info.AmmoDef.Const.PulseGrowTime;
                 if (Info.TriggerGrowthSteps < areaSize)
                 {
-                    const int expansionPerTick = 100 / 60;
-                    var nextSize = (double)++Info.TriggerGrowthSteps * expansionPerTick;
+                    var expansionPerTick = areaSize / maxSteps;
+                    var nextSize = ++Info.TriggerGrowthSteps * expansionPerTick;
                     if (nextSize <= areaSize)
                     {
                         var nextRound = nextSize + 1;
