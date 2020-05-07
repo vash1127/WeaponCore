@@ -61,6 +61,7 @@ namespace WeaponCore
                         Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
                     }
+
                     switch (hitEnt.EventType)
                     {
                         case HitEntity.Type.Shield:

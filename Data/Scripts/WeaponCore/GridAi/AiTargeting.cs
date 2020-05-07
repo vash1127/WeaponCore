@@ -213,14 +213,22 @@ namespace WeaponCore.Support
                     {
                         if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
                         session.CanShoot++;
+                        Vector3D newCenter;
                         if (!w.AiEnabled)
                         {
-                            var newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel) : targetCenter;
+                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
                             if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
                         }
-                        else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
+                        else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
+
+                        if (w.Comp.Ai.ShieldNear)
+                        {
+                            var targetDir = newCenter - weaponPos;
+                            if (w.HitFriendlyShield(newCenter, targetDir))
+                                continue;
+                        }
 
                         if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.Comp.WeaponValues.WeaponRandom[w.WeaponId], Acquire, w, true)) continue;
 
@@ -236,6 +244,14 @@ namespace WeaponCore.Support
                     if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
+
+                    if (w.Comp.Ai.ShieldNear)
+                    {
+                        var targetDir = predictedPos - weaponPos;
+                        if (w.HitFriendlyShield(predictedPos, targetDir))
+                            continue;
+                    }
+
                     session.TopRayCasts++;
 
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
