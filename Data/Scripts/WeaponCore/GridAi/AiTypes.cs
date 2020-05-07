@@ -275,5 +275,10 @@ namespace WeaponCore.Support
             }
         }
 
+        internal struct Shields
+        {
+            internal long Id;
+            internal MyEntity ShieldEnt;
+        }
     }
 }

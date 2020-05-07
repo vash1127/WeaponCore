@@ -34,8 +34,10 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 var safeZone = ent as MySafeZone;
+
                 if (ent is IMyCharacter && p.Info.EwarActive && !genericFields) continue;
                 if (grid != null && p.SmartsOn && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
+
 
                 if (safeZone != null) {
                     var outSideSphere = safeZone.Shape== MySafeZoneShape.Sphere && safeZone.PositionComp.WorldVolume.Contains(p.Info.Origin) == ContainmentType.Disjoint;
@@ -49,6 +51,7 @@ namespace WeaponCore.Projectiles
                 }
 
                 if (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
+
 
                     var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
@@ -169,8 +172,7 @@ namespace WeaponCore.Projectiles
                                 if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock)) 
                                     continue;
                             }
-
-                            if (!hitEntity.SphereCheck && !p.Info.EwarActive) {
+                            if (!p.Info.EwarActive) {
 
                                 grid.RayCastCells(hitEntity.Intersection.From, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
 
@@ -179,7 +181,7 @@ namespace WeaponCore.Projectiles
                                     IHitInfo hitInfo;
                                     p.Info.Ai.Session.Physics.CastRay(hitEntity.Intersection.From, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
                                     var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-                                    if (hitGrid == null || !hitGrid.IsSameConstructAs(p.Info.Target.FiringCube.CubeGrid)) 
+                                    if (hitGrid == null || !hitGrid.IsSameConstructAs(p.Info.Target.FiringCube.CubeGrid))
                                         continue;
 
                                     hitEntity.HitPos = hitInfo.Position;

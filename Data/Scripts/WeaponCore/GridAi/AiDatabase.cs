@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
@@ -102,28 +103,17 @@ namespace WeaponCore.Support
         private void FinalizeTargetDb()
         {
             MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(GridVolume.Center);
-            ShieldNearTmp = false;
             ObstructionsTmp.Clear();
             StaticsInRangeTmp.Clear();
             for (int i = 0; i < _possibleTargets.Count; i++)
             {
                 var ent = _possibleTargets[i];
                 var hasPhysics = ent.Physics != null;
-                if (Session.ShieldApiLoaded && hasPhysics && !ent.Physics.Enabled && ent.Physics.IsPhantom && !ent.Render.CastShadows)
+                if (Session.ShieldApiLoaded && hasPhysics && !ent.Physics.Enabled && ent.Physics.IsPhantom && !ent.Render.CastShadows && ent.Render.Visible)
                 {
                     long testId;
-                    long.TryParse(ent.Name, out testId);
-                    if (testId != 0)
-                    {
-                        MyEntity shieldEnt;
-                        if (testId == MyGrid.EntityId) MyShieldTmp = ent;
-                        else if (MyEntities.TryGetEntityById(testId, out shieldEnt))
-                        {
-                            var shieldGrid = shieldEnt as MyCubeGrid;
-                            if (shieldGrid != null && MyGrid.IsSameConstructAs(shieldGrid)) MyShieldTmp = ent;
-                        }
-                        else if (!ShieldNearTmp) ShieldNearTmp = true;
-                    }
+                    if (long.TryParse(ent.Name, out testId))
+                        NearByShieldsTmp.Add(new Shields {Id = testId, ShieldEnt = ent});
                 }
                 var voxel = ent as MyVoxelBase;
                 var grid = ent as MyCubeGrid;

@@ -223,6 +223,33 @@ namespace WeaponCore.Support
             return false;
         }
 
+        internal void NearByShield()
+        {
+            NearByShields.Clear();
+            ShieldNear = false;
+            MyShield = null;
+            for (int i = 0; i < NearByShieldsTmp.Count; i++)
+            {
+                var shield = NearByShieldsTmp[i];
+                var shieldGrid = MyEntities.GetEntityByIdOrDefault(shield.Id) as MyCubeGrid;
+
+                if (shieldGrid != null)
+                {
+                    if (shield.Id == MyGrid.EntityId || MyGrid.IsSameConstructAs(shieldGrid))
+                    {
+                        MyShield = shield.ShieldEnt;
+                    }
+                    else
+                    {
+                        ShieldNear = true;
+                        NearByShields.Add(shield.ShieldEnt);
+                    }
+                }
+                
+            }
+            NearByShieldsTmp.Clear();
+        }
+
         internal void MyPlanetInfo(bool clear = false)
         {
             if (!clear)
@@ -818,6 +845,9 @@ namespace WeaponCore.Support
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
             ControllingPlayers.Clear();
+            NearByShieldsTmp.Clear();
+            NearByShields.Clear();
+            TestShields.Clear();
             SourceCount = 0;
             BlockCount = 0;
             MyOwner = 0;
@@ -832,7 +862,6 @@ namespace WeaponCore.Support
             RequestIncrease = false;
             DbReady = false;
             Focus.Clean();
-            MyShieldTmp = null;
             MyShield = null;
             MyPlanetTmp = null;
             MyPlanet = null;

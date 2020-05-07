@@ -46,6 +46,9 @@ namespace WeaponCore.Support
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
+        internal readonly List<Shields> NearByShieldsTmp = new List<Shields>();
+        internal readonly List<MyEntity> NearByShields = new List<MyEntity>();
+        internal readonly List<MyEntity> TestShields = new List<MyEntity>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
@@ -75,7 +78,6 @@ namespace WeaponCore.Support
         internal IMyGridTerminalSystem TerminalSystem;
         internal IMyTerminalBlock LastWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
-        internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
@@ -113,7 +115,6 @@ namespace WeaponCore.Support
         internal bool RequestIncrease;
         internal bool StaticEntitiesInRange;
         internal bool StaticGridInRange;
-        internal bool ShieldNearTmp;
         internal bool ShieldNear;
         internal bool HasPower;
         internal bool HadPower;

@@ -12,6 +12,7 @@ using static WeaponCore.WeaponRandomGenerator.RandomType;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 using System;
+using VRage;
 
 namespace WeaponCore.Platform
 {
@@ -506,9 +507,32 @@ namespace WeaponCore.Platform
                 if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 return false;
             }
+
             Casting = true;
+
             Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, NormalShootRayCallBack);
             return true;
+        }
+
+        public bool HitFriendlyShield(Vector3D targetPos, Vector3D dir)
+        {
+            var testRay = new RayD(MyPivotPos, dir);
+            Comp.Ai.TestShields.Clear();
+            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, MyPivotPos);
+
+            for (int i = 0; i < Comp.Ai.NearByShields.Count; i++)
+            {
+                var shield = Comp.Ai.NearByShields[i];
+                var dist = shield.PositionComp.WorldVolume.Intersects(testRay);
+                if (dist == null || dist.Value * dist.Value <= checkDistanceSqr)
+                    Comp.Ai.TestShields.Add(shield);
+            }
+
+            if (Comp.Ai.TestShields.Count == 0)
+                return false;
+
+            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, true, Comp.Ai.MyGrid, checkDistanceSqr);
+            return !result.Item1 && result.Item2 > 0;
         }
 
         public void NormalShootRayCallBack(IHitInfo hitInfo)
@@ -516,7 +540,21 @@ namespace WeaponCore.Platform
             Casting = false;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             var ignoreTargets = Target.IsProjectile || Target.Entity is IMyCharacter;
-            var hitTopEnt = (MyEntity)hitInfo.HitEntity?.GetTopMostParent();
+
+            double rayDist = 0;
+            if (Comp.Ai.ShieldNear)
+            {
+                var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
+                var targetDir = targetPos - MyPivotPos;
+                if (HitFriendlyShield(targetPos, targetDir))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return;
+                }
+            }
+
+            var hitTopEnt = (MyEntity)hitInfo?.HitEntity?.GetTopMostParent();
             if (hitTopEnt == null)
             {
                 if (ignoreTargets)
@@ -571,8 +609,7 @@ namespace WeaponCore.Platform
                 var targetPos = Target.Entity.PositionComp.WorldMatrixRef.Translation;
                 var weaponPos = MyPivotPos;
 
-                double rayDist;
-                Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
                 var newHitShortDist = rayDist * (1 - hitInfo.Fraction);
                 var distanceToTarget = rayDist * hitInfo.Fraction;
 

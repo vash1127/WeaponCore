@@ -4,6 +4,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRageMath;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using VRage;
 using VRage.Game.Entity;
 
@@ -14,6 +15,7 @@ namespace WeaponCore.Support
         private bool _apiInit;
         private Func<IMyTerminalBlock, RayD, long, float, bool, bool, Vector3D?> _rayAttackShield; // negative damage values heal
         private Func<IMyTerminalBlock, LineD, long, float, bool, bool, Vector3D?> _lineAttackShield; // negative damage values heal
+        private Func<List<MyEntity>, RayD, bool, bool, MyCubeGrid, float, MyTuple<bool, float>> _intersectEntToShieldFast; // fast check of entities for shield
         private Func<IMyTerminalBlock, Vector3D, long, float, bool, bool, bool, bool> _pointAttackShield; // negative damage values heal
         private Func<IMyTerminalBlock, Vector3D, long, float, bool, bool, bool, float?> _pointAttackShieldExt; // negative damage values heal
         private Action<IMyTerminalBlock, int> _setShieldHeat;
@@ -87,8 +89,9 @@ namespace WeaponCore.Support
         public void ApiLoad(IReadOnlyDictionary<string, Delegate> delegates)
         {
             _apiInit = true;
-            _rayAttackShield = (Func<IMyTerminalBlock, RayD, long, float, bool,bool, Vector3D?>)delegates["RayAttackShield"];
-            _lineAttackShield = (Func<IMyTerminalBlock, LineD, long, float, bool,bool, Vector3D?>)delegates["LineAttackShield"];
+            _rayAttackShield = (Func<IMyTerminalBlock, RayD, long, float, bool, bool, Vector3D?>)delegates["RayAttackShield"];
+            _lineAttackShield = (Func<IMyTerminalBlock, LineD, long, float, bool, bool, Vector3D?>)delegates["LineAttackShield"];
+            _intersectEntToShieldFast = (Func<List<MyEntity>, RayD, bool, bool, MyCubeGrid, float, MyTuple<bool, float>>)delegates["IntersectEntToShieldFast"];
             _pointAttackShield = (Func<IMyTerminalBlock, Vector3D, long, float, bool, bool, bool, bool>)delegates["PointAttackShield"];
             _pointAttackShieldExt = (Func<IMyTerminalBlock, Vector3D, long, float, bool, bool, bool, float?>)delegates["PointAttackShieldExt"];
             _setShieldHeat = (Action<IMyTerminalBlock, int>)delegates["SetShieldHeat"];
@@ -126,6 +129,8 @@ namespace WeaponCore.Support
             _rayAttackShield?.Invoke(block, ray, attackerId, damage, energy, drawParticle) ?? null;
         public Vector3D? LineAttackShield(IMyTerminalBlock block, LineD line, long attackerId, float damage, bool energy, bool drawParticle) =>
             _lineAttackShield?.Invoke(block, line, attackerId, damage, energy, drawParticle) ?? null;
+        public MyTuple<bool, float> IntersectEntToShieldFast(List<MyEntity> entities, RayD ray, bool onlyIfOnline, bool enemyOnly, MyCubeGrid grid, float maxRangeSqr) =>
+            _intersectEntToShieldFast?.Invoke(entities, ray, onlyIfOnline, enemyOnly, grid, maxRangeSqr) ?? new MyTuple<bool, float>(false, float.MaxValue);
         public bool PointAttackShield(IMyTerminalBlock block, Vector3D pos, long attackerId, float damage, bool energy, bool drawParticle, bool posMustBeInside = false) =>
             _pointAttackShield?.Invoke(block, pos, attackerId, damage, energy, drawParticle, posMustBeInside) ?? false;
         public float? PointAttackShieldExt(IMyTerminalBlock block, Vector3D pos, long attackerId, float damage, bool energy, bool drawParticle, bool posMustBeInside = false) =>

@@ -305,8 +305,8 @@ namespace WeaponCore.Api
                 var topMost = targetEnt.GetTopMostParent();
                 var targetVel = topMost.Physics?.LinearVelocity ?? Vector3.Zero;
                 var targetAccel = topMost.Physics?.AngularAcceleration ?? Vector3.Zero;
-
-                return Weapon.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel);
+                Vector3D predictedPos;
+                return Weapon.CanShootTargetObb(w, (MyEntity)targetEnt, targetVel, targetAccel, out predictedPos);
             }
             return false;
         }

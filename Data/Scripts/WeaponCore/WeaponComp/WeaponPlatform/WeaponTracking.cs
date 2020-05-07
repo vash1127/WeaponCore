@@ -42,13 +42,11 @@ namespace WeaponCore.Platform
             return (inRange && canTrack) || weapon.Comp.TrackReticle;
         }
 
-        internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)
+        internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
-            var ai = weapon.Comp.Ai;
 
-            Vector3D targetPos;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 

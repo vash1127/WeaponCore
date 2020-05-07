@@ -107,6 +107,11 @@ namespace WeaponCore
                     db.Obstructions.Clear();
                     db.Obstructions.AddRange(db.ObstructionsTmp);
                     db.ObstructionsTmp.Clear();
+                    
+                    db.MyShield = null;
+                    db.ShieldNear = false;
+                    if (db.NearByShieldsTmp.Count > 0)
+                        db.NearByShield();
 
                     if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
                     db.StaticsInRange.Clear();
@@ -116,9 +121,7 @@ namespace WeaponCore
                     db.MyStaticInfo();
 
                     db.DbReady = db.SortedTargets.Count > 0 || db.TargetAis.Count > 0 || Tick - db.LiveProjectileTick < 3600 || db.LiveProjectile.Count > 0 || db.ControllingPlayers.Keys.Count > 0 || db.FirstRun;
-                    db.MyShield = db.MyShieldTmp;
                     db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
-                    db.ShieldNear = db.ShieldNearTmp;
                     db.BlockCount = db.MyGrid.BlocksCount;
 
                     if (!db.TargetingInfo.TargetInRange && db.LiveProjectile.Count > 0)
