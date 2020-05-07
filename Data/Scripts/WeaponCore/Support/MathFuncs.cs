@@ -128,7 +128,7 @@ namespace WeaponCore.Support
                 if (weapon.Azimuth + desiredAzimuth > weapon.MaxAzToleranceRadians && weapon.MaxAzToleranceRadians < Math.PI)
                     return false;
 
-                if (weapon.Azimuth + desiredAzimuth < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > Math.PI)
+                if (weapon.Azimuth + desiredAzimuth < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > -Math.PI)
                     return false;
 
                 if (desiredElevation < weapon.MinElToleranceRadians || desiredElevation > weapon.MaxElToleranceRadians)
@@ -184,7 +184,7 @@ namespace WeaponCore.Support
                 az = weapon.MaxAzToleranceRadians;
                 azHitLimit = true;
             }
-            else if (az < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > Math.PI)
+            else if (az < weapon.MinAzToleranceRadians && weapon.MinAzToleranceRadians > -Math.PI)
             {
                 // Hit lower azimuth limit
                 az = weapon.MinAzToleranceRadians;

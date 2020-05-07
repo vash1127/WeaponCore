@@ -123,12 +123,11 @@ namespace WeaponCore.Support
 
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
-                            //Log.Line($"On exists");
-                            for (int j = 0; j < weapon.AnimationsSet[EventTriggers.TurnOn].Length; j++)
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => 
                             {
-                                var animation = weapon.AnimationsSet[EventTriggers.TurnOn][j];
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => weapon.PlayEmissives(animation, weapon.System));
-                            }
+                                for (int j = 0; j < weapon.AnimationsSet[EventTriggers.TurnOn].Length; j++)
+                                    weapon.PlayEmissives(weapon.AnimationsSet[EventTriggers.TurnOn][j], weapon.System);
+                            });
                         }
                     }
                 } 
