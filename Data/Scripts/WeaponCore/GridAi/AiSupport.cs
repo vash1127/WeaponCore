@@ -13,7 +13,6 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
 using static WeaponCore.WeaponRandomGenerator;
-
 namespace WeaponCore.Support
 {
     public partial class GridAi

@@ -520,8 +520,7 @@ namespace WeaponCore.Platform
             Comp.Ai.TestShields.Clear();
             var checkDistanceSqr = Vector3.DistanceSquared(targetPos, MyPivotPos);
 
-            for (int i = 0; i < Comp.Ai.NearByShields.Count; i++)
-            {
+            for (int i = 0; i < Comp.Ai.NearByShields.Count; i++) {
                 var shield = Comp.Ai.NearByShields[i];
                 var dist = shield.PositionComp.WorldVolume.Intersects(testRay);
                 if (dist == null || dist.Value * dist.Value <= checkDistanceSqr)
@@ -531,7 +530,7 @@ namespace WeaponCore.Platform
             if (Comp.Ai.TestShields.Count == 0)
                 return false;
 
-            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, true, Comp.Ai.MyGrid, checkDistanceSqr);
+            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, true, Comp.Ai.MyOwner, checkDistanceSqr);
             return !result.Item1 && result.Item2 > 0;
         }
 
