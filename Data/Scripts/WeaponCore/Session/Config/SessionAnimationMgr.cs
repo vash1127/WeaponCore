@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -16,7 +17,6 @@ namespace WeaponCore
     {
         internal void CreateAnimationSets(AnimationDef animations, WeaponSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames)
         {
-
             var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
             weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
             weaponEmissivesSet = new Dictionary<string, EmissiveState>();
@@ -140,6 +140,9 @@ namespace WeaponCore
                             else
                             {
                                 var type = 6;
+                                Vector3D rotChanged = Vector3D.Zero;
+                                Vector3D rotCenterChanged = Vector3D.Zero;
+
                                 if (move.LinearPoints != null && move.LinearPoints.Length > 0)
                                 {
                                     double distance = 0;
@@ -229,7 +232,7 @@ namespace WeaponCore
 
                                             emissiveIdSet.Add(id + moveIndexer.Count);
 
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
 
                                             moveIndexer.Add(new[]
                                                 {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
@@ -307,7 +310,7 @@ namespace WeaponCore
 
                                             emissiveIdSet.Add(id + moveIndexer.Count);
 
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
 
                                             moveIndexer.Add(new[]
                                                 {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
@@ -324,7 +327,7 @@ namespace WeaponCore
                                         var vecTotalMoved = 0d;
                                         var totalChanged = 0d;
 
-                                        CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+                                        CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
 
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
@@ -389,24 +392,90 @@ namespace WeaponCore
                                 {
                                     moveSet.Add(Matrix.Zero);
 
-                                    var rate = GetRate(move.MovementType, move.TicksToMove);
 
-                                    if (move.MovementType == RelMove.MoveType.Linear)
-                                        CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+                                    MatrixD rotation = MatrixD.Zero;
+                                    MatrixD centerRotation = MatrixD.Zero;
+
+                                    var hasX = !MyUtils.IsZero(move.Rotation.x, 1E-04f);
+                                    var hasY = !MyUtils.IsZero(move.Rotation.y, 1E-04f);
+                                    var hasZ = !MyUtils.IsZero(move.Rotation.z, 1E-04f);
+                                    
+                                    if (hasX)
+                                        rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.Rotation.x));
+                                    if(hasY)
+                                    {
+                                        if(hasX)
+                                            rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.y));
+                                        else
+                                            rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.y));
+                                    }
+                                    if (hasZ)
+                                    {
+                                        if (hasX || hasY)
+                                            rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.z));
+                                        else
+                                            rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.z));
+                                    }
+
+                                    hasX = !MyUtils.IsZero(move.RotAroundCenter.x, 1E-04f);
+                                    hasY = !MyUtils.IsZero(move.RotAroundCenter.y, 1E-04f);
+                                    hasZ = !MyUtils.IsZero(move.RotAroundCenter.z, 1E-04f);
+
+                                    if (hasX)
+                                        centerRotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.RotAroundCenter.x));
+                                    if (hasY)
+                                    {
+                                        if (hasX)
+                                            centerRotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.y));
+                                        else
+                                            centerRotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.y));
+                                    }
+                                    if (hasZ)
+                                    {
+                                        if (hasX || hasY)
+                                            centerRotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.z));
+                                        else
+                                            centerRotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.z));
+                                    }
+
+                                    var angle = Math.Round(MathHelperD.ToDegrees(Math.Acos(((rotation.Rotation.M11 + rotation.Rotation.M22 + rotation.Rotation.M33) - 1) / 2)), 2);
+                                    var centerAngle = Math.Round(MathHelperD.ToDegrees(Math.Acos(((centerRotation.Rotation.M11 + centerRotation.Rotation.M22 + centerRotation.Rotation.M33) - 1) / 2)), 2);
+
+                                    var rateAngle = centerAngle > angle ? centerAngle : angle;
+
+                                    var rate = GetRate(move.MovementType, rateAngle, move.TicksToMove);
+
+                                    var traveled = 0d;
 
                                     for (int j = 0; j < move.TicksToMove; j++)
                                     {
+
                                         var progress = 0d;
                                         if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                            progress = (0.001 * Math.Pow(rate, j)) / (double)move.TicksToMove;
+                                        {
+                                            var step = 0.001 * Math.Pow(rate, j + 1);
+                                            if (step > angle) step = angle;
+                                            traveled = step;                                            
+
+                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                                                progress = 1;
+                                            else
+                                                progress = (float)(traveled / angle);
+                                        }
                                         if (move.MovementType == RelMove.MoveType.ExpoDecay)
                                         {
-                                            var perc = ((double)move.TicksToMove * Math.Pow(rate, j)) / (double)move.TicksToMove;
-                                            progress = MathHelper.Lerp(1d, 0d, perc);
+                                            var step = angle * Math.Pow(rate, j + 1);
+                                            if (step < 0.001) step = 0;
+
+                                            traveled = angle - step;
+
+                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                                                progress = 1;
+                                            else
+                                                progress = traveled / angle;
                                         }
                                         else
                                             progress = (double)j / (double)(move.TicksToMove - 1);
-
 
                                         if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
                                             progress = 1;
@@ -424,8 +493,7 @@ namespace WeaponCore
 
                                         emissiveIdSet.Add(id + moveIndexer.Count);
 
-                                        if (move.MovementType != RelMove.MoveType.Linear)
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet);
+                                        CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
 
                                         //Log.Line($"type: {type}");
 
@@ -477,13 +545,14 @@ namespace WeaponCore
 
         }
 
-        internal double GetRate(RelMove.MoveType move, uint ticksToMove)
+        internal double GetRate(RelMove.MoveType move, double fullRotAmount, uint ticksToMove)
         {
-            var rate = 1d;
+            var rate = 0d;
             if (move == RelMove.MoveType.ExpoGrowth)
             {
                 var check = 0d;
-                while (check < ticksToMove)
+
+                while (check < fullRotAmount)
                 {
                     rate += 0.001;
                     check = 0.001 * Math.Pow(1 + rate, ticksToMove);
@@ -496,9 +565,8 @@ namespace WeaponCore
                 while (check > 0)
                 {
                     rate += 0.001;
-                    check = ticksToMove * Math.Pow(1 - rate, ticksToMove);
+                    check = fullRotAmount * Math.Pow(1 - rate, ticksToMove);
                     if (check < 0.001) check = 0;
-
                 }
                 rate = 1 - rate;
             }
@@ -530,21 +598,29 @@ namespace WeaponCore
 
                         var rotCenterNames = animation.RotCenterNameSet;
 
-                        var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
-
+                        var partMatrix = GetPartDummy("subpart_" + animation.SubpartId, subpart.Parent.Model)?.Matrix ?? Matrix.Identity;
+                        var partCenter = partMatrix.Translation;
 
                         for (int j = 0; j < rotations.Length; j++)
                         {
                             if (rotations[j] != Matrix.Zero)
+                            {
                                 rotations[j] = Matrix.CreateTranslation(-partCenter) * rotations[j] * Matrix.CreateTranslation(partCenter);
+
+                                Matrix.AlignRotationToAxes(ref rotations[j], ref partMatrix);
+                            }
+
                         }
 
                         for (int j = 0; j < rotCenters.Length; j++)
                         {
                             if (rotCenters[j] != Matrix.Zero && rotCenterNames != null)
                             {
-                                var dummyCenter = GetPartLocation(rotCenterNames[j], subpart.Model);
-                                rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyCenter)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyCenter));
+                                var dummyMatrix = GetPartDummy(rotCenterNames[j], subpart.Model)?.Matrix ?? Matrix.Identity;
+                                rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyMatrix.Translation)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyMatrix.Translation));
+
+
+                                Matrix.AlignRotationToAxes(ref rotCenters[j], ref dummyMatrix);
                             }
                         }
 
@@ -612,10 +688,9 @@ namespace WeaponCore
             return rotation;
         }
 
-        internal void CreateRotationSets(RelMove move, double progress, ref int type, ref List<string> rotCenterNameSet, ref List<Matrix> rotCenterSet, ref List<Matrix> rotationSet)
+        internal void CreateRotationSets(RelMove move, double progress, ref int type, ref List<string> rotCenterNameSet, ref List<Matrix> rotCenterSet, ref List<Matrix> rotationSet, ref Vector3D centerChanged, ref Vector3D changed)
         {
             type = 6;
-            var fullProgress = 1 - progress < 0.001;
 
             if (!String.IsNullOrEmpty(move.CenterEmpty) &&
                                     (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
@@ -623,15 +698,14 @@ namespace WeaponCore
                                      move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
             {
                 rotCenterNameSet.Add(move.CenterEmpty);                
+                
+                var newX = MathHelper.Lerp(0, move.RotAroundCenter.x, progress) - centerChanged.X;
+                var newY = MathHelper.Lerp(0, move.RotAroundCenter.y, progress) - centerChanged.Y;
+                var newZ = MathHelper.Lerp(0, move.RotAroundCenter.z, progress) - centerChanged.Z;
 
-                var xPerTick = move.RotAroundCenter.x / move.TicksToMove;
-                var newX = fullProgress ? MathHelper.Lerp(0, move.RotAroundCenter.x / move.TicksToMove, progress) : xPerTick;
-
-                var yPerTick = move.RotAroundCenter.y / move.TicksToMove;
-                var newY = fullProgress ? MathHelper.Lerp(0, move.RotAroundCenter.y / move.TicksToMove, progress) : yPerTick;
-
-                var zPerTick = move.RotAroundCenter.z / move.TicksToMove;
-                var newZ = fullProgress ? MathHelper.Lerp(0, move.RotAroundCenter.z / move.TicksToMove, progress) : zPerTick;
+                centerChanged.X += newX;
+                centerChanged.Y += newY;
+                centerChanged.Z += newZ;
 
                 rotCenterSet.Add(CreateRotation(newX, newY, newZ));
 
@@ -646,14 +720,13 @@ namespace WeaponCore
             if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
                 move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
             {
-                var xPerTick = move.Rotation.x / move.TicksToMove;
-                var newX = fullProgress ? MathHelper.Lerp(0, move.Rotation.x / move.TicksToMove, progress) : xPerTick;
+                var newX = MathHelper.Lerp(0, move.Rotation.x, progress) - changed.X;
+                var newY = MathHelper.Lerp(0, move.Rotation.y, progress) - changed.Y;
+                var newZ = MathHelper.Lerp(0, move.Rotation.z, progress) - changed.Z;
 
-                var yPerTick = move.Rotation.y / move.TicksToMove;
-                var newY = fullProgress ? MathHelper.Lerp(0, move.Rotation.y / move.TicksToMove, progress) : yPerTick;
-
-                var zPerTick = move.Rotation.z / move.TicksToMove;
-                var newZ = fullProgress ? MathHelper.Lerp(0, move.Rotation.z / move.TicksToMove, progress) : zPerTick;
+                changed.X += newX;
+                changed.Y += newY;
+                changed.Z += newZ;
 
                 rotationSet.Add(CreateRotation(newX, newY, newZ));
 

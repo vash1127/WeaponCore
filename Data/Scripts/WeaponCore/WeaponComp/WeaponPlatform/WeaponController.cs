@@ -8,6 +8,13 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
+
+        internal void turnOn(object o)
+        {
+            for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
+                PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j], System);
+        }
+
         public void AimBarrel()
         {
             LastTrackedTick = Comp.Session.Tick;
