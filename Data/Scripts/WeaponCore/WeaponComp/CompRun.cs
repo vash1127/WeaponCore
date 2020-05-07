@@ -122,13 +122,7 @@ namespace WeaponCore.Support
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
 
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                        {
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => 
-                            {
-                                for (int j = 0; j < weapon.AnimationsSet[EventTriggers.TurnOn].Length; j++)
-                                    weapon.PlayEmissives(weapon.AnimationsSet[EventTriggers.TurnOn][j], weapon.System);
-                            });
-                        }
+                            Session.FutureEvents.Schedule(weapon.turnOn, null, 100);
                     }
                 } 
                 else Log.Line($"Comp Init() failed");

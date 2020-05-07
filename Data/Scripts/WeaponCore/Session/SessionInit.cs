@@ -232,7 +232,6 @@ namespace WeaponCore
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-
                 WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
             }
 
