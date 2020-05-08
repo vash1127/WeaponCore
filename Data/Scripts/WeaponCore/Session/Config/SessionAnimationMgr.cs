@@ -327,8 +327,6 @@ namespace WeaponCore
                                         var vecTotalMoved = 0d;
                                         var totalChanged = 0d;
 
-                                        CreateRotationSets(move, 1, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
-
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
                                             var changed = distancePerTick + remaining;
@@ -361,17 +359,15 @@ namespace WeaponCore
 
                                             moveSet.Add(matrix);
 
+                                            var progress = 0f;
+                                            if (move.TicksToMove == 1)
+                                                progress = 1;
+                                            else
+                                                progress = (float)j / (move.TicksToMove - 1);
+
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                            {
-                                                var progress = 0f;
-                                                if (move.TicksToMove == 1)
-                                                    progress = 1;
-                                                else
-                                                    progress = (float)j / (move.TicksToMove - 1);
-
                                                 CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                            }
                                             else
                                             {
                                                 weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
@@ -379,6 +375,8 @@ namespace WeaponCore
                                             }
 
                                             emissiveIdSet.Add(id + moveIndexer.Count);
+
+                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
 
                                             moveIndexer.Add(new[]
                                                 {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});

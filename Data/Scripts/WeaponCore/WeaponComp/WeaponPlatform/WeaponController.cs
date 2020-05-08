@@ -8,13 +8,6 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-
-        internal void turnOn(object o)
-        {
-            for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
-                PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j], System);
-        }
-
         public void AimBarrel()
         {
             LastTrackedTick = Comp.Session.Tick;
@@ -244,6 +237,12 @@ namespace WeaponCore.Platform
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
 
+        internal void TurnOnEmissive(object o)
+        {
+            for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
+                PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j], System);
+        }
+
         internal void SetWeaponDps(object o = null)
         {
             if (System.DesignatorWeapon) return;
@@ -276,8 +275,6 @@ namespace WeaponCore.Platform
                 mulitplier *= mulitplier;
 
             HeatPShot = System.HeatPerShot * mulitplier;
-
-
 
             RequiredPower *= mulitplier;
 
