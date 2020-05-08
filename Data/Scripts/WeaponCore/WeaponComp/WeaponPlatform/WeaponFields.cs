@@ -227,7 +227,6 @@ namespace WeaponCore.Platform
             MuzzlePart = new PartInfo { Entity = entity };
             AnimationsSet = animationSets;
             Timings = new WeaponTimings();
-
             if (AnimationsSet != null)
             {
                 foreach (var set in AnimationsSet)

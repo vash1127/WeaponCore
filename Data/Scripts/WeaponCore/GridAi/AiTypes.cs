@@ -279,6 +279,7 @@ namespace WeaponCore.Support
         {
             internal long Id;
             internal MyEntity ShieldEnt;
+            internal MyCubeBlock ShieldBlock;
         }
     }
 }
