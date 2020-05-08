@@ -596,7 +596,7 @@ namespace WeaponCore
 
                         var rotCenterNames = animation.RotCenterNameSet;
 
-                        var partMatrix = GetPartDummy("subpart_" + animation.SubpartId, subpart.Parent.Model)?.Matrix ?? Matrix.Identity;
+                        var partMatrix = !animation.SubpartId.Equals("None") ? GetPartDummy("subpart_" + animation.SubpartId, subpart.Parent.Model)?.Matrix ?? Matrix.Identity : subpart.PositionComp.LocalMatrixRef;
                         var partCenter = partMatrix.Translation;
 
                         for (int j = 0; j < rotations.Length; j++)
