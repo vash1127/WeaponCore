@@ -224,7 +224,7 @@ namespace WeaponCore.Support
 
         internal void NearByShield()
         {
-            NearByShields.Clear();
+            NearByFriendlyShields.Clear();
             ShieldNear = false;
             MyShield = null;
             for (int i = 0; i < NearByShieldsTmp.Count; i++)
@@ -240,8 +240,13 @@ namespace WeaponCore.Support
                     }
                     else
                     {
+                        var relation = shield.ShieldBlock.IDModule.GetUserRelationToOwner(MyOwner);
+                        var friendly = relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Friends ;
+                        if (friendly)
+                        {
+                            NearByFriendlyShields.Add(shield.ShieldEnt);
+                        }
                         ShieldNear = true;
-                        NearByShields.Add(shield.ShieldEnt);
                     }
                 }
                 
@@ -845,7 +850,7 @@ namespace WeaponCore.Support
             DeadProjectiles.Clear();
             ControllingPlayers.Clear();
             NearByShieldsTmp.Clear();
-            NearByShields.Clear();
+            NearByFriendlyShields.Clear();
             TestShields.Clear();
             SourceCount = 0;
             BlockCount = 0;

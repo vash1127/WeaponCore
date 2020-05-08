@@ -113,7 +113,13 @@ namespace WeaponCore.Support
                 {
                     long testId;
                     if (long.TryParse(ent.Name, out testId))
-                        NearByShieldsTmp.Add(new Shields {Id = testId, ShieldEnt = ent});
+                    {
+                        var shieldblock = Session.SApi.MatchEntToShieldFast(ent, false);
+                        if (shieldblock != null)
+                        {
+                            NearByShieldsTmp.Add(new Shields { Id = testId, ShieldEnt = ent, ShieldBlock = (MyCubeBlock)shieldblock});
+                        }
+                    }
                 }
                 var voxel = ent as MyVoxelBase;
                 var grid = ent as MyCubeGrid;

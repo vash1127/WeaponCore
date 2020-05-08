@@ -214,6 +214,14 @@ namespace WeaponCore.Platform
                         {
                             float shotFade;
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
+                            long patternCycle = FireCounter;
+                            if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
+                            {
+                                patternCycle = ((FireCounter - 1) % ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd) + 1;
+                                //var end = FireCounter != 0 && patternCycle == ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd;
+                                //var start = FireCounter != 0 && patternCycle == ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart;
+                            }
+
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
                                 MyEntity primeE = null;
@@ -226,8 +234,8 @@ namespace WeaponCore.Platform
                                     triggerE = session.TriggerEntityPool.Get();
 
                                 if (ammoPattern.Const.HasShotFade) {
-                                    if (FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
-                                        shotFade = MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
+                                    if (patternCycle > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                                        shotFade = MathHelper.Clamp(((patternCycle - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
                                     else if (System.DelayCeaseFire && CeaseFireDelayTick != tick)
                                         shotFade = MathHelper.Clamp(((tick - CeaseFireDelayTick) - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart) * ammoPattern.Const.ShotFadeStep, 0, 1);
                                     else shotFade = 0;
@@ -244,7 +252,6 @@ namespace WeaponCore.Platform
                                 if (!ammoPattern.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
                                 else if (i == _nextVirtual)
                                 {
-
                                     vProjectile.Info.Origin = muzzle.Position;
                                     vProjectile.Info.Direction = muzzle.DeviatedDir;
                                     vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
@@ -281,8 +288,8 @@ namespace WeaponCore.Platform
                                 p.Info.MaxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
                                 
                                 if (ammoPattern.Const.HasShotFade) {
-                                    if (FireCounter > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
-                                        shotFade = MathHelper.Clamp(((FireCounter - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
+                                    if (patternCycle > ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                                        shotFade = MathHelper.Clamp(((patternCycle - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ammoPattern.Const.ShotFadeStep, 0, 1);
                                     else if (System.DelayCeaseFire && CeaseFireDelayTick != tick)
                                         shotFade = MathHelper.Clamp(((tick - CeaseFireDelayTick) - ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart) * ammoPattern.Const.ShotFadeStep, 0, 1);
                                     else shotFade = 0;
@@ -514,25 +521,6 @@ namespace WeaponCore.Platform
             return true;
         }
 
-        public bool HitFriendlyShield(Vector3D targetPos, Vector3D dir)
-        {
-            var testRay = new RayD(MyPivotPos, dir);
-            Comp.Ai.TestShields.Clear();
-            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, MyPivotPos);
-
-            for (int i = 0; i < Comp.Ai.NearByShields.Count; i++) {
-                var shield = Comp.Ai.NearByShields[i];
-                var dist = shield.PositionComp.WorldVolume.Intersects(testRay);
-                if (dist == null || dist.Value * dist.Value <= checkDistanceSqr)
-                    Comp.Ai.TestShields.Add(shield);
-            }
-
-            if (Comp.Ai.TestShields.Count == 0)
-                return false;
-
-            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, true, Comp.Ai.MyOwner, checkDistanceSqr);
-            return !result.Item1 && result.Item2 > 0;
-        }
 
         public void NormalShootRayCallBack(IHitInfo hitInfo)
         {
@@ -636,6 +624,28 @@ namespace WeaponCore.Platform
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
                 }
             }
+        }
+
+        public bool HitFriendlyShield(Vector3D targetPos, Vector3D dir)
+        {
+            var testRay = new RayD(MyPivotPos, dir);
+            Comp.Ai.TestShields.Clear();
+            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, MyPivotPos);
+
+            for (int i = 0; i < Comp.Ai.NearByFriendlyShields.Count; i++)
+            {
+                var shield = Comp.Ai.NearByFriendlyShields[i];
+                var dist = testRay.Intersects(shield.PositionComp.WorldVolume);
+                if (dist != null && dist.Value * dist.Value <= checkDistanceSqr)
+                    Comp.Ai.TestShields.Add(shield);
+            }
+
+            if (Comp.Ai.TestShields.Count == 0)
+                return false;
+
+            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.MyOwner, checkDistanceSqr);
+
+            return result.Item1 && result.Item2 > 0;
         }
 
         public bool MuzzleHitSelf()
