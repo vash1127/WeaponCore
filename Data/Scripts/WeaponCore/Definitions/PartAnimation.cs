@@ -57,7 +57,7 @@ namespace WeaponCore.Support {
         }
 
         internal MyEntity MainEnt;
-        internal MyEntitySubpart Part;
+        internal MyEntity Part;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
         internal bool Looping;
@@ -69,14 +69,14 @@ namespace WeaponCore.Support {
 
         private int _currentMove;
         private EmissiveState LastEmissive;
-        private string _uid;
+        private Guid _uid;
 
         internal int CurrentMove
         {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet,string[] emissiveIds, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
+        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet,string[] emissiveIds, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntity part, MyEntity mainEnt, string muzzle, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
         {
             EventTrigger = eventTrigger;
             RotationSet = rotationSet;
@@ -87,8 +87,7 @@ namespace WeaponCore.Support {
             EmissiveIds = emissiveIds;
 
             //Unique Animation ID
-            Guid guid = Guid.NewGuid();
-            _uid = Convert.ToBase64String(guid.ToByteArray());
+            _uid = Guid.NewGuid();
 
             TypeSet = typeSet;
             Muzzle = muzzle;
@@ -106,7 +105,7 @@ namespace WeaponCore.Support {
 
             if (part != null)
             {                
-                FinalPos = HomePos = part.PositionComp.LocalMatrix;
+                FinalPos = HomePos = part.PositionComp.LocalMatrixRef;
                 var emissivePartCheck = new HashSet<string>();
                 var emissiveParts = new List<string>();
                 for (int i = 0; i < NumberOfMoves; i++)
@@ -177,8 +176,7 @@ namespace WeaponCore.Support {
             EmissiveIds = copyFromAnimation.EmissiveIds;
 
             //Unique Animation ID
-            Guid guid = Guid.NewGuid();
-            _uid = Convert.ToBase64String(guid.ToByteArray());
+            _uid = Guid.NewGuid();
 
             TypeSet = copyFromAnimation.TypeSet;
             Muzzle = copyFromAnimation.Muzzle;
@@ -194,6 +192,9 @@ namespace WeaponCore.Support {
             MovesPivotPos = copyFromAnimation.MovesPivotPos;
             FinalPos = copyFromAnimation.FinalPos;
             HomePos = copyFromAnimation.HomePos;
+            HasMovement = copyFromAnimation.HasMovement;
+            EmissiveParts = copyFromAnimation.EmissiveParts;
+            EventIdLookup = copyFromAnimation.EventIdLookup;
         }
 
         internal void GetCurrentMove(out Vector3D translation, out Matrix rotation, out Matrix rotAroundCenter, out AnimationType type, out EmissiveState emissiveState)
