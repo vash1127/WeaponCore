@@ -32,13 +32,19 @@ namespace WeaponCore.Support
             return true;
         }
 
-        internal static float? IntersectEllipsoid(MatrixD ellipsoidMatrixInv, MatrixD ellipsoidMatrix, RayD ray)
+        internal static double? IntersectEllipsoid(MatrixD ellipsoidMatrixInv, MatrixD ellipsoidMatrix, RayD ray)
         {
             var normSphere = new BoundingSphereD(Vector3.Zero, 1f);
             var kRay = new RayD(Vector3D.Zero, Vector3D.Forward);
 
-            var krayPos = Vector3D.Transform(ray.Position, ellipsoidMatrixInv);
-            var krayDir = Vector3D.Normalize(Vector3D.TransformNormal(ray.Direction, ellipsoidMatrixInv));
+            Vector3D krayPos;
+            Vector3D.Transform(ref ray.Position, ref ellipsoidMatrixInv, out krayPos);
+
+            Vector3D nDir;
+            Vector3D.TransformNormal(ref ray.Direction, ref ellipsoidMatrixInv, out nDir);
+
+            Vector3D krayDir;
+            Vector3D.Normalize(ref nDir, out krayDir);
 
             kRay.Direction = krayDir;
             kRay.Position = krayPos;
@@ -46,9 +52,12 @@ namespace WeaponCore.Support
             if (!nullDist.HasValue) return null;
 
             var hitPos = krayPos + (krayDir * -nullDist.Value);
-            var worldHitPos = Vector3D.Transform(hitPos, ellipsoidMatrix);
-            var dist = Vector3.Distance(worldHitPos, ray.Position);
-            return float.IsNaN(dist) ? (float?) null : dist;
+            Vector3D worldHitPos;
+            Vector3D.Transform(ref hitPos, ref ellipsoidMatrix, out worldHitPos);
+
+            double dist;
+            Vector3D.Distance(ref worldHitPos, ref ray.Position, out dist);
+            return (double.IsNaN(dist) ? (double?) null : dist);
         }
 
         public static bool PointInEllipsoid(Vector3D point, MatrixD ellipsoidMatrixInv)

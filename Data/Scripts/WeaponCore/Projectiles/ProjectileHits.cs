@@ -38,7 +38,6 @@ namespace WeaponCore.Projectiles
                 if (ent is IMyCharacter && p.Info.EwarActive && !genericFields) continue;
                 if (grid != null && p.SmartsOn && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
 
-
                 if (safeZone != null) {
                     var outSideSphere = safeZone.Shape== MySafeZoneShape.Sphere && safeZone.PositionComp.WorldVolume.Contains(p.Info.Origin) == ContainmentType.Disjoint;
                     var outSideBox = safeZone.Shape == MySafeZoneShape.Box && safeZone.PositionComp.WorldAABB.Contains(p.Info.Origin) == ContainmentType.Disjoint;
@@ -50,20 +49,19 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField)) {
+                var checkShield = Session.ShieldApiLoaded && ent.Physics != null && !ent.Physics.Enabled && ent.Physics.IsPhantom && ent.Render.Visible;
+
+                if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
 
-                    var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
+                    var shieldInfo = p.Info.Ai.Session.SApi.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
 
                         if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
-                            double? dist = null;
-                            if (ent.Physics != null && ent.Physics.IsPhantom) {
-                                p.EntitiesNear = true;
-                                dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
-                                if (p.Info.Target.IsProjectile && Vector3D.Transform(p.Info.Target.Projectile.Position, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
-                                    projetileInShield = true;
-                            }
+                            p.EntitiesNear = true;
+                            var dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
+                            if (p.Info.Target.IsProjectile && Vector3D.Transform(p.Info.Target.Projectile.Position, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
+                                projetileInShield = true;
 
                             if (dist != null && (dist.Value < beam.Length || p.Info.EwarActive)) {
                                 var hitEntity = HitEntityPool.Get();

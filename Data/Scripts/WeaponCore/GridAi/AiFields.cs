@@ -115,6 +115,7 @@ namespace WeaponCore.Support
         internal bool RequestIncrease;
         internal bool StaticEntitiesInRange;
         internal bool StaticGridInRange;
+        internal bool FriendlyShieldNear;
         internal bool ShieldNear;
         internal bool HasPower;
         internal bool HadPower;

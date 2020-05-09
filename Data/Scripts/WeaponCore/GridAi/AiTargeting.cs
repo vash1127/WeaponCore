@@ -109,7 +109,7 @@ namespace WeaponCore.Support
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || Vector3D.DistanceSquared(targetPos, p.Position) >= p.DistanceToTravelSqr) continue;
 
-                if (!focusTarget && info.OffenseRating <= 0 || Obstruction(ref info, ref targetPos, p))
+                if (!focusTarget && info.OffenseRating <= 0)
                     continue;
 
                 if (focusTarget && !attackFriends && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Friends) continue;
@@ -118,7 +118,7 @@ namespace WeaponCore.Support
 
                 if (info.IsGrid && s.TrackGrids)
                 {
-                    if (!focusTarget && info.FatCount < 2) continue;
+                    if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
                     if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, null, !focusTarget)) continue;
                     return true;
@@ -129,6 +129,9 @@ namespace WeaponCore.Support
 
                 var meteor = info.Target as MyMeteor;
                 if (meteor != null && !s.TrackMeteors) continue;
+
+                if (Obstruction(ref info, ref targetPos, p))
+                    continue;
 
                 double rayDist;
                 Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
@@ -223,7 +226,7 @@ namespace WeaponCore.Support
                         }
                         else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
 
-                        if (w.Comp.Ai.ShieldNear)
+                        if (w.Comp.Ai.FriendlyShieldNear)
                         {
                             var targetDir = newCenter - weaponPos;
                             if (w.HitFriendlyShield(newCenter, targetDir))
@@ -245,7 +248,7 @@ namespace WeaponCore.Support
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
 
-                    if (w.Comp.Ai.ShieldNear)
+                    if (w.Comp.Ai.FriendlyShieldNear)
                     {
                         var targetDir = predictedPos - weaponPos;
                         if (w.HitFriendlyShield(predictedPos, targetDir))
@@ -698,7 +701,7 @@ namespace WeaponCore.Support
                 {
                     var voxelVolume = ent.PositionComp.WorldVolume;
 
-                    if (voxelVolume.Contains(p.Position) != ContainmentType.Disjoint || new RayD(ref p.Position, ref dir).Intersects(voxelVolume) != null)
+                    if (!ai.PlanetSurfaceInRange && (voxelVolume.Contains(p.Position) != ContainmentType.Disjoint || new RayD(ref p.Position, ref dir).Intersects(voxelVolume) != null))
                     {
                         var dirNorm = Vector3D.Normalize(dir);
                         var targetDist = Vector3D.Distance(p.Position, targetPos);
@@ -739,8 +742,8 @@ namespace WeaponCore.Support
                     var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
                     if (subDist.HasValue)
                     {
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        var q = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, q);
                         if (obb.Intersects(ref ray) != null)
                             obstruction = sub.RayCastBlocks(p.Position, targetPos) != null;
                     }
@@ -750,16 +753,16 @@ namespace WeaponCore.Support
 
                 if (!obstruction && ai.PlanetSurfaceInRange && ai.MyPlanet != null)
                 {
-                    var dirNorm = Vector3D.Normalize(dir);
+                    Vector3D dirNorm;
+                    Vector3D.Normalize(ref dir, out dirNorm);
                     var targetDist = Vector3D.Distance(p.Position, targetPos);
                     var tRadius = info.Target.PositionComp.LocalVolume.Radius;
                     var testPos = p.Position + (dirNorm * (targetDist - tRadius));
-                    var lineTest = new LineD(p.Position, testPos);
+
+                    var lineTest = new LineD(p.Position, testPos, (targetDist - tRadius));
 
                     using (ai.MyPlanet.Pin())
-                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, lineTest, 2);
-
-                    //obstruction = voxelHit.HasValue;
+                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest, 2);
                 }
             }
             return obstruction;
