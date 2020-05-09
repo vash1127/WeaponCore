@@ -72,7 +72,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        internal static bool CheckSurfacePointsOnLine(MyPlanet planet, LineD testLine, double distBetweenPoints)
+        internal static bool CheckSurfacePointsOnLine(MyPlanet planet, ref LineD testLine, double distBetweenPoints)
         {
             var checkPoints = (int)((testLine.Length / distBetweenPoints) + distBetweenPoints);
             var lastPoint = (checkPoints - 1);
@@ -94,12 +94,15 @@ namespace WeaponCore.Support
 
                 if (!planetInPath)
                 {
-                    Vector3D? voxelHit = null;
                     var closestSurface = planet.GetClosestSurfacePointGlobal(ref testPos);
                     var reverseLine = testLine;
                     reverseLine.Direction = -reverseLine.Direction;
                     reverseLine.From = testPos;
-                    reverseLine.To = reverseLine.From + (reverseLine.Direction * (Vector3D.Distance(closestSurface, reverseLine.From) + distBetweenPoints));
+
+                    double closestRevDist;
+                    Vector3D.Distance(ref closestSurface, ref reverseLine.From, out closestRevDist);
+                    reverseLine.To = reverseLine.From + (reverseLine.Direction * (closestRevDist + distBetweenPoints));
+                    Vector3D? voxelHit;
                     planet.GetIntersectionWithLine(ref reverseLine, out voxelHit);
                     return voxelHit.HasValue;
                 }
@@ -113,8 +116,8 @@ namespace WeaponCore.Support
             var planet = voxel as MyPlanet;
             var voxelMap = voxel as MyVoxelMap;
             var ray = new RayD(trajectile.From, trajectile.Direction);
-            var voxelAABB = voxel.PositionComp.WorldAABB;
-            var rayVoxelDist = ray.Intersects(voxelAABB);
+            var voxelAabb = voxel.PositionComp.WorldAABB;
+            var rayVoxelDist = ray.Intersects(voxelAabb);
             if (rayVoxelDist.HasValue)
             {
                 var voxelMaxLen = voxel.PositionComp.WorldVolume.Radius * 2;
@@ -126,7 +129,6 @@ namespace WeaponCore.Support
                 var obb = new MyOrientedBoundingBoxD(voxel.PositionComp.WorldAABB.Center, voxel.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                 if (obb.Intersects(ref testLine) != null)
                 {
-                    Log.Line("obb");
                     if (planet != null)
                     {
                         var startPos = trajectile.From - planet.PositionLeftBottomCorner;

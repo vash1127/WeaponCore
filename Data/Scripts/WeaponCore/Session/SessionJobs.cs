@@ -110,6 +110,7 @@ namespace WeaponCore
                     
                     db.MyShield = null;
                     db.ShieldNear = false;
+                    db.FriendlyShieldNear = false;
                     if (db.NearByShieldsTmp.Count > 0)
                         db.NearByShield();
 

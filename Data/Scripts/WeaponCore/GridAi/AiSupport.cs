@@ -225,8 +225,6 @@ namespace WeaponCore.Support
         internal void NearByShield()
         {
             NearByFriendlyShields.Clear();
-            ShieldNear = false;
-            MyShield = null;
             for (int i = 0; i < NearByShieldsTmp.Count; i++)
             {
                 var shield = NearByShieldsTmp[i];
@@ -245,6 +243,7 @@ namespace WeaponCore.Support
                         if (friendly)
                         {
                             NearByFriendlyShields.Add(shield.ShieldEnt);
+                            FriendlyShieldNear = true;
                         }
                         ShieldNear = true;
                     }

@@ -129,8 +129,8 @@ namespace WeaponCore.Support
             _rayAttackShield?.Invoke(block, ray, attackerId, damage, energy, drawParticle) ?? null;
         public Vector3D? LineAttackShield(IMyTerminalBlock block, LineD line, long attackerId, float damage, bool energy, bool drawParticle) =>
             _lineAttackShield?.Invoke(block, line, attackerId, damage, energy, drawParticle) ?? null;
-        public MyTuple<bool, float> IntersectEntToShieldFast(List<MyEntity> entities, RayD ray, bool onlyIfOnline, bool enemyOnly, long requesterId, float maxRange) =>
-            _intersectEntToShieldFast?.Invoke(entities, ray, onlyIfOnline, enemyOnly, requesterId, maxRange) ?? new MyTuple<bool, float>(false, float.MaxValue);
+        public MyTuple<bool, float> IntersectEntToShieldFast(List<MyEntity> entities, RayD ray, bool onlyIfOnline, bool enemyOnly, long requesterId, float maxRangeSqr) =>
+            _intersectEntToShieldFast?.Invoke(entities, ray, onlyIfOnline, enemyOnly, requesterId, maxRangeSqr) ?? new MyTuple<bool, float>(false, float.MaxValue);
         public bool PointAttackShield(IMyTerminalBlock block, Vector3D pos, long attackerId, float damage, bool energy, bool drawParticle, bool posMustBeInside = false) =>
             _pointAttackShield?.Invoke(block, pos, attackerId, damage, energy, drawParticle, posMustBeInside) ?? false;
         public float? PointAttackShieldExt(IMyTerminalBlock block, Vector3D pos, long attackerId, float damage, bool energy, bool drawParticle, bool posMustBeInside = false) =>
