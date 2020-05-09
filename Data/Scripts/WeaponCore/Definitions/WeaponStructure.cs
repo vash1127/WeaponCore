@@ -413,6 +413,7 @@ namespace WeaponCore.Support
         public readonly bool AmmoSkipAccel;
         public readonly bool LineWidthVariance;
         public readonly bool LineColorVariance;
+        public readonly bool LineSegments;
         public readonly bool OneHitParticle;
         public readonly bool DamageScaling;
         public readonly bool ArmorScaling;
@@ -479,6 +480,7 @@ namespace WeaponCore.Support
         public readonly double TracerLength;
         public readonly double CollisionSize;
         public readonly double SmartsDelayDistSqr;
+        public readonly double SegmentStep;
 
         public AmmoConstants(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
         {
@@ -514,6 +516,8 @@ namespace WeaponCore.Support
             DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
             LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
             LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;
+            LineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentGap > 0;
+            SegmentStep = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             SpeedVariance = ammo.AmmoDef.Trajectory.SpeedVariance.Start > 0 || ammo.AmmoDef.Trajectory.SpeedVariance.End > 0;
             RangeVariance = ammo.AmmoDef.Trajectory.RangeVariance.Start > 0 || ammo.AmmoDef.Trajectory.RangeVariance.End > 0;
             TrailWidth = ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth > 0 ? ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth : ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Width;

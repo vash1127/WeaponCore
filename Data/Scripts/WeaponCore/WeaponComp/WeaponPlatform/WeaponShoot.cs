@@ -126,11 +126,11 @@ namespace WeaponCore.Platform
 
                 #region Projectile Creation
                 Projectile vProjectile = null;
-                if (ActiveAmmoDef.AmmoDef.Const.VirtualBeams) vProjectile = CreateVirtualProjectile();
+
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
                 var firingPlayer = Comp.State.Value.CurrentPlayerControl.PlayerId == Comp.Session.PlayerId;
                 FireCounter++;
-
+                
                 for (int i = 0; i < bps; i++)
                 {
                     var current = NextMuzzle;
@@ -216,14 +216,11 @@ namespace WeaponCore.Platform
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
                             long patternCycle = FireCounter;
                             if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
-                            {
                                 patternCycle = ((FireCounter - 1) % ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd) + 1;
-                                //var end = FireCounter != 0 && patternCycle == ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd;
-                                //var start = FireCounter != 0 && patternCycle == ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart;
-                            }
 
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
+                                if (i == 0) vProjectile = CreateVirtualProjectile(patternCycle);
                                 MyEntity primeE = null;
                                 MyEntity triggerE = null;
 
@@ -296,7 +293,7 @@ namespace WeaponCore.Platform
                                 }
                                 else shotFade = 0;
                                 p.Info.ShotFade = shotFade;
-
+                                p.Info.FireCounter = FireCounter;
                                 p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
                                 p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                                 p.PredictedTargetPos = Target.TargetPos;
@@ -394,7 +391,7 @@ namespace WeaponCore.Platform
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
         }
 
-        private Projectile CreateVirtualProjectile()
+        private Projectile CreateVirtualProjectile(long patternCycle)
         {
             var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
             p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
@@ -417,15 +414,15 @@ namespace WeaponCore.Platform
             float shotFade;
             if (ActiveAmmoDef.AmmoDef.Const.HasShotFade)
             {
-                if (FireCounter > ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart)
-                    shotFade = MathHelper.Clamp(((FireCounter - ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0, 1);
+                if (patternCycle > ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                    shotFade = MathHelper.Clamp(((patternCycle - ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0, 1);
                 else if (System.DelayCeaseFire && CeaseFireDelayTick != Comp.Ai.Session.Tick)
                     shotFade = MathHelper.Clamp(((Comp.Ai.Session.Tick - CeaseFireDelayTick) - ActiveAmmoDef.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart) * ActiveAmmoDef.AmmoDef.Const.ShotFadeStep, 0, 1);
                 else shotFade = 0;
             }
             else shotFade = 0;
             p.Info.ShotFade = shotFade;
-
+            p.Info.FireCounter = FireCounter;
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
             p.Info.ShooterVel = Comp.Ai.GridVel;

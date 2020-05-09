@@ -231,7 +231,34 @@ namespace WeaponCore.Support
                     if (!av.AmmoDef.Const.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                            MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                        {
+                            if (av.AmmoDef.Const.LineSegments)
+                            {
+                                var seg = av.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+                                var measure = seg.SegmentLength + seg.SegmentGap;
+                                var segments = (av.VisualLength / measure) * 2;
+                                var indexCnt = ((int)segments) + 1;
+                                var offset = segments - (indexCnt - 1);
+                                var stepPos = av.TracerBack;
+                                var end = indexCnt - 1;
+                                var movedLength = av.FireCounter * av.AmmoDef.Const.SegmentStep;
+                                var measureStep = movedLength % measure;
+                                var startIsPastGap = measureStep >= seg.SegmentGap;
+                                double travel;
+                                for (int j = 0; j < indexCnt; j++)
+                                {
+                                    var even = j % 2 == 0;
+                                    var theEnd = j == end;
+                                    var len = theEnd ? offset : even ? seg.SegmentLength : seg.SegmentGap;
+                                    var gap = !even || theEnd;
+
+                                    MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, !gap ? seg.Color : av.Color, stepPos, av.PointDir, (float)len, (float)av.TracerWidth);
+                                    stepPos += (av.PointDir * len);
+                                }
+                            }
+                            else
+                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                        }
                     }
                     else
                     {
@@ -316,8 +343,9 @@ namespace WeaponCore.Support
         private void RunShrinks(AvShot av)
         {
             var s = av.TracerShrinks.Dequeue();
-            if (av.LastTick != Session.Tick) {
-
+            if (av.LastTick != Session.Tick)
+            {
+                //av.FireCounter++;
                 if (!av.AmmoDef.Const.OffsetEffect) {
 
                     if (av.OnScreen != AvShot.Screen.None)

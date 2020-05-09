@@ -425,6 +425,17 @@ namespace WeaponCore.Support
                         [ProtoMember(4)] internal Vector4 Color;
                         [ProtoMember(5)] internal uint VisualFadeStart;
                         [ProtoMember(6)] internal uint VisualFadeEnd;
+                        [ProtoMember(7)] internal SegmentDef Segmentation;
+
+                        [ProtoContract]
+                        public struct SegmentDef
+                        {
+                            [ProtoMember(1)] internal double SegmentLength;
+                            [ProtoMember(2)] internal double SegmentGap;
+                            [ProtoMember(3)] internal double Speed;
+                            [ProtoMember(4)] internal Vector4 Color;
+                            [ProtoMember(5)] internal bool Reverse;
+                        }
                     }
 
                     [ProtoContract]
