@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -170,14 +171,15 @@ namespace WeaponCore.Projectiles
                                 if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock)) 
                                     continue;
                             }
-                            if (!p.Info.EwarActive) {
-
-                                grid.RayCastCells(hitEntity.Intersection.From, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
+                            if (!p.Info.EwarActive)
+                            {
+                                var forwardPos = p.Info.Age != 1 ? hitEntity.Intersection.From : hitEntity.Intersection.From + (hitEntity.Intersection.Direction * Math.Min(grid.GridSizeHalf, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled)) ;
+                                grid.RayCastCells(forwardPos, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
 
                                 if (hitEntity.Vector3ICache.Count > 0) {
                                     
                                     IHitInfo hitInfo;
-                                    p.Info.Ai.Session.Physics.CastRay(hitEntity.Intersection.From, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
+                                    p.Info.Ai.Session.Physics.CastRay(forwardPos, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
                                     var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
                                     if (hitGrid == null || !hitGrid.IsSameConstructAs(p.Info.Target.FiringCube.CubeGrid))
                                         continue;
