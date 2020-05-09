@@ -195,6 +195,8 @@ namespace WeaponCore.Platform
                 var weapon = Weapons[i];
                 SetupUi(weapon);
 
+                
+
                 if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
                     comp.Debug = true;
 
@@ -441,7 +443,7 @@ namespace WeaponCore.Platform
                             MyEntity part;
                             if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                             {
-                                animation.Part = (MyEntitySubpart)part;
+                                animation.Part = part;
                                 //if (animation.Running)
                                 //  animation.Paused = true;
                                 animation.Reset();

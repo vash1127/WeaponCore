@@ -584,10 +584,9 @@ namespace WeaponCore
                     for (int i = 0; i < animationSet.Value.Length; i++)
                     {
                         var animation = animationSet.Value[i];
+                        
                         MyEntity part;
-                        parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
-                        var subpart = part as MyEntitySubpart;
-                        if (subpart == null) continue;
+                        if(!parts.NameToEntity.TryGetValue(animation.SubpartId, out part)) continue;
 
                         var rotations = new Matrix[animation.RotationSet.Length];
                         var rotCenters = new Matrix[animation.RotCenterSet.Length];
@@ -596,34 +595,36 @@ namespace WeaponCore
 
                         var rotCenterNames = animation.RotCenterNameSet;
 
-                        var partMatrix = !animation.SubpartId.Equals("None") ? GetPartDummy("subpart_" + animation.SubpartId, subpart.Parent.Model)?.Matrix ?? Matrix.Identity : subpart.PositionComp.LocalMatrixRef;
-                        var partCenter = partMatrix.Translation;
-
-                        for (int j = 0; j < rotations.Length; j++)
+                        if (!animation.SubpartId.Equals("None"))
                         {
-                            if (rotations[j] != Matrix.Zero)
-                            {
-                                rotations[j] = Matrix.CreateTranslation(-partCenter) * rotations[j] * Matrix.CreateTranslation(partCenter);
+                            var partMatrix = GetPartDummy("subpart_" + animation.SubpartId, part.Parent.Model)?.Matrix ?? Matrix.Identity;
+                            var partCenter = partMatrix.Translation;
 
-                                Matrix.AlignRotationToAxes(ref rotations[j], ref partMatrix);
+                            for (int j = 0; j < rotations.Length; j++)
+                            {
+                                if (rotations[j] != Matrix.Zero)
+                                {
+                                    rotations[j] = Matrix.CreateTranslation(-partCenter) * rotations[j] * Matrix.CreateTranslation(partCenter);
+
+                                    Matrix.AlignRotationToAxes(ref rotations[j], ref partMatrix);
+                                }
                             }
 
-                        }
-
-                        for (int j = 0; j < rotCenters.Length; j++)
-                        {
-                            if (rotCenters[j] != Matrix.Zero && rotCenterNames != null)
+                            for (int j = 0; j < rotCenters.Length; j++)
                             {
-                                var dummyMatrix = GetPartDummy(rotCenterNames[j], subpart.Model)?.Matrix ?? Matrix.Identity;
-                                rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyMatrix.Translation)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyMatrix.Translation));
+                                if (rotCenters[j] != Matrix.Zero && rotCenterNames != null)
+                                {
+                                    var dummyMatrix = GetPartDummy(rotCenterNames[j], part.Model)?.Matrix ?? Matrix.Identity;
+                                    rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyMatrix.Translation)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyMatrix.Translation));
 
 
-                                Matrix.AlignRotationToAxes(ref rotCenters[j], ref dummyMatrix);
+                                    Matrix.AlignRotationToAxes(ref rotCenters[j], ref dummyMatrix);
+                                }
                             }
                         }
 
                         allAnimationSet[animationSet.Key][i] = new PartAnimation(animation.EventTrigger, animation.AnimationId, rotations, rotCenters,
-                            animation.TypeSet, animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
+                            animation.TypeSet, animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, part, parts.Entity,
                             animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
                             animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives);
                     }
@@ -650,11 +651,11 @@ namespace WeaponCore
                     var animation = animationKv.Value[i];
                     MyEntity part;
                     parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
-                    var subpart = part as MyEntitySubpart;
-                    if (subpart == null) continue;
+                    
+                    if (part == null) continue;
                     returnAnimations[animationKv.Key][i] = new PartAnimation(animation)
                     {
-                        Part = subpart,
+                        Part = part,
                         MainEnt = parts.Entity,
                     };
                 }
