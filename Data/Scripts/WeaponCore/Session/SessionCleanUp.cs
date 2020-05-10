@@ -219,7 +219,6 @@ namespace WeaponCore
             Projectiles.ShrapnelToSpawn.Clear();
             Projectiles.ShrapnelPool.Clean();
             Projectiles.FragmentPool.Clean();
-            Projectiles.ActiveProjetiles.ApplyChanges();
             Projectiles.ActiveProjetiles.Clear();
             Projectiles.ProjectilePool.Clear();
             Projectiles.HitEntityPool.Clean();

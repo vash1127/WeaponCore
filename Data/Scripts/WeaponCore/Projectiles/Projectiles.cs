@@ -29,7 +29,7 @@ namespace WeaponCore.Projectiles
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
-        internal readonly CachingHashSet<Projectile> ActiveProjetiles = new CachingHashSet<Projectile>();
+        internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>();
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
 
@@ -53,8 +53,6 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.Start("Clean&Spawn", 17);
             Clean();
             SpawnFragments();
-
-            ActiveProjetiles.ApplyChanges();
             Session.StallReporter.End();
 
             if (AddTargets.Count > 0)
@@ -109,8 +107,6 @@ namespace WeaponCore.Projectiles
                 p.PruningProxyId = -1;
 
                 p.Info.Clean();
-                ProjectilePool.Push(p);
-                ActiveProjetiles.Remove(p);
             }
 
             CleanUp.Clear();
@@ -179,8 +175,9 @@ namespace WeaponCore.Projectiles
 
         private void UpdateState()
         {
-            foreach (var p in ActiveProjetiles)
+            for (int i = ActiveProjetiles.Count - 1; i >= 0; i--)
             {
+                var p = ActiveProjetiles[i];
                 p.Info.Age++;
                 p.Active = false;
                 switch (p.State)
@@ -189,7 +186,8 @@ namespace WeaponCore.Projectiles
                         p.DestroyProjectile();
                         continue;
                     case ProjectileState.Dead:
-                        Log.Line("dead");
+                        ProjectilePool.Push(p);
+                        ActiveProjetiles.RemoveAtFast(i);
                         continue;
                     case ProjectileState.Start:
                         p.Start();
@@ -326,8 +324,9 @@ namespace WeaponCore.Projectiles
 
         private void CheckHits()
         {
-            foreach (var p in ActiveProjetiles) {
+            for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
 
+                var p = ActiveProjetiles[x];
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
@@ -438,8 +437,10 @@ namespace WeaponCore.Projectiles
 
         private void UpdateAv()
         {
-            foreach (var p in ActiveProjetiles)
-            {
+            for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
+
+                var p = ActiveProjetiles[x];
+
                 if (!p.Miss || (int)p.State > 3) continue;
                 if (p.Info.MuzzleId == -1)
                 {
@@ -449,25 +450,7 @@ namespace WeaponCore.Projectiles
                 if (!p.EnableAv) continue;
 
                 if (p.SmartsOn)
-                {
-                    /*
-                    if (p.EnableAv && Vector3D.Dot(p.Info.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
-                    {
-                        p.VisualStep += 0.0025;
-                        if (p.VisualStep > 1) p.VisualStep = 1;
-
-                        Vector3D lerpDir;
-                        Vector3D.Lerp(ref p.Info.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
-                        Vector3D.Normalize(ref lerpDir, out p.Info.VisualDir);
-                    }
-                    else if (p.EnableAv && Vector3D.Dot(p.Info.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
-                    {
-                        p.Info.VisualDir = p.AccelDir;
-                        p.VisualStep = 0;
-                    }
-                    */
                     p.Info.VisualDir = p.Info.Direction;
-                }
                 else if (p.FeelsGravity) p.Info.VisualDir = p.Info.Direction;
 
                 if (p.LineOrNotModel)
