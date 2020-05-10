@@ -189,7 +189,7 @@ namespace WeaponCore.Platform
                         var patternIndex = 1;
 
                         if (!pattern.Enable || !pattern.Random)
-                            patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndex;
+                            patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
                         else {
                             if (pattern.TriggerChance >= rnd.TurretRandom.NextDouble() || pattern.TriggerChance >= 1)
                             {
@@ -202,7 +202,7 @@ namespace WeaponCore.Platform
 
                         if (pattern.Random)
                         {
-                            for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
+                            for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt; w++)
                             {
                                 var y = rnd.TurretRandom.Next(w + 1);
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[w] = ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y];
@@ -214,8 +214,6 @@ namespace WeaponCore.Platform
                             float shotFade;
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
                             
-                            var gapStart = false;
-                            var segmentLen = 0d;
                             if (ammoPattern.Const.LineSegments) 
                                 UpdateSegmentState(ammoPattern);
                             
@@ -226,7 +224,7 @@ namespace WeaponCore.Platform
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
                                 if (i == 0) 
-                                    vProjectile = CreateVirtualProjectile(patternCycle, gapStart, segmentLen);
+                                    vProjectile = CreateVirtualProjectile(patternCycle);
 
                                 MyEntity primeE = null;
                                 MyEntity triggerE = null;
@@ -271,7 +269,7 @@ namespace WeaponCore.Platform
                                 p.Info.Ai = Comp.Ai;
                                 p.Info.IsFiringPlayer = firingPlayer;
                                 p.Info.AmmoDef = ammoPattern;
-                                p.Info.AmmoInfo = AmmoInfos[ammoPattern.Const.PatternIndex];
+                                p.Info.AmmoInfo = AmmoInfos[ammoPattern.Const.AmmoIdxPos];
                                 p.Info.Overrides = Comp.Set.Value.Overrides;
                                 p.Info.Target.Entity = Target.Entity;
                                 p.Info.Target.Projectile = Target.Projectile;
@@ -398,14 +396,14 @@ namespace WeaponCore.Platform
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
         }
 
-        private Projectile CreateVirtualProjectile(long patternCycle, bool gapStart, double initalSegmentLen)
+        private Projectile CreateVirtualProjectile(long patternCycle)
         {
             var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
             p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
             p.Info.AmmoDef = ActiveAmmoDef.AmmoDef;
-            p.Info.AmmoInfo = AmmoInfos[ActiveAmmoDef.AmmoDef.Const.PatternIndex];
+            p.Info.AmmoInfo = AmmoInfos[ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos];
 
             p.Info.Overrides = Comp.Set.Value.Overrides;
             p.Info.Target.Entity = Target.Entity;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -244,9 +245,33 @@ namespace WeaponCore.Support
                                 var stepPos = av.TracerBack;
                                 var j = 0;
                                 double travel = 0;
+
+
+
+                                var measure = seg.SegmentGap + seg.SegmentLength;
+                                var steps = av.VisualLength / measure;
+                                var cull = av.VisualLength > 50 && steps > 10;
+
+                                double? start = null;
+                                double? end = null; 
+                                if (cull)
+                                {
+                                    var reverse = -av.PointDir;
+                                    var ray2 = new RayD(ref av.TracerBack, ref av.PointDir);
+                                    var ray1 = new RayD(ref av.TracerFront, ref reverse);
+
+                                    Session.CameraFrustrum.Intersects(ref ray1, out start);
+                                    Session.CameraFrustrum.Intersects(ref ray2, out end);
+                                }
+
+                                start = start.HasValue ? Math.Abs(start.Value - 1000) : double.MaxValue;
+                                end = end ?? double.MaxValue;
+
+                                var segsDrawn = 0;
                                 while (travel < av.VisualLength)
                                 {
-                                    var mod = j % 2;
+                                    var mod = j++ % 2;
+
                                     var gap = av.AmmoInfo.SegmentGaped && mod == 0 || !av.AmmoInfo.SegmentGaped && mod == 1;
                                     var first = travel <= 0;
 
@@ -255,31 +280,35 @@ namespace WeaponCore.Support
                                     MyStringId material;
                                     Vector4 dyncColor;
                                     if (!gap) {
+                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentLength;
                                         material = av.AmmoDef.Const.TracerMaterial;
                                         width = av.TracerWidth;
                                         dyncColor = color;
-                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentLength;
                                     }
                                     else {
+                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentGap;
                                         material = av.AmmoDef.Const.SegmentMaterial;
                                         width = av.SegmentWidth;
                                         dyncColor = segColor;
-                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentGap;
                                     }
 
                                     var notLast = travel + rawLen < av.VisualLength;
                                     var len = notLast ? rawLen : av.VisualLength - travel;
-                                    MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);
 
-                                    if (!notLast) {
+                                    if (!cull || (cull && start <= travel && end <= travel + rawLen))
+                                    {
+                                        segsDrawn++;
+                                        MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);
+                                    }
+
+                                    if (!notLast)
                                         travel = av.VisualLength;
-                                    }
-                                    else {
+                                    else
                                         travel += len;
-                                    }
                                     stepPos += (av.PointDir * len);
-                                    j++;
+                                    //Log.Line($"{start} - {end}");
                                 }
+                                //Log.Line($"{segsDrawn}");
                             }
                             else
                                 MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);

@@ -395,8 +395,8 @@ namespace WeaponCore.Support
         public readonly int ShrapnelId = -1;
         public readonly int MaxChaseTime;
         public readonly int MagazineSize;
-        public readonly int PatternIndex;
-        public readonly int AmmoIndex;
+        public readonly int PatternIndexCnt;
+        public readonly int AmmoIdxPos;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -487,7 +487,7 @@ namespace WeaponCore.Support
 
         public AmmoConstants(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
         {
-            AmmoIndex = ammoIndex;
+            AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
 
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
@@ -548,7 +548,7 @@ namespace WeaponCore.Support
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
 
-            ComputeAmmoPattern(ammo, wDef, out AmmoPattern, out PatternIndex, out AmmoShufflePattern);
+            ComputeAmmoPattern(ammo, wDef, out AmmoPattern, out PatternIndexCnt, out AmmoShufflePattern);
 
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);

@@ -236,7 +236,6 @@ namespace WeaponCore.Support
                         if (dist != null && dist <= a.ShortEstTravel + a.ShortStepSize)
                             a.OnScreen = Screen.Trail;
                     }
-
                     if (a.OnScreen != Screen.None && !a.TrailActivated && a.AmmoDef.Const.Trail) a.TrailActivated = true;
 
                     if (a.OnScreen == Screen.None && a.TrailActivated) a.OnScreen = Screen.Trail;
@@ -496,7 +495,6 @@ namespace WeaponCore.Support
 
             Color = color;
             SegmentColor = segmentColor;
-
             var tracerWidth = AmmoDef.AmmoGraphics.Lines.Tracer.Width;
             var trailWidth = AmmoDef.Const.TrailWidth;
             if (AmmoDef.Const.LineWidthVariance)

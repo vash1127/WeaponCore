@@ -81,7 +81,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
-        internal AmmoInfo[] AmmoInfos = new AmmoInfo[1];
+        internal AmmoInfo[] AmmoInfos;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;

@@ -153,6 +153,7 @@ namespace WeaponCore.Projectiles
                             var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
                             
                             if (!quickCheck) {
+
                                 var deltaPos = targetSphere.Center - p.Info.Origin;
                                 var deltaVel = targetAi.GridVel - p.Info.Ai.GridVel;
                                 var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, p.Info.AmmoDef.Const.DesiredProjectileSpeed);
@@ -165,6 +166,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
                     if (addProjectile) {
+
                         targetAi.LiveProjectile.Add(p);
                         targetAi.LiveProjectileTick = Session.Tick;
                         targetAi.NewProjectileTick = Session.Tick;
@@ -187,6 +189,7 @@ namespace WeaponCore.Projectiles
                         p.DestroyProjectile();
                         continue;
                     case ProjectileState.Dead:
+                        Log.Line("dead");
                         continue;
                     case ProjectileState.Start:
                         p.Start();
