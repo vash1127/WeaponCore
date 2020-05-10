@@ -40,7 +40,7 @@ namespace WeaponCore.Support
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
 
-                    weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes.Length > 0 ? weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId] : new WeaponAmmoTypes();
+                    weapon.ChangeActiveAmmo(weapon.System.WeaponAmmoTypes.Length > 0 ? weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId] : new WeaponAmmoTypes());
 
                     if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable)
                     {

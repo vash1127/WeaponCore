@@ -378,6 +378,7 @@ namespace WeaponCore.Support
         public readonly int[] AmmoShufflePattern;
         public readonly MyStringId TracerMaterial;
         public readonly MyStringId TrailMaterial;
+        public readonly MyStringId SegmentMaterial;
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly AreaEffectType AreaEffect;
         public readonly string ModelPath;
@@ -414,6 +415,8 @@ namespace WeaponCore.Support
         public readonly bool LineWidthVariance;
         public readonly bool LineColorVariance;
         public readonly bool LineSegments;
+        public readonly bool SegmentWidthVariance;
+        public readonly bool SegmentColorVariance;
         public readonly bool OneHitParticle;
         public readonly bool DamageScaling;
         public readonly bool ArmorScaling;
@@ -490,6 +493,7 @@ namespace WeaponCore.Support
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
             TracerMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material);
+            SegmentMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material);
 
             if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
 
@@ -516,13 +520,15 @@ namespace WeaponCore.Support
             DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
             LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
             LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;
+            SegmentColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.End > 0;
+            SegmentWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.End > 0;
+
             LineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentGap > 0;
             SegmentStep = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             SpeedVariance = ammo.AmmoDef.Trajectory.SpeedVariance.Start > 0 || ammo.AmmoDef.Trajectory.SpeedVariance.End > 0;
             RangeVariance = ammo.AmmoDef.Trajectory.RangeVariance.Start > 0 || ammo.AmmoDef.Trajectory.RangeVariance.End > 0;
             TrailWidth = ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth > 0 ? ammo.AmmoDef.AmmoGraphics.Lines.Trail.CustomWidth : ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Width;
             TargetOffSet = ammo.AmmoDef.Trajectory.Smarts.Inaccuracy > 0;
-
             TargetLossTime = ammo.AmmoDef.Trajectory.TargetLossTime > 0 ? ammo.AmmoDef.Trajectory.TargetLossTime : int.MaxValue;
             CanZombie = TargetLossTime > 0 && TargetLossTime != int.MaxValue && !IsMine;
             MaxLifeTime = ammo.AmmoDef.Trajectory.MaxLifeTime > 0 ? ammo.AmmoDef.Trajectory.MaxLifeTime : int.MaxValue;

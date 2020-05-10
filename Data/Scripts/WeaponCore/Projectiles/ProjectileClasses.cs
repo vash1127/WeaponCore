@@ -5,6 +5,7 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
@@ -35,7 +36,6 @@ namespace WeaponCore.Support
         internal int MuzzleId;
         internal int ObjectsHit;
         internal int Age;
-        internal int FireCounter;
         internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
@@ -56,6 +56,7 @@ namespace WeaponCore.Support
         internal bool IsFiringPlayer;
         internal bool ClientSent;
         internal bool IsVirtual;
+        internal Weapon.AmmoInfo AmmoInfo;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection, double maxTrajectory, float shotFade)
@@ -98,6 +99,7 @@ namespace WeaponCore.Support
             System = null;
             Ai = null;
             AmmoDef = null;
+            AmmoInfo = null;
             WeaponCache = null;
             LastHitShield = false;
             IsShrapnel = false;
@@ -115,7 +117,6 @@ namespace WeaponCore.Support
             MaxTrajectory = 0;
             ShotFade = 0;
             TracerLength = 0;
-            FireCounter = 0;
             EnableGuidance = true;
             Direction = Vector3D.Zero;
             VisualDir = Vector3D.Zero;
@@ -303,6 +304,7 @@ namespace WeaponCore.Support
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
                 frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
+                frag.AmmoInfo = p.Info.AmmoInfo;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
@@ -381,7 +383,7 @@ namespace WeaponCore.Support
                 p.Info.LockOnFireState = frag.LockOnFireState;
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
-                p.Info.FireCounter = 0;
+                p.Info.AmmoInfo = frag.AmmoInfo;
                 p.State = Projectiles.Projectile.ProjectileState.Start;
 
                 frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
@@ -402,6 +404,7 @@ namespace WeaponCore.Support
         public WeaponSystem System;
         public GridAi Ai;
         public AmmoDef AmmoDef;
+        public Weapon.AmmoInfo AmmoInfo;
         public MyEntity PrimeEntity;
         public MyEntity TriggerEntity;
         public MyEntity Target;

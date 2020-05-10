@@ -225,8 +225,14 @@ namespace WeaponCore.Support
                 if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
                     var color = av.Color;
+                    var segColor = av.SegmentColor;
+
                     if (av.ShotFade > 0)
-                        color *= MathHelper.Clamp(1f - av.ShotFade, 0.005f, 1f);
+                    {
+                        var fade = MathHelper.Clamp(1f - av.ShotFade, 0.005f, 1f);
+                        color *= fade;
+                        segColor *= fade;
+                    }
 
                     if (!av.AmmoDef.Const.OffsetEffect)
                     {
@@ -235,25 +241,44 @@ namespace WeaponCore.Support
                             if (av.AmmoDef.Const.LineSegments)
                             {
                                 var seg = av.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
-                                var measure = seg.SegmentLength + seg.SegmentGap;
-                                var segments = (av.VisualLength / measure) * 2;
-                                var indexCnt = ((int)segments) + 1;
-                                var offset = segments - (indexCnt - 1);
                                 var stepPos = av.TracerBack;
-                                var end = indexCnt - 1;
-                                var movedLength = av.FireCounter * av.AmmoDef.Const.SegmentStep;
-                                var measureStep = movedLength % measure;
-                                var startIsPastGap = measureStep >= seg.SegmentGap;
-                                double travel;
-                                for (int j = 0; j < indexCnt; j++)
+                                var j = 0;
+                                double travel = 0;
+                                while (travel < av.VisualLength)
                                 {
-                                    var even = j % 2 == 0;
-                                    var theEnd = j == end;
-                                    var len = theEnd ? offset : even ? seg.SegmentLength : seg.SegmentGap;
-                                    var gap = !even || theEnd;
+                                    var mod = j % 2;
+                                    var gap = av.AmmoInfo.SegmentGaped && mod == 0 || !av.AmmoInfo.SegmentGaped && mod == 1;
+                                    var first = travel <= 0;
 
-                                    MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerMaterial, !gap ? seg.Color : av.Color, stepPos, av.PointDir, (float)len, (float)av.TracerWidth);
+                                    double width;
+                                    double rawLen;
+                                    MyStringId material;
+                                    Vector4 dyncColor;
+                                    if (!gap) {
+                                        material = av.AmmoDef.Const.TracerMaterial;
+                                        width = av.TracerWidth;
+                                        dyncColor = color;
+                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentLength;
+                                    }
+                                    else {
+                                        material = av.AmmoDef.Const.SegmentMaterial;
+                                        width = av.SegmentWidth;
+                                        dyncColor = segColor;
+                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentGap;
+                                    }
+
+                                    var notLast = travel + rawLen < av.VisualLength;
+                                    var len = notLast ? rawLen : av.VisualLength - travel;
+                                    MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);
+
+                                    if (!notLast) {
+                                        travel = av.VisualLength;
+                                    }
+                                    else {
+                                        travel += len;
+                                    }
                                     stepPos += (av.PointDir * len);
+                                    j++;
                                 }
                             }
                             else

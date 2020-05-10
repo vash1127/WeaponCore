@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
@@ -15,6 +16,56 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
+        public void UpdateSegmentState(AmmoDef ammoDef)
+        {
+            var wasGapped = AmmoInfos[ammoDef.Const.PatternIndex].SegmentGaped;
+            var seg = ammoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+            var thisLen = wasGapped ? seg.SegmentGap : seg.SegmentLength;
+            var oldmStep = MeasureStep;
+
+            if (oldmStep > thisLen)
+            {
+                wasGapped = !wasGapped;
+                AmmoInfos[ammoDef.Const.PatternIndex].SegmentGaped = wasGapped;
+                MeasureStep = 0;
+            }
+
+            MeasureStep += ammoDef.Const.SegmentStep;
+            AmmoInfos[ammoDef.Const.PatternIndex].SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(seg.SegmentGap, 0, Math.Min(MeasureStep, seg.SegmentGap)) 
+                : MathHelperD.Clamp(seg.SegmentLength, 0, Math.Min(MeasureStep, seg.SegmentLength));
+        }
+
+        public void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
+        {
+            ActiveAmmoDef = ammoDef;
+
+            for (int i = 0; i < AmmoInfos.Length; i++) {
+                if (AmmoInfos[i] != null) {
+                    Comp.Session.AmmoInfoPool.Return(AmmoInfos[i]);
+                    AmmoInfos[i] = null;
+                }
+            }
+
+
+            if (AmmoInfos.Length != System.WeaponAmmoTypes.Length)
+                Array.Resize(ref AmmoInfos, System.WeaponAmmoTypes.Length);
+
+            for (int i = 0; i < AmmoInfos.Length; i++)
+                    AmmoInfos[i] = Comp.Session.AmmoInfoPool.Get();
+        }
+
+        public void PurgeAmmoInfo()
+        {
+            for (int i = 0; i < AmmoInfos.Length; i++)
+                if (AmmoInfos[i] != null)
+                {
+                    Comp.Session.AmmoInfoPool.Return(AmmoInfos[i]);
+                    AmmoInfos[i] = null;
+                }
+
+            AmmoInfos = null;
+        }
+
         public void PositionChanged(MyPositionComponentBase pComp)
         {
             try
@@ -503,7 +554,7 @@ namespace WeaponCore.Platform
                 else
                 {
                     if (Comp.Session.IsCreative)
-                        ActiveAmmoDef = newAmmo;
+                        ChangeActiveAmmo(newAmmo);
 
                     Session.ComputeStorage(this);
                 }
@@ -512,11 +563,11 @@ namespace WeaponCore.Platform
 
             if (!newAmmo.AmmoDef.Const.EnergyAmmo)
             {
-                ActiveAmmoDef = newAmmo;
+                ChangeActiveAmmo(newAmmo);
                 Session.ComputeStorage(this);
                 return;
             }
-            ActiveAmmoDef = newAmmo;
+            ChangeActiveAmmo(newAmmo);
             SetWeaponDps();
         }
 
@@ -618,7 +669,7 @@ namespace WeaponCore.Platform
                 StartReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
             {
-                ActiveAmmoDef = System.WeaponAmmoTypes[Set.AmmoTypeId];
+                ChangeActiveAmmo(System.WeaponAmmoTypes[Set.AmmoTypeId]);
                 SetWeaponDps();
                 if (CanReload)
                     StartReload();

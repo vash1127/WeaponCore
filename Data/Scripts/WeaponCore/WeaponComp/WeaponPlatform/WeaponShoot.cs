@@ -200,7 +200,6 @@ namespace WeaponCore.Platform
                                 rnd.TurretCurrentCounter++;
                         }
 
-
                         if (pattern.Random)
                         {
                             for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
@@ -214,13 +213,21 @@ namespace WeaponCore.Platform
                         {
                             float shotFade;
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
+                            
+                            var gapStart = false;
+                            var segmentLen = 0d;
+                            if (ammoPattern.Const.LineSegments) 
+                                UpdateSegmentState(ammoPattern);
+                            
                             long patternCycle = FireCounter;
                             if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
                                 patternCycle = ((FireCounter - 1) % ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd) + 1;
 
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
-                                if (i == 0) vProjectile = CreateVirtualProjectile(patternCycle);
+                                if (i == 0) 
+                                    vProjectile = CreateVirtualProjectile(patternCycle, gapStart, segmentLen);
+
                                 MyEntity primeE = null;
                                 MyEntity triggerE = null;
 
@@ -264,6 +271,7 @@ namespace WeaponCore.Platform
                                 p.Info.Ai = Comp.Ai;
                                 p.Info.IsFiringPlayer = firingPlayer;
                                 p.Info.AmmoDef = ammoPattern;
+                                p.Info.AmmoInfo = AmmoInfos[ammoPattern.Const.PatternIndex];
                                 p.Info.Overrides = Comp.Set.Value.Overrides;
                                 p.Info.Target.Entity = Target.Entity;
                                 p.Info.Target.Projectile = Target.Projectile;
@@ -293,7 +301,6 @@ namespace WeaponCore.Platform
                                 }
                                 else shotFade = 0;
                                 p.Info.ShotFade = shotFade;
-                                p.Info.FireCounter = FireCounter;
                                 p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
                                 p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                                 p.PredictedTargetPos = Target.TargetPos;
@@ -391,13 +398,15 @@ namespace WeaponCore.Platform
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
         }
 
-        private Projectile CreateVirtualProjectile(long patternCycle)
+        private Projectile CreateVirtualProjectile(long patternCycle, bool gapStart, double initalSegmentLen)
         {
             var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
             p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
             p.Info.AmmoDef = ActiveAmmoDef.AmmoDef;
+            p.Info.AmmoInfo = AmmoInfos[ActiveAmmoDef.AmmoDef.Const.PatternIndex];
+
             p.Info.Overrides = Comp.Set.Value.Overrides;
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
@@ -422,7 +431,6 @@ namespace WeaponCore.Platform
             }
             else shotFade = 0;
             p.Info.ShotFade = shotFade;
-            p.Info.FireCounter = FireCounter;
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
             p.Info.ShooterVel = Comp.Ai.GridVel;

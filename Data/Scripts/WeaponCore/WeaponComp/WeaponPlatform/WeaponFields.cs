@@ -81,6 +81,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
+        internal AmmoInfo[] AmmoInfos = new AmmoInfo[1];
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -144,6 +145,8 @@ namespace WeaponCore.Platform
         internal double MaxTargetDistanceSqr;
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
+        internal double MeasureStep;
+
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -218,6 +221,18 @@ namespace WeaponCore.Platform
             public bool Av1Looping;
             public bool Av2Looping;
 
+        }
+
+        public class AmmoInfo
+        {
+            public bool SegmentGaped;
+            public double SegmentLenTranserved;
+
+            public void Clean()
+            {
+                SegmentGaped = false;
+                SegmentLenTranserved = 0f;
+            }
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
