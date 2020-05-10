@@ -482,7 +482,6 @@ namespace WeaponCore.Support
                     segmentColor.X *= randomValue;
                     segmentColor.Y *= randomValue;
                     segmentColor.Z *= randomValue;
-                    Log.Line($"segColor+ line color");
                 }
             }
 
@@ -493,7 +492,6 @@ namespace WeaponCore.Support
                 segmentColor.X *= randomValue;
                 segmentColor.Y *= randomValue;
                 segmentColor.Z *= randomValue;
-                Log.Line($"segColor");
             }
 
             Color = color;
