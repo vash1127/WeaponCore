@@ -529,7 +529,6 @@ namespace WeaponCore.Support
             SegmentWidth = seg.WidthMultiplier > 0 ? TracerWidth * seg.WidthMultiplier : TracerWidth;
             if (AmmoDef.Const.SegmentWidthVariance)
             {
-                Log.Line("segwidth");
                 var wv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 SegmentWidth += randomValue;
