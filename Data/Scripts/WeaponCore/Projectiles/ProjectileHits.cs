@@ -120,17 +120,19 @@ namespace WeaponCore.Projectiles
                                 Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
                                 if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (beam.Length * beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
 
-                                    using (voxel.Pin()) {
-                                        if (beam.Length > 50)
-                                        {
-                                            IHitInfo hit;
-                                            p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
-                                            if (hit?.HitEntity is MyVoxelBase)
-                                                voxelHit = hit.Position;
-                                        }
-                                        else if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES)  && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
-                                            voxelHit = beam.From;
+                                    if (beam.Length > 50) {
+                                        IHitInfo hit;
+                                        p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
+                                        if (hit?.HitEntity is MyVoxelBase)
+                                            voxelHit = hit.Position;
                                     }
+                                    else {
+                                        using (voxel.Pin()) {
+                                            if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+                                                voxelHit = beam.From;
+                                        }
+                                    }
+
                                 }
                             }
                         }

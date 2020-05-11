@@ -745,8 +745,7 @@ namespace WeaponCore.Support
 
                     var lineTest = new LineD(p.Position, testPos, (targetDist - tRadius));
 
-                    using (ai.MyPlanet.Pin())
-                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest, 2);
+                    obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest, 2);
                 }
             }
             return obstruction;

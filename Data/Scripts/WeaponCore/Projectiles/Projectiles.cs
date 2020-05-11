@@ -66,7 +66,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 17);
-            if (activeCount > 0)
+            if (activeCount > 0 && false)
                 Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
             else if (activeCount > 0)
                 CheckHits();
