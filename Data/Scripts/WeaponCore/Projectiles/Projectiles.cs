@@ -29,7 +29,7 @@ namespace WeaponCore.Projectiles
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
-        internal readonly CachingHashSet<Projectile> ActiveProjetiles = new CachingHashSet<Projectile>();
+        internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>(2048);
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
 
@@ -53,8 +53,6 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.Start("Clean&Spawn", 17);
             Clean();
             SpawnFragments();
-
-            ActiveProjetiles.ApplyChanges();
             Session.StallReporter.End();
 
             if (AddTargets.Count > 0)
@@ -68,7 +66,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 17);
-            if (activeCount > 150)
+            if (activeCount > 0 && false)
                 Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
             else if (activeCount > 0)
                 CheckHits();
@@ -109,8 +107,6 @@ namespace WeaponCore.Projectiles
                 p.PruningProxyId = -1;
 
                 p.Info.Clean();
-                ProjectilePool.Push(p);
-                ActiveProjetiles.Remove(p);
             }
 
             CleanUp.Clear();
@@ -153,6 +149,7 @@ namespace WeaponCore.Projectiles
                             var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
                             
                             if (!quickCheck) {
+
                                 var deltaPos = targetSphere.Center - p.Info.Origin;
                                 var deltaVel = targetAi.GridVel - p.Info.Ai.GridVel;
                                 var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, p.Info.AmmoDef.Const.DesiredProjectileSpeed);
@@ -165,6 +162,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
                     if (addProjectile) {
+
                         targetAi.LiveProjectile.Add(p);
                         targetAi.LiveProjectileTick = Session.Tick;
                         targetAi.NewProjectileTick = Session.Tick;
@@ -177,8 +175,9 @@ namespace WeaponCore.Projectiles
 
         private void UpdateState()
         {
-            foreach (var p in ActiveProjetiles)
+            for (int i = ActiveProjetiles.Count - 1; i >= 0; i--)
             {
+                var p = ActiveProjetiles[i];
                 p.Info.Age++;
                 p.Active = false;
                 switch (p.State)
@@ -187,6 +186,8 @@ namespace WeaponCore.Projectiles
                         p.DestroyProjectile();
                         continue;
                     case ProjectileState.Dead:
+                        ProjectilePool.Push(p);
+                        ActiveProjetiles.RemoveAtFast(i);
                         continue;
                     case ProjectileState.Start:
                         p.Start();
@@ -268,7 +269,10 @@ namespace WeaponCore.Projectiles
                 }
 
                 p.Info.PrevDistanceTraveled = p.Info.DistanceTraveled;
-                p.Info.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Info.Direction, p.Velocity * StepConst));
+
+                double distChanged;
+                Vector3D.Dot(ref p.Info.Direction, ref p.TravelMagnitude, out distChanged);
+                p.Info.DistanceTraveled += Math.Abs(distChanged);
                 if (p.ModelState == EntityState.Exists)
                 {
                     var up = MatrixD.Identity.Up;
@@ -323,8 +327,9 @@ namespace WeaponCore.Projectiles
 
         private void CheckHits()
         {
-            foreach (var p in ActiveProjetiles) {
+            for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
 
+                var p = ActiveProjetiles[x];
                 p.Miss = false;
 
                 if (!p.Active || (int)p.State > 3) continue;
@@ -435,8 +440,10 @@ namespace WeaponCore.Projectiles
 
         private void UpdateAv()
         {
-            foreach (var p in ActiveProjetiles)
-            {
+            for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
+
+                var p = ActiveProjetiles[x];
+
                 if (!p.Miss || (int)p.State > 3) continue;
                 if (p.Info.MuzzleId == -1)
                 {
@@ -446,25 +453,7 @@ namespace WeaponCore.Projectiles
                 if (!p.EnableAv) continue;
 
                 if (p.SmartsOn)
-                {
-                    /*
-                    if (p.EnableAv && Vector3D.Dot(p.Info.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
-                    {
-                        p.VisualStep += 0.0025;
-                        if (p.VisualStep > 1) p.VisualStep = 1;
-
-                        Vector3D lerpDir;
-                        Vector3D.Lerp(ref p.Info.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
-                        Vector3D.Normalize(ref lerpDir, out p.Info.VisualDir);
-                    }
-                    else if (p.EnableAv && Vector3D.Dot(p.Info.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
-                    {
-                        p.Info.VisualDir = p.AccelDir;
-                        p.VisualStep = 0;
-                    }
-                    */
                     p.Info.VisualDir = p.Info.Direction;
-                }
                 else if (p.FeelsGravity) p.Info.VisualDir = p.Info.Direction;
 
                 if (p.LineOrNotModel)
@@ -479,7 +468,11 @@ namespace WeaponCore.Projectiles
                     }
                     else
                     {
-                        p.Info.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Info.Direction, (p.Velocity - p.StartSpeed) * StepConst));
+                        var dir = (p.Velocity - p.StartSpeed) * StepConst;
+                        double distChanged;
+                        Vector3D.Dot(ref p.Info.Direction, ref dir, out distChanged);
+
+                        p.Info.ProjectileDisplacement += Math.Abs(distChanged);
                         var displaceDiff = p.Info.ProjectileDisplacement - p.Info.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.Info.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {

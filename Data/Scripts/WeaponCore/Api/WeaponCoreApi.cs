@@ -636,11 +636,16 @@ namespace WeaponCore.Api
                             [ProtoContract]
                             public struct SegmentDef
                             {
-                                [ProtoMember(1)] internal double SegmentLength;
-                                [ProtoMember(2)] internal double SegmentGap;
-                                [ProtoMember(3)] internal double Speed;
-                                [ProtoMember(4)] internal Vector4 Color;
-                                [ProtoMember(5)] internal bool Reverse;
+                                [ProtoMember(1)] internal string Material;
+                                [ProtoMember(2)] internal double SegmentLength;
+                                [ProtoMember(3)] internal double SegmentGap;
+                                [ProtoMember(4)] internal double Speed;
+                                [ProtoMember(5)] internal Vector4 Color;
+                                [ProtoMember(6)] internal double WidthMultiplier;
+                                [ProtoMember(7)] internal bool Reverse;
+                                [ProtoMember(8)] internal bool UseLineVariance;
+                                [ProtoMember(9)] internal Randomize ColorVariance;
+                                [ProtoMember(10)] internal Randomize WidthVariance;
                             }
                         }
 

@@ -45,7 +45,6 @@ namespace WeaponCore
 
                     if (!gridAi.HasPower)
                         continue;
-
                     ///
                     /// Comp update section
                     ///
@@ -94,13 +93,14 @@ namespace WeaponCore
                             }
                             else
                                 inputState = PlayerMouseStates[-1];
-
                             ///
                             /// Weapon update section
                             ///
                             for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                                 var w = comp.Platform.Weapons[j];
+                                //if (w.IsHome && !comp.UserControlled && (w.TargetNonThreats && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetingInfo.ThreatInRange) && (TrackingAi == null || !TrackingAi.MyGrid.IsSameConstructAs(gridAi.MyGrid)))
+                                    //continue;
                                 if (!w.Set.Enable) {
 
                                     if (w.Target.HasTarget && !IsClient)
@@ -165,13 +165,13 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-                                w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && gridAi.TargetingInfo.TargetInRange && (!comp.UserControlled || w.State.ManualShoot == ShootClick)) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                                w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && (w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.ManualShoot == ShootClick)) || comp.TrackReticle && !w.Target.IsFakeTarget;
                                 if (!IsClient && (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (compCurPlayer.ControlType == ControlType.None || compCurPlayer.ControlType == ControlType.Ui))
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
                                 }
-                                else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && gridAi.TargetingInfo.TargetInRange) {
+                                else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && (w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange)) {
 
                                     if (w.Target != w.Comp.TrackingWeapon.Target) {
                                         w.Target = w.Comp.TrackingWeapon.Target;
@@ -420,8 +420,7 @@ namespace WeaponCore
 
                     if (checkTime || gridAi.TargetResetTick == Tick && w.Target.HasTarget)
                     {
-
-                        if (seekProjectile || comp.TrackReticle || gridAi.TargetingInfo.TargetInRange && gridAi.TargetingInfo.ValidTargetExists(w))
+                        if (seekProjectile || comp.TrackReticle || (w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange) && gridAi.TargetingInfo.ValidTargetExists(w))
                         {
 
                             if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget)
@@ -434,8 +433,9 @@ namespace WeaponCore
                         }
 
 
-                        if (w.Target.HasTarget || !gridAi.TargetingInfo.TargetInRange)
+                        if (w.Target.HasTarget || !(w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange))
                         {
+                            Log.Line($"CheckAcquire remove");
 
                             w.AcquiringTarget = false;
                             AcquireTargets.RemoveAtFast(i);
@@ -452,7 +452,6 @@ namespace WeaponCore
         {
             for (int i = ShootingWeapons.Count - 1; i >= 0; i--)
             {
-
                 var w = ShootingWeapons[i];
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai?.MyGrid.Pin())

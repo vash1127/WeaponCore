@@ -189,7 +189,7 @@ namespace WeaponCore.Platform
                         var patternIndex = 1;
 
                         if (!pattern.Enable || !pattern.Random)
-                            patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndex;
+                            patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
                         else {
                             if (pattern.TriggerChance >= rnd.TurretRandom.NextDouble() || pattern.TriggerChance >= 1)
                             {
@@ -200,10 +200,9 @@ namespace WeaponCore.Platform
                                 rnd.TurretCurrentCounter++;
                         }
 
-
                         if (pattern.Random)
                         {
-                            for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndex; w++)
+                            for (int w = 0; w < ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt; w++)
                             {
                                 var y = rnd.TurretRandom.Next(w + 1);
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[w] = ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y];
@@ -214,13 +213,19 @@ namespace WeaponCore.Platform
                         {
                             float shotFade;
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
+                            
+                            if (ammoPattern.Const.LineSegments) 
+                                UpdateSegmentState(ammoPattern);
+                            
                             long patternCycle = FireCounter;
                             if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
                                 patternCycle = ((FireCounter - 1) % ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd) + 1;
 
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
-                                if (i == 0) vProjectile = CreateVirtualProjectile(patternCycle);
+                                if (i == 0) 
+                                    vProjectile = CreateVirtualProjectile(patternCycle);
+
                                 MyEntity primeE = null;
                                 MyEntity triggerE = null;
 
@@ -264,6 +269,7 @@ namespace WeaponCore.Platform
                                 p.Info.Ai = Comp.Ai;
                                 p.Info.IsFiringPlayer = firingPlayer;
                                 p.Info.AmmoDef = ammoPattern;
+                                p.Info.AmmoInfo = AmmoInfos[ammoPattern.Const.AmmoIdxPos];
                                 p.Info.Overrides = Comp.Set.Value.Overrides;
                                 p.Info.Target.Entity = Target.Entity;
                                 p.Info.Target.Projectile = Target.Projectile;
@@ -293,7 +299,6 @@ namespace WeaponCore.Platform
                                 }
                                 else shotFade = 0;
                                 p.Info.ShotFade = shotFade;
-                                p.Info.FireCounter = FireCounter;
                                 p.Info.PrimeEntity = ammoPattern.Const.PrimeModel ? ammoPattern.Const.PrimeEntityPool.Get() : null;
                                 p.Info.TriggerEntity = ammoPattern.Const.TriggerModel ? session.TriggerEntityPool.Get() : null;
                                 p.PredictedTargetPos = Target.TargetPos;
@@ -398,6 +403,8 @@ namespace WeaponCore.Platform
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
             p.Info.AmmoDef = ActiveAmmoDef.AmmoDef;
+            p.Info.AmmoInfo = AmmoInfos[ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos];
+
             p.Info.Overrides = Comp.Set.Value.Overrides;
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
@@ -422,7 +429,6 @@ namespace WeaponCore.Platform
             }
             else shotFade = 0;
             p.Info.ShotFade = shotFade;
-            p.Info.FireCounter = FireCounter;
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
             p.Info.ShooterVel = Comp.Ai.GridVel;

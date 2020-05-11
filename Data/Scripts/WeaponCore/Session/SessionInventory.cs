@@ -298,8 +298,7 @@ namespace WeaponCore
 
                 weapon.Comp.IgnoreInvChange = true;
                 
-                weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId];
-
+                weapon.ChangeActiveAmmo(weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId]);
                 for (int j = 0; j < inventoriesToAddTo.Count; j++)
                 {
                     var amt = inventoriesToAddTo[i].Amount;

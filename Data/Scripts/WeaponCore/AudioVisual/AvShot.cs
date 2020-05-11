@@ -8,6 +8,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -15,6 +16,7 @@ namespace WeaponCore.Support
     {
         internal WeaponSystem System;
         internal WeaponDefinition.AmmoDef AmmoDef;
+        internal Weapon.AmmoInfo AmmoInfo;
         internal GridAi Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
@@ -58,6 +60,7 @@ namespace WeaponCore.Support
         internal double ShortStepSize;
         internal double TotalLength;
         internal double TracerWidth;
+        internal double SegmentWidth;
         internal double TrailWidth;
         internal double ScaleFov;
         internal double VisualLength;
@@ -95,6 +98,8 @@ namespace WeaponCore.Support
         internal Vector3D TracerBack;
         internal Vector3D ClosestPointOnLine;
         internal Vector4 Color;
+        internal Vector4 SegmentColor;
+
 
         internal Hit Hit;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
@@ -145,6 +150,7 @@ namespace WeaponCore.Support
         {
             System = info.System;
             AmmoDef = info.AmmoDef;
+            AmmoInfo = info.AmmoInfo;
             Ai = info.Ai;
             IsShrapnel = info.IsShrapnel;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
@@ -232,7 +238,6 @@ namespace WeaponCore.Support
                         if (dist != null && dist <= a.ShortEstTravel + a.ShortStepSize)
                             a.OnScreen = Screen.Trail;
                     }
-
                     if (a.OnScreen != Screen.None && !a.TrailActivated && a.AmmoDef.Const.Trail) a.TrailActivated = true;
 
                     if (a.OnScreen == Screen.None && a.TrailActivated) a.OnScreen = Screen.Trail;
@@ -465,6 +470,7 @@ namespace WeaponCore.Support
         internal void LineVariableEffects()
         {
             var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
+            var segmentColor = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
             if (AmmoDef.Const.LineColorVariance)
             {
                 var cv = AmmoDef.AmmoGraphics.Lines.ColorVariance;
@@ -472,8 +478,25 @@ namespace WeaponCore.Support
                 color.X *= randomValue;
                 color.Y *= randomValue;
                 color.Z *= randomValue;
+                if (AmmoDef.Const.LineSegments && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
+                {
+                    segmentColor.X *= randomValue;
+                    segmentColor.Y *= randomValue;
+                    segmentColor.Z *= randomValue;
+                }
             }
+
+            if (AmmoDef.Const.SegmentColorVariance)
+            {
+                var cv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance;
+                var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
+                segmentColor.X *= randomValue;
+                segmentColor.Y *= randomValue;
+                segmentColor.Z *= randomValue;
+            }
+
             Color = color;
+            SegmentColor = segmentColor;
             var tracerWidth = AmmoDef.AmmoGraphics.Lines.Tracer.Width;
             var trailWidth = AmmoDef.Const.TrailWidth;
             if (AmmoDef.Const.LineWidthVariance)
@@ -501,6 +524,15 @@ namespace WeaponCore.Support
             TracerWidth = Math.Max(tracerWidth, scale * ScaleFov * (DistanceToLine / 100));
             TrailWidth = Math.Max(trailWidth, scale * ScaleFov * (DistanceToLine / 100));
             TrailScaler = ((float)TrailWidth / trailWidth);
+
+            var seg = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+            SegmentWidth = seg.WidthMultiplier > 0 ? TracerWidth * seg.WidthMultiplier : TracerWidth;
+            if (AmmoDef.Const.SegmentWidthVariance)
+            {
+                var wv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance;
+                var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
+                SegmentWidth += randomValue;
+            }
         }
 
 
@@ -801,6 +833,7 @@ namespace WeaponCore.Support
             TracerFront = Vector3D.Zero;
             ClosestPointOnLine = Vector3D.Zero;
             Color = Vector4.Zero;
+            SegmentColor = Vector4.Zero;
             OnScreen = Screen.None;
             Tracer = TracerState.Off;
             Trail = TrailState.Off;
@@ -810,6 +843,7 @@ namespace WeaponCore.Support
             DistanceToLine = 0;
             TracerWidth = 0;
             TrailWidth = 0;
+            SegmentWidth = 0;
             TrailScaler = 0;
             MaxTrajectory = 0;
             ShotFade = 0;
@@ -845,6 +879,7 @@ namespace WeaponCore.Support
             TriggerEntity = null;
             Ai = null;
             AmmoDef = null;
+            AmmoInfo = null;
             System = null;
 
         }

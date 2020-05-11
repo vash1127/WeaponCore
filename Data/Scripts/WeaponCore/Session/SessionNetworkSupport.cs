@@ -707,7 +707,7 @@ namespace WeaponCore
             var canReload = weapon.CanReload;
 
             if (!canReload)
-                weapon.ActiveAmmoDef = weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId];
+                weapon.ChangeActiveAmmo(weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId]);
 
             if (canReload)
                 weapon.StartReload();
