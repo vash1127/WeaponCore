@@ -262,7 +262,6 @@ namespace WeaponCore.Support
                 var gridRadius = gridVolume.Radius;
                 var gridCenter = gridVolume.Center;
                 var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
-
                 ClosestPlanetSqr = double.MaxValue;
                 if (new BoundingSphereD(planetCenter, MyPlanet.AtmosphereRadius + gridRadius).Intersects(gridVolume))
                 {
@@ -309,21 +308,18 @@ namespace WeaponCore.Support
             {
                 var ent = StaticsInRange[i];
                 if (ent == null) continue;
-                using (ent.Pin())
+                if (ent.MarkedForClose) continue;
+
+                var staticCenter = ent.PositionComp.WorldAABB.Center;
+                if (ent is MyCubeGrid) StaticGridInRange = true;
+
+                double distSqr;
+                Vector3D.DistanceSquared(ref staticCenter, ref GridVolume.Center, out distSqr);
+                if (distSqr < closestDistSqr)
                 {
-                    if (ent.MarkedForClose) continue;
-
-                    var staticCenter = ent.PositionComp.WorldAABB.Center;
-                    if (ent is MyCubeGrid) StaticGridInRange = true;
-
-                    double distSqr;
-                    Vector3D.DistanceSquared(ref staticCenter, ref GridVolume.Center, out distSqr);
-                    if (distSqr < closestDistSqr)
-                    {
-                        closestDistSqr = distSqr;
-                        closestEnt = ent;
-                        closestCenter = staticCenter;
-                    }
+                    closestDistSqr = distSqr;
+                    closestEnt = ent;
+                    closestCenter = staticCenter;
                 }
             }
 
