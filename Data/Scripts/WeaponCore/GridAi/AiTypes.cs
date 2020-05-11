@@ -49,21 +49,34 @@ namespace WeaponCore.Support
 
         internal class AiTargetingInfo
         {
-            internal bool TargetInRange;
+            internal bool ThreatInRange;
             internal double ThreatRangeSqr;
+            internal bool OtherInRange;
+            internal double OthertRangeSqr;
 
             internal bool ValidTargetExists(Weapon w)
             {
                 var comp = w.Comp;
                 var ai = comp.Ai;
+                var overRides = comp.Set.Value.Overrides;
+                var overActive = overRides.Activate;
+                var attackNeutrals = overActive && overRides.Neutrals;
+                var attackNoOwner = overActive && overRides.Unowned;
+                var attackFriends = overActive && overRides.Friendly;
+                w.TargetNonThreats = (attackNoOwner || attackNeutrals || attackFriends);
 
-                return ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr || ai.Focus.HasFocus || ai.LiveProjectile.Count > 0;
+                var targetInrange = w.TargetNonThreats ? OthertRangeSqr <= w.MaxTargetDistanceSqr && OthertRangeSqr >= w.MinTargetDistanceSqr 
+                    : ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr;
+
+                return targetInrange || ai.Focus.HasFocus || ai.LiveProjectile.Count > 0;
             }
 
             internal void Clean()
             {
                 ThreatRangeSqr = double.MaxValue;
-                TargetInRange = false;
+                ThreatInRange = false;
+                OthertRangeSqr = double.MaxValue;
+                OtherInRange = false;
             }
         }
 
@@ -217,10 +230,11 @@ namespace WeaponCore.Support
         {
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal Vector3D TargetDir;
+            internal Vector3D TargetHeading;
             internal Vector3D TargetPos;
-            internal Vector3 Velocity;
+            internal Vector3D Velocity;
             internal double DistSqr;
-            internal float VelLenSqr;
+            internal double VelLenSqr;
             internal double TargetRadius;
             internal bool IsGrid;
             internal bool LargeGrid;
@@ -249,16 +263,18 @@ namespace WeaponCore.Support
                 var targetSphere = Target.PositionComp.WorldVolume;
                 TargetPos = targetSphere.Center;
                 TargetRadius = targetSphere.Radius;
+
+                var myCenter = myAi.GridVolume.Center;
+
                 if (!MyUtils.IsZero(Velocity, 1E-02F))
                 {
-                    TargetDir = Vector3D.Normalize(Velocity);
-                    var refDir = Vector3D.Normalize(myAi.GridVolume.Center - TargetPos);
-                    Approaching = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
+                    var targetMag = myCenter - TargetPos;
+                    Approaching = MathFuncs.IsDotProductWithinTolerance(ref Velocity, ref targetMag, myAi.Session.ApproachDegrees);
                 }
                 else
                 {
-                    TargetDir = Vector3D.Zero;
                     Approaching = false;
+                    TargetHeading = Vector3D.Zero;
                 }
 
                 if (targetAi != null)
@@ -268,10 +284,13 @@ namespace WeaponCore.Support
                 else if (detectInfo.Armed) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
 
-                var targetDist = Vector3D.Distance(myAi.GridVolume.Center, TargetPos) - TargetRadius;
-                targetDist -= myAi.GridVolume.Radius;
-                if (targetDist < 0) targetDist = 0;
-                DistSqr = targetDist * targetDist;
+                var myRadius = myAi.MyGrid.PositionComp.LocalVolume.Radius;
+                var sphereDistance = MyUtils.GetSmallestDistanceToSphere(ref myCenter, ref targetSphere);
+                if (sphereDistance <= myRadius)
+                    sphereDistance = 0;
+                else sphereDistance -= myRadius;
+
+                DistSqr = sphereDistance * sphereDistance;
             }
         }
 

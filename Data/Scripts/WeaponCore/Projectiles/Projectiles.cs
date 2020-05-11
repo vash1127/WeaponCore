@@ -29,7 +29,7 @@ namespace WeaponCore.Projectiles
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
-        internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>();
+        internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>(2048);
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
 
@@ -66,7 +66,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 17);
-            if (activeCount > 150)
+            if (activeCount > 0)
                 Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
             else if (activeCount > 0)
                 CheckHits();
@@ -269,7 +269,10 @@ namespace WeaponCore.Projectiles
                 }
 
                 p.Info.PrevDistanceTraveled = p.Info.DistanceTraveled;
-                p.Info.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Info.Direction, p.Velocity * StepConst));
+
+                double distChanged;
+                Vector3D.Dot(ref p.Info.Direction, ref p.TravelMagnitude, out distChanged);
+                p.Info.DistanceTraveled += Math.Abs(distChanged);
                 if (p.ModelState == EntityState.Exists)
                 {
                     var up = MatrixD.Identity.Up;
@@ -465,7 +468,11 @@ namespace WeaponCore.Projectiles
                     }
                     else
                     {
-                        p.Info.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Info.Direction, (p.Velocity - p.StartSpeed) * StepConst));
+                        var dir = (p.Velocity - p.StartSpeed) * StepConst;
+                        double distChanged;
+                        Vector3D.Dot(ref p.Info.Direction, ref dir, out distChanged);
+
+                        p.Info.ProjectileDisplacement += Math.Abs(distChanged);
                         var displaceDiff = p.Info.ProjectileDisplacement - p.Info.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.Info.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {

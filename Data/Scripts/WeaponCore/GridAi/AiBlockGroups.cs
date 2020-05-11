@@ -31,14 +31,18 @@ namespace WeaponCore.Support
             Modify
         }
 
-        internal void ApplySettings(string BlockGroup)
+        internal void ApplySettings(string blockGroup)
         {
             GroupOverrides o = null;
             GridAi ai = null;
             foreach (var comp in Comps)
             {
                 if (ai == null)
-                    ai = comp?.Ai;
+                {
+                    if (comp?.Ai == null)
+                        return;
+                    ai = comp.Ai;
+                }
 
                 o = comp.Set.Value.Overrides;
                 foreach (var setting in Settings)
@@ -117,11 +121,11 @@ namespace WeaponCore.Support
                 if(comp.Session.MpActive)
                     comp.Session.SendControlingPlayer(comp);
 
-                comp.State.Value.CurrentBlockGroup = BlockGroup;
+                comp.State.Value.CurrentBlockGroup = blockGroup;
             }
             
             if (ai != null && ai.Session.HandlesInput && ai.Session.MpActive && o != null)
-                ai.Session.SendOverRidesUpdate(ai, BlockGroup, o);
+                ai.Session.SendOverRidesUpdate(ai, blockGroup, o);
         }
 
         internal void SetValue(WeaponComponent comp, string setting, int value)

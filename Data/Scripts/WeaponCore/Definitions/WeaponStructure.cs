@@ -562,7 +562,6 @@ namespace WeaponCore.Support
             Sound(ammo.AmmoDef, session, out HitSound, out AltHitSounds, out AmmoTravelSound, out HitSoundDistSqr, out AmmoTravelSoundDistSqr, out AmmoSoundMaxDistSqr);
             MagazineSize = EnergyAmmo ? EnergyMagSize : MagazineDef.Capacity;
             GetPeakDps(ammo, system, wDef, out PeakDps, out EffectiveDps, out ShotsPerSec, out BaseDps, out AreaDps, out DetDps);
-            //GetParticleInfo(ammo, wDef, session);
 
             DesiredProjectileSpeed = (!IsBeamWeapon ? ammo.AmmoDef.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Enable;

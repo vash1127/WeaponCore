@@ -26,7 +26,7 @@ namespace WeaponCore.Support
     {
         internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
-            w.HitOther = false;
+            //w.HitOther = false;
             var tick = w.Comp.Session.Tick;
             w.Target.CheckTick = tick;
             var targetType = TargetType.None;
@@ -48,7 +48,7 @@ namespace WeaponCore.Support
             else
             {
                 Vector3D predictedPos;
-                if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
+                if (Weapon.CanShootTarget(w, ref w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
@@ -246,7 +246,7 @@ namespace WeaponCore.Support
 
                     if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
-                    if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
+                    if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
 
                     if (w.Comp.Ai.FriendlyShieldNear)
                     {
@@ -307,7 +307,7 @@ namespace WeaponCore.Support
                                 target.Top5.Clear();
 
                             target.LastBlockType = bt;
-                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w, checkPower)) return true;
+                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, w, checkPower)) return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type, checkPower)) return true;
                     }
@@ -355,7 +355,6 @@ namespace WeaponCore.Support
             var gridPhysics = iGrid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
             Vector3D targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-            var notSelfHit = false;
             var foundBlock = false;
             var blocksChecked = 0;
             var blocksSighted = 0;
@@ -384,28 +383,21 @@ namespace WeaponCore.Support
                     blocksChecked++;
                     ai.Session.CanShoot++;
                     Vector3D predictedPos;
-                    if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel, out predictedPos)) continue;
+                    if (!Weapon.CanShootTarget(w, ref blockPos, targetLinVel, targetAccel, out predictedPos)) continue;
 
                     blocksSighted++;
-                    Vector3D? hitPos;
-                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref weaponPos, ref blockPos, out hitPos, w.Comp.MyCube, w.Comp.Ai))
-                        continue;
 
                     ai.Session.RandomRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15);
 
-                    if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
-                        notSelfHit = true;
-
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase ||
-                        hitInfo.HitEntity == ai.MyGrid)
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase)
                         continue;
 
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
                     if (hitGrid != null)
                     {
-                        if (hitGrid.MarkedForClose) continue;
+                        if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && hitGrid.IsSameConstructAs(ai.MyGrid)) continue;
                         bool enemy;
 
                         var bigOwners = hitGrid.BigOwners;
@@ -435,11 +427,10 @@ namespace WeaponCore.Support
                 foundBlock = true;
                 break;
             }
-            if (turretCheck && !notSelfHit) w.HitOther = true;
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null, bool checkPower = true)
+        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -457,50 +448,49 @@ namespace WeaponCore.Support
             var testPos = currentPos;
             var top5 = target.Top5;
             IHitInfo hitInfo = null;
-            var notSelfHit = false;
-            for (int i = 0; i < cubes.Count + top5Count; i++)
-            {
+
+            for (int i = 0; i < cubes.Count + top5Count; i++) {
+
                 ai.Session.BlockChecks++;
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? top5[index] : cubes[index];
 
                 var grid = cube.CubeGrid;
-                if (grid?.Physics == null || !grid.Physics.Enabled || grid.PositionComp == null) continue;
-
-                if (cube.MarkedForClose || checkPower && !cube.IsWorking || !(cube is IMyTerminalBlock) || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
+                if (grid == null || grid.MarkedForClose) continue;
+                if (!(cube is IMyTerminalBlock) || cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3 || checkPower && !cube.IsWorking) continue;
+                
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-                if (test < minValue3)
-                {
+                
+                if (test < minValue3) {
+
                     IHitInfo hit = null;
                     var best = test < minValue;
                     var bestTest = false;
-                    if (best)
-                    {
-                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.AmmoDef.Trajectory.Smarts.OverideTarget))
-                        {
+                    if (best) {
+
+                        if (w != null && !(!w.IsTurret && w.ActiveAmmoDef.AmmoDef.Trajectory.Smarts.OverideTarget)) {
+
                             ai.Session.CanShoot++;
-                            var castRay = false;
-
                             Vector3D predictedPos;
-                            Vector3D? hitPos;
-                            if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel, out predictedPos))
-                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref testPos, ref cubePos, out hitPos, w.Comp.MyCube, w.Comp.Ai);
+                            if (Weapon.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
 
-                            if (castRay)
-                            {
                                 ai.Session.ClosestRayCasts++;
-                                bestTest = MyAPIGateway.Physics.CastRay(testPos, cubePos, out hit, 15) && hit?.HitEntity == cube.CubeGrid;
+                                if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer)) {
 
-                                if (hit == null && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()) || (hit.HitEntity != ai.MyGrid))
-                                    notSelfHit = true;
+                                    var hitGrid = hit.HitEntity as MyCubeGrid;
+                                    if (hitGrid != null) {
+                                        if (grid == hitGrid)
+                                            bestTest = true;
+                                    }
+                                }
                             }
                         }
                         else bestTest = true;
                     }
-                    if (best && bestTest)
-                    {
+
+                    if (best && bestTest) {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
                         minValue2 = minValue1;
@@ -515,8 +505,7 @@ namespace WeaponCore.Support
                         bestCubePos = cubePos;
                         hitInfo = hit;
                     }
-                    else if (test < minValue0)
-                    {
+                    else if (test < minValue0) {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
                         minValue2 = minValue1;
@@ -527,8 +516,7 @@ namespace WeaponCore.Support
 
                         newEntity0 = cube;
                     }
-                    else if (test < minValue1)
-                    {
+                    else if (test < minValue1) {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
                         minValue2 = minValue1;
@@ -537,16 +525,14 @@ namespace WeaponCore.Support
 
                         newEntity1 = cube;
                     }
-                    else if (test < minValue2)
-                    {
+                    else if (test < minValue2) {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
                         minValue2 = test;
 
                         newEntity2 = cube;
                     }
-                    else
-                    {
+                    else {
                         minValue3 = test;
                         newEntity3 = cube;
                     }
@@ -554,8 +540,8 @@ namespace WeaponCore.Support
 
             }
             top5.Clear();
-            if (newEntity != null && hitInfo != null)
-            {
+            if (newEntity != null && hitInfo != null) {
+
                 double rayDist;
                 Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
                 var shortDist = rayDist * (1 - hitInfo.Fraction);
@@ -564,8 +550,8 @@ namespace WeaponCore.Support
                 target.Set(newEntity, hitInfo.Position, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
-            else if (newEntity != null)
-            {
+            else if (newEntity != null) {
+
                 double rayDist;
                 Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
                 var shortDist = rayDist;
@@ -580,8 +566,6 @@ namespace WeaponCore.Support
             if (newEntity1 != null) top5.Add(newEntity1);
             if (newEntity2 != null) top5.Add(newEntity2);   
             if (newEntity3 != null) top5.Add(newEntity3);
-
-            if (!notSelfHit && w != null) w.HitOther = true;
 
             return hitInfo != null;
         }
@@ -627,7 +611,7 @@ namespace WeaponCore.Support
                 if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.MyGrid)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) < w.MinTargetDistanceSqr) continue;
 
                 Vector3D predictedPos;
-                if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
+                if (Weapon.CanShootTarget(w, ref lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
                 {
                     var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)

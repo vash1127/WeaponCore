@@ -147,6 +147,7 @@ namespace WeaponCore.Platform
         internal double MinTargetDistanceSqr;
         internal double MeasureStep;
 
+        internal bool TargetNonThreats;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -158,7 +159,6 @@ namespace WeaponCore.Platform
         internal bool AvCapable;
         internal bool OutOfAmmo;
         internal bool CurrentlyDegrading;
-        internal bool HitOther;
         internal bool FixedOffset;
         internal bool AiOnlyWeapon;
         internal bool DrawingPower;

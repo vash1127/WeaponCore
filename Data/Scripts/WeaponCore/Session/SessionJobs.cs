@@ -92,12 +92,21 @@ namespace WeaponCore
                         db.SortedTargets.Add(targetInfo);
                         db.Targets[ent] = targetInfo;
 
-                        if (targetInfo.Target == db.Focus.Target[0] || targetInfo.Target == db.Focus.Target[1] || targetInfo.DistSqr < db.MaxTargetingRangeSqr && targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.OffenseRating > 0 && (targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Friends || targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.FactionShare))
+                        var checkFocus = db.Focus.HasFocus && targetInfo.Target == db.Focus.Target[0] || targetInfo.Target == db.Focus.Target[1];
+                        if (targetInfo.DistSqr < db.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
                         {
-                            db.TargetingInfo.TargetInRange = true;
-                            db.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
+                            if (checkFocus || targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                db.TargetingInfo.ThreatInRange = true;
+                                db.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
+                            }
+
+                            if (checkFocus || targetInfo.DistSqr < db.TargetingInfo.OthertRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                db.TargetingInfo.OtherInRange = true;
+                                db.TargetingInfo.OthertRangeSqr = targetInfo.DistSqr;
+                            }
                         }
                     }
+
                     db.NewEntities.Clear();
                     db.SortedTargets.Sort(TargetCompare);
                     db.TargetAis.Clear();
@@ -125,8 +134,11 @@ namespace WeaponCore
                     db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                     db.BlockCount = db.MyGrid.BlocksCount;
 
-                    if (!db.TargetingInfo.TargetInRange && db.LiveProjectile.Count > 0)
-                        db.TargetingInfo.TargetInRange = true;
+                    if (!db.TargetingInfo.ThreatInRange && db.LiveProjectile.Count > 0)
+                    {
+                        db.TargetingInfo.ThreatInRange = true;
+                        db.TargetingInfo.ThreatRangeSqr = 0;
+                    }
 
                     if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
                     if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();
