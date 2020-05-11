@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using VRage.Game;
@@ -200,5 +201,78 @@ namespace WeaponCore.Support
     {
         public MyInventory Inventory;
         public int Amount;
+    }
+
+    public class ParticleEvent
+    {
+        private readonly Guid _uid;
+        public readonly Dummy MyDummy;
+        public readonly Vector4 Color;
+        public readonly Vector3 Offset;
+        public readonly string ParticleName;
+        public readonly string EmptyName;
+        public readonly string PartName;
+        public readonly uint MaxPlayTime;
+        public readonly uint StartDelay;
+        public readonly uint LoopDelay;
+        public readonly float Scale;
+        public readonly bool DoesLoop;
+        public readonly bool Restart;
+
+        public bool Playing;
+        public bool Stop;
+        public bool Triggered;
+        public uint PlayTick;
+        public MyParticleEffect Effect;
+
+        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart)
+        {
+            ParticleName = particleName;
+            EmptyName = emptyName;
+            Color = color;
+            Offset = offset;
+            Scale = scale;
+            MaxPlayTime = maxPlayTime;
+            StartDelay = startDelay;
+            LoopDelay = loopDelay;
+            DoesLoop = loop;
+            Restart = restart;
+            _uid = Guid.NewGuid();
+        }
+
+        public ParticleEvent(ParticleEvent copyFrom, Dummy myDummy, string partName)
+        {
+            MyDummy = myDummy;
+            PartName = partName;
+            EmptyName = copyFrom.EmptyName;
+            ParticleName = copyFrom.ParticleName;
+            Color = copyFrom.Color;
+            Offset = copyFrom.Offset;
+            Scale = copyFrom.Scale;
+            MaxPlayTime = copyFrom.MaxPlayTime;
+            StartDelay = copyFrom.StartDelay;
+            LoopDelay = copyFrom.LoopDelay;
+            DoesLoop = copyFrom.DoesLoop;
+            Restart = copyFrom.Restart;
+            _uid = Guid.NewGuid();
+        }
+
+        protected bool Equals(ParticleEvent other)
+        {
+            return Equals(_uid, other._uid);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((ParticleEvent)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return _uid.GetHashCode();
+        }
     }
 }

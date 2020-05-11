@@ -177,6 +177,7 @@ namespace WeaponCore.Platform
                 }
 
                 var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
+                var wepParticleEvents = comp.Session.CreateWeaponParticleEvents(system, comp.MyCube);
 
                 foreach (var triggerSet in wepAnimationSet)
                     for(int j = 0; j < triggerSet.Value.Length; j++)
@@ -189,6 +190,7 @@ namespace WeaponCore.Platform
                     AzimuthPart = new PartInfo { Entity = azimuthPart },
                     ElevationPart = new PartInfo { Entity = elevationPart },
                     AzimuthOnBase = azimuthPart.Parent == comp.MyCube,
+                    ParticleEvents = wepParticleEvents,
                     AiOnlyWeapon = comp.BaseType != Turret || (comp.BaseType == Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"))
                 };
 
@@ -438,8 +440,9 @@ namespace WeaponCore.Platform
 
                     foreach (var animationSet in weapon.AnimationsSet)
                     {
-                        foreach (var animation in animationSet.Value)
+                        for(int i = 0; i < animationSet.Value.Length; i++)
                         {
+                            var animation = animationSet.Value[i];
                             MyEntity part;
                             if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                             {
@@ -448,6 +451,18 @@ namespace WeaponCore.Platform
                                 //  animation.Paused = true;
                                 animation.Reset();
                             }
+                        }
+                    }
+
+                    foreach (var particleEvents in weapon.ParticleEvents)
+                    {
+                        for (int i = 0; i < particleEvents.Value.Length; i++)
+                        {
+                            var particle = particleEvents.Value[i];
+
+                            MyEntity part;
+                            if (Parts.NameToEntity.TryGetValue(particle.PartName, out part))
+                                particle.MyDummy.Entity = part;
                         }
                     }
 

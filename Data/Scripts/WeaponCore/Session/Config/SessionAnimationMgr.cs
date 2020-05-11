@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -15,10 +17,11 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDef animations, WeaponSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames)
+        internal void CreateAnimationSets(AnimationDef animations, WeaponSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames, out Dictionary<EventTriggers, ParticleEvent[]> particleEvents)
         {
             var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
             weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
+            particleEvents = new Dictionary<EventTriggers, ParticleEvent[]>();
             weaponEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
             animationLengths = new Dictionary<EventTriggers, uint>();
@@ -39,6 +42,23 @@ namespace WeaponCore
             {
                 foreach (var emissive in wepEmissivesSet)
                     emissiveLookup.Add(emissive.EmissiveName, emissive);
+            }
+
+            if (animations.EventParticles != null)
+            {
+                foreach (var particleEvent in animations.EventParticles)
+                {
+                    Log.Line($"Event: {particleEvent.Key} Particles: {particleEvent.Value.Length}");
+                    var particles = new ParticleEvent[particleEvent.Value.Length];
+
+                    for (int i = 0; i < particleEvent.Value.Length; i++)
+                    {
+                        var particleDef = particleEvent.Value[i];
+                        particles[i] = new ParticleEvent(particleDef.Particle.Name, particleDef.EmptyName, particleDef.Particle.Color, particleDef.Particle.Offset, particleDef.Particle.Extras.Scale, particleDef.Particle.Extras.MaxDuration, particleDef.StartDelay, particleDef.LoopDelay, particleDef.Particle.Extras.Loop, particleDef.Particle.Extras.Restart);
+                    }
+
+                    particleEvents[particleEvent.Key] = particles;
+                }
             }
 
             if (wepAnimationSets == null)
@@ -540,7 +560,6 @@ namespace WeaponCore
                 weaponAnimationSets[animationsKv.Key] = new PartAnimation[animationsKv.Value.Count];
                 animationsKv.Value.CopyTo(weaponAnimationSets[animationsKv.Key], 0);
             }
-
         }
 
         internal double GetRate(RelMove.MoveType move, double fullRotAmount, uint ticksToMove)
@@ -662,6 +681,79 @@ namespace WeaponCore
             }
             //Log.Line("Copying Animations");
             return returnAnimations;
+        }
+
+        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(WeaponSystem system, MyEntity cube)
+        {
+            var particles = new Dictionary<EventTriggers, ParticleEvent[]>();
+
+            foreach(var particleDef in system.ParticleEvents)
+            {
+                var particleEvents = particleDef.Value;
+                particles[particleDef.Key] = new ParticleEvent[particleEvents.Length];
+
+                for (int i = 0; i < particles[particleDef.Key].Length; i++)
+                {
+                    var systemParticle = particleEvents[i];
+
+                    Dummy particleDummy;
+                    string partName;
+                    if (CreateParticleDummy(cube, systemParticle.EmptyName, out particleDummy, out partName)) ;
+                        particles[particleDef.Key][i] = new ParticleEvent(systemParticle, particleDummy, partName);
+
+                }
+            }
+
+            return particles;
+        }
+
+        internal bool CreateParticleDummy(MyEntity cube, string emptyName, out Dummy particleDummy, out string PartName)
+        {
+            var head = -1;
+            var tmp = new Dictionary<string, IMyModelDummy>();
+            var nameLookup = new Dictionary<MyEntity, string>() { [cube] = "None" };
+            var subparts = new List<MyEntity>();
+            MyEntity dummyPart = null;
+            particleDummy = null;
+
+            while (head < subparts.Count)
+            {
+                var query = head == -1 ? cube : subparts[head];
+                head++;
+                if (query.Model == null)
+                    continue;
+                tmp.Clear();
+                ((IMyEntity)query).Model.GetDummies(tmp);
+                foreach (var kv in tmp)
+                {
+                    if (kv.Key.Equals(emptyName))
+                    {
+                        dummyPart = query;
+                        break;
+                    }
+
+                    if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))
+                    {
+                        var name = kv.Key.Substring("subpart_".Length);
+                        MyEntitySubpart res;
+                        if (query.TryGetSubpart(name, out res))
+                        {
+                            subparts.Add(res);
+                            nameLookup[res] = name;
+                        }
+                    }
+                }
+            }
+
+            if (dummyPart != null)
+            {
+                particleDummy = new Dummy(dummyPart, emptyName);
+                PartName = nameLookup[dummyPart];
+                return true;
+            }
+
+            PartName = "";
+            return false;
         }
 
         internal Matrix CreateRotation(double x, double y, double z)
@@ -839,7 +931,7 @@ namespace WeaponCore
 
                     if (animation.MovesPivotPos || animation.CanPlay)
                     {
-                        var localMatrix = animation.Part.PositionComp.LocalMatrix;
+                        var localMatrix = animation.Part.PositionComp.LocalMatrixRef;
                         Matrix rotation;
                         Matrix rotAroundCenter;
                         Vector3D translation;
@@ -880,7 +972,7 @@ namespace WeaponCore
                         else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
                         {
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
-                            var matrix = animation.Part.PositionComp.LocalMatrix;
+                            var matrix = animation.Part.PositionComp.LocalMatrixRef;
 
                             //animation.Part.OnClose += testing;
                             animation.Part.Render.AddRenderObjects();
@@ -890,7 +982,7 @@ namespace WeaponCore
                         else if (!DedicatedServer && (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade))
                         {
                             animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
-                            var matrix = animation.Part.PositionComp.LocalMatrix;
+                            var matrix = animation.Part.PositionComp.LocalMatrixRef;
                             animation.Part.Render.RemoveRenderObjects();
                             animation.Part.PositionComp.SetLocalMatrix(ref matrix, null, true);
                         }
@@ -956,6 +1048,71 @@ namespace WeaponCore
                 else
                     AnimationsToProcess.RemoveAtFast(i);
 
+            }
+        }
+
+        internal void ProcessParticles()
+        {
+            for (int i = ParticlesToProcess.Count - 1; i >= 0; i--)
+            {
+                var particleEvent = ParticlesToProcess[i];
+
+                var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
+
+                Log.Line($"particleEvent.PlayTick: {particleEvent.PlayTick} Tick - particleEvent.PlayTick: {Tick - particleEvent.PlayTick} particleEvent.MaxPlayTime: {particleEvent.MaxPlayTime}");
+
+                if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop)
+                {
+                    var dummyInfo = particleEvent.MyDummy.Info;
+                    var ent = particleEvent.MyDummy.Entity;
+
+                    if (particleEvent.Effect == null)
+                    {
+                        var matrix = MatrixD.CreateWorld(dummyInfo.Position, dummyInfo.DummyMatrix.Forward, dummyInfo.DummyMatrix.Up);
+
+                        if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref dummyInfo.Position, uint.MaxValue, out particleEvent.Effect))
+                        {
+                            Log.Line($"Failed to Create Particle! Particle: {particleEvent.ParticleName}");
+                            particleEvent.Playing = false;
+                            ParticlesToProcess.RemoveAtFast(i);
+                            continue;
+                        }
+                        else
+                        {
+                            Log.Line($"Particle Updated");
+                            particleEvent.Effect.WorldMatrix = matrix;
+                            particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
+                            particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
+                        }
+                    }
+
+                    if (particleEvent.Effect.IsStopped)
+                    {
+                        Log.Line($"Playing particle, Position: {dummyInfo.Position} Tick: {Tick}");
+                        particleEvent.Effect.Play();
+                    }
+                }
+                else if (playedFull && particleEvent.DoesLoop && !particleEvent.Stop)
+                {
+                    Log.Line($"Loop Particle Tick: {Tick}");
+
+                    particleEvent.PlayTick = Tick + particleEvent.LoopDelay;
+                    if (particleEvent.LoopDelay > 0 && particleEvent.Effect != null && !particleEvent.Effect.IsStopped)
+                        particleEvent.Effect.Stop();
+
+                }
+                else if (playedFull || particleEvent.Stop)
+                {
+                    Log.Line($"Stop Particle Tick: {Tick}");
+
+                    if (!particleEvent.Effect.IsStopped)
+                        particleEvent.Effect.Stop();
+
+                    particleEvent.Playing = false;
+                    particleEvent.Stop = false;
+                    ParticlesToProcess.RemoveAtFast(i);
+                    continue;
+                }
             }
         }
     }

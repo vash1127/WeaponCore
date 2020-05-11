@@ -240,6 +240,8 @@ namespace WeaponCore
 
                                 w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus && gridAi.Focus.FocusInRange(w);
 
+                                Log.Line($"shoot: {shoot} w.LockOnFireState: {w.LockOnFireState}");
+
                                 if (canShoot && (shoot || w.LockOnFireState))
                                 {
                                     if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))

@@ -74,7 +74,10 @@ namespace WeaponCore.Platform
             try
             {
                 var session = Comp.Session;
-                var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
+                var canPlay = !session.DedicatedServer && 64000000 >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos); //8km max range, will play regardless of range if it moves PivotPos and is loaded
+
+                if (canPlay)
+                    PlayParticleEvent(state, active);
 
                 switch (state)
                 {
@@ -284,6 +287,35 @@ namespace WeaponCore.Platform
             catch (Exception e)
             {
                 Log.Line($"Exception in Event Triggered: {e}");
+            }
+        }
+
+        internal void PlayParticleEvent(EventTriggers eventTrigger, bool active)
+        {
+            if (ParticleEvents.ContainsKey(eventTrigger))
+            {
+                for (int i = 0; i < ParticleEvents[eventTrigger].Length; i++)
+                {
+                    var particle = ParticleEvents[eventTrigger][i];
+
+                    if(active && particle.Restart && particle.Triggered) continue;
+
+                    if (active && !particle.Playing)
+                    {
+                        particle.PlayTick = Comp.Session.Tick + particle.StartDelay;
+                        Comp.Session.ParticlesToProcess.Add(particle);
+                        particle.Playing = true;
+                        particle.Triggered = true;
+                        Log.Line("Particle Queued");
+                    }
+                    else if (!active)
+                    {
+                        if(particle.Playing)
+                            particle.Stop = true;
+
+                        particle.Triggered = false;
+                    }
+                }
             }
         }
 

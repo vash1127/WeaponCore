@@ -169,9 +169,11 @@ namespace WeaponCore
             try
             {
                 if (Placer != null) UpdatePlacer();
-                if (!DedicatedServer) ProcessAnimations();
 
-                if (GridTask.IsComplete)
+                if(AnimationsToProcess.Count > 0) ProcessAnimations();
+                if (!DedicatedServer) ProcessParticles();
+
+                    if (GridTask.IsComplete)
                     CheckDirtyGrids();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }

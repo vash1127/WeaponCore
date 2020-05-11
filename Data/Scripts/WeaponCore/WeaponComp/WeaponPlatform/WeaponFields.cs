@@ -20,6 +20,7 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
+        internal Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;
         private int _nextVirtual;
