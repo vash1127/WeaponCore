@@ -1059,9 +1059,9 @@ namespace WeaponCore
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
                 var obb = particleEvent.MyDummy.Entity.PositionComp.WorldAABB;
 
-                var inView = Camera.IsInFrustum(ref obb) && Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance;
-
-                if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && inView)
+                var playable = Camera.IsInFrustum(ref obb) && Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance;
+                
+                if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && playable)
                 {
                     var dummyInfo = particleEvent.MyDummy.Info;
                     var ent = particleEvent.MyDummy.Entity;
@@ -1070,7 +1070,7 @@ namespace WeaponCore
                     var rOffset = Vector3D.Rotate(particleEvent.Offset, matrix);
                     var pos = dummyInfo.Position + rOffset;
 
-                    if (particleEvent.Effect == null)
+                    if (particleEvent.Effect == null || particleEvent.Effect.IsStopped)
                     {
                         if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref pos, uint.MaxValue, out particleEvent.Effect))
                         {
@@ -1086,27 +1086,37 @@ namespace WeaponCore
                             particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                         }
                     }
-                    particleEvent.Effect.SetTranslation(ref pos);
+                    else
+                    {
+                        particleEvent.Effect.WorldMatrix = matrix;
+                        particleEvent.Effect.SetTranslation(ref pos);
+                    }
                 }
-                else if (playedFull && particleEvent.DoesLoop && !particleEvent.Stop)
+                else if (playedFull && particleEvent.DoesLoop && !particleEvent.Stop && playable)
                 {
                     particleEvent.PlayTick = Tick + particleEvent.LoopDelay;
-                    if (particleEvent.LoopDelay > 0 && particleEvent.Effect != null && !particleEvent.Effect.IsStopped && particleEvent.ForceStop)
-                        particleEvent.Effect.Stop();
 
-                    particleEvent.Effect = null;
+                    if (particleEvent.LoopDelay > 0 && particleEvent.Effect != null && !particleEvent.Effect.IsStopped && particleEvent.ForceStop)
+                    {
+                        particleEvent.Effect.Stop();
+                        particleEvent.Effect = null;
+                    }                    
                 }
                 else if (playedFull || particleEvent.Stop)
                 {
-                    particleEvent.Effect.Stop();
+                    if(particleEvent.Effect != null)
+                        particleEvent.Effect.Stop();
+
                     particleEvent.Effect = null;
                     particleEvent.Playing = false;
                     particleEvent.Stop = false;
                     Av.ParticlesToProcess.RemoveAtFast(i);
                 }
-                else if (!inView)
+                else if (!playable)
                 {
-                    particleEvent.Effect.Stop();
+                    if (particleEvent.Effect != null)
+                        particleEvent.Effect.Stop();
+                    
                     particleEvent.Effect = null;
                 }
 
