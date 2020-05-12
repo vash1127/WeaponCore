@@ -36,6 +36,7 @@ namespace WeaponCore.Support
         internal int MuzzleId;
         internal int ObjectsHit;
         internal int Age;
+        internal int FireCounter;
         internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
@@ -117,6 +118,7 @@ namespace WeaponCore.Support
             MaxTrajectory = 0;
             ShotFade = 0;
             TracerLength = 0;
+            FireCounter = 0;
             EnableGuidance = true;
             Direction = Vector3D.Zero;
             VisualDir = Vector3D.Zero;

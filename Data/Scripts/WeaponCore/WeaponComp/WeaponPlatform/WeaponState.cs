@@ -133,7 +133,11 @@ namespace WeaponCore.Platform
             try
             {
                 var session = Comp.Session;
-                var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
+                var distance = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
+                var canPlay = !session.DedicatedServer && 64000000 >= distance; //8km max range, will play regardless of range if it moves PivotPos and is loaded
+
+                if (canPlay)
+                    PlayParticleEvent(state, active, distance);
 
                 switch (state)
                 {
@@ -343,6 +347,37 @@ namespace WeaponCore.Platform
             catch (Exception e)
             {
                 Log.Line($"Exception in Event Triggered: {e}");
+            }
+        }
+
+        internal void PlayParticleEvent(EventTriggers eventTrigger, bool active, double distance)
+        {
+            if (ParticleEvents.ContainsKey(eventTrigger))
+            {
+                for (int i = 0; i < ParticleEvents[eventTrigger].Length; i++)
+                {
+                    var particle = ParticleEvents[eventTrigger][i];
+
+                    if(active && particle.Restart && particle.Triggered) continue;
+
+                    var obb = particle.MyDummy.Entity.PositionComp.WorldAABB;
+                    var inView = Comp.Session.Camera.IsInFrustum(ref obb);
+
+                    if (active && !particle.Playing && distance <= particle.Distance && inView)
+                    {
+                        particle.PlayTick = Comp.Session.Tick + particle.StartDelay;
+                        Comp.Session.Av.ParticlesToProcess.Add(particle);
+                        particle.Playing = true;
+                        particle.Triggered = true;
+                    }
+                    else if (!active)
+                    {
+                        if(particle.Playing)
+                            particle.Stop = true;
+
+                        particle.Triggered = false;
+                    }
+                }
             }
         }
 

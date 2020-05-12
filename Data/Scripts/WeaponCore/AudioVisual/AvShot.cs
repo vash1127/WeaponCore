@@ -81,6 +81,7 @@ namespace WeaponCore.Support
         internal int TracerStep;
         internal int TracerSteps;
         internal uint LastTick;
+        internal int FireCounter;
         internal ParticleState HitParticle;
         internal TracerState Tracer;
         internal TrailState Trail;
@@ -169,6 +170,7 @@ namespace WeaponCore.Support
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
             MaxTrajectory = info.MaxTrajectory;
             ShotFade = info.ShotFade;
+            FireCounter = info.FireCounter;
             ShrinkInited = false;
             HitEmitter.CanPlayLoopSounds = false;
             if (AmmoDef.Const.DrawLine) Tracer = !AmmoDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
@@ -845,6 +847,7 @@ namespace WeaponCore.Support
             TrailScaler = 0;
             MaxTrajectory = 0;
             ShotFade = 0;
+            FireCounter = 0;
             ParentId = ulong.MaxValue;
             Dirty = false;
             AmmoSound = false;

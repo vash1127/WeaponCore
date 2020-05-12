@@ -69,7 +69,7 @@ namespace WeaponCore.Support
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
                 var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
-                return new DummyInfo { Position = subPartPos, Direction = subPartDir };
+                return new DummyInfo { Position = subPartPos, Direction = subPartDir, DummyMatrix = dummyMatrix };
             }
         }
 
@@ -77,6 +77,7 @@ namespace WeaponCore.Support
         {
             public Vector3D Position;
             public Vector3D Direction;
+            public MatrixD DummyMatrix;
         }
     }
 }

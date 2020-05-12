@@ -37,6 +37,7 @@ namespace WeaponCore.Support
 
         public readonly Dictionary<EventTriggers, PartAnimation[]> WeaponAnimationSet;
         public readonly Dictionary<EventTriggers, uint> WeaponAnimationLengths;
+        public readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         public readonly HashSet<string> AnimationIdLookup;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
@@ -160,7 +161,7 @@ namespace WeaponCore.Support
             
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
 
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
             for (int i = 0; i < WeaponAmmoTypes.Length; i++)
             {

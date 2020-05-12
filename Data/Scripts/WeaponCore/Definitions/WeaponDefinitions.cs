@@ -71,12 +71,13 @@ namespace WeaponCore.Support
         }
 
 
-        [ProtoContract]
+        [ProtoContract(IgnoreListHandling = true)]
         public struct AnimationDef
         {
             [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
             [ProtoMember(2)] internal WeaponEmissive[] Emissives;
             [ProtoMember(3)] internal string[] HeatingEmissiveParts;
+            [ProtoMember(4)] internal Dictionary<PartAnimationSetDef.EventTriggers, EventParticle[]> EventParticles;
 
 
             [ProtoContract(IgnoreListHandling = true)]
@@ -120,6 +121,16 @@ namespace WeaponCore.Support
                 [ProtoMember(4)] internal bool LeavePreviousOn;
                 [ProtoMember(5)] internal Vector4[] Colors;
                 [ProtoMember(6)] internal float[] IntensityRange;
+            }
+
+            [ProtoContract]
+            public struct EventParticle
+            {
+                [ProtoMember(1)] internal string EmptyName;
+                [ProtoMember(2)] internal ParticleDef Particle;
+                [ProtoMember(4)] internal uint StartDelay;
+                [ProtoMember(5)] internal uint LoopDelay;
+                [ProtoMember(6)] internal bool ForceStop;
             }
 
             [ProtoContract]
@@ -645,7 +656,7 @@ namespace WeaponCore.Support
         {
             [ProtoMember(1)] internal float Scale;
             [ProtoMember(2)] internal float MaxDistance;
-            [ProtoMember(3)] internal float MaxDuration;
+            [ProtoMember(3)] internal uint MaxDuration;
             [ProtoMember(4)] internal bool Loop;
             [ProtoMember(5)] internal bool Restart;
             [ProtoMember(6)] internal float HitPlayChance;

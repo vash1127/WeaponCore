@@ -19,6 +19,7 @@ namespace WeaponCore.Support
 
         internal readonly List<AvBarrel> AvBarrels1 = new List<AvBarrel>(128);
         internal readonly List<AvBarrel> AvBarrels2 = new List<AvBarrel>(128);
+        internal readonly List<ParticleEvent> ParticlesToProcess = new List<ParticleEvent>(128);
         internal readonly List<KeensMess> KeensBrokenParticles = new List<KeensMess>();
         internal readonly Dictionary<MyParticleEffect, KeensMess> RipMap = new Dictionary<MyParticleEffect, KeensMess>();
 
@@ -82,6 +83,7 @@ namespace WeaponCore.Support
             if (AvBarrels1.Count > 0) RunAvBarrels1();
             if (AvBarrels2.Count > 0) RunAvBarrels2();
             if (HitSounds.Count > 0) RunHitSounds();
+            if (ParticlesToProcess.Count > 0) Session.ProcessParticles();
 
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
