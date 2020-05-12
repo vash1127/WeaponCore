@@ -243,7 +243,8 @@ namespace WeaponCore.Projectiles
 
             if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
                 StaticEntCheck();
-            else if (Info.Ai.PlanetSurfaceInRange) LinePlanetCheck = true;
+            else if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) 
+                LinePlanetCheck = true;
 
             if (EnableAv)
             {

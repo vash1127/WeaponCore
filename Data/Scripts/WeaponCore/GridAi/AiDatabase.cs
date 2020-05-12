@@ -1,10 +1,7 @@
-﻿using Sandbox.Game;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
-using VRage.Game.Entity;
-using VRageMath;
 
 namespace WeaponCore.Support
 {
@@ -12,10 +9,10 @@ namespace WeaponCore.Support
     {
         internal void Scan()
         {
-            using (_scanLock.AcquireExclusiveUsing())
-            {
-                if (!Scanning && Session.Tick - _lastScan > 100)
-                {
+            using (_scanLock.AcquireExclusiveUsing()) {
+
+                if (!Scanning && Session.Tick - _lastScan > 100) {
+
                     Scanning = true;
                     _lastScan = Session.Tick;
                     GridVolume.Radius = MaxTargetingRange;
@@ -24,17 +21,16 @@ namespace WeaponCore.Support
                         RemSubGrids.Add(grid);
 
                     PrevSubGrids.Clear();
-                    for (int i = 0; i < _possibleTargets.Count; i++)
-                    {
+                    for (int i = 0; i < _possibleTargets.Count; i++) {
+
                         var ent = _possibleTargets[i];
-                        using (ent.Pin())
-                        {
+                        using (ent.Pin()) {
+
                             if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject
                                 || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
 
                             var grid = ent as MyCubeGrid;
-                            if (grid != null && MyGrid.IsSameConstructAs(grid))
-                            {
+                            if (grid != null && MyGrid.IsSameConstructAs(grid)) {
                                 PrevSubGrids.Add(grid);
                                 continue;
                             }
@@ -42,16 +38,15 @@ namespace WeaponCore.Support
                             Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                             if (!CreateEntInfo(ent, MyOwner, out entInfo)) continue;
 
-                            switch (entInfo.Relationship)
-                            {
+                            switch (entInfo.Relationship) {
                                 case MyRelationsBetweenPlayerAndBlock.Owner:
                                 case MyRelationsBetweenPlayerAndBlock.FactionShare:
                                 case MyRelationsBetweenPlayerAndBlock.Friends:
                                     continue;
                             }
 
-                            if (grid != null)
-                            {
+                            if (grid != null) {
+
                                 FatMap fatMap;
                                 if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
                                     continue;
@@ -62,14 +57,12 @@ namespace WeaponCore.Support
                                 if (fatCount <= 0 || !grid.IsPowered)
                                     continue;
 
-                                if (fatCount <= 20) // possible debris
-                                {
+                                if (fatCount <= 20)  { // possible debris
+
                                     var valid = false;
-                                    for (int j = 0; j < fatCount; j++)
-                                    {
+                                    for (int j = 0; j < fatCount; j++) {
                                         var fat = allFat[j];
-                                        if (fat is IMyTerminalBlock && fat.IsWorking)
-                                        {
+                                        if (fat is IMyTerminalBlock && fat.IsWorking) {
                                             valid = true;
                                             break;
                                         }
