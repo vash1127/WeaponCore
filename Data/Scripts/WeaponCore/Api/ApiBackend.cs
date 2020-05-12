@@ -449,7 +449,7 @@ namespace WeaponCore.Api
         {
             try
             {
-                _session.ProjectileAddedCallback += callback;
+                _session.ProjectileAddedCallback -= callback;
             }
             catch (Exception e)
             {

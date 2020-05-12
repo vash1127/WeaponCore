@@ -206,7 +206,6 @@ namespace WeaponCore
             GroupInfoPool.Clean();
             TargetInfoPool.Clean();
 
-            Projectiles.Clean();
             WeaponCoreBlockDefs.Clear();
             VanillaIds.Clear();
             VanillaCoreIds.Clear();
@@ -222,7 +221,6 @@ namespace WeaponCore
             Projectiles.ActiveProjetiles.Clear();
             Projectiles.ProjectilePool.Clear();
             Projectiles.HitEntityPool.Clean();
-            Projectiles.CleanUp.Clear();
             Projectiles.VirtInfoPool.Clean();
 
             DbsToUpdate.Clear();

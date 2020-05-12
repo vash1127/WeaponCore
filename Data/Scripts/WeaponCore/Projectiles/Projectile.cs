@@ -1013,7 +1013,6 @@ namespace WeaponCore.Projectiles
                 HitEffects();
 
             State = ProjectileState.Dead;
-            Info.Ai.Session.Projectiles.CleanUp.Add(this);
 
             if (EnableAv)
             {
@@ -1024,8 +1023,18 @@ namespace WeaponCore.Projectiles
             else if (Info.AmmoDef.Const.VirtualBeams)
             {
                 for (int i = 0; i < VrPros.Count; i++)
-                    VrPros[i].AvShot.AvClose(Position);
+                {
+                    var vp = VrPros[i];
+                    vp.AvShot.AvClose(Position);
+                    Info.System.Session.Projectiles.VirtInfoPool.Return(vp);
+                }
+                VrPros.Clear();
             }
+            if (DynamicGuidance)
+                DynTrees.UnregisterProjectile(this);
+
+            PruningProxyId = -1;
+            Info.Clean();
         }
 
         internal enum ProjectileState

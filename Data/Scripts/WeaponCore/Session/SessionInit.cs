@@ -151,73 +151,69 @@ namespace WeaponCore
                 var hasTurret = false;
                 var firstWeapon = true;
 
-                foreach (var wepDef in weapons)
-                {
+                foreach (var wepDef in weapons) {
+
                     if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
 
-                    foreach (var def in AllDefinitions)
-                    {
+                    foreach (var def in AllDefinitions) {
 
                         MyDefinitionId defid;
                         var matchingDef = def.Id.SubtypeName == tDef.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(tDef.Key), out defid) && defid == def.Id);
+                        if (matchingDef) {
 
-                        var designator = false;
-                        for(int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
-                        {
-                            if (wepDef.Assignments.MountPoints[i].MuzzlePartId == "Designator")
-                            {
-                                designator = true;
-                                break;
+                            WeaponCoreBlockDefs[tDef.Key] = def.Id;
+                            var designator = false;
+                            for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++) {
+
+                                if (wepDef.Assignments.MountPoints[i].MuzzlePartId == "Designator") {
+                                    designator = true;
+                                    break;
+                                }
                             }
-                        }
 
-                        if (matchingDef && !designator)
-                        {
-                            if (def is MyWeaponBlockDefinition)
-                            {
+                            if (!designator) {
+
                                 var wepBlockDef = def as MyWeaponBlockDefinition;
-                                if (firstWeapon)
-                                    wepBlockDef.InventoryMaxVolume = 0;
+                                if (wepBlockDef != null) {
+                                    if (firstWeapon)
+                                        wepBlockDef.InventoryMaxVolume = 0;
 
-                                wepBlockDef.InventoryMaxVolume += wepDef.HardPoint.HardWare.InventorySize;
+                                    wepBlockDef.InventoryMaxVolume += wepDef.HardPoint.HardWare.InventorySize;
 
-                                var weaponCsDef = MyDefinitionManager.Static.GetWeaponDefinition(wepBlockDef.WeaponDefinitionId);
+                                    var weaponCsDef = MyDefinitionManager.Static.GetWeaponDefinition(wepBlockDef.WeaponDefinitionId);
 
-                                weaponCsDef.WeaponAmmoDatas[0].RateOfFire = wepDef.HardPoint.Loading.RateOfFire;
-                                weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = wepDef.HardPoint.Loading.ShotsInBurst;
-                            }
-                            else if (def is MyConveyorSorterDefinition)
-                            {
-                                if (firstWeapon)
-                                    ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
+                                    weaponCsDef.WeaponAmmoDatas[0].RateOfFire = wepDef.HardPoint.Loading.RateOfFire;
+                                    weaponCsDef.WeaponAmmoDatas[0].ShotsInBurst = wepDef.HardPoint.Loading.ShotsInBurst;
+                                }
+                                else if (def is MyConveyorSorterDefinition) {
+                                    if (firstWeapon)
+                                        ((MyConveyorSorterDefinition)def).InventorySize = Vector3.Zero;
 
-                                var size = Math.Pow(wepDef.HardPoint.HardWare.InventorySize, 1d / 3d);
+                                    var size = Math.Pow(wepDef.HardPoint.HardWare.InventorySize, 1d / 3d);
 
-                                ((MyConveyorSorterDefinition)def).InventorySize += new Vector3(size, size, size);
-                            }
+                                    ((MyConveyorSorterDefinition)def).InventorySize += new Vector3(size, size, size);
+                                }
 
-                            firstWeapon = false;
+                                firstWeapon = false;
 
+                                for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++) {
 
-                            for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
-                            {
-                                var az = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].AzimuthPartId) ? wepDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
+                                    var az = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].AzimuthPartId) ? wepDef.Assignments.MountPoints[i].AzimuthPartId : "MissileTurretBase1";
+                                    var el = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].ElevationPartId) ? wepDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
 
-                                var el = !string.IsNullOrEmpty(wepDef.Assignments.MountPoints[i].ElevationPartId) ? wepDef.Assignments.MountPoints[i].ElevationPartId : "MissileTurretBarrels";
+                                    if (def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(az) || VanillaSubpartNames.Contains(el))) {
 
-                                if (def is MyLargeTurretBaseDefinition && (VanillaSubpartNames.Contains(az) || VanillaSubpartNames.Contains(el)))
-                                {
-                                    var gunDef = (MyLargeTurretBaseDefinition)def;
-                                    var blockDefs = wepDef.HardPoint.HardWare;
-
-                                    gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
-                                    gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
-                                    gunDef.MinElevationDegrees = blockDefs.MinElevation;
-                                    gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
-                                    gunDef.RotationSpeed = blockDefs.RotateRate / 60;
-                                    gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
-                                    gunDef.AiEnabled = false;
+                                        var gunDef = (MyLargeTurretBaseDefinition)def;
+                                        var blockDefs = wepDef.HardPoint.HardWare;
+                                        gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
+                                        gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
+                                        gunDef.MinElevationDegrees = blockDefs.MinElevation;
+                                        gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
+                                        gunDef.RotationSpeed = blockDefs.RotateRate / 60;
+                                        gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
+                                        gunDef.AiEnabled = false;
+                                    }
                                 }
                             }
                         }
