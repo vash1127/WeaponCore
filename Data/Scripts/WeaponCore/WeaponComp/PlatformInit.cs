@@ -323,7 +323,7 @@ namespace WeaponCore.Platform
                         weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                         weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
 
-                        if (comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String) && comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String))
+                        if ((string.IsNullOrEmpty(weapon.System.AzimuthPartName.String) || comp.Session.VanillaSubpartNames.Contains(weapon.System.AzimuthPartName.String)) && (string.IsNullOrEmpty(weapon.System.ElevationPartName.String) || comp.Session.VanillaSubpartNames.Contains(weapon.System.ElevationPartName.String)))
                             weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.UpdateParts;
                     }
                     else
