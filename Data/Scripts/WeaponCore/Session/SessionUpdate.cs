@@ -236,8 +236,8 @@ namespace WeaponCore
 
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus && gridAi.Focus.FocusInRange(w);
 
-                        if (canShoot && (shoot || w.LockOnFireState))
-                        {
+                        if (canShoot && (shoot || w.LockOnFireState)) {
+
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
 
@@ -431,22 +431,20 @@ namespace WeaponCore
 
         private void ShootWeapons()
         {
-            for (int i = ShootingWeapons.Count - 1; i >= 0; i--)
-            {
+            for (int i = ShootingWeapons.Count - 1; i >= 0; i--) {
+
                 var w = ShootingWeapons[i];
                 var invalidWeapon = w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.Concealed || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
                 var smartTimer = !w.AiEnabled && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart && Tick - w.LastSmartLosCheck > 180;
                 var quickSkip = invalidWeapon || smartTimer && !w.SmartLos() || w.PauseShoot;
                 if (quickSkip) continue;
 
-                if (!w.Comp.UnlimitedPower)
-                {
-                    //TODO add logic for power priority
-                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                    {
+                if (!w.Comp.UnlimitedPower) {
 
-                        if (w.Timings.ChargeDelayTicks == 0)
-                        {
+                    //TODO add logic for power priority
+                    if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+
+                        if (w.Timings.ChargeDelayTicks == 0) {
                             var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                             w.OldUseablePower = w.UseablePower;
                             w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
@@ -460,16 +458,12 @@ namespace WeaponCore
                             w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
                             w.State.Sync.Charging = true;
                         }
-                        else if (w.Timings.ChargeUntilTick <= Tick)
-                        {
-
+                        else if (w.Timings.ChargeUntilTick <= Tick) {
                             w.State.Sync.Charging = false;
                             w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower))
-                    {
-
+                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower)) {
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         w.DrawPower(true);
@@ -480,6 +474,7 @@ namespace WeaponCore
 
                     if (w.State.Sync.Charging)
                         continue;
+
                 }
 
                 if (w.Timings.ShootDelayTick <= Tick) w.Shoot();

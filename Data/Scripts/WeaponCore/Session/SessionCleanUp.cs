@@ -221,7 +221,6 @@ namespace WeaponCore
             Projectiles.ActiveProjetiles.Clear();
             Projectiles.ProjectilePool.Clear();
             Projectiles.HitEntityPool.Clean();
-            Projectiles.CleanUp.Clear();
             Projectiles.VirtInfoPool.Clean();
 
             DbsToUpdate.Clear();
