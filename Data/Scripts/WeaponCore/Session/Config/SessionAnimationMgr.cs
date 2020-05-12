@@ -1058,7 +1058,8 @@ namespace WeaponCore
 
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
                 var obb = particleEvent.MyDummy.Entity.PositionComp.WorldAABB;
-                var inView = Camera.IsInFrustum(ref obb);
+
+                var inView = Camera.IsInFrustum(ref obb) && Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance;
 
                 if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && inView)
                 {
