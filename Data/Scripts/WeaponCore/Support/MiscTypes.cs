@@ -218,6 +218,7 @@ namespace WeaponCore.Support
         public readonly float Scale;
         public readonly bool DoesLoop;
         public readonly bool Restart;
+        public readonly bool ForceStop;
 
         public bool Playing;
         public bool Stop;
@@ -225,7 +226,7 @@ namespace WeaponCore.Support
         public uint PlayTick;
         public MyParticleEffect Effect;
 
-        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart)
+        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
         {
             ParticleName = particleName;
             EmptyName = emptyName;
@@ -237,6 +238,7 @@ namespace WeaponCore.Support
             LoopDelay = loopDelay;
             DoesLoop = loop;
             Restart = restart;
+            ForceStop = forceStop;
             _uid = Guid.NewGuid();
         }
 
@@ -254,6 +256,7 @@ namespace WeaponCore.Support
             LoopDelay = copyFrom.LoopDelay;
             DoesLoop = copyFrom.DoesLoop;
             Restart = copyFrom.Restart;
+            ForceStop = copyFrom.ForceStop;
             _uid = Guid.NewGuid();
         }
 

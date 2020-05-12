@@ -365,7 +365,6 @@ namespace WeaponCore.Platform
                         Comp.Session.ParticlesToProcess.Add(particle);
                         particle.Playing = true;
                         particle.Triggered = true;
-                        Log.Line("Particle Queued");
                     }
                     else if (!active)
                     {

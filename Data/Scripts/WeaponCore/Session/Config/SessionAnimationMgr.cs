@@ -48,13 +48,12 @@ namespace WeaponCore
             {
                 foreach (var particleEvent in animations.EventParticles)
                 {
-                    Log.Line($"Event: {particleEvent.Key} Particles: {particleEvent.Value.Length}");
                     var particles = new ParticleEvent[particleEvent.Value.Length];
 
                     for (int i = 0; i < particleEvent.Value.Length; i++)
                     {
                         var particleDef = particleEvent.Value[i];
-                        particles[i] = new ParticleEvent(particleDef.Particle.Name, particleDef.EmptyName, particleDef.Particle.Color, particleDef.Particle.Offset, particleDef.Particle.Extras.Scale, particleDef.Particle.Extras.MaxDuration, particleDef.StartDelay, particleDef.LoopDelay, particleDef.Particle.Extras.Loop, particleDef.Particle.Extras.Restart);
+                        particles[i] = new ParticleEvent(particleDef.Particle.Name, particleDef.EmptyName, particleDef.Particle.Color, particleDef.Particle.Offset, particleDef.Particle.Extras.Scale, particleDef.Particle.Extras.MaxDuration, particleDef.StartDelay, particleDef.LoopDelay, particleDef.Particle.Extras.Loop, particleDef.Particle.Extras.Restart, particleDef.ForceStop);
                     }
 
                     particleEvents[particleEvent.Key] = particles;
@@ -1059,8 +1058,6 @@ namespace WeaponCore
 
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
 
-                Log.Line($"particleEvent.PlayTick: {particleEvent.PlayTick} Tick - particleEvent.PlayTick: {Tick - particleEvent.PlayTick} particleEvent.MaxPlayTime: {particleEvent.MaxPlayTime}");
-
                 if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop)
                 {
                     var dummyInfo = particleEvent.MyDummy.Info;
@@ -1079,35 +1076,25 @@ namespace WeaponCore
                         }
                         else
                         {
-                            Log.Line($"Particle Updated");
                             particleEvent.Effect.WorldMatrix = matrix;
                             particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
                             particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                         }
                     }
-
-                    if (particleEvent.Effect.IsStopped)
-                    {
-                        Log.Line($"Playing particle, Position: {dummyInfo.Position} Tick: {Tick}");
-                        particleEvent.Effect.Play();
-                    }
+                    particleEvent.Effect.SetTranslation(ref dummyInfo.Position);
                 }
                 else if (playedFull && particleEvent.DoesLoop && !particleEvent.Stop)
                 {
-                    Log.Line($"Loop Particle Tick: {Tick}");
-
                     particleEvent.PlayTick = Tick + particleEvent.LoopDelay;
-                    if (particleEvent.LoopDelay > 0 && particleEvent.Effect != null && !particleEvent.Effect.IsStopped)
+                    if (particleEvent.LoopDelay > 0 && particleEvent.Effect != null && !particleEvent.Effect.IsStopped && particleEvent.ForceStop)
                         particleEvent.Effect.Stop();
 
+                    particleEvent.Effect = null;
                 }
                 else if (playedFull || particleEvent.Stop)
                 {
-                    Log.Line($"Stop Particle Tick: {Tick}");
-
-                    if (!particleEvent.Effect.IsStopped)
-                        particleEvent.Effect.Stop();
-
+                    particleEvent.Effect.Stop();
+                    particleEvent.Effect = null;
                     particleEvent.Playing = false;
                     particleEvent.Stop = false;
                     ParticlesToProcess.RemoveAtFast(i);
