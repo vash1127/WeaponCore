@@ -150,16 +150,7 @@ namespace WeaponCore.Support
                     if (Ai != null) {
 
                         Ai.FirstRun = true;
-                        /*
-                        var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
-
-                        if (!Ai.WeaponCounter.ContainsKey(blockDef))
-                            Ai.WeaponCounter.TryAdd(blockDef, Session.WeaponCountPool.Get());
-
-                        Ai.WeaponCounter[blockDef].Current++;
-                        */
                         RegisterEvents();
-
 
                         if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                             Platform.ResetParts(this);
@@ -232,8 +223,6 @@ namespace WeaponCore.Support
 
                 if (!Ai.WeaponBase.TryAdd(MyCube, this))
                     Log.Line($"failed to add cube to gridAi");
-
-
 
                 Ai.CompChange(true, this);
 

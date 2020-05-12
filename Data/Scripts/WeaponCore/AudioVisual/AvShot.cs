@@ -871,6 +871,18 @@ namespace WeaponCore.Support
             GlowSteps.Clear();
             Offsets.Clear();
             //
+            if (PrimeEntity != null && PrimeEntity.InScene)
+            {
+                PrimeEntity.InScene = false;
+                PrimeEntity.Render.RemoveRenderObjects();
+            }
+
+            if (Triggered && TriggerEntity != null && TriggerEntity.InScene)
+            {
+                TriggerEntity.InScene = true;
+                TriggerEntity.Render.UpdateRenderObject(true, false);
+            }
+
             FiringWeapon = null;
             PrimeEntity = null;
             TriggerEntity = null;

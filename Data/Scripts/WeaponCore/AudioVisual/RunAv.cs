@@ -96,6 +96,7 @@ namespace WeaponCore.Support
                     if (av.PrimeEntity != null)
                     {
                         _models++;
+
                         if (av.OnScreen != AvShot.Screen.None)
                         {
                             if (!av.PrimeEntity.InScene && !av.Cloaked)
@@ -250,7 +251,7 @@ namespace WeaponCore.Support
 
                                 var measure = seg.SegmentGap + seg.SegmentLength;
                                 var steps = av.VisualLength / measure;
-                                var cull = av.VisualLength > 50 && steps > 10;
+                                var cull = false && av.VisualLength > 50 && steps > 10;
 
                                 double? start = null;
                                 double? end = null; 
