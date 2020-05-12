@@ -54,6 +54,11 @@ namespace WeaponCore.Support
         internal bool AmmoParticleInited;
         internal bool FieldParticleStopped;
         internal bool FieldParticleInited;
+        internal bool ModelOnly;
+        internal bool LastHitShield;
+        internal bool ForceHitParticle;
+        internal bool HitParticleActive;
+        internal bool FakeExplosion;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -173,6 +178,7 @@ namespace WeaponCore.Support
             FireCounter = info.FireCounter;
             ShrinkInited = false;
             HitEmitter.CanPlayLoopSounds = false;
+            ModelOnly = info.ModelOnly;
             if (AmmoDef.Const.DrawLine) Tracer = !AmmoDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 
@@ -192,8 +198,7 @@ namespace WeaponCore.Support
             for (int x = 0; x < s.Projectiles.DeferedAvDraw.Count; x++)
             {
                 var d = s.Projectiles.DeferedAvDraw[x];
-                var i = d.Info;
-                var a = i.AvShot;
+                var a = d.AvShot;
                 var lineEffect = a.AmmoDef.Const.Trail || a.AmmoDef.Const.DrawLine;
                 var saveHit = d.Hit;
                 ++a.LifeTime;
@@ -205,16 +210,16 @@ namespace WeaponCore.Support
 
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
-                a.Direction = i.Direction;
-                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : i.VisualDir;
+                a.Direction = d.Direction;
+                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : d.VisualDir;
                 a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
 
-                if (i.ModelOnly)
+                if (a.ModelOnly)
                 {
                     a.ModelSphereCurrent.Center = a.TracerFront;
                     if (a.Triggered)
-                        a.ModelSphereCurrent.Radius = i.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
+                        a.ModelSphereCurrent.Radius = d.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
 
                     if (s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
                         a.OnScreen = Screen.ModelOnly;
@@ -246,7 +251,7 @@ namespace WeaponCore.Support
                     {
                         a.ModelSphereCurrent.Center = a.TracerFront;
                         if (a.Triggered)
-                            a.ModelSphereCurrent.Radius = i.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
+                            a.ModelSphereCurrent.Radius = d.TriggerGrowthSteps < a.AmmoDef.Const.AreaEffectSize ? a.TriggerMatrix.Scale.AbsMax() : a.AmmoDef.Const.AreaEffectSize;
 
                         if (a.OnScreen == Screen.None && s.Camera.IsInFrustum(ref a.ModelSphereCurrent))
                             a.OnScreen = Screen.ModelOnly;
@@ -262,7 +267,7 @@ namespace WeaponCore.Support
                         a.OnScreen = Screen.InProximity;
                 }
 
-                if (i.MuzzleId == -1)
+                if (a.MuzzleId == -1)
                     return;
 
                 if (saveHit) {
@@ -280,7 +285,7 @@ namespace WeaponCore.Support
                     else if (a.Tracer != TracerState.Off && a.VisualLength <= 0) {
                         a.Tracer = TracerState.Off;
                     }
-                    else if (a.Hitting && !i.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F)) {
+                    else if (a.Hitting && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F)) {
                         a.Tracer = TracerState.Shrink;
                         a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
                     }
@@ -661,6 +666,30 @@ namespace WeaponCore.Support
             Offsets.Clear();
         }
 
+
+        internal void HitEffects()
+        {
+            var distToCameraSqr = Vector3D.DistanceSquared(Hit.HitPos, Ai.Session.CameraPos);
+            var closeToCamera = distToCameraSqr < 360000;
+
+            if (OnScreen == Screen.Tracer || closeToCamera)
+            {
+                if (FakeExplosion)
+                    HitParticle = ParticleState.Explosion;
+                else if (HitParticleActive && AmmoDef.Const.HitParticle && !(LastHitShield && !AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield))
+                    HitParticle = ParticleState.Custom;
+            }
+
+            var hitSound = AmmoDef.Const.HitSound && (HitSoundActive && (distToCameraSqr < AmmoDef.Const.HitSoundDistSqr || !LastHitShield || AmmoDef.AmmoAudio.HitPlayShield));
+            if (hitSound && !HitEmitter.IsPlaying)
+            {
+                HitEmitter.Entity = Hit.Entity;
+                Ai.Session.Av.HitSounds.Add(this);
+            }
+            LastHitShield = false;
+        }
+
+
         internal void SetupSounds(double distanceFromCameraSqr)
         {
             FiringSoundState = System.FiringSound;
@@ -860,6 +889,7 @@ namespace WeaponCore.Support
             ShotFade = 0;
             FireCounter = 0;
             ParentId = ulong.MaxValue;
+            LastHitShield = false;
             Dirty = false;
             AmmoSound = false;
             HitSoundActive = false;
@@ -881,6 +911,10 @@ namespace WeaponCore.Support
             AmmoParticleInited = false;
             FieldParticleStopped = false;
             FieldParticleInited = false;
+            ModelOnly = false;
+            ForceHitParticle = false;
+            HitParticleActive = false;
+            FakeExplosion = false;
             TracerShrinks.Clear();
             GlowSteps.Clear();
             Offsets.Clear();
@@ -917,12 +951,15 @@ namespace WeaponCore.Support
     }
     internal struct DeferedAv
     {
-        internal ProInfo Info;
+        internal AvShot AvShot;
         internal bool Hit;
         internal double StepSize;
         internal double VisualLength;
         internal double? ShortStepSize;
+        internal int TriggerGrowthSteps;
         internal Vector3D TracerFront;
+        internal Vector3D Direction;
+        internal Vector3D VisualDir;
     }
 
     internal struct Shrunk

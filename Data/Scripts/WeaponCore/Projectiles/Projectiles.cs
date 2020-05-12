@@ -254,6 +254,7 @@ namespace WeaponCore.Projectiles
                     var up = MatrixD.Identity.Up;
                     MatrixD matrix;
                     MatrixD.CreateWorld(ref p.Position, ref p.Info.VisualDir, ref up, out matrix);
+                    
                     if (p.Info.AmmoDef.Const.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
                     if (p.Info.AmmoDef.Const.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize)
@@ -331,11 +332,14 @@ namespace WeaponCore.Projectiles
 
                         p.CheckList.Clear();
                         p.State = ProjectileState.Detonate;
-                        p.ForceHitParticle = true;
+
+                        if (p.EnableAv)
+                            p.Info.AvShot.ForceHitParticle = true;
                     }
                     else
                         p.State = ProjectileState.Detonate;
-                    
+
+                    p.EarlyEnd = true;
                     p.Hit.HitPos = p.Position;
 
                 }
@@ -435,12 +439,12 @@ namespace WeaponCore.Projectiles
                 if (p.LineOrNotModel)
                 {
                     if (p.State == ProjectileState.OneAndDone)
-                        DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position});
+                        DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position});
                     else if (p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine)
                     {
                         if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
                         else
-                            DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.AmmoDef.Const.CollisionSize, TracerFront = p.Position});
+                            DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.AmmoDef.Const.CollisionSize, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir});
                     }
                     else
                     {
@@ -455,20 +459,20 @@ namespace WeaponCore.Projectiles
                             if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
                             else
                             {
-                                DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.ProjectileDisplacement, TracerFront = p.Position});
+                                DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.ProjectileDisplacement, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
                             }
                         }
                         else
                         {
                             if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
                             else
-                                DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position });
+                                DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
                         }
                     }
                 }
 
-                if (p.Info.ModelOnly)
-                    DeferedAvDraw.Add(new DeferedAv { Info = p.Info, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position});
+                if (p.Info.AvShot.ModelOnly)
+                    DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
             }
         }
 
