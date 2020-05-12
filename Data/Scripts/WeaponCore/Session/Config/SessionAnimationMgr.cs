@@ -1052,9 +1052,9 @@ namespace WeaponCore
 
         internal void ProcessParticles()
         {
-            for (int i = ParticlesToProcess.Count - 1; i >= 0; i--)
+            for (int i = Av.ParticlesToProcess.Count - 1; i >= 0; i--)
             {
-                var particleEvent = ParticlesToProcess[i];
+                var particleEvent = Av.ParticlesToProcess[i];
 
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
 
@@ -1071,7 +1071,7 @@ namespace WeaponCore
                         {
                             Log.Line($"Failed to Create Particle! Particle: {particleEvent.ParticleName}");
                             particleEvent.Playing = false;
-                            ParticlesToProcess.RemoveAtFast(i);
+                            Av.ParticlesToProcess.RemoveAtFast(i);
                             continue;
                         }
                         else
@@ -1097,7 +1097,7 @@ namespace WeaponCore
                     particleEvent.Effect = null;
                     particleEvent.Playing = false;
                     particleEvent.Stop = false;
-                    ParticlesToProcess.RemoveAtFast(i);
+                    Av.ParticlesToProcess.RemoveAtFast(i);
                     continue;
                 }
             }

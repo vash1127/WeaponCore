@@ -362,7 +362,7 @@ namespace WeaponCore.Platform
                     if (active && !particle.Playing)
                     {
                         particle.PlayTick = Comp.Session.Tick + particle.StartDelay;
-                        Comp.Session.ParticlesToProcess.Add(particle);
+                        Comp.Session.Av.ParticlesToProcess.Add(particle);
                         particle.Playing = true;
                         particle.Triggered = true;
                     }

@@ -143,7 +143,6 @@ namespace WeaponCore
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
-        internal List<ParticleEvent> ParticlesToProcess = new List<ParticleEvent>(128);
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
 
         internal IMyPhysics Physics;

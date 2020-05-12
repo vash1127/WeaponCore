@@ -171,7 +171,6 @@ namespace WeaponCore
                 if (Placer != null) UpdatePlacer();
 
                 if(AnimationsToProcess.Count > 0) ProcessAnimations();
-                if (!DedicatedServer) ProcessParticles();
 
                     if (GridTask.IsComplete)
                     CheckDirtyGrids();
