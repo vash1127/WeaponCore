@@ -216,6 +216,7 @@ namespace WeaponCore.Support
         public readonly uint StartDelay;
         public readonly uint LoopDelay;
         public readonly float Scale;
+        public readonly float Distance;
         public readonly bool DoesLoop;
         public readonly bool Restart;
         public readonly bool ForceStop;
@@ -226,13 +227,14 @@ namespace WeaponCore.Support
         public uint PlayTick;
         public MyParticleEffect Effect;
 
-        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
+        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
         {
             ParticleName = particleName;
             EmptyName = emptyName;
             Color = color;
             Offset = offset;
             Scale = scale;
+            Distance = distance;
             MaxPlayTime = maxPlayTime;
             StartDelay = startDelay;
             LoopDelay = loopDelay;
@@ -251,6 +253,7 @@ namespace WeaponCore.Support
             Color = copyFrom.Color;
             Offset = copyFrom.Offset;
             Scale = copyFrom.Scale;
+            Distance = copyFrom.Distance;
             MaxPlayTime = copyFrom.MaxPlayTime;
             StartDelay = copyFrom.StartDelay;
             LoopDelay = copyFrom.LoopDelay;

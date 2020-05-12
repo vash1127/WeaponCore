@@ -133,10 +133,11 @@ namespace WeaponCore.Platform
             try
             {
                 var session = Comp.Session;
-                var canPlay = !session.DedicatedServer && 64000000 >= Vector3D.DistanceSquared(session.CameraPos, MyPivotPos); //8km max range, will play regardless of range if it moves PivotPos and is loaded
+                var distance = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos);
+                var canPlay = !session.DedicatedServer && 64000000 >= distance; //8km max range, will play regardless of range if it moves PivotPos and is loaded
 
                 if (canPlay)
-                    PlayParticleEvent(state, active);
+                    PlayParticleEvent(state, active, distance);
 
                 switch (state)
                 {
@@ -349,7 +350,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal void PlayParticleEvent(EventTriggers eventTrigger, bool active)
+        internal void PlayParticleEvent(EventTriggers eventTrigger, bool active, double distance)
         {
             if (ParticleEvents.ContainsKey(eventTrigger))
             {
@@ -359,7 +360,10 @@ namespace WeaponCore.Platform
 
                     if(active && particle.Restart && particle.Triggered) continue;
 
-                    if (active && !particle.Playing)
+                    var obb = particle.MyDummy.Entity.PositionComp.WorldAABB;
+                    var inView = Comp.Session.Camera.IsInFrustum(ref obb);
+
+                    if (active && !particle.Playing && distance <= particle.Distance && inView)
                     {
                         particle.PlayTick = Comp.Session.Tick + particle.StartDelay;
                         Comp.Session.Av.ParticlesToProcess.Add(particle);

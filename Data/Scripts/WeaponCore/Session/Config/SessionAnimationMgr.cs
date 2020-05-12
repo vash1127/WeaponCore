@@ -53,7 +53,7 @@ namespace WeaponCore
                     for (int i = 0; i < particleEvent.Value.Length; i++)
                     {
                         var particleDef = particleEvent.Value[i];
-                        particles[i] = new ParticleEvent(particleDef.Particle.Name, particleDef.EmptyName, particleDef.Particle.Color, particleDef.Particle.Offset, particleDef.Particle.Extras.Scale, particleDef.Particle.Extras.MaxDuration, particleDef.StartDelay, particleDef.LoopDelay, particleDef.Particle.Extras.Loop, particleDef.Particle.Extras.Restart, particleDef.ForceStop);
+                        particles[i] = new ParticleEvent(particleDef.Particle.Name, particleDef.EmptyName, particleDef.Particle.Color, particleDef.Particle.Offset, particleDef.Particle.Extras.Scale, (particleDef.Particle.Extras.MaxDistance * particleDef.Particle.Extras.MaxDistance), particleDef.Particle.Extras.MaxDuration, particleDef.StartDelay, particleDef.LoopDelay, particleDef.Particle.Extras.Loop, particleDef.Particle.Extras.Restart, particleDef.ForceStop);
                     }
 
                     particleEvents[particleEvent.Key] = particles;
@@ -1057,8 +1057,10 @@ namespace WeaponCore
                 var particleEvent = Av.ParticlesToProcess[i];
 
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
+                var obb = particleEvent.MyDummy.Entity.PositionComp.WorldAABB;
+                var inView = Camera.IsInFrustum(ref obb);
 
-                if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop)
+                if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && inView)
                 {
                     var dummyInfo = particleEvent.MyDummy.Info;
                     var ent = particleEvent.MyDummy.Entity;
@@ -1091,7 +1093,7 @@ namespace WeaponCore
 
                     particleEvent.Effect = null;
                 }
-                else if (playedFull || particleEvent.Stop)
+                else if (playedFull || particleEvent.Stop || !inView)
                 {
                     particleEvent.Effect.Stop();
                     particleEvent.Effect = null;
