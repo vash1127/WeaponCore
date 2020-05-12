@@ -882,8 +882,8 @@ namespace WeaponCore.Support
 
             if (Triggered && TriggerEntity != null && TriggerEntity.InScene)
             {
-                TriggerEntity.InScene = true;
-                TriggerEntity.Render.UpdateRenderObject(true, false);
+                TriggerEntity.InScene = false;
+                TriggerEntity.Render.RemoveRenderObjects();
             }
 
             FiringWeapon = null;
