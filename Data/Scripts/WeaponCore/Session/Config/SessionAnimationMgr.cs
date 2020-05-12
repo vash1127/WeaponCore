@@ -62,7 +62,7 @@ namespace WeaponCore
 
             if (wepAnimationSets == null)
                 return;
-            
+
             foreach (var animationSet in wepAnimationSets)
             {                
                 for (int t = 0; t < animationSet.SubpartId.Length; t++)
@@ -1066,11 +1066,13 @@ namespace WeaponCore
                     var dummyInfo = particleEvent.MyDummy.Info;
                     var ent = particleEvent.MyDummy.Entity;
 
+                    var matrix = MatrixD.CreateWorld(dummyInfo.Position, dummyInfo.DummyMatrix.Forward, dummyInfo.DummyMatrix.Up);
+                    var rOffset = Vector3D.Rotate(particleEvent.Offset, matrix);
+                    var pos = dummyInfo.Position + rOffset;
+
                     if (particleEvent.Effect == null)
                     {
-                        var matrix = MatrixD.CreateWorld(dummyInfo.Position, dummyInfo.DummyMatrix.Forward, dummyInfo.DummyMatrix.Up);
-
-                        if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref dummyInfo.Position, uint.MaxValue, out particleEvent.Effect))
+                        if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref pos, uint.MaxValue, out particleEvent.Effect))
                         {
                             Log.Line($"Failed to Create Particle! Particle: {particleEvent.ParticleName}");
                             particleEvent.Playing = false;
@@ -1084,7 +1086,7 @@ namespace WeaponCore
                             particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                         }
                     }
-                    particleEvent.Effect.SetTranslation(ref dummyInfo.Position);
+                    particleEvent.Effect.SetTranslation(ref pos);
                 }
                 else if (playedFull && particleEvent.DoesLoop && !particleEvent.Stop)
                 {
@@ -1094,15 +1096,20 @@ namespace WeaponCore
 
                     particleEvent.Effect = null;
                 }
-                else if (playedFull || particleEvent.Stop || !inView)
+                else if (playedFull || particleEvent.Stop)
                 {
                     particleEvent.Effect.Stop();
                     particleEvent.Effect = null;
                     particleEvent.Playing = false;
                     particleEvent.Stop = false;
                     Av.ParticlesToProcess.RemoveAtFast(i);
-                    continue;
                 }
+                else if (!inView)
+                {
+                    particleEvent.Effect.Stop();
+                    particleEvent.Effect = null;
+                }
+
             }
         }
     }

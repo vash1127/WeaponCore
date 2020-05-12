@@ -272,6 +272,8 @@ namespace WeaponCore.Platform
                                     if (CurLgstAnimPlaying == null || CurLgstAnimPlaying.EventTrigger != state || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
                                         CurLgstAnimPlaying = animation;
 
+                                    Log.Line($"start animation");
+
                                     animation.Running = true;
                                     animation.CanPlay = true;
                                     //animation.Paused = Comp.ResettingSubparts;
