@@ -49,7 +49,6 @@ namespace WeaponCore
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
                     var comp = gridAi.Weapons[i];
-
                     if (comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 
@@ -250,7 +249,6 @@ namespace WeaponCore
                                     w.Timings.ChargeDelayTicks = 0;
                                 }
                             }
-
                             if (w.Timings.ChargeDelayTicks == 0 || w.Timings.ChargeUntilTick <= Tick) {
 
                                 if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge && !w.System.DesignatorWeapon) {
@@ -371,7 +369,6 @@ namespace WeaponCore
 
                     w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.Timings.ChargeUntilTick = w.Timings.ChargeDelayTicks + Tick;
-
                     if (!w.Comp.UnlimitedPower)
                     {
                         if (!w.DrawingPower)

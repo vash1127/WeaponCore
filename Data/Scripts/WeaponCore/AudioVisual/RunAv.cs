@@ -93,11 +93,12 @@ namespace WeaponCore.Support
                 var glowCnt = av.GlowSteps.Count;
                 var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
 
-                if (refreshed)
+                if (refreshed || av.Dirty)
                 {
                     if (av.PrimeEntity != null)
                     {
                         _models++;
+
                         if (av.OnScreen != AvShot.Screen.None)
                         {
                             if (!av.PrimeEntity.InScene && !av.Cloaked)
@@ -108,7 +109,7 @@ namespace WeaponCore.Support
                             av.PrimeEntity.PositionComp.SetWorldMatrix(ref av.PrimeMatrix, null, false, false, false);
                         }
 
-                        if ((av.Cloaked || av.OnScreen == AvShot.Screen.None) && av.PrimeEntity.InScene)
+                        if ((av.Cloaked || av.OnScreen == AvShot.Screen.None || av.Dirty) && av.PrimeEntity.InScene)
                         {
                             av.PrimeEntity.InScene = false;
                             av.PrimeEntity.Render.RemoveRenderObjects();
@@ -252,7 +253,7 @@ namespace WeaponCore.Support
 
                                 var measure = seg.SegmentGap + seg.SegmentLength;
                                 var steps = av.VisualLength / measure;
-                                var cull = av.VisualLength > 50 && steps > 10;
+                                var cull = false && av.VisualLength > 50 && steps > 10;
 
                                 double? start = null;
                                 double? end = null; 

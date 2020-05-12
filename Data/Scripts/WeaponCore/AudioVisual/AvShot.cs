@@ -827,7 +827,18 @@ namespace WeaponCore.Support
 
             if (AmmoEffect != null)
                 DisposeAmmoEffect(true, false);
-            
+
+            if (PrimeEntity != null && PrimeEntity.InScene)
+            {
+                PrimeEntity.InScene = false;
+                PrimeEntity.Render.RemoveRenderObjects();
+            }
+
+            if (Triggered && TriggerEntity != null && TriggerEntity.InScene)
+            {
+                TriggerEntity.InScene = false;
+                TriggerEntity.Render.RemoveRenderObjects();
+            }
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
@@ -874,6 +885,8 @@ namespace WeaponCore.Support
             GlowSteps.Clear();
             Offsets.Clear();
             //
+
+
             FiringWeapon = null;
             PrimeEntity = null;
             TriggerEntity = null;
