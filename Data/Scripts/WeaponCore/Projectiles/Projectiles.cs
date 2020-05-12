@@ -30,7 +30,6 @@ namespace WeaponCore.Projectiles
         internal readonly List<Projectile> ValidateHits = new List<Projectile>(128);
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
         internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>(2048);
-        internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
 
         internal ulong CurrentProjectileId;
@@ -51,24 +50,21 @@ namespace WeaponCore.Projectiles
                 DeferedAvStateUpdates(Session);
 
             Session.StallReporter.Start("Clean&Spawn", 17);
-            Clean();
             SpawnFragments();
             Session.StallReporter.End();
 
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
 
-            var activeCount = ActiveProjetiles.Count;
-
             Session.StallReporter.Start("UpdateState", 17);
-            if (activeCount > 0) 
+            if (ActiveProjetiles.Count > 0) 
                 UpdateState();
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 17);
-            if (activeCount > 0 && false)
+            if (false && ActiveProjetiles.Count > 0)
                 Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
-            else if (activeCount > 0)
+            else if (ActiveProjetiles.Count > 0)
                 CheckHits();
             Session.StallReporter.End();
         }
@@ -89,27 +85,6 @@ namespace WeaponCore.Projectiles
 
             if (!Session.DedicatedServer)
                 UpdateAv();
-        }
-
-        internal void Clean()
-        {
-            for (int j = 0; j < CleanUp.Count; j++)
-            {
-                var p = CleanUp[j];
-                for (int i = 0; i < p.VrPros.Count; i++)
-                    VirtInfoPool.Return(p.VrPros[i]);
-
-                p.VrPros.Clear();
-
-                if (p.DynamicGuidance)
-                    DynTrees.UnregisterProjectile(p);
-
-                p.PruningProxyId = -1;
-
-                p.Info.Clean();
-            }
-
-            CleanUp.Clear();
         }
 
         internal void PrepFragmentEntities()
@@ -186,8 +161,7 @@ namespace WeaponCore.Projectiles
                         p.DestroyProjectile();
                         continue;
                     case ProjectileState.Dead:
-                        ProjectilePool.Push(p);
-                        ActiveProjetiles.RemoveAtFast(i);
+
                         continue;
                     case ProjectileState.Start:
                         p.Start();
@@ -196,6 +170,8 @@ namespace WeaponCore.Projectiles
                     case ProjectileState.Depleted:
                     case ProjectileState.Detonate:
                         p.ProjectileClose();
+                        ProjectilePool.Push(p);
+                        ActiveProjetiles.RemoveAtFast(i);
                         continue;
                 }
                 if (p.Info.Target.IsProjectile)

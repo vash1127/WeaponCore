@@ -223,8 +223,11 @@ namespace WeaponCore.Platform
 
                             if (ammoPattern.Const.VirtualBeams && j == 0)
                             {
-                                if (i == 0) 
+                                if (i == 0)
+                                {
                                     vProjectile = CreateVirtualProjectile(patternCycle);
+                                    Comp.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
+                                }
 
                                 MyEntity primeE = null;
                                 MyEntity triggerE = null;
@@ -258,8 +261,6 @@ namespace WeaponCore.Platform
                                     vProjectile.Info.Direction = muzzle.DeviatedDir;
                                     vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
                                 }
-
-                                Comp.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
                             }
                             else
                             {
