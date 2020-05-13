@@ -115,6 +115,8 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
 
+                        var hadTarget = w.Target.HasTarget;
+
                         if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
@@ -174,7 +176,7 @@ namespace WeaponCore
                             }
                         }
 
-                        if (w.Target.TargetChanged) // Target changed
+                        if (hadTarget != w.Target.HasTarget) // Target changed
                             w.TargetChanged();
 
                         ///
