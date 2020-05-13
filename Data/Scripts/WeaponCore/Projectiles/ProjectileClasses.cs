@@ -49,7 +49,6 @@ namespace WeaponCore.Support
         internal double TracerLength;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
-        internal bool LastHitShield;
         internal bool TriggeredPulse;
         internal bool EwarActive;
         internal bool ModelOnly;
@@ -102,7 +101,6 @@ namespace WeaponCore.Support
             AmmoDef = null;
             AmmoInfo = null;
             WeaponCache = null;
-            LastHitShield = false;
             IsShrapnel = false;
             TriggeredPulse = false;
             EwarActive = false;

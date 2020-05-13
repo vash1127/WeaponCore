@@ -37,7 +37,6 @@ namespace WeaponCore.Projectiles
         internal Vector3D TargetOffSet;
         internal Vector3D PrevTargetOffset;
         internal Vector3 PrevTargetVel;
-        internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
         internal Vector3 Gravity;
         internal Hit Hit = new Hit();
@@ -72,9 +71,7 @@ namespace WeaponCore.Projectiles
         internal bool MoveToAndActivate;
         internal bool LockedTarget;
         internal bool DynamicGuidance;
-
         internal bool GenerateShrapnel;
-        internal bool Colliding;
         internal bool LinePlanetCheck;
         internal bool SmartsOn;
         internal bool MineSeeking;
@@ -82,10 +79,9 @@ namespace WeaponCore.Projectiles
         internal bool MineTriggered;
         internal bool Miss;
         internal bool Active;
-        internal bool HitParticleActive;
+        //internal bool HitParticleActive;
         internal bool CachedPlanetHit;
-        internal bool ForceHitParticle;
-        internal bool FakeExplosion;
+        //internal bool FakeExplosion;
         internal bool AtMaxRange;
         internal bool ShieldBypassed;
         internal bool EarlyEnd;
@@ -117,7 +113,6 @@ namespace WeaponCore.Projectiles
             ModelState = EntityState.None;
             LastEntityPos = Position;
             Hit = new Hit();
-            LastHitPos = null;
             LastHitEntVel = null;
             Info.AvShot = null;
             Info.Age = 0;
@@ -127,14 +122,12 @@ namespace WeaponCore.Projectiles
             LastOffsetTime = 0;
             EntitiesNear = true;
             PruningProxyId = -1;
-            Colliding = false;
             Active = false;
             CachedPlanetHit = false;
             PositionChecked = false;
             MineSeeking = false;
             MineActivated = false;
             MineTriggered = false;
-            HitParticleActive = false;
             LinePlanetCheck = false;
             AtMaxRange = false;
             ShieldBypassed = false;
@@ -246,16 +239,6 @@ namespace WeaponCore.Projectiles
             else if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) 
                 LinePlanetCheck = true;
 
-            if (EnableAv)
-            {
-                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.AreaEffect.AreaEffectRadius > 0 && Info.AmmoDef.AreaEffect.AreaEffectDamage > 0)
-                {
-                    var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
-                    HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
-                }
-                FakeExplosion = HitParticleActive && Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && Info.AmmoDef.AmmoGraphics.Particles.Hit.Name == string.Empty;
-            }
-
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
@@ -284,6 +267,13 @@ namespace WeaponCore.Projectiles
                 Info.AvShot = Info.Ai.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, StepPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
+
+                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.AreaEffect.AreaEffectRadius > 0 && Info.AmmoDef.AreaEffect.AreaEffectDamage > 0)
+                {
+                    var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
+                    Info.AvShot.HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
+                }
+                Info.AvShot.FakeExplosion = Info.AvShot.HitParticleActive && Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && Info.AmmoDef.AmmoGraphics.Particles.Hit.Name == string.Empty;
             }
 
             if (!Info.AmmoDef.Const.PrimeModel && !Info.AmmoDef.Const.TriggerModel) ModelState = EntityState.None;
@@ -306,7 +296,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 LineOrNotModel = Info.AmmoDef.Const.DrawLine || ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle;
-                Info.ModelOnly = !LineOrNotModel && ModelState == EntityState.Exists;
+                Info.AvShot.ModelOnly = !LineOrNotModel && ModelState == EntityState.Exists;
             }
         }
 
@@ -427,7 +417,6 @@ namespace WeaponCore.Projectiles
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
-            Colliding = true;
             if (!Info.AmmoDef.Const.VirtualBeams && add) Info.Ai.Session.Hits.Add(this);
             else if (Info.AmmoDef.Const.VirtualBeams)
             {
@@ -439,11 +428,11 @@ namespace WeaponCore.Projectiles
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
                 if (add) Info.Ai.Session.Hits.Add(this);
-                CreateFakeBeams(!add);
+                if (EnableAv) CreateFakeBeams(!add);
             }
 
             if (EnableAv)
-                HitEffects();
+                Info.AvShot.HitEffects();
 
             return true;
         }
@@ -477,7 +466,7 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = Info, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit});
+            Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir});
         }
 
         internal void CreateFakeBeams(bool miss = false)
@@ -496,7 +485,7 @@ namespace WeaponCore.Projectiles
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.Origin, Position);
                     vp.Direction = beam.Direction;
                     vp.VisualDir = beam.Direction;
-                    Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = vp, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss });
+                    Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir });
                 }
                 else {
                     Vector3D beamEnd;
@@ -510,9 +499,9 @@ namespace WeaponCore.Projectiles
                     vp.VisualDir = line.Direction;
 
                     if (!miss && hitPos.HasValue)
-                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = vp, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true });
+                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir });
                     else
-                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { Info = vp, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false });
+                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir });
                 }
             }
         }
@@ -941,44 +930,16 @@ namespace WeaponCore.Projectiles
             if (Info.Age != 0) LastOffsetTime = Info.Age;
         }
 
-        internal void HitEffects()
-        {
-            if (Colliding || ForceHitParticle)
-            {
-                var distToCameraSqr = Vector3D.DistanceSquared(Position, Info.Ai.Session.CameraPos);
-                var closeToCamera = distToCameraSqr < 360000;
-                if (ForceHitParticle)
-                {
-                    LastHitPos = Position;
-                    EarlyEnd = true;
-                }
-
-                if (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)
-                {
-                    if (FakeExplosion)
-                        Info.AvShot.HitParticle = ParticleState.Explosion;
-                    else if (HitParticleActive && Info.AmmoDef.Const.HitParticle && !(Info.LastHitShield && !Info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield))
-                        Info.AvShot.HitParticle = ParticleState.Custom;
-                }
-
-                var hitSound = Info.AmmoDef.Const.HitSound && (Info.AvShot.HitSoundActive && (ForceHitParticle || distToCameraSqr < Info.AmmoDef.Const.HitSoundDistSqr || LastHitPos.HasValue && (!Info.LastHitShield || Info.AmmoDef.AmmoAudio.HitPlayShield)));
-                if (hitSound && !Info.AvShot.HitEmitter.IsPlaying)
-                {
-                    Info.AvShot.HitEmitter.Entity = Hit.Entity;
-                    Info.Ai.Session.Av.HitSounds.Add(Info.AvShot);
-                }
-                Info.LastHitShield = false;
-            }
-            Colliding = false;
-        }
-
         internal void DestroyProjectile()
         {
             if (State == ProjectileState.Destroy)
             {
-                ForceHitParticle = true;
                 Hit = new Hit {Block = null, Entity = null, HitPos = Position, VisualHitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick};
-                if (EnableAv || Info.AmmoDef.Const.VirtualBeams) Info.AvShot.Hit = Hit;
+                if (EnableAv || Info.AmmoDef.Const.VirtualBeams)
+                {
+                    Info.AvShot.ForceHitParticle = true;
+                    Info.AvShot.Hit = Hit;
+                }
                 Intersected(false);
             }
 
@@ -1009,8 +970,8 @@ namespace WeaponCore.Projectiles
             foreach (var seeker in Seekers) seeker.Info.Target.Reset(Info.Ai.Session.Tick, Target.States.ProjectileClosed);
             Seekers.Clear();
 
-            if (EnableAv)
-                HitEffects();
+            if (EnableAv && Info.AvShot.ForceHitParticle)
+                Info.AvShot.HitEffects();
 
             State = ProjectileState.Dead;
 
@@ -1018,7 +979,8 @@ namespace WeaponCore.Projectiles
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
-                Info.AvShot.AvClose(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
+
+                Info.AvShot.AvClose(Position, Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion);
             }
             else if (Info.AmmoDef.Const.VirtualBeams)
             {

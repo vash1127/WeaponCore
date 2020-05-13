@@ -93,7 +93,7 @@ namespace WeaponCore.Support
                 var glowCnt = av.GlowSteps.Count;
                 var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
 
-                if (refreshed || av.Dirty)
+                if (refreshed)
                 {
                     if (av.PrimeEntity != null)
                     {
@@ -109,7 +109,7 @@ namespace WeaponCore.Support
                             av.PrimeEntity.PositionComp.SetWorldMatrix(ref av.PrimeMatrix, null, false, false, false);
                         }
 
-                        if ((av.Cloaked || av.OnScreen == AvShot.Screen.None || av.Dirty) && av.PrimeEntity.InScene)
+                        if ((av.Cloaked || av.OnScreen == AvShot.Screen.None) && av.PrimeEntity.InScene)
                         {
                             av.PrimeEntity.InScene = false;
                             av.PrimeEntity.Render.RemoveRenderObjects();
@@ -130,7 +130,6 @@ namespace WeaponCore.Support
 
                     if (av.HasTravelSound)
                     {
-
                         if (!av.AmmoSound)
                         {
                             double distSqr;
@@ -143,7 +142,6 @@ namespace WeaponCore.Support
 
                     if (av.HitParticle == AvShot.ParticleState.Custom) 
                     {
-
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (av.OnScreen != AvShot.Screen.None) {
                             var pos = av.Hit.HitTick == Session.Tick && !MyUtils.IsZero(av.Hit.VisualHitPos) ? av.Hit.VisualHitPos : av.TracerFront;

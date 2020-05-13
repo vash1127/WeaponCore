@@ -44,8 +44,12 @@ namespace WeaponCore.Projectiles
                     var outSideBox = safeZone.Shape == MySafeZoneShape.Box && safeZone.PositionComp.WorldAABB.Contains(p.Info.Origin) == ContainmentType.Disjoint;
                     var outside = outSideSphere || outSideBox;
                     if (outside) {
+
                         p.State = Projectile.ProjectileState.Detonate;
-                        p.ForceHitParticle = true;
+                        p.EarlyEnd = true;
+
+                        if (p.EnableAv) 
+                            p.Info.AvShot.ForceHitParticle = true;
                         break;
                     }
                 }
@@ -289,10 +293,8 @@ namespace WeaponCore.Projectiles
             if (finalCount > 0) {
 
                 var hitEntity = p.Info.HitList[0];
-                p.LastHitPos = hitEntity.HitPos;
-                p.Info.LastHitShield = hitEntity.EventType == Shield;
 
-                if (p.Info.LastHitShield)
+                if (hitEntity.EventType == Shield)
                 {
                     var cube = hitEntity.Entity as MyCubeBlock;
                     if (cube?.CubeGrid?.Physics != null)
@@ -322,12 +324,16 @@ namespace WeaponCore.Projectiles
                         p.Info.System.Session.Physics.CastRay(from, to, out hitInfo, 15);
                     }
 
-                    visualHitPos = hitInfo?.HitEntity != null ? hitInfo.Position : p.LastHitPos;
+                    visualHitPos = hitInfo?.HitEntity != null ? hitInfo.Position : hitEntity.HitPos;
                 }
-                else visualHitPos = p.LastHitPos;
+                else visualHitPos = hitEntity.HitPos;
 
-                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = p.LastHitPos ?? Vector3D.Zero, VisualHitPos = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
-                if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
+                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = hitEntity.HitPos ?? Vector3D.Zero, VisualHitPos = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
+                if (p.EnableAv)
+                {
+                    p.Info.AvShot.LastHitShield = hitEntity.EventType == Shield;
+                    p.Info.AvShot.Hit = p.Hit;
+                }
 
                 return true;
             }
