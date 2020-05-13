@@ -115,8 +115,6 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
 
-                        var hadTarget = w.Target.HasTarget;
-
                         if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
@@ -130,7 +128,7 @@ namespace WeaponCore
                             else if (w.AiEnabled) {
 
                                 if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
-                                    w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
+                                    w.Target.Reset(Tick, States.Expired, !comp.TrackReticle && (w.Target.CurrentState != States.RayCheckFailed && !w.Target.HasTarget));
                             }
                             else {
 
@@ -176,7 +174,7 @@ namespace WeaponCore
                             }
                         }
 
-                        if (hadTarget != w.Target.HasTarget) // Target changed
+                        if (w.Target.TargetChanged) // Target changed
                             w.TargetChanged();
 
                         ///
