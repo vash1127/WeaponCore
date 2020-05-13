@@ -851,7 +851,6 @@ namespace WeaponCore.Support
             if (AmmoEffect != null)
                 DisposeAmmoEffect(true, false);
 
-            /*
             if (PrimeEntity != null && PrimeEntity.InScene)
             {
                 PrimeEntity.InScene = false;
@@ -863,7 +862,6 @@ namespace WeaponCore.Support
                 TriggerEntity.InScene = false;
                 TriggerEntity.Render.RemoveRenderObjects();
             }
-            */
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
