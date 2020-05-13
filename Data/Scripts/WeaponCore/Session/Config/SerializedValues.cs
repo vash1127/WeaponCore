@@ -274,7 +274,10 @@ namespace WeaponCore
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
                         var w = comp.Platform.Weapons[i];
-                        var wTiming = timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
+                        if (comp.Session.IsServer)
+                            timings[w.WeaponId] = new WeaponTimings();
+
+                        var wTiming = comp.Session.IsServer ? timings[w.WeaponId] : timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
 
                         var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
                         rand.ClientProjectileRandom = new Random(rand.CurrentSeed);

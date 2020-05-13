@@ -48,7 +48,6 @@ namespace WeaponCore.Support
         internal bool Back;
         internal bool DetonateFakeExp;
         internal bool LastStep;
-        internal bool Dirty;
         internal bool IsShrapnel;
         internal bool AmmoParticleStopped;
         internal bool AmmoParticleInited;
@@ -59,6 +58,7 @@ namespace WeaponCore.Support
         internal bool ForceHitParticle;
         internal bool HitParticleActive;
         internal bool FakeExplosion;
+        internal bool MarkForClose;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -107,6 +107,7 @@ namespace WeaponCore.Support
 
 
         internal Hit Hit;
+        internal AvClose EndState;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal BoundingSphereD ModelSphereCurrent;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
@@ -816,31 +817,23 @@ namespace WeaponCore.Support
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, MaxTrajectory);
         }
 
-        internal void AvClose(Vector3D endPos, bool detonateFakeExp = false)
+        internal void AvClose()
         {
-            if (Vector3D.IsZero(TracerFront)) TracerFront = endPos;
-            DetonateFakeExp = detonateFakeExp;
-            Dirty = true;
+            if (Vector3D.IsZero(TracerFront)) TracerFront = EndState.EndPos;
 
             if (AmmoDef.Const.AmmoParticle)
                 DisposeAmmoEffect(false, false);
 
-            if (DetonateFakeExp)
-            {
-                HitParticle = ParticleState.Dirty;
-                if (Ai.Session.Av.ExplosionReady)
-                {
+            if (EndState.DetonateFakeExp){
 
+                HitParticle = ParticleState.Dirty;
+                if (Ai.Session.Av.ExplosionReady) {
                     if (OnScreen != Screen.None)
-                    {
-                        if (DetonateFakeExp) SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
-                        else SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.AreaEffectRadius, TracerFront, AmmoDef);
-                    }
+                        SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
                 }
             }
 
-            if (!Active)
-                Ai.Session.Av.AvShotPool.Return(this);
+            MarkForClose = true;
         }
 
 
@@ -848,6 +841,7 @@ namespace WeaponCore.Support
         {
             // Reset only vars that are not always set
             Hit = new Hit();
+            EndState = new AvClose();
             if (AmmoSound)
             {
                 TravelEmitter.StopSound(true);
@@ -868,6 +862,7 @@ namespace WeaponCore.Support
                 TriggerEntity.InScene = false;
                 TriggerEntity.Render.RemoveRenderObjects();
             }
+
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
@@ -890,7 +885,6 @@ namespace WeaponCore.Support
             FireCounter = 0;
             ParentId = ulong.MaxValue;
             LastHitShield = false;
-            Dirty = false;
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundInitted = false;
@@ -915,6 +909,7 @@ namespace WeaponCore.Support
             ForceHitParticle = false;
             HitParticleActive = false;
             FakeExplosion = false;
+            MarkForClose = false;
             TracerShrinks.Clear();
             GlowSteps.Clear();
             Offsets.Clear();
@@ -949,6 +944,14 @@ namespace WeaponCore.Support
         internal bool Last;
 
     }
+
+    internal struct AvClose
+    {
+        internal bool Dirty;
+        internal bool DetonateFakeExp;
+        internal Vector3D EndPos;
+    }
+
     internal struct DeferedAv
     {
         internal AvShot AvShot;
