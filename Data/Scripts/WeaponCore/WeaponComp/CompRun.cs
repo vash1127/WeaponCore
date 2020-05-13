@@ -122,7 +122,7 @@ namespace WeaponCore.Support
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
 
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                            Session.FutureEvents.Schedule(weapon.TurnOnEmissive, null, 100);
+                            Session.FutureEvents.Schedule(weapon.TurnOnEmissive, null, 4);
                     }
                 } 
                 else Log.Line($"Comp Init() failed");

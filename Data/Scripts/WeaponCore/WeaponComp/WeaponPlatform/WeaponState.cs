@@ -86,15 +86,19 @@ namespace WeaponCore.Platform
 
         public void UpdateParts(MyPositionComponentBase pComp)
         {
-            if (_azimuthSubpartUpdateTick == Comp.Session.Tick) return;
-            _azimuthSubpartUpdateTick = Comp.Session.Tick;
+            if (_subpartUpdateTick == Comp.Session.Tick) return;
+            _subpartUpdateTick = Comp.Session.Tick;
 
             var matrix = AzimuthPart.Entity.WorldMatrix;
             foreach (var part in AzimuthPart.Entity.Subparts)
             {
-                //if(!part.Key.Contains(System.AzimuthPartName.String))
-                    //part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
+                if(ElevationPart.Entity != part.Value)
+                    part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
             }
+
+            matrix = ElevationPart.Entity.WorldMatrix;
+            foreach (var part in ElevationPart.Entity.Subparts)
+                part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
         }
 
         internal void TargetChanged()

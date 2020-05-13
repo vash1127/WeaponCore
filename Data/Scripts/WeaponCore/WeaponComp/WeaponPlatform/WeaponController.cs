@@ -1,4 +1,6 @@
 ﻿using System;
+using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -239,6 +241,8 @@ namespace WeaponCore.Platform
 
         internal void TurnOnEmissive(object o)
         {
+            if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
             for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
                 PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j], System);
         }

@@ -25,7 +25,7 @@ namespace WeaponCore.Platform
         private readonly int _numModelBarrels;
         private int _nextVirtual;
         private uint _ticksUntilShoot;
-        private uint _azimuthSubpartUpdateTick;
+        private uint _subpartUpdateTick;
         private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
