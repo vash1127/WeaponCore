@@ -175,7 +175,8 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     return State;
                 }
-
+                azimuthPart.NeedsWorldMatrix = true;
+                elevationPart.NeedsWorldMatrix = true;
                 var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
                 var wepParticleEvents = comp.Session.CreateWeaponParticleEvents(system, comp.MyCube);
 
@@ -251,6 +252,7 @@ namespace WeaponCore.Platform
                         weapon.MuzzlePart.ToTransformation = muzzlePartPosTo;
                         weapon.MuzzlePart.FromTransformation = muzzlePartPosFrom;
                         weapon.MuzzlePart.PartLocalLocation = muzzlePartLocation;
+                        weapon.MuzzlePart.Entity.NeedsWorldMatrix = true;
                     }
 
                     if (weapon.AiOnlyWeapon)
@@ -274,6 +276,8 @@ namespace WeaponCore.Platform
                             weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
                             weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
                             weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
+                            //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
+
                         }
                         else
                         {
@@ -283,6 +287,7 @@ namespace WeaponCore.Platform
                             weapon.AzimuthPart.FullRotationStep = MatrixD.Zero;
                             weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
+                            //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
                         }
 
 
@@ -304,6 +309,7 @@ namespace WeaponCore.Platform
                             weapon.ElevationPart.FullRotationStep = fullStepElRotation;
                             weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
                             weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
+                            //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                         }
                         else if (elevationPartName == "None")
                         {
@@ -313,6 +319,7 @@ namespace WeaponCore.Platform
                             weapon.ElevationPart.FullRotationStep = MatrixD.Zero;
                             weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
+                            //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                         }
                     }
 
@@ -419,7 +426,7 @@ namespace WeaponCore.Platform
                         weapon.AzimuthPart.Entity = azimuthPartEntity;
                         weapon.AzimuthPart.Parent = azimuthPartEntity.Parent;
                         //weapon.AzimuthPart.Entity.InvalidateOnMove = false;
-                        //weapon.AzimuthPart.Entity.NeedsWorldMatrix = false;
+                        weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
                     }
 
                     MyEntity elevationPartEntity;
@@ -427,7 +434,7 @@ namespace WeaponCore.Platform
                     {
                         weapon.ElevationPart.Entity = elevationPartEntity;
                         //weapon.ElevationPart.Entity.InvalidateOnMove = false;
-                        //weapon.ElevationPart.Entity.NeedsWorldMatrix = false;
+                        weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                     }
 
                     if (m.Value.DesignatorWeapon)

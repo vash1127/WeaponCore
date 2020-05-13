@@ -109,7 +109,6 @@ namespace WeaponCore
                             w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAv = !w.PlayTurretAv;
                         }
-
                         ///
                         /// Check target for expire states
                         /// 
