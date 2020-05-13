@@ -726,7 +726,6 @@ namespace WeaponCore.Support
 
             if (!EnergyAmmo && MagazineSize > 0 || IsHybrid)
             {
-                if (IsHybrid) Log.Line($"IsHybrid");
                 var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
                 burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
 
