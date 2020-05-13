@@ -439,7 +439,7 @@ namespace WeaponCore.Projectiles
                 if (p.LineOrNotModel)
                 {
                     if (p.State == ProjectileState.OneAndDone)
-                        DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position});
+                        DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
                     else if (p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine)
                     {
                         if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
