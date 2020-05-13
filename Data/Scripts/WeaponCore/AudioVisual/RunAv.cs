@@ -88,10 +88,11 @@ namespace WeaponCore.Support
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
+
                 var refreshed = av.LastTick == Session.Tick;
                 var shrinkCnt = av.TracerShrinks.Count;
                 var glowCnt = av.GlowSteps.Count;
-                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
+                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.MarkForClose;
 
                 if (refreshed)
                 {
@@ -203,6 +204,9 @@ namespace WeaponCore.Support
                     AvShotPool.Return(av);
                     AvShots.RemoveAtFast(i);
                 }
+
+                if (av.EndState.Dirty)
+                    av.AvClose();
             }
         }
 

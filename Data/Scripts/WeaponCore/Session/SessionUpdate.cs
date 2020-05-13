@@ -128,7 +128,7 @@ namespace WeaponCore
                             else if (w.AiEnabled) {
 
                                 if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
-                                    w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
+                                    w.Target.Reset(Tick, States.Expired, !comp.TrackReticle && (w.Target.CurrentState != States.RayCheckFailed && !w.Target.HasTarget));
                             }
                             else {
 
