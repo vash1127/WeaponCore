@@ -862,6 +862,7 @@ namespace WeaponCore.Support
                 TriggerEntity.InScene = false;
                 TriggerEntity.Render.RemoveRenderObjects();
             }
+
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
