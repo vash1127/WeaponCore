@@ -76,7 +76,6 @@ namespace WeaponCore
 
                     comp.WasControlled = comp.UserControlled;
                     comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
-
                     var leftClick = false;
                     var rightClick = false;
 
