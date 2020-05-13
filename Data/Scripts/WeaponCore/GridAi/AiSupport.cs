@@ -716,7 +716,7 @@ namespace WeaponCore.Support
                         {
                             try
                             {
-                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null || ((IMySlimBlock)powerBlock.SlimBlock).IsDestroyed || powerBlock.CubeGrid.MarkedForClose)
+                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null  || powerBlock.CubeGrid.MarkedForClose)
                                 {
                                     Log.Line($"skipping bad power block");
                                     continue;
