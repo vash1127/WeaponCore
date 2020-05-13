@@ -84,23 +84,6 @@ namespace WeaponCore.Platform
             catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
         }
 
-        public void UpdateParts(MyPositionComponentBase pComp)
-        {
-            if (_subpartUpdateTick == Comp.Session.Tick) return;
-            _subpartUpdateTick = Comp.Session.Tick;
-
-            var matrix = AzimuthPart.Entity.WorldMatrix;
-            foreach (var part in AzimuthPart.Entity.Subparts)
-            {
-                if(ElevationPart.Entity != part.Value)
-                    part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
-            }
-
-            matrix = ElevationPart.Entity.WorldMatrix;
-            foreach (var part in ElevationPart.Entity.Subparts)
-                part.Value.PositionComp.UpdateWorldMatrix(ref matrix);
-        }
-
         internal void TargetChanged()
         {
             EventTriggerStateChanged(EventTriggers.Tracking, Target.HasTarget);
@@ -121,9 +104,6 @@ namespace WeaponCore.Platform
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
             obj.OnMarkForClose -= EntPartClose;
-
-            if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.Session.VanillaSubpartNames.Contains(System.AzimuthPartName.String) && Comp.Session.VanillaSubpartNames.Contains(System.ElevationPartName.String))
-                obj.PositionComp.OnPositionChanged -= UpdateParts;
         }
 
         internal void DelayedStart(object o)
