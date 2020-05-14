@@ -372,16 +372,14 @@ namespace WeaponCore.Projectiles
         {
             if (Vector3D.IsZero(Hit.HitPos)) return false;
 
-            if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel))
-            {
+            if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel)) {
                 var useCollisionSize = ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle && !Info.AmmoDef.Const.DrawLine;
                 Info.AvShot.TestSphere.Center = Hit.VisualHitPos;
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
             if (!Info.AmmoDef.Const.VirtualBeams && add) Info.Ai.Session.Hits.Add(this);
-            else if (Info.AmmoDef.Const.VirtualBeams)
-            {
+            else if (Info.AmmoDef.Const.VirtualBeams) {
                 Info.WeaponCache.VirtualHit = true;
                 Info.WeaponCache.HitEntity.Entity = Hit.Entity;
                 Info.WeaponCache.HitEntity.HitPos = Hit.VisualHitPos;
@@ -392,10 +390,6 @@ namespace WeaponCore.Projectiles
                 if (add) Info.Ai.Session.Hits.Add(this);
                 CreateFakeBeams(!add);
             }
-
-            if (EnableAv)
-                Info.AvShot.HitEffects();
-
             return true;
         }
 

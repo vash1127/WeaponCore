@@ -274,6 +274,8 @@ namespace WeaponCore.Support
                 if (saveHit) {
                     a.HitVelocity = a.Hit.HitVelocity;
                     a.Hitting = !a.ShrinkInited;
+
+                    a.HitEffects();
                     if (!a.HitSoundInitted && a.HitSoundActive)
                         a.HitSoundStart();
                 }
@@ -541,63 +543,6 @@ namespace WeaponCore.Support
             }
         }
 
-
-        internal void RunBeam()
-        {
-            if (FiringWeapon != null)
-            {
-                var weapon = FiringWeapon.Platform.Weapons[WeaponId];
-                if (OnScreen != Screen.None)
-                {
-                    MatrixD matrix;
-                    MatrixD.CreateTranslation(ref Hit.VisualHitPos, out matrix);
-                    if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !Ai.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
-                    {
-                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.VisualHitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
-                        {
-                            if (weapon.HitEffects[MuzzleId] != null)
-                            {
-                                weapon.HitEffects[MuzzleId].Stop();
-                                weapon.HitEffects[MuzzleId] = null;
-                            }
-                            return;
-                        }
-
-                        weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                        weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
-                        weapon.HitEffects[MuzzleId].UserScale = scale;
-                        Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
-
-                        var mess = Ai.Session.Av.KeenMessPool.Get();
-                        mess.Effect = weapon.HitEffects[MuzzleId];
-                        mess.AmmoDef = AmmoDef;
-                        mess.Velocity = HitVelocity;
-                        mess.LastTick = Ai.Session.Tick;
-                        mess.Looping = mess.Effect.Loop;
-                        Ai.Session.Av.KeensBrokenParticles.Add(mess);
-                        Ai.Session.Av.RipMap.Add(mess.Effect, mess);
-                    }
-                    else if (weapon.HitEffects[MuzzleId] != null)
-                    {
-                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = Ai.Session.Tick;
-                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
-
-                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        weapon.HitEffects[MuzzleId].UserScale = scale;
-                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
-                    }
-
-                }
-                else if (weapon.HitEffects[MuzzleId] != null)
-                {
-                    weapon.HitEffects[MuzzleId].Stop(weapon.HitEffects[MuzzleId].Loop);
-                    weapon.HitEffects[MuzzleId] = null;
-                }
-            }
-        }
-
         internal void PrepOffsetEffect(Vector3D tracerStart, Vector3D direction, double tracerLength)
         {
             var up = MatrixD.Identity.Up;
@@ -667,13 +612,12 @@ namespace WeaponCore.Support
             Offsets.Clear();
         }
 
-
         internal void HitEffects()
         {
-            var distToCameraSqr = Vector3D.DistanceSquared(Hit.HitPos, Ai.Session.CameraPos);
-            var closeToCamera = distToCameraSqr < 360000;
+            double distToCameraSqr;
+            Vector3D.DistanceSquared(ref Hit.HitPos, ref Ai.Session.CameraPos, out distToCameraSqr);
 
-            if (OnScreen == Screen.Tracer || closeToCamera)
+            if (OnScreen == Screen.Tracer || distToCameraSqr < 360000)
             {
                 if (FakeExplosion)
                     HitParticle = ParticleState.Explosion;
@@ -816,6 +760,63 @@ namespace WeaponCore.Support
             ShrinkInited = false;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, MaxTrajectory);
         }
+
+        internal void RunBeam()
+        {
+            if (FiringWeapon != null)
+            {
+                var weapon = FiringWeapon.Platform.Weapons[WeaponId];
+                if (OnScreen != Screen.None)
+                {
+                    MatrixD matrix;
+                    MatrixD.CreateTranslation(ref Hit.VisualHitPos, out matrix);
+                    if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !Ai.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
+                    {
+                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.VisualHitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
+                        {
+                            if (weapon.HitEffects[MuzzleId] != null)
+                            {
+                                weapon.HitEffects[MuzzleId].Stop();
+                                weapon.HitEffects[MuzzleId] = null;
+                            }
+                            return;
+                        }
+
+                        weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
+                        weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
+                        weapon.HitEffects[MuzzleId].UserScale = scale;
+                        Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
+
+                        var mess = Ai.Session.Av.KeenMessPool.Get();
+                        mess.Effect = weapon.HitEffects[MuzzleId];
+                        mess.AmmoDef = AmmoDef;
+                        mess.Velocity = HitVelocity;
+                        mess.LastTick = Ai.Session.Tick;
+                        mess.Looping = mess.Effect.Loop;
+                        Ai.Session.Av.KeensBrokenParticles.Add(mess);
+                        Ai.Session.Av.RipMap.Add(mess.Effect, mess);
+                    }
+                    else if (weapon.HitEffects[MuzzleId] != null)
+                    {
+                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = Ai.Session.Tick;
+                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
+
+                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                        weapon.HitEffects[MuzzleId].UserScale = scale;
+                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
+                    }
+
+                }
+                else if (weapon.HitEffects[MuzzleId] != null)
+                {
+                    weapon.HitEffects[MuzzleId].Stop(weapon.HitEffects[MuzzleId].Loop);
+                    weapon.HitEffects[MuzzleId] = null;
+                }
+            }
+        }
+
 
         internal void AvClose()
         {

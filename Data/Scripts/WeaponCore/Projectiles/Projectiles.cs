@@ -41,17 +41,10 @@ namespace WeaponCore.Projectiles
 
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("FragmentsNeedingEntities", 17);
-            if (Session.FragmentsNeedingEntities.Count > 0)
-                PrepFragmentEntities();
-            Session.StallReporter.End();
+
 
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
-
-            Session.StallReporter.Start("Clean&Spawn", 17);
-            SpawnFragments();
-            Session.StallReporter.End();
 
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
@@ -59,6 +52,11 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.Start("UpdateState", 17);
             if (ActiveProjetiles.Count > 0) 
                 UpdateState();
+            Session.StallReporter.End();
+
+            Session.StallReporter.Start("Spawn", 17);
+            if (ShrapnelToSpawn.Count > 0)
+                SpawnFragments();
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 17);
@@ -87,22 +85,38 @@ namespace WeaponCore.Projectiles
                 UpdateAv();
         }
 
+
+
+        private void SpawnFragments()
+        {
+            if (Session.FragmentsNeedingEntities.Count > 0)
+                PrepFragmentEntities();
+
+            int spawned = 0;
+            for (int j = 0; j < ShrapnelToSpawn.Count; j++)
+            {
+                int count;
+                ShrapnelToSpawn[j].Spawn(out count);
+                spawned += count;
+            }
+            ShrapnelToSpawn.Clear();
+
+            if (AddTargets.Count > 0)
+                AddProjectileTargets();
+
+            var end = ActiveProjetiles.Count - spawned;
+            UpdateState(end);
+        }
+
         internal void PrepFragmentEntities()
         {
             for (int i = 0; i < Session.FragmentsNeedingEntities.Count; i++)
             {
                 var frag = Session.FragmentsNeedingEntities[i];
                 if (frag.AmmoDef.Const.PrimeModel && frag.PrimeEntity == null) frag.PrimeEntity = frag.AmmoDef.Const.PrimeEntityPool.Get();
-                if (frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) frag.TriggerEntity =  Session.TriggerEntityPool.Get();
+                if (frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) frag.TriggerEntity = Session.TriggerEntityPool.Get();
             }
             Session.FragmentsNeedingEntities.Clear();
-        }
-
-        private void SpawnFragments()
-        {
-            for (int j = 0; j < ShrapnelToSpawn.Count; j++)
-                ShrapnelToSpawn[j].Spawn();
-            ShrapnelToSpawn.Clear();
         }
 
         internal void AddProjectileTargets()
@@ -148,10 +162,12 @@ namespace WeaponCore.Projectiles
             AddTargets.Clear();
         }
 
-        private void UpdateState()
+        private void UpdateState(int end = 0)
         {
-            for (int i = ActiveProjetiles.Count - 1; i >= 0; i--)
+            var t = 0;
+            for (int i = ActiveProjetiles.Count - 1; i >= end; i--)
             {
+                t++;
                 var p = ActiveProjetiles[i];
                 p.Info.Age++;
                 p.Active = false;
@@ -161,7 +177,6 @@ namespace WeaponCore.Projectiles
                         p.DestroyProjectile();
                         continue;
                     case ProjectileState.Dead:
-
                         continue;
                     case ProjectileState.Start:
                         p.Start();

@@ -251,8 +251,6 @@ namespace WeaponCore.Support
                                 var j = 0;
                                 double travel = 0;
 
-
-
                                 var measure = seg.SegmentGap + seg.SegmentLength;
                                 var steps = av.VisualLength / measure;
                                 var cull = false && av.VisualLength > 50 && steps > 10;
