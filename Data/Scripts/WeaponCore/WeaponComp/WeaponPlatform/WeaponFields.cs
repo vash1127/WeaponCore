@@ -104,7 +104,6 @@ namespace WeaponCore.Platform
         internal readonly bool PrimaryWeaponGroup;
 
         internal EventTriggers LastEvent;
-        internal PartAnimation CurLgstAnimPlaying;
         internal float RequiredPower;
         internal float MaxCharge;
         internal float UseablePower;
@@ -178,13 +177,14 @@ namespace WeaponCore.Platform
         internal bool CanUseChargeAmmo;
         internal bool CanUseBeams;
         internal bool PauseShoot;
+        internal bool LastEventCanDelay;
         internal bool ShotReady
         {
             get
             {
                 var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (State.Sync.Reloading || OutOfAmmo);
                 var canShoot = !State.Sync.Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && !State.Sync.Charging && (ShootTick <= Comp.Session.Tick) && (Timings.ShootDelayTick <= Comp.Session.Tick);
+                var shotReady = canShoot && !State.Sync.Charging && (ShootTick <= Comp.Session.Tick) && (Timings.AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;
             }
         }
@@ -193,7 +193,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                return !State.Sync.Reloading && Comp.State.Value.Online && !System.DesignatorWeapon && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower) || Comp.Session.IsCreative);
+                return !State.Sync.Reloading && Comp.State.Value.Online && !System.DesignatorWeapon && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower) || Comp.Session.IsCreative) && (Timings.AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
             }
         }
 

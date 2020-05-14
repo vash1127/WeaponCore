@@ -217,10 +217,7 @@ namespace WeaponCore.Platform
                 }
 
                 if (State.Sync.Overheated && State.Sync.Heat <= (System.MaxHeat * System.WepCoolDown))
-                {
-                    if (CurLgstAnimPlaying != null)
-                        Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
-                        
+                {                        
                     EventTriggerStateChanged(EventTriggers.Overheated, false);
                     State.Sync.Overheated = false;
                 }

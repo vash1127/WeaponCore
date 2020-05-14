@@ -208,7 +208,7 @@ namespace WeaponCore
                         ///
                         ///Check Reload
                         ///
-                        if ((w.State.Sync.CurrentMags > 0 || w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                        if (w.State.Sync.CurrentMags > 0 && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                             w.StartReload();
                         ///
                         ///
@@ -224,7 +224,7 @@ namespace WeaponCore
 
                         w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
-                        var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon;
+                        var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.Timings.AnimationDelayTick <= Tick);
                         var fakeTarget = overRides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                         var manualShot = (compCurPlayer.ControlType == ControlType.Camera || (overRides.ManualControl && comp.TrackReticle) || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && !inputState.InMenu && (j % 2 == 0 && leftClick || j == 1 && rightClick);
@@ -472,7 +472,7 @@ namespace WeaponCore
 
                 }
 
-                if (w.Timings.ShootDelayTick <= Tick) w.Shoot();
+                w.Shoot();
 
                 if (MpActive && IsServer && !w.IsTurret && w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Tick - w.LastSyncTick > ResyncMinDelayTicks) w.ForceSync();
             }

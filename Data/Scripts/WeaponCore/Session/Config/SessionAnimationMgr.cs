@@ -46,19 +46,25 @@ namespace WeaponCore
 
             if (animations.EventParticles != null)
             {
-                foreach (var particleEvent in animations.EventParticles)
+                Dictionary<EventTriggers, List<ParticleEvent>> tmpList = new Dictionary<EventTriggers, List<ParticleEvent>>();
+
+                for (int i = 0; i < animations.EventParticles.Count; i++)
                 {
-                    var particles = new ParticleEvent[particleEvent.Value.Length];
+                    var eventParticle = animations.EventParticles[i];
 
-                    for (int i = 0; i < particleEvent.Value.Length; i++)
-                    {
-                        var particleDef = particleEvent.Value[i];
-                        particles[i] = new ParticleEvent(particleDef.Particle.Name, particleDef.EmptyName, particleDef.Particle.Color, particleDef.Particle.Offset, particleDef.Particle.Extras.Scale, (particleDef.Particle.Extras.MaxDistance * particleDef.Particle.Extras.MaxDistance), particleDef.Particle.Extras.MaxDuration, particleDef.StartDelay, particleDef.LoopDelay, particleDef.Particle.Extras.Loop, particleDef.Particle.Extras.Restart, particleDef.ForceStop);
-                    }
+                    if (!tmpList.ContainsKey(eventParticle.Trigger))
+                        tmpList[eventParticle.Trigger] = new List<ParticleEvent>();
 
-                    particleEvents[particleEvent.Key] = particles;
+                    tmpList[eventParticle.Trigger].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyName, eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop));
+                    
                 }
+
+                foreach (var eventList in tmpList)
+                    particleEvents[eventList.Key] = eventList.Value.ToArray();
             }
+
+
+            
 
             if (wepAnimationSets == null)
                 return;

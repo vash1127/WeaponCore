@@ -49,15 +49,8 @@ namespace WeaponCore.Platform
                             nxtMuzzle = (nxtMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                         }
 
-                        uint prefireLength;
-                        if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.PreFire, out prefireLength))
-                        {
-                            if (_prefiredTick + prefireLength <= tick)
-                            {
-                                EventTriggerStateChanged(EventTriggers.PreFire, true, _muzzlesToFire);
-                                _prefiredTick = tick;
-                            }
-                        }
+                        EventTriggerStateChanged(EventTriggers.PreFire, true, _muzzlesToFire);
+
                         PreFired = true;
                     }
                     return;

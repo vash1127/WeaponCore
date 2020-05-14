@@ -179,10 +179,9 @@ namespace WeaponCore
         [ProtoMember(2)] public uint ChargeUntilTick;
         [ProtoMember(3)] public uint AnimationDelayTick;
         [ProtoMember(4)] public uint OffDelay;
-        [ProtoMember(5)] public uint ShootDelayTick;
-        [ProtoMember(6)] public uint WeaponReadyTick;
-        [ProtoMember(7)] public uint LastHeatUpdateTick;
-        [ProtoMember(8)] public uint ReloadedTick;
+        [ProtoMember(5)] public uint WeaponReadyTick;
+        [ProtoMember(6)] public uint LastHeatUpdateTick;
+        [ProtoMember(7)] public uint ReloadedTick;
         
 
         public WeaponTimings SyncOffsetServer(uint tick)
@@ -195,7 +194,6 @@ namespace WeaponCore
                 AnimationDelayTick = AnimationDelayTick > offset ? AnimationDelayTick - offset : 0,
                 ChargeUntilTick = ChargeUntilTick > offset ? ChargeUntilTick - offset : 0,
                 OffDelay = OffDelay >= offset ? OffDelay - offset : 0,
-                ShootDelayTick = ShootDelayTick > offset ? ShootDelayTick - offset : 0,
                 WeaponReadyTick = WeaponReadyTick > offset ? WeaponReadyTick - offset : 0,
                 LastHeatUpdateTick = tick - LastHeatUpdateTick > 20 ? 0 : (tick - LastHeatUpdateTick) - offset,
                 ReloadedTick = ReloadedTick > offset ? ReloadedTick - offset : 0,
@@ -211,7 +209,6 @@ namespace WeaponCore
                 AnimationDelayTick = AnimationDelayTick > 0 ? AnimationDelayTick + tick : 0,
                 ChargeUntilTick = ChargeUntilTick > 0 ? ChargeUntilTick + tick : 0,
                 OffDelay = OffDelay > 0 ? OffDelay + tick : 0,
-                ShootDelayTick = ShootDelayTick > 0 ? ShootDelayTick + tick : 0,
                 WeaponReadyTick = WeaponReadyTick > 0 ? WeaponReadyTick + tick : 0,
                 ReloadedTick = ReloadedTick,
             };
@@ -223,7 +220,6 @@ namespace WeaponCore
             ChargeUntilTick = syncFrom.ChargeUntilTick;
             AnimationDelayTick = syncFrom.AnimationDelayTick;
             OffDelay = syncFrom.OffDelay;
-            ShootDelayTick = syncFrom.ShootDelayTick;
             WeaponReadyTick = syncFrom.WeaponReadyTick;
             LastHeatUpdateTick = syncFrom.LastHeatUpdateTick;
             ReloadedTick = syncFrom.ReloadedTick;
