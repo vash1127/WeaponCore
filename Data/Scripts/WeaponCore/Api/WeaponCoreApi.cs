@@ -95,7 +95,8 @@ namespace WeaponCore.Api
 
         private void HandleMessage(object obj)
         {
-            if (_apiInit || obj is string) // the sent "ApiEndpointRequest" will also be received here, explicitly ignoring that
+            if (_apiInit || obj is string
+            ) // the sent "ApiEndpointRequest" will also be received here, explicitly ignoring that
                 return;
 
             var dict = obj as IReadOnlyDictionary<string, Delegate>;
@@ -153,11 +154,13 @@ namespace WeaponCore.Api
                 var byteArrays = new List<byte[]>();
                 GetAllWeaponDefinitions(byteArrays);
                 foreach (var byteArray in byteArrays)
-                    WeaponDefinitions.Add(MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
+                    WeaponDefinitions.Add(
+                        MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
             }
         }
 
-        private void AssignMethod<T>(IReadOnlyDictionary<string, Delegate> delegates, string name, ref T field) where T : class
+        private void AssignMethod<T>(IReadOnlyDictionary<string, Delegate> delegates, string name, ref T field)
+            where T : class
         {
             if (delegates == null)
             {
@@ -172,30 +175,69 @@ namespace WeaponCore.Api
             field = del as T;
 
             if (field == null)
-                throw new Exception($"{GetType().Name} :: Delegate {name} is not type {typeof(T)}, instead it's: {del.GetType()}");
+                throw new Exception(
+                    $"{GetType().Name} :: Delegate {name} is not type {typeof(T)}, instead it's: {del.GetType()}");
         }
 
         public void GetAllWeaponDefinitions(IList<byte[]> collection) => _getAllWeaponDefinitions?.Invoke(collection);
         public void GetAllCoreWeapons(ICollection<MyDefinitionId> collection) => _getCoreWeapons?.Invoke(collection);
-        public void GetAllCoreStaticLaunchers(ICollection<MyDefinitionId> collection) => _getCoreStaticLaunchers?.Invoke(collection);
+
+        public void GetAllCoreStaticLaunchers(ICollection<MyDefinitionId> collection) =>
+            _getCoreStaticLaunchers?.Invoke(collection);
+
         public void GetAllCoreTurrets(ICollection<MyDefinitionId> collection) => _getCoreTurrets?.Invoke(collection);
-        public bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection) => _getBlockWeaponMap?.Invoke(weaponBlock, collection) ?? false;
-        public MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim) => _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
-        public void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection) => _getSortedThreats?.Invoke(shooter, collection);
+
+        public bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection) =>
+            _getBlockWeaponMap?.Invoke(weaponBlock, collection) ?? false;
+
+        public MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim) =>
+            _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
+
+        public void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection) =>
+            _getSortedThreats?.Invoke(shooter, collection);
+
         public IMyEntity GetAiFocus(IMyEntity shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
-        public bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0) => _setAiFocus?.Invoke(shooter, target, priority) ?? false;
-        public MyTuple<bool, bool, bool, IMyEntity> GetWeaponTarget(IMyTerminalBlock weapon, int weaponId = 0) => _getWeaponTarget?.Invoke(weapon, weaponId) ?? new MyTuple<bool, bool, bool, IMyEntity>();
-        public void SetWeaponTarget(IMyTerminalBlock weapon, IMyEntity target, int weaponId = 0) => _setWeaponTarget?.Invoke(weapon, target, weaponId);
-        public void FireWeaponOnce(IMyTerminalBlock weapon, bool allWeapons = true, int weaponId = 0) => _fireWeaponOnce?.Invoke(weapon, allWeapons, weaponId);
-        public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on, bool allWeapons, int weaponId = 0) => _toggleWeaponFire?.Invoke(weapon, on, allWeapons, weaponId);
-        public bool IsWeaponReadyToFire(IMyTerminalBlock weapon, int weaponId = 0, bool anyWeaponReady = true, bool shootReady = false) => _isWeaponReadyToFire?.Invoke(weapon, weaponId, anyWeaponReady, shootReady) ?? false;
-        public float GetMaxWeaponRange(IMyTerminalBlock weapon, int weaponId) => _getMaxWeaponRange?.Invoke(weapon, weaponId) ?? 0f;
-        public bool GetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) => _getTurretTargetTypes?.Invoke(weapon, collection, weaponId) ?? false;
-        public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) => _setTurretTargetTypes?.Invoke(weapon, collection, weaponId);
-        public void SetBlockTrackingRange(IMyTerminalBlock weapon, float range) => _setBlockTrackingRange?.Invoke(weapon, range);
-        public bool IsTargetAligned(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) => _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
-        public bool CanShootTarget(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) => _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
-        public Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) => _getPredictedTargetPos?.Invoke(weapon, targetEnt, weaponId) ?? null;
+
+        public bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0) =>
+            _setAiFocus?.Invoke(shooter, target, priority) ?? false;
+
+        public MyTuple<bool, bool, bool, IMyEntity> GetWeaponTarget(IMyTerminalBlock weapon, int weaponId = 0) =>
+            _getWeaponTarget?.Invoke(weapon, weaponId) ?? new MyTuple<bool, bool, bool, IMyEntity>();
+
+        public void SetWeaponTarget(IMyTerminalBlock weapon, IMyEntity target, int weaponId = 0) =>
+            _setWeaponTarget?.Invoke(weapon, target, weaponId);
+
+        public void FireWeaponOnce(IMyTerminalBlock weapon, bool allWeapons = true, int weaponId = 0) =>
+            _fireWeaponOnce?.Invoke(weapon, allWeapons, weaponId);
+
+        public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on, bool allWeapons, int weaponId = 0) =>
+            _toggleWeaponFire?.Invoke(weapon, on, allWeapons, weaponId);
+
+        public bool IsWeaponReadyToFire(IMyTerminalBlock weapon, int weaponId = 0, bool anyWeaponReady = true,
+            bool shootReady = false) =>
+            _isWeaponReadyToFire?.Invoke(weapon, weaponId, anyWeaponReady, shootReady) ?? false;
+
+        public float GetMaxWeaponRange(IMyTerminalBlock weapon, int weaponId) =>
+            _getMaxWeaponRange?.Invoke(weapon, weaponId) ?? 0f;
+
+        public bool GetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) =>
+            _getTurretTargetTypes?.Invoke(weapon, collection, weaponId) ?? false;
+
+        public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) =>
+            _setTurretTargetTypes?.Invoke(weapon, collection, weaponId);
+
+        public void SetBlockTrackingRange(IMyTerminalBlock weapon, float range) =>
+            _setBlockTrackingRange?.Invoke(weapon, range);
+
+        public bool IsTargetAligned(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+            _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
+
+        public bool CanShootTarget(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+            _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
+
+        public Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+            _getPredictedTargetPos?.Invoke(weapon, targetEnt, weaponId) ?? null;
+
         public float GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon) ?? 0f;
         public float GetCurrentPower(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
         public float GetMaxPower(MyDefinitionId weaponDef) => _getMaxPower?.Invoke(weaponDef) ?? 0f;
@@ -203,10 +245,19 @@ namespace WeaponCore.Api
         public bool HasGridAi(IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
         public bool HasCoreWeapon(IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
         public float GetOptimalDps(IMyEntity entity) => _getOptimalDps?.Invoke(entity) ?? 0f;
-        public string GetActiveAmmo(IMyTerminalBlock weapon, int weaponId) => _getActiveAmmo?.Invoke(weapon, weaponId) ?? null;
-        public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) => _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
-        public void RegisterProjectileAddedCallback(Action<Vector3, float> action) => _registerProjectileAdded?.Invoke(action);
-        public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) => _unRegisterProjectileAdded?.Invoke(action);
+
+        public string GetActiveAmmo(IMyTerminalBlock weapon, int weaponId) =>
+            _getActiveAmmo?.Invoke(weapon, weaponId) ?? null;
+
+        public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) =>
+            _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
+
+        public void RegisterProjectileAddedCallback(Action<Vector3, float> action) =>
+            _registerProjectileAdded?.Invoke(action);
+
+        public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) =>
+            _unRegisterProjectileAdded?.Invoke(action);
+
         public float GetConstructEffectiveDps(IMyEntity entity) => _getConstructEffectiveDps?.Invoke(entity) ?? 0f;
 
     }
@@ -280,12 +331,13 @@ namespace WeaponCore.Api
             }
 
 
-            [ProtoContract]
+            [ProtoContract(IgnoreListHandling = true)]
             public struct AnimationDef
             {
                 [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
                 [ProtoMember(2)] internal WeaponEmissive[] Emissives;
                 [ProtoMember(3)] internal string[] HeatingEmissiveParts;
+                [ProtoMember(4)] internal Dictionary<PartAnimationSetDef.EventTriggers, EventParticle[]> EventParticles;
 
 
                 [ProtoContract(IgnoreListHandling = true)]
@@ -329,6 +381,16 @@ namespace WeaponCore.Api
                     [ProtoMember(4)] internal bool LeavePreviousOn;
                     [ProtoMember(5)] internal Vector4[] Colors;
                     [ProtoMember(6)] internal float[] IntensityRange;
+                }
+
+                [ProtoContract]
+                public struct EventParticle
+                {
+                    [ProtoMember(1)] internal string EmptyName;
+                    [ProtoMember(2)] internal ParticleDef Particle;
+                    [ProtoMember(4)] internal uint StartDelay;
+                    [ProtoMember(5)] internal uint LoopDelay;
+                    [ProtoMember(6)] internal bool ForceStop;
                 }
 
                 [ProtoContract]
@@ -386,6 +448,7 @@ namespace WeaponCore.Api
                 [ProtoMember(10)] internal HardPointAudioDef Audio;
                 [ProtoMember(11)] internal HardPointParticleDef Graphics;
                 [ProtoMember(12)] internal OtherDef Other;
+                [ProtoMember(13)] internal bool AddToleranceToTracking;
 
                 [ProtoContract]
                 public struct LoadingDef
@@ -851,7 +914,7 @@ namespace WeaponCore.Api
             {
                 [ProtoMember(1)] internal float Scale;
                 [ProtoMember(2)] internal float MaxDistance;
-                [ProtoMember(3)] internal float MaxDuration;
+                [ProtoMember(3)] internal uint MaxDuration;
                 [ProtoMember(4)] internal bool Loop;
                 [ProtoMember(5)] internal bool Restart;
                 [ProtoMember(6)] internal float HitPlayChance;
