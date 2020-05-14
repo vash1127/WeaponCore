@@ -89,7 +89,6 @@ namespace WeaponCore.Projectiles
         }
 
 
-
         private void SpawnFragments()
         {
             if (Session.FragmentsNeedingEntities.Count > 0)
@@ -107,8 +106,7 @@ namespace WeaponCore.Projectiles
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
 
-            var end = ActiveProjetiles.Count - spawned;
-            UpdateState(end);
+            UpdateState(ActiveProjetiles.Count - spawned);
         }
 
         internal void PrepFragmentEntities()
@@ -167,10 +165,8 @@ namespace WeaponCore.Projectiles
 
         private void UpdateState(int end = 0)
         {
-            var t = 0;
             for (int i = ActiveProjetiles.Count - 1; i >= end; i--)
             {
-                t++;
                 var p = ActiveProjetiles[i];
                 p.Info.Age++;
                 p.Active = false;
