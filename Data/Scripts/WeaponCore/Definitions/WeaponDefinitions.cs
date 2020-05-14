@@ -122,7 +122,6 @@ namespace WeaponCore.Support
                 [ProtoMember(5)] internal Vector4[] Colors;
                 [ProtoMember(6)] internal float[] IntensityRange;
             }
-
             [ProtoContract]
             public struct EventParticle
             {
@@ -132,7 +131,6 @@ namespace WeaponCore.Support
                 [ProtoMember(5)] internal uint LoopDelay;
                 [ProtoMember(6)] internal bool ForceStop;
             }
-
             [ProtoContract]
             internal struct RelMove
             {

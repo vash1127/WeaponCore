@@ -43,7 +43,7 @@ namespace WeaponCore
                 foreach (var emissive in wepEmissivesSet)
                     emissiveLookup.Add(emissive.EmissiveName, emissive);
             }
-
+            /*
             if (animations.EventParticles != null)
             {
                 foreach (var particleEvent in animations.EventParticles)
@@ -59,7 +59,7 @@ namespace WeaponCore
                     particleEvents[particleEvent.Key] = particles;
                 }
             }
-
+            */
             if (wepAnimationSets == null)
                 return;
 

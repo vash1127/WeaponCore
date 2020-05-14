@@ -42,12 +42,15 @@ namespace WeaponCore.Projectiles
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
 
-
+            Session.StallReporter.Start("DeferedAvStateUpdates", 17);
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
+            Session.StallReporter.End();
 
+            Session.StallReporter.Start("AddTargets", 17);
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
+            Session.StallReporter.End();
 
             Session.StallReporter.Start("UpdateState", 17);
             if (ActiveProjetiles.Count > 0) 
