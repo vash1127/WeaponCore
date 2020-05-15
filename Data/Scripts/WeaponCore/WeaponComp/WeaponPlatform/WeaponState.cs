@@ -81,6 +81,9 @@ namespace WeaponCore.Platform
             {
                 if (PosChangedTick != Comp.Session.Tick)
                     UpdatePivotPos();
+
+                if (Comp.UserControlled)
+                    IsHome = false;
             }
             catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
         }
@@ -471,6 +474,7 @@ namespace WeaponCore.Platform
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
                     OutOfAmmo = true;
+                    Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
                 }
                 State.Sync.Reloading = false;
             }

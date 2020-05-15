@@ -51,6 +51,7 @@ namespace WeaponCore.Support
             Invalid,
             Fake,
             FiredBurst,
+            OutOfAmmo,
         }
 
         internal Target(MyCubeBlock firingCube = null)

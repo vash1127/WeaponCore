@@ -42,7 +42,7 @@ namespace WeaponCore.Platform
 
         }
 
-        public void TurretHomePosition(object o = null)
+        public void TurretHomePosition(bool schedule = false)
         {
             if (Comp == null || State == null || Target == null || Comp.MyCube == null) return;
             using (Comp.MyCube.Pin())
@@ -55,14 +55,15 @@ namespace WeaponCore.Platform
                     return;
                 }
 
-                var userControlled = o != null && (bool)o;
+                ReturingHome = true;
 
                 if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
                 {
                     Azimuth = Comp.TurretBase.Azimuth;
                     Elevation = Comp.TurretBase.Elevation;
                 }
-                else if (!userControlled)
+
+                if(!schedule)
                 {
                     var azStep = System.AzStep;
                     var elStep = System.ElStep;
@@ -80,10 +81,10 @@ namespace WeaponCore.Platform
                     else if (oldEl < 0)
                         Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
-                    if (MyUtils.IsEqual((float)oldAz, (float)Azimuth))
+                    if (!MyUtils.IsEqual((float)oldAz, (float)Azimuth))
                         AzimuthTick = Comp.Session.Tick;
 
-                    if (MyUtils.IsEqual((float)oldEl, (float)Elevation))
+                    if (!MyUtils.IsEqual((float)oldEl, (float)Elevation))
                         ElevationTick = Comp.Session.Tick;
 
                     AimBarrel();
@@ -95,7 +96,7 @@ namespace WeaponCore.Platform
                 {
                     ReturingHome = true;
                     IsHome = false;
-                    Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
+                    Comp.Session.FutureEvents.Schedule(o => { TurretHomePosition(); }, null, (schedule ? 300u : 1u));
                     //Log.Line("Schedule");
                 }
                 else
