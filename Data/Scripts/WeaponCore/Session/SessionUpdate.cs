@@ -61,7 +61,6 @@ namespace WeaponCore
                         comp.TerminalRefresh();
 
                     var overRides = comp.Set.Value.Overrides;
-                    var compCurPlayer = comp.State.Value.CurrentPlayerControl;
 
                     if (HandlesInput)
                     {
@@ -75,6 +74,8 @@ namespace WeaponCore
                     }
 
                     comp.WasControlled = comp.UserControlled;
+                    
+                    var compCurPlayer = comp.State.Value.CurrentPlayerControl;
                     comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
                     var leftClick = false;
                     var rightClick = false;
@@ -93,7 +94,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-                        //if (w.IsHome && !comp.UserControlled && (w.TargetNonThreats && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetingInfo.ThreatInRange) && (TrackingAi == null || !TrackingAi.MyGrid.IsSameConstructAs(gridAi.MyGrid)))
+                        //if (!comp.UserControlled && (w.TargetNonThreats && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetingInfo.ThreatInRange) && (TrackingAi == null || !TrackingAi.MyGrid.IsSameConstructAs(gridAi.MyGrid)))
                             //continue;
                         if (!w.Set.Enable) {
 
