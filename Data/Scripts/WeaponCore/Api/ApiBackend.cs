@@ -93,7 +93,8 @@ namespace WeaponCore.Api
                 foreach (var weaponSystem in weaponStructure.WeaponSystems.Values)
                 {
                     var system = weaponSystem;
-                    collection.Add(system.WeaponName, system.WeaponId);
+                    if (!collection.ContainsKey(system.WeaponName))
+                        collection.Add(system.WeaponName, system.WeaponId);
                 }
                 return true;
             }

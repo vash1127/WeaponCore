@@ -94,8 +94,6 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-                        //if (!comp.UserControlled && (w.TargetNonThreats && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetingInfo.ThreatInRange) && (TrackingAi == null || !TrackingAi.MyGrid.IsSameConstructAs(gridAi.MyGrid)))
-                            //continue;
                         if (!w.Set.Enable) {
 
                             if (w.Target.HasTarget && !IsClient)
