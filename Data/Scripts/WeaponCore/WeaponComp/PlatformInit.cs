@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
                 State = PlatformState.Invalid;
-                Log.Line("closed, init platform invalid, I am crashing now Dave.");
+                Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) closed, init platform invalid, I am crashing now Dave.");
                 return State;
             }
             
@@ -135,7 +135,7 @@ namespace WeaponCore.Platform
                 WeaponSystem system;
                 if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system))
                 {
-                    Log.Line($"Invalid weapon system, I am crashing now Dave.");
+                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
@@ -146,7 +146,7 @@ namespace WeaponCore.Platform
                 MyEntity muzzlePartEntity;
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
-                    Log.Line($"Invalid barrelPart, I am crashing now Dave.");
+                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid barrelPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
@@ -163,7 +163,7 @@ namespace WeaponCore.Platform
                 MyEntity azimuthPart = null;
                 if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
                 {
-                    Log.Line($"Invalid azimuthPart, I am crashing now Dave.");
+                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid azimuthPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
@@ -171,7 +171,7 @@ namespace WeaponCore.Platform
                 MyEntity elevationPart = null;
                 if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
                 {
-                    Log.Line($"Invalid elevationPart, I am crashing now Dave.");
+                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid elevationPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }

@@ -303,7 +303,7 @@ namespace WeaponCore.Projectiles
             LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
             var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory));
 
-            for (int i = 0; i < Info.Ai.StaticsInRange.Count; i++)
+            for (int i = 0; i < ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
@@ -337,7 +337,7 @@ namespace WeaponCore.Projectiles
                         }
                         break;
                     }
-                    if (grid != null && grid.IsSameConstructAs(Info.Ai.MyGrid)) continue;
+                    if (grid != null && grid.IsSameConstructAs(ai.MyGrid)) continue;
                     PruneQuery = MyEntityQueryType.Both;
                     if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
                 }
