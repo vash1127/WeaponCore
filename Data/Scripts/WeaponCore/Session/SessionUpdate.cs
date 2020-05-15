@@ -78,7 +78,6 @@ namespace WeaponCore
                     var compCurPlayer = comp.State.Value.CurrentPlayerControl;
                     comp.UserControlled = compCurPlayer.ControlType != ControlType.None;
 
-                    var controlChanged = comp.WasControlled != comp.UserControlled;
                     var leftClick = false;
                     var rightClick = false;
 
@@ -180,7 +179,7 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         ///
 
-                        if (w.TurretMode && !w.ReturingHome && ((w.Target.TargetChanged && !w.Target.HasTarget) || (controlChanged && !comp.UserControlled)))
+                        if (w.TurretMode && !w.ReturingHome && ((w.Target.TargetChanged && !w.Target.HasTarget) || (comp.WasControlled != comp.UserControlled && !comp.UserControlled)))
                             w.TurretHomePosition(true);
 
                         ///
