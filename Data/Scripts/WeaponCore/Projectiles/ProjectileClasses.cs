@@ -59,18 +59,19 @@ namespace WeaponCore.Support
         internal Weapon.AmmoInfo AmmoInfo;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection, double maxTrajectory, float shotFade)
+        internal void InitVirtual(Weapon weapon, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, int muzzleId, Vector3D origin, Vector3D virDirection, double maxTrajectory, float shotFade)
         {
             IsVirtual = true;
-            System = system;
-            Ai = ai;
+            System = weapon.System;
+            Ai = weapon.Comp.Ai;
             AmmoDef = ammodef;
+            AmmoInfo = weapon.AmmoInfos[ammodef.Const.AmmoIdxPos];
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;
-            Target.Entity = target.Entity;
-            Target.Projectile = target.Projectile;
-            Target.FiringCube = target.FiringCube;
-            WeaponId = weaponId;
+            Target.Entity = weapon.Target.Entity;
+            Target.Projectile = weapon.Target.Projectile;
+            Target.FiringCube = weapon.Target.FiringCube;
+            WeaponId = weapon.WeaponId;
             MuzzleId = muzzleId;
             Direction = virDirection;
             Origin = origin;
@@ -349,10 +350,11 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void Spawn()
+        internal void Spawn(out int spawned)
         {
             Session session = null;
-            for (int i = 0; i < Sharpnel.Count; i++)
+            spawned = Sharpnel.Count;
+            for (int i = 0; i < spawned; i++)
             {
                 var frag = Sharpnel[i];
                 session = frag.Ai.Session;

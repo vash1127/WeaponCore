@@ -16,6 +16,7 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
+
         public void UpdateSegmentState(AmmoDef ammoDef)
         {
             var wasGapped = AmmoInfos[ammoDef.Const.AmmoIdxPos].SegmentGaped;

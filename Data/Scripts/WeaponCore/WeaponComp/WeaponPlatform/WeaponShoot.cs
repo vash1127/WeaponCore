@@ -244,7 +244,7 @@ namespace WeaponCore.Platform
 
                                 var info = session.Projectiles.VirtInfoPool.Get();
                                 info.AvShot = session.Av.AvShotPool.Get();
-                                info.InitVirtual(System, Comp.Ai, ammoPattern, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir, maxTrajectory, shotFade);
+                                info.InitVirtual(this, ammoPattern, primeE, triggerE, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir, maxTrajectory, shotFade);
                                 vProjectile.VrPros.Add(info);
 
                                 if (!ammoPattern.Const.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
@@ -398,7 +398,6 @@ namespace WeaponCore.Platform
             p.Info.Ai = Comp.Ai;
             p.Info.AmmoDef = ActiveAmmoDef.AmmoDef;
             p.Info.AmmoInfo = AmmoInfos[ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos];
-
             p.Info.Overrides = Comp.Set.Value.Overrides;
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
