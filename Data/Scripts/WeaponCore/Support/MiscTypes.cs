@@ -213,7 +213,7 @@ namespace WeaponCore.Support
         public readonly string ParticleName;
         public readonly string EmptyName;
         public readonly string PartName;
-        public readonly uint MaxPlayTime;
+        public readonly float MaxPlayTime;
         public readonly uint StartDelay;
         public readonly uint LoopDelay;
         public readonly float Scale;
@@ -229,7 +229,7 @@ namespace WeaponCore.Support
         public MyParticleEffect Effect;
         public MyCubeBlock BaseBlock;
 
-        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
+        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, float maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
         {
             ParticleName = particleName;
             EmptyName = emptyName;

@@ -128,7 +128,7 @@ namespace WeaponCore
                 switch (Name)
                 {
                     case "Group":
-                        if (Wheel.GroupNames.Count > 0)
+                        if (Wheel.GroupNames.Count > 0 && Wheel.ActiveGroupName != null)
                         {
                             Message = $"# {Wheel.ActiveGroupName} #\n{item.ItemMessage}";
                         }
@@ -144,8 +144,11 @@ namespace WeaponCore
                         }
                         break;
                     case "GroupSettings":
-                        if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
-                        ReportGroupSettings(groupInfo, item);
+                        if (Wheel.ActiveGroupName != null)
+                        {
+                            if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                            ReportGroupSettings(groupInfo, item);
+                        }
                         break;
                     case "Comps":
                         if (BlockGroups.Count > 0)
