@@ -178,7 +178,7 @@ namespace WeaponCore.Platform
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
                 var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
-                var wepParticleEvents = comp.Session.CreateWeaponParticleEvents(system, comp.MyCube);
+                var wepParticleEvents = comp.Session.CreateWeaponParticleEvents(system, Parts);
 
                 foreach (var triggerSet in wepAnimationSet)
                     for(int j = 0; j < triggerSet.Value.Length; j++)

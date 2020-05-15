@@ -46,25 +46,20 @@ namespace WeaponCore
 
             if (animations.EventParticles != null)
             {
-                Dictionary<EventTriggers, List<ParticleEvent>> tmpList = new Dictionary<EventTriggers, List<ParticleEvent>>();
-
-                for (int i = 0; i < animations.EventParticles.Count; i++)
+                foreach(var particleEvent in animations.EventParticles)
                 {
-                    var eventParticle = animations.EventParticles[i];
+                    particleEvents[particleEvent.Key] = new ParticleEvent[particleEvent.Value.Length];
 
-                    if (!tmpList.ContainsKey(eventParticle.Trigger))
-                        tmpList[eventParticle.Trigger] = new List<ParticleEvent>();
+                    var eventParticles = particleEvent.Value;
+                    for (int i = 0; i < particleEvent.Value.Length; i++)
+                    {
+                        var eventParticle = particleEvent.Value[i];
 
-                    tmpList[eventParticle.Trigger].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyName, eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop));
+                        particleEvents[particleEvent.Key][i] = new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyName, eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), (uint)eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop);
+                    }
                     
                 }
-
-                foreach (var eventList in tmpList)
-                    particleEvents[eventList.Key] = eventList.Value.ToArray();
-            }
-
-
-            
+            }            
 
             if (wepAnimationSets == null)
                 return;
@@ -688,7 +683,7 @@ namespace WeaponCore
             return returnAnimations;
         }
 
-        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(WeaponSystem system, MyEntity cube)
+        internal Dictionary<EventTriggers, ParticleEvent[]> CreateWeaponParticleEvents(WeaponSystem system, RecursiveSubparts parts)
         {
             var particles = new Dictionary<EventTriggers, ParticleEvent[]>();
 
@@ -703,12 +698,12 @@ namespace WeaponCore
 
                     Dummy particleDummy;
                     string partName;
-                    if (CreateParticleDummy(cube, systemParticle.EmptyName, out particleDummy, out partName)) ;
-                        particles[particleDef.Key][i] = new ParticleEvent(systemParticle, particleDummy, partName);
-
+                    if (CreateParticleDummy(parts.Entity, systemParticle.EmptyName, out particleDummy, out partName)) {
+                        Vector3 pos = GetPartLocation(systemParticle.EmptyName, particleDummy.Entity.Model);
+                        particles[particleDef.Key][i] = new ParticleEvent(systemParticle, particleDummy, partName, pos);
+                    }
                 }
             }
-
             return particles;
         }
 
@@ -1061,24 +1056,21 @@ namespace WeaponCore
             for (int i = Av.ParticlesToProcess.Count - 1; i >= 0; i--)
             {
                 var particleEvent = Av.ParticlesToProcess[i];
-
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
                 var obb = particleEvent.MyDummy.Entity.PositionComp.WorldAABB;
-
                 var playable = Camera.IsInFrustum(ref obb) && Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance;
-                
+
                 if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && playable)
                 {
                     var dummyInfo = particleEvent.MyDummy.Info;
                     var ent = particleEvent.MyDummy.Entity;
-
-                    var matrix = MatrixD.CreateWorld(dummyInfo.Position, dummyInfo.DummyMatrix.Forward, dummyInfo.DummyMatrix.Up);
-                    var rOffset = Vector3D.Rotate(particleEvent.Offset, matrix);
-                    var pos = dummyInfo.Position + rOffset;
+                    var pos = particleEvent.EmptyPos;
+                    var matrix = dummyInfo.DummyMatrix;
+                    matrix.Translation = pos;
 
                     if (particleEvent.Effect == null || particleEvent.Effect.IsStopped)
                     {
-                        if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref pos, uint.MaxValue, out particleEvent.Effect))
+                        if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref pos, ent.Render.GetRenderObjectID(), out particleEvent.Effect))
                         {
                             Log.Line($"Failed to Create Particle! Particle: {particleEvent.ParticleName}");
                             particleEvent.Playing = false;
@@ -1092,10 +1084,10 @@ namespace WeaponCore
                             particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                         }
                     }
-                    else
+                    else if (particleEvent.Effect.IsStopped)
                     {
-                        particleEvent.Effect.WorldMatrix = matrix;
-                        particleEvent.Effect.SetTranslation(ref pos);
+                        particleEvent.Effect.StopEmitting();
+                        particleEvent.Effect.Play();
                     }
                 }
                 else if (playedFull && particleEvent.DoesLoop && !particleEvent.Stop && playable)
@@ -1105,25 +1097,26 @@ namespace WeaponCore
                     if (particleEvent.LoopDelay > 0 && particleEvent.Effect != null && !particleEvent.Effect.IsStopped && particleEvent.ForceStop)
                     {
                         particleEvent.Effect.Stop();
-                        particleEvent.Effect = null;
+                        particleEvent.Effect.StopEmitting();
                     }                    
                 }
                 else if (playedFull || particleEvent.Stop)
                 {
-                    if(particleEvent.Effect != null)
+                    if (particleEvent.Effect != null)
+                    {
                         particleEvent.Effect.Stop();
+                        MyParticlesManager.RemoveParticleEffect(particleEvent.Effect);
+                    }
 
                     particleEvent.Effect = null;
                     particleEvent.Playing = false;
                     particleEvent.Stop = false;
                     Av.ParticlesToProcess.RemoveAtFast(i);
                 }
-                else if (!playable)
+                else if (!playable && particleEvent.Effect != null && !particleEvent.Effect.IsStopped)
                 {
-                    if (particleEvent.Effect != null)
-                        particleEvent.Effect.Stop();
-                    
-                    particleEvent.Effect = null;
+                    particleEvent.Effect.Stop();
+                    particleEvent.Effect.StopEmitting();
                 }
 
             }

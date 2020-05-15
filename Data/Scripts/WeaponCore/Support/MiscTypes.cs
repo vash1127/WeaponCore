@@ -209,6 +209,7 @@ namespace WeaponCore.Support
         public readonly Dummy MyDummy;
         public readonly Vector4 Color;
         public readonly Vector3 Offset;
+        public readonly Vector3D EmptyPos;
         public readonly string ParticleName;
         public readonly string EmptyName;
         public readonly string PartName;
@@ -226,6 +227,7 @@ namespace WeaponCore.Support
         public bool Triggered;
         public uint PlayTick;
         public MyParticleEffect Effect;
+        public MyCubeBlock BaseBlock;
 
         public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, uint maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
         {
@@ -244,7 +246,7 @@ namespace WeaponCore.Support
             _uid = Guid.NewGuid();
         }
 
-        public ParticleEvent(ParticleEvent copyFrom, Dummy myDummy, string partName)
+        public ParticleEvent(ParticleEvent copyFrom, Dummy myDummy, string partName, Vector3 pos)
         {
             MyDummy = myDummy;
             PartName = partName;
@@ -252,6 +254,7 @@ namespace WeaponCore.Support
             ParticleName = copyFrom.ParticleName;
             Color = copyFrom.Color;
             Offset = copyFrom.Offset;
+            EmptyPos = pos;
             Scale = copyFrom.Scale;
             Distance = copyFrom.Distance;
             MaxPlayTime = copyFrom.MaxPlayTime;

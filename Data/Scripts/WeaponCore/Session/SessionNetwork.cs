@@ -1428,18 +1428,18 @@ namespace WeaponCore
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
-                            if (comp == null || comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            if (comp == null || comp.MyCube.MarkedForClose || comp.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                             {
-                                errorPacket.Error = $"comp is null: {comp == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
+                                errorPacket.Error = $"comp is null: {comp == null} gridAi is null: {comp.Ai == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
                                 break;
                             }
 
                             var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
                             var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
                             
-                            if(targetEnt == null)
+                            if(targetEnt == null || weapon == null)
                             {
-                                errorPacket.Error = $"targetEnt: {targetEnt}";
+                                errorPacket.Error = $"targetEnt: {targetEnt == null} weapon: {weapon == null}";
                                 break;
                             }
                             var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;

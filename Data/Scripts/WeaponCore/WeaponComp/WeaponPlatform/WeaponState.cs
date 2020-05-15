@@ -122,7 +122,7 @@ namespace WeaponCore.Platform
                 var canPlay = !session.DedicatedServer && 64000000 >= distance; //8km max range, will play regardless of range if it moves PivotPos and is loaded
 
                 if (canPlay)
-                    PlayParticleEvent(state, active, distance);
+                    PlayParticleEvent(state, active, distance, muzzles);
 
                 if (!AnimationsSet.ContainsKey(state)) return;
                 if (Timings.AnimationDelayTick < Comp.Session.Tick)
@@ -147,7 +147,10 @@ namespace WeaponCore.Platform
 
                                     if (animation.Muzzle != "Any" && addToFiring) _muzzlesFiring.Add(animation.Muzzle);
 
-                                    animation.StartTick = session.Tick + animation.MotionDelay + (session.Tick - Timings.AnimationDelayTick);
+                                    animation.StartTick = session.Tick + animation.MotionDelay;
+                                    if(state == EventTriggers.StopFiring)
+                                        animation.StartTick += (Timings.AnimationDelayTick - session.Tick);
+
                                     Comp.Session.AnimationsToProcess.Add(animation);
                                     animation.Running = true;
                                     //animation.Paused = Comp.ResettingSubparts;
@@ -171,8 +174,6 @@ namespace WeaponCore.Platform
                     case EventTriggers.StopTracking:
                     case EventTriggers.Tracking:
                         {
-                            var oppositeEvnt = state == EventTriggers.Tracking ? EventTriggers.StopTracking : EventTriggers.Tracking;
-                            //if (active) LastEvent = state;
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
@@ -183,26 +184,15 @@ namespace WeaponCore.Platform
 
                                     PartAnimation animCheck;
                                     animation.Running = true;
-                                    //animation.Paused = Comp.ResettingSubparts;
                                     animation.CanPlay = canPlay;
                                     string opEvent = "";
-                                    if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out opEvent) && AnimationLookup.TryGetValue(opEvent, out animCheck) && animCheck.Running)
-                                    {
-                                        animCheck.Reverse = true;
 
-                                        if (!animation.DoesLoop)
-                                            animation.Running = false;
-                                        else
-                                        {
-                                            animation.StartTick = Comp.Session.Tick + (uint)animCheck.CurrentMove + animation.MotionDelay;
-                                            Comp.Session.AnimationsToProcess.Add(animation);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Comp.Session.AnimationsToProcess.Add(animation);
-                                        animation.StartTick = session.Tick + animation.MotionDelay;
-                                    }
+                                    
+                                    Comp.Session.AnimationsToProcess.Add(animation);
+                                    animation.StartTick = session.Tick + animation.MotionDelay;
+
+                                    if (LastEvent == EventTriggers.StopTracking || LastEvent == EventTriggers.Tracking)
+                                        animation.StartTick += (Timings.AnimationDelayTick - session.Tick);
 
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
@@ -224,8 +214,7 @@ namespace WeaponCore.Platform
                             var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
 
                             if ((state == EventTriggers.TurnOn && !Comp.State.Value.Online) || state == EventTriggers.TurnOff && Comp.State.Value.Online) return;
-
-                            //LastEvent = state;
+                            
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
@@ -233,25 +222,11 @@ namespace WeaponCore.Platform
                                 {
                                     animation.Running = true;
                                     animation.CanPlay = true;
-                                    //animation.Paused = Comp.ResettingSubparts;
-                                    
-                                    string eventName;
-                                    PartAnimation animCheck;
-                                    if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out eventName) && AnimationLookup.TryGetValue(eventName, out animCheck))
-                                    {
-                                        if (animCheck.Running)
-                                        {
-                                            animCheck.Reverse = true;
-                                            animation.Running = false;
-                                        }
-                                        else
-                                            session.ThreadedAnimations.Enqueue(animation);
-                                    }
-                                    else
-                                        session.ThreadedAnimations.Enqueue(animation);
 
-                                    animation.StartTick = session.Tick + animation.MotionDelay + (session.Tick - Timings.AnimationDelayTick);
+                                    animation.StartTick = session.Tick + animation.MotionDelay + (Timings.AnimationDelayTick - session.Tick);
                                     if (state == EventTriggers.TurnOff) animation.StartTick += Timings.OffDelay;
+
+                                    session.ThreadedAnimations.Enqueue(animation);
                                 }
                                 else
                                     animation.Reverse = false;
@@ -264,7 +239,6 @@ namespace WeaponCore.Platform
                     case EventTriggers.BurstReload:
                     case EventTriggers.Reloading:
                         {
-                            //if (active) LastEvent = state;
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
@@ -280,7 +254,6 @@ namespace WeaponCore.Platform
 
                                     animation.Running = true;
                                     animation.CanPlay = canPlay;
-                                    //animation.Paused = Comp.ResettingSubparts;
 
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
@@ -314,7 +287,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal void PlayParticleEvent(EventTriggers eventTrigger, bool active, double distance)
+        internal void PlayParticleEvent(EventTriggers eventTrigger, bool active, double distance, HashSet<string> muzzles)
         {
             if (ParticleEvents.ContainsKey(eventTrigger))
             {
@@ -472,14 +445,13 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
-        public void StartReload(bool reset = false)
+        public void StartReload()
         {
-            if (reset && State?.Sync != null) State.Sync.Reloading = false;            
+            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || ((LastEventCanDelay || LastEvent == EventTriggers.Firing) && Timings.AnimationDelayTick > Comp.Session.Tick)) return;
 
-            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || (LastEventCanDelay && Timings.AnimationDelayTick > Comp.Session.Tick)) return;
+            var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
             State.Sync.Reloading = true;
-
             FinishBurst = false;
 
             if (IsShooting)
@@ -489,8 +461,6 @@ namespace WeaponCore.Platform
 
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
                 State.ShotsFired = 0;
-
-            var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
             if (!ActiveAmmoDef.Equals(newAmmo))
                 ChangeAmmo(ref newAmmo);

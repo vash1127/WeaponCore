@@ -56,7 +56,8 @@ namespace WeaponCore.Platform
                 }
 
                 var userControlled = o != null && (bool)o;
-                if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
+
+                if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
                 {
                     Azimuth = Comp.TurretBase.Azimuth;
                     Elevation = Comp.TurretBase.Elevation;
@@ -88,11 +89,14 @@ namespace WeaponCore.Platform
                     AimBarrel();
                 }
 
+                //Log.Line($"Azimuth: {Azimuth} Elevation: {Elevation} userControlled: {userControlled}");
+
                 if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
                 {
                     ReturingHome = true;
                     IsHome = false;
                     Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
+                    //Log.Line("Schedule");
                 }
                 else
                 {
