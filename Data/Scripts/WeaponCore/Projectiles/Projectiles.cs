@@ -9,8 +9,10 @@ using VRage.Game.Entity;
 using VRage.Profiler;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
+using static WeaponCore.Support.NewProjectile;
 using static WeaponCore.Support.AvShot;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 
@@ -18,8 +20,11 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
+
+
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal readonly Session Session;
+        internal readonly MyConcurrentPool<List<NewVirtual>> VirtInfoPools = new MyConcurrentPool<List<NewVirtual>>(128, vInfo => vInfo.Clear());
         internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(128, vInfo => vInfo.Clean());
         internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>(32);
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
@@ -31,6 +36,7 @@ namespace WeaponCore.Projectiles
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
         internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>(2048);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
+        internal readonly List<NewProjectile> NewProjectiles = new List<NewProjectile>(256);
 
         internal ulong CurrentProjectileId;
 
@@ -46,6 +52,8 @@ namespace WeaponCore.Projectiles
             if (!Session.DedicatedServer) 
                 DeferedAvStateUpdates(Session);
             Session.StallReporter.End();
+
+            GenProjectiles();
 
             Session.StallReporter.Start("AddTargets", 17);
             if (AddTargets.Count > 0)
@@ -88,6 +96,94 @@ namespace WeaponCore.Projectiles
                 UpdateAv();
         }
 
+        private void GenProjectiles()
+        {
+            for (int i = 0; i < NewProjectiles.Count; i++) {
+
+                var gen = NewProjectiles[i];
+                var w = gen.Weapon;
+                var a = gen.AmmoDef;
+                var t = gen.Type;
+                var virts = gen.NewVirts;
+                var muzzle = gen.Muzzle;
+                var firingCounter = gen.FireCounter;
+                var firingPlayer = gen.FiringPlayer;
+                var patternCycle = gen.PatternCycle;
+                var targetable = gen.Targetable;
+                var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
+
+                p.Info.Id = Session.Projectiles.CurrentProjectileId++;
+                p.Info.System = w.System;
+                p.Info.Ai = w.Comp.Ai;
+                p.Info.IsFiringPlayer = firingPlayer;
+                p.Info.AmmoDef = a;
+                p.Info.AmmoInfo = w.AmmoInfos[a.Const.AmmoIdxPos];
+                p.Info.Overrides = w.Comp.Set.Value.Overrides;
+                p.Info.Target.Entity = w.Target.Entity;
+                p.Info.Target.Projectile = w.Target.Projectile;
+                p.Info.Target.IsProjectile = w.Target.Projectile != null;
+                p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
+                p.Info.Target.FiringCube = w.Comp.MyCube;
+                p.Info.WeaponId = w.WeaponId;
+                p.Info.BaseDamagePool = w.BaseDamage;
+                p.Info.EnableGuidance = w.Comp.Set.Value.Guidance;
+                p.Info.WeaponCache = w.WeaponCache;
+                p.Info.WeaponRng = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
+                p.Info.LockOnFireState = w.LockOnFireState;
+                p.Info.ShooterVel = w.Comp.Ai.GridVel;
+                p.Info.OriginUp = w.MyPivotUp;
+                p.Info.MaxTrajectory = a.Const.MaxTrajectoryGrows && firingCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * firingCounter : a.Const.MaxTrajectory;
+                
+                p.Info.MuzzleId = t != Kind.Virtual ? muzzle.MuzzleId : -1;
+                p.Info.WeaponCache.VirutalId = t != Kind.Virtual ? -1 : p.Info.WeaponCache.VirutalId;
+                p.Info.Origin = t != Kind.Virtual ? muzzle.Position : w.MyPivotPos;
+                p.Info.Direction = t != Kind.Virtual ? muzzle.DeviatedDir : w.MyPivotDir;
+
+                float shotFade;
+                if (a.Const.HasShotFade && !a.Const.VirtualBeams) {
+                    if (patternCycle > a.AmmoGraphics.Lines.Tracer.VisualFadeStart)
+                        shotFade = MathHelper.Clamp(((patternCycle - a.AmmoGraphics.Lines.Tracer.VisualFadeStart)) * a.Const.ShotFadeStep, 0, 1);
+                    else if (w.System.DelayCeaseFire && w.CeaseFireDelayTick != Session.Tick)
+                        shotFade = MathHelper.Clamp(((Session.Tick - w.CeaseFireDelayTick) - a.AmmoGraphics.Lines.Tracer.VisualFadeStart) * a.Const.ShotFadeStep, 0, 1);
+                    else shotFade = 0;
+                }
+                else shotFade = 0;
+                p.Info.ShotFade = shotFade;
+                p.PredictedTargetPos = w.Target.TargetPos;
+                p.DeadSphere.Center = w.MyPivotPos;
+                p.DeadSphere.Radius = w.Comp.Ai.MyGrid.GridSizeHalf + 0.1;
+                p.State = ProjectileState.Start;
+
+                if (t != Kind.Virtual) {
+                    p.Info.PrimeEntity = a.Const.PrimeModel ? a.Const.PrimeEntityPool.Get() : null;
+                    p.Info.TriggerEntity = a.Const.TriggerModel ? Session.TriggerEntityPool.Get() : null;
+
+                    if (targetable)
+                        Session.Projectiles.AddTargets.Add(p);
+                }
+                else {
+                    p.Info.WeaponCache.VirtualHit = false;
+                    p.Info.WeaponCache.Hits = 0;
+                    p.Info.WeaponCache.HitEntity.Entity = null;
+
+                    for (int j = 0; j < virts.Count; j++) {
+                        var v = virts[j];
+                        p.VrPros.Add(v.Info);
+                        if (!a.Const.RotateRealBeam) p.Info.WeaponCache.VirutalId = 0;
+                        else if (v.Rotate) {
+                            p.Info.Origin = v.Origin;
+                            p.Info.Direction = v.Dir;
+                            p.Info.WeaponCache.VirutalId = v.VirtualId;
+                        }
+                    }
+                    virts.Clear();
+                    VirtInfoPools.Return(virts);
+                }
+
+                Session.Projectiles.ActiveProjetiles.Add(p);
+            }
+            NewProjectiles.Clear();
+        }
 
         private void SpawnFragments()
         {
@@ -394,7 +490,7 @@ namespace WeaponCore.Projectiles
                 }
 
                 if (sphere) {
-                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) 
+                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60) 
                         p.CheckForNearVoxel(60);
 
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList, p.PruneQuery);
@@ -403,7 +499,7 @@ namespace WeaponCore.Projectiles
                     p.CheckList.Clear();
                 }
                 else if (line) {
-                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
+                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60) p.CheckForNearVoxel(60);
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref p.Beam, p.SegmentList, p.PruneQuery);
                 }
 

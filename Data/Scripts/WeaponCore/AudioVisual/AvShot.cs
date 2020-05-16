@@ -17,14 +17,13 @@ namespace WeaponCore.Support
         internal WeaponSystem System;
         internal WeaponDefinition.AmmoDef AmmoDef;
         internal Weapon.AmmoInfo AmmoInfo;
-        internal GridAi Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound;
         internal MyEntity3DSoundEmitter FireEmitter;
-        internal MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal MyEntity3DSoundEmitter TravelEmitter;
         internal MyEntity3DSoundEmitter HitEmitter;
         internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>(64);
         internal Queue<Shrinks> TracerShrinks = new Queue<Shrinks>(64);
@@ -157,7 +156,6 @@ namespace WeaponCore.Support
             System = info.System;
             AmmoDef = info.AmmoDef;
             AmmoInfo = info.AmmoInfo;
-            Ai = info.Ai;
             IsShrapnel = info.IsShrapnel;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
@@ -263,7 +261,7 @@ namespace WeaponCore.Support
                     a.TestSphere.Center = a.TracerFront;
                     if (s.Camera.IsInFrustum(ref a.TestSphere))
                         a.OnScreen = Screen.InProximity;
-                    else if (Vector3D.DistanceSquared(a.TracerFront, a.Ai.Session.CameraPos) <= 225)
+                    else if (Vector3D.DistanceSquared(a.TracerFront, s.CameraPos) <= 225)
                         a.OnScreen = Screen.InProximity;
                 }
 
@@ -273,9 +271,7 @@ namespace WeaponCore.Support
                 if (saveHit) {
                     a.HitVelocity = a.Hit.HitVelocity;
                     a.Hitting = !a.ShrinkInited;
-                    a.HitEffects(false);
-                    if (a.HitSoundActive && a.System.Session.Tick - a.LastHit > 9)
-                        a.HitSoundStart();
+                    a.HitEffects();
                     a.LastHit = a.System.Session.Tick;
                 }
                 a.LastStep = a.Hitting || MyUtils.IsZero(a.MaxTrajectory - a.ShortEstTravel, 1E-01F);
@@ -387,7 +383,7 @@ namespace WeaponCore.Support
 
             if (glowCount <= AmmoDef.AmmoGraphics.Lines.Trail.DecayTime)
             {
-                var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
+                var glow = System.Session.Av.Glows.Count > 0 ? System.Session.Av.Glows.Pop() : new AfterGlow();
                 
                 glow.TailPos = backPos;
                 GlowSteps.Enqueue(glow);
@@ -516,14 +512,14 @@ namespace WeaponCore.Support
             }
 
             var target = TracerFront + (-Direction * TotalLength);
-            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref Ai.Session.CameraPos);
-            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Ai.Session.CameraMatrix.Translation);
+            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref System.Session.CameraPos);
+            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, System.Session.CameraMatrix.Translation);
 
             if (AmmoDef.Const.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
             {
                 target = TracerFront + (-Direction * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, MaxTrajectory * 0.5)));
-                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref Ai.Session.CameraPos);
-                DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Ai.Session.CameraMatrix.Translation);
+                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref System.Session.CameraPos);
+                DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, System.Session.CameraMatrix.Translation);
             }
 
             double scale = 0.1f;
@@ -611,36 +607,55 @@ namespace WeaponCore.Support
             Offsets.Clear();
         }
 
-        internal void HitEffects(bool playSound)
+        internal void HitEffects(bool force = false)
         {
-            double distToCameraSqr;
-            Vector3D.DistanceSquared(ref Hit.HitPos, ref Ai.Session.CameraPos, out distToCameraSqr);
-
-            if (OnScreen == Screen.Tracer || distToCameraSqr < 360000)
+            if (System.Session.Tick - LastHit > 4 || force)
             {
-                if (FakeExplosion)
-                    HitParticle = ParticleState.Explosion;
-                else if (HitParticleActive && AmmoDef.Const.HitParticle && !(LastHitShield && !AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield))
-                    HitParticle = ParticleState.Custom;
-            }
+                double distToCameraSqr;
+                Vector3D.DistanceSquared(ref Hit.HitPos, ref System.Session.CameraPos, out distToCameraSqr);
 
-            var hitSound = playSound && AmmoDef.Const.HitSound && (HitSoundActive && (distToCameraSqr < AmmoDef.Const.HitSoundDistSqr || !LastHitShield || AmmoDef.AmmoAudio.HitPlayShield));
-
-            if (hitSound)
-            {
-                if (HitEmitter == null)
+                if (OnScreen == Screen.Tracer || distToCameraSqr < 360000)
                 {
-                    HitEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
-                    HitSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
+                    if (FakeExplosion)
+                        HitParticle = ParticleState.Explosion;
+                    else if (HitParticleActive && AmmoDef.Const.HitParticle && !(LastHitShield && !AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield))
+                        HitParticle = ParticleState.Custom;
                 }
 
-                if (!HitEmitter.IsPlaying)
+
+                var hitSound = AmmoDef.Const.HitSound && (HitSoundActive && (distToCameraSqr < AmmoDef.Const.HitSoundDistSqr || !LastHitShield || AmmoDef.AmmoAudio.HitPlayShield));
+                if (hitSound)
                 {
+                    HitSoundInitted = true;
+                    if (HitEmitter == null)
+                    {
+                        HitEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                        HitSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
+                    }
+                    HitEmitter.CanPlayLoopSounds = false;
+
+                    if (!AmmoDef.Const.AltHitSounds)
+                        HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
+                    else
+                    {
+                        var ent = HitEmitter.Entity;
+                        if (ent is MyCubeGrid)
+                            HitSound.Init(AmmoDef.AmmoAudio.ShieldHitSound, false);
+                        else if (ent is IMyUpgradeModule && AmmoDef.AmmoAudio.ShieldHitSound != string.Empty)
+                            HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
+                        else if (ent is MyVoxelBase && AmmoDef.AmmoAudio.VoxelHitSound != string.Empty)
+                            HitSound.Init(AmmoDef.AmmoAudio.VoxelHitSound, false);
+                        else if (ent is IMyCharacter && AmmoDef.AmmoAudio.PlayerHitSound != string.Empty)
+                            HitSound.Init(AmmoDef.AmmoAudio.PlayerHitSound, false);
+                        else if (ent is MyFloatingObject && AmmoDef.AmmoAudio.FloatingHitSound != string.Empty)
+                            HitSound.Init(AmmoDef.AmmoAudio.FloatingHitSound, false);
+                        else HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
+                    }
                     HitEmitter.Entity = Hit.Entity;
-                    Ai.Session.Av.HitSounds.Add(this);
+                    System.Session.Av.HitSounds.Add(this);
                 }
+                LastHitShield = false;
             }
-            LastHitShield = false;
         }
 
 
@@ -677,45 +692,6 @@ namespace WeaponCore.Support
                 StartSoundActived = false;
                 FireEmitter.PlaySound(FireSound, true);
             }
-        }
-
-        internal void HitSoundStart()
-        {
-            Log.Line($"test");
-            double distToCameraSqr;
-            Vector3D.DistanceSquared(ref Hit.HitPos, ref Ai.Session.CameraPos, out distToCameraSqr);
-            var hitSound = AmmoDef.Const.HitSound && (HitSoundActive && (distToCameraSqr < AmmoDef.Const.HitSoundDistSqr || !LastHitShield || AmmoDef.AmmoAudio.HitPlayShield));
-            if (hitSound)
-            {
-                HitSoundInitted = true;
-                if (HitEmitter == null)
-                {
-                    HitEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
-                    HitSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
-                }
-                HitEmitter.CanPlayLoopSounds = false;
-
-                if (!AmmoDef.Const.AltHitSounds)
-                    HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
-                else
-                {
-                    var ent = HitEmitter.Entity;
-                    if (ent is MyCubeGrid)
-                        HitSound.Init(AmmoDef.AmmoAudio.ShieldHitSound, false);
-                    else if (ent is IMyUpgradeModule && AmmoDef.AmmoAudio.ShieldHitSound != string.Empty)
-                        HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
-                    else if (ent is MyVoxelBase && AmmoDef.AmmoAudio.VoxelHitSound != string.Empty)
-                        HitSound.Init(AmmoDef.AmmoAudio.VoxelHitSound, false);
-                    else if (ent is IMyCharacter && AmmoDef.AmmoAudio.PlayerHitSound != string.Empty)
-                        HitSound.Init(AmmoDef.AmmoAudio.PlayerHitSound, false);
-                    else if (ent is MyFloatingObject && AmmoDef.AmmoAudio.FloatingHitSound != string.Empty)
-                        HitSound.Init(AmmoDef.AmmoAudio.FloatingHitSound, false);
-                    else HitSound.Init(AmmoDef.AmmoAudio.HitSound, false);
-                }
-                HitEmitter.Entity = Hit.Entity;
-                Ai.Session.Av.HitSounds.Add(this);
-            }
-            LastHitShield = false;
         }
 
         internal void AmmoSoundStart()
@@ -803,7 +779,7 @@ namespace WeaponCore.Support
                 {
                     MatrixD matrix;
                     MatrixD.CreateTranslation(ref Hit.VisualHitPos, out matrix);
-                    if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !Ai.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
+                    if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !System.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
                     {
                         if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.VisualHitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
                         {
@@ -822,19 +798,19 @@ namespace WeaponCore.Support
                         weapon.HitEffects[MuzzleId].UserScale = scale;
                         Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
 
-                        var mess = Ai.Session.Av.KeenMessPool.Get();
+                        var mess = System.Session.Av.KeenMessPool.Get();
                         mess.Effect = weapon.HitEffects[MuzzleId];
                         mess.AmmoDef = AmmoDef;
                         mess.Velocity = HitVelocity;
-                        mess.LastTick = Ai.Session.Tick;
+                        mess.LastTick = System.Session.Tick;
                         mess.Looping = mess.Effect.Loop;
-                        Ai.Session.Av.KeensBrokenParticles.Add(mess);
-                        Ai.Session.Av.RipMap.Add(mess.Effect, mess);
+                        System.Session.Av.KeensBrokenParticles.Add(mess);
+                        System.Session.Av.RipMap.Add(mess.Effect, mess);
                     }
                     else if (weapon.HitEffects[MuzzleId] != null)
                     {
-                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = Ai.Session.Tick;
-                        Ai.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
+                        System.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = System.Session.Tick;
+                        System.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
 
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                         weapon.HitEffects[MuzzleId].UserScale = scale;
@@ -861,9 +837,9 @@ namespace WeaponCore.Support
             if (EndState.DetonateFakeExp){
 
                 HitParticle = ParticleState.Dirty;
-                if (Ai.Session.Av.ExplosionReady) {
+                if (System.Session.Av.ExplosionReady) {
                     if (OnScreen != Screen.None)
-                        SUtils.CreateFakeExplosion(Ai.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
+                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
                 }
             }
 
@@ -877,14 +853,12 @@ namespace WeaponCore.Support
             Hit = new Hit();
             EndState = new AvClose();
 
-            if (AmmoSound)
-            {
+            if (AmmoSound) {
                 TravelEmitter.StopSound(true);
                 AmmoSound = false;
             }
 
-            if (HitEmitter != null)
-            {
+            if (HitEmitter != null) {
                 System.Session.Emitters.Push(HitEmitter);
                 HitEmitter.CanPlayLoopSounds = true;
             }
@@ -973,7 +947,6 @@ namespace WeaponCore.Support
             FiringWeapon = null;
             PrimeEntity = null;
             TriggerEntity = null;
-            Ai = null;
             AmmoDef = null;
             AmmoInfo = null;
             System = null;

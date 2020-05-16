@@ -293,6 +293,36 @@ namespace WeaponCore.Support
         }
     }
 
+    internal struct NewVirtual
+    {
+        internal ProInfo Info;
+        internal bool Rotate;
+        internal Vector3D Origin;
+        internal Vector3D Dir;
+        internal int VirtualId;
+    }
+
+    internal struct NewProjectile
+    {
+        internal enum Kind
+        {
+            Normal,
+            Virtual,
+            Frag,
+            Client
+        }
+
+        internal Weapon Weapon;
+        internal Weapon.Muzzle Muzzle;
+        internal AmmoDef AmmoDef;
+        internal List<NewVirtual> NewVirts;
+        internal int FireCounter;
+        internal bool FiringPlayer;
+        internal bool Targetable;
+        internal long PatternCycle;
+        internal Kind Type;
+    }
+
     internal class Fragments
     {
         internal List<Fragment> Sharpnel = new List<Fragment>();
@@ -340,11 +370,11 @@ namespace WeaponCore.Support
                 if (frag.AmmoDef.Const.PrimeModel && frag.AmmoDef.Const.PrimeEntityPool.Count > 0)
                     frag.PrimeEntity = frag.AmmoDef.Const.PrimeEntityPool.Get();
 
-                if (frag.AmmoDef.Const.TriggerModel && p.Info.Ai.Session.TriggerEntityPool.Count > 0)
-                    frag.TriggerEntity = p.Info.Ai.Session.TriggerEntityPool.Get();
+                if (frag.AmmoDef.Const.TriggerModel && p.Info.System.Session.TriggerEntityPool.Count > 0)
+                    frag.TriggerEntity = p.Info.System.Session.TriggerEntityPool.Get();
 
                 if (frag.AmmoDef.Const.PrimeModel && frag.PrimeEntity == null || frag.AmmoDef.Const.TriggerModel && frag.TriggerEntity == null) 
-                    p.Info.Ai.Session.FragmentsNeedingEntities.Add(frag);
+                    p.Info.System.Session.FragmentsNeedingEntities.Add(frag);
 
                 Sharpnel.Add(frag);
             }
@@ -357,11 +387,11 @@ namespace WeaponCore.Support
             for (int i = 0; i < spawned; i++)
             {
                 var frag = Sharpnel[i];
-                session = frag.Ai.Session;
-                var p = frag.Ai.Session.Projectiles.ProjectilePool.Count > 0 ? frag.Ai.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
+                session = frag.System.Session;
+                var p = frag.System.Session.Projectiles.ProjectilePool.Count > 0 ? frag.System.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
-                p.Info.Id = frag.Ai.Session.Projectiles.CurrentProjectileId++;
+                p.Info.Id = frag.System.Session.Projectiles.CurrentProjectileId++;
                 p.Info.AmmoDef = frag.AmmoDef;
                 p.Info.PrimeEntity = frag.PrimeEntity;
                 p.Info.TriggerEntity = frag.TriggerEntity;
@@ -388,12 +418,12 @@ namespace WeaponCore.Support
                 p.Info.AmmoInfo = frag.AmmoInfo;
                 p.State = Projectiles.Projectile.ProjectileState.Start;
 
-                frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
+                frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
 
                 if (p.Info.AmmoDef.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
-                    frag.Ai.Session.Projectiles.AddTargets.Add(p);
+                    frag.System.Session.Projectiles.AddTargets.Add(p);
 
-                frag.Ai.Session.Projectiles.FragmentPool.Return(frag);
+                frag.System.Session.Projectiles.FragmentPool.Return(frag);
             }
 
             session?.Projectiles.ShrapnelPool.Return(this);

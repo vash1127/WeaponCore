@@ -24,7 +24,6 @@ namespace WeaponCore.Projectiles
             var shieldByPass = p.Info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
             var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
-            var ai = p.Info.Ai;
             var found = false;
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
             p.EntitiesNear = false;
@@ -59,7 +58,7 @@ namespace WeaponCore.Projectiles
                 if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
 
-                    var shieldInfo = p.Info.Ai.Session.SApi.MatchEntToShieldFastExt(ent, true);
+                    var shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
 
                         if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
@@ -89,7 +88,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if ((ent == ai.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.Physics.IsPhantom && !ent.IsPreview && (grid != null || voxel != null || destroyable != null)) {
+                if ((ent == p.Info.Ai.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.Physics.IsPhantom && !ent.IsPreview && (grid != null || voxel != null || destroyable != null)) {
                     
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
                     var extBeam = new LineD(extFrom, beam.To);
@@ -101,7 +100,7 @@ namespace WeaponCore.Projectiles
                     if (voxel != null) {
 
                         if (voxel.RootVoxel != voxel) continue;
-                        if (voxel == ai.MyPlanet) {
+                        if (voxel == p.Info.Ai.MyPlanet) {
 
                             if (p.CachedPlanetHit) {
                                 IHitInfo cachedPlanetResult;
@@ -112,8 +111,8 @@ namespace WeaponCore.Projectiles
                             }
 
                             if (p.LinePlanetCheck) {
-                                var surfacePos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
-                                var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
+                                var surfacePos = p.Info.Ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
+                                var planetCenter = p.Info.Ai.MyPlanet.PositionComp.WorldAABB.Center;
                                 double surfaceToCenter;
                                 Vector3D.DistanceSquared(ref surfacePos, ref planetCenter, out surfaceToCenter);
                                 double endPointToCenter;
@@ -185,7 +184,7 @@ namespace WeaponCore.Projectiles
                                 if (hitEntity.Vector3ICache.Count > 0) {
                                     
                                     IHitInfo hitInfo;
-                                    p.Info.Ai.Session.Physics.CastRay(forwardPos, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
+                                    p.Info.System.Session.Physics.CastRay(forwardPos, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
                                     var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
                                     if (hitGrid == null || !hitGrid.IsSameConstructAs(p.Info.Target.FiringCube.CubeGrid))
                                         continue;

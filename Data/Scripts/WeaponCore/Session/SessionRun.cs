@@ -173,7 +173,7 @@ namespace WeaponCore
                 if(AnimationsToProcess.Count > 0 || ThreadedAnimations.Count > 0) ProcessAnimations();
 
                     if (GridTask.IsComplete)
-                    CheckDirtyGrids();
+                        CheckDirtyGrids();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

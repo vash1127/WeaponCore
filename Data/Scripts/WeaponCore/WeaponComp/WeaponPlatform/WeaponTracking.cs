@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Engine.Physics;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Components;
@@ -583,6 +584,231 @@ namespace WeaponCore.Platform
             ** Applying correction
             */
             return tgtPosSim;
+        }
+
+        private bool RayCheckTest()
+        {
+            var tick = Comp.Session.Tick;
+            var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
+            if (System.Values.HardPoint.Other.MuzzleCheck)
+            {
+                LastMuzzleCheck = tick;
+                if (MuzzleHitSelf())
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.TrackReticle);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.TrackReticle);
+                    return false;
+                }
+                if (tick - Comp.LastRayCastTick <= 29) return true;
+            }
+            Comp.LastRayCastTick = tick;
+
+            if (Target.IsFakeTarget)
+            {
+                Casting = true;
+                Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, MyPhysics.CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
+                return true;
+            }
+            if (Comp.TrackReticle) return true;
+
+
+            if (Target.IsProjectile)
+            {
+                if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return false;
+                }
+            }
+            if (!Target.IsProjectile)
+            {
+                var character = Target.Entity as IMyCharacter;
+                if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && (character.IsDead || character.Integrity <= 0 || Comp.Session.AdminMap.ContainsKey(character)))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return false;
+                }
+
+                var cube = Target.Entity as MyCubeBlock;
+                if (cube != null && !cube.IsWorking)
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return false;
+                }
+                var topMostEnt = Target.Entity.GetTopMostParent();
+                if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return false;
+                }
+            }
+
+            var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
+            var distToTargetSqr = Vector3D.DistanceSquared(targetPos, MyPivotPos);
+            if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
+            {
+                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                return false;
+            }
+
+            Casting = true;
+
+            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, MyPhysics.CollisionLayers.DefaultCollisionLayer, NormalShootRayCallBack);
+            return true;
+        }
+
+
+        public void NormalShootRayCallBack(IHitInfo hitInfo)
+        {
+            Casting = false;
+            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+            var ignoreTargets = Target.IsProjectile || Target.Entity is IMyCharacter;
+
+            double rayDist = 0;
+            if (Comp.Ai.ShieldNear)
+            {
+                var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
+                var targetDir = targetPos - MyPivotPos;
+                if (HitFriendlyShield(targetPos, targetDir))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return;
+                }
+            }
+
+            var hitTopEnt = (MyEntity)hitInfo?.HitEntity?.GetTopMostParent();
+            if (hitTopEnt == null)
+            {
+                if (ignoreTargets)
+                {
+                    return;
+                }
+
+                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                return;
+            }
+
+            var targetTopEnt = Target.Entity?.GetTopMostParent();
+            if (targetTopEnt == null)
+            {
+                return;
+            }
+
+            var unexpectedHit = ignoreTargets || targetTopEnt != hitTopEnt;
+            var topAsGrid = hitTopEnt as MyCubeGrid;
+
+            if (unexpectedHit)
+            {
+                if (hitTopEnt is MyVoxelBase)
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return;
+                }
+
+                if (topAsGrid == null)
+                    return;
+
+                if (topAsGrid.IsSameConstructAs(Comp.Ai.MyGrid))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return;
+                }
+
+                if (!GridAi.GridEnemy(Comp.Ai.MyOwner, topAsGrid))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return;
+                }
+                return;
+            }
+            if (System.ClosestFirst && topAsGrid != null)
+            {
+                var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
+                var targetPos = Target.Entity.PositionComp.WorldMatrixRef.Translation;
+                var weaponPos = MyPivotPos;
+
+                if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                var newHitShortDist = rayDist * (1 - hitInfo.Fraction);
+                var distanceToTarget = rayDist * hitInfo.Fraction;
+
+                var shortDistExceed = newHitShortDist - Target.HitShortDist > maxChange;
+                var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
+                if (shortDistExceed || escapeDistExceed)
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                }
+            }
+        }
+
+        public void ManualShootRayCallBack(IHitInfo hitInfo)
+        {
+            Casting = false;
+            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+
+            var grid = hitInfo.HitEntity as MyCubeGrid;
+            if (grid != null)
+            {
+                if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, false);
+                }
+            }
+        }
+
+        public bool HitFriendlyShield(Vector3D targetPos, Vector3D dir)
+        {
+            var testRay = new RayD(MyPivotPos, dir);
+            Comp.Ai.TestShields.Clear();
+            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, MyPivotPos);
+
+            for (int i = 0; i < Comp.Ai.NearByFriendlyShields.Count; i++)
+            {
+                var shield = Comp.Ai.NearByFriendlyShields[i];
+                var dist = testRay.Intersects(shield.PositionComp.WorldVolume);
+                if (dist != null && dist.Value * dist.Value <= checkDistanceSqr)
+                    Comp.Ai.TestShields.Add(shield);
+            }
+
+            if (Comp.Ai.TestShields.Count == 0)
+                return false;
+
+            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.MyOwner, checkDistanceSqr);
+
+            return result.Item1 && result.Item2 > 0;
+        }
+
+        public bool MuzzleHitSelf()
+        {
+            for (int i = 0; i < Muzzles.Length; i++)
+            {
+                var m = Muzzles[i];
+                var grid = Comp.Ai.MyGrid;
+                var dummy = Dummies[i];
+                var newInfo = dummy.Info;
+                m.Direction = newInfo.Direction;
+                m.Position = newInfo.Position;
+                m.LastUpdateTick = Comp.Session.Tick;
+
+                var start = m.Position;
+                var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
+
+                Vector3D? hit;
+                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube, Comp.Ai))
+                    return true;
+            }
+            return false;
         }
 
         internal void InitTracking()

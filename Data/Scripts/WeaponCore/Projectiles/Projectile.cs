@@ -337,7 +337,7 @@ namespace WeaponCore.Projectiles
                         }
                         break;
                     }
-                    if (grid != null && grid.IsSameConstructAs(ai.MyGrid)) continue;
+                    if (grid != null && grid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid)) continue;
                     PruneQuery = MyEntityQueryType.Both;
                     if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
                 }
@@ -387,7 +387,7 @@ namespace WeaponCore.Projectiles
                 Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, Hit.VisualHitPos);
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
-                if (add) Info.Ai.Session.Hits.Add(this);
+                if (add) Info.System.Session.Hits.Add(this);
                 CreateFakeBeams(!add);
             }
             return true;
@@ -441,7 +441,7 @@ namespace WeaponCore.Projectiles
                 vs.Hit = Hit;
                 if (Info.AmmoDef.Const.ConvergeBeams) {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.Origin, Position);
-                    Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = beam.Direction, VisualDir = beam.Direction });
+                    Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = beam.Direction, VisualDir = beam.Direction });
                 }
                 else {
                     Vector3D beamEnd;
@@ -921,10 +921,10 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
             Watchers.Clear();
 
-            foreach (var seeker in Seekers) seeker.Info.Target.Reset(Info.Ai.Session.Tick, Target.States.ProjectileClosed);
+            foreach (var seeker in Seekers) seeker.Info.Target.Reset(Info.System.Session.Tick, Target.States.ProjectileClosed);
             Seekers.Clear();
 
-            if (EnableAv && Info.AvShot.ForceHitParticle && Info.System.Session.Tick - Info.AvShot.LastHit > 9)
+            if (EnableAv && Info.AvShot.ForceHitParticle)
                 Info.AvShot.HitEffects(true);
 
             State = ProjectileState.Dead;
