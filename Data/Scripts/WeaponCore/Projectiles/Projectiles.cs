@@ -108,6 +108,7 @@ namespace WeaponCore.Projectiles
                 var muzzle = gen.Muzzle;
                 var firingCounter = gen.FireCounter;
                 var firingPlayer = gen.FiringPlayer;
+                var clientSent = gen.ClientSent;
                 var patternCycle = gen.PatternCycle;
                 var targetable = gen.Targetable;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
@@ -116,10 +117,11 @@ namespace WeaponCore.Projectiles
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
+                p.Info.ClientSent = clientSent;
                 p.Info.AmmoDef = a;
                 p.Info.AmmoInfo = w.AmmoInfos[a.Const.AmmoIdxPos];
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
-                p.Info.Target.Entity = w.Target.Entity;
+                p.Info.Target.Entity = !gen.Spawn ? w.Target.Entity: gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
@@ -131,13 +133,15 @@ namespace WeaponCore.Projectiles
                 p.Info.WeaponRng = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
                 p.Info.LockOnFireState = w.LockOnFireState;
                 p.Info.ShooterVel = w.Comp.Ai.GridVel;
-                p.Info.OriginUp = w.MyPivotUp;
-                p.Info.MaxTrajectory = a.Const.MaxTrajectoryGrows && firingCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * firingCounter : a.Const.MaxTrajectory;
+                p.Info.OriginUp = !gen.Spawn ? w.MyPivotUp : gen.OriginUp;
+                p.Info.MaxTrajectory = !gen.Spawn ? a.Const.MaxTrajectoryGrows && firingCounter < a.Trajectory.MaxTrajectoryTime ? a.Const.TrajectoryStep * firingCounter : a.Const.MaxTrajectory: gen.MaxTrajectory;
                 
                 p.Info.MuzzleId = t != Kind.Virtual ? muzzle.MuzzleId : -1;
                 p.Info.WeaponCache.VirutalId = t != Kind.Virtual ? -1 : p.Info.WeaponCache.VirutalId;
-                p.Info.Origin = t != Kind.Virtual ? muzzle.Position : w.MyPivotPos;
-                p.Info.Direction = t != Kind.Virtual ? muzzle.DeviatedDir : w.MyPivotDir;
+                p.Info.Origin = !gen.Spawn ? t != Kind.Virtual ? muzzle.Position : w.MyPivotPos : gen.Origin;
+                p.Info.Direction = !gen.Spawn ? t != Kind.Virtual ? muzzle.DeviatedDir : w.MyPivotDir : gen.Direction;
+
+                if (gen.Spawn) p.Velocity = gen.Velocity;
 
                 float shotFade;
                 if (a.Const.HasShotFade && !a.Const.VirtualBeams) {
