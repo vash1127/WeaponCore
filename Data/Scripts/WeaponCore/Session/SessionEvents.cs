@@ -165,6 +165,9 @@ namespace WeaponCore
             {
                 InMenu = false;
                 HudUi.NeedsUpdate = true;
+                GridAi ai;
+                if(ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))
+                    ai.ScanBlockGroups = true;
             }
             catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}"); }
         }
