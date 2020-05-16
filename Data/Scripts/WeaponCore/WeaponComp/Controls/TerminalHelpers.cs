@@ -10,6 +10,8 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+
 namespace WeaponCore.Control
 {
     public static class TerminalHelpers
@@ -278,12 +280,19 @@ namespace WeaponCore.Control
                 else
                 {
                     if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        MyAPIGateway.Utilities.InvokeOnGameThread(() => {
+                        MyAPIGateway.Utilities.InvokeOnGameThread(() =>
+                        {
                             if (w.CanReload)
                                 w.StartReload();
                             else
                                 Session.ComputeStorage(w);
                         });
+                    uint delay;
+                    if (w.System.WeaponAnimationLengths.TryGetValue(TurnOn, out delay))
+                        w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
+
+                    if (w.LastEvent == TurnOff && w.Timings.AnimationDelayTick > comp.Session.Tick)
+                        w.Timings.WeaponReadyTick += w.Timings.AnimationDelayTick - comp.Session.Tick;
                 }
 
                 if (w.Timings.AnimationDelayTick < comp.Session.Tick || w.LastEvent == TurnOn || w.LastEvent == TurnOff)
