@@ -924,8 +924,8 @@ namespace WeaponCore.Projectiles
             foreach (var seeker in Seekers) seeker.Info.Target.Reset(Info.Ai.Session.Tick, Target.States.ProjectileClosed);
             Seekers.Clear();
 
-            if (EnableAv && Info.AvShot.ForceHitParticle)
-                Info.AvShot.HitEffects();
+            if (EnableAv && Info.AvShot.ForceHitParticle && Info.System.Session.Tick - Info.AvShot.LastHit > 9)
+                Info.AvShot.HitEffects(true);
 
             State = ProjectileState.Dead;
             if (EnableAv)

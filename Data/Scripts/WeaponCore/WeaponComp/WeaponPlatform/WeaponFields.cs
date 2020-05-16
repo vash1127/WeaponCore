@@ -287,29 +287,33 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
-                FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
-                FiringSound = new MySoundPair();
+                FiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                FiringEmitter.Entity = Comp.MyCube;
+                FiringSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
                 FiringSound.Init(System.Values.HardPoint.Audio.FiringSound);
             }
 
             if (AvCapable && system.PreFireSound)
             {
-                PreFiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
-                PreFiringSound = new MySoundPair();
+                PreFiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                PreFiringEmitter.Entity = Comp.MyCube;
+                PreFiringSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
                 PreFiringSound.Init(System.Values.HardPoint.Audio.PreFiringSound);
             }
 
             if (AvCapable && system.WeaponReloadSound)
             {
-                ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
-                ReloadSound = new MySoundPair();
+                ReloadEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                ReloadEmitter.Entity = Comp.MyCube;
+                ReloadSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
                 ReloadSound.Init(System.Values.HardPoint.Audio.ReloadSound);
             }
 
             if (AvCapable && system.BarrelRotationSound)
             {
-                RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
-                RotateSound = new MySoundPair();
+                RotateEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                RotateEmitter.Entity = Comp.MyCube;
+                RotateSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
                 RotateSound.Init(System.Values.HardPoint.Audio.BarrelRotationSound);
             }
 

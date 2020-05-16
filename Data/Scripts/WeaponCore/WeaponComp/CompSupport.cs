@@ -120,6 +120,49 @@ namespace WeaponCore.Support
             }
         }
 
+        public void CleanCompSounds()
+        {
+            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready)
+            {
+                foreach (var w in Platform.Weapons)
+                {
+                    if (w.AvCapable && w.System.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
+                    {
+                        w.FiringEmitter.StopSound(true, true);
+                        w.FiringEmitter.Entity = null;
+                        w.System.Session.Emitters.Push(w.FiringEmitter);
+                        w.System.Session.SoundPairs.Push(w.FiringSound);
+                    }
+
+                    if (w.AvCapable && w.System.PreFireSound)
+                    {
+                        w.PreFiringEmitter.StopSound(true, true);
+                        w.PreFiringEmitter.Entity = null;
+                        w.System.Session.Emitters.Push(w.PreFiringEmitter);
+                        w.System.Session.SoundPairs.Push(w.PreFiringSound);
+                    }
+
+
+                    if (w.AvCapable && w.System.WeaponReloadSound)
+                    {
+                        w.ReloadEmitter.StopSound(true, true);
+                        w.ReloadEmitter.Entity = null;
+                        w.System.Session.Emitters.Push(w.ReloadEmitter);
+                        w.System.Session.SoundPairs.Push(w.ReloadSound);
+                    }
+
+                    if (w.AvCapable && w.System.BarrelRotationSound)
+                    {
+                        w.RotateEmitter.StopSound(true, true);
+                        w.RotateEmitter.Entity = null;
+                        w.System.Session.Emitters.Push(w.RotateEmitter);
+                        w.System.Session.SoundPairs.Push(w.RotateSound);
+                    }
+
+                }
+            }
+        }
+
         public int GetSyncHash()
         {
             var hash = State.Value.ClickShoot.GetHashCode() + State.Value.ClickShoot.GetHashCode();

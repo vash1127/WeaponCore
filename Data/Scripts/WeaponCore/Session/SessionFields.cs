@@ -65,6 +65,9 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly MyConcurrentPool<Weapon.AmmoInfo> AmmoInfoPool = new MyConcurrentPool<Weapon.AmmoInfo>(128, info => info.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
+        
+        internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
+        internal readonly Stack<MySoundPair> SoundPairs = new Stack<MySoundPair>(256);
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<long, IMyCharacter> Admins = new ConcurrentDictionary<long, IMyCharacter>();
@@ -315,9 +318,6 @@ namespace WeaponCore
             foreach (var suit in (PacketType[]) arrayOfPacketTypes)
             {
                 PacketPools.Add(suit, new MyConcurrentPool<Packet>(128, packet => packet.CleanUp()));
-                PacketQueues = new List<PacketObj>[arrayOfPacketTypes.Length];
-                for (int i = 0; i < PacketQueues.Length; i++)
-                    PacketQueues[i] = new List<PacketObj>();
             }
         }
     }

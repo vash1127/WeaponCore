@@ -137,6 +137,7 @@ namespace WeaponCore
                 {
                     comp.StopAllSounds();
                     comp.CleanCompParticles();
+                    comp.CleanCompSounds();
                     comp.Platform.RemoveParts(comp);
                 }
 
