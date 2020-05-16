@@ -65,7 +65,7 @@ namespace WeaponCore.Support
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(EventTriggers.TurnOff, true);
                             else if (w.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                                Session.FutureEvents.Schedule(w.TurnOnEmissive, null, 100);
+                                Session.FutureEvents.Schedule(w.TurnOnAV, null, 100);
 
                             if (w.State.Sync.CurrentAmmo == 0)
                                 w.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);                            

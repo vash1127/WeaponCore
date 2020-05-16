@@ -241,12 +241,24 @@ namespace WeaponCore.Platform
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
 
-        internal void TurnOnEmissive(object o)
+        internal void TurnOnAV(object o)
         {
             if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
                 PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j], System);
+
+            PlayParticleEvent(EventTriggers.TurnOn, true, Vector3D.DistanceSquared(Comp.Session.CameraPos, MyPivotPos), null);
+        }
+
+        internal void TurnOffAV(object o)
+        {
+            if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            for (int j = 0; j < AnimationsSet[EventTriggers.TurnOff].Length; j++)
+                PlayEmissives(AnimationsSet[EventTriggers.TurnOff][j], System);
+
+            PlayParticleEvent(EventTriggers.TurnOff, true, Vector3D.DistanceSquared(Comp.Session.CameraPos, MyPivotPos), null);
         }
 
         internal void SetWeaponDps(object o = null)

@@ -9,6 +9,7 @@ using VRage.Game.ModAPI;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -393,6 +394,13 @@ namespace WeaponCore.Platform
                         //cant check for emissives so may be null ref
                     }
 
+                    if (weapon.Comp.FunctionalBlock.Enabled)
+                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
+                        else
+                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAV, null, 4);
+
                     c++;
                 }
             }
@@ -526,6 +534,13 @@ namespace WeaponCore.Platform
                     {
                         //cant check for emissives so may be null ref
                     }
+
+                    if (weapon.Comp.State.Value.Online)
+                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
+                        else
+                        if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAV, null, 4);
                 }
                 c++;
             }
