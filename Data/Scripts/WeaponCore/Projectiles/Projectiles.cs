@@ -53,7 +53,9 @@ namespace WeaponCore.Projectiles
                 DeferedAvStateUpdates(Session);
             Session.StallReporter.End();
 
-            GenProjectiles();
+            Session.StallReporter.Start("GenProjectiles", 17);
+            if (NewProjectiles.Count > 0) GenProjectiles();
+            Session.StallReporter.End();
 
             Session.StallReporter.Start("AddTargets", 17);
             if (AddTargets.Count > 0)
