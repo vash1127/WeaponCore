@@ -46,19 +46,37 @@ namespace WeaponCore
 
             if (animations.EventParticles != null)
             {
-                foreach(var particleEvent in animations.EventParticles)
+                var tmpEvents = new Dictionary<EventTriggers, List<ParticleEvent>>();
+
+                foreach (var particleEvent in animations.EventParticles)
                 {
-                    particleEvents[particleEvent.Key] = new ParticleEvent[particleEvent.Value.Length];
+                    tmpEvents[particleEvent.Key] = new List<ParticleEvent>();
 
                     var eventParticles = particleEvent.Value;
+
                     for (int i = 0; i < particleEvent.Value.Length; i++)
                     {
                         var eventParticle = particleEvent.Value[i];
 
-                        particleEvents[particleEvent.Key][i] = new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyName, eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), (uint)eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop);
-                    }
-                    
+                        if (eventParticle.EmptyNames.Length == eventParticle.MuzzleNames.Length)
+                        {
+                            for (int j = 0; j < eventParticle.EmptyNames.Length; j++)
+                            {
+                                tmpEvents[particleEvent.Key].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyNames[j], eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), (uint)eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop, eventParticle.MuzzleNames[j]));
+                            }
+                        }
+                        else
+                        {
+                            for (int j = 0; j < eventParticle.EmptyNames.Length; j++)
+                            {
+                                tmpEvents[particleEvent.Key].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyNames[j], eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), (uint)eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop, eventParticle.MuzzleNames));
+                            }
+                        }
+                    }                    
                 }
+
+                foreach (var particleEvent in tmpEvents)
+                    particleEvents[particleEvent.Key] = particleEvent.Value.ToArray();
             }            
 
             if (wepAnimationSets == null)
@@ -698,8 +716,8 @@ namespace WeaponCore
 
                     Dummy particleDummy;
                     string partName;
-                    if (CreateParticleDummy(parts.Entity, systemParticle.EmptyName, out particleDummy, out partName)) {
-                        Vector3 pos = GetPartLocation(systemParticle.EmptyName, particleDummy.Entity.Model);
+                    if (CreateParticleDummy(parts.Entity, systemParticle.EmptyNames, out particleDummy, out partName)) {
+                        Vector3 pos = GetPartLocation(systemParticle.EmptyNames, particleDummy.Entity.Model);
                         particles[particleDef.Key][i] = new ParticleEvent(systemParticle, particleDummy, partName, pos);
                     }
                 }
