@@ -25,6 +25,8 @@ namespace WeaponCore.Support
         internal GroupOverrides Overrides;
         internal WeaponFrameCache WeaponCache;
         internal AmmoDef AmmoDef;
+        internal MyPlanet MyPlanet;
+        internal MyEntity MyShield;
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
@@ -37,6 +39,7 @@ namespace WeaponCore.Support
         internal int ObjectsHit;
         internal int Age;
         internal int FireCounter;
+        internal int AiVersion;
         internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
@@ -56,6 +59,8 @@ namespace WeaponCore.Support
         internal bool IsFiringPlayer;
         internal bool ClientSent;
         internal bool IsVirtual;
+        internal bool InPlanetGravity;
+
         internal Weapon.AmmoInfo AmmoInfo;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
@@ -64,6 +69,9 @@ namespace WeaponCore.Support
             IsVirtual = true;
             System = weapon.System;
             Ai = weapon.Comp.Ai;
+            MyPlanet = weapon.Comp.Ai.MyPlanet;
+            MyShield = weapon.Comp.Ai.MyShield;
+            InPlanetGravity = weapon.Comp.Ai.InPlanetGravity;
             AmmoDef = ammodef;
             AmmoInfo = weapon.AmmoInfos[ammodef.Const.AmmoIdxPos];
             PrimeEntity = primeEntity;
@@ -92,13 +100,15 @@ namespace WeaponCore.Support
 
             if (TriggerEntity != null)
             {
-                Ai.Session.TriggerEntityPool.Return(TriggerEntity);
+                System.Session.TriggerEntityPool.Return(TriggerEntity);
                 TriggerEntity = null;
             }
 
             AvShot = null;
             System = null;
             Ai = null;
+            MyPlanet = null;
+            MyShield = null;
             AmmoDef = null;
             AmmoInfo = null;
             WeaponCache = null;
@@ -109,6 +119,7 @@ namespace WeaponCore.Support
             LockOnFireState = false;
             IsFiringPlayer = false;
             ClientSent = false;
+            InPlanetGravity = false;
             TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
@@ -118,6 +129,7 @@ namespace WeaponCore.Support
             ShotFade = 0;
             TracerLength = 0;
             FireCounter = 0;
+            AiVersion = 0;
             EnableGuidance = true;
             Direction = Vector3D.Zero;
             VisualDir = Vector3D.Zero;
@@ -321,9 +333,6 @@ namespace WeaponCore.Support
         internal Vector3D Direction;
         internal Vector3D Velocity;
         internal MyEntity TargetEnt;
-        internal int FireCounter;
-        internal bool FiringPlayer;
-        internal bool Targetable;
         internal long PatternCycle;
         internal float MaxTrajectory;
         internal Kind Type;
@@ -422,12 +431,13 @@ namespace WeaponCore.Support
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
                 p.Info.AmmoInfo = frag.AmmoInfo;
-                p.State = Projectiles.Projectile.ProjectileState.Start;
 
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
+                p.Start();
 
                 if (p.Info.AmmoDef.Health > 0 && !p.Info.AmmoDef.Const.IsBeamWeapon)
                     frag.System.Session.Projectiles.AddTargets.Add(p);
+
 
                 frag.System.Session.Projectiles.FragmentPool.Return(frag);
             }

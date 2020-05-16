@@ -102,6 +102,9 @@ namespace WeaponCore
                 if (Tick120 && CompsDelayed.Count > 0)
                     DelayedComps();
 
+                if (Tick20 && !DelayedGridAiClean.IsEmpty)
+                    DelayedGridAiCleanup();
+
                 if (CompReAdds.Count > 0)
                     ChangeReAdds();
 

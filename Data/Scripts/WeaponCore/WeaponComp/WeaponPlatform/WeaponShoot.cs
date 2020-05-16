@@ -102,8 +102,6 @@ namespace WeaponCore.Platform
                 #region Projectile Creation
                 var rnd = Comp.WeaponValues.WeaponRandom[WeaponId];
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
-                var firingPlayer = Comp.State.Value.CurrentPlayerControl.PlayerId == Comp.Session.PlayerId;
-                var targetable = ActiveAmmoDef.AmmoDef.Health > 0 && !ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
 
                 FireCounter++;
                 List<NewVirtual> vProList = null;
@@ -187,7 +185,7 @@ namespace WeaponCore.Platform
                             if (ammoPattern.Const.VirtualBeams && j == 0) {
                                 if (i == 0) {
                                     vProList = System.Session.Projectiles.VirtInfoPools.Get();
-                                    System.Session.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, FireCounter = FireCounter, FiringPlayer = firingPlayer, Muzzle = muzzle, PatternCycle = patternCycle, Targetable = targetable, Weapon = this, Type = NewProjectile.Kind.Virtual });
+                                    System.Session.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });
                                 }
 
                                 MyEntity primeE = null;
@@ -217,7 +215,7 @@ namespace WeaponCore.Platform
                                 vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Origin = muzzle.Position, Dir = muzzle.DeviatedDir, VirtualId = _nextVirtual });
                             }
                             else
-                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, FireCounter = FireCounter, FiringPlayer = firingPlayer, Muzzle = muzzle, PatternCycle = patternCycle, Targetable = targetable, Weapon = this, Type = NewProjectile.Kind.Normal});
+                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
                         }
                     }
 

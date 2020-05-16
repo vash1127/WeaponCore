@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -10,7 +9,6 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
-using static WeaponCore.Support.AvShot;
 
 namespace WeaponCore.Projectiles
 {
@@ -97,6 +95,7 @@ namespace WeaponCore.Projectiles
         internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
         internal readonly List<IHitInfo> RayHits = new List<IHitInfo>();
 
+        #region Start
         internal void Start()
         {
             Position = Info.Origin;
@@ -112,7 +111,7 @@ namespace WeaponCore.Projectiles
             Hit = new Hit();
             LastHitEntVel = null;
             Info.AvShot = null;
-            Info.Age = 0;
+            Info.Age = -1;
             ChaseAge = 0;
             NewTargets = 0;
             ZombieLifeTime = 0;
@@ -141,6 +140,12 @@ namespace WeaponCore.Projectiles
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
+
+            Info.MyPlanet = Info.Ai.MyPlanet;
+            Info.MyShield = Info.Ai.MyShield;
+            Info.InPlanetGravity = Info.Ai.InPlanetGravity;
+            Info.AiVersion = Info.Ai.Version;
+            Info.Ai.ProjectileTicker = Info.Ai.Session.Tick;
 
             if (Guidance == GuidanceType.Smart && DynamicGuidance)
             {
@@ -228,12 +233,12 @@ namespace WeaponCore.Projectiles
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
             var pruneStaticCheck = Info.Ai.ClosestPlanetSqr * 0.5 < MaxTrajectorySqr || Info.Ai.StaticGridInRange;
             PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            
+
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
             if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
                 StaticEntCheck();
-            else if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) 
+            else if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr)
                 LinePlanetCheck = true;
 
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
@@ -298,51 +303,57 @@ namespace WeaponCore.Projectiles
 
         internal void StaticEntCheck()
         {
-            var ai = Info.Ai;
-            LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
-            var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory));
-
-            for (int i = 0; i < ai.StaticsInRange.Count; i++)
+            try
             {
-                var staticEnt = ai.StaticsInRange[i];
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
-                var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                var voxel = staticEnt as MyVoxelBase;
-                var grid = staticEnt as MyCubeGrid;
+                var ai = Info.Ai;
+                LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
+                var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory));
 
-                if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
+                for (int i = 0; i < ai.StaticsInRange.Count; i++)
                 {
-                    if (voxel != null && voxel == voxel.RootVoxel)
-                    {
-                        if (voxel == ai.MyPlanet)
-                        {
-                            if (!Info.AmmoDef.Const.IsBeamWeapon)
-                            {
-                                //Info.Ai.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
-                                LinePlanetCheck = true;
-                            }
-                            else if (!Info.WeaponCache.VoxelHits[CachedId].Cached(lineTest, Info))
-                            {
-                                LinePlanetCheck = true;
-                            }
-                            else CachedPlanetHit = true;
+                    var staticEnt = ai.StaticsInRange[i];
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    var voxel = staticEnt as MyVoxelBase;
+                    var grid = staticEnt as MyCubeGrid;
 
-                            PruneQuery = MyEntityQueryType.Both;
-                        }
-                        else
+                    if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
+                    {
+                        if (voxel != null && voxel == voxel.RootVoxel)
                         {
-                            LinePlanetCheck = true;
-                            PruneQuery = MyEntityQueryType.Both;
+                            if (voxel == Info.MyPlanet)
+                            {
+                                if (!Info.AmmoDef.Const.IsBeamWeapon)
+                                {
+                                    //Info.System.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
+                                    LinePlanetCheck = true;
+                                }
+                                else if (!Info.WeaponCache.VoxelHits[CachedId].Cached(lineTest, Info))
+                                {
+                                    LinePlanetCheck = true;
+                                }
+                                else CachedPlanetHit = true;
+
+                                PruneQuery = MyEntityQueryType.Both;
+                            }
+                            else
+                            {
+                                LinePlanetCheck = true;
+                                PruneQuery = MyEntityQueryType.Both;
+                            }
+                            break;
                         }
-                        break;
+                        if (grid != null && grid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid)) continue;
+                        PruneQuery = MyEntityQueryType.Both;
+                        if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
                     }
-                    if (grid != null && grid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid)) continue;
-                    PruneQuery = MyEntityQueryType.Both;
-                    if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
                 }
             }
+            catch (Exception ex) { Log.Line($"Exception in StaticEntCheck: {ex} AiNull:{Info.Ai == null} - StaticsNull:{Info?.Ai?.StaticsInRange == null} - FiringCubeNull:{Info.Target.FiringCube?.CubeGrid == null} - AmmoNull:{Info.AmmoDef == null}) - { Info?.WeaponCache?.VoxelHits[CachedId] == null} "); }
         }
+        #endregion
 
+        #region Run
         internal void CouldHitPlanet(List<IHitInfo> hitInfos)
         {
             for (int i = 0; i < hitInfos.Count; i++)
@@ -371,14 +382,16 @@ namespace WeaponCore.Projectiles
         {
             if (Vector3D.IsZero(Hit.HitPos)) return false;
 
-            if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel)) {
+            if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel))
+            {
                 var useCollisionSize = ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle && !Info.AmmoDef.Const.DrawLine;
                 Info.AvShot.TestSphere.Center = Hit.VisualHitPos;
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
             if (!Info.AmmoDef.Const.VirtualBeams && add) Info.System.Session.Hits.Add(this);
-            else if (Info.AmmoDef.Const.VirtualBeams) {
+            else if (Info.AmmoDef.Const.VirtualBeams)
+            {
                 Info.WeaponCache.VirtualHit = true;
                 Info.WeaponCache.HitEntity.Entity = Hit.Entity;
                 Info.WeaponCache.HitEntity.HitPos = Hit.VisualHitPos;
@@ -423,26 +436,29 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir});
+            Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir });
         }
 
         internal void CreateFakeBeams(bool miss = false)
         {
             Vector3D? hitPos = null;
             if (!Vector3D.IsZero(Hit.VisualHitPos)) hitPos = Hit.VisualHitPos;
-            for (int i = 0; i < VrPros.Count; i++) {
-                
+            for (int i = 0; i < VrPros.Count; i++)
+            {
+
                 var vp = VrPros[i];
                 var vs = vp.AvShot;
 
                 vp.TracerLength = Info.TracerLength;
                 vs.Init(vp, StepPerSec * StepConst, MaxSpeed);
                 vs.Hit = Hit;
-                if (Info.AmmoDef.Const.ConvergeBeams) {
+                if (Info.AmmoDef.Const.ConvergeBeams)
+                {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.Origin, Position);
                     Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = beam.Direction, VisualDir = beam.Direction });
                 }
-                else {
+                else
+                {
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
@@ -598,10 +614,12 @@ namespace WeaponCore.Projectiles
                     PredictedTargetPos = targetPos;
 
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
-                    if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos))) {
+                    if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
+                    {
                         PrevTargetPos = PredictedTargetPos;
                     }
-                    else {
+                    else
+                    {
                         PrevTargetPos = targetPos;
                     }
 
@@ -615,11 +633,13 @@ namespace WeaponCore.Projectiles
                         {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
-                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree)) {
-                                if (WasTracking) 
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
+                            {
+                                if (WasTracking)
                                     PickTarget = true;
                             }
-                            else if (!WasTracking) {
+                            else if (!WasTracking)
+                            {
                                 WasTracking = true;
                             }
                         }
@@ -657,7 +677,7 @@ namespace WeaponCore.Projectiles
 
                 var normalMissileAcceleration = (relativeVelocity - (relativeVelocity.Dot(missileToTarget) * missileToTarget)) * Info.AmmoDef.Trajectory.Smarts.Aggressiveness;
 
-                if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel =  (missileToTarget * StepPerSec);
+                if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel = (missileToTarget * StepPerSec);
                 else
                 {
                     var maxLateralThrust = StepPerSec * Math.Min(1, Math.Max(0, Info.AmmoDef.Const.MaxLateralThrust));
@@ -666,7 +686,7 @@ namespace WeaponCore.Projectiles
                         Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
                         normalMissileAcceleration *= maxLateralThrust;
                     }
-                    commandedAccel =  Math.Sqrt(Math.Max(0, StepPerSec * StepPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
+                    commandedAccel = Math.Sqrt(Math.Max(0, StepPerSec * StepPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
                 }
 
                 newVel = Velocity + (commandedAccel * StepConst);
@@ -735,7 +755,7 @@ namespace WeaponCore.Projectiles
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
-                        if (netted.Info.Ai.MyGrid.IsSameConstructAs(Info.Ai.MyGrid) || netted.Info.Target.IsProjectile) continue;
+                        if (netted.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         {
                             Info.BaseEwarPool -= Info.AmmoDef.AreaEffect.AreaEffectDamage;
@@ -753,7 +773,7 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     return;
                 case AreaEffectType.PushField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() *  100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
@@ -785,7 +805,8 @@ namespace WeaponCore.Projectiles
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse) {
+                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    {
                         Info.EwarActive = true;
                     }
                     break;
@@ -887,7 +908,7 @@ namespace WeaponCore.Projectiles
         {
             if (State == ProjectileState.Destroy)
             {
-                Hit = new Hit {Block = null, Entity = null, HitPos = Position, VisualHitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick};
+                Hit = new Hit { Block = null, Entity = null, HitPos = Position, VisualHitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick };
                 if (EnableAv || Info.AmmoDef.Const.VirtualBeams)
                 {
                     Info.AvShot.ForceHitParticle = true;
@@ -934,7 +955,7 @@ namespace WeaponCore.Projectiles
 
                 if (!Info.AvShot.Active)
                     Info.System.Session.Av.AvShotPool.Return(Info.AvShot);
-                else Info.AvShot.EndState = new AvClose {EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
+                else Info.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
             }
             else if (Info.AmmoDef.Const.VirtualBeams)
             {
@@ -944,7 +965,7 @@ namespace WeaponCore.Projectiles
                     if (!vp.AvShot.Active)
                         Info.System.Session.Av.AvShotPool.Return(vp.AvShot);
                     else vp.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
-                    
+
                     Info.System.Session.Projectiles.VirtInfoPool.Return(vp);
                 }
                 VrPros.Clear();
@@ -958,7 +979,6 @@ namespace WeaponCore.Projectiles
 
         internal enum ProjectileState
         {
-            Start,
             Alive,
             Detonate,
             OneAndDone,
@@ -972,5 +992,6 @@ namespace WeaponCore.Projectiles
             Exists,
             None
         }
+        #endregion
     }
 }

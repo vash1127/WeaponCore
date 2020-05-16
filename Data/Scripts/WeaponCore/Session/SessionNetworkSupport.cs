@@ -880,7 +880,6 @@ namespace WeaponCore
         {
             var muzzle = weapon.Muzzles[muzzleId];
             var session = weapon.Comp.Session;
-
             session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, Muzzle = muzzle, Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Client });
         }
         #endregion

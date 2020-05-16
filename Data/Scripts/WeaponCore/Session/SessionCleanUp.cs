@@ -170,8 +170,15 @@ namespace WeaponCore
                     PlatFormPool.Return(comp.Platform);
             }
 
+            foreach (var gridAi in DelayedGridAiClean)
+            {
+                gridAi.ProjectileTicker = 0;
+                gridAi.GridClose(null);
+            }
+
             PlatFormPool.Clean();
             CompsToStart.ClearImmediate();
+            DelayedGridAiClean.ClearImmediate();
 
             CompsDelayed.Clear();
             CompReAdds.Clear();
