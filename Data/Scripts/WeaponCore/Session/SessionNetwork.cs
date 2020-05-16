@@ -16,14 +16,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal readonly List<PacketObj>[] PacketQueues;
-        internal struct PacketObj
-        {
-            internal Packet Packet;
-            internal int PacketSize;
-            internal NetworkReporter.Report Report;
-            internal ErrorPacket ErrorPacket;
-        }
+
 
         #region Client Sync
         private void ClientReceivedPacket(byte[] rawData)
@@ -34,111 +27,141 @@ namespace WeaponCore
                 if (packet == null) return;
 
                 var packetSize = rawData.Length;
-                ProccessClientPacket(packet, packetSize);
-                /*
+                //ProccessClientPacket(packet, packetSize);
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Client;
                 report.PacketSize = packetSize;
                 Reporter.ReportData[packet.PType].Add(report);
                 var errorPacket = new ErrorPacket {RecievedTick = Tick, Packet = packet};
-
-                PacketQueues[(int)packet.PType].Add(new PacketObj { Packet = packet, PacketSize = packetSize, Report = report, ErrorPacket = errorPacket });
-                */
+                var packetObj = PacketObjPool.Get();
+                packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
             }
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
 
-        private void DrainQueues()
+        private bool ProccessClientPacket(PacketObj packetObj)
         {
-            for (int i = 0; i < PacketQueues.Length; i++)
+            var invalidType = false;
+            switch (packetObj.Packet.PType)
             {
-                var queue = PacketQueues[i];
-
-                if (queue.Count > 0) {
-                    switch ((PacketType) i) {
-                        case PacketType.CompStateUpdate: {
-                            SendCompStateUpdate(queue);
-                            break;
-                        }
-                        case PacketType.CompSettingsUpdate: {
-                            CompSettingsUpdate(queue);
-                            break;
-                        }
-                        case PacketType.WeaponSyncUpdate: {
-                            WeaponSyncUpdate(queue);
-                            break;
-                        }
-                        case PacketType.FakeTargetUpdate: {
-                            FakeTargetUpdate(queue);
-                            break;
-                        }
-                        case PacketType.PlayerIdUpdate: {
-                            PlayerIdUpdate(queue);
-                            break;
-                        }
-                        case PacketType.ClientMouseEvent: {
-                            ClientMouseEvent(queue);
-                            break;
-                        }
-                        case PacketType.ActiveControlUpdate: {
-                            ActiveControlUpdate(queue);
-                            break;
-                        }
-                        case PacketType.ActiveControlFullUpdate: {
-                            break;
-                        }
-                        case PacketType.ReticleUpdate: {
-                            break;
-                        }
-                        case PacketType.OverRidesUpdate: {
-                            break;
-                        }
-                        case PacketType.PlayerControlUpdate: {
-                            break;
-                        }
-                        case PacketType.TargetExpireUpdate: {
-                            break;
-                        }
-                        case PacketType.FullMouseUpdate: {
-                            break;
-                        }
-                        case PacketType.CompToolbarShootState: {
-                            break;
-                        }
-                        case PacketType.RangeUpdate: {
-                            break;
-                        }
-                        case PacketType.GridAiUiMidUpdate: {
-                            break;
-                        }
-                        case PacketType.CycleAmmo: {
-                            break;
-                        }
-                        case PacketType.GridOverRidesSync: {
-                            break;
-                        }
-                        case PacketType.RescanGroupRequest: {
-                            break;
-                        }
-                        case PacketType.GridFocusListSync: {
-                            break;
-                        }
-                        case PacketType.ClientMidUpdate: {
-                            break;
-                        }
-                        case PacketType.FocusUpdate:
-                        case PacketType.ReassignTargetUpdate:
-                        case PacketType.NextActiveUpdate:
-                        case PacketType.ReleaseActiveUpdate: {
-                            break;
-                        }
-                        default:
-                            break;
+                case PacketType.CompStateUpdate: {
+                        CompStateUpdate(packetObj);
+                        break;
                     }
+                case PacketType.CompSettingsUpdate: {
+                        CompSettingsUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.WeaponSyncUpdate: {
+                        WeaponSyncUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.FakeTargetUpdate: {
+                        FakeTargetUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.PlayerIdUpdate: {
+                        PlayerIdUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.ClientMouseEvent: {
+                        ClientMouseEvent(packetObj);
+                        break;
+                    }
+                case PacketType.ActiveControlUpdate: {
+                        ActiveControlUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.ActiveControlFullUpdate: {
+                        ActiveControlFullUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.ReticleUpdate: {
+                        ReticleUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.OverRidesUpdate: {
+                        OverRidesUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.PlayerControlUpdate: {
+                        PlayerControlUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.TargetExpireUpdate: {
+                        TargetExpireUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.FullMouseUpdate: {
+                        FullMouseUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.CompToolbarShootState: {
+                        CompToolbarShootState(packetObj);
+                        break;
+                    }
+                case PacketType.RangeUpdate: {
+                        RangeUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.GridAiUiMidUpdate: {
+                        GridAiUiMidUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.CycleAmmo: {
+                        CycleAmmo(packetObj);
+                        break;
+                    }
+                case PacketType.GridOverRidesSync: {
+                        GridOverRidesSync(packetObj);
+                        break;
+                    }
+                case PacketType.RescanGroupRequest: {
+                        RescanGroupRequest(packetObj);
+                        break;
+                    }
+                case PacketType.GridFocusListSync: {
+                        GridFocusListSync(packetObj);
+                        break;
+                    }
+                case PacketType.ClientMidUpdate: {
+                        ClientMidUpdate(packetObj);
+                        break;
+                    }
+                case PacketType.FocusUpdate:
+                case PacketType.ReassignTargetUpdate:
+                case PacketType.NextActiveUpdate:
+                case PacketType.ReleaseActiveUpdate: {
+                        FocusStates(packetObj);
+                        break;
+                    }
+                default:
+                    if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
+                    Log.Line($"Invalid Packet Type: {packetObj.Packet.PType} packet type: {packetObj.Packet.GetType()}");
+                    invalidType = true;
+                    packetObj.Report.PacketValid = false;
+                    break;
+            }
+            if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
+            {
+                if (!ClientSideErrorPktList.Contains(packetObj))
+                    ClientSideErrorPktList.Add(packetObj);
+                else
+                {
+                    //this only works because hashcode override in ErrorPacket
+                    ClientSideErrorPktList.Remove(packetObj);
+                    ClientSideErrorPktList.Add(packetObj);
                 }
             }
-        }
+            else if (packetObj.Report.PacketValid && ClientSideErrorPktList.Contains(packetObj))
+                ClientSideErrorPktList.Remove(packetObj);
 
+            if (packetObj.Report.PacketValid)
+                PacketObjPool.Return(packetObj);
+
+            return packetObj.Report.PacketValid;
+        }
+        /*
         private bool ProccessClientPacket(Packet packet, int packetSize, bool retry = false)
         {
             try
@@ -749,12 +772,15 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); return false; }
         }
+        */
 
         public void ReproccessClientErrorPackets()
         {
             for(int i = ClientSideErrorPktList.Count - 1; i >= 0; i--)
             {
-                var erroredPacket = ClientSideErrorPktList[i];
+                var packetObj = ClientSideErrorPktList[i];
+
+                var erroredPacket = packetObj.ErrorPacket;
                 if (erroredPacket.MaxAttempts == 0)
                 {
                     //set packet retry variables, based on type
@@ -815,7 +841,7 @@ namespace WeaponCore
                         break;
 
                     default:
-                        success = ProccessClientPacket(erroredPacket.Packet, 0, true);                        
+                        success = ProccessClientPacket(packetObj);                        
                         break;
                 }
 
@@ -824,13 +850,17 @@ namespace WeaponCore
                     if (!success)
                         Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
 
-                    ClientSideErrorPktList.Remove(erroredPacket);
+                    ClientSideErrorPktList.Remove(packetObj);
+                    PacketObjPool.Return(packetObj);
                 }
                 else
                     erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
 
                 if (erroredPacket.MaxAttempts == 0)
-                    ClientSideErrorPktList.Remove(erroredPacket);
+                {
+                    ClientSideErrorPktList.Remove(packetObj);
+                    PacketObjPool.Return(packetObj);
+                }
             }
         }
 

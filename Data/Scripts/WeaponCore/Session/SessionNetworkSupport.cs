@@ -15,6 +15,45 @@ namespace WeaponCore
     {
 
         #region Packet Creation Methods
+        internal class PacketObj
+        {
+            internal Packet Packet;
+            internal NetworkReporter.Report Report;
+            internal ErrorPacket ErrorPacket;
+            internal int PacketSize;
+
+            internal void Clean()
+            {
+                Packet = null;
+                Report = null;
+                ErrorPacket = null;
+                PacketSize = 0;
+            }
+        }
+
+        public struct NetResult
+        {
+            public string Message;
+            public bool Valid;
+        }
+
+        private NetResult Msg(string message, bool valid = true)
+        {
+            return new NetResult { Message = message, Valid = valid };
+        }
+
+        private bool Error(PacketObj data, params NetResult[] messages)
+        {
+            var message = $"[{data.Packet.PType.ToString()}] - ";
+
+            for (int i = 0; i < messages.Length; i++)
+            {
+                var resultPair = messages[i];
+                message += $"{resultPair.Message}: {resultPair.Valid} - ";
+            }
+            data.ErrorPacket.Error = message;
+            return false;
+        }
 
         internal struct PacketInfo
         {
@@ -30,6 +69,8 @@ namespace WeaponCore
             internal uint RetryDelayTicks;
             internal int RetryAttempt;
             internal int MaxAttempts;
+            internal bool NoReprocess;
+            internal bool Retry;
             internal string Error;
             internal PacketType PType;
             internal Packet Packet;
@@ -744,24 +785,21 @@ namespace WeaponCore
             }
         }
 
-        public void UpdateActiveControlDictionary(MyCubeBlock block, long playerId, bool updateAdd)
+        public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd)
         {
-            var grid = block?.CubeGrid;
-
-            if (block == null || grid == null) return;
             GridAi trackingAi;
             if (updateAdd) //update/add
             {
-                if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
+                if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
                 {
-                    trackingAi.ControllingPlayers[playerId] = block;
+                    trackingAi.ControllingPlayers[playerId] = cube;
                     trackingAi.ControllingPlayers.ApplyAdditionsAndModifications();
                 }
             }
             else //remove
             {
-                if (GridTargetingAIs.TryGetValue(grid, out trackingAi))
-                    trackingAi.ControllingPlayers.TryGetValue(playerId, out block);
+                if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
+                    trackingAi.ControllingPlayers.TryGetValue(playerId, out cube);
             }
         }
 
@@ -819,7 +857,7 @@ namespace WeaponCore
             p.Info.MuzzleId = muzzleId;
             p.Info.BaseDamagePool = weapon.BaseDamage;
             p.Info.EnableGuidance = false;
-            p.Info.WeaponCache = weapon.WeaponCache ?? new WeaponFrameCache(weapon.System.Values.Assignments.Barrels.Length);
+            p.Info.WeaponCache = weapon.WeaponCache;
             p.Info.WeaponCache.VirutalId = -1;
             p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
             p.Info.LockOnFireState = false;
