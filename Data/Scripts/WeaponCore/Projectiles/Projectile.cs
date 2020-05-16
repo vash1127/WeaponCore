@@ -103,11 +103,11 @@ namespace WeaponCore.Projectiles
             Position = Info.Origin;
             AccelDir = Info.Direction;
             Info.VisualDir = Info.Direction;
-            var cameraStart = Info.Ai.Session.CameraPos;
+            var cameraStart = Info.System.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Info.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = Info.AmmoDef.Const.ShrapnelId > -1;
             var probability = Info.AmmoDef.AmmoGraphics.VisualProbability;
-            EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.Ai.Session.DedicatedServer && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+            EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.System.Session.DedicatedServer && DistanceFromCameraSqr <= Info.System.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
             Hit = new Hit();
@@ -262,7 +262,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                Info.AvShot = Info.Ai.Session.Av.AvShotPool.Get();
+                Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, StepPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
                 if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.AreaEffect.AreaEffectRadius > 0 && Info.AmmoDef.AreaEffect.AreaEffectDamage > 0)
@@ -378,7 +378,7 @@ namespace WeaponCore.Projectiles
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
-            if (!Info.AmmoDef.Const.VirtualBeams && add) Info.Ai.Session.Hits.Add(this);
+            if (!Info.AmmoDef.Const.VirtualBeams && add) Info.System.Session.Hits.Add(this);
             else if (Info.AmmoDef.Const.VirtualBeams) {
                 Info.WeaponCache.VirtualHit = true;
                 Info.WeaponCache.HitEntity.Entity = Hit.Entity;
@@ -424,7 +424,7 @@ namespace WeaponCore.Projectiles
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir});
+            Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir});
         }
 
         internal void CreateFakeBeams(bool miss = false)
@@ -453,18 +453,18 @@ namespace WeaponCore.Projectiles
 
                     var line = new LineD(vs.Origin, beamEnd, !hit ? Info.MaxTrajectory : Info.WeaponCache.HitDistance);
                     if (!miss && hitPos.HasValue)
-                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
+                        Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
                     else
-                        Info.Ai.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
+                        Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
                 }
             }
         }
 
         private void SpawnShrapnel()
         {
-            var shrapnel = Info.Ai.Session.Projectiles.ShrapnelPool.Get();
-            shrapnel.Init(this, Info.Ai.Session.Projectiles.FragmentPool);
-            Info.Ai.Session.Projectiles.ShrapnelToSpawn.Add(shrapnel);
+            var shrapnel = Info.System.Session.Projectiles.ShrapnelPool.Get();
+            shrapnel.Init(this, Info.System.Session.Projectiles.FragmentPool);
+            Info.System.Session.Projectiles.ShrapnelToSpawn.Add(shrapnel);
         }
 
         internal bool NewTarget()
@@ -732,7 +732,7 @@ namespace WeaponCore.Projectiles
             {
                 case AreaEffectType.AntiSmart:
                     var eWarSphere = new BoundingSphereD(Position, Info.AmmoDef.Const.AreaEffectSize);
-                    DynTrees.GetAllProjectilesInSphere(Info.Ai.Session, ref eWarSphere, EwaredProjectiles, false);
+                    DynTrees.GetAllProjectilesInSphere(Info.System.Session, ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
@@ -903,7 +903,7 @@ namespace WeaponCore.Projectiles
         internal void UnAssignProjectile(bool clear)
         {
             Info.Target.Projectile.Seekers.Remove(this);
-            if (clear) Info.Target.Reset(Info.Ai.Session.Tick, Target.States.ProjectileClosed);
+            if (clear) Info.Target.Reset(Info.System.Session.Tick, Target.States.ProjectileClosed);
             else
             {
                 Info.Target.IsProjectile = false;
@@ -934,7 +934,7 @@ namespace WeaponCore.Projectiles
                     ModelState = EntityState.None;
 
                 if (!Info.AvShot.Active)
-                    Info.Ai.Session.Av.AvShotPool.Return(Info.AvShot);
+                    Info.System.Session.Av.AvShotPool.Return(Info.AvShot);
                 else Info.AvShot.EndState = new AvClose {EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
             }
             else if (Info.AmmoDef.Const.VirtualBeams)
@@ -943,7 +943,7 @@ namespace WeaponCore.Projectiles
                 {
                     var vp = VrPros[i];
                     if (!vp.AvShot.Active)
-                        Info.Ai.Session.Av.AvShotPool.Return(vp.AvShot);
+                        Info.System.Session.Av.AvShotPool.Return(vp.AvShot);
                     else vp.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
                     
                     Info.System.Session.Projectiles.VirtInfoPool.Return(vp);

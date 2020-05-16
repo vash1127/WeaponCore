@@ -319,7 +319,7 @@ namespace WeaponCore.Support
 
                 var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
                 if (a.Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
-                    a.RunGlow(ref a.EmptyShrink);
+                    a.RunGlow(ref a.EmptyShrink, false, saveHit);
 
                 if (!a.Active && a.OnScreen != Screen.None)
                 {
@@ -360,7 +360,7 @@ namespace WeaponCore.Support
             s.Projectiles.DeferedAvDraw.Clear();
         }
 
-        internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
+        internal void RunGlow(ref Shrinks shrink, bool shrinking = false, bool hit = false)
         {
             var glowCount = GlowSteps.Count;
             var firstStep = glowCount == 0;
@@ -369,10 +369,9 @@ namespace WeaponCore.Support
             var extStart = Back && firstStep && VisualLength < ShortStepSize;
             Vector3D frontPos;
             Vector3D backPos;
-            var velStep = ShootVelStep;
-            var hit = !MyUtils.IsZero(Hit.VisualHitPos);
-            if (hit)
-                velStep = Vector3D.Zero;
+            
+            var stopVel = shrinking || hit;
+            var velStep = !stopVel ? ShootVelStep : Vector3D.Zero;
 
             if (shrinking)
             {
@@ -396,18 +395,19 @@ namespace WeaponCore.Support
                 ++glowCount;
             }
 
-            var endIdx = glowCount - 1;
-            for (int i = endIdx; i >= 0; i--)
+            var idxStart = glowCount - 1;
+            var idxEnd = 0;
+            for (int i = idxStart; i >= idxEnd; i--)
             {
                 var g = GlowSteps[i];
 
-                if (i != 0)
+                if (i != idxEnd)
                 {
-                    var extend = extEnd && i == endIdx;
+                    var extend = extEnd && i == idxStart;
                     g.Parent = GlowSteps[i - 1];
                     g.Line = new LineD(extend ? TracerFront + velStep : g.Parent.TailPos += velStep, extend ? g.Parent.TailPos : g.TailPos);
                 }
-                else if (i != endIdx)
+                else if (i != idxStart)
                     g.Line = new LineD(g.Line.From + velStep, g.TailPos);
                 else
                     g.Line = new LineD(frontPos, backPos);
