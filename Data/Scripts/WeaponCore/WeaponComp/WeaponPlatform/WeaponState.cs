@@ -211,10 +211,6 @@ namespace WeaponCore.Platform
                     case EventTriggers.TurnOff:
                         if (active)
                         {
-                            var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
-
-                            if ((state == EventTriggers.TurnOn && !Comp.State.Value.Online) || state == EventTriggers.TurnOff && Comp.State.Value.Online) return;
-                            
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
@@ -298,7 +294,7 @@ namespace WeaponCore.Platform
                     if(active && particle.Restart && particle.Triggered) continue;
 
                     var obb = particle.MyDummy.Entity.PositionComp.WorldAABB;
-                    var inView = Comp.Session.Camera.IsInFrustum(ref obb);
+                    //var inView = Comp.Session.Camera.IsInFrustum(ref obb);
 
                     var canPlay = true;
                     if (muzzles != null)
@@ -317,7 +313,7 @@ namespace WeaponCore.Platform
 
                     if (!canPlay) return;
 
-                    if (active && !particle.Playing && distance <= particle.Distance && inView)
+                    if (active && !particle.Playing && distance <= particle.Distance)
                     {
                         particle.PlayTick = Comp.Session.Tick + particle.StartDelay;
                         Comp.Session.Av.ParticlesToProcess.Add(particle);

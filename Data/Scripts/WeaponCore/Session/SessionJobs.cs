@@ -140,7 +140,7 @@ namespace WeaponCore
                         db.TargetingInfo.ThreatRangeSqr = 0;
                     }
 
-                    if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
+                    if (db.ScanBlockGroups) db.ReScanBlockGroups();
                     if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();
 
                     db.FirstRun = false;

@@ -58,6 +58,9 @@ namespace WeaponCore
                     {
                         var eventParticle = particleEvent.Value[i];
 
+                        if (eventParticle.MuzzleNames == null)
+                            eventParticle.MuzzleNames = new string[0];
+
                         if (eventParticle.EmptyNames.Length == eventParticle.MuzzleNames.Length)
                         {
                             for (int j = 0; j < eventParticle.EmptyNames.Length; j++)
