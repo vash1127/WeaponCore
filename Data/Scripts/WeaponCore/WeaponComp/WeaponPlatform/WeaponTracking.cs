@@ -10,6 +10,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Platform
 {
@@ -606,7 +607,7 @@ namespace WeaponCore.Platform
             if (Target.IsFakeTarget)
             {
                 Casting = true;
-                Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, MyPhysics.CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
+                Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return true;
             }
             if (Comp.TrackReticle) return true;
@@ -658,7 +659,7 @@ namespace WeaponCore.Platform
 
             Casting = true;
 
-            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, MyPhysics.CollisionLayers.DefaultCollisionLayer, NormalShootRayCallBack);
+            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, NormalShootRayCallBack);
             return true;
         }
 

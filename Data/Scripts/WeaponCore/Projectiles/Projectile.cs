@@ -11,7 +11,6 @@ using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static WeaponCore.Support.AvShot;
-using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Projectiles
 {
