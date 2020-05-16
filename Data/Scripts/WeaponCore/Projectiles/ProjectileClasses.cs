@@ -323,9 +323,7 @@ namespace WeaponCore.Support
         internal MyEntity TargetEnt;
         internal int FireCounter;
         internal bool FiringPlayer;
-        internal bool ClientSent;
         internal bool Targetable;
-        internal bool Spawn;
         internal long PatternCycle;
         internal float MaxTrajectory;
         internal Kind Type;
