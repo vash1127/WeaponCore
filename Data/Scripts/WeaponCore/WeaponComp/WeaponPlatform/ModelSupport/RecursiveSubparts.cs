@@ -17,6 +17,7 @@ namespace WeaponCore.Support
         private readonly List<MyEntity> _subparts = new List<MyEntity>();
         private readonly Dictionary<string, IMyModelDummy> _tmp = new Dictionary<string, IMyModelDummy>();
         internal readonly Dictionary<string, MyEntity> NameToEntity = new Dictionary<string, MyEntity>();
+        internal readonly Dictionary<MyEntity, string> EntityToName = new Dictionary<MyEntity, string>();
 
         private IMyModel _trackedModel;
         internal MyEntity Entity;
@@ -27,6 +28,7 @@ namespace WeaponCore.Support
             _subparts.Clear();
             _tmp.Clear();
             NameToEntity.Clear();
+            EntityToName.Clear();
             _trackedModel = null;
             Entity = myEntity;
         }
@@ -38,6 +40,7 @@ namespace WeaponCore.Support
             _trackedModel = Entity?.Model;
             _subparts.Clear();
             NameToEntity.Clear();
+            EntityToName.Clear();
             if (Entity != null)
             {
                 var head = -1;
@@ -61,11 +64,13 @@ namespace WeaponCore.Support
                             {
                                 _subparts.Add(res);
                                 NameToEntity[name] = res;
+                                EntityToName[res] = name;
                                 //Log.Line($"name: {name}");
                             }
                         }
                     }
-                    NameToEntity["None"] = Entity; 
+                    NameToEntity["None"] = Entity;
+                    EntityToName[Entity] = "None";
                 }
             }
         }

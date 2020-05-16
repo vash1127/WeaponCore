@@ -819,7 +819,7 @@ namespace WeaponCore
             p.Info.MuzzleId = muzzleId;
             p.Info.BaseDamagePool = weapon.BaseDamage;
             p.Info.EnableGuidance = false;
-            p.Info.WeaponCache = weapon.WeaponCache;
+            p.Info.WeaponCache = weapon.WeaponCache ?? new WeaponFrameCache(weapon.System.Values.Assignments.Barrels.Length);
             p.Info.WeaponCache.VirutalId = -1;
             p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
             p.Info.LockOnFireState = false;

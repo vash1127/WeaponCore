@@ -71,14 +71,13 @@ namespace WeaponCore.Support
         }
 
 
-        [ProtoContract(IgnoreListHandling = true)]
+        [ProtoContract]
         public struct AnimationDef
         {
             [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
             [ProtoMember(2)] internal WeaponEmissive[] Emissives;
             [ProtoMember(3)] internal string[] HeatingEmissiveParts;
             [ProtoMember(4)] internal Dictionary<PartAnimationSetDef.EventTriggers, EventParticle[]> EventParticles;
-
 
             [ProtoContract(IgnoreListHandling = true)]
             public struct PartAnimationSetDef

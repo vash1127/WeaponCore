@@ -163,6 +163,11 @@ namespace WeaponCore.Support
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths, out HeatingSubparts, out ParticleEvents);
 
+            uint delay;
+            if (WeaponAnimationLengths.TryGetValue(EventTriggers.PreFire, out delay))
+                if (delay > DelayToFire)
+                    DelayToFire = (int)delay;
+
             for (int i = 0; i < WeaponAmmoTypes.Length; i++)
             {
                 var ammo = WeaponAmmoTypes[i];

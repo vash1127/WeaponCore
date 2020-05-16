@@ -42,7 +42,7 @@ namespace WeaponCore.Platform
 
         }
 
-        public void TurretHomePosition(object o = null)
+        public void TurretHomePosition(bool schedule = false)
         {
             if (Comp == null || State == null || Target == null || Comp.MyCube == null) return;
             using (Comp.MyCube.Pin())
@@ -55,13 +55,15 @@ namespace WeaponCore.Platform
                     return;
                 }
 
-                var userControlled = o != null && (bool)o;
-                if (userControlled && Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
+                ReturingHome = true;
+
+                if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
                 {
                     Azimuth = Comp.TurretBase.Azimuth;
                     Elevation = Comp.TurretBase.Elevation;
                 }
-                else if (!userControlled)
+
+                if(!schedule)
                 {
                     var azStep = System.AzStep;
                     var elStep = System.ElStep;
@@ -79,20 +81,23 @@ namespace WeaponCore.Platform
                     else if (oldEl < 0)
                         Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
-                    if (MyUtils.IsEqual((float)oldAz, (float)Azimuth))
+                    if (!MyUtils.IsEqual((float)oldAz, (float)Azimuth))
                         AzimuthTick = Comp.Session.Tick;
 
-                    if (MyUtils.IsEqual((float)oldEl, (float)Elevation))
+                    if (!MyUtils.IsEqual((float)oldEl, (float)Elevation))
                         ElevationTick = Comp.Session.Tick;
 
                     AimBarrel();
                 }
 
+                //Log.Line($"Azimuth: {Azimuth} Elevation: {Elevation} userControlled: {userControlled}");
+
                 if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
                 {
                     ReturingHome = true;
                     IsHome = false;
-                    Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, (userControlled ? 300u : 1u));
+                    Comp.Session.FutureEvents.Schedule(o => { TurretHomePosition(); }, null, (schedule ? 300u : 1u));
+                    //Log.Line("Schedule");
                 }
                 else
                 {
@@ -217,10 +222,7 @@ namespace WeaponCore.Platform
                 }
 
                 if (State.Sync.Overheated && State.Sync.Heat <= (System.MaxHeat * System.WepCoolDown))
-                {
-                    if (CurLgstAnimPlaying != null)
-                        Timings.ShootDelayTick = Comp.Session.Tick + (CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove));
-                        
+                {                        
                     EventTriggerStateChanged(EventTriggers.Overheated, false);
                     State.Sync.Overheated = false;
                 }

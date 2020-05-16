@@ -264,27 +264,19 @@ namespace WeaponCore.Control
                         w.TurretHomePosition();
 
                     }
-                    w.StopShooting();
-                    if (w.DrawingPower)
-                        w.StopPowerDraw();
+
+                    if(w.IsShooting) w.StopShooting();
+                    if (w.DrawingPower) w.StopPowerDraw();
 
                     comp.TerminalRefresh();
 
                     if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         w.State.Sync.Reloading = false;
                     //comp.State.Value.CurrentCharge += w.State.Sync.CurrentCharge;
-
-                    uint delay;
-                    if (w.System.WeaponAnimationLengths.TryGetValue(TurnOff, out delay))
-                        w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = comp.Session.Tick + delay + w.Timings.OffDelay;
+                    
                 }
                 else
                 {
-                    w.Timings.OffDelay = 0;
-                    uint delay;
-                    if (w.System.WeaponAnimationLengths.TryGetValue(TurnOn, out delay))
-                        w.Timings.AnimationDelayTick = w.Timings.ShootDelayTick = w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
-
                     if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         MyAPIGateway.Utilities.InvokeOnGameThread(() => {
                             if (w.CanReload)
