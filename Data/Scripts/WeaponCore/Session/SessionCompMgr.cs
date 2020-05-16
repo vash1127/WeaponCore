@@ -123,16 +123,12 @@ namespace WeaponCore
 
         private void DelayedGridAiCleanup()
         {
-            Log.Line($"delayed cleanup");
             for (int i = 0; i < DelayedGridAiClean.Count; i++)
             {
                 var gridAi = DelayedGridAiClean[i];
                 gridAi.GridClose(null);
                 if (!gridAi.GridInit)
-                {
                     DelayedGridAiClean.Remove(gridAi);
-                    Log.Line($"removed gridAi");
-                }
             }
             DelayedGridAiClean.ApplyRemovals();
         }
