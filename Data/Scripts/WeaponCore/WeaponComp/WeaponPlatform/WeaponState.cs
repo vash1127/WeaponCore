@@ -183,13 +183,10 @@ namespace WeaponCore.Platform
                                 if (active && !animation.Running)
                                 {
                                     if (animation.TriggerOnce && animation.Triggered) continue;
-                                    animation.Triggered = true;
 
-                                    PartAnimation animCheck;
+                                    animation.Triggered = true;
                                     animation.Running = true;
                                     animation.CanPlay = canPlay;
-                                    string opEvent = "";
-
                                     
                                     Comp.Session.AnimationsToProcess.Add(animation);
                                     animation.StartTick = session.Tick + animation.MotionDelay;
@@ -302,6 +299,23 @@ namespace WeaponCore.Platform
 
                     var obb = particle.MyDummy.Entity.PositionComp.WorldAABB;
                     var inView = Comp.Session.Camera.IsInFrustum(ref obb);
+
+                    var canPlay = true;
+                    if (muzzles != null)
+                    {
+                        for (int j = 0; j < particle.MuzzleNames.Length; j++)
+                        {
+                            if (particle.MuzzleNames[j] == "Any" || muzzles.Contains(particle.MuzzleNames[j]))
+                            {
+                                canPlay = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                        canPlay = true;
+
+                    if (!canPlay) return;
 
                     if (active && !particle.Playing && distance <= particle.Distance && inView)
                     {

@@ -212,7 +212,8 @@ namespace WeaponCore.Support
         public readonly Vector3 Offset;
         public readonly Vector3D EmptyPos;
         public readonly string ParticleName;
-        public readonly string EmptyName;
+        public readonly string EmptyNames;
+        public readonly string[] MuzzleNames;
         public readonly string PartName;
         public readonly float MaxPlayTime;
         public readonly uint StartDelay;
@@ -230,10 +231,11 @@ namespace WeaponCore.Support
         public MyParticleEffect Effect;
         public MyCubeBlock BaseBlock;
 
-        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, float maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop)
+        public ParticleEvent(string particleName, string emptyName, Vector4 color, Vector3 offset, float scale, float distance, float maxPlayTime, uint startDelay, uint loopDelay, bool loop, bool restart, bool forceStop, params string[] muzzleNames)
         {
             ParticleName = particleName;
-            EmptyName = emptyName;
+            EmptyNames = emptyName;
+            MuzzleNames = muzzleNames;
             Color = color;
             Offset = offset;
             Scale = scale;
@@ -251,7 +253,8 @@ namespace WeaponCore.Support
         {
             MyDummy = myDummy;
             PartName = partName;
-            EmptyName = copyFrom.EmptyName;
+            EmptyNames = copyFrom.EmptyNames;
+            MuzzleNames = copyFrom.MuzzleNames;
             ParticleName = copyFrom.ParticleName;
             Color = copyFrom.Color;
             Offset = copyFrom.Offset;

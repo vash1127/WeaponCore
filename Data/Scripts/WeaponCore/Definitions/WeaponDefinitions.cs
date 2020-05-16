@@ -124,8 +124,9 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct EventParticle
             {
-                [ProtoMember(1)] internal string EmptyName;
-                [ProtoMember(2)] internal ParticleDef Particle;
+                [ProtoMember(1)] internal string[] EmptyNames;
+                [ProtoMember(2)] internal string[] MuzzleNames;
+                [ProtoMember(3)] internal ParticleDef Particle;
                 [ProtoMember(4)] internal uint StartDelay;
                 [ProtoMember(5)] internal uint LoopDelay;
                 [ProtoMember(6)] internal bool ForceStop;
