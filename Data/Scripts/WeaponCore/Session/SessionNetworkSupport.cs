@@ -838,6 +838,7 @@ namespace WeaponCore
             return o;
         }
 
+        /*
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {
             var comp = weapon.Comp;
@@ -873,6 +874,14 @@ namespace WeaponCore
             p.Info.MaxTrajectory = maxTrajectory;
 
             comp.Session.Projectiles.ActiveProjetiles.Add(p);
+        }*/
+
+        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
+        {
+            var muzzle = weapon.Muzzles[muzzleId];
+            var session = weapon.Comp.Session;
+
+            session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, ClientSent = true, Spawn = true, Muzzle = muzzle, Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Normal });
         }
         #endregion
     }
