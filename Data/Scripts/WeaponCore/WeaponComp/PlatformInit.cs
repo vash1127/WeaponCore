@@ -164,7 +164,7 @@ namespace WeaponCore.Platform
                 MyEntity azimuthPart = null;
                 if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
                 {
-                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid azimuthPart, I am crashing now Dave.");
+                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
