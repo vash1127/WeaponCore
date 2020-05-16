@@ -850,6 +850,7 @@ namespace WeaponCore.Support
             SourceCount = 0;
             BlockCount = 0;
             MyOwner = 0;
+            ProjectileTicker = 0;
             PointDefense = false;
             FadeOut = false;
             SupressMouseShoot = false;
@@ -860,6 +861,7 @@ namespace WeaponCore.Support
             RequestedPowerChanged = false;
             RequestIncrease = false;
             DbReady = false;
+            GridInit = false;
             Focus.Clean();
             MyShield = null;
             MyPlanetTmp = null;
@@ -869,6 +871,7 @@ namespace WeaponCore.Support
             LastTerminal = null;
             PowerDistributor = null;
             PowerBlock = null;
+            Version++;
         }
     }
 }

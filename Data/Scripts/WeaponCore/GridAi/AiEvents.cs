@@ -94,10 +94,17 @@ namespace WeaponCore.Support
         internal void GridClose(MyEntity myEntity)
         {
             RegisterMyGridEvents(false);
-            Session.GridAiPool.Return(this);
-
-            if (Session.IsClient)
-                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
+            if (Session.Tick - ProjectileTicker > 61)
+            {
+                Session.GridAiPool.Return(this);
+                if (Session.IsClient)
+                    Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
+            }
+            else if (myEntity != null)
+            {
+                Session.DelayedGridAiClean.Add(this);
+                Session.DelayedGridAiClean.ApplyAdditions();
+            }
         }
     }
 }

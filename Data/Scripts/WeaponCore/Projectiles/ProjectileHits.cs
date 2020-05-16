@@ -36,7 +36,7 @@ namespace WeaponCore.Projectiles
                 var safeZone = ent as MySafeZone;
 
                 if (ent is IMyCharacter && p.Info.EwarActive && !genericFields) continue;
-                if (grid != null && p.SmartsOn && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
+                if (grid != null && p.SmartsOn && p.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
 
                 if (safeZone != null) {
                     var outSideSphere = safeZone.Shape== MySafeZoneShape.Sphere && safeZone.PositionComp.WorldVolume.Contains(p.Info.Origin) == ContainmentType.Disjoint;
@@ -59,7 +59,7 @@ namespace WeaponCore.Projectiles
 
 
                     var shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
-                    if (shieldInfo != null && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
+                    if (shieldInfo != null && !p.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
 
                         if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
                             p.EntitiesNear = true;
@@ -88,7 +88,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if ((ent == p.Info.Ai.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.Physics.IsPhantom && !ent.IsPreview && (grid != null || voxel != null || destroyable != null)) {
+                if ((ent == p.Info.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.Physics.IsPhantom && !ent.IsPreview && (grid != null || voxel != null || destroyable != null)) {
                     
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
                     var extBeam = new LineD(extFrom, beam.To);
@@ -100,7 +100,7 @@ namespace WeaponCore.Projectiles
                     if (voxel != null) {
 
                         if (voxel.RootVoxel != voxel) continue;
-                        if (voxel == p.Info.Ai.MyPlanet) {
+                        if (voxel == p.Info.MyPlanet) {
 
                             if (p.CachedPlanetHit) {
                                 IHitInfo cachedPlanetResult;
@@ -111,8 +111,8 @@ namespace WeaponCore.Projectiles
                             }
 
                             if (p.LinePlanetCheck) {
-                                var surfacePos = p.Info.Ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
-                                var planetCenter = p.Info.Ai.MyPlanet.PositionComp.WorldAABB.Center;
+                                var surfacePos = p.Info.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
+                                var planetCenter = p.Info.MyPlanet.PositionComp.WorldAABB.Center;
                                 double surfaceToCenter;
                                 Vector3D.DistanceSquared(ref surfacePos, ref planetCenter, out surfaceToCenter);
                                 double endPointToCenter;
@@ -399,11 +399,11 @@ namespace WeaponCore.Projectiles
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
                             var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Intersection.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
-                            if (grid.IsSameConstructAs(hitEnt.Info.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) <= grid.GridSize * grid.GridSize)
+                            if (grid.IsSameConstructAs(hitEnt.Info.Target.FiringCube.CubeGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) <= grid.GridSize * grid.GridSize)
                                 continue;
 
                             if (!ewarActive)
-                                GetAndSortBlocksInSphere(hitEnt.Info.AmmoDef, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
+                                GetAndSortBlocksInSphere(hitEnt.Info.AmmoDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
 
                             if (hitEnt.Blocks.Count > 0 || ewarActive)
                             {
@@ -507,7 +507,7 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
-        internal static void GetAndSortBlocksInSphere(WeaponDefinition.AmmoDef ammoDef, GridAi ai, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
+        internal static void GetAndSortBlocksInSphere(WeaponDefinition.AmmoDef ammoDef, WeaponSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;
@@ -517,7 +517,7 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in ai.Session.GridToFatMap[grid].MyCubeBocks)
+                foreach (var cube in system.Session.GridToFatMap[grid].MyCubeBocks)
                 {
                     if (!(cube is IMyTerminalBlock)) continue;
                     switch (fieldType)
@@ -552,13 +552,13 @@ namespace WeaponCore.Projectiles
             {
                 //usage:
                 //var dict = (Dictionary<Vector3I, IMySlimBlock>)GetHackDict((IMySlimBlock) null);
-                var tmpList = ai.Session.SlimPool.Get();
+                var tmpList = system.Session.SlimPool.Get();
                 Session.GetBlocksInsideSphereFast(grid, ref sphere, true, tmpList);
 
                 for (int i = 0; i < tmpList.Count; i++)
                     blocks.Add(tmpList[i]);
 
-                ai.Session.SlimPool.Return(tmpList);
+                system.Session.SlimPool.Return(tmpList);
             }
 
             blocks.Sort((a, b) =>
