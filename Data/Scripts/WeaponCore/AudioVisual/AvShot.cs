@@ -274,7 +274,6 @@ namespace WeaponCore.Support
                     a.HitVelocity = a.Hit.HitVelocity;
                     a.Hitting = !a.ShrinkInited;
                     a.HitEffects(false);
-                    Log.Line($"{a.HitSoundActive} - {a.System.Session.Tick - a.LastTick}");
                     if (a.HitSoundActive && a.System.Session.Tick - a.LastHit > 9)
                         a.HitSoundStart();
                     a.LastHit = a.System.Session.Tick;
