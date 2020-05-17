@@ -25,9 +25,11 @@ namespace WeaponCore
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
             else
+            {
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
+            }
 
-            MyAPIGateway.Multiplayer.RegisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
 
             if (IsServer)
             {

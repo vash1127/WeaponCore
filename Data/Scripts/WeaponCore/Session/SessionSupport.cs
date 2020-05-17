@@ -45,7 +45,7 @@ namespace WeaponCore
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
                 CheckAdminRights();
-                if (MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
+                if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
             }
             LCount++;
             if (LCount == 129)

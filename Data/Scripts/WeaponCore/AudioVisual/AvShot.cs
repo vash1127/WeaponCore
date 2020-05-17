@@ -666,6 +666,8 @@ namespace WeaponCore.Support
             if (!AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.AmmoTravelSound)
             {
                 HasTravelSound = true;
+                TravelEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                TravelSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
                 TravelSound.Init(AmmoDef.AmmoAudio.TravelSound, false);
             }
             else HasTravelSound = false;
@@ -696,9 +698,6 @@ namespace WeaponCore.Support
 
         internal void AmmoSoundStart()
         {
-            TravelEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
-            TravelSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
-
             TravelEmitter.SetPosition(TracerFront);
             TravelEmitter.Entity = PrimeEntity;
             TravelEmitter.PlaySound(TravelSound, true);

@@ -263,9 +263,11 @@ namespace WeaponCore
                 if (IsServer || DedicatedServer)
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ServerReceivedPacket);
                 else
+                {
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
+                }
 
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
