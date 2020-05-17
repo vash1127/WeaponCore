@@ -67,7 +67,7 @@ namespace WeaponCore
                         comp.WasTrackReticle = comp.TrackReticle;
                         var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == PlayerId;
 
-                        comp.TrackReticle = comp.State.Value.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.ControllingPlayers.ContainsKey(PlayerId));
+                        comp.TrackReticle = comp.State.Value.OtherPlayerTrackingReticle || (isControllingPlayer && (overRides.TargetPainter || overRides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.ControllingPlayers.ContainsKey(PlayerId));
 
                         if (MpActive && isControllingPlayer && comp.TrackReticle != comp.WasTrackReticle)
                             comp.Session.SendTrackReticleUpdate(comp);
@@ -207,8 +207,7 @@ namespace WeaponCore
 
                         ///
                         ///Check Reload
-                        ///
-                        
+                        ///                        
 
                         if (!w.OutOfAmmo && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                             w.StartReload();
