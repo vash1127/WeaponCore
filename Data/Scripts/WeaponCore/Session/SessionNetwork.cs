@@ -1214,7 +1214,10 @@ namespace WeaponCore
                                 break;
                             }
 
-                            comp.TrackReticle = reticlePacket.Data;
+                            if(DedicatedServer)
+                                comp.TrackReticle = reticlePacket.Data;
+
+                            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
 
                             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
 
