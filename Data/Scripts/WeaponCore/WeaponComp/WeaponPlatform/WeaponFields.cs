@@ -193,7 +193,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                return !State.Sync.Reloading && Comp.State.Value.Online && !System.DesignatorWeapon && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower) || Comp.Session.IsCreative) && (Timings.AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
+                return !State.Sync.Reloading && Comp.State.Value.Online && !System.DesignatorWeapon && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (State.Sync.CurrentMags > 0 || (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower) || Comp.Session.IsCreative) && (Timings.AnimationDelayTick <= Comp.Session.Tick || (!LastEventCanDelay && LastEvent != EventTriggers.Firing));
             }
         }
 

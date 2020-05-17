@@ -460,7 +460,7 @@ namespace WeaponCore.Platform
 
         public void StartReload()
         {
-            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || ((LastEventCanDelay || LastEvent == EventTriggers.Firing) && Timings.AnimationDelayTick > Comp.Session.Tick)) return;
+            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
 
