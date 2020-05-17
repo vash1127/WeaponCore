@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -11,7 +12,98 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private bool CompStateUpdate(PacketObj data)
+        public void ReproccessClientErrorPacketsNew()
+        {
+            for (int i = ClientSideErrorPktListNew.Count - 1; i >= 0; i--)
+            {
+                var packetObj = ClientSideErrorPktListNew[i];
+
+                var erroredPacket = packetObj.ErrorPacket;
+                if (erroredPacket.MaxAttempts == 0)
+                {
+                    //set packet retry variables, based on type
+                    //erroredPacket.MaxAttempts = 3;
+                    //erroredPacket.RetryAttempt = 0;                    
+
+                    switch (erroredPacket.PType)
+                    {
+                        case PacketType.WeaponSyncUpdate:
+                            erroredPacket.MaxAttempts = 7;
+                            erroredPacket.RetryDelayTicks = 15;
+                            break;
+
+                        default:
+                            erroredPacket.MaxAttempts = 7;
+                            erroredPacket.RetryDelayTicks = 15;
+                            break;
+                    }
+
+                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+                }
+
+                //proccess packet logic
+
+                if (erroredPacket.RetryTick > Tick) continue;
+                erroredPacket.RetryAttempt++;
+
+                var success = false;
+
+                switch (erroredPacket.PType)
+                {
+                    case PacketType.WeaponSyncUpdate:
+                        var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
+                        if (ent == null) break;
+
+                        var packet = erroredPacket.Packet as GridWeaponPacket;
+                        if (packet == null)
+                        {
+                            erroredPacket.MaxAttempts = 0;
+                            break;
+                        }
+
+                        var compsToCheck = new HashSet<long>();
+                        for (int j = 0; j < packet.Data.Count; j++)
+                        {
+                            if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
+                                compsToCheck.Add(packet.Data[j].CompEntityId);
+                        }
+
+                        PacketsToServer.Add(new RequestTargetsPacket
+                        {
+                            EntityId = erroredPacket.Packet.EntityId,
+                            SenderId = MultiplayerId,
+                            PType = PacketType.WeaponUpdateRequest,
+                            Comps = new List<long>(compsToCheck),
+                        });
+
+                        success = true;
+                        break;
+
+                    default:
+                        success = ProccessClientPacket(packetObj);
+                        break;
+                }
+
+                if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
+                {
+                    if (!success)
+                        Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
+
+                    ClientSideErrorPktListNew.Remove(packetObj);
+                    PacketObjPool.Return(packetObj);
+                }
+                else
+                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+
+                if (erroredPacket.MaxAttempts == 0)
+                {
+                    ClientSideErrorPktListNew.Remove(packetObj);
+                    PacketObjPool.Return(packetObj);
+                }
+            }
+        }
+
+        private bool ClientCompStateUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
@@ -27,7 +119,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool CompSettingsUpdate(PacketObj data)
+        private bool ClientCompSettingsUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
@@ -38,12 +130,11 @@ namespace WeaponCore
 
             comp.MIds[(int)packet.PType] = setPacket.MId;
             comp.Set.Value.Sync(comp, setPacket.Data);
-
             data.Report.PacketValid = true;
             return true;
         }
 
-        private bool WeaponSyncUpdate(PacketObj data)
+        private bool ClientWeaponSyncUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var targetPacket = (GridWeaponPacket)packet;
@@ -103,7 +194,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool FakeTargetUpdate(PacketObj data)
+        private bool ClientFakeTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
             data.ErrorPacket.NoReprocess = true; 
@@ -121,7 +212,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool PlayerIdUpdate(PacketObj data)
+        private bool ClientPlayerIdUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var updatePacket = (BoolUpdatePacket)packet;
@@ -135,7 +226,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientMouseEvent(PacketObj data)
+        private bool ClientClientMouseEvent(PacketObj data)
         {
             var packet = data.Packet;
             var mousePacket = (InputPacket)packet;
@@ -154,7 +245,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ActiveControlUpdate(PacketObj data)
+        private bool ClientActiveControlUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var dPacket = (BoolUpdatePacket)packet;
@@ -171,7 +262,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ActiveControlFullUpdate(PacketObj data)
+        private bool ClientActiveControlFullUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var csPacket = (CurrentGridPlayersPacket)packet;
@@ -191,7 +282,7 @@ namespace WeaponCore
 
         }
 
-        private bool ReticleUpdate(PacketObj data)
+        private bool ClientReticleUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var reticlePacket = (BoolUpdatePacket)packet;
@@ -208,7 +299,7 @@ namespace WeaponCore
 
         }
 
-        private bool OverRidesUpdate(PacketObj data)
+        private bool ClientOverRidesUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var overRidesPacket = (OverRidesPacket)packet;
@@ -263,7 +354,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool PlayerControlUpdate(PacketObj data)
+        private bool ClientPlayerControlUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var cPlayerPacket = (ControllingPlayerPacket)packet;
@@ -278,7 +369,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool TargetExpireUpdate(PacketObj data)
+        private bool ClientTargetExpireUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var idPacket = (WeaponIdPacket)packet;
@@ -296,7 +387,7 @@ namespace WeaponCore
 
         }
 
-        private bool FullMouseUpdate(PacketObj data)
+        private bool ClientFullMouseUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var mouseUpdatePacket = (MouseInputSyncPacket)packet;
@@ -314,7 +405,7 @@ namespace WeaponCore
 
         }
 
-        private bool CompToolbarShootState(PacketObj data)
+        private bool ClientCompToolbarShootState(PacketObj data)
         {
             var packet = data.Packet;
             var shootStatePacket = (ShootStatePacket)packet;
@@ -345,7 +436,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool RangeUpdate(PacketObj data)
+        private bool ClientRangeUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var rangePacket = (RangePacket)packet;
@@ -360,7 +451,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool GridAiUiMidUpdate(PacketObj data)
+        private bool ClientGridAiUiMidUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
@@ -376,7 +467,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool CycleAmmo(PacketObj data)
+        private bool ClientCycleAmmo(PacketObj data)
         {
             var packet = data.Packet;
             var cyclePacket = (CycleAmmoPacket)packet;
@@ -395,7 +486,7 @@ namespace WeaponCore
 
         }
 
-        private bool GridOverRidesSync(PacketObj data)
+        private bool ClientGridOverRidesSync(PacketObj data)
         {
             var packet = data.Packet;
             var gridOverRidePacket = (GridOverRidesSyncPacket)packet;
@@ -425,7 +516,7 @@ namespace WeaponCore
 
         }
 
-        private bool RescanGroupRequest(PacketObj data)
+        private bool ClientRescanGroupRequest(PacketObj data)
         {
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
@@ -440,7 +531,7 @@ namespace WeaponCore
 
         }
 
-        private bool GridFocusListSync(PacketObj data)
+        private bool ClientGridFocusListSync(PacketObj data)
         {
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
@@ -463,7 +554,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientMidUpdate(PacketObj data)
+        private bool ClientClientMidUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var midPacket = (ClientMIdUpdatePacket)packet;
@@ -492,7 +583,7 @@ namespace WeaponCore
             return true;
 
         }
-        private bool FocusStates(PacketObj data)
+        private bool ClientFocusStates(PacketObj data)
         {
             var packet = data.Packet;
             var focusPacket = (FocusPacket)packet;

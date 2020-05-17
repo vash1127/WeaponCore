@@ -19,8 +19,8 @@ namespace WeaponCore.Support
         internal Weapon.AmmoInfo AmmoInfo;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
-        internal MySoundPair FireSound = new MySoundPair();
-        internal MySoundPair TravelSound = new MySoundPair();
+        internal MySoundPair FireSound;
+        internal MySoundPair TravelSound;
         internal MySoundPair HitSound;
         internal MyEntity3DSoundEmitter FireEmitter;
         internal MyEntity3DSoundEmitter TravelEmitter;
@@ -861,21 +861,36 @@ namespace WeaponCore.Support
                 System.Session.Emitters.Push(HitEmitter);
                 HitEmitter.CanPlayLoopSounds = true;
             }
+
             if (HitSound != null)
+            {
                 System.Session.SoundPairs.Push(HitSound);
+            }
 
             if (FireEmitter != null)
+            {
                 System.Session.Emitters.Push(FireEmitter);
+            }
+
             if (FireSound != null)
+            {
                 System.Session.SoundPairs.Push(FireSound);
+            }
 
             if (TravelEmitter != null)
+            {
                 System.Session.Emitters.Push(TravelEmitter);
+            }
+
             if (TravelSound != null)
+            {
                 System.Session.SoundPairs.Push(TravelSound);
+            }
 
             if (AmmoEffect != null)
+            {
                 DisposeAmmoEffect(true, false);
+            }
 
             if (PrimeEntity != null && PrimeEntity.InScene)
             {

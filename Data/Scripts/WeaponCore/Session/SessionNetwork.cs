@@ -50,102 +50,102 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
 
+        #region NewClientSwitch
         private bool ProccessClientPacket(PacketObj packetObj)
         {
             var invalidType = false;
-            switch (packetObj.Packet.PType)
-            {
+            switch (packetObj.Packet.PType) {
                 case PacketType.CompStateUpdate: {
-                        CompStateUpdate(packetObj);
-                        break;
-                    }
+                    ClientCompStateUpdate(packetObj);
+                    break;
+                }
                 case PacketType.CompSettingsUpdate: {
-                        CompSettingsUpdate(packetObj);
-                        break;
-                    }
+                    ClientCompSettingsUpdate(packetObj);
+                    break;
+                }
                 case PacketType.WeaponSyncUpdate: {
-                        WeaponSyncUpdate(packetObj);
-                        break;
-                    }
+                    ClientWeaponSyncUpdate(packetObj);
+                    break;
+                }
                 case PacketType.FakeTargetUpdate: {
-                        FakeTargetUpdate(packetObj);
-                        break;
-                    }
+                    ClientFakeTargetUpdate(packetObj);
+                    break;
+                }
                 case PacketType.PlayerIdUpdate: {
-                        PlayerIdUpdate(packetObj);
-                        break;
-                    }
+                    ClientPlayerIdUpdate(packetObj);
+                    break;
+                }
                 case PacketType.ClientMouseEvent: {
-                        ClientMouseEvent(packetObj);
-                        break;
-                    }
+                    ClientClientMouseEvent(packetObj);
+                    break;
+                }
                 case PacketType.ActiveControlUpdate: {
-                        ActiveControlUpdate(packetObj);
-                        break;
-                    }
+                    ClientActiveControlUpdate(packetObj);
+                    break;
+                }
                 case PacketType.ActiveControlFullUpdate: {
-                        ActiveControlFullUpdate(packetObj);
-                        break;
-                    }
+                    ClientActiveControlFullUpdate(packetObj);
+                    break;
+                }
                 case PacketType.ReticleUpdate: {
-                        ReticleUpdate(packetObj);
-                        break;
-                    }
+                    ClientReticleUpdate(packetObj);
+                    break;
+                }
                 case PacketType.OverRidesUpdate: {
-                        OverRidesUpdate(packetObj);
-                        break;
-                    }
+                    ClientOverRidesUpdate(packetObj);
+                    break;
+                }
                 case PacketType.PlayerControlUpdate: {
-                        PlayerControlUpdate(packetObj);
-                        break;
-                    }
+                    ClientPlayerControlUpdate(packetObj);
+                    break;
+                }
                 case PacketType.TargetExpireUpdate: {
-                        TargetExpireUpdate(packetObj);
-                        break;
-                    }
+                    ClientTargetExpireUpdate(packetObj);
+                    break;
+                }
                 case PacketType.FullMouseUpdate: {
-                        FullMouseUpdate(packetObj);
-                        break;
-                    }
+                    ClientFullMouseUpdate(packetObj);
+                    break;
+                }
                 case PacketType.CompToolbarShootState: {
-                        CompToolbarShootState(packetObj);
-                        break;
-                    }
+                    ClientCompToolbarShootState(packetObj);
+                    break;
+                }
                 case PacketType.RangeUpdate: {
-                        RangeUpdate(packetObj);
-                        break;
-                    }
+                    ClientRangeUpdate(packetObj);
+                    break;
+                }
                 case PacketType.GridAiUiMidUpdate: {
-                        GridAiUiMidUpdate(packetObj);
-                        break;
-                    }
+                    ClientGridAiUiMidUpdate(packetObj);
+                    break;
+                }
                 case PacketType.CycleAmmo: {
-                        CycleAmmo(packetObj);
-                        break;
-                    }
+                    ClientCycleAmmo(packetObj);
+                    break;
+                }
                 case PacketType.GridOverRidesSync: {
-                        GridOverRidesSync(packetObj);
-                        break;
-                    }
+                    ClientGridOverRidesSync(packetObj);
+                    break;
+                }
                 case PacketType.RescanGroupRequest: {
-                        RescanGroupRequest(packetObj);
-                        break;
-                    }
+                    ClientRescanGroupRequest(packetObj);
+                    break;
+                }
                 case PacketType.GridFocusListSync: {
-                        GridFocusListSync(packetObj);
-                        break;
-                    }
+                    ClientGridFocusListSync(packetObj);
+                    break;
+                }
                 case PacketType.ClientMidUpdate: {
-                        ClientMidUpdate(packetObj);
-                        break;
-                    }
+                    ClientClientMidUpdate(packetObj);
+                    break;
+                }
                 case PacketType.FocusUpdate:
                 case PacketType.ReassignTargetUpdate:
                 case PacketType.NextActiveUpdate:
                 case PacketType.ReleaseActiveUpdate: {
-                        FocusStates(packetObj);
-                        break;
-                    }
+                    ClientFocusStates(packetObj);
+                    break;
+                }
                 default:
                     if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
                     Log.Line($"Invalid Packet Type: {packetObj.Packet.PType} packet type: {packetObj.Packet.GetType()}");
@@ -172,7 +172,10 @@ namespace WeaponCore
 
             return packetObj.Report.PacketValid;
         }
+        #endregion
 
+
+        #region OldClientSwitch
         private bool ProccessClientPacket(Packet packet, int packetSize, bool retry = false)
         {
             try
@@ -225,9 +228,10 @@ namespace WeaponCore
                             break;
                         }
                     case PacketType.WeaponSyncUpdate:
-                    {
+                        {
                             var targetPacket = packet as GridWeaponPacket;
-                            if (targetPacket?.Data == null || ent == null) {
+                            if (targetPacket?.Data == null || ent == null)
+                            {
                                 errorPacket.Error = $"Data was null: {targetPacket?.Data == null} Grid was null: {ent == null}";
 
                                 break;
@@ -386,7 +390,8 @@ namespace WeaponCore
                                     UpdateActiveControlDictionary(block, playerBlock.PlayerId, true);
                                 }
                             }
-                            catch (Exception e) {
+                            catch (Exception e)
+                            {
                                 errorPacket.Error = $" Error in Full Update {e}";
                             }
 
@@ -505,14 +510,14 @@ namespace WeaponCore
                         }
                     case PacketType.FullMouseUpdate:
                         {
-                            var mouseUpdatePacket = (MouseInputSyncPacket) packet;
+                            var mouseUpdatePacket = (MouseInputSyncPacket)packet;
 
                             if (mouseUpdatePacket.Data == null) break;
 
-                            for(int i = 0; i < mouseUpdatePacket.Data.Length; i++)
+                            for (int i = 0; i < mouseUpdatePacket.Data.Length; i++)
                             {
                                 var playerMousePackets = mouseUpdatePacket.Data[i];
-                                if(playerMousePackets.PlayerId != PlayerId)
+                                if (playerMousePackets.PlayerId != PlayerId)
                                     PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
                             }
 
@@ -521,7 +526,7 @@ namespace WeaponCore
                         }
                     case PacketType.CompToolbarShootState:
                         {
-                            var shootStatePacket = (ShootStatePacket) packet;
+                            var shootStatePacket = (ShootStatePacket)packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
@@ -554,7 +559,7 @@ namespace WeaponCore
                         }
                     case PacketType.RangeUpdate:
                         {
-                            var rangePacket = (RangePacket) packet;
+                            var rangePacket = (RangePacket)packet;
                             ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
                             comp = ent?.Components.Get<WeaponComponent>();
 
@@ -569,7 +574,7 @@ namespace WeaponCore
                     case PacketType.GridAiUiMidUpdate:
                         {
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-                            var midPacket = (MIdPacket) packet;
+                            var midPacket = (MIdPacket)packet;
 
                             if (myGrid == null) break;
 
@@ -669,20 +674,20 @@ namespace WeaponCore
                             GridAi ai;
                             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                for(int i = 0; i < focusPacket.EntityIds.Length; i++)
+                                for (int i = 0; i < focusPacket.EntityIds.Length; i++)
                                 {
                                     ai.Focus.Target[i] = MyEntities.GetEntityByIdOrDefault(focusPacket.EntityIds[i]);
                                 }
                                 report.PacketValid = true;
                             }
-                            
+
                             break;
                         }
                     case PacketType.ClientMidUpdate:
                         {
                             var midPacket = packet as ClientMIdUpdatePacket;
 
-                            if(ent == null || midPacket == null)
+                            if (ent == null || midPacket == null)
                             {
                                 errorPacket.Error = $"ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose} midPacket is nul: {midPacket == null}";
                                 break;
@@ -717,7 +722,7 @@ namespace WeaponCore
                     case PacketType.NextActiveUpdate:
                     case PacketType.ReleaseActiveUpdate:
                         {
-                            var focusPacket = (FocusPacket) packet;
+                            var focusPacket = (FocusPacket)packet;
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             if (myGrid == null || myGrid.MarkedForClose)
@@ -757,7 +762,7 @@ namespace WeaponCore
                         }
 
                     default:
-                        if(!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
+                        if (!retry) Reporter.ReportData[PacketType.Invalid].Add(report);
                         Log.Line($"Invalid Packet Type: {packet.PType} packet type: {packet.GetType()}");
                         invalidType = true;
                         report.PacketValid = false;
@@ -776,13 +781,14 @@ namespace WeaponCore
                         ClientSideErrorPktList.Add(errorPacket);
                     }
                 }
-                else if(report.PacketValid && ClientSideErrorPktList.Contains(errorPacket))
+                else if (report.PacketValid && ClientSideErrorPktList.Contains(errorPacket))
                     ClientSideErrorPktList.Remove(errorPacket);
 
                 return report.PacketValid;
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); return false; }
         }
+
 
         public void ReproccessClientErrorPackets()
         {
@@ -868,96 +874,8 @@ namespace WeaponCore
                     ClientSideErrorPktList.Remove(erroredPacket);
             }
         }
+        #endregion
 
-        public void ReproccessClientErrorPacketsNew()
-        {
-            for(int i = ClientSideErrorPktListNew.Count - 1; i >= 0; i--)
-            {
-                var packetObj = ClientSideErrorPktListNew[i];
-
-                var erroredPacket = packetObj.ErrorPacket;
-                if (erroredPacket.MaxAttempts == 0)
-                {
-                    //set packet retry variables, based on type
-                    //erroredPacket.MaxAttempts = 3;
-                    //erroredPacket.RetryAttempt = 0;                    
-
-                    switch (erroredPacket.PType)
-                    {
-                        case PacketType.WeaponSyncUpdate:
-                            erroredPacket.MaxAttempts = 7;
-                            erroredPacket.RetryDelayTicks = 15;                            
-                            break;
-
-                        default:
-                            erroredPacket.MaxAttempts = 7;
-                            erroredPacket.RetryDelayTicks = 15;
-                            break;
-                    }
-
-                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
-                }
-
-                //proccess packet logic
-
-                if (erroredPacket.RetryTick > Tick) continue;
-                erroredPacket.RetryAttempt++;
-
-                var success = false;
-
-                switch (erroredPacket.PType)
-                {
-                    case PacketType.WeaponSyncUpdate:
-                        var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
-                        if (ent == null) break;
-
-                        var packet = erroredPacket.Packet as GridWeaponPacket;
-                        if (packet == null)
-                        {
-                            erroredPacket.MaxAttempts = 0;
-                            break;
-                        }
-
-                        var compsToCheck = new HashSet<long>();
-                        for(int j = 0; j < packet.Data.Count; j++)
-                        {
-                            if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
-                                compsToCheck.Add(packet.Data[j].CompEntityId);
-                        }
-
-                        PacketsToServer.Add(new RequestTargetsPacket {
-                            EntityId = erroredPacket.Packet.EntityId,
-                            SenderId = MultiplayerId,
-                            PType = PacketType.WeaponUpdateRequest,
-                            Comps = new List<long>(compsToCheck),
-                        });
-
-                        success = true;
-                        break;
-
-                    default:
-                        success = ProccessClientPacket(packetObj);                        
-                        break;
-                }
-
-                if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
-                {
-                    if (!success)
-                        Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
-
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                    PacketObjPool.Return(packetObj);
-                }
-                else
-                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
-
-                if (erroredPacket.MaxAttempts == 0)
-                {
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                    PacketObjPool.Return(packetObj);
-                }
-            }
-        }
 
         internal void ProccessClientPacketsForServer()
         {
@@ -976,19 +894,133 @@ namespace WeaponCore
 
         #endregion
 
-        #region Server Sync
 
+        #region NewServerSwitch
+        private void ProccessServerPacket(byte[] rawData)
+        {
+            var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+            if (packet == null) return;
+
+            var packetSize = rawData.Length;
+
+            var report = Reporter.ReportPool.Get();
+            report.Receiver = NetworkReporter.Report.Received.Server;
+            report.PacketSize = packetSize;
+            Reporter.ReportData[packet.PType].Add(report);
+            var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = packet.PType };
+
+            var packetObj = PacketObjPool.Get();
+            packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+
+            switch (packetObj.Packet.PType) {
+
+                case PacketType.CompStateUpdate: {
+                    ServerCompStateUpdate(packetObj);
+                    break;
+                }
+                case PacketType.CompSettingsUpdate: {
+                    ServerCompSettingsUpdate(packetObj);
+                    break;
+                }
+                case PacketType.ClientMouseEvent: {
+                    ServerClientMouseEvent(packetObj);
+                    break;
+                }
+                case PacketType.ActiveControlUpdate: {
+                    ServerActiveControlUpdate(packetObj);
+                    break;
+                }
+                case PacketType.FakeTargetUpdate: {
+                    ServerFakeTargetUpdate(packetObj);
+                    break;
+                }
+                case PacketType.GridSyncRequestUpdate: {
+                    ServerGridSyncRequestUpdate(packetObj);
+                    break;
+                }
+                case PacketType.ReticleUpdate: {
+                    ServerReticleUpdate(packetObj);
+                    break;
+                }
+                case PacketType.OverRidesUpdate: {
+                    ServerOverRidesUpdate(packetObj);
+                    break;
+                }
+                case PacketType.PlayerControlUpdate: {
+                    ServerPlayerControlUpdate(packetObj);
+                    break;
+                }
+                case PacketType.WeaponUpdateRequest: {
+                    ServerWeaponUpdateRequest(packetObj);
+                    break;
+                }
+                case PacketType.ClientEntityClosed: {
+                    ServerClientEntityClosed(packetObj);
+                    break;
+                }
+                case PacketType.RequestMouseStates: {
+                    ServerRequestMouseStates(packetObj);
+                    break;
+                }
+                case PacketType.CompToolbarShootState: {
+                    ServerCompToolbarShootState(packetObj);
+                    break;
+                }
+                case PacketType.RangeUpdate: {
+                    ServerRangeUpdate(packetObj);
+                    break;
+                }
+                case PacketType.CycleAmmo: {
+                    ServerCycleAmmo(packetObj);
+                    break;
+                }
+                case PacketType.RescanGroupRequest: {
+                    ServerRescanGroupRequest(packetObj);
+                    break;
+                }
+                case PacketType.FixedWeaponHitEvent: {
+                    ServerFixedWeaponHitEvent(packetObj);
+                    break;
+                }
+                case PacketType.CompSyncRequest: {
+                    ServerCompSyncRequest(packetObj);
+                    break;
+                }
+                case PacketType.FocusUpdate:
+                case PacketType.ReassignTargetUpdate:
+                case PacketType.NextActiveUpdate:
+                case PacketType.ReleaseActiveUpdate: {
+                    ServerFocusUpdate(packetObj);
+                    break;
+                }
+                default:
+                    packetObj.Report.PacketValid = false;
+                    Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
+                    break;
+            }
+
+            if (!packetObj.Report.PacketValid)
+                Log.Line(packetObj.ErrorPacket.Error);
+
+            if (packetObj.Report.PacketValid)
+                PacketObjPool.Return(packetObj);
+
+            //return packetObj.Report.PacketValid;
+        }
+        #endregion
+
+        #region Server Sync
         private void ServerReceivedPacket(byte[] rawData)
         {
             PacketType ptype = PacketType.Invalid;
             try
             {
+                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+                if (packet == null) return;
+
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Server;
                 report.PacketSize = rawData.Length;
-
-                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                if (packet == null) return;
 
                 Reporter.ReportData[packet.PType].Add(report);
                 ptype = packet.PType;
@@ -1375,7 +1407,7 @@ namespace WeaponCore
                                     }
                                     else
                                     {
-                                        SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, myGrid, null);
+                                        //SendMidResync(packet.PType, ai.UiMId, packet.SenderId, myGrid, null);
                                         errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                                     }
                                 }
