@@ -299,13 +299,13 @@ namespace WeaponCore
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             GridAi ai;
-                            if (myGrid != null && GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                                 report.PacketValid = true;
                             }
                             else
-                                errorPacket.Error = $"myGrid was null {myGrid == null} GridToMasterAi Not Found";
+                                errorPacket.Error = $"myGrid was null {myGrid == null} GridTargetingAIs Not Found";
 
                             break;
                         }
@@ -438,7 +438,7 @@ namespace WeaponCore
                             else if (myGrid != null)
                             {
                                 GridAi ai;
-                                if (GridToMasterAi.TryGetValue(myGrid, out ai) && ai.UiMId < overRidesPacket.MId)
+                                if (GridTargetingAIs.TryGetValue(myGrid, out ai) && ai.UiMId < overRidesPacket.MId)
                                 {
                                     var o = overRidesPacket.Data;
                                     ai.UiMId = overRidesPacket.MId;
@@ -574,7 +574,7 @@ namespace WeaponCore
                             if (myGrid == null) break;
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.UiMId = midPacket.MId;
                                 report.PacketValid = true;
@@ -619,7 +619,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.ReScanBlockGroups();
 
@@ -649,7 +649,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                                 ai.ReScanBlockGroups(true);
 
                             report.PacketValid = true;
@@ -667,7 +667,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 for(int i = 0; i < focusPacket.EntityIds.Length; i++)
                                 {
@@ -699,7 +699,7 @@ namespace WeaponCore
                             else if (ent is MyCubeGrid)
                             {
                                 GridAi ai;
-                                if (GridToMasterAi.TryGetValue((MyCubeGrid)ent, out ai))
+                                if (GridTargetingAIs.TryGetValue((MyCubeGrid)ent, out ai))
                                 {
                                     ai.UiMId = midPacket.MId;
                                     report.PacketValid = true;
@@ -727,7 +727,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
@@ -1116,7 +1116,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
@@ -1140,11 +1140,6 @@ namespace WeaponCore
                             GridAi ai;
                             if (GridToMasterAi.TryGetValue(myGrid, out ai))
                             {
-                                if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                                    PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
-
-                                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
-
                                 var c = 0;
                                 var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
                                 foreach (var playerBlockPair in ai.ControllingPlayers)
@@ -1281,6 +1276,11 @@ namespace WeaponCore
                                     SingleClient = true,
                                 });
 
+                                if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                                    PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
+
+                                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
+
                                 report.PacketValid = true;
                             }
                             else
@@ -1312,92 +1312,86 @@ namespace WeaponCore
                         }
                     case PacketType.OverRidesUpdate:
                         {
-                            try
+                            var overRidesPacket = (OverRidesPacket) packet;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            var myGrid = ent as MyCubeGrid;
+
+                            if (ent == null || ent.MarkedForClose || comp == null && myGrid == null)
                             {
-                                var overRidesPacket = (OverRidesPacket)packet;
-                                ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
-                                comp = ent?.Components.Get<WeaponComponent>();
+                                errorPacket.Error = $"comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
 
-                                var myGrid = ent as MyCubeGrid;
-
-                                if (ent == null || ent.MarkedForClose || comp == null && myGrid == null)
+                            if (comp != null)
+                            {
+                                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId)
                                 {
-                                    errorPacket.Error = $"comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
-                                    break;
-                                }
+                                    comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
 
-                                if (comp != null)
-                                {
-                                    if (comp.MIds[(int)packet.PType] < overRidesPacket.MId)
+                                    GroupInfo group;
+                                    if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
                                     {
-                                        comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                                        comp.MIds[(int)packet.PType] = overRidesPacket.MId;
+                                        comp.Ai.ScanBlockGroupSettings = true;
+                                        comp.Ai.GroupsToCheck.Add(group);
+                                    }
+                                    report.PacketValid = true;
+                                }
+                                else
+                                {
+                                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                    errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                                }
+                            }
+                            else if (myGrid != null)
+                            {
+                                GridAi ai;
+                                if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                {
+                                    if (ai.UiMId < overRidesPacket.MId)
+                                    {
+                                        var o = overRidesPacket.Data;
+                                        ai.UiMId = overRidesPacket.MId;
 
-                                        GroupInfo group;
-                                        if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
+                                        ai.ReScanBlockGroups();
+
+                                        SyncGridOverrides(ai, overRidesPacket.GroupName, o);
+
+                                        GroupInfo groups;
+                                        if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                                         {
-                                            comp.Ai.ScanBlockGroupSettings = true;
-                                            comp.Ai.GroupsToCheck.Add(group);
+                                            foreach (var component in groups.Comps)
+                                            {
+                                                component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
+                                                component.Set.Value.Overrides.Sync(o);
+                                            }
+
+                                            report.PacketValid = true;
                                         }
-                                        report.PacketValid = true;
+                                        else
+                                            errorPacket.Error = "Block group not found";
                                     }
                                     else
                                     {
-                                        SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                        SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, myGrid, null);
                                         errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                                     }
                                 }
-                                else if (myGrid != null)
-                                {
-                                    GridAi ai;
-                                    if (GridToMasterAi.TryGetValue(myGrid, out ai))
-                                    {
-                                        if (ai.UiMId < overRidesPacket.MId)
-                                        {
-                                            var o = overRidesPacket.Data;
-                                            ai.UiMId = overRidesPacket.MId;
-
-                                            ai.ReScanBlockGroups();
-
-                                            SyncGridOverrides(ai, overRidesPacket.GroupName, o);
-
-                                            GroupInfo groups;
-                                            if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
-                                            {
-                                                foreach (var component in groups.Comps)
-                                                {
-                                                    component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
-                                                    component.Set.Value.Overrides.Sync(o);
-                                                }
-
-                                                report.PacketValid = true;
-                                            }
-                                            else
-                                                errorPacket.Error = "Block group not found";
-                                        }
-                                        else
-                                        {
-                                            SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, myGrid, null);
-                                            errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                                        }
-                                    }
-                                    else
-                                        errorPacket.Error = "GridAi not found";
-                                }
-
-                                if (report.PacketValid)
-                                {
-                                    PacketsToClient.Add(new PacketInfo
-                                    {
-                                        Entity = ent,
-                                        Packet = overRidesPacket,
-                                    });
-                                }
+                                else
+                                    errorPacket.Error = "GridAi not found";
                             }
-                            catch (Exception e)
+
+                            if (report.PacketValid)
                             {
-                                Log.Line($"Overrides error: {e}");
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = overRidesPacket,
+                                });
                             }
+
                             break;
                         }
                     case PacketType.PlayerControlUpdate:
@@ -1439,7 +1433,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 var gridPacket = new GridWeaponPacket
                                 {
@@ -1657,7 +1651,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                                 ai.ReScanBlockGroups(true);
 
                             PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
@@ -1727,7 +1721,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
                                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
