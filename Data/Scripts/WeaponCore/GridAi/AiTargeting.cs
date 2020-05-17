@@ -297,7 +297,7 @@ namespace WeaponCore.Support
                     var bt = focusSubSystem ? w.Comp.Set.Value.Overrides.SubSystem : blockType;
 
                     ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
-                    ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
+                    system.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
                     if (bt != Any && blockTypeMap != null && blockTypeMap[bt].Count > 0)
                     {
                         var subSystemList = blockTypeMap[bt];
@@ -318,7 +318,7 @@ namespace WeaponCore.Support
                 if (system.OnlySubSystems || focusSubSystem && w.Comp.Set.Value.Overrides.SubSystem != Any) return false;
             }
             FatMap fatMap;
-            return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, type, checkPower);
+            return system.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, type, checkPower);
         }
 
         private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, bool checkPower = true)
@@ -350,7 +350,7 @@ namespace WeaponCore.Support
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks, wRng, type);
-            var physics = ai.Session.Physics;
+            var physics = system.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
@@ -361,7 +361,7 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < totalBlocks; i++)
             {
-                if (turretCheck && (blocksChecked > lastBlocks || isPriroity && (blocksSighted > 100 || blocksChecked > 50 && ai.Session.RandomRayCasts > 500 || blocksChecked > 25 && ai.Session.RandomRayCasts > 1000) ))
+                if (turretCheck && (blocksChecked > lastBlocks || isPriroity && (blocksSighted > 100 || blocksChecked > 50 && system.Session.RandomRayCasts > 500 || blocksChecked > 25 && system.Session.RandomRayCasts > 1000) ))
                     break;
 
                 var card = deck[i];
@@ -369,7 +369,7 @@ namespace WeaponCore.Support
 
                 if (!(block is IMyTerminalBlock) || block.MarkedForClose || checkPower && !block.IsWorking) continue;
 
-                ai.Session.BlockChecks++;
+                system.Session.BlockChecks++;
 
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
                 double rayDist;
@@ -387,7 +387,7 @@ namespace WeaponCore.Support
 
                     blocksSighted++;
 
-                    ai.Session.RandomRayCasts++;
+                    system.Session.RandomRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15);
 
@@ -575,7 +575,7 @@ namespace WeaponCore.Support
         {
             var ai = w.Comp.Ai;
             var s = w.System;
-            var physics = ai.Session.Physics;
+            var physics = s.Session.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
 
