@@ -26,7 +26,9 @@ namespace WeaponCore
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
             else
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
-            
+
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
+
             if (IsServer)
             {
                 MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
@@ -68,9 +70,9 @@ namespace WeaponCore
         {
             if (Inited) return;
             Inited = true;
-            Log.Init("debug");
-            Log.Init("perf", false);
-            Log.Init("stats", false);
+            Log.Init("debug", this);
+            Log.Init("perf", this, false);
+            Log.Init("stats", this, false);
 
 
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;

@@ -16,7 +16,16 @@ namespace WeaponCore
 {
     public partial class Session
     {
-
+        private void AuthorReceivedPacket(byte[] rawData)
+        {
+            try
+            {
+                var packet = MyAPIGateway.Utilities.SerializeFromBinary<NetLog>(rawData);
+                if (packet == null) return;
+                Log.CleanLine(packet.Message);
+            }
+            catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
+        }
 
         #region Client Sync
         private void ClientReceivedPacket(byte[] rawData)

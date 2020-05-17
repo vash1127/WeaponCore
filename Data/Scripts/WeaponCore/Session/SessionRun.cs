@@ -265,6 +265,7 @@ namespace WeaponCore
                 else
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);
 
+                MyAPIGateway.Multiplayer.UnregisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;

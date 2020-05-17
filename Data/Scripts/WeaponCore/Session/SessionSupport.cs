@@ -45,6 +45,7 @@ namespace WeaponCore
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
                 CheckAdminRights();
+                if (MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
             }
             LCount++;
             if (LCount == 129)
@@ -167,19 +168,6 @@ namespace WeaponCore
             return _loadCounter;
         }
 
-        private bool FindPlayer(IMyPlayer player, long id)
-        {
-            if (player.IdentityId == id)
-            {
-                Players[id] = player;
-                SteamToPlayer[player.SteamUserId] = id;
-                PlayerMouseStates[id] = new InputStateData();
-
-                PlayerEventId++;
-                if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
-            }
-            return false;
-        }
 
         private void CheckAdminRights()
         {

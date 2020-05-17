@@ -453,6 +453,12 @@ namespace WeaponCore
     }
 
     [ProtoContract]
+    internal class NetLog
+    {
+        [ProtoMember(1)] internal string Message;
+    }
+
+    [ProtoContract]
     internal class PlayerMouseData
     {
         [ProtoMember(1)] internal long PlayerId;

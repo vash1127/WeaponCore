@@ -1,4 +1,6 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Diagnostics;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
@@ -881,6 +883,42 @@ namespace WeaponCore
             var muzzle = weapon.Muzzles[muzzleId];
             var session = weapon.Comp.Session;
             session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, Muzzle = muzzle, Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Client });
+        }
+
+        private bool AuthorDebug()
+        {
+            var authorsOffline = ConnectedAuthors.Count == 0;
+            if (authorsOffline)
+            {
+                AuthLogging = false;
+                return false;
+            }
+
+            foreach (var a in ConnectedAuthors)
+            {
+                var authorsFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(a.Key);
+                if (authorsFaction == null || string.IsNullOrEmpty(authorsFaction.PrivateInfo))
+                    continue;
+
+                int debugValue;
+                int perfValue;
+                int customValue;
+                int logLevel;
+                var netLog = int.TryParse(authorsFaction.PrivateInfo[0].ToString(), out debugValue);
+                var perfLog = int.TryParse(authorsFaction.PrivateInfo[1].ToString(), out perfValue);
+                var customLog = int.TryParse(authorsFaction.PrivateInfo[2].ToString(), out customValue);
+                var hasLevel = int.TryParse(authorsFaction.PrivateInfo[2].ToString(), out logLevel);
+
+                if ((netLog || perfLog || customLog) && hasLevel)
+                {
+                    AuthLogging = true;
+                    LogLevel = logLevel;
+                    return true;
+                }
+                AuthLogging = false;
+
+            }
+            return false;
         }
         #endregion
     }

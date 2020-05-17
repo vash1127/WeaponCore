@@ -172,7 +172,7 @@ namespace WeaponCore
             }
             catch (Exception e)
             {
-                Log.ThreadedWrite($"Exception In Pull: {e}");
+                Log.Line($"Exception In Pull: {e}");
                 WeaponToPullAmmo.ClearList();
                 WeaponToPullAmmo.ApplyChanges();
             }

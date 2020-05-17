@@ -55,6 +55,12 @@ namespace WeaponCore
                 PacketPools.Clear();
             }
 
+            foreach (var e in Emitters)
+                e.Cleanup();
+            Emitters.Clear();
+
+            SoundPairs.Clear();
+
             foreach (var item in _effectedCubes)
             {
                 var cubeid = item.Key;

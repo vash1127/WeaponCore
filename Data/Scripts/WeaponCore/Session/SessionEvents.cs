@@ -208,13 +208,27 @@ namespace WeaponCore
                     if (IsServer && MpActive)
                         SendPlayerConnectionUpdate(l, false);
 
-                    if (removedPlayer.SteamUserId == AuthorSteamId)
-                    {
-                        AuthorPlayerId = 0;
-                    }
+                    if (AuthorIds.Contains(removedPlayer.SteamUserId))
+                        ConnectedAuthors.Remove(playerId);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }
+        }
+
+
+        private bool FindPlayer(IMyPlayer player, long id)
+        {
+            if (player.IdentityId == id)
+            {
+                Players[id] = player;
+                SteamToPlayer[player.SteamUserId] = id;
+                PlayerMouseStates[id] = new InputStateData();
+
+                PlayerEventId++;
+                if (AuthorIds.Contains(player.SteamUserId)) 
+                    ConnectedAuthors.Add(id, player.SteamUserId);
+            }
+            return false;
         }
     }
 }

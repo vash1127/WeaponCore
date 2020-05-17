@@ -16,14 +16,15 @@ namespace WeaponCore.Support
         public class LogInstance
         {
             internal TextWriter TextWriter = null;
-
+            internal Session Session;
             internal void Clean()
             {
                 TextWriter = null;
+                Session = null;
             }
         }
 
-        public static void Init(string name, bool defaultInstance = true)
+        public static void Init(string name, Session session, bool defaultInstance = true)
         {
             try
             {
@@ -33,7 +34,10 @@ namespace WeaponCore.Support
 
                 if (defaultInstance) _defaultInstance = name;
                 var instance = _logPool.Get();
+
+                instance.Session = session;
                 _instances[name] = instance;
+
                 instance.TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(filename, typeof(LogInstance));
                 Line($"Logging Started", name);
             }
@@ -64,6 +68,12 @@ namespace WeaponCore.Support
             MyAPIGateway.Utilities.DeleteFileInLocalStorage(oldName, anyObjectInYourMod);
         }
 
+        public static void NetLogger(Session session, string message)
+        {
+            foreach (var a in session.ConnectedAuthors)
+                MyAPIGateway.Multiplayer.SendMessageTo(Session.AuthorPacketId, MyAPIGateway.Utilities.SerializeToBinary(new NetLog { Message = message }), a.Value);
+        }
+
         public static void Line(string text, string instanceName = null)
         {
             try
@@ -72,8 +82,12 @@ namespace WeaponCore.Support
                 var instance = _instances[name];
                 if (instance.TextWriter != null)
                 {
-                    instance.TextWriter.WriteLine($"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - " + text);
+                    var message = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - " + text;
+                    instance.TextWriter.WriteLine(message);
                     instance.TextWriter.Flush();
+
+                    if (instance.Session.AuthLogging)
+                        NetLogger(instance.Session, "[R-LOG] " + message);
                 }
             }
             catch (Exception e)
@@ -89,14 +103,25 @@ namespace WeaponCore.Support
                 var instance = _instances[name];
                 if (instance.TextWriter != null)
                 {
-                    instance.TextWriter.WriteLine($"{DateTime.Now:HH-mm-ss-fff} - "  + text);
+                    var message = $"{DateTime.Now:HH-mm-ss-fff} - " + text;
+                    instance.TextWriter.WriteLine(message);
                     instance.TextWriter.Flush();
+
+                    if (instance.Session.AuthLogging)
+                        NetLogger(instance.Session, "[R-LOG] " + message);
                 }
             }
             catch (Exception e)
             {
             }
         }
+
+        public static void NetLog(string text, Session session)
+        {
+            if (session.AuthLogging)
+                NetLogger(session, "[R-LOG] " + text);
+        }
+
         public static void Chars(string text, string instanceName = null)
         {
             try
@@ -107,6 +132,9 @@ namespace WeaponCore.Support
                 {
                     instance.TextWriter.Write(text);
                     instance.TextWriter.Flush();
+
+                    if (instance.Session.AuthLogging)
+                        NetLogger(instance.Session, "[R-LOG] " + text);
                 }
             }
             catch (Exception e)
@@ -124,6 +152,10 @@ namespace WeaponCore.Support
                 {
                     instance.TextWriter.WriteLine(text);
                     instance.TextWriter.Flush();
+
+
+                    if (instance.Session.AuthLogging)
+                        NetLogger(instance.Session, "[R-LOG] " + text);
                 }
             }
             catch (Exception e)
@@ -142,7 +174,7 @@ namespace WeaponCore.Support
 
             var instance = _instances[_defaultInstance];
             if (instance.TextWriter != null)
-                Init("debugdevelop.log");
+                Init("debugdevelop.log", null);
 
             instance = _instances[_defaultInstance];           
 
