@@ -1005,7 +1005,7 @@ namespace WeaponCore
             if (packetObj.Report.PacketValid)
                 PacketObjPool.Return(packetObj);
 
-            return packetObj.Report.PacketValid;
+            //return packetObj.Report.PacketValid;
         }
         #endregion
 
@@ -1407,7 +1407,7 @@ namespace WeaponCore
                                     }
                                     else
                                     {
-                                        SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, myGrid, null);
+                                        //SendMidResync(packet.PType, ai.UiMId, packet.SenderId, myGrid, null);
                                         errorPacket.Error = "Mid is old, likely multiple clients attempting update";
                                     }
                                 }
