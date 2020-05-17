@@ -896,8 +896,22 @@ namespace WeaponCore
 
 
         #region NewServerSwitch
-        private bool ProccessServerPacket(PacketObj packetObj)
+        private void ProccessServerPacket(byte[] rawData)
         {
+            var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+            if (packet == null) return;
+
+            var packetSize = rawData.Length;
+
+            var report = Reporter.ReportPool.Get();
+            report.Receiver = NetworkReporter.Report.Received.Server;
+            report.PacketSize = packetSize;
+            Reporter.ReportData[packet.PType].Add(report);
+            var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = packet.PType };
+
+            var packetObj = PacketObjPool.Get();
+            packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+
             switch (packetObj.Packet.PType) {
 
                 case PacketType.CompStateUpdate: {
@@ -1001,12 +1015,12 @@ namespace WeaponCore
             PacketType ptype = PacketType.Invalid;
             try
             {
+                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+                if (packet == null) return;
+
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Server;
                 report.PacketSize = rawData.Length;
-
-                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                if (packet == null) return;
 
                 Reporter.ReportData[packet.PType].Add(report);
                 ptype = packet.PType;
