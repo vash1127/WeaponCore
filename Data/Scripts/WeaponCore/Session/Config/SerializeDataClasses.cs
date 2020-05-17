@@ -65,7 +65,8 @@ namespace WeaponCore
     [ProtoInclude(14, typeof(GridFocusListPacket))]
     [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(16, typeof(ClientMIdUpdatePacket))]
-    [ProtoInclude(17, typeof(MIdPacket))]    
+    [ProtoInclude(17, typeof(MIdPacket))]
+
     public class Packet
     {
         [ProtoMember(1)] internal long EntityId;
@@ -450,12 +451,6 @@ namespace WeaponCore
             MouseButtonRight = syncFrom.MouseButtonRight;
             InMenu = syncFrom.InMenu;
         }
-    }
-
-    [ProtoContract]
-    internal class NetLog
-    {
-        [ProtoMember(1)] internal string Message;
     }
 
     [ProtoContract]

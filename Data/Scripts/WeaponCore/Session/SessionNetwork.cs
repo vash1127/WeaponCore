@@ -20,9 +20,9 @@ namespace WeaponCore
         {
             try
             {
-                var packet = MyAPIGateway.Utilities.SerializeFromBinary<NetLog>(rawData);
-                if (packet == null) return;
-                Log.CleanLine(packet.Message);
+                var message = System.Text.Encoding.UTF8.GetString(rawData, 0, rawData.Length); ;
+                if (string.IsNullOrEmpty(message)) return;
+                Log.CleanLine(message);
             }
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
@@ -36,7 +36,8 @@ namespace WeaponCore
                 if (packet == null) return;
 
                 var packetSize = rawData.Length;
-                //ProccessClientPacket(packet, packetSize);
+                ProccessClientPacket(packet, packetSize);
+                /*
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Client;
                 report.PacketSize = packetSize;
@@ -44,6 +45,7 @@ namespace WeaponCore
                 var errorPacket = new ErrorPacket {RecievedTick = Tick, Packet = packet};
                 var packetObj = PacketObjPool.Get();
                 packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+                */
             }
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
@@ -153,24 +155,24 @@ namespace WeaponCore
             }
             if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
             {
-                if (!ClientSideErrorPktList.Contains(packetObj))
-                    ClientSideErrorPktList.Add(packetObj);
+                if (!ClientSideErrorPktListNew.Contains(packetObj))
+                    ClientSideErrorPktListNew.Add(packetObj);
                 else
                 {
                     //this only works because hashcode override in ErrorPacket
-                    ClientSideErrorPktList.Remove(packetObj);
-                    ClientSideErrorPktList.Add(packetObj);
+                    ClientSideErrorPktListNew.Remove(packetObj);
+                    ClientSideErrorPktListNew.Add(packetObj);
                 }
             }
-            else if (packetObj.Report.PacketValid && ClientSideErrorPktList.Contains(packetObj))
-                ClientSideErrorPktList.Remove(packetObj);
+            else if (packetObj.Report.PacketValid && ClientSideErrorPktListNew.Contains(packetObj))
+                ClientSideErrorPktListNew.Remove(packetObj);
 
             if (packetObj.Report.PacketValid)
                 PacketObjPool.Return(packetObj);
 
             return packetObj.Report.PacketValid;
         }
-        /*
+
         private bool ProccessClientPacket(Packet packet, int packetSize, bool retry = false)
         {
             try
@@ -781,13 +783,97 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: {ex}"); return false; }
         }
-        */
 
         public void ReproccessClientErrorPackets()
         {
-            for(int i = ClientSideErrorPktList.Count - 1; i >= 0; i--)
+            for (int i = ClientSideErrorPktList.Count - 1; i >= 0; i--)
             {
-                var packetObj = ClientSideErrorPktList[i];
+                var erroredPacket = ClientSideErrorPktList[i];
+                if (erroredPacket.MaxAttempts == 0)
+                {
+                    //set packet retry variables, based on type
+                    //erroredPacket.MaxAttempts = 3;
+                    //erroredPacket.RetryAttempt = 0;                    
+
+                    switch (erroredPacket.PType)
+                    {
+                        case PacketType.WeaponSyncUpdate:
+                            erroredPacket.MaxAttempts = 7;
+                            erroredPacket.RetryDelayTicks = 15;
+                            break;
+
+                        default:
+                            erroredPacket.MaxAttempts = 7;
+                            erroredPacket.RetryDelayTicks = 15;
+                            break;
+                    }
+
+                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+                }
+
+                //proccess packet logic
+
+                if (erroredPacket.RetryTick > Tick) continue;
+                erroredPacket.RetryAttempt++;
+
+                var success = false;
+
+                switch (erroredPacket.PType)
+                {
+                    case PacketType.WeaponSyncUpdate:
+                        var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
+                        if (ent == null) break;
+
+                        var packet = erroredPacket.Packet as GridWeaponPacket;
+                        if (packet == null)
+                        {
+                            erroredPacket.MaxAttempts = 0;
+                            break;
+                        }
+
+                        var compsToCheck = new HashSet<long>();
+                        for (int j = 0; j < packet.Data.Count; j++)
+                        {
+                            if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
+                                compsToCheck.Add(packet.Data[j].CompEntityId);
+                        }
+
+                        PacketsToServer.Add(new RequestTargetsPacket
+                        {
+                            EntityId = erroredPacket.Packet.EntityId,
+                            SenderId = MultiplayerId,
+                            PType = PacketType.WeaponUpdateRequest,
+                            Comps = new List<long>(compsToCheck),
+                        });
+
+                        success = true;
+                        break;
+
+                    default:
+                        success = ProccessClientPacket(erroredPacket.Packet, 0, true);
+                        break;
+                }
+
+                if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
+                {
+                    if (!success)
+                        Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
+
+                    ClientSideErrorPktList.Remove(erroredPacket);
+                }
+                else
+                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+
+                if (erroredPacket.MaxAttempts == 0)
+                    ClientSideErrorPktList.Remove(erroredPacket);
+            }
+        }
+
+        public void ReproccessClientErrorPacketsNew()
+        {
+            for(int i = ClientSideErrorPktListNew.Count - 1; i >= 0; i--)
+            {
+                var packetObj = ClientSideErrorPktListNew[i];
 
                 var erroredPacket = packetObj.ErrorPacket;
                 if (erroredPacket.MaxAttempts == 0)
@@ -859,7 +945,7 @@ namespace WeaponCore
                     if (!success)
                         Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
 
-                    ClientSideErrorPktList.Remove(packetObj);
+                    ClientSideErrorPktListNew.Remove(packetObj);
                     PacketObjPool.Return(packetObj);
                 }
                 else
@@ -867,7 +953,7 @@ namespace WeaponCore
 
                 if (erroredPacket.MaxAttempts == 0)
                 {
-                    ClientSideErrorPktList.Remove(packetObj);
+                    ClientSideErrorPktListNew.Remove(packetObj);
                     PacketObjPool.Return(packetObj);
                 }
             }
@@ -938,7 +1024,7 @@ namespace WeaponCore
                             else
                             {
                                 SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                                errorPacket.Error = $"Mid is old({statePacket.MId}[{comp.MIds[(int)packet.PType]}]), likely multiple clients attempting update";
                             }
 
                             break;

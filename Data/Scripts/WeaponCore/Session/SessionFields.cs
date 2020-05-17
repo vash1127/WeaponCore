@@ -129,7 +129,8 @@ namespace WeaponCore
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
 
 
-        internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktList = new DsUniqueListFastRemove<PacketObj>(128);
+        internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
+        internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
@@ -146,10 +147,10 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlimsClient = new HashSet<IMySlimBlock>();
         private readonly Dictionary<IMySlimBlock, float> _slimHealthClient = new Dictionary<IMySlimBlock, float>();
-
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
-
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
+
+        internal readonly int[] AuthorSettings = new int[5];
 
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
@@ -318,6 +319,9 @@ namespace WeaponCore
             {
                 PacketPools.Add(suit, new MyConcurrentPool<Packet>(128, packet => packet.CleanUp()));
             }
+
+            for (int i = 0; i < AuthorSettings.Length; i++)
+                AuthorSettings[i] = -1;
         }
     }
 }

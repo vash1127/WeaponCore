@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Text;
 using Sandbox.ModAPI;
 using VRage.Collections;
 
@@ -70,8 +71,11 @@ namespace WeaponCore.Support
 
         public static void NetLogger(Session session, string message)
         {
+            var test = Encoding.UTF8.GetBytes(message);
             foreach (var a in session.ConnectedAuthors)
-                MyAPIGateway.Multiplayer.SendMessageTo(Session.AuthorPacketId, MyAPIGateway.Utilities.SerializeToBinary(new NetLog { Message = message }), a.Value);
+            {
+                MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.AuthorPacketId, test, a.Value, true);
+            }
         }
 
         public static void Line(string text, string instanceName = null)
@@ -85,8 +89,9 @@ namespace WeaponCore.Support
                     var message = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - " + text;
                     instance.TextWriter.WriteLine(message);
                     instance.TextWriter.Flush();
-
-                    if (instance.Session.AuthLogging)
+                    var set = instance.Session.AuthorSettings;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    if (netEnabled)
                         NetLogger(instance.Session, "[R-LOG] " + message);
                 }
             }
@@ -107,7 +112,9 @@ namespace WeaponCore.Support
                     instance.TextWriter.WriteLine(message);
                     instance.TextWriter.Flush();
 
-                    if (instance.Session.AuthLogging)
+                    var set = instance.Session.AuthorSettings;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    if (netEnabled)
                         NetLogger(instance.Session, "[R-LOG] " + message);
                 }
             }
@@ -116,9 +123,11 @@ namespace WeaponCore.Support
             }
         }
 
-        public static void NetLog(string text, Session session)
+        public static void NetLog(string text, Session session, int logLevel)
         {
-            if (session.AuthLogging)
+            var set = session.AuthorSettings;
+            var netEnabled = session.AuthLogging && set[3] >= 0 && logLevel >= set[4];
+            if (netEnabled)
                 NetLogger(session, "[R-LOG] " + text);
         }
 
@@ -133,7 +142,9 @@ namespace WeaponCore.Support
                     instance.TextWriter.Write(text);
                     instance.TextWriter.Flush();
 
-                    if (instance.Session.AuthLogging)
+                    var set = instance.Session.AuthorSettings;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    if (netEnabled)
                         NetLogger(instance.Session, "[R-LOG] " + text);
                 }
             }
@@ -153,8 +164,9 @@ namespace WeaponCore.Support
                     instance.TextWriter.WriteLine(text);
                     instance.TextWriter.Flush();
 
-
-                    if (instance.Session.AuthLogging)
+                    var set = instance.Session.AuthorSettings;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    if (netEnabled)
                         NetLogger(instance.Session, "[R-LOG] " + text);
                 }
             }

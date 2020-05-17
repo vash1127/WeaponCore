@@ -898,23 +898,38 @@ namespace WeaponCore
             {
                 var authorsFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(a.Key);
                 if (authorsFaction == null || string.IsNullOrEmpty(authorsFaction.PrivateInfo))
+                {
+                    AuthLogging = false;
                     continue;
+                }
 
-                int debugValue;
-                int perfValue;
-                int customValue;
-                int logLevel;
-                var netLog = int.TryParse(authorsFaction.PrivateInfo[0].ToString(), out debugValue);
-                var perfLog = int.TryParse(authorsFaction.PrivateInfo[1].ToString(), out perfValue);
-                var customLog = int.TryParse(authorsFaction.PrivateInfo[2].ToString(), out customValue);
-                var hasLevel = int.TryParse(authorsFaction.PrivateInfo[2].ToString(), out logLevel);
+                var length = authorsFaction.PrivateInfo.Length;
 
-                if ((netLog || perfLog || customLog) && hasLevel)
+                var debugLog = length > 0 && int.TryParse(authorsFaction.PrivateInfo[0].ToString(), out AuthorSettings[0]);
+                if (!debugLog) AuthorSettings[0] = -1;
+
+                var perfLog = length > 1 && int.TryParse(authorsFaction.PrivateInfo[1].ToString(), out AuthorSettings[1]);
+                if (!perfLog) AuthorSettings[1] = -1;
+
+                var statsLog = length > 2 && int.TryParse(authorsFaction.PrivateInfo[2].ToString(), out AuthorSettings[2]);
+                if (!statsLog) AuthorSettings[2] = -1;
+
+                var customLog = length > 3 && int.TryParse(authorsFaction.PrivateInfo[3].ToString(), out AuthorSettings[3]);
+                if (!customLog) AuthorSettings[3] = -1;
+
+                var hasLevel = length > 4 && int.TryParse(authorsFaction.PrivateInfo[4].ToString(), out AuthorSettings[4]);
+                if (!hasLevel) AuthorSettings[4] = -1;
+
+
+                if ((debugLog || perfLog || customLog || statsLog) && hasLevel)
                 {
                     AuthLogging = true;
-                    LogLevel = logLevel;
+                    LogLevel = AuthorSettings[4];
                     return true;
                 }
+
+                for (int i = 0; i < AuthorSettings.Length; i++)
+                    AuthorSettings[i] = -1;
                 AuthLogging = false;
 
             }
