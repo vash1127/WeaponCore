@@ -114,21 +114,29 @@ namespace WeaponCore.Projectiles
                 {
                     Log.Line($"projectAi change: GridInit:{p.Info.Ai.GridInit} - VersionMisMatch{p.Info.AiVersion != p.Info.Ai.Version}");
                 }
-                switch (p.State)
+
+                if (p.Info.Age > 0)
                 {
-                    case ProjectileState.Destroy:
-                        p.DestroyProjectile();
-                        continue;
-                    case ProjectileState.Dead:
-                        continue;
-                    case ProjectileState.OneAndDone:
-                    case ProjectileState.Depleted:
-                    case ProjectileState.Detonate:
-                        p.ProjectileClose();
-                        ProjectilePool.Push(p);
-                        ActiveProjetiles.RemoveAtFast(i);
-                        continue;
+                    switch (p.State)
+                    {
+                        case ProjectileState.Destroy:
+                            p.DestroyProjectile();
+                            continue;
+                        case ProjectileState.Dead:
+                            continue;
+                        case ProjectileState.OneAndDone:
+                        case ProjectileState.Depleted:
+                        case ProjectileState.Detonate:
+                            if (p.Info.Age == 0)
+                                break;
+
+                            p.ProjectileClose();
+                            ProjectilePool.Push(p);
+                            ActiveProjetiles.RemoveAtFast(i);
+                            continue;
+                    }
                 }
+
                 if (p.Info.Target.IsProjectile)
                     if (p.Info.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
