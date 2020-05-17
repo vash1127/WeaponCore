@@ -1138,7 +1138,6 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            Log.Line($"packet.EntityId: {packet.EntityId} myGrid not null: {myGrid != null} GridToMasterAi count: {GridToMasterAi.Count} targeting ai count: {GridTargetingAIs.Count}");
                             if (GridToMasterAi.TryGetValue(myGrid, out ai))
                             {
                                 if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
