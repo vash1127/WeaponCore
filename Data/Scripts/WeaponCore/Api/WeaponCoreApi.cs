@@ -647,6 +647,14 @@ namespace WeaponCore.Api
                     [ProtoContract]
                     public struct LineDef
                     {
+                        internal enum Texture
+                        {
+                            Off,
+                            Resize,
+                            Cycle,
+                            Chaos,
+                        }
+
                         [ProtoMember(1)] internal TracerBaseDef Tracer;
                         [ProtoMember(2)] internal string TracerMaterial;
                         [ProtoMember(3)] internal Randomize ColorVariance;
@@ -672,11 +680,13 @@ namespace WeaponCore.Api
                             [ProtoMember(5)] internal uint VisualFadeStart;
                             [ProtoMember(6)] internal uint VisualFadeEnd;
                             [ProtoMember(7)] internal SegmentDef Segmentation;
+                            [ProtoMember(8)] internal string[] Textures;
+                            [ProtoMember(9)] internal Texture TextureMode;
 
                             [ProtoContract]
                             public struct SegmentDef
                             {
-                                [ProtoMember(1)] internal string Material;
+                                [ProtoMember(1)] internal string Material; //retired
                                 [ProtoMember(2)] internal double SegmentLength;
                                 [ProtoMember(3)] internal double SegmentGap;
                                 [ProtoMember(4)] internal double Speed;
@@ -686,6 +696,8 @@ namespace WeaponCore.Api
                                 [ProtoMember(8)] internal bool UseLineVariance;
                                 [ProtoMember(9)] internal Randomize ColorVariance;
                                 [ProtoMember(10)] internal Randomize WidthVariance;
+                                [ProtoMember(11)] internal string[] Textures;
+                                [ProtoMember(12)] internal Texture TextureMode;
                             }
                         }
 
@@ -700,6 +712,9 @@ namespace WeaponCore.Api
                             [ProtoMember(6)] internal float CustomWidth;
                             [ProtoMember(7)] internal bool UseWidthVariance;
                             [ProtoMember(8)] internal bool UseColorFade;
+                            [ProtoMember(9)] internal string[] Textures;
+                            [ProtoMember(10)] internal Texture TextureMode;
+
                         }
                     }
                 }
