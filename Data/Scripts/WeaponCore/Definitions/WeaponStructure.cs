@@ -382,9 +382,9 @@ namespace WeaponCore.Support
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly AmmoDef[] AmmoPattern;
         public readonly int[] AmmoShufflePattern;
-        public readonly MyStringId TracerMaterial;
-        public readonly MyStringId TrailMaterial;
-        public readonly MyStringId SegmentMaterial;
+        public readonly MyStringId[] TracerTextures;
+        public readonly MyStringId[] TrailTextures;
+        public readonly MyStringId[] SegmentTextures;
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly AreaEffectType AreaEffect;
         public readonly string ModelPath;
@@ -497,9 +497,30 @@ namespace WeaponCore.Support
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
 
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
-            TracerMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial);
-            TrailMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material);
-            SegmentMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material);
+
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length > 0)
+            {
+                TracerTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length; i++)
+                    TracerTextures[i] = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures[i]);
+            }
+            else TracerTextures = new[] {MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial)};
+
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length > 0)
+            {
+                SegmentTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length; i++)
+                    SegmentTextures[i] = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures[i]);
+            }
+            else SegmentTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material) };
+
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length > 0)
+            {
+                TrailTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length; i++)
+                    TrailTextures[i] = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures[i]);
+            }
+            else TrailTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material) };
 
             if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
 
