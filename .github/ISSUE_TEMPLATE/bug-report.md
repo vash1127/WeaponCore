@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: Leave a bug report, tell us whats wrong! Please do not write the whole report
-  in the title.
+  in the title. DO NOT LEAVE THE TITLE BLANK.
 title: "(Bug) "
 labels: Housecleaning (Bug)
 assignees: ''
