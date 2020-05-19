@@ -228,11 +228,13 @@ namespace WeaponCore.Platform
         {
             public bool SegmentGaped;
             public double SegmentLenTranserved;
+            public int TextureIdx = - 1;
 
             public void Clean()
             {
                 SegmentGaped = false;
                 SegmentLenTranserved = 0f;
+                TextureIdx = 0;
             }
         }
 

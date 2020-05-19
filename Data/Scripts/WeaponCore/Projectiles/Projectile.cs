@@ -75,7 +75,6 @@ namespace WeaponCore.Projectiles
         internal bool MineActivated;
         internal bool MineTriggered;
         internal bool Miss;
-        internal bool Active;
         internal bool CachedPlanetHit;
         internal bool AtMaxRange;
         internal bool ShieldBypassed;
@@ -118,7 +117,6 @@ namespace WeaponCore.Projectiles
             LastOffsetTime = 0;
             EntitiesNear = true;
             PruningProxyId = -1;
-            Active = false;
             CachedPlanetHit = false;
             PositionChecked = false;
             MineSeeking = false;

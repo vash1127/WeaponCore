@@ -481,7 +481,7 @@ namespace WeaponCore.Support
                 color.X *= randomValue;
                 color.Y *= randomValue;
                 color.Z *= randomValue;
-                if (AmmoDef.Const.LineSegments && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
+                if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Resize && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
                 {
                     segmentColor.X *= randomValue;
                     segmentColor.Y *= randomValue;

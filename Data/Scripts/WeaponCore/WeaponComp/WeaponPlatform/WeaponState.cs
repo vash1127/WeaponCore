@@ -16,7 +16,6 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-
         public void UpdateSegmentState(AmmoDef ammoDef)
         {
             var wasGapped = AmmoInfos[ammoDef.Const.AmmoIdxPos].SegmentGaped;
@@ -34,6 +33,16 @@ namespace WeaponCore.Platform
             MeasureStep += ammoDef.Const.SegmentStep;
             AmmoInfos[ammoDef.Const.AmmoIdxPos].SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(seg.SegmentGap, 0, Math.Min(MeasureStep, seg.SegmentGap)) 
                 : MathHelperD.Clamp(seg.SegmentLength, 0, Math.Min(MeasureStep, seg.SegmentLength));
+        }
+
+        public void UpdateCycleState(AmmoDef ammoDef)
+        {
+            var current = AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx;
+            if (current + 1 < ammoDef.Const.TracerTextures.Length)
+                AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current + 1;
+            else
+                AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = 0;
+
         }
 
         public void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
@@ -396,6 +405,10 @@ namespace WeaponCore.Platform
             if (System.Values.HardPoint.Audio.FireSoundEndDelay > 0)
                 Comp.Session.FutureEvents.Schedule(StopFiringSound, false, System.Values.HardPoint.Audio.FireSoundEndDelay);
             else StopFiringSound(false);
+
+            if (AmmoInfos != null)
+                for (int i = 0; i < AmmoInfos.Length; i++)
+                    AmmoInfos[i].TextureIdx = -1;
 
             StopPreFiringSound(false);
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();

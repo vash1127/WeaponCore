@@ -6,6 +6,8 @@ using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using System;
 using System.Collections.Generic;
+using VRage.Utils;
+
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -175,9 +177,22 @@ namespace WeaponCore.Platform
                         for (int k = 0; k < patternIndex; k++) {
 
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
-                            if (ammoPattern.Const.LineSegments) 
-                                UpdateSegmentState(ammoPattern);
-                            
+                            if (i == 0 && j == 0)
+                            {
+                                switch (ammoPattern.Const.TracerMode)
+                                {
+                                    case AmmoConstants.Texture.Resize:
+                                        UpdateSegmentState(ammoPattern);
+                                        break;
+                                    case AmmoConstants.Texture.Cycle:
+                                        UpdateCycleState(ammoPattern);
+                                        break;
+                                    case AmmoConstants.Texture.Chaos:
+                                        AmmoInfos[ammoPattern.Const.AmmoIdxPos].TextureIdx = MyUtils.GetRandomInt(0, ammoPattern.Const.TracerTextures.Length);
+                                        break;
+                                }
+                            }
+
                             long patternCycle = FireCounter;
                             if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
                                 patternCycle = ((FireCounter - 1) % ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd) + 1;

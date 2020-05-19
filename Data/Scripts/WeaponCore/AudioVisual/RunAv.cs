@@ -244,7 +244,7 @@ namespace WeaponCore.Support
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
                         {
-                            if (av.AmmoDef.Const.LineSegments)
+                            if (av.AmmoDef.Const.TracerMode == AmmoConstants.Texture.Resize)
                             {
                                 var seg = av.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
                                 var stepPos = av.TracerBack;
@@ -271,6 +271,11 @@ namespace WeaponCore.Support
                                 end = end ?? double.MaxValue;
 
                                 var segsDrawn = 0;
+                                var segTextureCnt = av.AmmoDef.Const.SegmentTextures.Length;
+                                var gapTextureCnt = av.AmmoDef.Const.TracerTextures.Length;
+
+                                var segStepLen = seg.SegmentLength / segTextureCnt;
+                                var gapStepLen = seg.SegmentGap / gapTextureCnt;
                                 while (travel < av.VisualLength)
                                 {
                                     var mod = j++ % 2;
@@ -280,17 +285,14 @@ namespace WeaponCore.Support
 
                                     double width;
                                     double rawLen;
-                                    MyStringId material;
                                     Vector4 dyncColor;
                                     if (!gap) {
                                         rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentLength;
-                                        material = av.AmmoDef.Const.TracerTextures[0];
                                         width = av.TracerWidth;
                                         dyncColor = color;
                                     }
                                     else {
                                         rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentGap;
-                                        material = av.AmmoDef.Const.SegmentTextures[0];
                                         width = av.SegmentWidth;
                                         dyncColor = segColor;
                                     }
@@ -301,6 +303,8 @@ namespace WeaponCore.Support
                                     if (!cull || (cull && start <= travel && end <= travel + rawLen))
                                     {
                                         segsDrawn++;
+                                        var clampStep = !gap ? MathHelperD.Clamp((int)((len / segStepLen) + 0.5) - 1, 0, segTextureCnt - 1) : MathHelperD.Clamp((int)((len / gapStepLen) + 0.5) - 1, 0, gapTextureCnt);
+                                        var material = !gap ? av.AmmoDef.Const.SegmentTextures[(int)clampStep] : av.AmmoDef.Const.TracerTextures[(int)clampStep];
                                         MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);
                                     }
 
@@ -309,10 +313,10 @@ namespace WeaponCore.Support
                                     else
                                         travel += len;
                                     stepPos += (av.PointDir * len);
-                                    //Log.Line($"{start} - {end}");
                                 }
-                                //Log.Line($"{segsDrawn}");
                             }
+                            else if (av.AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal)
+                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.AmmoInfo.TextureIdx], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                             else
                                 MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                         }

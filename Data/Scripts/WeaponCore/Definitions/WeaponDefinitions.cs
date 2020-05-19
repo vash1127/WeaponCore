@@ -412,8 +412,7 @@ namespace WeaponCore.Support
                 {
                     internal enum Texture
                     {
-                        Off,
-                        Resize,
+                        Normal,
                         Cycle,
                         Chaos,
                     }
@@ -460,7 +459,7 @@ namespace WeaponCore.Support
                             [ProtoMember(9)] internal Randomize ColorVariance;
                             [ProtoMember(10)] internal Randomize WidthVariance;
                             [ProtoMember(11)] internal string[] Textures;
-                            [ProtoMember(12)] internal Texture TextureMode;
+                            [ProtoMember(12)] internal bool Enable;
                         }
                     }
 
