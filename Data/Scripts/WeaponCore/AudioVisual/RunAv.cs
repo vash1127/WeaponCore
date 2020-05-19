@@ -288,13 +288,13 @@ namespace WeaponCore.Support
                                     Vector4 dyncColor;
                                     if (!gap) {
                                         rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentLength;
-                                        width = av.TracerWidth;
-                                        dyncColor = color;
+                                        width = av.SegmentWidth;
+                                        dyncColor = segColor;
                                     }
                                     else {
                                         rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentGap;
-                                        width = av.SegmentWidth;
-                                        dyncColor = segColor;
+                                        width = av.TrailWidth;
+                                        dyncColor = color;
                                     }
 
                                     var notLast = travel + rawLen < av.VisualLength;
@@ -316,7 +316,10 @@ namespace WeaponCore.Support
                                 }
                             }
                             else if (av.AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal)
+                            {
                                 MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.AmmoInfo.TextureIdx], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                                Log.Line($"{av.AmmoInfo.TextureIdx}");
+                            }
                             else
                                 MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                         }
