@@ -8,6 +8,9 @@ assignees: ''
 
 ---
 
+**Is this a multiplayer or singleplayer bug?**
+
+
 **Describe the bug:**
 
 
@@ -20,5 +23,5 @@ assignees: ''
 **(Optional) Screenshots or videos:**
 (remove if not used)
 
-**(Optional) Additional context:**
+**(Optional) Additional content/log files/etc:**
 (remove if not used)
