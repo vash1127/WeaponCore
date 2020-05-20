@@ -189,26 +189,9 @@ namespace WeaponCore
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action.Name = new StringBuilder($"Toggle Click To Fire");
-            action.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                
-                TerminalHelpers.WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
-            };
-            action.Writer = (blk, sb) =>
-            {
-                var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
-
-                if (on)
-                    sb.Append("On");
-                else
-                    sb.Append("Off");
-            };
-            action.Enabled = (b) =>
-            {
-                var comp = b?.Components?.Get<WeaponComponent>();
-                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-            };
+            action.Action = TerminalHelpers.TerminalActionShootClick;
+            action.Writer = TerminalHelpers.ClickShootWriter;
+            action.Enabled = TerminalHelpers.CompReady;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -236,10 +219,7 @@ namespace WeaponCore
                 else
                     sb.Append("Off");
             };
-            action0.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action0.Enabled = TerminalHelpers.CompReady;
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -264,10 +244,7 @@ namespace WeaponCore
                 else
                     sb.Append("Off");
             };
-            action1.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action1.Enabled = TerminalHelpers.CompReady;
             action1.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -292,10 +269,7 @@ namespace WeaponCore
                 else
                     sb.Append("Off");
             };
-            action2.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action2.Enabled = TerminalHelpers.CompReady;
             action2.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action2);
@@ -310,10 +284,7 @@ namespace WeaponCore
                 TerminalHelpers.WcShootOnceAction(comp);
             };
             action3.Writer = (b, t) => t.Append("");
-            action3.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action3.Enabled = TerminalHelpers.CompReady;
             action3.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action3);

@@ -16,6 +16,8 @@ namespace WeaponCore.Control
 {
     public static class TerminalHelpers
     {
+
+        #region Alter vanilla Actions/Control
         internal static void AlterActions<T>()
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
@@ -315,6 +317,9 @@ namespace WeaponCore.Control
                 w.Set.Enable = On;
             }
         }
+        #endregion
+
+        #region Shoot Actions
 
         internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
         {
@@ -459,6 +464,36 @@ namespace WeaponCore.Control
             cState.ClickShoot = on;
             cState.ShootOn = !on && cState.ShootOn;
         }
+        #endregion
+
+        #region Support methods
+
+        internal static bool CompReady(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+        }
+
+        internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
+
+            if (on)
+                sb.Append("On");
+            else
+                sb.Append("Off");
+        }
+
+        internal static void TerminalActionShootClick(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
+        }
+        #endregion
+
+        #region terminal control methods
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, int, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock
         {
@@ -617,6 +652,7 @@ namespace WeaponCore.Control
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
         }
+        #endregion
 
         #region Saved Code
 
