@@ -585,7 +585,7 @@ namespace WeaponCore.Support
 
         internal void ComputeTextures(WeaponAmmoTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
         {
-            var lineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentGap > 0;
+            var lineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0;
 
             if (lineSegments)
                 tracerTexture = Texture.Resize;

@@ -21,7 +21,7 @@ namespace WeaponCore.Platform
 
             if (oldmStep > thisLen)
             {
-                wasGapped = !wasGapped;
+                wasGapped = !wasGapped && seg.SegmentGap > 0;
                 AmmoInfos[ammoDef.Const.AmmoIdxPos].SegmentGaped = wasGapped;
                 MeasureStep = 0;
             }

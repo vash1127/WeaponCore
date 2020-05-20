@@ -256,13 +256,13 @@ namespace WeaponCore.Support
                                 var gapTextureCnt = av.AmmoDef.Const.TracerTextures.Length;
                                 var segStepLen = seg.SegmentLength / segTextureCnt;
                                 var gapStepLen = seg.SegmentGap / gapTextureCnt;
-
+                                var gapEnabled = gapStepLen > 0;
                                 int j = 0;
                                 double travel = 0;
                                 while (travel < av.VisualLength) {
 
                                     var mod = j++ % 2;
-                                    var gap = av.AmmoInfo.SegmentGaped && mod == 0 || !av.AmmoInfo.SegmentGaped && mod == 1;
+                                    var gap = gapEnabled && (av.AmmoInfo.SegmentGaped && mod == 0 || !av.AmmoInfo.SegmentGaped && mod == 1);
                                     var first = travel <= 0;
 
                                     double width;
