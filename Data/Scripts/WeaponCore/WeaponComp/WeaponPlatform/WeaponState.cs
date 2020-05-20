@@ -71,7 +71,7 @@ namespace WeaponCore.Platform
             ActiveAmmoDef = ammoDef;
 
             if (AmmoInfos == null)
-                AmmoInfos = new AmmoInfo[System.WeaponAmmoTypes.Length];
+                AmmoInfos = new AmmoInfo[ammoDef.AmmoDef.Const.PatternIndexCnt];
 
             for (int i = 0; i < AmmoInfos.Length; i++) {
                 if (AmmoInfos[i] != null) {
@@ -81,8 +81,8 @@ namespace WeaponCore.Platform
             }
 
 
-            if (AmmoInfos.Length != System.WeaponAmmoTypes.Length)
-                Array.Resize(ref AmmoInfos, System.WeaponAmmoTypes.Length);
+            if (AmmoInfos.Length != ammoDef.AmmoDef.Const.PatternIndexCnt)
+                Array.Resize(ref AmmoInfos, ammoDef.AmmoDef.Const.PatternIndexCnt);
 
             for (int i = 0; i < AmmoInfos.Length; i++)
                     AmmoInfos[i] = Comp.Session.AmmoInfoPool.Get();

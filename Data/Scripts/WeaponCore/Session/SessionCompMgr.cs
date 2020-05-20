@@ -148,6 +148,7 @@ namespace WeaponCore
                 if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
                     comp.StopAllSounds();
+                    comp.CleanCompAmmos();
                     comp.CleanCompParticles();
                     comp.CleanCompSounds();
                     comp.Platform.RemoveParts(comp);

@@ -43,7 +43,6 @@ namespace WeaponCore.Support
                             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                                 var w = comp.Platform.Weapons[i];
                                 w.StopShooting();
-                                w.PurgeAmmoInfo();
                                 w.WeaponCache.HitEntity.Clean();
                                 if (w.DrawingPower)
                                     w.StopPowerDraw();
@@ -160,6 +159,14 @@ namespace WeaponCore.Support
                     }
 
                 }
+            }
+        }
+
+        public void CleanCompAmmos()
+        {
+            foreach (var w in Platform.Weapons)
+            {
+                w.PurgeAmmoInfo();
             }
         }
 
