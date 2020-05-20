@@ -30,22 +30,13 @@ namespace WeaponCore.Projectiles
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-
-                Log.Line($"test1");
                 p.Info.AmmoInfo = w.AmmoInfos[a.Const.AmmoIdxPos];
-                Log.Line($"test2");
-
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
-                Log.Line($"test3");
-
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
-                Log.Line($"test4");
-
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
-                Log.Line($"test5");
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;
