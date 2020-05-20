@@ -674,6 +674,7 @@ namespace WeaponCore.Api
                             Normal,
                             Cycle,
                             Chaos,
+                            Wave,
                         }
 
                         [ProtoMember(1)] internal TracerBaseDef Tracer;

@@ -381,6 +381,7 @@ namespace WeaponCore.Support
             Cycle,
             Chaos,
             Resize,
+            Wave,
         }
 
         private const string Arc = "Arc";
@@ -592,6 +593,8 @@ namespace WeaponCore.Support
                 tracerTexture = Texture.Normal;
             else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Cycle)
                 tracerTexture = Texture.Cycle;
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Wave)
+                tracerTexture = Texture.Wave;
             else tracerTexture = Texture.Chaos;
             trailTexture = (Texture) ammo.AmmoDef.AmmoGraphics.Lines.Trail.TextureMode;
 

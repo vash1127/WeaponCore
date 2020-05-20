@@ -227,12 +227,13 @@ namespace WeaponCore.Platform
         public class AmmoInfo
         {
             public bool SegmentGaped;
+            public bool Reverse;
             public double SegmentLenTranserved;
             public int TextureIdx = - 1;
-
             public void Clean()
             {
                 SegmentGaped = false;
+                Reverse = false;
                 SegmentLenTranserved = 0f;
                 TextureIdx = 0;
             }

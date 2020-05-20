@@ -185,7 +185,8 @@ namespace WeaponCore.Platform
                                         UpdateSegmentState(ammoPattern);
                                         break;
                                     case AmmoConstants.Texture.Cycle:
-                                        UpdateCycleState(ammoPattern);
+                                    case AmmoConstants.Texture.Wave:
+                                        UpdateCyclicalState(ammoPattern);
                                         break;
                                     case AmmoConstants.Texture.Chaos:
                                         AmmoInfos[ammoPattern.Const.AmmoIdxPos].TextureIdx = MyUtils.GetRandomInt(0, ammoPattern.Const.TracerTextures.Length);

@@ -1,12 +1,8 @@
-﻿using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
@@ -35,14 +31,39 @@ namespace WeaponCore.Platform
                 : MathHelperD.Clamp(seg.SegmentLength, 0, Math.Min(MeasureStep, seg.SegmentLength));
         }
 
-        public void UpdateCycleState(AmmoDef ammoDef)
+        public void UpdateCyclicalState(AmmoDef ammoDef)
         {
-            var current = AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx;
-            if (current + 1 < ammoDef.Const.TracerTextures.Length)
-                AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current + 1;
-            else
-                AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = 0;
+            if (ammoDef.Const.TracerMode == AmmoConstants.Texture.Cycle)
+            {
+                var current = AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx;
+                if (current + 1 < ammoDef.Const.TracerTextures.Length)
+                    AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current + 1;
+                else
+                    AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = 0;
+            }
+            else // Wave pattern
+            {
+                var info = AmmoInfos[ammoDef.Const.AmmoIdxPos];
+                var current = info.TextureIdx;
+                var reverse = info.Reverse;
 
+                if (!reverse) {
+                    if (current + 1 < ammoDef.Const.TracerTextures.Length)
+                        AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current + 1;
+                    else {
+                        info.Reverse = true;
+                        AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current - 1;
+                    }
+                }
+                else {
+                    if (current - 1 >= 0)
+                        AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current - 1;
+                    else {
+                        info.Reverse = false;
+                        AmmoInfos[ammoDef.Const.AmmoIdxPos].TextureIdx = current + 1;
+                    }
+                }
+            }
         }
 
         public void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
@@ -408,7 +429,7 @@ namespace WeaponCore.Platform
 
             if (AmmoInfos != null)
                 for (int i = 0; i < AmmoInfos.Length; i++)
-                    AmmoInfos[i].TextureIdx = -1;
+                    AmmoInfos[i].Clean();
 
             StopPreFiringSound(false);
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
