@@ -1,4 +1,5 @@
-﻿using VRageMath;
+﻿using Sandbox.Game.AI;
+using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.NewProjectile;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
@@ -21,14 +22,13 @@ namespace WeaponCore.Projectiles
                 var patternCycle = gen.PatternCycle;
                 var targetable = w.ActiveAmmoDef.AmmoDef.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
-                
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.AmmoInfo = w.AmmoInfos[w.ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos][a.Const.AmmoIdxPos];
+                p.Info.AmmoInfo = w.AmmoInfos[w.ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos][gen.PatternIdx];
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;

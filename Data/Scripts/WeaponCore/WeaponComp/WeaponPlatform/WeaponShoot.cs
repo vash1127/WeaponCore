@@ -173,7 +173,6 @@ namespace WeaponCore.Platform
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y] = w;
                             }
                         }
-
                         for (int k = 0; k < patternIndex; k++) {
 
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
@@ -185,7 +184,7 @@ namespace WeaponCore.Platform
                             if (ammoPattern.Const.VirtualBeams && j == 0) {
                                 if (i == 0) {
                                     vProList = System.Session.Projectiles.VirtInfoPools.Get();
-                                    System.Session.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });
+                                    System.Session.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, PatternIdx = k, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });
                                 }
 
                                 MyEntity primeE = null;
@@ -215,7 +214,7 @@ namespace WeaponCore.Platform
                                 vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Origin = muzzle.Position, Dir = muzzle.DeviatedDir, VirtualId = _nextVirtual });
                             }
                             else
-                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
+                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, PatternIdx = k, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
                         }
                     }
 

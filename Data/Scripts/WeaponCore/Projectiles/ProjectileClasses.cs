@@ -335,6 +335,7 @@ namespace WeaponCore.Support
         internal MyEntity TargetEnt;
         internal long PatternCycle;
         internal float MaxTrajectory;
+        internal int PatternIdx;
         internal Kind Type;
     }
 
