@@ -155,7 +155,6 @@ namespace WeaponCore.Support
                                 var scaler = 1;
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
-
                                 hitEffect.UserScale = scale * scaler;
                                 if (!MyUtils.IsZero(av.Hit.HitVelocity, 1E-01F))
                                 {
@@ -380,7 +379,6 @@ namespace WeaponCore.Support
             var s = av.TracerShrinks.Dequeue();
             if (av.LastTick != Session.Tick)
             {
-                //av.FireCounter++;
                 if (!av.AmmoDef.Const.OffsetEffect) {
 
                     if (av.OnScreen != AvShot.Screen.None)

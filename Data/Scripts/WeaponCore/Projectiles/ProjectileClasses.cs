@@ -73,7 +73,7 @@ namespace WeaponCore.Support
             MyShield = weapon.Comp.Ai.MyShield;
             InPlanetGravity = weapon.Comp.Ai.InPlanetGravity;
             AmmoDef = ammodef;
-            AmmoInfo = weapon.AmmoInfos[ammodef.Const.AmmoIdxPos];
+            AmmoInfo = weapon.AmmoInfos[weapon.ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos][ammodef.Const.AmmoIdxPos];
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;
             Target.Entity = weapon.Target.Entity;

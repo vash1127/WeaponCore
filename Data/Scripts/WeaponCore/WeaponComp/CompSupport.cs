@@ -162,14 +162,6 @@ namespace WeaponCore.Support
             }
         }
 
-        public void CleanCompAmmos()
-        {
-            foreach (var w in Platform.Weapons)
-            {
-                w.PurgeAmmoInfo();
-            }
-        }
-
         public int GetSyncHash()
         {
             var hash = State.Value.ClickShoot.GetHashCode() + State.Value.ClickShoot.GetHashCode();

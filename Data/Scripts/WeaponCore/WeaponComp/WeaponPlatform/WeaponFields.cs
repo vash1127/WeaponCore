@@ -82,7 +82,6 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
-        internal AmmoInfo[] AmmoInfos;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -94,6 +93,8 @@ namespace WeaponCore.Platform
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
         internal WeaponAmmoTypes ActiveAmmoDef;
+        
+        internal readonly AmmoInfo[][] AmmoInfos;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -228,14 +229,19 @@ namespace WeaponCore.Platform
         {
             public bool SegmentGaped;
             public bool Reverse;
+            public int TextureIdx = -1;
+            public uint LastUpdateTick;
             public double SegmentLenTranserved = 1;
-            public int TextureIdx = - 1;
+            public double MeasureStep;
+
             public void Clean()
             {
                 SegmentGaped = false;
                 Reverse = false;
-                //SegmentLenTranserved = 0f;
-                TextureIdx = - 1;
+                SegmentLenTranserved = 1;
+                TextureIdx = -1;
+                MeasureStep = 0;
+                LastUpdateTick = 0;
             }
         }
 
@@ -351,6 +357,15 @@ namespace WeaponCore.Platform
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             TrackProjectiles = System.TrackProjectile;
+
+            AmmoInfos = new AmmoInfo[System.WeaponAmmoTypes.Length][];
+            for (int i = 0; i < System.WeaponAmmoTypes.Length; i++)
+            {
+                var def = System.WeaponAmmoTypes[i].AmmoDef;
+                AmmoInfos[i] = new AmmoInfo[def.Const.PatternIndexCnt];
+                for (int j = 0; j < AmmoInfos[i].Length; j++)
+                    AmmoInfos[i][j] = new AmmoInfo();
+            }
         }
     }
 }

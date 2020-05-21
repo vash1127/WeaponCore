@@ -177,19 +177,12 @@ namespace WeaponCore.Support
         }
     }
 
-    public struct WeaponAmmoTypes
+    public class WeaponAmmoTypes
     {
         public MyDefinitionId AmmoDefinitionId;
         public WeaponDefinition.AmmoDef AmmoDef;
         public string AmmoName;
         public bool IsShrapnel;
-
-        public override bool Equals(object obj)
-        {
-            if (obj.GetType() != GetType()) return false;
-
-            return AmmoDef.Equals(((WeaponAmmoTypes)obj).AmmoDef);
-        }
     }
 
     public class WeaponAmmoMoveRequest

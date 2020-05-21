@@ -474,6 +474,29 @@ namespace WeaponCore.Support
         {
             var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
             var segmentColor = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
+
+            if (AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && AmmoInfo.LastUpdateTick != System.Session.Tick)
+            {
+                if (System.Session.Tick - AmmoInfo.LastUpdateTick > 1)
+                    AmmoInfo.Clean();
+
+                AmmoInfo.LastUpdateTick = System.Session.Tick;
+
+                switch (AmmoDef.Const.TracerMode)
+                {
+                    case AmmoConstants.Texture.Resize:
+                        UpdateSegmentState();
+                        break;
+                    case AmmoConstants.Texture.Cycle:
+                    case AmmoConstants.Texture.Wave:
+                        UpdateCyclicalState();
+                        break;
+                    case AmmoConstants.Texture.Chaos:
+                        AmmoInfo.TextureIdx = MyUtils.GetRandomInt(0, AmmoDef.Const.TracerTextures.Length);
+                        break;
+                }
+            }
+
             if (AmmoDef.Const.LineColorVariance)
             {
                 var cv = AmmoDef.AmmoGraphics.Lines.ColorVariance;
@@ -535,6 +558,63 @@ namespace WeaponCore.Support
                 var wv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 SegmentWidth += randomValue;
+            }
+        }
+
+        public void UpdateSegmentState()
+        {
+            var wasGapped = AmmoInfo.SegmentGaped;
+            var seg = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+            var thisLen = wasGapped ? seg.SegmentGap : seg.SegmentLength;
+            var oldmStep = AmmoInfo.MeasureStep;
+
+            if (oldmStep > thisLen)
+            {
+                wasGapped = !wasGapped && seg.SegmentGap > 0;
+                AmmoInfo.SegmentGaped = wasGapped;
+                AmmoInfo.MeasureStep = 0;
+            }
+
+            AmmoInfo.MeasureStep += AmmoDef.Const.SegmentStep;
+            AmmoInfo.SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(seg.SegmentGap, 0, Math.Min(AmmoInfo.MeasureStep, seg.SegmentGap))
+                : MathHelperD.Clamp(seg.SegmentLength, 0, Math.Min(AmmoInfo.MeasureStep, seg.SegmentLength));
+        }
+
+        public void UpdateCyclicalState()
+        {
+            if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Cycle)
+            {
+                var current = AmmoInfo.TextureIdx;
+                if (current + 1 < AmmoDef.Const.TracerTextures.Length)
+                    AmmoInfo.TextureIdx = current + 1;
+                else
+                    AmmoInfo.TextureIdx = 0;
+            }
+            else // Wave pattern
+            {
+                var current = AmmoInfo.TextureIdx;
+                var reverse = AmmoInfo.Reverse;
+
+                if (!reverse)
+                {
+                    if (current + 1 < AmmoDef.Const.TracerTextures.Length)
+                        AmmoInfo.TextureIdx = current + 1;
+                    else
+                    {
+                        AmmoInfo.Reverse = true;
+                        AmmoInfo.TextureIdx = current - 1;
+                    }
+                }
+                else
+                {
+                    if (current - 1 >= 0)
+                        AmmoInfo.TextureIdx = current - 1;
+                    else
+                    {
+                        AmmoInfo.Reverse = false;
+                        AmmoInfo.TextureIdx = current + 1;
+                    }
+                }
             }
         }
 
@@ -789,7 +869,6 @@ namespace WeaponCore.Support
                             }
                             return;
                         }
-
                         weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
                         weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);

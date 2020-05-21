@@ -1,8 +1,6 @@
 ﻿using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Projectiles.Projectile;
 using static WeaponCore.Support.NewProjectile;
-using static WeaponCore.Support.AvShot;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 
 namespace WeaponCore.Projectiles
@@ -30,7 +28,7 @@ namespace WeaponCore.Projectiles
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.AmmoInfo = w.AmmoInfos[a.Const.AmmoIdxPos];
+                p.Info.AmmoInfo = w.AmmoInfos[w.ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos][a.Const.AmmoIdxPos];
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;

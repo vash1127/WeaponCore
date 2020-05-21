@@ -1080,7 +1080,6 @@ namespace WeaponCore
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
                 var obb = particleEvent.MyDummy.Entity.PositionComp.WorldAABB;
                 var playable = Camera.IsInFrustum(ref obb) && Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance;
-
                 if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && playable)
                 {
                     var dummyInfo = particleEvent.MyDummy.Info;
@@ -1098,12 +1097,9 @@ namespace WeaponCore
                             Av.ParticlesToProcess.RemoveAtFast(i);
                             continue;
                         }
-                        else
-                        {
-                            particleEvent.Effect.WorldMatrix = matrix;
-                            particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
-                            particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
-                        }
+                        particleEvent.Effect.WorldMatrix = matrix;
+                        particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
+                        particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                     }
                     else if (particleEvent.Effect.IsStopped)
                     {
