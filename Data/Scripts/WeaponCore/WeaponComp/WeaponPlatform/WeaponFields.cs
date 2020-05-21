@@ -227,12 +227,15 @@ namespace WeaponCore.Platform
         public class AmmoInfo
         {
             public bool SegmentGaped;
-            public double SegmentLenTranserved;
-
+            public bool Reverse;
+            public double SegmentLenTranserved = 1;
+            public int TextureIdx = - 1;
             public void Clean()
             {
                 SegmentGaped = false;
-                SegmentLenTranserved = 0f;
+                Reverse = false;
+                //SegmentLenTranserved = 0f;
+                TextureIdx = - 1;
             }
         }
 
@@ -341,8 +344,6 @@ namespace WeaponCore.Platform
             var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
-
-
 
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];

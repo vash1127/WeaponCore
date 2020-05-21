@@ -481,7 +481,7 @@ namespace WeaponCore.Support
                 color.X *= randomValue;
                 color.Y *= randomValue;
                 color.Z *= randomValue;
-                if (AmmoDef.Const.LineSegments && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
+                if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Resize && AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.UseLineVariance)
                 {
                     segmentColor.X *= randomValue;
                     segmentColor.Y *= randomValue;
@@ -565,7 +565,7 @@ namespace WeaponCore.Support
             var up = MatrixD.Identity.Up;
             var startPos = pos + -(direction * tracerLength);
             MatrixD.CreateWorld(ref startPos, ref direction, ref up, out matrix);
-            var offsetMaterial = AmmoDef.Const.TracerMaterial;
+            var offsetMaterial = AmmoDef.Const.TracerTextures[0];
             var tracerLengthSqr = tracerLength * tracerLength;
             var maxOffset = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MaxOffset;
             var minLength = AmmoDef.AmmoGraphics.Lines.OffsetEffect.MinLength;

@@ -375,6 +375,15 @@ namespace WeaponCore.Support
 
     public class AmmoConstants
     {
+        public enum Texture
+        {
+            Normal,
+            Cycle,
+            Chaos,
+            Resize,
+            Wave,
+        }
+
         private const string Arc = "Arc";
 
         public readonly MyConcurrentPool<MyEntity> PrimeEntityPool;
@@ -382,11 +391,13 @@ namespace WeaponCore.Support
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly AmmoDef[] AmmoPattern;
         public readonly int[] AmmoShufflePattern;
-        public readonly MyStringId TracerMaterial;
-        public readonly MyStringId TrailMaterial;
-        public readonly MyStringId SegmentMaterial;
+        public readonly MyStringId[] TracerTextures;
+        public readonly MyStringId[] TrailTextures;
+        public readonly MyStringId[] SegmentTextures;
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly AreaEffectType AreaEffect;
+        public readonly Texture TracerMode;
+        public readonly Texture TrailMode;
         public readonly string ModelPath;
 
         public readonly int MaxObjectsHit;
@@ -420,7 +431,6 @@ namespace WeaponCore.Support
         public readonly bool AmmoSkipAccel;
         public readonly bool LineWidthVariance;
         public readonly bool LineColorVariance;
-        public readonly bool LineSegments;
         public readonly bool SegmentWidthVariance;
         public readonly bool SegmentColorVariance;
         public readonly bool OneHitParticle;
@@ -495,11 +505,9 @@ namespace WeaponCore.Support
         {
             AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
-
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(ammo.AmmoDefinitionId);
-            TracerMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial);
-            TrailMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material);
-            SegmentMaterial = MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material);
+
+            ComputeTextures(ammo, out TracerTextures, out SegmentTextures, out TrailTextures, out TracerMode, out TrailMode);
 
             if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
 
@@ -526,10 +534,9 @@ namespace WeaponCore.Support
             DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
             LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
             LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;
-            SegmentColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.End > 0;
-            SegmentWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.End > 0;
+            SegmentColorVariance = TracerMode == Texture.Resize && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.ColorVariance.End > 0;
+            SegmentWidthVariance = TracerMode == Texture.Resize && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance.End > 0;
 
-            LineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentGap > 0;
             SegmentStep = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             SpeedVariance = ammo.AmmoDef.Trajectory.SpeedVariance.Start > 0 || ammo.AmmoDef.Trajectory.SpeedVariance.End > 0;
             RangeVariance = ammo.AmmoDef.Trajectory.RangeVariance.Start > 0 || ammo.AmmoDef.Trajectory.RangeVariance.End > 0;
@@ -574,6 +581,61 @@ namespace WeaponCore.Support
             HasShotFade =  ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 1;
             MaxTrajectoryGrows = ammo.AmmoDef.Trajectory.MaxTrajectoryTime > 1;
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
+        }
+
+        internal void ComputeTextures(WeaponAmmoTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
+        {
+            var lineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0;
+
+            if (lineSegments)
+                tracerTexture = Texture.Resize;
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Normal)
+                tracerTexture = Texture.Normal;
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Cycle)
+                tracerTexture = Texture.Cycle;
+            else if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.TextureMode == AmmoDef.GraphicDef.LineDef.Texture.Wave)
+                tracerTexture = Texture.Wave;
+            else tracerTexture = Texture.Chaos;
+            trailTexture = (Texture) ammo.AmmoDef.AmmoGraphics.Lines.Trail.TextureMode;
+
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length > 0)
+            {
+                tracerTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures.Length; i++)
+                {
+                    var value = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Textures[i];
+                    if (string.IsNullOrEmpty(value))
+                        value = ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial;
+                    tracerTextures[i] = MyStringId.GetOrCompute(value);
+                }
+            }
+            else tracerTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.TracerMaterial) };
+
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length > 0)
+            {
+                segmentTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures.Length; i++)
+                {
+                    var value = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Textures[i];
+                    if (string.IsNullOrEmpty(value))
+                        value = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material;
+                    segmentTextures[i] = MyStringId.GetOrCompute(value);
+                }
+            }
+            else segmentTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Material) };
+
+            if (ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures != null && ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length > 0)
+            {
+                trailTextures = new MyStringId[ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length];
+                for (int i = 0; i < ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures.Length; i++)
+                {
+                    var value = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Textures[i];
+                    if (string.IsNullOrEmpty(value))
+                        value = ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material;
+                    trailTextures[i] = MyStringId.GetOrCompute(value);
+                }
+            }
+            else trailTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material) };
         }
 
         internal void GetParticleInfo(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)

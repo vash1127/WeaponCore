@@ -4,10 +4,7 @@ using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
-using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.WeaponDefinition;
-
 namespace WeaponCore
 {
     public partial class Session

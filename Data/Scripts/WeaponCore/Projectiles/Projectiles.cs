@@ -104,48 +104,37 @@ namespace WeaponCore.Projectiles
             for (int i = ActiveProjetiles.Count - 1; i >= end; i--)
             {
                 var p = ActiveProjetiles[i];
-                p.Info.Age++;
-                p.Active = false;
+                ++p.Info.Age;
                 var age30 = p.Info.Age % 30 == 0;
                 if (age30)
                     p.Info.Ai.ProjectileTicker = p.Info.System.Session.Tick;
 
-                if (!p.Info.Ai.GridInit || p.Info.AiVersion != p.Info.Ai.Version)
-                {
-                    Log.Line($"projectAi change: GridInit:{p.Info.Ai.GridInit} - VersionMisMatch{p.Info.AiVersion != p.Info.Ai.Version}");
-                }
+                switch (p.State) {
+                    case ProjectileState.Destroy:
+                        p.DestroyProjectile();
+                        continue;
+                    case ProjectileState.Dead:
+                        continue;
+                    case ProjectileState.OneAndDone:
+                    case ProjectileState.Depleted:
+                    case ProjectileState.Detonate:
+                        if (p.Info.Age == 0 && p.State == ProjectileState.OneAndDone)
+                            break;
 
-                if (p.Info.Age > 0)
-                {
-                    switch (p.State)
-                    {
-                        case ProjectileState.Destroy:
-                            p.DestroyProjectile();
-                            continue;
-                        case ProjectileState.Dead:
-                            continue;
-                        case ProjectileState.OneAndDone:
-                        case ProjectileState.Depleted:
-                        case ProjectileState.Detonate:
-                            if (p.Info.Age == 0)
-                                break;
-
-                            p.ProjectileClose();
-                            ProjectilePool.Push(p);
-                            ActiveProjetiles.RemoveAtFast(i);
-                            continue;
-                    }
+                        p.ProjectileClose();
+                        ProjectilePool.Push(p);
+                        ActiveProjetiles.RemoveAtFast(i);
+                        continue;
                 }
 
                 if (p.Info.Target.IsProjectile)
                     if (p.Info.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
 
-                if (p.FeelsGravity)
-                {
+                if (p.FeelsGravity) {
+
                     var update = p.FakeGravityNear || p.EntitiesNear || p.Info.InPlanetGravity && age30 || !p.Info.InPlanetGravity && p.Info.Age % 10 == 0;
-                    if (update)
-                    {
+                    if (update) {
                         p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
 
                         if (!p.Info.InPlanetGravity && !MyUtils.IsZero(p.Gravity)) p.FakeGravityNear = true;
@@ -155,15 +144,13 @@ namespace WeaponCore.Projectiles
                     Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
                 }
 
-                if (p.AccelLength > 0 && !p.Info.TriggeredPulse)
-                {
+                if (p.AccelLength > 0 && !p.Info.TriggeredPulse) {
+
                     if (p.SmartsOn) p.RunSmart();
-                    else
-                    {
+                    else {
                         var accel = true;
                         Vector3D newVel;
-                        if (p.FieldTime > 0)
-                        {
+                        if (p.FieldTime > 0) {
                             var distToMax = p.Info.MaxTrajectory - p.Info.DistanceTraveled;
 
                             var stopDist = p.VelocityLengthSqr / 2 / (p.StepPerSec);
@@ -180,8 +167,7 @@ namespace WeaponCore.Projectiles
                                 p.VelocityLengthSqr = 0;
                             }
                         }
-                        else
-                        {
+                        else {
                             newVel = p.Velocity + p.AccelVelocity;
                             p.VelocityLengthSqr = newVel.LengthSquared();
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Info.Direction * p.MaxSpeed;
@@ -191,15 +177,13 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (p.State == ProjectileState.OneAndDone)
-                {
+                if (p.State == ProjectileState.OneAndDone) {
                     p.LastPosition = p.Position;
                     var beamEnd = p.Position + (p.Info.Direction * p.Info.MaxTrajectory);
                     p.TravelMagnitude = p.Position - beamEnd;
                     p.Position = beamEnd;
                 }
-                else
-                {
+                else {
                     if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
                         p.LastPosition = p.Position;
 
@@ -212,8 +196,9 @@ namespace WeaponCore.Projectiles
                 double distChanged;
                 Vector3D.Dot(ref p.Info.Direction, ref p.TravelMagnitude, out distChanged);
                 p.Info.DistanceTraveled += Math.Abs(distChanged);
-                if (p.ModelState == EntityState.Exists)
-                {
+                
+                if (p.ModelState == EntityState.Exists) {
+
                     var up = MatrixD.Identity.Up;
                     MatrixD matrix;
                     MatrixD.CreateWorld(ref p.Position, ref p.Info.VisualDir, ref up, out matrix);
@@ -224,10 +209,9 @@ namespace WeaponCore.Projectiles
                         p.Info.TriggerMatrix = matrix;
                 }
 
-                if (p.DynamicGuidance)
-                {
-                    if (p.PruningProxyId != -1)
-                    {
+                if (p.DynamicGuidance) {
+
+                    if (p.PruningProxyId != -1) {
                         var sphere = new BoundingSphereD(p.Position, p.Info.AmmoDef.Const.AreaEffectSize);
                         BoundingBoxD result;
                         BoundingBoxD.CreateFromSphere(ref sphere, out result);
@@ -260,8 +244,6 @@ namespace WeaponCore.Projectiles
                 else p.AtMaxRange = true;
                 if (p.Info.AmmoDef.Const.Ewar)
                     p.RunEwar();
-
-                p.Active = true;
             }
         }
 
@@ -272,7 +254,7 @@ namespace WeaponCore.Projectiles
                 var p = ActiveProjetiles[x];
                 p.Miss = false;
 
-                if (!p.Active || (int)p.State > 3) continue;
+                if ((int)p.State > 3) continue;
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);

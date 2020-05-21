@@ -23,7 +23,7 @@ namespace WeaponCore.Projectiles
                 var patternCycle = gen.PatternCycle;
                 var targetable = w.ActiveAmmoDef.AmmoDef.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
-
+                
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
@@ -37,6 +37,7 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
+
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;
                 p.Info.EnableGuidance = w.Comp.Set.Value.Guidance;
