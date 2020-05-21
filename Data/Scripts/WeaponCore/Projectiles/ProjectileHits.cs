@@ -318,7 +318,7 @@ namespace WeaponCore.Projectiles
                     if (p.Info.System.Session.HandlesInput && hitEntity.HitPos.HasValue && Vector3D.DistanceSquared(hitEntity.HitPos.Value, p.Info.System.Session.CameraPos) < 22500 && p.Info.System.Session.CameraFrustrum.Contains(hitEntity.HitPos.Value) != ContainmentType.Disjoint)
                     {
                         var entSphere = hitEntity.Entity.PositionComp.WorldVolume;
-                        var from = hitEntity.Intersection.From + (hitEntity.Intersection.Direction * MyUtils.GetSmallestDistanceToSphere(ref hitEntity.Intersection.From, ref entSphere));
+                        var from = hitEntity.Intersection.From + (hitEntity.Intersection.Direction * MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref hitEntity.Intersection.From, ref entSphere));
                         var to = hitEntity.HitPos.Value + (hitEntity.Intersection.Direction * 3f);
                         p.Info.System.Session.Physics.CastRay(from, to, out hitInfo, 15);
                     }
