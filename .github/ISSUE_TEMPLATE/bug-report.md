@@ -8,20 +8,21 @@ assignees: ''
 
 ---
 
-**Is this a multiplayer or singleplayer bug?**
+
+## Is this a multiplayer or singleplayer bug?
 
 
-**Describe the bug:**
+## Describe the bug:
 
 
-**List Steps To Reproduce:**
+## Steps To Reproduce:
 
 
-**Describe Expected behavior:**
+## Expected behavior:
 
 
-**(Optional) Screenshots or videos:**
+### (Optional) Screenshots or videos:
 (remove if not used)
 
-**(Optional) Additional content/log files/etc:**
+### (Optional) Additional content/log files/etc:
 (remove if not used)
