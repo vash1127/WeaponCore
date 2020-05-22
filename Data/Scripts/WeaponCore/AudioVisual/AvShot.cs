@@ -8,7 +8,6 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -16,7 +15,6 @@ namespace WeaponCore.Support
     {
         internal WeaponSystem System;
         internal WeaponDefinition.AmmoDef AmmoDef;
-        internal Weapon.AmmoInfo AmmoInfo;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
         internal MySoundPair FireSound;
@@ -79,6 +77,7 @@ namespace WeaponCore.Support
         internal float GlowShrinkSize;
         internal float DistanceToLine;
         internal ulong ParentId = ulong.MaxValue;
+        internal int UniqueMuzzleId;
         internal int LifeTime;
         internal int MuzzleId;
         internal int WeaponId;
@@ -112,6 +111,13 @@ namespace WeaponCore.Support
         internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal Shrinks EmptyShrink;
+
+        public bool SegmentGaped;
+        public bool TextureReverse;
+        public int TextureIdx = -1;
+        public uint TextureLastUpdate;
+        public double SegmentLenTranserved = 1;
+        public double SegMeasureStep;
 
         internal enum ParticleState
         {
@@ -151,11 +157,11 @@ namespace WeaponCore.Support
             Trail,
         }
 
+        #region Run
         internal void Init(ProInfo info, double firstStepSize, double maxSpeed)
         {
             System = info.System;
             AmmoDef = info.AmmoDef;
-            AmmoInfo = info.AmmoInfo;
             IsShrapnel = info.IsShrapnel;
             if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
             ParentId = info.Id;
@@ -167,6 +173,7 @@ namespace WeaponCore.Support
             Offset = AmmoDef.Const.OffsetEffect;
             MaxTracerLength = info.TracerLength;
             MuzzleId = info.MuzzleId;
+            UniqueMuzzleId = info.UniqueMuzzleId;
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
@@ -189,6 +196,10 @@ namespace WeaponCore.Support
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, MaxTrajectory);
+
+            AvInfoCache infoCache;
+            if (AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && System.Session.AvShotCache.TryGetValue(info.UniqueMuzzleId, out infoCache))
+                UpdateCache(infoCache);
         }
 
         internal static void DeferedAvStateUpdates(Session s)
@@ -230,8 +241,8 @@ namespace WeaponCore.Support
                     //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
                     //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
 
-                   double? dist;
-                   s.CameraFrustrum.Intersects(ref rayTracer, out dist);
+                    double? dist;
+                    s.CameraFrustrum.Intersects(ref rayTracer, out dist);
 
                     if (dist != null && dist <= a.VisualLength)
                         a.OnScreen = Screen.Tracer;
@@ -268,7 +279,8 @@ namespace WeaponCore.Support
                 if (a.MuzzleId == -1)
                     return;
 
-                if (saveHit) {
+                if (saveHit)
+                {
                     a.HitVelocity = a.Hit.HitVelocity;
                     a.Hitting = !a.ShrinkInited;
                     a.HitEffects();
@@ -276,18 +288,23 @@ namespace WeaponCore.Support
                 }
                 a.LastStep = a.Hitting || MyUtils.IsZero(a.MaxTrajectory - a.ShortEstTravel, 1E-01F);
 
-                if (a.AmmoDef.Const.DrawLine) {
-                    if (a.AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F)) {
+                if (a.AmmoDef.Const.DrawLine)
+                {
+                    if (a.AmmoDef.Const.IsBeamWeapon || !saveHit && MyUtils.IsZero(a.MaxTracerLength - a.VisualLength, 1E-01F))
+                    {
                         a.Tracer = TracerState.Full;
                     }
-                    else if (a.Tracer != TracerState.Off && a.VisualLength <= 0) {
+                    else if (a.Tracer != TracerState.Off && a.VisualLength <= 0)
+                    {
                         a.Tracer = TracerState.Off;
                     }
-                    else if (a.Hitting && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F)) {
+                    else if (a.Hitting && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
+                    {
                         a.Tracer = TracerState.Shrink;
                         a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
                     }
-                    else if (a.Tracer == TracerState.Grow && a.LastStep) {
+                    else if (a.Tracer == TracerState.Grow && a.LastStep)
+                    {
                         a.Tracer = TracerState.Full;
                     }
                 }
@@ -364,7 +381,7 @@ namespace WeaponCore.Support
             var extStart = Back && firstStep && VisualLength < ShortStepSize;
             Vector3D frontPos;
             Vector3D backPos;
-            
+
             var stopVel = shrinking || hit;
             var velStep = !stopVel ? ShootVelStep : Vector3D.Zero;
 
@@ -384,7 +401,7 @@ namespace WeaponCore.Support
             if (glowCount <= AmmoDef.AmmoGraphics.Lines.Trail.DecayTime)
             {
                 var glow = System.Session.Av.Glows.Count > 0 ? System.Session.Av.Glows.Pop() : new AfterGlow();
-                
+
                 glow.TailPos = backPos;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
@@ -442,7 +459,7 @@ namespace WeaponCore.Support
                     }
 
                     width = (float)Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
-                    TracerShrinks.Enqueue(new Shrinks { NewFront = shrunk.Value.NewTracerFront, Color = color, Length = shrunk.Value.Reduced, Thickness = width, Last = last});
+                    TracerShrinks.Enqueue(new Shrinks { NewFront = shrunk.Value.NewTracerFront, Color = color, Length = shrunk.Value.Reduced, Thickness = width, Last = last });
                 }
             }
         }
@@ -451,7 +468,7 @@ namespace WeaponCore.Support
         {
             ShrinkInited = true;
 
-            var fractualSteps = VisualLength  / StepSize;
+            var fractualSteps = VisualLength / StepSize;
             TracerSteps = (int)Math.Floor(fractualSteps);
             TracerStep = TracerSteps;
             if (TracerSteps <= 0 || fractualSteps < StepSize && !MyUtils.IsZero(fractualSteps - StepSize, 1E-01F))
@@ -465,36 +482,75 @@ namespace WeaponCore.Support
                 Hit.VisualHitPos += ShootVelStep;
                 var newTracerFront = Hit.VisualHitPos + -(PointDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
-                return new Shrunk(ref newTracerFront, (float) reduced);
+                return new Shrunk(ref newTracerFront, (float)reduced);
             }
             return null;
         }
+        #endregion
 
         internal void LineVariableEffects()
         {
             var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
             var segmentColor = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
 
-            if (AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && AmmoInfo.LastUpdateTick != System.Session.Tick)
+            if (AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && TextureLastUpdate != System.Session.Tick)
             {
-                if (System.Session.Tick - AmmoInfo.LastUpdateTick > 1)
-                    AmmoInfo.Clean();
+                if (System.Session.Tick - TextureLastUpdate > 1)
+                    AmmoInfoClean();
 
-                AmmoInfo.LastUpdateTick = System.Session.Tick;
+                TextureLastUpdate = System.Session.Tick;
 
-                switch (AmmoDef.Const.TracerMode)
-                {
+                switch (AmmoDef.Const.TracerMode) {
                     case AmmoConstants.Texture.Resize:
-                        UpdateSegmentState();
+                        var wasGapped = SegmentGaped;
+                        var segSize = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
+                        var thisLen = wasGapped ? segSize.SegmentGap : segSize.SegmentLength;
+                        var oldmStep = SegMeasureStep;
+
+                        if (oldmStep > thisLen) {
+                            wasGapped = !wasGapped && segSize.SegmentGap > 0;
+                            SegmentGaped = wasGapped;
+                            SegMeasureStep = 0;
+                        }
+                        SegMeasureStep += AmmoDef.Const.SegmentStep;
+                        SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(segSize.SegmentGap, 0, Math.Min(SegMeasureStep, segSize.SegmentGap)) : MathHelperD.Clamp(segSize.SegmentLength, 0, Math.Min(SegMeasureStep, segSize.SegmentLength));
                         break;
                     case AmmoConstants.Texture.Cycle:
                     case AmmoConstants.Texture.Wave:
-                        UpdateCyclicalState();
+                        if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Cycle) {
+                            var current = TextureIdx;
+                            if (current + 1 < AmmoDef.Const.TracerTextures.Length)
+                                TextureIdx = current + 1;
+                            else
+                                TextureIdx = 0;
+                        }
+                        else {
+                            var current = TextureIdx;
+                            if (!TextureReverse) {
+                                if (current + 1 < AmmoDef.Const.TracerTextures.Length)
+                                    TextureIdx = current + 1;
+                                else {
+                                    TextureReverse = true;
+                                    TextureIdx = current - 1;
+                                }
+                            }
+                            else {
+                                if (current - 1 >= 0)
+                                    TextureIdx = current - 1;
+                                else {
+                                    TextureReverse = false;
+                                    TextureIdx = current + 1;
+                                }
+                            }
+                        }
                         break;
                     case AmmoConstants.Texture.Chaos:
-                        AmmoInfo.TextureIdx = MyUtils.GetRandomInt(0, AmmoDef.Const.TracerTextures.Length);
+                        TextureIdx = MyUtils.GetRandomInt(0, AmmoDef.Const.TracerTextures.Length);
                         break;
                 }
+
+                if (AmmoDef.Const.IsBeamWeapon)
+                    System.Session.AvShotCache[UniqueMuzzleId] = new AvInfoCache {SegMeasureStep = SegMeasureStep, SegmentGaped = SegmentGaped, SegmentLenTranserved = SegmentLenTranserved, TextureIdx = TextureIdx, TextureLastUpdate = TextureLastUpdate, TextureReverse = TextureReverse};
             }
 
             if (AmmoDef.Const.LineColorVariance)
@@ -558,63 +614,6 @@ namespace WeaponCore.Support
                 var wv = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 SegmentWidth += randomValue;
-            }
-        }
-
-        public void UpdateSegmentState()
-        {
-            var wasGapped = AmmoInfo.SegmentGaped;
-            var seg = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
-            var thisLen = wasGapped ? seg.SegmentGap : seg.SegmentLength;
-            var oldmStep = AmmoInfo.MeasureStep;
-
-            if (oldmStep > thisLen)
-            {
-                wasGapped = !wasGapped && seg.SegmentGap > 0;
-                AmmoInfo.SegmentGaped = wasGapped;
-                AmmoInfo.MeasureStep = 0;
-            }
-
-            AmmoInfo.MeasureStep += AmmoDef.Const.SegmentStep;
-            AmmoInfo.SegmentLenTranserved = wasGapped ? MathHelperD.Clamp(seg.SegmentGap, 0, Math.Min(AmmoInfo.MeasureStep, seg.SegmentGap))
-                : MathHelperD.Clamp(seg.SegmentLength, 0, Math.Min(AmmoInfo.MeasureStep, seg.SegmentLength));
-        }
-
-        public void UpdateCyclicalState()
-        {
-            if (AmmoDef.Const.TracerMode == AmmoConstants.Texture.Cycle)
-            {
-                var current = AmmoInfo.TextureIdx;
-                if (current + 1 < AmmoDef.Const.TracerTextures.Length)
-                    AmmoInfo.TextureIdx = current + 1;
-                else
-                    AmmoInfo.TextureIdx = 0;
-            }
-            else // Wave pattern
-            {
-                var current = AmmoInfo.TextureIdx;
-                var reverse = AmmoInfo.Reverse;
-
-                if (!reverse)
-                {
-                    if (current + 1 < AmmoDef.Const.TracerTextures.Length)
-                        AmmoInfo.TextureIdx = current + 1;
-                    else
-                    {
-                        AmmoInfo.Reverse = true;
-                        AmmoInfo.TextureIdx = current - 1;
-                    }
-                }
-                else
-                {
-                    if (current - 1 >= 0)
-                        AmmoInfo.TextureIdx = current - 1;
-                    else
-                    {
-                        AmmoInfo.Reverse = false;
-                        AmmoInfo.TextureIdx = current + 1;
-                    }
-                }
             }
         }
 
@@ -923,6 +922,26 @@ namespace WeaponCore.Support
 
             MarkForClose = true;
         }
+        
+        public void AmmoInfoClean()
+        {
+            SegmentGaped = false;
+            TextureReverse = false;
+            SegmentLenTranserved = 1;
+            TextureIdx = -1;
+            SegMeasureStep = 0;
+            TextureLastUpdate = 0;
+        }
+
+        internal void UpdateCache(AvInfoCache avInfoCache)
+        {
+            SegmentGaped = avInfoCache.SegmentGaped;
+            TextureReverse = avInfoCache.TextureReverse;
+            SegmentLenTranserved = avInfoCache.SegmentLenTranserved;
+            TextureIdx = avInfoCache.TextureIdx;
+            SegMeasureStep = avInfoCache.SegMeasureStep;
+            TextureLastUpdate = avInfoCache.TextureLastUpdate;
+        }
 
 
         internal void Close()
@@ -1003,6 +1022,7 @@ namespace WeaponCore.Support
             MaxTrajectory = 0;
             ShotFade = 0;
             FireCounter = 0;
+            UniqueMuzzleId = 0;
             LastHit = uint.MaxValue / 2;
             ParentId = ulong.MaxValue;
             LastHitShield = false;
@@ -1035,13 +1055,18 @@ namespace WeaponCore.Support
             GlowSteps.Clear();
             Offsets.Clear();
             //
-
+            SegmentGaped = false;
+            TextureReverse = false;
+            SegmentLenTranserved = 1;
+            TextureIdx = -1;
+            SegMeasureStep = 0;
+            TextureLastUpdate = 0;
+            //
 
             FiringWeapon = null;
             PrimeEntity = null;
             TriggerEntity = null;
             AmmoDef = null;
-            AmmoInfo = null;
             System = null;
             HitEmitter = null;
             HitSound = null;
@@ -1068,6 +1093,16 @@ namespace WeaponCore.Support
         internal float Thickness;
         internal bool Last;
 
+    }
+
+    internal struct AvInfoCache
+    {
+        internal bool SegmentGaped;
+        internal bool TextureReverse;
+        internal double SegmentLenTranserved;
+        internal double SegMeasureStep;
+        internal int TextureIdx;
+        internal uint TextureLastUpdate;
     }
 
     internal struct AvClose

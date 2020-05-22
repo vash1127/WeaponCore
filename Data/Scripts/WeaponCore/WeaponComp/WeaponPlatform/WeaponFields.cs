@@ -94,7 +94,6 @@ namespace WeaponCore.Platform
         internal WeaponTimings Timings;
         internal WeaponAmmoTypes ActiveAmmoDef;
         
-        internal readonly AmmoInfo[][] AmmoInfos;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -208,9 +207,10 @@ namespace WeaponCore.Platform
 
         public class Muzzle
         {
-            public Muzzle(int id)
+            public Muzzle(int id, Session session)
             {
                 MuzzleId = id;
+                UniqueId = session.UniqueMuzzleId;
             }
 
             public Vector3D Position;
@@ -220,29 +220,10 @@ namespace WeaponCore.Platform
             public uint LastAv1Tick;
             public uint LastAv2Tick;
             public int MuzzleId;
+            public int UniqueId;
             public bool Av1Looping;
             public bool Av2Looping;
 
-        }
-
-        public class AmmoInfo
-        {
-            public bool SegmentGaped;
-            public bool Reverse;
-            public int TextureIdx = -1;
-            public uint LastUpdateTick;
-            public double SegmentLenTranserved = 1;
-            public double MeasureStep;
-
-            public void Clean()
-            {
-                SegmentGaped = false;
-                Reverse = false;
-                SegmentLenTranserved = 1;
-                TextureIdx = -1;
-                MeasureStep = 0;
-                LastUpdateTick = 0;
-            }
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
@@ -357,15 +338,6 @@ namespace WeaponCore.Platform
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             TrackProjectiles = System.TrackProjectile;
-
-            AmmoInfos = new AmmoInfo[System.WeaponAmmoTypes.Length][];
-            for (int i = 0; i < System.WeaponAmmoTypes.Length; i++)
-            {
-                var def = System.WeaponAmmoTypes[i].AmmoDef;
-                AmmoInfos[i] = new AmmoInfo[def.Const.PatternIndexCnt];
-                for (int j = 0; j < AmmoInfos[i].Length; j++)
-                    AmmoInfos[i][j] = new AmmoInfo();
-            }
         }
     }
 }

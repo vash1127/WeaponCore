@@ -40,6 +40,7 @@ namespace WeaponCore.Support
         internal int Age;
         internal int FireCounter;
         internal int AiVersion;
+        internal int UniqueMuzzleId;
         internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
@@ -61,10 +62,9 @@ namespace WeaponCore.Support
         internal bool IsVirtual;
         internal bool InPlanetGravity;
 
-        internal Weapon.AmmoInfo AmmoInfo;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
-        internal void InitVirtual(Weapon weapon, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, int muzzleId, Vector3D origin, Vector3D virDirection, double maxTrajectory, float shotFade)
+        internal void InitVirtual(Weapon weapon, AmmoDef ammodef, MyEntity primeEntity, MyEntity triggerEntity, Weapon.Muzzle muzzle, double maxTrajectory, float shotFade)
         {
             IsVirtual = true;
             System = weapon.System;
@@ -73,16 +73,16 @@ namespace WeaponCore.Support
             MyShield = weapon.Comp.Ai.MyShield;
             InPlanetGravity = weapon.Comp.Ai.InPlanetGravity;
             AmmoDef = ammodef;
-            AmmoInfo = weapon.AmmoInfos[weapon.ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos][ammodef.Const.AmmoIdxPos];
             PrimeEntity = primeEntity;
             TriggerEntity = triggerEntity;
             Target.Entity = weapon.Target.Entity;
             Target.Projectile = weapon.Target.Projectile;
             Target.FiringCube = weapon.Target.FiringCube;
             WeaponId = weapon.WeaponId;
-            MuzzleId = muzzleId;
-            Direction = virDirection;
-            Origin = origin;
+            MuzzleId = muzzle.MuzzleId;
+            UniqueMuzzleId = muzzle.UniqueId;
+            Direction = muzzle.DeviatedDir;
+            Origin = muzzle.Position;
             MaxTrajectory = maxTrajectory;
             ShotFade = shotFade;
         }
@@ -110,7 +110,6 @@ namespace WeaponCore.Support
             MyPlanet = null;
             MyShield = null;
             AmmoDef = null;
-            AmmoInfo = null;
             WeaponCache = null;
             IsShrapnel = false;
             TriggeredPulse = false;
@@ -130,6 +129,7 @@ namespace WeaponCore.Support
             TracerLength = 0;
             FireCounter = 0;
             AiVersion = 0;
+            UniqueMuzzleId = 0;
             EnableGuidance = true;
             Direction = Vector3D.Zero;
             VisualDir = Vector3D.Zero;
@@ -308,9 +308,8 @@ namespace WeaponCore.Support
     internal struct NewVirtual
     {
         internal ProInfo Info;
+        internal Weapon.Muzzle Muzzle;
         internal bool Rotate;
-        internal Vector3D Origin;
-        internal Vector3D Dir;
         internal int VirtualId;
     }
 
@@ -335,7 +334,6 @@ namespace WeaponCore.Support
         internal MyEntity TargetEnt;
         internal long PatternCycle;
         internal float MaxTrajectory;
-        internal int PatternIdx;
         internal Kind Type;
     }
 
@@ -351,11 +349,11 @@ namespace WeaponCore.Support
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
                 frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
-                frag.AmmoInfo = p.Info.AmmoInfo;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
                 frag.MuzzleId = p.Info.MuzzleId;
+                frag.UniqueMuzzleId = p.Info.UniqueMuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Hit.HitPos) ? p.Hit.HitPos : p.Position;
@@ -418,6 +416,7 @@ namespace WeaponCore.Support
                 p.Info.EnableGuidance = frag.Guidance;
                 p.Info.WeaponId = frag.WeaponId;
                 p.Info.MuzzleId = frag.MuzzleId;
+                p.Info.UniqueMuzzleId = frag.UniqueMuzzleId;
                 p.Info.Origin = frag.Origin;
                 p.Info.OriginUp = frag.OriginUp;
                 p.Info.WeaponRng = frag.WeaponRng;
@@ -431,7 +430,6 @@ namespace WeaponCore.Support
                 p.Info.LockOnFireState = frag.LockOnFireState;
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
-                p.Info.AmmoInfo = frag.AmmoInfo;
 
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
@@ -453,7 +451,6 @@ namespace WeaponCore.Support
         public WeaponSystem System;
         public GridAi Ai;
         public AmmoDef AmmoDef;
-        public Weapon.AmmoInfo AmmoInfo;
         public MyEntity PrimeEntity;
         public MyEntity TriggerEntity;
         public MyEntity Target;
@@ -467,6 +464,7 @@ namespace WeaponCore.Support
         public BoundingSphereD DeadSphere;
         public int WeaponId;
         public int MuzzleId;
+        public int UniqueMuzzleId;
         public WeaponRandomGenerator WeaponRng;
         public bool Guidance;
         public bool ClientSent;

@@ -28,7 +28,6 @@ namespace WeaponCore.Projectiles
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.AmmoInfo = w.AmmoInfos[w.ActiveAmmoDef.AmmoDef.Const.AmmoIdxPos][gen.PatternIdx];
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
@@ -88,8 +87,8 @@ namespace WeaponCore.Projectiles
                         if (!a.Const.RotateRealBeam) p.Info.WeaponCache.VirutalId = 0;
                         else if (v.Rotate)
                         {
-                            p.Info.Origin = v.Origin;
-                            p.Info.Direction = v.Dir;
+                            p.Info.Origin = v.Muzzle.Position;
+                            p.Info.Direction = v.Muzzle.Direction;
                             p.Info.WeaponCache.VirutalId = v.VirtualId;
                         }
                     }
