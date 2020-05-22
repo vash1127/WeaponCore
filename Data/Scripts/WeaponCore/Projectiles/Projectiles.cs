@@ -47,12 +47,6 @@ namespace WeaponCore.Projectiles
 
         internal void Stage1() // Methods highly inlined due to keen's mod profiler
         {
-
-            Session.StallReporter.Start("DeferedAvStateUpdates", 17);
-            if (!Session.DedicatedServer) 
-                DeferedAvStateUpdates(Session);
-            Session.StallReporter.End();
-
             Session.StallReporter.Start("GenProjectiles", 17);
             if (NewProjectiles.Count > 0) GenProjectiles();
             Session.StallReporter.End();
@@ -73,9 +67,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("CheckHits", 17);
-            if (false && ActiveProjetiles.Count > 0)
-                Session.PTask = MyAPIGateway.Parallel.StartBackground(CheckHits);
-            else if (ActiveProjetiles.Count > 0)
+            if (ActiveProjetiles.Count > 0)
                 CheckHits();
             Session.StallReporter.End();
         }
@@ -96,6 +88,11 @@ namespace WeaponCore.Projectiles
 
             if (!Session.DedicatedServer)
                 UpdateAv();
+
+            Session.StallReporter.Start("DeferedAvStateUpdates", 17);
+            if (!Session.DedicatedServer)
+                DeferedAvStateUpdates(Session);
+            Session.StallReporter.End();
         }
 
 
@@ -187,7 +184,7 @@ namespace WeaponCore.Projectiles
                     if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
                         p.LastPosition = p.Position;
 
-                    p.TravelMagnitude = p.Velocity * StepConst;
+                    p.TravelMagnitude = p.Info.Age != 0 ? p.Velocity * StepConst : p.InitalStep;
                     p.Position += p.TravelMagnitude;
                 }
 
@@ -418,6 +415,9 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.AvShot.ModelOnly)
                     DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
+
+                if (false && p.Info.IsShrapnel)
+                    p.Info.System.Session.DebugLines.Add(new Session.DebugLine {Color = Color.Blue, Line = new LineD(p.LastPosition, p.Position)});
             }
         }
 
