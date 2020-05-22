@@ -16,6 +16,8 @@ namespace WeaponCore.Control
 {
     public static class TerminalHelpers
     {
+
+        #region Alter vanilla Actions/Control
         internal static void AlterActions<T>()
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
@@ -315,6 +317,9 @@ namespace WeaponCore.Control
                 w.Set.Enable = On;
             }
         }
+        #endregion
+
+        #region Shoot Actions
 
         internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
         {
@@ -459,6 +464,119 @@ namespace WeaponCore.Control
             cState.ClickShoot = on;
             cState.ShootOn = !on && cState.ShootOn;
         }
+        #endregion
+
+        #region Support methods
+
+        internal static bool CompReady(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+        }
+
+        internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
+
+            if (on)
+                sb.Append("On");
+            else
+                sb.Append("Off");
+        }
+
+        internal static void TerminalActionShootClick(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
+        }
+
+        internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            WcShootToggleAction(comp);
+        }
+
+        internal static void TerminalActionShootOn(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            WcShootOnAction(comp);
+        }
+
+        internal static void TerminalActionShootOff(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            WcShootOffAction(comp);
+        }
+
+        internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            WcShootOnceAction(comp);
+        }
+
+        internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            int weaponId;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
+
+            var w = comp.Platform.Weapons[weaponId];
+
+            var availAmmo = w.System.WeaponAmmoTypes.Length;
+            // cant use w.ActiveAmmoDef as it may not have reloaded yet
+            var currActive = w.System.WeaponAmmoTypes[w.Set.AmmoTypeId];
+            var next = (w.Set.AmmoTypeId + 1) % availAmmo;
+            var currDef = w.System.WeaponAmmoTypes[next];
+
+            var change = false;
+
+            while (!(currActive.Equals(currDef)))
+            {
+                if (currDef.AmmoDef.Const.IsTurretSelectable)
+                {
+                    w.Set.AmmoTypeId = next;
+
+                    if (comp.Session.MpActive)
+                        comp.Session.SendCycleAmmoNetworkUpdate(w, next);
+
+                    change = true;
+
+                    break;
+                }
+
+                next = (next + 1) % availAmmo;
+                currDef = w.System.WeaponAmmoTypes[next];
+            }
+
+            if (change)
+                MyAPIGateway.Utilities.InvokeOnGameThread(w.CycleAmmo);
+        }
+
+        internal static void ShootStateWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp.State.Value.ShootOn)
+                sb.Append("On");
+            else
+                sb.Append("Off");
+        }
+        #endregion
+
+        #region terminal control methods
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, int, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock
         {
@@ -617,6 +735,7 @@ namespace WeaponCore.Control
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
         }
+        #endregion
 
         #region Saved Code
 

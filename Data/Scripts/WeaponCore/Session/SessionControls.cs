@@ -189,26 +189,9 @@ namespace WeaponCore
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action.Name = new StringBuilder($"Toggle Click To Fire");
-            action.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                
-                TerminalHelpers.WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
-            };
-            action.Writer = (blk, sb) =>
-            {
-                var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
-
-                if (on)
-                    sb.Append("On");
-                else
-                    sb.Append("Off");
-            };
-            action.Enabled = (b) =>
-            {
-                var comp = b?.Components?.Get<WeaponComponent>();
-                return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-            };
+            action.Action = TerminalHelpers.TerminalActionShootClick;
+            action.Writer = TerminalHelpers.ClickShootWriter;
+            action.Enabled = TerminalHelpers.CompReady;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -219,27 +202,9 @@ namespace WeaponCore
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"Shoot");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action0.Name = new StringBuilder($"Shoot On/Off");
-            action0.Action = delegate (IMyTerminalBlock blk) 
-            {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                    return;
-
-                TerminalHelpers.WcShootToggleAction(comp);
-            };
-            action0.Writer = (blk, sb) => 
-            {
-                var comp = blk.Components.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                if (comp.State.Value.ShootOn)
-                    sb.Append("On");
-                else
-                    sb.Append("Off");
-            };
-            action0.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action0.Action = TerminalHelpers.TerminActionToggleShoot;
+            action0.Writer = TerminalHelpers.ShootStateWriter;
+            action0.Enabled = TerminalHelpers.CompReady;
             action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -247,27 +212,9 @@ namespace WeaponCore
             var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"Shoot_On");
             action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
             action1.Name = new StringBuilder($"Shoot On");
-            action1.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                    return;
-
-                TerminalHelpers.WcShootOnAction(comp);
-
-            };
-            action1.Writer = (blk, sb) =>
-            {
-                var comp = blk.Components.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                if (comp.State.Value.ShootOn)
-                    sb.Append("On");
-                else
-                    sb.Append("Off");
-            };
-            action1.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action1.Action = TerminalHelpers.TerminalActionShootOn;
+            action1.Writer = TerminalHelpers.ShootStateWriter;
+            action1.Enabled = TerminalHelpers.CompReady;
             action1.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -275,27 +222,9 @@ namespace WeaponCore
             var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"Shoot_Off");
             action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
             action2.Name = new StringBuilder($"Shoot Off");
-            action2.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                    return;
-
-                TerminalHelpers.WcShootOffAction(comp);
-
-            };
-            action2.Writer = (blk, sb) =>
-            {
-                var comp = blk.Components.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                if (comp.State.Value.ShootOn)
-                    sb.Append("On");
-                else
-                    sb.Append("Off");
-            };
-            action2.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action2.Action = TerminalHelpers.TerminalActionShootOff;
+            action2.Writer = TerminalHelpers.ShootStateWriter;
+            action2.Enabled = TerminalHelpers.CompReady;
             action2.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action2);
@@ -303,17 +232,9 @@ namespace WeaponCore
             var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"ShootOnce");
             action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
             action3.Name = new StringBuilder($"Shoot Once");
-            action3.Action = delegate (IMyTerminalBlock blk) {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-                TerminalHelpers.WcShootOnceAction(comp);
-            };
+            action3.Action = TerminalHelpers.TerminalActionShootOnce;
             action3.Writer = (b, t) => t.Append("");
-            action3.Enabled = (b) =>
-            {
-                return b.Components.Has<WeaponComponent>();
-            };
+            action3.Enabled = TerminalHelpers.CompReady;
             action3.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action3);
@@ -324,52 +245,10 @@ namespace WeaponCore
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_CycleAmmo");
             action0.Icon = path + @"\Textures\GUI\Icons\Actions\Cycle_Ammo.dds";
             action0.Name = new StringBuilder($"{name} Cycle Ammo");
-            action0.Action = delegate (IMyTerminalBlock blk)
-            {
-                var comp = blk?.Components?.Get<WeaponComponent>();
-                int weaponId;
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
-                try
-                {
-                    var w = comp.Platform.Weapons[weaponId];
-
-                    var availAmmo = w.System.WeaponAmmoTypes.Length;
-                    // cant use w.ActiveAmmoDef as it may not have reloaded yet
-                    var currActive = w.System.WeaponAmmoTypes[w.Set.AmmoTypeId]; 
-                    var next = (w.Set.AmmoTypeId + 1) % availAmmo;
-                    var currDef = w.System.WeaponAmmoTypes[next];
-
-                    var change = false;
-
-                    while (!(currActive.Equals(currDef)))
-                    {
-                        if (currDef.AmmoDef.Const.IsTurretSelectable)
-                        { 
-                            w.Set.AmmoTypeId = next;
-
-                            if (comp.Session.MpActive)
-                                comp.Session.SendCycleAmmoNetworkUpdate(w, next);
-
-                            change = true;
-
-                            break;
-                        }
-
-                        next = (next + 1) % availAmmo;
-                        currDef = w.System.WeaponAmmoTypes[next];
-                    }
-
-                    if (change)
-                        comp.Session.FutureEvents.Schedule(w.CycleAmmo, null, 1);
-
-                }
-                catch (Exception e)
-                {
-                    Log.Line($"Broke the Unbreakable, its dead Jim: {e}");
-                }
-            };
+            action0.Action = (b) => TerminalHelpers.TerminalActionCycleAmmo(b, id);
             action0.Writer = (b, t) =>
             {
+                //cant create method call as it would require 2, this is checked every tick
                 var comp = b?.Components?.Get<WeaponComponent>();
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
@@ -382,6 +261,7 @@ namespace WeaponCore
             };
             action0.Enabled = (b) =>
             {
+                //cant create method call as it would require 2, this is checked every tick
                 var comp = b?.Components?.Get<WeaponComponent>();
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;

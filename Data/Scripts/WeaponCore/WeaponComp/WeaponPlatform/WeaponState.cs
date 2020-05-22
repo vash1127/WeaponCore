@@ -586,7 +586,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal void CycleAmmo(object o = null)
+        internal void CycleAmmo()
         {
             if (State.Sync.CurrentAmmo == 0)
             {

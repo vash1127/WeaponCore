@@ -1170,7 +1170,7 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            if (GridToMasterAi.TryGetValue(myGrid, out ai))
                             {
                                 var c = 0;
                                 var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
