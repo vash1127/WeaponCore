@@ -82,7 +82,6 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
-        internal AmmoInfo[] AmmoInfos;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -94,6 +93,7 @@ namespace WeaponCore.Platform
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
         internal WeaponAmmoTypes ActiveAmmoDef;
+        
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -207,9 +207,10 @@ namespace WeaponCore.Platform
 
         public class Muzzle
         {
-            public Muzzle(int id)
+            public Muzzle(int id, Session session)
             {
                 MuzzleId = id;
+                UniqueId = session.UniqueMuzzleId;
             }
 
             public Vector3D Position;
@@ -219,24 +220,10 @@ namespace WeaponCore.Platform
             public uint LastAv1Tick;
             public uint LastAv2Tick;
             public int MuzzleId;
+            public int UniqueId;
             public bool Av1Looping;
             public bool Av2Looping;
 
-        }
-
-        public class AmmoInfo
-        {
-            public bool SegmentGaped;
-            public bool Reverse;
-            public double SegmentLenTranserved = 1;
-            public int TextureIdx = - 1;
-            public void Clean()
-            {
-                SegmentGaped = false;
-                Reverse = false;
-                //SegmentLenTranserved = 0f;
-                TextureIdx = - 1;
-            }
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)

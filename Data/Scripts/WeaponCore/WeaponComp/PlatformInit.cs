@@ -355,7 +355,7 @@ namespace WeaponCore.Platform
                         if (weapon.Muzzles[i] == null)
                         {
                             weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, barrel);
-                            weapon.Muzzles[i] = new Muzzle(i);
+                            weapon.Muzzles[i] = new Muzzle(i, comp.Session);
                         }
                         else
                             weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;

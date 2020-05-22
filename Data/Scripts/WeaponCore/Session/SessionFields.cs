@@ -64,7 +64,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<GridAi> GridAiPool = new MyConcurrentPool<GridAi>(128, ai => ai.CleanUp());
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
-        internal readonly MyConcurrentPool<Weapon.AmmoInfo> AmmoInfoPool = new MyConcurrentPool<Weapon.AmmoInfo>(128, info => info.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
         
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
@@ -104,7 +103,7 @@ namespace WeaponCore
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsCheck = new Dictionary<Weapon, int>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
-
+        internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -202,6 +201,7 @@ namespace WeaponCore
         internal string TriggerEntityModel;
         internal object InitObj = new object();
 
+        internal int MuzzleIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;
         internal int TargetChecks;
@@ -291,6 +291,8 @@ namespace WeaponCore
                 return 0;
             }
         }
+
+        internal int UniqueMuzzleId => MuzzleIdCounter++;
 
         public T CastProhibit<T>(T ptr, object val) => (T) val;
 

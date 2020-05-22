@@ -21,13 +21,11 @@ namespace WeaponCore
 
         private void StartComps()
         {
-            //var reassign = false;
             for (int i = 0; i < CompsToStart.Count; i++)
             {
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.RemoveComp();
                     PlatFormPool.Return(weaponComp.Platform);
                     weaponComp.Platform = null;
@@ -36,18 +34,7 @@ namespace WeaponCore
                 }
                 if (weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose && weaponComp.MyCube.BlockDefinition.HasPhysics)
                     continue;
-                /*
-                if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
-                {
-                    if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
-                        continue;
 
-                    Log.Line($"[StartComps - gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
-                    InitComp(weaponComp.MyCube, false);
-                    reassign = true;
-                    CompsToStart.Remove(weaponComp);
-                }
-                */
                 if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                 {
                     if (weaponComp.MyCube.MarkedForClose)
@@ -68,13 +55,6 @@ namespace WeaponCore
                 }
             }
             CompsToStart.ApplyRemovals();
-            /*
-            if (reassign)
-            {
-                CompsToStart.ApplyAdditions();
-                StartComps();
-            }
-            */
         }
 
         private void InitComp(MyCubeBlock cube, bool thread = true)
@@ -148,7 +128,6 @@ namespace WeaponCore
                 if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
                     comp.StopAllSounds();
-                    comp.CleanCompAmmos();
                     comp.CleanCompParticles();
                     comp.CleanCompSounds();
                     comp.Platform.RemoveParts(comp);

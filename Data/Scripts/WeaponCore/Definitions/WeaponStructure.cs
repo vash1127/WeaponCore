@@ -638,31 +638,6 @@ namespace WeaponCore.Support
             else trailTextures = new[] { MyStringId.GetOrCompute(ammo.AmmoDef.AmmoGraphics.Lines.Trail.Material) };
         }
 
-        internal void GetParticleInfo(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
-        {
-            var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
-            var comparer = new Session.HackEqualityComparer();
-            for (int i = 0; i < list.Count; i++)
-            {
-                var tuple = (IStructuralEquatable)list[i];
-                if (tuple != null)
-                {
-                    tuple.GetHashCode(comparer);
-                    var hacked = comparer.Def;
-                    if (hacked != null)
-                    {
-                        if (hacked.ParticleEffects != null)
-                        {
-                            foreach (var particle in hacked.ParticleEffects)
-                            {
-                                if (particle.Id.SubtypeId.Contains("Spark"))
-                                    Log.Line($"test: {particle.Id.SubtypeId} - {ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name}");
-                            }
-                        }
-                    }
-                }
-            }
-        }
 
         private void ComputeSteps(WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
         {
@@ -711,6 +686,33 @@ namespace WeaponCore.Support
                 }
             }
         }
+
+        internal void GetParticleInfo(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
+        {
+            var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
+            var comparer = new Session.HackEqualityComparer();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var tuple = (IStructuralEquatable)list[i];
+                if (tuple != null)
+                {
+                    tuple.GetHashCode(comparer);
+                    var hacked = comparer.Def;
+                    if (hacked != null)
+                    {
+                        if (hacked.ParticleEffects != null)
+                        {
+                            foreach (var particle in hacked.ParticleEffects)
+                            {
+                                if (particle.Id.SubtypeId.Contains("Spark"))
+                                    Log.Line($"test: {particle.Id.SubtypeId} - {ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name}");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;

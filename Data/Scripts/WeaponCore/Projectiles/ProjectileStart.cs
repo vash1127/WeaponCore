@@ -1,8 +1,7 @@
-﻿using VRageMath;
+﻿using Sandbox.Game.AI;
+using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Projectiles.Projectile;
 using static WeaponCore.Support.NewProjectile;
-using static WeaponCore.Support.AvShot;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef;
 
 namespace WeaponCore.Projectiles
@@ -23,14 +22,12 @@ namespace WeaponCore.Projectiles
                 var patternCycle = gen.PatternCycle;
                 var targetable = w.ActiveAmmoDef.AmmoDef.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
-                
                 p.Info.Id = Session.Projectiles.CurrentProjectileId++;
                 p.Info.System = w.System;
                 p.Info.Ai = w.Comp.Ai;
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.AmmoInfo = w.AmmoInfos[a.Const.AmmoIdxPos];
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
@@ -90,8 +87,8 @@ namespace WeaponCore.Projectiles
                         if (!a.Const.RotateRealBeam) p.Info.WeaponCache.VirutalId = 0;
                         else if (v.Rotate)
                         {
-                            p.Info.Origin = v.Origin;
-                            p.Info.Direction = v.Dir;
+                            p.Info.Origin = v.Muzzle.Position;
+                            p.Info.Direction = v.Muzzle.Direction;
                             p.Info.WeaponCache.VirutalId = v.VirtualId;
                         }
                     }

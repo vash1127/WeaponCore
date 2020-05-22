@@ -155,7 +155,6 @@ namespace WeaponCore.Support
                                 var scaler = 1;
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
-
                                 hitEffect.UserScale = scale * scaler;
                                 if (!MyUtils.IsZero(av.Hit.HitVelocity, 1E-01F))
                                 {
@@ -247,7 +246,7 @@ namespace WeaponCore.Support
                             if (av.AmmoDef.Const.TracerMode == AmmoConstants.Texture.Normal)
                                 MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                             else if (av.AmmoDef.Const.TracerMode != AmmoConstants.Texture.Resize)
-                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.AmmoInfo.TextureIdx], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.TextureIdx], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                             else {
                                 
                                 var seg = av.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
@@ -262,29 +261,28 @@ namespace WeaponCore.Support
                                 while (travel < av.VisualLength) {
 
                                     var mod = j++ % 2;
-                                    var gap = gapEnabled && (av.AmmoInfo.SegmentGaped && mod == 0 || !av.AmmoInfo.SegmentGaped && mod == 1);
+                                    var gap = gapEnabled && (av.SegmentGaped && mod == 0 || !av.SegmentGaped && mod == 1);
                                     var first = travel <= 0;
 
                                     double width;
                                     double rawLen;
                                     Vector4 dyncColor;
                                     if (!gap) {
-                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentLength;
+                                        rawLen = first ? av.SegmentLenTranserved : seg.SegmentLength;
                                         width = av.SegmentWidth;
                                         dyncColor = segColor;
                                     }
                                     else {
-                                        rawLen = first ? av.AmmoInfo.SegmentLenTranserved : seg.SegmentGap;
+                                        rawLen = first ? av.SegmentLenTranserved : seg.SegmentGap;
                                         width = av.TrailWidth;
                                         dyncColor = color;
                                     }
 
                                     var notLast = travel + rawLen < av.VisualLength;
                                     var len = notLast ? rawLen : av.VisualLength - travel;
-
                                     var clampStep = !gap ? MathHelperD.Clamp((int)((len / segStepLen) + 0.5) - 1, 0, segTextureCnt - 1) : MathHelperD.Clamp((int)((len / gapStepLen) + 0.5) - 1, 0, gapTextureCnt);
                                     var material = !gap ? av.AmmoDef.Const.SegmentTextures[(int)clampStep] : av.AmmoDef.Const.TracerTextures[(int)clampStep];
-                                    
+
                                     MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);
                                     if (!notLast)
                                         travel = av.VisualLength;
@@ -380,7 +378,6 @@ namespace WeaponCore.Support
             var s = av.TracerShrinks.Dequeue();
             if (av.LastTick != Session.Tick)
             {
-                //av.FireCounter++;
                 if (!av.AmmoDef.Const.OffsetEffect) {
 
                     if (av.OnScreen != AvShot.Screen.None)

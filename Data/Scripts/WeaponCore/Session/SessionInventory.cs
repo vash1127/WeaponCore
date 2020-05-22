@@ -235,7 +235,6 @@ namespace WeaponCore
             {
                 var weapon = WeaponsToRemoveAmmo[i];
                 var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
-                var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
                 var ai = weapon.Comp.Ai;
                 var itemVolume = weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
                 var magsToRemove = (int)weapon.Comp.BlockInventory.GetItemAmount(def);
@@ -255,20 +254,17 @@ namespace WeaponCore
                         if (canMove >= (double)magsToRemove)
                         {
                             inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = magsToRemove });
-                            magsToRemove = 0;
                             break;
                         }
-                        else
-                        {
-                            inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = canMove });
-                            magsToRemove -= canMove;
-                        }
+                        inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = canMove });
+                        magsToRemove -= canMove;
                         
 
                         cachedInventories[inventory] += canMove * itemVolume;
                     }
                 }
 
+                inventoryMoveRequests.Weapon = weapon;
                 AmmoToRemoveQueue.Add(inventoryMoveRequests);
                 WeaponsToRemoveAmmo.Remove(weapon);
             }
@@ -282,39 +278,43 @@ namespace WeaponCore
         {
             for (int i = 0; i < AmmoToRemoveQueue.Count; i++)
             {
-                var request = AmmoToRemoveQueue[i];
-                var weapon = request.Weapon;
-                if (!weapon.Comp.InventoryInited)
+                try
                 {
+                    var request = AmmoToRemoveQueue[i];
+                    var weapon = request.Weapon;
+                    if (!weapon.Comp.InventoryInited)
+                    {
+                        request.Inventories.Clear();
+                        request.Weapon = null;
+                        AmmoToRemoveQueue.Remove(request);
+                        continue;
+                    }
+
+                    var inventoriesToAddTo = request.Inventories;
+                    var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
+                    var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
+
+                    weapon.Comp.IgnoreInvChange = true;
+
+                    weapon.ChangeActiveAmmo(weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId]);
+                    for (int j = 0; j < inventoriesToAddTo.Count; j++)
+                    {
+                        var amt = inventoriesToAddTo[i].Amount;
+                        weapon.Comp.BlockInventory.RemoveItemsOfType(amt, def);
+                        inventoriesToAddTo[i].Inventory.Add(magItem, amt);
+                    }
+
+                    WepUi.SetDps(weapon.Comp, weapon.Comp.Set.Value.DpsModifier, false, true);
+                    weapon.Comp.IgnoreInvChange = false;
+
+                    ComputeStorage(weapon);
+
                     request.Inventories.Clear();
                     request.Weapon = null;
+                    InventoryMoveRequestPool.Return(request);
                     AmmoToRemoveQueue.Remove(request);
-                    continue;
                 }
-
-                var inventoriesToAddTo = request.Inventories;
-                var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
-                var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
-
-                weapon.Comp.IgnoreInvChange = true;
-                
-                weapon.ChangeActiveAmmo(weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId]);
-                for (int j = 0; j < inventoriesToAddTo.Count; j++)
-                {
-                    var amt = inventoriesToAddTo[i].Amount;
-                    weapon.Comp.BlockInventory.RemoveItemsOfType(amt, def);
-                    inventoriesToAddTo[i].Inventory.Add(magItem, amt);
-                }
-
-                WepUi.SetDps(weapon.Comp, weapon.Comp.Set.Value.DpsModifier, false, true);
-                weapon.Comp.IgnoreInvChange = false;
-
-                ComputeStorage(weapon);
-
-                request.Inventories.Clear();
-                request.Weapon = null;
-                InventoryMoveRequestPool.Return(request);
-                AmmoToRemoveQueue.Remove(request);
+                catch (Exception ex) { Log.Line($"Exception in RemoveAmmo: {ex} - { AmmoToRemoveQueue[i] == null} - {AmmoToRemoveQueue[i]?.Weapon == null} - {AmmoToRemoveQueue[i]?.Weapon?.ActiveAmmoDef == null}"); }
             }
             AmmoToRemoveQueue.ApplyRemovals();
         }

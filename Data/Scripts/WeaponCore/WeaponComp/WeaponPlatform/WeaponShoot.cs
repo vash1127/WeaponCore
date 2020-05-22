@@ -173,26 +173,9 @@ namespace WeaponCore.Platform
                                 ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[y] = w;
                             }
                         }
-
                         for (int k = 0; k < patternIndex; k++) {
 
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
-                            if (i == 0 && j == 0)
-                            {
-                                switch (ammoPattern.Const.TracerMode)
-                                {
-                                    case AmmoConstants.Texture.Resize:
-                                        UpdateSegmentState(ammoPattern);
-                                        break;
-                                    case AmmoConstants.Texture.Cycle:
-                                    case AmmoConstants.Texture.Wave:
-                                        UpdateCyclicalState(ammoPattern);
-                                        break;
-                                    case AmmoConstants.Texture.Chaos:
-                                        AmmoInfos[ammoPattern.Const.AmmoIdxPos].TextureIdx = MyUtils.GetRandomInt(0, ammoPattern.Const.TracerTextures.Length);
-                                        break;
-                                }
-                            }
 
                             long patternCycle = FireCounter;
                             if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
@@ -227,11 +210,11 @@ namespace WeaponCore.Platform
                                 var info = session.Projectiles.VirtInfoPool.Get();
                                 
                                 info.AvShot = session.Av.AvShotPool.Get();
-                                info.InitVirtual(this, ammoPattern, primeE, triggerE, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir, maxTrajectory, shotFade);
-                                vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Origin = muzzle.Position, Dir = muzzle.DeviatedDir, VirtualId = _nextVirtual });
+                                info.InitVirtual(this, ammoPattern, primeE, triggerE, muzzle, maxTrajectory, shotFade);
+                                vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Muzzle = muzzle, VirtualId = _nextVirtual });
                             }
                             else
-                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
+                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern,  Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
                         }
                     }
 
