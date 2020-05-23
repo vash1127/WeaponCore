@@ -209,6 +209,7 @@ namespace WeaponCore
             var nova = false;
             var outOfPew = false;
             IMySlimBlock rootBlock = null;
+            var destroyed = 0;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || outOfPew && !nova) break;
@@ -220,6 +221,7 @@ namespace WeaponCore
                     if (_destroyedSlims.Contains(rootBlock) || _destroyedSlimsClient.Contains(rootBlock)) continue;
                     if (rootBlock.IsDestroyed)
                     {
+                        destroyed++;
                         _destroyedSlims.Add(rootBlock);
                         if (IsClient)
                         {
@@ -317,6 +319,7 @@ namespace WeaponCore
                         }
                         else
                         {
+                            destroyed++;
                             _destroyedSlims.Add(block);
                             if (IsClient)
                             {
@@ -332,6 +335,7 @@ namespace WeaponCore
                         scaledDamage = areaEffectDmg * damageScale;
                         if (scaledDamage >= blockHp)
                         {
+                            destroyed++;
                             _destroyedSlims.Add(block);
                             if (IsClient)
                             {
@@ -389,7 +393,7 @@ namespace WeaponCore
                 }
             }
 
-            if (rootBlock != null && damagePool <= 0 || objectsHit >= maxObjects)
+            if (rootBlock != null && destroyed > 0 && damagePool <= 0 || objectsHit >= maxObjects)
             {
                 var fat = rootBlock.FatBlock;
                 MyOrientedBoundingBoxD obb;
@@ -617,6 +621,7 @@ namespace WeaponCore
             }
             return false;
         }
+
         public void GetBlockSphereDb(MyCubeGrid grid, double areaRadius, out List<Vector3I> radiatedBlocks)
         {
             areaRadius = Math.Ceiling(areaRadius);

@@ -274,7 +274,7 @@ namespace WeaponCore.Support
                                     }
                                     else {
                                         rawLen = first ? av.SegmentLenTranserved : seg.SegmentGap;
-                                        width = av.TrailWidth;
+                                        width = av.TracerWidth;
                                         dyncColor = color;
                                     }
 

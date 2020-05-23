@@ -99,7 +99,7 @@ namespace WeaponCore.Support
         {
             using (MyCube?.Pin())
             {
-                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose || Platform == null || Platform.State == MyWeaponPlatform.PlatformState.Invalid || Platform.Weapons?.Length == 0 || BlockInventory == null) return;
+                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose || Platform == null || Platform.State == MyWeaponPlatform.PlatformState.Invalid || Platform.Weapons == null || Platform.Weapons.Length == 0 || BlockInventory == null) return;
                 
 
                 if (MyCube is IMyConveyorSorter || BlockInventory.Constraint == null) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
@@ -108,9 +108,7 @@ namespace WeaponCore.Support
                 BlockInventory.Refresh();
                 BlockInventory.Constraint.Clear();
 
-                for (int i = 0; i < Platform.Weapons.Length; i++)
-                {
-
+                for (int i = 0; i < Platform.Weapons.Length; i++) {
                     var w = Platform.Weapons[i];
 
                     if (w == null) continue;

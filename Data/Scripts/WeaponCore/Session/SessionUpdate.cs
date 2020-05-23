@@ -21,6 +21,7 @@ namespace WeaponCore
                 ///
                 /// GridAi update section
                 ///
+                
                 gridAi.Concealed = ((uint) gridAi.MyGrid.Flags & 4) > 0;
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;

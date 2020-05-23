@@ -75,7 +75,8 @@ namespace WeaponCore
                 // Finished last frame
                 //
                 Timings();
-
+                
+                /*
                 if (IsClient && !ClientAmmoCheck.IsEmpty && CTask.IsComplete)
                 {
                     if (CTask.valid && CTask.Exceptions != null)
@@ -83,6 +84,7 @@ namespace WeaponCore
 
                     CTask = MyAPIGateway.Parallel.StartBackground(ProccessClientAmmoUpdates, ProccessClientReload);
                 }
+                */
 
                 if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete)
                 {

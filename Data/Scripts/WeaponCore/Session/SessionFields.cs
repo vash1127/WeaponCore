@@ -45,6 +45,7 @@ namespace WeaponCore
         internal volatile bool BaseControlsActions;
         internal volatile bool DbCallBackComplete = true;
         internal volatile bool Pause;
+        internal volatile int AmmoPulls;
 
         internal readonly TargetCompare TargetCompare = new TargetCompare();
 
@@ -221,7 +222,6 @@ namespace WeaponCore
         internal int TargetSets;
         internal int TargetResets;
         internal int AmmoMoveTriggered;
-        internal int AmmoPulls;
         internal int Count = -1;
         internal int LCount;
         internal int SCount;

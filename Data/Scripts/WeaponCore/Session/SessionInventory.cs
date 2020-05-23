@@ -49,8 +49,13 @@ namespace WeaponCore
             }
             else if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
             {
-                weapon.Comp.Session.ClientAmmoCheck.Add(weapon);
-                weapon.Comp.Session.ClientAmmoCheck.ApplyAdditions();
+                weapon.System.Session.StallReporter.Start("ClientAmmoUpdate", 2);
+                //weapon.Comp.Session.ClientAmmoCheck.Add(weapon);
+                //weapon.Comp.Session.ClientAmmoCheck.ApplyAdditions();
+                weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
+                if (weapon.CanReload)
+                    weapon.StartReload();
+                weapon.System.Session.StallReporter.End();
             }
         }
 
@@ -75,7 +80,6 @@ namespace WeaponCore
 
                         var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
                         var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
-                        var weaponInventory = weapon.Comp.BlockInventory;
                         var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
                         var magsAdded = 0;
 
@@ -122,7 +126,7 @@ namespace WeaponCore
 
                             var magsAvailable = (int)cachedInv[def][inventory];
 
-                            if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
+                            if (((IMyInventory)inventory).CanTransferItemTo(weapon.Comp.BlockInventory, def))
                             {
                                 if (magsAvailable >= magsNeeded)
                                 {
@@ -237,7 +241,9 @@ namespace WeaponCore
                 var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
                 var ai = weapon.Comp.Ai;
                 var itemVolume = weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+
                 var magsToRemove = (int)weapon.Comp.BlockInventory.GetItemAmount(def);
+
                 var inventoryMoveRequests = InventoryMoveRequestPool.Get();
                 
 
