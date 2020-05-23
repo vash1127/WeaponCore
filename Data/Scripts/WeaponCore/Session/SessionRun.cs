@@ -42,9 +42,6 @@ namespace WeaponCore
                 //
                 // Finish work from last frame
                 //
-                DsUtil.Start("projectiles2");
-                Projectiles.Stage2();
-                DsUtil.Complete("projectiles2", true);
 
                 DsUtil.Start("damage");
                 if (_effectedCubes.Count > 0)
@@ -163,6 +160,10 @@ namespace WeaponCore
                 Projectiles.Stage1();
                 DsUtil.Complete("projectiles1", true);
 
+                DsUtil.Start("projectiles2");
+                Projectiles.Stage2();
+                DsUtil.Complete("projectiles2", true);
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -188,6 +189,15 @@ namespace WeaponCore
                 if (DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
+
+                if (false)
+                {
+                    foreach (var dLine in DebugLines)
+                    {
+                        DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
+                    }
+                }
+
 
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;

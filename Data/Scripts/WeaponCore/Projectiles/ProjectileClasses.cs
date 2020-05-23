@@ -431,6 +431,8 @@ namespace WeaponCore.Support
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
 
+                if (false) frag.System.Session.DebugLines.Add(new Session.DebugLine {Color = Color.Red, Line = new LineD(p.Info.Origin, p.Info.Origin + (p.Info.Direction * 10))}); // Debug
+
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
 

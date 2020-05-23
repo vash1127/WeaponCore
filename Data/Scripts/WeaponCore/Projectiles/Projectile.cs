@@ -24,6 +24,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D LastPosition;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
+        internal Vector3D InitalStep;
         internal Vector3D AccelVelocity;
         internal Vector3D MaxVelocity;
         internal Vector3D TravelMagnitude;
@@ -243,6 +244,7 @@ namespace WeaponCore.Projectiles
             ConstantSpeed = accelPerSec <= 0;
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
             var desiredSpeed = (Info.Direction * DesiredSpeed);
+            InitalStep = desiredSpeed * StepConst;
             var relativeSpeedCap = StartSpeed + desiredSpeed;
             MaxVelocity = relativeSpeedCap.LengthSquared() > desiredSpeed.LengthSquared() ? relativeSpeedCap : Vector3D.Zero + desiredSpeed;
             MaxSpeed = MaxVelocity.Length();
@@ -435,6 +437,9 @@ namespace WeaponCore.Projectiles
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
             Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir });
+
+            if (false && Info.IsShrapnel)
+                Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = Color.Blue, Line = new LineD(LastPosition, endPos) });
         }
 
         internal void CreateFakeBeams(bool miss = false)

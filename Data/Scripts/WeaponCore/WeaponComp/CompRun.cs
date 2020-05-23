@@ -71,9 +71,7 @@ namespace WeaponCore.Support
             {
                 if (!MyCube.MarkedForClose && Entity != null) 
                 {
-                    Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
                     Ai.FirstRun = true;
-
                     StorageSetup();
                     InventoryInit();
                     PowerInit();
