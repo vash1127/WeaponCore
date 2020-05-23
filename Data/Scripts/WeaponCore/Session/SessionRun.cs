@@ -194,8 +194,12 @@ namespace WeaponCore
                 {
                     foreach (var dLine in DebugLines)
                     {
-                        DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
+                        if (Tick - dLine.CreateTick > 2400)
+                            DebugLines.Remove(dLine);
+                        else
+                            DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
                     }
+                    DebugLines.ApplyRemovals();
                 }
 
 

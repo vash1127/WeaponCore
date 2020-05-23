@@ -37,7 +37,6 @@ namespace WeaponCore.Projectiles
         internal Vector3 PrevTargetVel;
         internal Vector3? LastHitEntVel;
         internal Vector3 Gravity;
-        internal Hit Hit = new Hit();
         internal LineD Beam;
         internal BoundingSphereD PruneSphere;
         internal BoundingSphereD DeadSphere;
@@ -108,7 +107,6 @@ namespace WeaponCore.Projectiles
             EnableAv = !Info.AmmoDef.Const.VirtualBeams && !Info.System.Session.DedicatedServer && DistanceFromCameraSqr <= Info.System.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
-            Hit = new Hit();
             LastHitEntVel = null;
             Info.AvShot = null;
             Info.Age = -1;
@@ -244,7 +242,6 @@ namespace WeaponCore.Projectiles
             ConstantSpeed = accelPerSec <= 0;
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
             var desiredSpeed = (Info.Direction * DesiredSpeed);
-            InitalStep = desiredSpeed * StepConst;
             var relativeSpeedCap = StartSpeed + desiredSpeed;
             MaxVelocity = relativeSpeedCap.LengthSquared() > desiredSpeed.LengthSquared() ? relativeSpeedCap : Vector3D.Zero + desiredSpeed;
             MaxSpeed = MaxVelocity.Length();
@@ -258,6 +255,8 @@ namespace WeaponCore.Projectiles
                 VelocityLengthSqr = MaxSpeed * MaxSpeed;
             }
             else Velocity = StartSpeed + AccelVelocity;
+            
+            InitalStep = !Info.IsShrapnel ? desiredSpeed * StepConst : Velocity * StepConst;
 
             TravelMagnitude = Velocity * StepConst;
             FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
@@ -380,12 +379,17 @@ namespace WeaponCore.Projectiles
 
         internal bool Intersected(bool add = true)
         {
-            if (Vector3D.IsZero(Hit.HitPos)) return false;
-
+            if (Vector3D.IsZero(Info.Hit.HitPos))
+            {
+                Log.Line("intersected failed");
+                return false;
+            }
+            if (false)
+                Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = Info.IsShrapnel ? Color.Orange : Color.Green, Line = new LineD(LastPosition, Info.Hit.HitPos), CreateTick = Info.System.Session.Tick });
             if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle && !Info.AmmoDef.Const.DrawLine;
-                Info.AvShot.TestSphere.Center = Hit.VisualHitPos;
+                Info.AvShot.TestSphere.Center = Info.Hit.VisualHitPos;
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
@@ -393,12 +397,12 @@ namespace WeaponCore.Projectiles
             else if (Info.AmmoDef.Const.VirtualBeams)
             {
                 Info.WeaponCache.VirtualHit = true;
-                Info.WeaponCache.HitEntity.Entity = Hit.Entity;
-                Info.WeaponCache.HitEntity.HitPos = Hit.VisualHitPos;
+                Info.WeaponCache.HitEntity.Entity = Info.Hit.Entity;
+                Info.WeaponCache.HitEntity.HitPos = Info.Hit.VisualHitPos;
                 Info.WeaponCache.Hits = VrPros.Count;
-                Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, Hit.VisualHitPos);
+                Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, Info.Hit.VisualHitPos);
 
-                if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
+                if (Info.Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Info.Hit.Block;
                 if (add) Info.System.Session.Hits.Add(this);
                 CreateFakeBeams(!add);
             }
@@ -407,7 +411,7 @@ namespace WeaponCore.Projectiles
 
         internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
         {
-            var endPos = hit ? Hit.VisualHitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - Info.MaxTrajectory) : Position;
+            var endPos = hit ? Info.Hit.VisualHitPos : !EarlyEnd ? Position + -Info.Direction * (Info.DistanceTraveled - Info.MaxTrajectory) : Position;
             var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
             var avSize = useCollisionSize ? Info.AmmoDef.Const.CollisionSize : Info.TracerLength;
             double remainingTracer;
@@ -438,14 +442,12 @@ namespace WeaponCore.Projectiles
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
             Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = Info.AvShot, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = Info.Direction, VisualDir = Info.VisualDir });
 
-            if (false && Info.IsShrapnel)
-                Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = Color.Blue, Line = new LineD(LastPosition, endPos) });
         }
 
         internal void CreateFakeBeams(bool miss = false)
         {
             Vector3D? hitPos = null;
-            if (!Vector3D.IsZero(Hit.VisualHitPos)) hitPos = Hit.VisualHitPos;
+            if (!Vector3D.IsZero(Info.Hit.VisualHitPos)) hitPos = Info.Hit.VisualHitPos;
             for (int i = 0; i < VrPros.Count; i++)
             {
 
@@ -454,7 +456,7 @@ namespace WeaponCore.Projectiles
 
                 vp.TracerLength = Info.TracerLength;
                 vs.Init(vp, StepPerSec * StepConst, MaxSpeed);
-                vs.Hit = Hit;
+                vs.Hit = Info.Hit;
                 if (Info.AmmoDef.Const.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.Origin, Position);
@@ -911,11 +913,11 @@ namespace WeaponCore.Projectiles
         {
             if (State == ProjectileState.Destroy)
             {
-                Hit = new Hit { Block = null, Entity = null, HitPos = Position, VisualHitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick };
+                Info.Hit = new Hit { Block = null, Entity = null, HitPos = Position, VisualHitPos = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick };
                 if (EnableAv || Info.AmmoDef.Const.VirtualBeams)
                 {
                     Info.AvShot.ForceHitParticle = true;
-                    Info.AvShot.Hit = Hit;
+                    Info.AvShot.Hit = Info.Hit;
                 }
                 Intersected(false);
             }

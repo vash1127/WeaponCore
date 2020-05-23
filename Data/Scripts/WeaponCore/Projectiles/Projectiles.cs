@@ -282,7 +282,7 @@ namespace WeaponCore.Projectiles
                         p.State = ProjectileState.Detonate;
 
                     p.EarlyEnd = true;
-                    p.Hit.HitPos = p.Position;
+                    p.Info.Hit.HitPos = p.Position;
 
                 }
 
@@ -350,6 +350,10 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < ValidateHits.Count; i++) {
                 
                 var p = ValidateHits[i];
+
+                if (false)
+                    p.Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = p.Info.IsShrapnel ? Color.Blue : Color.Red, Line = new LineD(p.LastPosition, p.Position), CreateTick = p.Info.System.Session.Tick });
+                
                 if (GetAllEntitiesInLine(p, p.Beam) && p.Intersected())
                     continue;
 
@@ -415,11 +419,8 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.AvShot.ModelOnly)
                     DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
-
-                if (false && p.Info.IsShrapnel)
-                    p.Info.System.Session.DebugLines.Add(new Session.DebugLine {Color = Color.Blue, Line = new LineD(p.LastPosition, p.Position)});
             }
+            Session.DebugLines.ApplyAdditions();
         }
-
     }
 }

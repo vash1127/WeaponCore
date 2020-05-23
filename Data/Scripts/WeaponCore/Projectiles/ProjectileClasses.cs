@@ -32,6 +32,7 @@ namespace WeaponCore.Support
         internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D VisualDir;
+        internal Hit Hit = new Hit();
         internal WeaponRandomGenerator WeaponRng;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
@@ -131,6 +132,7 @@ namespace WeaponCore.Support
             AiVersion = 0;
             UniqueMuzzleId = 0;
             EnableGuidance = true;
+            Hit = new Hit();
             Direction = Vector3D.Zero;
             VisualDir = Vector3D.Zero;
             Origin = Vector3D.Zero;
@@ -345,7 +347,6 @@ namespace WeaponCore.Support
             for (int i = 0; i < p.Info.AmmoDef.Shrapnel.Fragments; i++)
             {
                 var frag = fragPool.Get();
-
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
                 frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
@@ -356,7 +357,7 @@ namespace WeaponCore.Support
                 frag.UniqueMuzzleId = p.Info.UniqueMuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
-                frag.Origin = !Vector3D.IsZero(p.Hit.HitPos) ? p.Hit.HitPos : p.Position;
+                frag.Origin = !Vector3D.IsZero(p.Info.Hit.HitPos) ? p.Info.Hit.HitPos : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.WeaponRng = p.Info.WeaponRng;
                 frag.IsFiringPlayer = p.Info.IsFiringPlayer;
@@ -430,8 +431,6 @@ namespace WeaponCore.Support
                 p.Info.LockOnFireState = frag.LockOnFireState;
                 p.Info.MaxTrajectory = frag.AmmoDef.Const.MaxTrajectory;
                 p.Info.ShotFade = 0;
-
-                if (false) frag.System.Session.DebugLines.Add(new Session.DebugLine {Color = Color.Red, Line = new LineD(p.Info.Origin, p.Info.Origin + (p.Info.Direction * 10))}); // Debug
 
                 frag.System.Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();

@@ -42,7 +42,7 @@ namespace WeaponCore
 
                 if (IsClient && p.Info.IsFiringPlayer && fixedFire)
                 {
-                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
+                    SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Info.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
                     p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                 }
 
@@ -208,11 +208,12 @@ namespace WeaponCore
             var done = false;
             var nova = false;
             var outOfPew = false;
+            IMySlimBlock rootBlock = null;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || outOfPew && !nova) break;
 
-                var rootBlock = hitEnt.Blocks[i];
+                rootBlock = hitEnt.Blocks[i];
 
                 if (!nova)
                 {
@@ -298,7 +299,11 @@ namespace WeaponCore
                     var blockIsRoot = block == rootBlock;
                     var primaryDamage = primeDamage || blockIsRoot;
 
-                    if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects) break;
+                    if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects) {
+                        outOfPew = true;
+                        damagePool = 0;
+                        break;
+                    }
 
                     var scaledDamage = damagePool * damageScale;
                     if (primaryDamage)
@@ -371,8 +376,7 @@ namespace WeaponCore
                             nova = true;
                             i--;
                             t.BaseDamagePool = 0;
-                            t.ObjectsHit = maxObjects;
-                            objectsHit = int.MinValue;
+                            t.ObjectsHit = objectsHit;
                             var aInfo = t.AmmoDef.AreaEffect;
                             var dInfo = aInfo.Detonation;
 
@@ -383,6 +387,24 @@ namespace WeaponCore
                         }
                     }
                 }
+            }
+
+            if (rootBlock != null && damagePool <= 0 || objectsHit >= maxObjects)
+            {
+                var fat = rootBlock.FatBlock;
+                MyOrientedBoundingBoxD obb;
+                if (fat != null)
+                    obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrixRef);
+                else {
+                    Vector3 halfExt;
+                    rootBlock.ComputeScaledHalfExtents(out halfExt);
+                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                    obb = new MyOrientedBoundingBoxD(grid.GridIntegerToWorld(rootBlock.Position), blockBox.HalfExtents, Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef));
+                }
+
+                var dist = obb.Intersects(ref hitEnt.Intersection);
+                if (dist.HasValue)
+                    t.Hit.HitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * dist.Value);
             }
             if (!countBlocksAsObjects) t.ObjectsHit += 1;
             if (!nova)
