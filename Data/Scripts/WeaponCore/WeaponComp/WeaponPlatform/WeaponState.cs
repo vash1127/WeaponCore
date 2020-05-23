@@ -74,6 +74,8 @@ namespace WeaponCore.Platform
                 if (Timings.AnimationDelayTick < Comp.Session.Tick)
                     Timings.AnimationDelayTick = Comp.Session.Tick;
 
+                var set = false;
+
                 switch (state)
                 {
                     case EventTriggers.StopFiring:
@@ -90,6 +92,8 @@ namespace WeaponCore.Platform
                                 {
                                     if (animation.TriggerOnce && animation.Triggered) continue;
                                     animation.Triggered = true;
+
+                                    set = true;
 
                                     if (animation.Muzzle != "Any" && addToFiring) _muzzlesFiring.Add(animation.Muzzle);
 
@@ -127,6 +131,7 @@ namespace WeaponCore.Platform
                                 {
                                     if (animation.TriggerOnce && animation.Triggered) continue;
 
+                                    set = true;
                                     animation.Triggered = true;
                                     animation.Running = true;
                                     animation.CanPlay = canPlay;
@@ -188,6 +193,8 @@ namespace WeaponCore.Platform
                                     if (animation.TriggerOnce && animation.Triggered) continue;
                                     animation.Triggered = true;
 
+                                    set = true;
+
                                     animation.StartTick = session.Tick + animation.MotionDelay;
                                     session?.ThreadedAnimations?.Enqueue(animation);
 
@@ -209,7 +216,7 @@ namespace WeaponCore.Platform
                             break;
                         }
                 }
-                if (active)
+                if (active && set)
                 {
                     var animationLength = 0u;
 
