@@ -478,10 +478,9 @@ namespace WeaponCore.Support
     internal class VoxelCache
     {
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
-        internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 10f);
+        internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);
         internal Vector3D? Hit;
         internal uint LastRefreshed;
-        internal bool SkipCheck;
 
         internal void Update(ref Vector3D? hitPos, uint tick)
         {

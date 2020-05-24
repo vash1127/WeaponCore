@@ -108,10 +108,8 @@ namespace WeaponCore.Projectiles
                             var ray = new RayD(ref beam.From, ref beam.Direction);
                             var dist = voxelCache.HitSphere.Intersects(ray);
 
-                            if (dist.HasValue) {
+                            if (dist.HasValue) 
                                 voxelHit = beam.From + (beam.Direction * dist.Value);
-                                voxelCache.SkipCheck = false;
-                            }
                         }
                         voxelCache.Hit = voxelHit;
 
@@ -139,8 +137,7 @@ namespace WeaponCore.Projectiles
                                             voxelHit = hit.Position;
                                     }
                                     else {
-                                        using (voxel.Pin())
-                                        {
+                                        using (voxel.Pin()) {
                                             if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
                                                 voxelHit = beam.From;
                                         }
@@ -159,10 +156,8 @@ namespace WeaponCore.Projectiles
 
                         if (!voxelHit.HasValue) {
 
-                            if (voxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) {
+                            if (voxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) 
                                 voxelCache.MissSphere.Center = beam.To;
-                                voxelCache.LastRefreshed = p.Info.System.Session.Tick;
-                            }
                             continue;
                         }
                         if (p.Info.System.Session.Tick - voxelCache.LastRefreshed >= 60)
