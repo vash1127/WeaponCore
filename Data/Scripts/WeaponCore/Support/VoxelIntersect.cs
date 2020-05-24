@@ -37,7 +37,7 @@ namespace WeaponCore.Support
             return hit.HasHit;
         }
 
-        internal static bool CheckPointsOnLine (MyVoxelBase voxel, LineD testLine, int distBetweenPoints)
+        internal static bool CheckPointsOnLine(MyVoxelBase voxel, LineD testLine, int distBetweenPoints)
         {
             var planet = voxel as MyPlanet;
             var map = voxel as MyVoxelMap;
@@ -69,6 +69,50 @@ namespace WeaponCore.Support
                 }
             }
 
+            return false;
+        }
+
+        internal static bool CheckPointsOnLine(MyVoxelBase voxel, LineD testLine, MyStorageData tmpStorage, int distBetweenPoints)
+        {
+            var voxelMatrix = voxel.PositionComp.WorldMatrixInvScaled;
+            var vecMax = new Vector3I(int.MaxValue);
+            var vecMin = new Vector3I(int.MinValue);
+
+            var checkPoints = (int)(testLine.Length / distBetweenPoints);
+            for (int i = 0; i < checkPoints; i++)
+            {
+                var point = testLine.From + (testLine.Direction * (distBetweenPoints * i));
+                Vector3D result;
+                Vector3D.Transform(ref point, ref voxelMatrix, out result);
+                var r = result + (Vector3D)(voxel.Size / 2);
+                var v1 = Vector3D.Floor(r);
+                Vector3D.Fract(ref r, out r);
+                var v2 = v1 + voxel.StorageMin;
+                var v3 = v2 + 1;
+                if (v2 != vecMax && v3 != vecMin)
+                {
+                    tmpStorage.Resize(v2, v3);
+                    voxel.Storage.ReadRange(tmpStorage, MyStorageDataTypeFlags.Content, 0, v2, v3);
+                    vecMax = v2;
+                    vecMin = v3;
+                }
+                var num1 = tmpStorage.Content(0, 0, 0);
+                var num2 = tmpStorage.Content(1, 0, 0);
+                var num3 = tmpStorage.Content(0, 1, 0);
+                var num4 = tmpStorage.Content(1, 1, 0);
+                var num5 = tmpStorage.Content(0, 0, 1);
+                var num6 = tmpStorage.Content(1, 0, 1);
+                var num7 = tmpStorage.Content(0, 1, 1);
+                var num8 = tmpStorage.Content(1, 1, 1);
+                var num9 = num1 + (num2 - num1) * r.X;
+                var num10 = num3 + (num4 - num3) * r.X;
+                var num11 = num5 + (num6 - num5) * r.X;
+                var num12 = num7 + (num8 - num7) * r.X;
+                var num13 = num9 + (num10 - num9) * r.Y;
+                var num14 = num11 + (num12 - num11) * r.Y;
+                if (num13 + (num14 - num13) * r.Z >= sbyte.MaxValue)
+                    return true;
+            }
             return false;
         }
 

@@ -85,6 +85,7 @@ namespace WeaponCore.Projectiles
         internal bool FakeGravityNear;
         internal bool HadTarget;
         internal bool WasTracking;
+        internal BoundingSphereD VoxelCacheSphere = new BoundingSphereD(Vector3D.Zero, 5f);
         internal readonly ProInfo Info = new ProInfo();
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<MyEntity> CheckList = new List<MyEntity>();
@@ -256,7 +257,7 @@ namespace WeaponCore.Projectiles
             }
             else Velocity = StartSpeed + AccelVelocity;
             
-            InitalStep = !Info.IsShrapnel ? desiredSpeed * StepConst : Velocity * StepConst;
+            InitalStep = !Info.IsShrapnel && ConstantSpeed ? desiredSpeed * StepConst : Velocity * StepConst;
 
             TravelMagnitude = Velocity * StepConst;
             FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
@@ -379,13 +380,8 @@ namespace WeaponCore.Projectiles
 
         internal bool Intersected(bool add = true)
         {
-            if (Vector3D.IsZero(Info.Hit.HitPos))
-            {
-                Log.Line("intersected failed");
-                return false;
-            }
-            if (false)
-                Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = Info.IsShrapnel ? Color.Orange : Color.Green, Line = new LineD(LastPosition, Info.Hit.HitPos), CreateTick = Info.System.Session.Tick });
+           //if (false)
+                //Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = Info.IsShrapnel ? Color.Orange : Color.Green, Line = new LineD(LastPosition, Info.Hit.HitPos), CreateTick = Info.System.Session.Tick });
             if (EnableAv && (Info.AmmoDef.Const.DrawLine || Info.AmmoDef.Const.PrimeModel || Info.AmmoDef.Const.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.AmmoDef.Const.AmmoParticle && !Info.AmmoDef.Const.DrawLine;

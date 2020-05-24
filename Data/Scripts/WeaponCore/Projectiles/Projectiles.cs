@@ -74,25 +74,16 @@ namespace WeaponCore.Projectiles
 
         internal void Stage2() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("Stage2-TaskWait", 17);
-            if (!Session.PTask.IsComplete)
-                Session.PTask.WaitOrExecute();
-
-            if (Session.PTask.IsComplete && Session.PTask.valid && Session.PTask.Exceptions != null)
-                Session.TaskHasErrors(ref Session.PTask, "PTask");
-            Session.StallReporter.End();
-
             Session.StallReporter.Start("ConfirmHit", 17);
             ConfirmHit();
             Session.StallReporter.End();
 
-            if (!Session.DedicatedServer)
+            if (!Session.DedicatedServer) {
+                Session.StallReporter.Start("DeferedAvStateUpdates", 17);
                 UpdateAv();
-
-            Session.StallReporter.Start("DeferedAvStateUpdates", 17);
-            if (!Session.DedicatedServer)
                 DeferedAvStateUpdates(Session);
-            Session.StallReporter.End();
+                Session.StallReporter.End();
+            }
         }
 
 
@@ -351,8 +342,8 @@ namespace WeaponCore.Projectiles
                 
                 var p = ValidateHits[i];
 
-                if (false)
-                    p.Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = p.Info.IsShrapnel ? Color.Blue : Color.Red, Line = new LineD(p.LastPosition, p.Position), CreateTick = p.Info.System.Session.Tick });
+                //if (false)
+                    //p.Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = p.Info.IsShrapnel ? Color.Blue : Color.Red, Line = new LineD(p.LastPosition, p.Position), CreateTick = p.Info.System.Session.Tick });
                 
                 if (GetAllEntitiesInLine(p, p.Beam) && p.Intersected())
                     continue;

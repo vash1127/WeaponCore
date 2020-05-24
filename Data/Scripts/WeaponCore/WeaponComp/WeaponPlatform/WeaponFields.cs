@@ -211,6 +211,7 @@ namespace WeaponCore.Platform
             {
                 MuzzleId = id;
                 UniqueId = session.UniqueMuzzleId;
+                session.VoxelCaches.Add(UniqueId, new VoxelCache());
             }
 
             public Vector3D Position;

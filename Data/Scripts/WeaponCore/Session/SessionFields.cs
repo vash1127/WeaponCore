@@ -105,6 +105,8 @@ namespace WeaponCore
         internal readonly Dictionary<Weapon, int> ChargingWeaponsCheck = new Dictionary<Weapon, int>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();
+        internal readonly Dictionary<long, VoxelCache> VoxelCaches = new Dictionary<long, VoxelCache>();
+
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();

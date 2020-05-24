@@ -255,7 +255,7 @@ namespace WeaponCore
 
                     var cube = block.FatBlock as MyCubeBlock;
                     if (cube != null && cube.Components.Has<WeaponComponent>())
-                        damageScale = 0.25f;
+                        damageScale = largeGrid ? 0.25f : 0.05f;
 
                     if (t.AmmoDef.Const.DamageScaling)
                     {

@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
@@ -130,7 +132,13 @@ namespace WeaponCore
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
                 }
-
+                /*
+                foreach (var c in VoxelCaches.Values)
+                {
+                    if (Tick - c.LastRefreshed < 60)
+                        c.DebugDraw();
+                }
+                */
                 if (GameLoaded)
                 {
                     DsUtil.Start("ai");

@@ -165,6 +165,7 @@ namespace WeaponCore.Support
         public bool SphereCheck;
         public bool DamageOverTime;
         public bool PulseTrigger;
+        public bool SelfHit;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public double? HitDist;
@@ -189,6 +190,7 @@ namespace WeaponCore.Support
             SphereCheck = false;
             DamageOverTime = false;
             PulseTrigger = false;
+            SelfHit = false;
         }
     }
 
@@ -471,5 +473,27 @@ namespace WeaponCore.Support
         public bool ClientSent;
         public bool IsFiringPlayer;
         public bool LockOnFireState;
+    }
+
+    internal class VoxelCache
+    {
+        internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
+        internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 10f);
+        internal Vector3D? Hit;
+        internal uint LastRefreshed;
+        internal bool SkipCheck;
+
+        internal void Update(ref Vector3D? hitPos, uint tick)
+        {
+            Hit = hitPos;
+            var hit = Hit ?? Vector3D.Zero;
+            HitSphere.Center = hit;
+            LastRefreshed = tick;
+        }
+
+        internal void DebugDraw()
+        {
+            DsDebugDraw.DrawSphere(HitSphere, Color.Red);
+        }
     }
 }
