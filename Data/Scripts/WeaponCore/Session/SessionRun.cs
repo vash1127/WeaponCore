@@ -132,13 +132,15 @@ namespace WeaponCore
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
                 }
+                
                 /*
                 foreach (var c in VoxelCaches.Values)
                 {
-                    if (Tick - c.LastRefreshed < 60)
+                    if (Tick - c.HitRefreshed < 60 && c.HitRefreshed > 0)
                         c.DebugDraw();
                 }
                 */
+
                 if (GameLoaded)
                 {
                     DsUtil.Start("ai");

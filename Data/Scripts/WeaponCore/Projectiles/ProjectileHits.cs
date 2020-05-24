@@ -28,6 +28,7 @@ namespace WeaponCore.Projectiles
             var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
             p.EntitiesNear = false;
             bool projetileInShield = false;
+            var tick = p.Info.System.Session.Tick;
             for (int i = 0; i < p.SegmentList.Count; i++) {
                 
                 var ent = p.SegmentList[i].Element;
@@ -102,18 +103,21 @@ namespace WeaponCore.Projectiles
                     if (voxel != null) {
 
                         if (voxel.RootVoxel != voxel) continue;
-                        var voxelCache = p.Info.System.Session.VoxelCaches[p.Info.UniqueMuzzleId];
-                        if (p.Info.System.Session.Tick - voxelCache.LastRefreshed < 60) {
 
-                            var ray = new RayD(ref beam.From, ref beam.Direction);
-                            var dist = voxelCache.HitSphere.Intersects(ray);
+                        var pseudoHit = false;
+                        var ray = new RayD(ref beam.From, ref beam.Direction);
+                        if (tick - p.Info.VoxelCache.HitRefreshed < 60) {
 
-                            if (dist.HasValue) 
+                            var dist = ray.Intersects(p.Info.VoxelCache.HitSphere);
+                            if (dist.HasValue && dist.Value <= beam.Length) {
+                                pseudoHit = true;
                                 voxelHit = beam.From + (beam.Direction * dist.Value);
+                            }
+                            else if (dist.HasValue)
+                                p.Info.VoxelCache.MissSphere.Center = beam.To;
                         }
-                        voxelCache.Hit = voxelHit;
 
-                        if (voxelHit == null && voxel == p.Info.MyPlanet && voxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) {
+                        if (voxelHit == null && voxel == p.Info.MyPlanet && p.Info.VoxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) {
 
                             if (p.LinePlanetCheck) {
 
@@ -128,24 +132,44 @@ namespace WeaponCore.Projectiles
 
                                 var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
                                 Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
-                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (beam.Length * beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
+                                if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (beam.Length * beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition))
+                                {
 
-                                    if (beam.Length > 50) {
-                                        IHitInfo hit;
-                                        p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
-                                        if (hit?.HitEntity is MyVoxelBase)
-                                            voxelHit = hit.Position;
-                                    }
-                                    else {
-                                        using (voxel.Pin()) {
-                                            if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
-                                                voxelHit = beam.From;
+                                    var estiamtedSurfaceDistance = ray.Intersects(p.Info.VoxelCache.PlanetSphere);
+                                    var estimatedSurfaceHit = estiamtedSurfaceDistance.HasValue && estiamtedSurfaceDistance.Value <= beam.Length;
+                                    var fullCheck = p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint || !estiamtedSurfaceDistance.HasValue ;
+                                    if (fullCheck) {
+
+                                        //Log.Line($"fullCheck: underSurface: {p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint} - estimatedSurfaceHit: {estimatedSurfaceHit}(estimatedToHit: {estiamtedSurfaceDistance.HasValue})[{estiamtedSurfaceDistance ?? -1f}]");
+                                        if (beam.Length > 50) {
+                                            IHitInfo hit;
+                                            p.Info.System.Session.Physics.CastLongRay(beam.From, beam.To, out hit, false);
+                                            if (hit?.HitEntity is MyVoxelBase)
+                                                voxelHit = hit.Position;
+                                        }
+                                        else {
+
+                                            using (voxel.Pin()) {
+                                                if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
+                                                    voxelHit = beam.From;
+                                            }
                                         }
                                     }
+                                    else if (estimatedSurfaceHit)
+                                    {
+                                        voxelHit = ray.Position + (ray.Direction * estiamtedSurfaceDistance.Value);
+                                        //Log.Line($"simSurfaceHit: underSurface: {p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint} - estimatedSurfaceHit: {estimatedSurfaceHit}(estimatedToHit: {estiamtedSurfaceDistance.HasValue})[{estiamtedSurfaceDistance ?? -1f}]");
+                                    }
+                                    //else Log.Line($"noCheck: underSurface: {p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint} - estimatedSurfaceHit: {estimatedSurfaceHit}(estimatedToHit: {estiamtedSurfaceDistance.HasValue})[{estiamtedSurfaceDistance ?? -1f}]");
+
+
+
+                                    if (voxelHit.HasValue && Vector3D.DistanceSquared(voxelHit.Value, p.Info.VoxelCache.PlanetSphere.Center) > p.Info.VoxelCache.PlanetSphere.Radius * p.Info.VoxelCache.PlanetSphere.Radius)
+                                        p.Info.VoxelCache.GrowPlanetCache(voxelHit.Value);
                                 }
                             }
                         }
-                        else if (voxelHit == null && voxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) {
+                        else if (voxelHit == null && p.Info.VoxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) {
                             using (voxel.Pin()) {
 
                                 if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
@@ -153,15 +177,15 @@ namespace WeaponCore.Projectiles
                             }
                         }
 
-
                         if (!voxelHit.HasValue) {
 
-                            if (voxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) 
-                                voxelCache.MissSphere.Center = beam.To;
+                            if (p.Info.VoxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint)
+                                p.Info.VoxelCache.MissSphere.Center = beam.To;
                             continue;
                         }
-                        if (p.Info.System.Session.Tick - voxelCache.LastRefreshed >= 60)
-                            voxelCache.Update(ref voxelHit, p.Info.System.Session.Tick);
+
+                        if (!pseudoHit)
+                            p.Info.VoxelCache.Update(voxel, ref voxelHit, tick);
                     }
                     var hitEntity = HitEntityPool.Get();
                     hitEntity.Info = p.Info;

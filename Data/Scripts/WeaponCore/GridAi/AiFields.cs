@@ -82,6 +82,7 @@ namespace WeaponCore.Support
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;
+        internal Vector3D ClosestPlanetCenter;
         internal Vector3D NaturalGravity;
         internal BoundingSphereD GridVolume;
         internal bool PlanetSurfaceInRange;
