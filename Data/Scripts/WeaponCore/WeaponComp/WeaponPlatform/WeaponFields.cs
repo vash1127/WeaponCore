@@ -195,10 +195,12 @@ namespace WeaponCore.Platform
         {
             get
             {
-                if (State.Sync.Reloading || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)))
+                if (!Comp.State.Value.Online || State.Sync.Reloading || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)) || State.Sync.CurrentAmmo > 0)
                     return false;
 
-                var wasOut = OutOfAmmo;
+                if (Comp.Session.IsCreative)
+                    return true;
+                
                 OutOfAmmo = State.Sync.CurrentAmmo == 0 && State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
 
                 if (OutOfAmmo)
@@ -208,12 +210,13 @@ namespace WeaponCore.Platform
                         EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
                         Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
                     }
+
                     return false;
                 }
-                else if (wasOut && Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
+                else if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
 
-                return Comp.State.Value.Online && !System.DesignatorWeapon && ActiveAmmoDef.AmmoDef.Const.Reloadable && State.Sync.CurrentAmmo == 0 && (!OutOfAmmo || Comp.Session.IsCreative);
+                return true;
             }
         }
 
