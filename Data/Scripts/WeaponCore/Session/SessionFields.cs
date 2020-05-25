@@ -46,6 +46,8 @@ namespace WeaponCore
         internal volatile bool DbCallBackComplete = true;
         internal volatile bool Pause;
         internal volatile int AmmoPulls;
+        internal volatile uint LastDeform;
+        internal volatile uint Tick;
 
         internal readonly TargetCompare TargetCompare = new TargetCompare();
 
@@ -100,12 +102,14 @@ namespace WeaponCore
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();
         internal readonly Dictionary<long, VoxelCache> VoxelCaches = new Dictionary<long, VoxelCache>();
+        internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
 
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
+        internal readonly HashSet<MyCubeGrid> DeformProtection = new HashSet<MyCubeGrid>();
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();
@@ -236,7 +240,6 @@ namespace WeaponCore
         internal int LCount;
         internal int SCount;
         internal int LogLevel;
-        internal uint Tick;
         
         internal ulong MultiplayerId;
         internal long PlayerId;
@@ -278,6 +281,7 @@ namespace WeaponCore
         internal bool IsClient;
         internal bool HandlesInput;
         internal bool AuthLogging;
+        internal bool DamageHandler;
 
         internal enum AnimationType
         {

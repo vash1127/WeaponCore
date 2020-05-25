@@ -20,6 +20,7 @@ namespace WeaponCore.Support
         internal void RequestDbUpdate()
         {
             GridVolume = MyGrid.PositionComp.WorldVolume;
+            ScanVolume = GridVolume;
             Session.DbsToUpdate.Add(this);
             TargetsUpdatedTick = Session.Tick;
         }
@@ -96,7 +97,38 @@ namespace WeaponCore.Support
             }
         }
 
+        internal void RamDefense()
+        {
+            //Session.DsUtil2.Start("");
 
+            /*
+            var qType = IsStatic || !StaticEntitiesInRange || Vector3D.IsZero(GridVel) ? MyEntityQueryType.Dynamic : MyEntityQueryType.Both;
+            CollisionEntities.Clear();
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref GridVolume, CollisionEntities, qType);
+            var he = MyGrid.PositionComp.LocalAABB.HalfExtents.Length();
+            var heExt = he + 4f;
+            var heBuffer = heExt / he;
+
+            var obb = new MyOrientedBoundingBoxD(GridVolume.Center, MyGrid.PositionComp.LocalAABB.HalfExtents * heBuffer, Quaternion.CreateFromRotationMatrix(MyGrid.PositionComp.WorldMatrixRef));
+            for (int i = 0; i < CollisionEntities.Count; i++)
+            {
+                var e = CollisionEntities[i];
+                var grid = e as MyCubeGrid;
+                var voxel = e as MyVoxelBase;
+
+                var validVoxel = voxel != null && voxel != voxel.RootVoxel;
+                var validGrid = grid != null && grid.InScene && !grid.MarkedForClose && grid.Physics != null && !grid.IsPreview && !grid.Physics.IsPhantom && !grid.IsSameConstructAs(MyGrid);
+                var notValid = !validGrid && !validVoxel;
+                if (notValid) continue;
+
+                var eObb = new MyOrientedBoundingBoxD(e.PositionComp.WorldAABB.Center, e.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(e.PositionComp.WorldMatrixRef));
+                if (obb.Contains(ref eObb) == ContainmentType.Disjoint)
+                    continue;
+
+            }
+            */
+            //Session.DsUtil2.Complete("", false, true);
+        }
         internal void CompChange(bool add, WeaponComponent comp)
         {
             if (add)
@@ -105,6 +137,15 @@ namespace WeaponCore.Support
                 {
                     Log.Line($"CompAddFailed:<{comp.MyCube.EntityId}> - comp({comp.MyCube.DebugName}[{comp.MyCube.BlockDefinition.Id.SubtypeName}]) already existed in {MyGrid.DebugName}");
                     return;
+                }
+
+                if (comp.HasArmor) {
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                        var w = comp.Platform.Weapons[i];
+                        if (w.System.IsArmor)
+                         Armor.Add(w.Comp.MyCube, w);
+                    }
+                    Session.ArmorCubes.Add(comp.MyCube, comp);
                 }
                 WeaponsIdx.Add(comp, Weapons.Count);
                 Weapons.Add(comp);
@@ -117,6 +158,15 @@ namespace WeaponCore.Support
                 {
                     Log.Line($"CompRemoveFailed: <{comp.MyCube.EntityId}> - {Weapons.Count}[{WeaponsIdx.Count}]({WeaponBase.Count}) - {Weapons.Contains(comp)}[{Weapons.Count}] - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.ContainsKey(comp.MyCube)} - {Session.GridTargetingAIs[comp.MyCube.CubeGrid].WeaponBase.Count} ");
                     return;
+                }
+
+                if (comp.HasArmor) {
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                        var w = comp.Platform.Weapons[i];
+                        if (w.System.IsArmor)
+                            Armor.Remove(w.Comp.MyCube);
+                    }
+                    Session.ArmorCubes.Remove(comp.MyCube);
                 }
 
                 Weapons.RemoveAtFast(idx);
@@ -316,7 +366,7 @@ namespace WeaponCore.Support
                 if (ent is MyCubeGrid) StaticGridInRange = true;
 
                 double distSqr;
-                Vector3D.DistanceSquared(ref staticCenter, ref GridVolume.Center, out distSqr);
+                Vector3D.DistanceSquared(ref staticCenter, ref ScanVolume.Center, out distSqr);
                 if (distSqr < closestDistSqr)
                 {
                     closestDistSqr = distSqr;
@@ -327,9 +377,9 @@ namespace WeaponCore.Support
 
             if (closestEnt != null)
             {
-                var dist = Vector3D.Distance(GridVolume.Center, closestCenter);
+                var dist = Vector3D.Distance(ScanVolume.Center, closestCenter);
                 dist -= closestEnt.PositionComp.LocalVolume.Radius;
-                dist -= GridVolume.Radius;
+                dist -= ScanVolume.Radius;
                 if (dist < 0) dist = 0;
 
                 var distSqr = dist * dist;

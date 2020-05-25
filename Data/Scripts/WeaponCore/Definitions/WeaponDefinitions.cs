@@ -242,6 +242,7 @@ namespace WeaponCore.Support
                 [ProtoMember(7)] internal int MaxElevation;
                 [ProtoMember(8)] internal int MinElevation;
                 [ProtoMember(9)] internal float InventorySize;
+                [ProtoMember(10)] internal bool IsArmor;
             }
 
             [ProtoContract]

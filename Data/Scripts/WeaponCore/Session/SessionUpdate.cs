@@ -5,6 +5,7 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
 using Sandbox.Game.Entities;
+using VRage.Game.Entity;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
@@ -44,6 +45,10 @@ namespace WeaponCore
 
                 if (!gridAi.HasPower)
                     continue;
+
+                if (gridAi.RamProximity)
+                    gridAi.RamDefense();
+
                 ///
                 /// Comp update section
                 ///
@@ -104,6 +109,9 @@ namespace WeaponCore
                         }
 
                         if (w.Timings.WeaponReadyTick > Tick) continue;
+
+                        if (Tick60 && w.System.IsArmor)
+                            Log.Line($"Hits:{w.ArmorHits}");
 
                         if (w.AvCapable && (!w.PlayTurretAv || Tick60)) {
                             var avWasEnabled = w.PlayTurretAv;

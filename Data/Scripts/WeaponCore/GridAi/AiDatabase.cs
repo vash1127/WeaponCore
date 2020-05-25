@@ -15,8 +15,8 @@ namespace WeaponCore.Support
 
                     Scanning = true;
                     _lastScan = Session.Tick;
-                    GridVolume.Radius = MaxTargetingRange;
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref GridVolume, _possibleTargets);
+                    ScanVolume.Radius = MaxTargetingRange;
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref ScanVolume, _possibleTargets);
                     foreach (var grid in PrevSubGrids)
                         RemSubGrids.Add(grid);
 
@@ -95,7 +95,7 @@ namespace WeaponCore.Support
 
         private void FinalizeTargetDb()
         {
-            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(GridVolume.Center);
+            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(ScanVolume.Center);
             ObstructionsTmp.Clear();
             StaticsInRangeTmp.Clear();
             for (int i = 0; i < _possibleTargets.Count; i++)

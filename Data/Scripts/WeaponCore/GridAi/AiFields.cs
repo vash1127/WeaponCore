@@ -61,9 +61,10 @@ namespace WeaponCore.Support
         internal readonly List<GridAi> TargetAis = new List<GridAi>(32);
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
-
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
+        internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
+
         internal readonly CachingDictionary<long, MyCubeBlock> ControllingPlayers = new CachingDictionary<long, MyCubeBlock>();
 
 
@@ -75,9 +76,7 @@ namespace WeaponCore.Support
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal uint CreatedTick;
-        
         internal Vector3 GridVel;
-
         internal IMyGridTerminalSystem TerminalSystem;
         internal IMyTerminalBlock LastWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
@@ -88,6 +87,7 @@ namespace WeaponCore.Support
         internal Vector3D ClosestPlanetCenter;
         internal Vector3D NaturalGravity;
         internal BoundingSphereD GridVolume;
+        internal BoundingSphereD ScanVolume;
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
         internal bool FirstRun = true;
@@ -128,7 +128,9 @@ namespace WeaponCore.Support
         internal bool CheckProjectiles;
         internal bool WeaponTerminalAccess;
         internal bool FadeOut;
-        internal bool Concealed; 
+        internal bool Concealed;
+        internal bool RamProtection = true;
+        internal bool RamProximity;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double ClosestStaticSqr = double.MaxValue;

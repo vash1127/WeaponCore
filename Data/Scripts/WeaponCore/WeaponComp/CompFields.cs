@@ -79,6 +79,7 @@ namespace WeaponCore.Support
         internal bool Registered;
         internal bool ResettingSubparts;
         internal bool BuildCompEventAttached;
+        internal bool HasArmor;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

@@ -221,6 +221,7 @@ namespace WeaponCore.Support
 
                 Ai.CompChange(true, this);
 
+                Ai.IsStatic = Ai.MyGrid.Physics?.IsStatic ?? false;
                 Ai.Construct.Update(Ai);
 
                 if (!FunctionalBlock.Enabled)

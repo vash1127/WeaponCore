@@ -30,6 +30,8 @@ namespace WeaponCore
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
             }
 
+            if (DamageHandler)
+                Session.DamageSystem.RegisterBeforeDamageHandler(int.MinValue, BeforeDamageHandler);
 
             if (IsServer)
             {
@@ -56,7 +58,6 @@ namespace WeaponCore
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
             TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
-
             CheckDirtyGrids();
 
             ApiServer.Load();
@@ -159,6 +160,9 @@ namespace WeaponCore
 
                     if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
+
+                    if (wepDef.HardPoint.HardWare.IsArmor)
+                        DamageHandler = true;
 
                     foreach (var def in AllDefinitions) {
 
