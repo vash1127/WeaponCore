@@ -155,13 +155,11 @@ namespace WeaponCore.Projectiles
                                             }
                                         }
                                     }
-                                    else if (estimatedSurfaceHit)
-                                    {
+                                    else if (estimatedSurfaceHit) {
                                         voxelHit = ray.Position + (ray.Direction * estiamtedSurfaceDistance.Value);
                                         //Log.Line($"simSurfaceHit: underSurface: {p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint} - estimatedSurfaceHit: {estimatedSurfaceHit}(estimatedToHit: {estiamtedSurfaceDistance.HasValue})[{estiamtedSurfaceDistance ?? -1f}]");
                                     }
                                     //else Log.Line($"noCheck: underSurface: {p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint} - estimatedSurfaceHit: {estimatedSurfaceHit}(estimatedToHit: {estiamtedSurfaceDistance.HasValue})[{estiamtedSurfaceDistance ?? -1f}]");
-
 
 
                                     if (voxelHit.HasValue && Vector3D.DistanceSquared(voxelHit.Value, p.Info.VoxelCache.PlanetSphere.Center) > p.Info.VoxelCache.PlanetSphere.Radius * p.Info.VoxelCache.PlanetSphere.Radius)
@@ -172,6 +170,7 @@ namespace WeaponCore.Projectiles
                         else if (voxelHit == null && p.Info.VoxelCache.MissSphere.Contains(beam.To) == ContainmentType.Disjoint) {
                             using (voxel.Pin()) {
 
+                                //Log.Line("full roid compute");
                                 if (!voxel.GetIntersectionWithLine(ref beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, beam.From))
                                     voxelHit = beam.From;
                             }

@@ -77,19 +77,8 @@ namespace WeaponCore
                 // Finished last frame
                 //
                 Timings();
-                
-                /*
-                if (IsClient && !ClientAmmoCheck.IsEmpty && CTask.IsComplete)
-                {
-                    if (CTask.valid && CTask.Exceptions != null)
-                        TaskHasErrors(ref CTask, "ITask");
 
-                    CTask = MyAPIGateway.Parallel.StartBackground(ProccessClientAmmoUpdates, ProccessClientReload);
-                }
-                */
-
-                if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete)
-                {
+                if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete) {
                     if (ITask.valid && ITask.Exceptions != null)
                         TaskHasErrors(ref ITask, "ITask");
 
@@ -125,8 +114,7 @@ namespace WeaponCore
         {
             try
             {
-                if (!DedicatedServer)
-                {
+                if (!DedicatedServer) {
                     EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
@@ -134,15 +122,26 @@ namespace WeaponCore
                 }
                 
                 /*
-                foreach (var c in VoxelCaches.Values)
-                {
+                foreach (var c in VoxelCaches.Values) {
                     if (Tick - c.HitRefreshed < 60 && c.HitRefreshed > 0)
                         c.DebugDraw();
                 }
                 */
 
-                if (GameLoaded)
+                if (false)
                 {
+                    foreach (var dLine in DebugLines)
+                    {
+                        if (Tick - dLine.CreateTick > 2400)
+                            DebugLines.Remove(dLine);
+                        else
+                            DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
+                    }
+                    DebugLines.ApplyRemovals();
+                }
+
+
+                if (GameLoaded) {
                     DsUtil.Start("ai");
                     AiLoop();
                     DsUtil.Complete("ai", true);
@@ -161,8 +160,7 @@ namespace WeaponCore
 
                 }
 
-                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
-                {
+                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu) {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
@@ -201,19 +199,6 @@ namespace WeaponCore
                 if (DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
-
-                if (false)
-                {
-                    foreach (var dLine in DebugLines)
-                    {
-                        if (Tick - dLine.CreateTick > 2400)
-                            DebugLines.Remove(dLine);
-                        else
-                            DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
-                    }
-                    DebugLines.ApplyRemovals();
-                }
-
 
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;

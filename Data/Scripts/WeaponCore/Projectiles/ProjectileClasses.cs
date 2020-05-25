@@ -5,6 +5,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -482,7 +483,8 @@ namespace WeaponCore.Support
     {
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
         internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);
-        internal BoundingSphereD PlanetSphere = new BoundingSphereD();
+        internal BoundingSphereD PlanetSphere = new BoundingSphereD(Vector3D.Zero, 0.1f);
+        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
         internal Vector3D FirstPlanetHit;
 
         internal uint HitRefreshed;
@@ -502,7 +504,7 @@ namespace WeaponCore.Support
                     //Log.Line("early planet reset");
                     PlanetReset = tick;
                     FirstPlanetHit = hit;
-                    PlanetSphere = new BoundingSphereD(voxel.PositionComp.WorldAABB.Center, 0.1f);
+                    PlanetSphere.Radius = 0.1f;
                 }
             }
         }
@@ -518,8 +520,11 @@ namespace WeaponCore.Support
         internal void DebugDraw()
         {
             DsDebugDraw.DrawSphere(HitSphere, Color.Red);
+            var test = PlanetSphere;
+            test.Radius *= 1.025f;
+            DsDebugDraw.DrawSphere(test, Color.Blue);
             //Log.Line($"{PlanetSphere.Radius} - {PlanetSphere.Contains(HitSphere.Center)} - {PlanetSphere.Contains(MissSphere.Center)}");
-            //DsDebugDraw.DrawSingleVec(PlanetSphere.Center, (float)PlanetSphere.Radius / 2, Color.Blue);
+            //DsDebugDraw.DrawSingleVec(PlanetSphere.Center, (float)PlanetSphere.Radius, Color.Blue);
         }
     }
 }
