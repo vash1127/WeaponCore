@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -35,21 +36,25 @@ namespace WeaponCore.Support
         {
             try
             {
+                MyInventory inventory;
                 var battery = myCubeBlock as MyBatteryBlock;
+                var isWeaponBase = Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId);
+
                 if (battery != null)
                 {
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
                 }
-                else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector || myCubeBlock is MyCockpit)
+                else if (!isWeaponBase && (myCubeBlock is IMyConveyor || myCubeBlock is IMyConveyorTube || myCubeBlock is IMyConveyorSorter || myCubeBlock is IMyCargoContainer || myCubeBlock is IMyCockpit || myCubeBlock is IMyAssembler))
                 {
-
-                    MyInventory inventory;
-                    if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Add(inventory))
+                    if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
                         inventory.InventoryContentChanged += CheckAmmoInventory;
-                    
+
+                    foreach (var weapon in OutOfAmmoWeapons)
+                        Session.ComputeStorage(weapon);
                 }
-                else if (myCubeBlock is IMyUserControllableGun || myCubeBlock is MyConveyorSorter) ScanBlockGroups = true;
+                else if (isWeaponBase) ScanBlockGroups = true;
+
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
         }
@@ -60,23 +65,27 @@ namespace WeaponCore.Support
             try
             {
                 WeaponComponent comp;
-                
+                MyInventory inventory;
+
                 var battery = myCubeBlock as MyBatteryBlock;
+
                 if (battery != null)
                 {
                     if (Batteries.Remove(battery)) SourceCount--;
                     UpdatePowerSources = true;
                 }
-                else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector || myCubeBlock is MyCockpit)
-                {
-                    MyInventory inventory;
-                    if (myCubeBlock.TryGetInventory(out inventory) && Inventories.Remove(inventory))
-                        inventory.InventoryContentChanged -= CheckAmmoInventory;
-                }
                 else if (myCubeBlock.Components.TryGet(out comp))
                 {
                     foreach (var group in BlockGroups.Values)
                         group.Comps.Remove(comp);
+                }
+                else if (myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                {
+                    inventory.InventoryContentChanged -= CheckAmmoInventory;
+
+                    ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
+                    if (Session.InventoryItems.TryRemove(inventory, out removed))
+                        removed.Clear();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }

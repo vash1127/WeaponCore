@@ -80,12 +80,18 @@ namespace WeaponCore
                 if (DeformProtection.Count > 0 && Tick - LastDeform > 0) DeformProtection.Clear();
                 Timings();
 
-                if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete) {
-                    if (ITask.valid && ITask.Exceptions != null)
-                        TaskHasErrors(ref ITask, "ITask");
+                /*
+                if (IsClient && !ClientAmmoCheck.IsEmpty && CTask.IsComplete)
+                {
+                    if (CTask.valid && CTask.Exceptions != null)
+                        TaskHasErrors(ref CTask, "ITask");
 
-                    ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
+                    CTask = MyAPIGateway.Parallel.StartBackground(ProccessClientAmmoUpdates, ProccessClientReload);
                 }
+                */
+
+                if (!IsClient && (!WeaponToPullAmmo.Empty || !WeaponsToRemoveAmmo.Empty) && ITask.IsComplete)
+                    StartAmmoTask();
 
 
                 if (!CompsToStart.IsEmpty)

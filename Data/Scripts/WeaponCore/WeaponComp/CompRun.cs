@@ -181,7 +181,7 @@ namespace WeaponCore.Support
                     for (int i = 0; i < fatList.Count; i++) {
 
                         var cubeBlock = fatList[i];
-                        if (cubeBlock is MyBatteryBlock || cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler || cubeBlock is IMyShipConnector)
+                        if (cubeBlock is MyBatteryBlock || cubeBlock.HasInventory)
                             Ai.FatBlockAdded(cubeBlock);
                     }
                 }
