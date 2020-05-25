@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Game;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support
@@ -36,7 +37,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                MyInventory inventory;
                 var battery = myCubeBlock as MyBatteryBlock;
                 var isWeaponBase = Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId);
 
@@ -47,6 +47,7 @@ namespace WeaponCore.Support
                 }
                 else if (!isWeaponBase && (myCubeBlock is IMyConveyor || myCubeBlock is IMyConveyorTube || myCubeBlock is IMyConveyorSorter || myCubeBlock is IMyCargoContainer || myCubeBlock is IMyCockpit || myCubeBlock is IMyAssembler))
                 {
+                    MyInventory inventory;
                     if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
                         inventory.InventoryContentChanged += CheckAmmoInventory;
 

@@ -172,8 +172,8 @@ namespace WeaponCore
 
                             WeaponCoreBlockDefs[tDef.Key] = def.Id;
                             var designator = false;
-                            for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++) {
 
+                            for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++) {
                                 if (wepDef.Assignments.MountPoints[i].MuzzlePartId == "Designator") {
                                     designator = true;
                                     break;
@@ -221,6 +221,17 @@ namespace WeaponCore
                                         gunDef.RotationSpeed = blockDefs.RotateRate / 60;
                                         gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
                                         gunDef.AiEnabled = false;
+                                    }
+
+                                    var cubeDef = def as MyCubeBlockDefinition;
+                                    if (cubeDef != null) {
+                                        for (int x = 0; x < wepDef.Assignments.MountPoints.Length; x++) {
+                                            var mp = wepDef.Assignments.MountPoints[x];
+                                            if (mp.SubtypeId == def.Id.SubtypeName) {
+                                                cubeDef.GeneralDamageMultiplier = mp.DurabilityMod > 0 ? mp.DurabilityMod : cubeDef.CubeSize == MyCubeSize.Large ? 0.25f : 0.05f;
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
                             }
