@@ -2,8 +2,10 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -27,6 +29,7 @@ namespace WeaponCore.Support
         internal AmmoDef AmmoDef;
         internal MyPlanet MyPlanet;
         internal MyEntity MyShield;
+        internal VoxelCache VoxelCache;
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
@@ -112,6 +115,7 @@ namespace WeaponCore.Support
             MyShield = null;
             AmmoDef = null;
             WeaponCache = null;
+            VoxelCache = null;
             IsShrapnel = false;
             TriggeredPulse = false;
             EwarActive = false;
@@ -479,20 +483,48 @@ namespace WeaponCore.Support
     {
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
         internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);
-        internal Vector3D? Hit;
-        internal uint LastRefreshed;
+        internal BoundingSphereD PlanetSphere = new BoundingSphereD(Vector3D.Zero, 0.1f);
+        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
+        internal Vector3D FirstPlanetHit;
 
-        internal void Update(ref Vector3D? hitPos, uint tick)
+        internal uint HitRefreshed;
+        internal uint PlanetReset;
+
+        internal void Update(MyVoxelBase voxel, ref Vector3D? hitPos, uint tick)
         {
-            Hit = hitPos;
-            var hit = Hit ?? Vector3D.Zero;
+            var hit = hitPos ?? Vector3D.Zero;
             HitSphere.Center = hit;
-            LastRefreshed = tick;
+            HitRefreshed = tick;
+            if (voxel is MyPlanet)
+            {
+                double dist;
+                Vector3D.DistanceSquared(ref hit, ref FirstPlanetHit, out dist);
+                if (dist > 2500)
+                {
+                    //Log.Line("early planet reset");
+                    PlanetReset = tick;
+                    FirstPlanetHit = hit;
+                    PlanetSphere.Radius = 0.1f;
+                }
+            }
+        }
+
+        internal void GrowPlanetCache(Vector3D hitPos)
+        {
+            double dist;
+            Vector3D.Distance(ref PlanetSphere.Center, ref hitPos, out dist);
+            //Log.Line($"surfaceRadiusIncreased: {dist} - was: {PlanetSphere.Radius}");
+            PlanetSphere = new BoundingSphereD(PlanetSphere.Center, dist);
         }
 
         internal void DebugDraw()
         {
             DsDebugDraw.DrawSphere(HitSphere, Color.Red);
+            var test = PlanetSphere;
+            test.Radius *= 1.025f;
+            DsDebugDraw.DrawSphere(test, Color.Blue);
+            //Log.Line($"{PlanetSphere.Radius} - {PlanetSphere.Contains(HitSphere.Center)} - {PlanetSphere.Contains(MissSphere.Center)}");
+            //DsDebugDraw.DrawSingleVec(PlanetSphere.Center, (float)PlanetSphere.Radius, Color.Blue);
         }
     }
 }

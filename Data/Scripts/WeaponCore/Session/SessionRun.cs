@@ -120,22 +120,34 @@ namespace WeaponCore
         {
             try
             {
-                if (!DedicatedServer)
-                {
+                if (!DedicatedServer) {
                     EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
                 }
+                
                 /*
-                foreach (var c in VoxelCaches.Values)
-                {
-                    if (Tick - c.LastRefreshed < 60)
+                foreach (var c in VoxelCaches.Values) {
+                    if (Tick - c.HitRefreshed < 60 && c.HitRefreshed > 0)
                         c.DebugDraw();
                 }
                 */
-                if (GameLoaded)
+
+                if (false)
                 {
+                    foreach (var dLine in DebugLines)
+                    {
+                        if (Tick - dLine.CreateTick > 2400)
+                            DebugLines.Remove(dLine);
+                        else
+                            DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
+                    }
+                    DebugLines.ApplyRemovals();
+                }
+
+
+                if (GameLoaded) {
                     DsUtil.Start("ai");
                     AiLoop();
                     DsUtil.Complete("ai", true);
@@ -154,8 +166,7 @@ namespace WeaponCore
 
                 }
 
-                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu)
-                {
+                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu) {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
@@ -194,19 +205,6 @@ namespace WeaponCore
                 if (DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
-
-                if (false)
-                {
-                    foreach (var dLine in DebugLines)
-                    {
-                        if (Tick - dLine.CreateTick > 2400)
-                            DebugLines.Remove(dLine);
-                        else
-                            DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
-                    }
-                    DebugLines.ApplyRemovals();
-                }
-
 
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;

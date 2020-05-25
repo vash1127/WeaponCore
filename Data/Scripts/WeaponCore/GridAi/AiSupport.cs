@@ -267,6 +267,7 @@ namespace WeaponCore.Support
                 {
                     InPlanetGravity = true;
                     PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
+                    ClosestPlanetCenter = planetCenter;
                     double pointDistSqr;
                     Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
 
@@ -279,6 +280,7 @@ namespace WeaponCore.Support
                 {
                     InPlanetGravity = false;
                     PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
+                    ClosestPlanetCenter = planetCenter;
                     double pointDistSqr;
                     Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
 

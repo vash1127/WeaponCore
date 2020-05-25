@@ -140,6 +140,10 @@ namespace WeaponCore.Projectiles
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             Info.MyPlanet = Info.Ai.MyPlanet;
+            Info.VoxelCache = Info.System.Session.VoxelCaches[Info.UniqueMuzzleId];
+            if (Info.MyPlanet != null)
+                Info.VoxelCache.PlanetSphere.Center = Info.Ai.ClosestPlanetCenter;
+
             Info.MyShield = Info.Ai.MyShield;
             Info.InPlanetGravity = Info.Ai.InPlanetGravity;
             Info.AiVersion = Info.Ai.Version;
