@@ -160,14 +160,14 @@ namespace WeaponCore
                 var grid = (MyCubeGrid)slim.CubeGrid;
 
                 if (info.IsDeformation && info.AttackerId > 0 && DeformProtection.Contains(grid)) {
-                    info.Amount = 0f;
+                    //info.Amount = 0f;
                     return;
                 }
 
                 WeaponComponent comp;
                 if (cube != null && ArmorCubes.TryGetValue(cube, out comp)) {
 
-                    info.Amount = 0f;
+                    //info.Amount = 0f;
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
                         var w = comp.Platform.Weapons[i];
@@ -175,9 +175,9 @@ namespace WeaponCore
                             continue;
                         w.ArmorHits++;
                     }
-                    info.Amount = 0f;
                     if (info.IsDeformation && info.AttackerId > 0)
                     {
+                        //info.Amount = 0f;
                         DeformProtection.Add(cube.CubeGrid);
                         LastDeform = Tick;
                     }

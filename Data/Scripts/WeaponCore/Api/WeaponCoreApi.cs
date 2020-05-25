@@ -287,6 +287,7 @@ namespace WeaponCore.Api
                     [ProtoMember(3)] internal string MuzzlePartId;
                     [ProtoMember(4)] internal string AzimuthPartId;
                     [ProtoMember(5)] internal string ElevationPartId;
+                    [ProtoMember(6)] internal float DurabilityMod;
                 }
             }
 
