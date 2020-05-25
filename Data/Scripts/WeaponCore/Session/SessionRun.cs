@@ -76,6 +76,8 @@ namespace WeaponCore
                 //
                 // Finished last frame
                 //
+
+                if (DeformProtection.Count > 0 && Tick - LastDeform > 0) DeformProtection.Clear();
                 Timings();
 
                 if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete) {
@@ -120,13 +122,12 @@ namespace WeaponCore
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
                 }
-                
+
                 /*
                 foreach (var c in VoxelCaches.Values) {
                     if (Tick - c.HitRefreshed < 60 && c.HitRefreshed > 0)
                         c.DebugDraw();
                 }
-                */
 
                 if (false)
                 {
@@ -139,6 +140,7 @@ namespace WeaponCore
                     }
                     DebugLines.ApplyRemovals();
                 }
+                */
 
 
                 if (GameLoaded) {

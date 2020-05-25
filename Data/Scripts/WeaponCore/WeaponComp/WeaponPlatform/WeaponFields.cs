@@ -51,6 +51,7 @@ namespace WeaponCore.Platform
         internal int LoadId;
         internal int ShortLoadId;
         internal int BarrelRate;
+        internal int ArmorHits;
 
         internal PartInfo MuzzlePart;
         internal PartInfo AzimuthPart;
@@ -315,6 +316,9 @@ namespace WeaponCore.Platform
                 if (hitParticle && CanUseBeams) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
+            if (System.IsArmor)
+                Comp.HasArmor = true;
+            
             WeaponId = weaponId;
             PrimaryWeaponGroup = WeaponId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;

@@ -88,7 +88,7 @@ namespace WeaponCore.Support
         public readonly bool BarrelRotationSound;
         public readonly bool PreFireSound;
         public readonly bool LockOnFocus;
-
+        public readonly bool IsArmor;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
@@ -148,6 +148,7 @@ namespace WeaponCore.Support
             AlwaysFireFullBurst = Values.HardPoint.Loading.FireFullBurst;
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
+            IsArmor = Values.HardPoint.HardWare.IsArmor;
 
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);

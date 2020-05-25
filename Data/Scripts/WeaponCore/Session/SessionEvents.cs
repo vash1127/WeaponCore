@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage.Game.Entity;
@@ -147,6 +148,41 @@ namespace WeaponCore
                 DirtyGrids.Add(myCubeBlock.CubeGrid);
             }
             catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex}"); }
+        }
+
+        internal void BeforeDamageHandler(object o, ref MyDamageInformation info)
+        {
+            var slim = o as IMySlimBlock;
+
+            if (slim != null) {
+
+                var cube = slim.FatBlock as MyCubeBlock;
+                var grid = (MyCubeGrid)slim.CubeGrid;
+
+                if (info.IsDeformation && info.AttackerId > 0 && DeformProtection.Contains(grid)) {
+                    info.Amount = 0f;
+                    return;
+                }
+
+                WeaponComponent comp;
+                if (cube != null && ArmorCubes.TryGetValue(cube, out comp)) {
+
+                    info.Amount = 0f;
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    {
+                        var w = comp.Platform.Weapons[i];
+                        if (!w.System.IsArmor)
+                            continue;
+                        w.ArmorHits++;
+                    }
+                    info.Amount = 0f;
+                    if (info.IsDeformation && info.AttackerId > 0)
+                    {
+                        DeformProtection.Add(cube.CubeGrid);
+                        LastDeform = Tick;
+                    }
+                }
+            }
         }
 
         private void MenuOpened(object obj)

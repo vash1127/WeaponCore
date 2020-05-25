@@ -577,6 +577,7 @@ namespace WeaponCore.Platform
             w.Comp.CanOverload = w.Comp.CanOverload || (w.System.Values.HardPoint.Ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
             w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
             w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
+
         }
     }
 }

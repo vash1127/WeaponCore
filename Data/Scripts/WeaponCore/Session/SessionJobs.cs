@@ -74,6 +74,8 @@ namespace WeaponCore
 
                     var newEntCnt = db.NewEntities.Count;
                     db.SortedTargets.Capacity = newEntCnt;
+                    var wasRamroximity = db.RamProximity;
+                    db.RamProximity = false;
                     for (int i = 0; i < newEntCnt; i++)
                     {
                         var detectInfo = db.NewEntities[i];
@@ -93,6 +95,10 @@ namespace WeaponCore
                         db.Targets[ent] = targetInfo;
 
                         var checkFocus = db.Focus.HasFocus && targetInfo.Target == db.Focus.Target[0] || targetInfo.Target == db.Focus.Target[1];
+
+                        if (db.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
+                            db.RamProximity = true;
+
                         if (targetInfo.DistSqr < db.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
                         {
                             if (checkFocus || targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies) {
@@ -146,6 +152,7 @@ namespace WeaponCore
                     db.FirstRun = false;
                 }
                 DbsToUpdate.Clear();
+
                 DsUtil.Complete("db", true);
                 DbCallBackComplete = true;
             }

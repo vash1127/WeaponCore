@@ -3,6 +3,8 @@ using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Interfaces;
 using static WeaponCore.Platform.MyWeaponPlatform;
 
 namespace WeaponCore.Support
@@ -23,7 +25,6 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
 
                 BlockInventory.ContentsChanged += OnContentsChanged;
-
             }
             else
             {
