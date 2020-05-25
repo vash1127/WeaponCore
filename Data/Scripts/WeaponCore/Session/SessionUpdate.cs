@@ -9,6 +9,7 @@ using VRage.Game.Entity;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 
 namespace WeaponCore
@@ -22,7 +23,6 @@ namespace WeaponCore
                 ///
                 /// GridAi update section
                 ///
-                
                 gridAi.Concealed = ((uint) gridAi.MyGrid.Flags & 4) > 0;
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;
@@ -32,8 +32,7 @@ namespace WeaponCore
                 if (readyToUpdate && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
 
-                if (gridAi.DeadProjectiles.Count > 0)
-                {
+                if (gridAi.DeadProjectiles.Count > 0) {
                     for (int i = 0; i < gridAi.DeadProjectiles.Count; i++) gridAi.LiveProjectile.Remove(gridAi.DeadProjectiles[i]);
                     gridAi.DeadProjectiles.Clear();
                     gridAi.LiveProjectileTick = Tick;
@@ -65,8 +64,7 @@ namespace WeaponCore
 
                     var overRides = comp.Set.Value.Overrides;
 
-                    if (HandlesInput)
-                    {
+                    if (HandlesInput) {
                         comp.WasTrackReticle = comp.TrackReticle;
                         var isControllingPlayer = comp.State.Value.CurrentPlayerControl.PlayerId == PlayerId;
 
@@ -85,8 +83,7 @@ namespace WeaponCore
                     var rightClick = false;
 
                     InputStateData inputState;
-                    if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out inputState))
-                    {
+                    if (PlayerMouseStates.TryGetValue(compCurPlayer.PlayerId, out inputState)) {
                         leftClick = inputState.MouseButtonLeft;// && currentControl;
                         rightClick = inputState.MouseButtonRight;// && currentControl;
                     }
@@ -111,7 +108,36 @@ namespace WeaponCore
                             var avWasEnabled = w.PlayTurretAv;
                             w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAv = !w.PlayTurretAv;
+
                         }
+
+                        if (!gridAi.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.ManualShoot != ShootOff) {
+                            w.State.ManualShoot = ShootOff;
+                            w.State.Sync.Reloading = false;
+                            w.State.Sync.CurrentAmmo = 0;
+                            w.FinishBurst = false;
+
+                            if (w.IsShooting)
+                                w.StopShooting();
+                        }
+
+                        ///
+                        ///Check Reload
+                        ///                        
+                        if (!w.OutOfAmmo && !w.State.Sync.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                            w.StartReload();
+
+                        ///
+                        /// Update Weapon Hud Info
+                        /// 
+                        if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                            HudUi.TexturesToAdd++;
+                            HudUi.WeaponsToDisplay.Add(w);
+                        }
+
+                        if (w.System.Armor != ArmorState.IsWeapon)
+                            continue;
+
                         ///
                         /// Check target for expire states
                         /// 
@@ -186,46 +212,9 @@ namespace WeaponCore
                             w.TurretHomePosition(true);
 
                         ///
-                        /// Update Weapon Hud Info
-                        /// 
-
-                        
-                        if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid))
-                        {
-                            HudUi.TexturesToAdd++;
-                            HudUi.WeaponsToDisplay.Add(w);
-                        }
-
-                        if(!gridAi.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.ManualShoot != ShootOff)
-                        {
-                            w.State.ManualShoot = ShootOff;
-                            w.State.Sync.Reloading = false;
-                            w.State.Sync.CurrentAmmo = 0;
-                            w.FinishBurst = false;
-
-                            if (w.IsShooting)
-                                w.StopShooting();
-                        }
-
-
-                        ///
-                        ///Check Reload
-                        ///                        
-
-                        if (!w.OutOfAmmo && !w.State.Sync.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
-                            w.StartReload();
-                        ///
-                        ///
-                        ///
-
-                        ///
                         /// Determine if its time to shoot
                         ///
                         ///
-
-                        //if(IsServer && Tick10)
-                        //Log.Line($"w.State.ManualShoot: {w.State.ManualShoot} leftClick: {leftClick} rightClick: {rightClick}");
-
                         w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
                         var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.Timings.AnimationDelayTick <= Tick);

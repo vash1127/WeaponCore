@@ -7,6 +7,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore.Platform
 {
@@ -338,7 +339,7 @@ namespace WeaponCore.Platform
                 if (hitParticle && CanUseBeams) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
-            if (System.IsArmor)
+            if (System.Armor != ArmorState.IsWeapon)
                 Comp.HasArmor = true;
             
             WeaponId = weaponId;
