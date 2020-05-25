@@ -55,10 +55,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256);
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>(128);
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128);
-        internal readonly MyConcurrentPool<Dictionary<MyInventory, MyFixedPoint>> CachedInvDefDictPool = new MyConcurrentPool<Dictionary<MyInventory, MyFixedPoint>>(128);
-        internal readonly MyConcurrentPool<Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>> CachedInvPullDictPool = new MyConcurrentPool<Dictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>>(128);
-        internal readonly MyConcurrentPool<Dictionary<MyInventory, float>> CachedInvRemoveDictPool = new MyConcurrentPool<Dictionary<MyInventory, float>>(128);
-        internal readonly MyConcurrentPool<List<MyInventory>> TmpInventoryListPool = new MyConcurrentPool<List<MyInventory>>(128);
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100);
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128);
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
@@ -76,12 +72,11 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
+        internal readonly ConcurrentDictionary<MyInventory, ConcurrentDictionary<MyDefinitionId, MyFixedPoint>> InventoryItems = new ConcurrentDictionary<MyInventory, ConcurrentDictionary<MyDefinitionId, MyFixedPoint>>();
         internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridToMasterAi = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
-        internal readonly ConcurrentCachingList<Weapon> WeaponToPullAmmo = new ConcurrentCachingList<Weapon>();
-        internal readonly ConcurrentCachingList<Weapon> WeaponsToRemoveAmmo = new ConcurrentCachingList<Weapon>();
         internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToPullQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<Weapon> ClientAmmoCheck = new ConcurrentCachingList<Weapon>();
@@ -102,7 +97,6 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>() {[-1] = new InputStateData()};
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
-        internal readonly Dictionary<Weapon, int> ChargingWeaponsCheck = new Dictionary<Weapon, int>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();
         internal readonly Dictionary<long, VoxelCache> VoxelCaches = new Dictionary<long, VoxelCache>();
@@ -113,11 +107,9 @@ namespace WeaponCore
         internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
 
-
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();
         internal readonly List<Projectile> Hits = new List<Projectile>(16);
-        internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly List<Weapon> AcquireTargets = new List<Weapon>(128);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
@@ -140,6 +132,22 @@ namespace WeaponCore
 
         internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
         internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
+
+        /// <summary>
+        /// DsUniqueListFastRemove without the class for less method calls
+        /// </summary>
+        internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
+        internal readonly Dictionary<GridAi, int> GridsToUpdateInvetoriesIndexer = new Dictionary<GridAi, int>();
+        internal readonly ConcurrentDictionary<Weapon, int> WeaponToPullAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
+        internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
+
+        internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
+        internal readonly List<GridAi> GridsToUpdateInvetories = new List<GridAi>(64);
+        internal readonly MyConcurrentList<Weapon> WeaponToPullAmmo = new MyConcurrentList<Weapon>(64);
+        internal readonly MyConcurrentList<Weapon> WeaponsToRemoveAmmo = new MyConcurrentList<Weapon>(64);        
+        ///
+        ///
+        ///
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();

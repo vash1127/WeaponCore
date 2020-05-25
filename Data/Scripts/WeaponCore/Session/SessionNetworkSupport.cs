@@ -776,7 +776,7 @@ namespace WeaponCore
                 comp.Session.FutureEvents.Schedule(weapon.Reloaded, null, weapon.Timings.ReloadedTick);
             }
 
-            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsCheck.ContainsKey(weapon))
+            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsIndexer.ContainsKey(weapon))
                 weapon.ChargeReload(true);
 
             if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)

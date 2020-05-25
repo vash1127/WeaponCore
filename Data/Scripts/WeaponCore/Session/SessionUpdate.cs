@@ -210,7 +210,7 @@ namespace WeaponCore
                         ///Check Reload
                         ///                        
 
-                        if (!w.OutOfAmmo && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                        if (!w.OutOfAmmo && !w.State.Sync.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                             w.StartReload();
                         ///
                         ///
@@ -299,7 +299,7 @@ namespace WeaponCore
 
                     w.State.Sync.Reloading = false;
 
-                    RemoveChargeWeapon(w);
+                    UniqueListRemove(w, ChargingWeaponsIndexer, ChargingWeapons);
                     continue;
                 }
 
@@ -334,7 +334,7 @@ namespace WeaponCore
 
                     w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
 
-                    RemoveChargeWeapon(w);
+                    UniqueListRemove(w, ChargingWeaponsIndexer, ChargingWeapons);
                     continue;
                 }
 

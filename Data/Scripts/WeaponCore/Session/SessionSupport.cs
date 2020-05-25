@@ -14,6 +14,8 @@ using VRage.Utils;
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game.Entities.Cube;
+using System.Collections.Concurrent;
+using VRage.Collections;
 
 namespace WeaponCore
 {
@@ -250,44 +252,56 @@ namespace WeaponCore
             MoveAmmo();
         }
 
-        internal void ProccessClientAmmoUpdates()
+        internal void StartAmmoTask()
         {
-            for (int i = 0; i < ClientAmmoCheck.Count; i++)
-            {
-                var weapon = ClientAmmoCheck[i];
-                weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-            }
-        }
+            if (ITask.valid && ITask.Exceptions != null)
+                TaskHasErrors(ref ITask, "ITask");
 
-        internal void ProccessClientReload()
-        {
-            for (int i = 0; i < ClientAmmoCheck.Count; i++)
+            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--)
             {
-                var weapon = ClientAmmoCheck[i];
-                if (weapon.CanReload)
-                    weapon.StartReload();
-                ClientAmmoCheck.Remove(weapon);
+                for (int j = 0; j < GridsToUpdateInvetories[i].Inventories.Count; j++)
+                {
+                    var inventory = GridsToUpdateInvetories[i].Inventories[j];
+                    if (InventoryItems.ContainsKey(inventory))
+                        InventoryItems[inventory].Clear();
+                    else
+                        InventoryItems[inventory] = new ConcurrentDictionary<MyDefinitionId, VRage.MyFixedPoint>(MyDefinitionId.Comparer);
+
+                    var items = inventory.GetItems();
+                    for (int l = 0; l < items.Count; l++)
+                    {
+                        var item = items[l];
+                        var defId = item.Content.GetId();
+
+                        if (AmmoDefIds.Contains(defId))
+                            InventoryItems[inventory][defId] = item.Amount;
+                    }
+                }
             }
-            ClientAmmoCheck.ApplyRemovals();
+
+            GridsToUpdateInvetories.Clear();
+            GridsToUpdateInvetoriesIndexer.Clear();
+
+            ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
         }
 
         //Would use DSUnique but to many profiler hits
-        internal bool RemoveChargeWeapon(Weapon weapon)
+        internal bool UniqueListRemove<T>(T item, IDictionary<T, int> indexer, IList<T> list)
         {
             int oldPos;
-            if (ChargingWeaponsCheck.TryGetValue(weapon, out oldPos))
+            if (indexer.TryGetValue(item, out oldPos))
             {
 
-                ChargingWeaponsCheck.Remove(weapon);
-                ChargingWeapons.RemoveAtFast(oldPos);
-                var count = ChargingWeapons.Count;
+                indexer.Remove(item);
+                list.RemoveAtFast(oldPos);
+                var count = list.Count;
                 if (count > 0)
                 {
                     count--;
                     if (oldPos <= count)
-                        ChargingWeaponsCheck[ChargingWeapons[oldPos]] = oldPos;
+                        indexer[list[oldPos]] = oldPos;
                     else
-                        ChargingWeaponsCheck[ChargingWeapons[count]] = count;
+                        indexer[list[count]] = count;
                 }
 
                 return true;
@@ -295,6 +309,14 @@ namespace WeaponCore
             return false;
         }
 
+        internal bool UniqueListAdd<T>(T item, IDictionary<T, int> indexer, IList<T> list)
+        {
+            if (indexer.ContainsKey(item)) return false;
+
+            list.Add(item);
+            indexer.Add(item, list.Count - 1);
+            return true;
+        }
 
         internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
         {

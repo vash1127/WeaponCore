@@ -678,17 +678,12 @@ namespace WeaponCore.Support
         {
             var magId = (MyDefinitionId?)o ?? new MyDefinitionId();
 
-            for (int i = 0; i < Weapons.Count; i++)
+            Log.Line($"magId: {magId} OutOfAmmoWeapons: {OutOfAmmoWeapons.Count}");
+
+            foreach (var w in OutOfAmmoWeapons)
             {
-                if (!Weapons[i].IgnoreInvChange)
-                {
-                    for (int j = 0; j < Weapons[i].Platform.Weapons.Length; j++)
-                    {
-                        var w = Weapons[i].Platform.Weapons[j];
-                        if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
-                            ComputeStorage(w);
-                    }
-                }
+                if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
+                    ComputeStorage(w);
             }
         }
 

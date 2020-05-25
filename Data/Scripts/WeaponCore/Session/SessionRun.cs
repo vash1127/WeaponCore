@@ -77,7 +77,7 @@ namespace WeaponCore
                 // Finished last frame
                 //
                 Timings();
-                
+
                 /*
                 if (IsClient && !ClientAmmoCheck.IsEmpty && CTask.IsComplete)
                 {
@@ -88,13 +88,8 @@ namespace WeaponCore
                 }
                 */
 
-                if (!IsClient && (!WeaponToPullAmmo.IsEmpty || !WeaponsToRemoveAmmo.IsEmpty) && ITask.IsComplete)
-                {
-                    if (ITask.valid && ITask.Exceptions != null)
-                        TaskHasErrors(ref ITask, "ITask");
-
-                    ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
-                }
+                if (!IsClient && (!WeaponToPullAmmo.Empty || !WeaponsToRemoveAmmo.Empty) && ITask.IsComplete)
+                    StartAmmoTask();
 
 
                 if (!CompsToStart.IsEmpty)

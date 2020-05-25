@@ -135,17 +135,21 @@ namespace WeaponCore
             ShootingWeapons.Clear();
             AcquireTargets.Clear();
             RemoveEffectsFromGrid.Clear();
-            WeaponToPullAmmo.ClearList();
+            WeaponToPullAmmo.Clear();
+            WeaponToPullAmmoIndexer.Clear();
             AmmoToPullQueue.ClearList();
-            WeaponToPullAmmo.ApplyChanges();
             AmmoToPullQueue.ApplyChanges();
+            ChargingWeaponsIndexer.Clear();
+            WeaponToPullAmmoIndexer.Clear();
+            WeaponsToRemoveAmmoIndexer.Clear();
+            ChargingWeapons.Clear();
+            WeaponsToRemoveAmmo.Clear();
             Hits.Clear();
 
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
             AcquireTargets.Clear();
-            ChargingWeapons.Clear();
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
             AnimationsToProcess.Clear();
