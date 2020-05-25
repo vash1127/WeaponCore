@@ -213,7 +213,6 @@ namespace WeaponCore
                     }
                 }
 
-
                 if (wasAdmin)
                 {
                     IMyCharacter removeCharacter;
