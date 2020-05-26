@@ -7,6 +7,7 @@ using Sandbox.ModAPI.Weapons;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
+using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore
 {
@@ -171,7 +172,7 @@ namespace WeaponCore
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
                         var w = comp.Platform.Weapons[i];
-                        if (!w.System.IsArmor)
+                        if (w.System.Armor == ArmorState.IsWeapon)
                             continue;
                         w.ArmorHits++;
                     }

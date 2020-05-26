@@ -142,7 +142,7 @@ namespace WeaponCore.Support
                 if (comp.HasArmor) {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.IsArmor)
+                        if (w.System.Armor != WeaponDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
                          Armor.Add(w.Comp.MyCube, w);
                     }
                     Session.ArmorCubes.Add(comp.MyCube, comp);
@@ -163,7 +163,7 @@ namespace WeaponCore.Support
                 if (comp.HasArmor) {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                         var w = comp.Platform.Weapons[i];
-                        if (w.System.IsArmor)
+                        if (w.System.Armor != WeaponDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
                             Armor.Remove(w.Comp.MyCube);
                     }
                     Session.ArmorCubes.Remove(comp.MyCube);

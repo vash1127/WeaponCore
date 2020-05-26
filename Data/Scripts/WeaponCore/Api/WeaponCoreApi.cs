@@ -495,6 +495,13 @@ namespace WeaponCore.Api
                 [ProtoContract]
                 public struct HardwareDef
                 {
+                    public enum ArmorState
+                    {
+                        IsWeapon,
+                        Passive,
+                        Active,
+                    }
+
                     [ProtoMember(1)] internal float RotateRate;
                     [ProtoMember(2)] internal float ElevateRate;
                     [ProtoMember(3)] internal Vector3D Offset;
@@ -504,7 +511,7 @@ namespace WeaponCore.Api
                     [ProtoMember(7)] internal int MaxElevation;
                     [ProtoMember(8)] internal int MinElevation;
                     [ProtoMember(9)] internal float InventorySize;
-                    [ProtoMember(10)] internal bool IsArmor;
+                    [ProtoMember(10)] internal ArmorState Armor;
                 }
 
                 [ProtoContract]

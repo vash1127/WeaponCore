@@ -161,7 +161,7 @@ namespace WeaponCore
                     if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
 
-                    if (wepDef.HardPoint.HardWare.IsArmor)
+                    if (wepDef.HardPoint.HardWare.Armor != WeaponDefinition.HardPointDef.HardwareDef.ArmorState.IsWeapon)
                         DamageHandler = true;
 
                     foreach (var def in AllDefinitions) {
