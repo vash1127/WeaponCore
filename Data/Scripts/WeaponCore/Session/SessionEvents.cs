@@ -212,9 +212,9 @@ namespace WeaponCore
         private void PlayerControlAcquired(MyEntity lastEnt)
         {
             var cube = lastEnt as MyCubeBlock;
-            GridAi gridAi;
-            if (cube!= null && GridToMasterAi.TryGetValue(cube.CubeGrid, out gridAi))
-                gridAi.TurnManualShootOff();
+            GridAi rootAi;
+            if (cube!= null && GridToMasterAi.TryGetValue(cube.CubeGrid, out rootAi))
+                rootAi.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.ManualShootingOff);
         }
 
         private void PlayerConnected(long id)

@@ -86,6 +86,39 @@ namespace WeaponCore.Support
             internal float OptimalDps;
             internal int BlockCount;
             internal GridAi RootAi;
+            internal enum UpdateType
+            {
+                BlockScan,
+                Overrides,
+                ManualShootingOff,
+                None,
+            }
+
+            internal void UpdateConstruct(UpdateType type)
+            {
+                foreach (var sub in RootAi.SubGrids) {
+
+                    GridAi ai;
+                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai)) {
+
+                        switch (type) {
+                            case UpdateType.BlockScan: {
+                                ai.ReScanBlockGroups();
+                                break;
+                            }
+                            case UpdateType.Overrides: {
+                                ai.UpdateGroupOverRides();
+                                break;
+                            }
+                            case UpdateType.ManualShootingOff:
+                            {
+                                ai.TurnManualShootOff();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
             internal void Update(GridAi ai)
             {

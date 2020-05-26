@@ -8,7 +8,7 @@ using VRage.Game;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
-
+using static WeaponCore.Support.GridAi.Constructs;
 namespace WeaponCore
 {
     public class FatMap
@@ -74,8 +74,6 @@ namespace WeaponCore
 
                     var newEntCnt = db.NewEntities.Count;
                     db.SortedTargets.Capacity = newEntCnt;
-                    var wasRamroximity = db.RamProximity;
-                    db.RamProximity = false;
                     for (int i = 0; i < newEntCnt; i++)
                     {
                         var detectInfo = db.NewEntities[i];
@@ -146,8 +144,8 @@ namespace WeaponCore
                         db.TargetingInfo.ThreatRangeSqr = 0;
                     }
 
-                    if (db.ScanBlockGroups) db.ReScanBlockGroups();
-                    if (db.ScanBlockGroupSettings) db.UpdateGroupOverRides();
+                    if (db.ScanBlockGroups) db.Construct.UpdateConstruct(UpdateType.BlockScan);
+                    if (db.ScanBlockGroupSettings) db.Construct.UpdateConstruct(UpdateType.Overrides);
 
                     db.FirstRun = false;
                 }
