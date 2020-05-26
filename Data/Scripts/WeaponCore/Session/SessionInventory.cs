@@ -182,15 +182,22 @@ namespace WeaponCore
                     if (((IMyInventory)weapon.Comp.BlockInventory).CanTransferItemTo(inventory, def)) {
                         
                         var canMove = (int)Math.Floor((float)(inventory.MaxVolume - inventory.CurrentVolume) / itemVolume);
-                        if (canMove >= magsToRemove) {
-                            inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = (int)magsToRemove });
-                            InventoryItems[inventory][def] += magsToRemove;
-                            break;
-                        }
+                        if (canMove > 0)
+                        {
+                            if(!InventoryItems[inventory].ContainsKey(def))
+                                InventoryItems[inventory][def] = 0;
 
-                        inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = canMove });
-                        InventoryItems[inventory][def] += canMove;
-                        magsToRemove -= canMove;                        
+                            if (canMove >= magsToRemove)
+                            {
+                                inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = (int)magsToRemove });
+                                InventoryItems[inventory][def] += magsToRemove;
+                                break;
+                            }
+
+                            inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Amount = canMove });
+                            InventoryItems[inventory][def] += canMove;
+                            magsToRemove -= canMove;
+                        }
                     }
                 }
 
