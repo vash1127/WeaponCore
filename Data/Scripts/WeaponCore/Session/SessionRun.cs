@@ -66,7 +66,9 @@ namespace WeaponCore
 
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                    if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
+                    //if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
+                    if (ClientSideErrorPktListNew.Count > 0) ReproccessClientErrorPacketsNew();
+                    
                     DsUtil.Complete("network1", true);
                 }
 

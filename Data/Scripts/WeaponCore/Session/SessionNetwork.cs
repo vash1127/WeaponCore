@@ -36,8 +36,8 @@ namespace WeaponCore
                 if (packet == null) return;
 
                 var packetSize = rawData.Length;
-                ProccessClientPacket(packet, packetSize);
-                /*
+                //ProccessClientPacket(packet, packetSize);
+                
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Client;
                 report.PacketSize = packetSize;
@@ -45,7 +45,8 @@ namespace WeaponCore
                 var errorPacket = new ErrorPacket {RecievedTick = Tick, Packet = packet};
                 var packetObj = PacketObjPool.Get();
                 packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
-                */
+
+                ProccessClientPacket(packetObj);
             }
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
