@@ -114,7 +114,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
                 ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
                 PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
                 data.Report.PacketValid = true;
@@ -133,7 +133,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                 var c = 0;
                 var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
@@ -321,7 +321,7 @@ namespace WeaponCore
             }
             else {
                 GridAi ai;
-                if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+                if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                     if (ai.UiMId < overRidesPacket.MId) {
 
@@ -395,7 +395,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                 var gridPacket = new GridWeaponPacket {
                     EntityId = packet.EntityId,
@@ -597,7 +597,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai))
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                 ai.ReScanBlockGroups(true);
 
             PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
@@ -654,7 +654,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 

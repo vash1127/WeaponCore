@@ -815,7 +815,7 @@ namespace WeaponCore
             GridAi trackingAi;
             if (updateAdd) //update/add
             {
-                if (GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi))
+                if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
                 {
                     trackingAi.ControllingPlayers[playerId] = cube;
                     trackingAi.ControllingPlayers.ApplyAdditionsAndModifications();
@@ -823,7 +823,7 @@ namespace WeaponCore
             }
             else //remove
             {
-                if (GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi))
+                if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
                     trackingAi.ControllingPlayers.TryGetValue(playerId, out cube);
             }
         }
