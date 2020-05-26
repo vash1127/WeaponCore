@@ -656,21 +656,11 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void TurnManualShootOff(bool isCallingGrid = true)
+        internal void TurnManualShootOff()
         {
             if (TurnOffManualTick == Session.Tick) return;
 
             TurnOffManualTick = Session.Tick;
-
-            if (isCallingGrid)
-            {
-                foreach (var grid in SubGrids)
-                {
-                    GridAi ai;
-                    if (grid != MyGrid && Session.GridTargetingAIs.TryGetValue(grid, out ai))
-                        ai.TurnManualShootOff(false);
-                }
-            }
 
             foreach (var cubeComp in Weapons)
             {

@@ -226,7 +226,7 @@ namespace WeaponCore
             GridAi gridAi;
             TargetArmed = false;
             var grid = entity as MyCubeGrid;
-            if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi))
+            if (grid != null && GridToMasterAi.TryGetValue(grid, out gridAi))
             {
                 TargetArmed = true;
             }

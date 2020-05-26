@@ -368,7 +368,7 @@ namespace WeaponCore
             {
                 var controlBlockActive = Session.ActiveControlBlock != null && (Session.ActiveControlBlock is MyCockpit || Session.ActiveControlBlock is MyRemoteControl || Session.ActiveControlBlock is MyCameraBlock);
 
-                var isGridAi = controlBlockActive && (Session.GridTargetingAIs.TryGetValue(Session.ActiveControlBlock.CubeGrid, out Ai) || Session.GridToMasterAi.TryGetValue(Session.ActiveControlBlock.CubeGrid, out Ai));
+                var isGridAi = controlBlockActive && (Session.GridTargetingAIs.TryGetValue(Session.ActiveControlBlock.CubeGrid, out Ai));
                 if (MyAPIGateway.Input.WasMiddleMouseReleased() && !WheelActive && isGridAi) return State.Open;
                 if (MyAPIGateway.Input.WasMiddleMouseReleased() && WheelActive) return State.Close;
                 return State.NoChange;
