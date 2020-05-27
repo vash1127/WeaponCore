@@ -63,7 +63,7 @@ namespace WeaponCore.Support
 
                     Ai = null;
                 }
-                else Log.Line($"CompRemove: Ai already null: {Platform.State}");
+                else if (Platform.State != MyWeaponPlatform.PlatformState.Delay) Log.Line($"CompRemove: Ai already null");
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }

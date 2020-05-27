@@ -101,6 +101,7 @@ namespace WeaponCore.Support
                             BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
                             OptimalDps += ai.OptimalDps;
                         }
+                        else Log.Line($"ConstructRefresh Failed sub no fatmap, sub is caller:{grid == ai.MyGrid}");
                     }
                     RootAi = tmpAi;
 
@@ -110,7 +111,7 @@ namespace WeaponCore.Support
                     UpdateWeaponCounters(ai);
                     return;
                 }
-                Log.Line($"ConstructRefresh Failed: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
+                Log.Line($"ConstructRefresh Failed main Ai no FatMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
                 OptimalDps = 0;
                 BlockCount = 0;
                 RootAi = null;
