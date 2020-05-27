@@ -223,20 +223,20 @@ namespace WeaponCore
             }
         }
 
+        public static bool GridEnemy(long gridOwner, MyCubeGrid grid, List<long> owners = null)
+        {
+            if (owners == null) owners = grid.BigOwners;
+            if (owners.Count == 0) return true;
+            var relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, owners[0], MyOwnershipShareModeEnum.Faction);
+            var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+            return enemy;
+        }
+
+
         internal void InitRayCast()
         {
             List<IHitInfo> tmpList = new List<IHitInfo>();
-
             MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
-
-            /*
-            foreach (var myEntity in MyEntities.GetEntities())
-            {
-                var grid = myEntity as MyCubeGrid;
-                if (grid != null)
-                    RemoveCoreToolbarWeapons(grid);
-            }
-            */
         }
 
         internal void ProccessAmmoMoves()

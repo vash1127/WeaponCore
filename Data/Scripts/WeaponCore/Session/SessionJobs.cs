@@ -33,8 +33,6 @@ namespace WeaponCore
             if (DbTask.IsComplete && DbTask.valid && DbTask.Exceptions != null)
                 TaskHasErrors(ref DbTask, "DbTask");
 
-            DbCallBackComplete = false;
-
             DbTask = MyAPIGateway.Parallel.StartBackground(ProcessDbs, ProcessDbsCallBack);
         }
 
@@ -152,7 +150,6 @@ namespace WeaponCore
                 DbsToUpdate.Clear();
 
                 DsUtil.Complete("db", true);
-                DbCallBackComplete = true;
             }
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
         }

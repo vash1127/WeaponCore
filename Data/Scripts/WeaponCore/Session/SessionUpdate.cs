@@ -5,7 +5,6 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
 using Sandbox.Game.Entities;
-using VRage.Game.Entity;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
@@ -27,9 +26,7 @@ namespace WeaponCore
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;
 
-                var readyToUpdate = Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete;
-
-                if (readyToUpdate && gridAi.UpdateOwner())
+                if (DbTask.IsComplete && Tick - gridAi.TargetsUpdatedTick > 100)
                     gridAi.RequestDbUpdate();
 
                 if (gridAi.DeadProjectiles.Count > 0) {
@@ -87,8 +84,7 @@ namespace WeaponCore
                         leftClick = inputState.MouseButtonLeft;// && currentControl;
                         rightClick = inputState.MouseButtonRight;// && currentControl;
                     }
-                    else
-                        inputState = PlayerMouseStates[-1];
+                    else inputState = PlayerMouseStates[-1];
                     ///
                     /// Weapon update section
                     ///
@@ -268,7 +264,7 @@ namespace WeaponCore
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
             }
 
-            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete)
+            if (DbTask.IsComplete && DbsToUpdate.Count > 0)
                 UpdateDbsInQueue();
         }
 

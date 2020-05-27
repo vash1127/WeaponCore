@@ -724,7 +724,7 @@ namespace WeaponCore.Platform
                     return;
                 }
 
-                if (!GridAi.GridEnemy(Comp.Ai.MyOwner, topAsGrid))
+                if (!Session.GridEnemy(Comp.Ai.MyOwner, topAsGrid))
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);

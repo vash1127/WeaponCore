@@ -143,13 +143,9 @@ namespace WeaponCore
                 var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
                 var comp = block?.Components.Get<WeaponComponent>();
 
-                if (comp?.Ai == null) return Error(data, Msg("Comp", comp != null), Msg("Ai"));
-
-                if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                    continue;
+                if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
                 Weapon weapon;
-
                 if (weaponData.Timmings != null && weaponData.SyncData != null && weaponData.WeaponRng != null) {
                     weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
                     var timings = weaponData.Timmings.SyncOffsetClient(Tick);
@@ -231,13 +227,12 @@ namespace WeaponCore
 
             long playerId;
             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId)) {
+                
                 PlayerMouseStates[playerId] = mousePacket.Data;
-
                 data.Report.PacketValid = true;
             }
             else
                 return Error(data, Msg("No Player Mouse State Found"));
-
 
             return true;
         }
@@ -265,8 +260,8 @@ namespace WeaponCore
             var csPacket = (CurrentGridPlayersPacket)packet;
 
             for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++) {
+                
                 var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
-
                 var cube = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
                 if (cube?.CubeGrid == null) return Error(data, Msg("Cube", cube != null), Msg("Grid"));
 
@@ -288,9 +283,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-
             comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
-
             data.Report.PacketValid = true;
             return true;
 
