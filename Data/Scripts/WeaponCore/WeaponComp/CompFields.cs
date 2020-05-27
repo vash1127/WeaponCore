@@ -80,6 +80,7 @@ namespace WeaponCore.Support
         internal bool ResettingSubparts;
         internal bool BuildCompEventAttached;
         internal bool HasArmor;
+        internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

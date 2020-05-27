@@ -2,14 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Game;
-using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRage.Groups;
-using VRage.ModAPI;
-using VRage.Utils;
-using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
@@ -375,16 +368,27 @@ namespace WeaponCore.Support
                 RemSubGrids.Add(grid);
             }
 
+            for (int i = 0; i < SortedTargets.Count; i++) {
+                var tInfo = SortedTargets[i];
+                tInfo.Target = null;
+                tInfo.MyAi = null;
+                tInfo.MyGrid = null;
+                tInfo.TargetAi = null;
+                Session.TargetInfoPool.Return(tInfo);
+            }
+            SortedTargets.Clear();
+
             Construct.Clean();
             AddSubGrids.Clear();
-            SubGridChanges();
+            SubGridChanges(true);
             SubGrids.Clear();
             Obstructions.Clear();
+            ObstructionsTmp.Clear();
             TargetAis.Clear();
+            TargetAisTmp.Clear();
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
-            SortedTargets.Clear();
             BlockGroups.Clear();
             Weapons.Clear();
             WeaponsIdx.Clear();
@@ -395,6 +399,8 @@ namespace WeaponCore.Support
             ControllingPlayers.Clear();
             NearByShieldsTmp.Clear();
             NearByFriendlyShields.Clear();
+            StaticsInRange.Clear();
+            StaticsInRangeTmp.Clear();
             TestShields.Clear();
             SourceCount = 0;
             BlockCount = 0;

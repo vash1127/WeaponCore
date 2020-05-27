@@ -103,7 +103,7 @@ namespace WeaponCore.Support
         internal void GridClose(MyEntity myEntity)
         {
             RegisterMyGridEvents(false);
-            if (Session.Tick - ProjectileTicker > 61)
+            if (Session.Tick - ProjectileTicker > 61 && Session.DbTask.IsComplete)
             {
                 Session.GridAiPool.Return(this);
                 if (Session.IsClient)

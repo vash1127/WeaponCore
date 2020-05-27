@@ -108,6 +108,12 @@ namespace WeaponCore.Support
                 BlockInventory.Refresh();
                 BlockInventory.Constraint.Clear();
 
+                if (!string.IsNullOrEmpty(CustomIcon)) {
+                    var iconPath = Session.ModContext.ModPath + "\\Textures\\Gui\\Icons\\" + CustomIcon;
+                    BlockInventory.Constraint.Icon = iconPath;
+                    BlockInventory.Constraint.UpdateIcon();
+                }
+
                 for (int i = 0; i < Platform.Weapons.Length; i++) {
                     var w = Platform.Weapons[i];
 

@@ -3,6 +3,7 @@ using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
@@ -184,6 +185,15 @@ namespace WeaponCore.Support
                         if (cubeBlock is MyBatteryBlock || cubeBlock.HasInventory)
                             Ai.FatBlockAdded(cubeBlock);
                     }
+
+                    var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
+                    for (int i = 0; i < subgrids.Count; i++) {
+                        var grid = (MyCubeGrid)subgrids[i];
+                        Ai.PrevSubGrids.Add(grid);
+                        Ai.SubGrids.Add(grid);
+                    }
+                    Ai.SubGridDetect();
+                    Ai.SubGridChanges();
                 }
 
                 var maxTrajectory = 0d;
@@ -222,7 +232,7 @@ namespace WeaponCore.Support
                 Ai.CompChange(true, this);
 
                 Ai.IsStatic = Ai.MyGrid.Physics?.IsStatic ?? false;
-                Ai.Construct.Update(Ai);
+                Ai.Construct.Refresh(Ai, Constructs.RefreshCaller.Init);
 
                 if (!FunctionalBlock.Enabled)
                     for (int i = 0; i < Platform.Weapons.Length; i++)

@@ -24,7 +24,7 @@ namespace WeaponCore.Support
             SubGridsChanged = AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
         }
 
-        public void SubGridChanges()
+        public void SubGridChanges(bool clean = false)
         {
             foreach (var grid in AddSubGrids)
             {
@@ -55,12 +55,13 @@ namespace WeaponCore.Support
             }
             RemSubGrids.Clear();
 
-            Construct.Update(this);
+            if (!clean) {
 
-            foreach (var grid in SubGrids)
-            {
-                if (Construct?.RootAi != null)
-                    Session.GridToMasterAi[grid] = Construct.RootAi;
+                Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
+                foreach (var grid in SubGrids) {
+                    if (Construct?.RootAi != null)
+                        Session.GridToMasterAi[grid] = Construct.RootAi;
+                }
             }
         }
 
@@ -70,6 +71,13 @@ namespace WeaponCore.Support
             internal float OptimalDps;
             internal int BlockCount;
             internal GridAi RootAi;
+
+            internal enum RefreshCaller
+            {
+                Init,
+                SubGridChange,
+            }
+
             internal enum UpdateType
             {
                 BlockScan,
@@ -78,64 +86,60 @@ namespace WeaponCore.Support
                 None,
             }
 
+            internal void Refresh(GridAi ai, RefreshCaller caller)
+            {
+                FatMap fatMap;
+                if (ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap)) {
+                    GridAi tmpAi = null;
+                    foreach (var grid in ai.SubGrids) {
+
+                        GridAi checkAi;
+                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi) && (tmpAi == null || tmpAi.MyGrid.EntityId > grid.EntityId)) tmpAi = checkAi;
+                        else Log.Line($"caller:{caller} - checkAi: {checkAi != null} - isMe: {grid == ai.MyGrid} - InGridTageting:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} - Marked: {ai.MyGrid.MarkedForClose} - Version:{ai.Version} - GridInit:{ai.GridInit} - {ai.MyGrid.DebugName}");
+
+                        if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
+                            BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
+                            OptimalDps += ai.OptimalDps;
+                        }
+                    }
+                    RootAi = tmpAi;
+
+                    if (RootAi == null)
+                        Log.Line($"rootAi is null in Update: {ai.SubGrids.Count} - caller:{caller}");
+
+                    UpdateWeaponCounters(ai);
+                    return;
+                }
+                Log.Line($"ConstructRefresh Failed: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
+                OptimalDps = 0;
+                BlockCount = 0;
+                RootAi = null;
+            }
+
+
             internal void UpdateConstruct(UpdateType type)
             {
-                foreach (var sub in RootAi.SubGrids)
-                {
+                foreach (var sub in RootAi.SubGrids) {
 
                     GridAi ai;
-                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
-                    {
+                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai)) {
 
-                        switch (type)
-                        {
-                            case UpdateType.BlockScan:
-                                {
+                        switch (type) {
+                            case UpdateType.BlockScan: {
                                     ai.ReScanBlockGroups();
                                     break;
                                 }
-                            case UpdateType.Overrides:
-                                {
+                            case UpdateType.Overrides: {
                                     ai.UpdateGroupOverRides();
                                     break;
                                 }
-                            case UpdateType.ManualShootingOff:
-                                {
+                            case UpdateType.ManualShootingOff: {
                                     ai.TurnManualShootOff();
                                     break;
                                 }
                         }
                     }
                 }
-            }
-            internal void Update(GridAi ai)
-            {
-                FatMap fatMap;
-                if (ai?.MyGrid != null && ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap))
-                {
-                    BlockCount = fatMap.MostBlocks;
-                    OptimalDps = ai.OptimalDps;
-                    GridAi tmpAi = null;
-                    foreach (var grid in ai.SubGrids)
-                    {
-                        GridAi checkAi;
-                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi) && (tmpAi == null || tmpAi.MyGrid.EntityId > grid.EntityId)) tmpAi = checkAi;
-
-                        if (grid == ai.MyGrid) continue;
-                        if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap))
-                        {
-                            BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
-                            OptimalDps += ai.OptimalDps;
-                        }
-                    }
-                    RootAi = tmpAi;
-                    UpdateWeaponCounters(ai);
-                    return;
-                }
-
-                OptimalDps = 0;
-                BlockCount = 0;
-                RootAi = null;
             }
 
             internal void UpdateWeaponCounters(GridAi ai)
