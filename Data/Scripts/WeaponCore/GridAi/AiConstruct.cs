@@ -59,8 +59,9 @@ namespace WeaponCore.Support
 
                 Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
                 foreach (var grid in SubGrids) {
-                    if (Construct?.RootAi != null)
+                    if (Construct.RootAi != null)
                         Session.GridToMasterAi[grid] = Construct.RootAi;
+                    else Log.Line($"Construct.RootAi is null");
                 }
             }
         }
@@ -127,17 +128,17 @@ namespace WeaponCore.Support
 
                         switch (type) {
                             case UpdateType.BlockScan: {
-                                    ai.ReScanBlockGroups();
-                                    break;
-                                }
+                                ai.ReScanBlockGroups();
+                                break; 
+                            }
                             case UpdateType.Overrides: {
-                                    ai.UpdateGroupOverRides();
-                                    break;
-                                }
+                                ai.UpdateGroupOverRides();
+                                break;
+                            }
                             case UpdateType.ManualShootingOff: {
-                                    ai.TurnManualShootOff();
-                                    break;
-                                }
+                                ai.TurnManualShootOff();
+                                break;
+                            }
                         }
                     }
                 }

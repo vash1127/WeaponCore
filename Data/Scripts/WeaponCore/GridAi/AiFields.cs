@@ -72,7 +72,6 @@ namespace WeaponCore.Support
         internal MyCubeGrid MyGrid;
         internal Constructs Construct = new Constructs();
         internal MyCubeBlock PowerBlock;
-        //internal GridAIValues AIValues = new GridAIValues();
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal uint CreatedTick;
