@@ -243,11 +243,10 @@ namespace WeaponCore.Projectiles
                 if ((int) p.State > 3)
                     continue;
 
-                if (p.Info.Ai.ProInMinCacheRange > 9 && !p.Info.Ai.AccelChecked)
+                if (p.Info.Ai.ProInMinCacheRange > 0 && !p.Info.Ai.AccelChecked)
                     p.Info.Ai.ComputeAccelSphere();
 
                 p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius && !p.Info.Ai.MarkedForClose;
-
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
@@ -278,7 +277,6 @@ namespace WeaponCore.Projectiles
 
                     p.EarlyEnd = true;
                     p.Info.Hit.HitPos = p.Position;
-
                 }
 
                 var sphere = false;

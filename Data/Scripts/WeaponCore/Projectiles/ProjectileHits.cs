@@ -34,23 +34,25 @@ namespace WeaponCore.Projectiles
             var entityCollection = p.UseEntityCache ? p.Info.Ai.NearByEntityCache : p.MyEntityList;
             var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
             var ray = new RayD(ref beam.From, ref beam.Direction);
-
+            var myGrid = p.Info.Target.FiringCube.CubeGrid;
             for (int i = 0; i < collectionCount; i++) {
                 
                 var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
                 var grid = ent as MyCubeGrid;
 
-                var entIsSelf = grid != null && p.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(grid);
+                var entIsSelf = grid != null && grid == myGrid || myGrid.IsSameConstructAs(grid);
                 if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
-                
-                if (p.UseEntityCache && (p.CheckType == Projectile.CheckTypes.CachedRay && ray.Intersects(ent.PositionComp.WorldVolume) > beam.Length || p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(ent.PositionComp.WorldVolume) == ContainmentType.Disjoint))
-                    continue;
+
 
                 var character = ent as IMyCharacter;
                 if (p.Info.EwarActive && character != null && !genericFields) continue;
 
+                var entSphere = ent.PositionComp.WorldVolume;
+                if (p.UseEntityCache && (p.CheckType == Projectile.CheckTypes.CachedRay && ray.Intersects(entSphere) > beam.Length || p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(entSphere) == ContainmentType.Disjoint))
+                    continue;
+
                 if (grid != null || character != null) {
-                    var extBeam = new LineD(beam.From - beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2), beam.To);
+                    var extBeam = new LineD(beam.From - beam.Direction * (entSphere.Radius * 2), beam.To);
                     var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.WorldMatrix));
                     if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
                 }
@@ -75,7 +77,7 @@ namespace WeaponCore.Projectiles
                 if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
                     var shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
-                    if (shieldInfo != null && !p.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
+                    if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
 
                         if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
                             p.EntitiesNear = true;
@@ -230,7 +232,7 @@ namespace WeaponCore.Projectiles
                                     IHitInfo hitInfo;
                                     p.Info.System.Session.Physics.CastRay(forwardPos, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
                                     var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-                                    if (hitGrid == null || !hitGrid.IsSameConstructAs(p.Info.Target.FiringCube.CubeGrid))
+                                    if (hitGrid == null || !myGrid.IsSameConstructAs(hitGrid))
                                         continue;
 
                                     hitEntity.HitPos = hitInfo.Position;
