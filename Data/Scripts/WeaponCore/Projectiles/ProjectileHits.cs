@@ -31,8 +31,8 @@ namespace WeaponCore.Projectiles
             var tick = p.Info.System.Session.Tick;
 
             var useEntityCollection = p.CheckType != Projectile.CheckTypes.Ray;
-            var entityCollection = p.UseEntityCache ? p.Info.Ai.NearByEntitiesCache : p.MyEntityList;
-            var collectionCount = !useEntityCollection ? p.MySegmentList.Count : p.CheckType == Projectile.CheckTypes.Sphere ? p.MyEntityList.Count: p.Info.Ai.NearByEntitiesCache.Count;
+            var entityCollection = p.UseEntityCache ? p.Info.Ai.NearByEntityCache : p.MyEntityList;
+            var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
             var ray = new RayD(ref beam.From, ref beam.Direction);
 
             for (int i = 0; i < collectionCount; i++) {

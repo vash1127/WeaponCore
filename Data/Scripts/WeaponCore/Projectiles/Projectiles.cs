@@ -239,14 +239,14 @@ namespace WeaponCore.Projectiles
 
                 var p = ActiveProjetiles[x];
                 p.Miss = false;
+                
+                if ((int) p.State > 3)
+                    continue;
 
                 if (p.Info.Ai.ProInMinCacheRange > 9 && !p.Info.Ai.AccelChecked)
                     p.Info.Ai.ComputeAccelSphere();
 
-                p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius;
-
-                if ((int) p.State > 3)
-                    continue;
+                p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius && !p.Info.Ai.MarkedForClose;
 
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
@@ -333,7 +333,7 @@ namespace WeaponCore.Projectiles
 
                 p.CheckType = p.UseEntityCache && sphere ? CheckTypes.CachedSphere : p.UseEntityCache ? CheckTypes.CachedRay : sphere ? CheckTypes.Sphere : CheckTypes.Ray;
 
-                if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntitiesCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
+                if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
                     ValidateHits.Add(p);
                     continue;
                 }

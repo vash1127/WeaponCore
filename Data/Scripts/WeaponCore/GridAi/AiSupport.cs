@@ -162,10 +162,12 @@ namespace WeaponCore.Support
             return deck;
         }
 
-        internal List<MyEntity> NearByEntitiesCache = new List<MyEntity>();
-        internal BoundingSphereD NearByEntitySphere;
+
         internal void ComputeAccelSphere()
         {
+            NearByEntityCache.Clear();
+            if (MarkedForClose) return;
+
             AccelChecked = true;
 
             var numOfEntities = NearByEntities > 0 ? NearByEntities : 1f;
@@ -173,8 +175,7 @@ namespace WeaponCore.Support
             var checkVol = Math.Max(ratio > 1 ? ScanVolume.Radius : ScanVolume.Radius * ratio, 500f);
             NearByEntitySphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, checkVol);
 
-            NearByEntitiesCache.Clear();
-            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref NearByEntitySphere, NearByEntitiesCache);
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref NearByEntitySphere, NearByEntityCache);
         }
 
         internal List<Projectile> GetProCache()

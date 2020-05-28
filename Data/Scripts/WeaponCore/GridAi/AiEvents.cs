@@ -14,17 +14,19 @@ namespace WeaponCore.Support
         internal void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
         {
             if (grid == null) grid = MyGrid;
-            if (register)
-            {
+            if (register) {
+
                 Registered = true;
+                MarkedForClose = false;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnClose += GridClose;
             }
-            else
-            {
-                if (Registered)
-                {
+            else {
+
+                MarkedForClose = true;
+                if (Registered) {
+
                     Registered = false;
                     grid.OnFatBlockAdded -= FatBlockAdded;
                     grid.OnFatBlockRemoved -= FatBlockRemoved;

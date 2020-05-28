@@ -61,6 +61,8 @@ namespace WeaponCore.Support
         internal readonly List<GridAi> TargetAis = new List<GridAi>(32);
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
+        internal readonly List<MyEntity> NearByEntityCache = new List<MyEntity>();
+
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
@@ -85,6 +87,7 @@ namespace WeaponCore.Support
         internal Vector3D PlanetClosestPoint;
         internal Vector3D ClosestPlanetCenter;
         internal Vector3D NaturalGravity;
+        internal BoundingSphereD NearByEntitySphere;
         internal BoundingSphereD GridVolume;
         internal BoundingSphereD ScanVolume;
         internal bool PlanetSurfaceInRange;
@@ -93,6 +96,7 @@ namespace WeaponCore.Support
         internal bool ScanBlockGroups = true;
         internal bool ScanBlockGroupSettings;
         internal bool Registered;
+        internal bool MarkedForClose;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
