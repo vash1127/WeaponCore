@@ -29,17 +29,26 @@ namespace WeaponCore.Projectiles
             p.EntitiesNear = false;
             bool projetileInShield = false;
             var tick = p.Info.System.Session.Tick;
-            for (int i = 0; i < p.SegmentList.Count; i++) {
+
+            var useEntityCollection = p.CheckType != Projectile.CheckTypes.Ray;
+            var entityCollection = p.UseEntityCache ? p.Info.Ai.NearByEntitiesCache : p.MyEntityList;
+            var collectionCount = !useEntityCollection ? p.MySegmentList.Count : p.CheckType == Projectile.CheckTypes.Sphere ? p.MyEntityList.Count: p.Info.Ai.NearByEntitiesCache.Count;
+            var ray = new RayD(ref beam.From, ref beam.Direction);
+
+            for (int i = 0; i < collectionCount; i++) {
                 
-                var ent = p.SegmentList[i].Element;
+                var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
                 var grid = ent as MyCubeGrid;
 
                 var entIsSelf = grid != null && p.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(grid);
                 if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
+                
+                if (p.UseEntityCache && (p.CheckType == Projectile.CheckTypes.CachedRay && ray.Intersects(ent.PositionComp.WorldVolume) > beam.Length || p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(ent.PositionComp.WorldVolume) == ContainmentType.Disjoint))
+                    continue;
 
                 var character = ent as IMyCharacter;
                 if (p.Info.EwarActive && character != null && !genericFields) continue;
-                
+
                 if (grid != null || character != null) {
                     var extBeam = new LineD(beam.From - beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2), beam.To);
                     var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.WorldMatrix));
@@ -105,7 +114,6 @@ namespace WeaponCore.Projectiles
                         if (voxel.RootVoxel != voxel) continue;
 
                         var pseudoHit = false;
-                        var ray = new RayD(ref beam.From, ref beam.Direction);
                         if (tick - p.Info.VoxelCache.HitRefreshed < 60) {
 
                             var dist = ray.Intersects(p.Info.VoxelCache.HitSphere);
@@ -270,7 +278,11 @@ namespace WeaponCore.Projectiles
                 if (rayCheck || sphere.Intersects(testSphere))
                     found = ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref beam);
             }
-            p.SegmentList.Clear();
+            
+            if(!useEntityCollection)
+                p.MySegmentList.Clear();
+            else if (p.CheckType == Projectile.CheckTypes.Sphere) 
+                entityCollection.Clear();
 
             return found && GenerateHitInfo(p);
         }

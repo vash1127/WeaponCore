@@ -85,15 +85,24 @@ namespace WeaponCore.Projectiles
         internal bool FakeGravityNear;
         internal bool HadTarget;
         internal bool WasTracking;
-        internal BoundingSphereD VoxelCacheSphere = new BoundingSphereD(Vector3D.Zero, 5f);
+        internal bool UseEntityCache;
+
+        internal enum CheckTypes
+        {
+            Ray,
+            Sphere,
+            CachedSphere,
+            CachedRay,
+        }
+
+        internal CheckTypes CheckType;
         internal readonly ProInfo Info = new ProInfo();
-        internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
-        internal readonly List<MyEntity> CheckList = new List<MyEntity>();
+        internal readonly List<MyLineSegmentOverlapResult<MyEntity>> MySegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
+        internal readonly List<MyEntity> MyEntityList = new List<MyEntity>();
         internal readonly List<ProInfo> VrPros = new List<ProInfo>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
         internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
-        internal readonly List<IHitInfo> RayHits = new List<IHitInfo>();
 
         #region Start
         internal void Start()
@@ -492,8 +501,8 @@ namespace WeaponCore.Projectiles
             var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
-            if (giveUp || !GridAi.ReacquireTarget(this))
-            {
+
+            if (giveUp || !GridAi.ReacquireTarget(this)) {
                 Info.Target.Entity = null;
                 if (Info.Target.IsProjectile) UnAssignProjectile(true);
                 return false;
@@ -540,24 +549,22 @@ namespace WeaponCore.Projectiles
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelVelocity = (Info.Direction * AccelLength);
 
-            if (ConstantSpeed)
-            {
+            if (ConstantSpeed) {
                 Velocity = MaxVelocity;
                 VelocityLengthSqr = MaxSpeed * MaxSpeed;
             }
             else Velocity = AccelVelocity;
 
-            if (Guidance == GuidanceType.DetectSmart)
-            {
+            if (Guidance == GuidanceType.DetectSmart) {
+
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
-                if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && LockedTarget)
-                {
+
+                if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && LockedTarget) {
                     OffSetTarget();
                     OffsetSqr = Info.AmmoDef.Trajectory.Smarts.Inaccuracy * Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
                 }
-                else
-                {
+                else {
                     TargetOffSet = Vector3D.Zero;
                     OffsetSqr = 0;
                 }
@@ -569,8 +576,7 @@ namespace WeaponCore.Projectiles
         internal void TriggerMine(bool startTimer)
         {
             DistanceToTravelSqr = double.MinValue;
-            if (Info.AmmoDef.Const.Ewar)
-            {
+            if (Info.AmmoDef.Const.Ewar) {
                 Info.AvShot.Triggered = true;
                 if (startTimer) FieldTime = Info.AmmoDef.Trajectory.Mines.FieldTime;
             }
@@ -675,19 +681,17 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                Vector3D commandedAccel;
 
                 var missileToTarget = Vector3D.Normalize(PrevTargetPos - Position);
                 var relativeVelocity = PrevTargetVel - Velocity;
-
                 var normalMissileAcceleration = (relativeVelocity - (relativeVelocity.Dot(missileToTarget) * missileToTarget)) * Info.AmmoDef.Trajectory.Smarts.Aggressiveness;
 
+                Vector3D commandedAccel;
                 if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel = (missileToTarget * StepPerSec);
-                else
-                {
+                else {
+
                     var maxLateralThrust = StepPerSec * Math.Min(1, Math.Max(0, Info.AmmoDef.Const.MaxLateralThrust));
-                    if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust)
-                    {
+                    if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust) {
                         Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
                         normalMissileAcceleration *= maxLateralThrust;
                     }
@@ -695,7 +699,6 @@ namespace WeaponCore.Projectiles
                 }
 
                 newVel = Velocity + (commandedAccel * StepConst);
-
                 AccelDir = commandedAccel / StepPerSec;
                 Vector3D.Normalize(ref Velocity, out Info.Direction);
             }
@@ -834,10 +837,10 @@ namespace WeaponCore.Projectiles
             if (!MineActivated)
             {
                 MyEntity closestEnt = null;
-                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref PruneSphere, CheckList, MyEntityQueryType.Dynamic);
-                for (int i = 0; i < CheckList.Count; i++)
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref PruneSphere, MyEntityList, MyEntityQueryType.Dynamic);
+                for (int i = 0; i < MyEntityList.Count; i++)
                 {
-                    var ent = CheckList[i];
+                    var ent = MyEntityList[i];
                     var grid = ent as MyCubeGrid;
                     var character = ent as IMyCharacter;
                     if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
@@ -857,6 +860,7 @@ namespace WeaponCore.Projectiles
                     minDist = dist;
                     closestEnt = ent;
                 }
+                MyEntityList.Clear();
 
                 if (closestEnt != null)
                 {
@@ -888,9 +892,8 @@ namespace WeaponCore.Projectiles
             if (activate)
             {
                 TriggerMine(false);
-                SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = Info.Target.Entity });
+                MyEntityList.Add(Info.Target.Entity);
             }
-            CheckList.Clear();
         }
 
         internal void OffSetTarget(bool roam = false)

@@ -136,6 +136,7 @@ namespace WeaponCore
                     ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.ControllingPlayers.Keys.Count > 0 || ai.FirstRun;
                     ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
                     ai.BlockCount = ai.MyGrid.BlocksCount;
+                    ai.NearByEntities = ai.NearByEntitiesTmp;
 
                     if (!ai.TargetingInfo.ThreatInRange && ai.LiveProjectile.Count > 0)
                     {

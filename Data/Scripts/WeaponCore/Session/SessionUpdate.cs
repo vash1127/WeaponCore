@@ -22,7 +22,11 @@ namespace WeaponCore
                 ///
                 /// GridAi update section
                 ///
-                gridAi.Concealed = ((uint) gridAi.MyGrid.Flags & 4) > 0;
+                gridAi.MyProjectiles = 0;
+                gridAi.ProInMinCacheRange = 0;
+                gridAi.AccelChecked = false;
+                gridAi.Concealed = ((uint)gridAi.MyGrid.Flags & 4) > 0;
+                
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;
 
@@ -120,6 +124,7 @@ namespace WeaponCore
                         ///
                         ///Check Reload
                         ///                        
+                        
                         if (!w.OutOfAmmo && !w.State.Sync.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                             w.StartReload();
 

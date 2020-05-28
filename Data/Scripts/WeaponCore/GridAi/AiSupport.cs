@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
@@ -158,6 +160,21 @@ namespace WeaponCore.Support
                 deck[j] = firstCard + i;
             }
             return deck;
+        }
+
+        internal List<MyEntity> NearByEntitiesCache = new List<MyEntity>();
+        internal BoundingSphereD NearByEntitySphere;
+        internal void ComputeAccelSphere()
+        {
+            AccelChecked = true;
+
+            var numOfEntities = NearByEntities > 0 ? NearByEntities : 1f;
+            var ratio = (MyProjectiles / numOfEntities) / 10f;
+            var checkVol = Math.Max(ratio > 1 ? ScanVolume.Radius : ScanVolume.Radius * ratio, 500f);
+            NearByEntitySphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, checkVol);
+
+            NearByEntitiesCache.Clear();
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref NearByEntitySphere, NearByEntitiesCache);
         }
 
         internal List<Projectile> GetProCache()
@@ -406,6 +423,10 @@ namespace WeaponCore.Support
             BlockCount = 0;
             MyOwner = 0;
             ProjectileTicker = 0;
+            NearByEntities = 0;
+            NearByEntitiesTmp = 0;
+            MyProjectiles = 0;
+            AccelChecked = false;
             PointDefense = false;
             FadeOut = false;
             SupressMouseShoot = false;

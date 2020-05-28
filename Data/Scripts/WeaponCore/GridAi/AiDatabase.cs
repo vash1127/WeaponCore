@@ -22,6 +22,7 @@ namespace WeaponCore.Support
 
             GridVolume = MyGrid.PositionComp.WorldVolume;
             ScanVolume = GridVolume;
+            ScanVolume.Radius = MaxTargetingRange;
             Session.DbsToUpdate.Add(this);
             TargetsUpdatedTick = Session.Tick;
         }
@@ -34,13 +35,14 @@ namespace WeaponCore.Support
 
                     Scanning = true;
                     _lastScan = Session.Tick;
-                    ScanVolume.Radius = MaxTargetingRange;
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref ScanVolume, _possibleTargets);
+                    NearByEntitiesTmp = _possibleTargets.Count;
+
                     foreach (var grid in PrevSubGrids)
                         RemSubGrids.Add(grid);
 
                     PrevSubGrids.Clear();
-                    for (int i = 0; i < _possibleTargets.Count; i++) {
+                    for (int i = 0; i < NearByEntitiesTmp; i++) {
 
                         var ent = _possibleTargets[i];
                         using (ent.Pin()) {
@@ -116,7 +118,7 @@ namespace WeaponCore.Support
             MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(ScanVolume.Center);
             ObstructionsTmp.Clear();
             StaticsInRangeTmp.Clear();
-            for (int i = 0; i < _possibleTargets.Count; i++) {
+            for (int i = 0; i < NearByEntitiesTmp; i++) {
 
                 var ent = _possibleTargets[i];
                 var hasPhysics = ent.Physics != null;

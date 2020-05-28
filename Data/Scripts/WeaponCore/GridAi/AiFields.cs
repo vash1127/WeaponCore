@@ -107,6 +107,10 @@ namespace WeaponCore.Support
         internal int BlockCount;
         internal int NumSyncWeapons;
         internal int Version;
+        internal int MyProjectiles;
+        internal int NearByEntities;
+        internal int NearByEntitiesTmp;
+        internal int ProInMinCacheRange;
         internal long MyOwner;
         internal bool PointDefense;
         internal bool SupressMouseShoot;
@@ -130,6 +134,7 @@ namespace WeaponCore.Support
         internal bool Concealed;
         internal bool RamProtection = true;
         internal bool RamProximity;
+        internal bool AccelChecked;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double ClosestStaticSqr = double.MaxValue;

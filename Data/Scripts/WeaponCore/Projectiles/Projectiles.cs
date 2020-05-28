@@ -20,8 +20,6 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-
-
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal readonly Session Session;
         internal readonly MyConcurrentPool<List<NewVirtual>> VirtInfoPools = new MyConcurrentPool<List<NewVirtual>>(128, vInfo => vInfo.Clear());
@@ -93,9 +91,8 @@ namespace WeaponCore.Projectiles
             {
                 var p = ActiveProjetiles[i];
                 ++p.Info.Age;
-                var age30 = p.Info.Age % 30 == 0;
-                if (age30)
-                    p.Info.Ai.ProjectileTicker = p.Info.System.Session.Tick;
+                ++p.Info.Ai.MyProjectiles;
+                p.Info.Ai.ProjectileTicker = p.Info.System.Session.Tick;
 
                 switch (p.State) {
                     case ProjectileState.Destroy:
@@ -121,7 +118,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.FeelsGravity) {
 
-                    var update = p.FakeGravityNear || p.EntitiesNear || p.Info.InPlanetGravity && age30 || !p.Info.InPlanetGravity && p.Info.Age % 10 == 0;
+                    var update = p.FakeGravityNear || p.EntitiesNear || p.Info.InPlanetGravity && p.Info.Age % 30 == 0 || !p.Info.InPlanetGravity && p.Info.Age % 10 == 0;
                     if (update) {
                         p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
 
@@ -184,7 +181,8 @@ namespace WeaponCore.Projectiles
                 double distChanged;
                 Vector3D.Dot(ref p.Info.Direction, ref p.TravelMagnitude, out distChanged);
                 p.Info.DistanceTraveled += Math.Abs(distChanged);
-                
+                if (p.Info.DistanceTraveled <= 500) ++p.Info.Ai.ProInMinCacheRange;
+
                 if (p.ModelState == EntityState.Exists) {
 
                     var up = MatrixD.Identity.Up;
@@ -242,10 +240,18 @@ namespace WeaponCore.Projectiles
                 var p = ActiveProjetiles[x];
                 p.Miss = false;
 
-                if ((int)p.State > 3) continue;
+                if (p.Info.Ai.ProInMinCacheRange > 9 && !p.Info.Ai.AccelChecked)
+                    p.Info.Ai.ComputeAccelSphere();
+
+                p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius;
+
+                if ((int) p.State > 3)
+                    continue;
+
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
+
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)) {
                     
                     var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
@@ -253,17 +259,15 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Radius = dInfo.DetonationRadius;
 
                     if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0)) {
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList,
-                            p.PruneQuery);
-                        for (int i = 0; i < p.CheckList.Count; i++)
-                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
-                            { Distance = 0, Element = p.CheckList[i] });
+
+                        if (!p.UseEntityCache)
+                            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.MyEntityList, p.PruneQuery);
+                        
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
                                     ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref p.Beam);
 
-                        p.CheckList.Clear();
                         p.State = ProjectileState.Detonate;
 
                         if (p.EnableAv)
@@ -316,17 +320,20 @@ namespace WeaponCore.Projectiles
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60) 
                         p.CheckForNearVoxel(60);
 
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.CheckList, p.PruneQuery);
-                    for (int i = 0; i < p.CheckList.Count; i++)
-                        p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = p.CheckList[i] });
-                    p.CheckList.Clear();
+                    if (!p.UseEntityCache)
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.MyEntityList, p.PruneQuery);
+
                 }
                 else if (line) {
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60) p.CheckForNearVoxel(60);
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref p.Beam, p.SegmentList, p.PruneQuery);
+
+                    if (!p.UseEntityCache)
+                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref p.Beam, p.MySegmentList, p.PruneQuery);
                 }
 
-                if (p.Info.Target.IsProjectile || p.SegmentList.Count > 0) {
+                p.CheckType = p.UseEntityCache && sphere ? CheckTypes.CachedSphere : p.UseEntityCache ? CheckTypes.CachedRay : sphere ? CheckTypes.Sphere : CheckTypes.Ray;
+
+                if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntitiesCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
                     ValidateHits.Add(p);
                     continue;
                 }
