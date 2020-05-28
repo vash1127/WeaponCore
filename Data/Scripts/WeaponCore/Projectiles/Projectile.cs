@@ -362,7 +362,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in StaticEntCheck: {ex} AiNull:{Info.Ai == null} - StaticsNull:{Info?.Ai?.StaticsInRange == null} - FiringCubeNull:{Info.Target.FiringCube?.CubeGrid == null} - AmmoNull:{Info.AmmoDef == null}) - { Info?.WeaponCache?.VoxelHits[CachedId] == null} "); }
+            catch (Exception ex) { Log.Line($"Exception in StaticEntCheck: {ex} AiNull:{Info.Ai == null} - StaticsNull:{Info.Ai?.StaticsInRange == null} - FiringCubeNull:{Info.Target.FiringCube?.CubeGrid == null} - AmmoNull:{Info.AmmoDef == null}) - {Info.WeaponCache == null} - {Info.WeaponCache?.VoxelHits[CachedId] == null} "); }
         }
         #endregion
 
