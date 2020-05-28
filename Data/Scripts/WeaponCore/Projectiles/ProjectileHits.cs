@@ -40,7 +40,7 @@ namespace WeaponCore.Projectiles
                 var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
                 var grid = ent as MyCubeGrid;
 
-                var entIsSelf = grid != null && grid == myGrid || myGrid.IsSameConstructAs(grid);
+                var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
                 if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
 
 
