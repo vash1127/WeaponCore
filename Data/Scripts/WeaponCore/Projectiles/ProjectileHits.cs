@@ -230,7 +230,7 @@ namespace WeaponCore.Projectiles
                                 if (hitEntity.Vector3ICache.Count > 0) {
                                     
                                     IHitInfo hitInfo;
-                                    p.Info.System.Session.Physics.CastRay(forwardPos, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer, false);
+                                    p.Info.System.Session.Physics.CastRay(forwardPos, hitEntity.Intersection.To, out hitInfo, CollisionLayers.DefaultCollisionLayer);
                                     var hitGrid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
                                     if (hitGrid == null || !myGrid.IsSameConstructAs(hitGrid))
                                         continue;
