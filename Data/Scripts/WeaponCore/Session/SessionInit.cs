@@ -155,9 +155,11 @@ namespace WeaponCore
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];
                 var hasTurret = false;
                 var firstWeapon = true;
+                string modPath = null;
+                foreach (var wepDef in weapons)
+                {
 
-                foreach (var wepDef in weapons) {
-
+                    modPath = wepDef.ModPath;
                     if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
 
@@ -247,7 +249,7 @@ namespace WeaponCore
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-                WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
+                WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons, modPath);
             }
 
 

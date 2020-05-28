@@ -1079,14 +1079,16 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
+        public readonly string ModPath;
         public readonly Session Session;
 
-        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
+            ModPath = modPath;
             var muzzlePartNames = new MyStringHash[numOfParts];
             var weaponId = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
