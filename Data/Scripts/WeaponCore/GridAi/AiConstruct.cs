@@ -100,7 +100,7 @@ namespace WeaponCore.Support
 
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
                             BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
-                            OptimalDps += ai.OptimalDps;
+                            if (checkAi != null) OptimalDps += checkAi.OptimalDps;
                         }
                         else Log.Line($"ConstructRefresh Failed sub no fatmap, sub is caller:{grid == ai.MyGrid}");
                     }

@@ -24,7 +24,7 @@ namespace WeaponCore
                 if (string.IsNullOrEmpty(message)) return;
                 Log.CleanLine(message);
             }
-            catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in AuthorReceivedPacket: {ex}"); }
         }
 
         #region Client Sync
@@ -36,8 +36,6 @@ namespace WeaponCore
                 if (packet == null) return;
 
                 var packetSize = rawData.Length;
-                //ProccessClientPacket(packet, packetSize);
-                
                 var report = Reporter.ReportPool.Get();
                 report.Receiver = NetworkReporter.Report.Received.Client;
                 report.PacketSize = packetSize;
@@ -54,124 +52,127 @@ namespace WeaponCore
         #region NewClientSwitch
         private bool ProccessClientPacket(PacketObj packetObj)
         {
-            var invalidType = false;
-            switch (packetObj.Packet.PType) {
-                case PacketType.CompStateUpdate: {
-                    ClientCompStateUpdate(packetObj);
-                    break;
+            try {
+                var invalidType = false;
+                switch (packetObj.Packet.PType) {
+                    case PacketType.CompStateUpdate: {
+                            ClientCompStateUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.CompSettingsUpdate: {
+                            ClientCompSettingsUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.WeaponSyncUpdate: {
+                            ClientWeaponSyncUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.FakeTargetUpdate: {
+                            ClientFakeTargetUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.PlayerIdUpdate: {
+                            ClientPlayerIdUpdate(packetObj); 
+                            break;
+                        }
+                    case PacketType.ClientMouseEvent: {
+                            ClientClientMouseEvent(packetObj);
+                            break;
+                        }
+                    case PacketType.ActiveControlUpdate: {
+                            ClientActiveControlUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.ActiveControlFullUpdate: {
+                            ClientActiveControlFullUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.ReticleUpdate: {
+                            ClientReticleUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.OverRidesUpdate: {
+                            ClientOverRidesUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.PlayerControlUpdate: {
+                            ClientPlayerControlUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.TargetExpireUpdate: {
+                            ClientTargetExpireUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.FullMouseUpdate: {
+                            ClientFullMouseUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.CompToolbarShootState: {
+                            ClientCompToolbarShootState(packetObj);
+                            break;
+                        }
+                    case PacketType.RangeUpdate: {
+                            ClientRangeUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.GridAiUiMidUpdate: {
+                            ClientGridAiUiMidUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.CycleAmmo: {
+                            ClientCycleAmmo(packetObj);
+                            break;
+                        }
+                    case PacketType.GridOverRidesSync: {
+                            ClientGridOverRidesSync(packetObj);
+                            break;
+                        }
+                    case PacketType.RescanGroupRequest: {
+                            ClientRescanGroupRequest(packetObj);
+                            break;
+                        }
+                    case PacketType.GridFocusListSync: {
+                            ClientGridFocusListSync(packetObj);
+                            break;
+                        }
+                    case PacketType.ClientMidUpdate: {
+                            ClientClientMidUpdate(packetObj);
+                            break;
+                        }
+                    case PacketType.FocusUpdate:
+                    case PacketType.ReassignTargetUpdate:
+                    case PacketType.NextActiveUpdate:
+                    case PacketType.ReleaseActiveUpdate: {
+                            ClientFocusStates(packetObj);
+                            break;
+                        }
+                    default:
+                        if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
+                        Log.Line($"Invalid Packet Type: {packetObj.Packet.PType} packet type: {packetObj.Packet.GetType()}");
+                        invalidType = true;
+                        packetObj.Report.PacketValid = false;
+                        break;
                 }
-                case PacketType.CompSettingsUpdate: {
-                    ClientCompSettingsUpdate(packetObj);
-                    break;
-                }
-                case PacketType.WeaponSyncUpdate: {
-                    ClientWeaponSyncUpdate(packetObj);
-                    break;
-                }
-                case PacketType.FakeTargetUpdate: {
-                    ClientFakeTargetUpdate(packetObj);
-                    break;
-                }
-                case PacketType.PlayerIdUpdate: {
-                    ClientPlayerIdUpdate(packetObj);
-                    break;
-                }
-                case PacketType.ClientMouseEvent: {
-                    ClientClientMouseEvent(packetObj);
-                    break;
-                }
-                case PacketType.ActiveControlUpdate: {
-                    ClientActiveControlUpdate(packetObj);
-                    break;
-                }
-                case PacketType.ActiveControlFullUpdate: {
-                    ClientActiveControlFullUpdate(packetObj);
-                    break;
-                }
-                case PacketType.ReticleUpdate: {
-                    ClientReticleUpdate(packetObj);
-                    break;
-                }
-                case PacketType.OverRidesUpdate: {
-                    ClientOverRidesUpdate(packetObj);
-                    break;
-                }
-                case PacketType.PlayerControlUpdate: {
-                    ClientPlayerControlUpdate(packetObj);
-                    break;
-                }
-                case PacketType.TargetExpireUpdate: {
-                    ClientTargetExpireUpdate(packetObj);
-                    break;
-                }
-                case PacketType.FullMouseUpdate: {
-                    ClientFullMouseUpdate(packetObj);
-                    break;
-                }
-                case PacketType.CompToolbarShootState: {
-                    ClientCompToolbarShootState(packetObj);
-                    break;
-                }
-                case PacketType.RangeUpdate: {
-                    ClientRangeUpdate(packetObj);
-                    break;
-                }
-                case PacketType.GridAiUiMidUpdate: {
-                    ClientGridAiUiMidUpdate(packetObj);
-                    break;
-                }
-                case PacketType.CycleAmmo: {
-                    ClientCycleAmmo(packetObj);
-                    break;
-                }
-                case PacketType.GridOverRidesSync: {
-                    ClientGridOverRidesSync(packetObj);
-                    break;
-                }
-                case PacketType.RescanGroupRequest: {
-                    ClientRescanGroupRequest(packetObj);
-                    break;
-                }
-                case PacketType.GridFocusListSync: {
-                    ClientGridFocusListSync(packetObj);
-                    break;
-                }
-                case PacketType.ClientMidUpdate: {
-                    ClientClientMidUpdate(packetObj);
-                    break;
-                }
-                case PacketType.FocusUpdate:
-                case PacketType.ReassignTargetUpdate:
-                case PacketType.NextActiveUpdate:
-                case PacketType.ReleaseActiveUpdate: {
-                    ClientFocusStates(packetObj);
-                    break;
-                }
-                default:
-                    if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
-                    Log.Line($"Invalid Packet Type: {packetObj.Packet.PType} packet type: {packetObj.Packet.GetType()}");
-                    invalidType = true;
-                    packetObj.Report.PacketValid = false;
-                    break;
-            }
-            if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
-            {
-                if (!ClientSideErrorPktListNew.Contains(packetObj))
-                    ClientSideErrorPktListNew.Add(packetObj);
-                else
+                if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
                 {
-                    //this only works because hashcode override in ErrorPacket
+                    if (!ClientSideErrorPktListNew.Contains(packetObj))
+                        ClientSideErrorPktListNew.Add(packetObj);
+                    else {
+                        //this only works because hashcode override in ErrorPacket
+                        ClientSideErrorPktListNew.Remove(packetObj);
+                        ClientSideErrorPktListNew.Add(packetObj);
+                    }
+                }
+                else if (packetObj.Report.PacketValid && ClientSideErrorPktListNew.Contains(packetObj))
                     ClientSideErrorPktListNew.Remove(packetObj);
-                    ClientSideErrorPktListNew.Add(packetObj);
+
+                if (packetObj.Report.PacketValid) {
+                    PacketObjPool.Return(packetObj);
+                    return true;
                 }
             }
-            else if (packetObj.Report.PacketValid && ClientSideErrorPktListNew.Contains(packetObj))
-                ClientSideErrorPktListNew.Remove(packetObj);
-
-            if (packetObj.Report.PacketValid)
-                PacketObjPool.Return(packetObj);
-
-            return packetObj.Report.PacketValid;
+            catch (Exception ex) { Log.Line($"Exception in ProccessClientPacket: {ex} - pObjNull:{packetObj == null} - packetNull:{packetObj?.Packet == null} - error:{packetObj?.ErrorPacket == null} - report:{packetObj?.Report == null}"); }
+            return false;
         }
         #endregion
 
