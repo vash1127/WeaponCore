@@ -90,11 +90,13 @@ namespace WeaponCore.Support
 
         internal void GeneralWeaponCleanUp()
         {
-            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready)
-            {
-                foreach (var w in Platform.Weapons)
+            if (Platform?.State == MyWeaponPlatform.PlatformState.Ready) {
+                foreach (var w in Platform.Weapons) {
                     for (int i = 0; i < w.Muzzles.Length; i++)
                         w.Comp.Session.VoxelCaches.Remove(w.Muzzles[i].UniqueId);
+
+                    w.RayCallBackClean();
+                }
             }
         }
 

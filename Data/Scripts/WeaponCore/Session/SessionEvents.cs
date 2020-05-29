@@ -117,7 +117,6 @@ namespace WeaponCore
             FatMap fatMap;
             if (GridToFatMap.TryRemove(grid, out fatMap))
             {
-                fatMap.MyCubeBocks.ClearImmediate();
                 ConcurrentListPool.Return(fatMap.MyCubeBocks);
                 fatMap.Trash = true;
                 FatMapPool.Return(fatMap);

@@ -208,6 +208,14 @@ namespace WeaponCore.Support
 
                 DistSqr = sphereDistance * sphereDistance;
             }
+
+            internal void Clean()
+            {
+                Target = null;
+                MyGrid = null;
+                MyAi = null;
+                TargetAi = null;
+            }
         }
 
         internal struct Shields

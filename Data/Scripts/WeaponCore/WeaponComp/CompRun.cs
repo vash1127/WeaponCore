@@ -76,7 +76,6 @@ namespace WeaponCore.Support
                     StorageSetup();
                     InventoryInit();
                     PowerInit();
-                    RegisterEvents();
 
                     if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                         Platform.ResetParts(this);
@@ -146,7 +145,6 @@ namespace WeaponCore.Support
                     if (Ai != null) {
 
                         Ai.FirstRun = true;
-                        RegisterEvents();
 
                         if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                             Platform.ResetParts(this);
@@ -173,6 +171,7 @@ namespace WeaponCore.Support
             try {
 
                 Ai.UpdatePowerSources = true;
+                RegisterEvents();
                 if (!Ai.GridInit) {
 
                     Ai.GridInit = true;

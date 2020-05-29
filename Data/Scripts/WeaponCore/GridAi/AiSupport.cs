@@ -100,7 +100,6 @@ namespace WeaponCore.Support
                 foreach (var group in BlockGroups) {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
-                        group.Value.Comps.Clear();
                         Session.GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }
@@ -377,6 +376,34 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{MyGrid == null}"); }
         }
 
+        internal void GridDelayedClose()
+        {
+            if (Session == null || MyGrid == null || Closed) {
+                Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
+                return;
+            }
+
+            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete) {
+                if (Session.IsClient)
+                    Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
+
+                Session.GridAiPool.Return(this);
+            }
+        }
+
+        internal void GridForceClose()
+        {
+            if (Session == null || MyGrid == null || Closed) {
+                Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null} - Closed: {Closed}");
+                return;
+            }
+
+            if (Session.IsClient)
+                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
+
+            Session.GridAiPool.Return(this);
+        }
+
         internal void CleanUp()
         {
             RegisterMyGridEvents(false);
@@ -394,8 +421,9 @@ namespace WeaponCore.Support
                 tInfo.TargetAi = null;
                 Session.TargetInfoPool.Return(tInfo);
             }
+            
             SortedTargets.Clear();
-
+            InventoryIndexer.Clear();
             Construct.Clean();
             AddSubGrids.Clear();
             SubGridChanges(true);
@@ -420,6 +448,7 @@ namespace WeaponCore.Support
             StaticsInRange.Clear();
             StaticsInRangeTmp.Clear();
             TestShields.Clear();
+            NewEntities.Clear();
             SourceCount = 0;
             BlockCount = 0;
             MyOwner = 0;
@@ -448,6 +477,10 @@ namespace WeaponCore.Support
             LastTerminal = null;
             PowerDistributor = null;
             PowerBlock = null;
+            MyGrid = null;
+            PowerDistributor = null;
+            Session = null;
+            Closed = true;
             Version++;
         }
 

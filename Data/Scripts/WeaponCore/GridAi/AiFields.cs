@@ -27,6 +27,7 @@ namespace WeaponCore.Support
         internal readonly FakeTarget DummyTarget = new FakeTarget();
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
+        internal readonly Constructs Construct = new Constructs();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -72,7 +73,6 @@ namespace WeaponCore.Support
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
-        internal Constructs Construct = new Constructs();
         internal MyCubeBlock PowerBlock;
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -97,6 +97,7 @@ namespace WeaponCore.Support
         internal bool ScanBlockGroupSettings;
         internal bool Registered;
         internal bool MarkedForClose;
+        internal bool Closed;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
@@ -171,7 +172,7 @@ namespace WeaponCore.Support
         {
             MyGrid = grid;
             MyGrid.Flags |= (EntityFlags)(1 << 31);
-
+            Closed = false;
             Session = session;
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -11,7 +12,6 @@ using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore.Platform
 {
-
     public partial class Weapon
     {
         internal int NextMuzzle;
@@ -96,7 +96,8 @@ namespace WeaponCore.Platform
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
         internal WeaponAmmoTypes ActiveAmmoDef;
-        
+        internal ParallelRayCallBack RayCallBack;
+
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -181,6 +182,16 @@ namespace WeaponCore.Platform
         internal bool CanUseBeams;
         internal bool PauseShoot;
         internal bool LastEventCanDelay;
+
+        public enum ManualShootActionState
+        {
+            ShootOn,
+            ShootOff,
+            ShootOnce,
+            ShootClick,
+        }
+
+
         internal bool ShotReady
         {
             get
@@ -219,36 +230,6 @@ namespace WeaponCore.Platform
 
                 return true;
             }
-        }
-
-        public enum ManualShootActionState
-        {
-            ShootOn,
-            ShootOff,
-            ShootOnce,
-            ShootClick,
-        }
-
-        public class Muzzle
-        {
-            public Muzzle(int id, Session session)
-            {
-                MuzzleId = id;
-                UniqueId = session.UniqueMuzzleId;
-                session.VoxelCaches.Add(UniqueId, new VoxelCache());
-            }
-
-            public Vector3D Position;
-            public Vector3D Direction;
-            public Vector3D DeviatedDir;
-            public uint LastUpdateTick;
-            public uint LastAv1Tick;
-            public uint LastAv2Tick;
-            public int MuzzleId;
-            public int UniqueId;
-            public bool Av1Looping;
-            public bool Av2Looping;
-
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
@@ -365,6 +346,7 @@ namespace WeaponCore.Platform
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
+            RayCallBack = new ParallelRayCallBack(this);
             TrackProjectiles = System.TrackProjectile;
         }
     }

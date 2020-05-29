@@ -63,15 +63,15 @@ namespace WeaponCore.Projectiles
             if (ShrapnelToSpawn.Count > 0)
                 SpawnFragments();
             Session.StallReporter.End();
-
-            Session.StallReporter.Start("CheckHits", 17);
-            if (ActiveProjetiles.Count > 0)
-                CheckHits();
-            Session.StallReporter.End();
         }
 
         internal void Stage2() // Methods highly inlined due to keen's mod profiler
         {
+            Session.StallReporter.Start("CheckHits", 17);
+            if (ActiveProjetiles.Count > 0)
+                CheckHits();
+            Session.StallReporter.End();
+
             Session.StallReporter.Start("ConfirmHit", 17);
             ConfirmHit();
             Session.StallReporter.End();

@@ -17,6 +17,12 @@ namespace WeaponCore
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
+
+        internal void Clean()
+        {
+            Targeting = null;
+            MyCubeBocks.ClearImmediate();
+        }
     }
 
     internal struct DeferedTypeCleaning
