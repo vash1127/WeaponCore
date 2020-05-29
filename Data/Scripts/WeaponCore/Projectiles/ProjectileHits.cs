@@ -43,7 +43,6 @@ namespace WeaponCore.Projectiles
                 var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
                 if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
 
-
                 var character = ent as IMyCharacter;
                 if (p.Info.EwarActive && character != null && !genericFields) continue;
 

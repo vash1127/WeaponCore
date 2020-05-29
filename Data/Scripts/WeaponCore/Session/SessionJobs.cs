@@ -49,8 +49,11 @@ namespace WeaponCore
                 for (int d = 0; d < DbsToUpdate.Count; d++)
                 {
                     var ai = DbsToUpdate[d];
-                    if (ai.MyGrid.MarkedForClose) 
+                    if (ai.MyGrid.MarkedForClose || ai.MarkedForClose)
+                    {
+                        Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose}");
                         continue;
+                    }
 
                     ai.TargetingInfo.Clean();
 

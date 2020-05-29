@@ -21,14 +21,14 @@ namespace WeaponCore
         private readonly Queue<List<List<Weapon>>> _weaponSubListsPool = new Queue<List<List<Weapon>>>(_initialPoolCapacity);
 
         private Session _session;
-        private Dictionary<FontType, Dictionary<char, TextureMap>> _characterMap;
-        private MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
-        private MyStringId _shadowEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontShadow");
+        private readonly MyStringId _monoEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontMono");
+        private readonly MyStringId _shadowEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontShadow");
         private MatrixD _cameraWorldMatrix;
         private Vector3D _viewPortSize = new Vector3D();
-        private List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
-        private List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
-        private List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
+        private readonly Dictionary<FontType, Dictionary<char, TextureMap>> _characterMap;
+        private readonly List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
+        private readonly List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
+        private readonly List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
         private Vector2D _currWeaponDisplayPos = new Vector2D();
         private float _aspectratio;

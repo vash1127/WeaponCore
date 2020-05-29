@@ -243,7 +243,7 @@ namespace WeaponCore.Projectiles
                 if ((int) p.State > 3)
                     continue;
 
-                if (p.Info.Ai.ProInMinCacheRange > 0 && !p.Info.Ai.AccelChecked)
+                if (p.Info.Ai.ProInMinCacheRange > 9 && !p.Info.Ai.AccelChecked)
                     p.Info.Ai.ComputeAccelSphere();
 
                 p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius && !p.Info.Ai.MarkedForClose;
