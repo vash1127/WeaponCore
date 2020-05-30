@@ -383,12 +383,8 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete) {
-                if (Session.IsClient)
-                    Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
-
+            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete) 
                 Session.GridAiPool.Return(this);
-            }
         }
 
         internal void GridForceClose()
@@ -397,9 +393,6 @@ namespace WeaponCore.Support
                 Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null} - Closed: {Closed}");
                 return;
             }
-
-            if (Session.IsClient)
-                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
 
             Session.GridAiPool.Return(this);
         }

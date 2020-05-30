@@ -120,6 +120,9 @@ namespace WeaponCore.Support
             ProjectileTicker = Session.Tick;
             Session.DelayedGridAiClean.Add(this);
             Session.DelayedGridAiClean.ApplyAdditions();
+
+            if (Session.IsClient)
+                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
         }
     }
 }
