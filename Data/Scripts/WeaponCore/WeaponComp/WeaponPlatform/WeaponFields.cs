@@ -207,28 +207,34 @@ namespace WeaponCore.Platform
         {
             get
             {
-                if (!Comp.State.Value.Online || State.Sync.Reloading || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)) || State.Sync.CurrentAmmo > 0)
-                    return false;
-
-                if (Comp.Session.IsCreative)
-                    return true;
-                
-                OutOfAmmo = State.Sync.CurrentAmmo == 0 && State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
-
-                if (OutOfAmmo)
+                try
                 {
-                    if (Comp.Ai.OutOfAmmoWeapons.Add(this) && CanHoldMultMags)
+                    if (!Comp.State.Value.Online || State.Sync.Reloading || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)) || State.Sync.CurrentAmmo > 0)
+                        return false;
+
+                    if (Comp.Session.IsCreative)
+                        return true;
+
+                    OutOfAmmo = State.Sync.CurrentAmmo == 0 && State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
+
+                    if (OutOfAmmo)
                     {
-                        EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
-                        Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
+                        if (Comp.Ai.OutOfAmmoWeapons.Add(this) && CanHoldMultMags)
+                        {
+                            EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
+                            Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
+                        }
+                        return false;
                     }
 
-                    return false;
-                }
-                else if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
-                    EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+                    if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
+                        EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
 
-                return true;
+                    return true;
+                }
+                catch (Exception ex) { Log.Line($"Exception in CanReload: {ex} - CompStateNull:{Comp.State == null} - StateNull{State?.Sync == null} - AmmoDefNull:{ActiveAmmoDef?.AmmoDef == null} TimingsNull{Timings == null} - AiNull:{Comp?.Ai == null} - SessionNull:{Comp?.Session == null} - targetNull:{Target == null}"); }
+
+                return false;
             }
         }
 

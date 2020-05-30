@@ -62,7 +62,7 @@ namespace WeaponCore
             public bool Valid;
         }
 
-        private NetResult Msg(string message, bool valid = true)
+        private NetResult Msg(string message, bool valid = false)
         {
             return new NetResult { Message = message, Valid = valid };
         }
@@ -77,6 +77,7 @@ namespace WeaponCore
                 message += $"{resultPair.Message}: {resultPair.Valid} - ";
             }
             data.ErrorPacket.Error = message;
+            Log.CleanLine($"[PacketError] {data.ErrorPacket.Error}");
             return false;
         }
 

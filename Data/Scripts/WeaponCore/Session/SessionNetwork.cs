@@ -148,7 +148,7 @@ namespace WeaponCore
                         }
                     default:
                         if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
-                        Log.Line($"Invalid Packet Type: {packetObj.Packet.PType} packet type: {packetObj.Packet.GetType()}");
+                        Log.Line($"[Bad Client Packet] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}");
                         invalidType = true;
                         packetObj.Report.PacketValid = false;
                         break;

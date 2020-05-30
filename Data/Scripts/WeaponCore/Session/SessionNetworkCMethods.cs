@@ -84,7 +84,7 @@ namespace WeaponCore
                 if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
                 {
                     if (!success)
-                        Log.Line($"Invalid Packet: {erroredPacket.PType} Entity: {erroredPacket.Packet.EntityId} Failed to reproccess, Error Cause: {erroredPacket.Error}");
+                        Log.Line($"[Bad Client Reprocess] type:{erroredPacket.PType} Entity:{erroredPacket.Packet.EntityId} Cause:{erroredPacket.Error} Size:{packetObj.PacketSize}");
 
                     ClientSideErrorPktListNew.Remove(packetObj);
                     PacketObjPool.Return(packetObj);
@@ -263,7 +263,7 @@ namespace WeaponCore
                 
                 var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
                 var cube = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
-                if (cube?.CubeGrid == null) return Error(data, Msg("Cube", cube != null), Msg("Grid"));
+                if (cube?.CubeGrid == null) return Error(data, Msg($"CubeId:{playerBlock.EntityId} - pId:{playerBlock.PlayerId}", cube != null), Msg("Grid"));
 
                 UpdateActiveControlDictionary(cube, playerBlock.PlayerId, true);
             }
@@ -531,10 +531,11 @@ namespace WeaponCore
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
-                for (int i = 0; i < focusPacket.EntityIds.Length; i++) {
-
-                    var focusTarget = MyEntities.GetEntityByIdOrDefault(focusPacket.EntityIds[i]);
-                    if (focusTarget == null) return Error(data, Msg("focusTarget"));
+                for (int i = 0; i < focusPacket.EntityIds.Length; i++)
+                {
+                    var eId = focusPacket.EntityIds[i];
+                    var focusTarget = MyEntities.GetEntityByIdOrDefault(eId);
+                    if (focusTarget == null) return Error(data, Msg($"focusTarget Id:{eId}"));
 
                     ai.Focus.Target[i] = focusTarget;
                 }
