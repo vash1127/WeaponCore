@@ -177,7 +177,7 @@ namespace WeaponCore
                         }
                     default:
                         if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
-                        Log.LineShortDate($"[Bad Client Packet] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}", "net");
+                        Log.LineShortDate($"        [BadClientPacket] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}", "net");
                         invalidType = true;
                         packetObj.Report.PacketValid = false;
                         break;
@@ -194,6 +194,8 @@ namespace WeaponCore
                 }
                 else if (packetObj.Report.PacketValid && ClientSideErrorPktListNew.Contains(packetObj))
                     ClientSideErrorPktListNew.Remove(packetObj);
+                else if (!packetObj.Report.PacketValid)
+                    PacketObjPool.Return(packetObj);
 
                 if (packetObj.Report.PacketValid) {
                     PacketObjPool.Return(packetObj);
@@ -327,10 +329,7 @@ namespace WeaponCore
             if (!packetObj.Report.PacketValid)
                 Log.LineShortDate(packetObj.ErrorPacket.Error, "net");
 
-            if (packetObj.Report.PacketValid)
-                PacketObjPool.Return(packetObj);
-
-            //return packetObj.Report.PacketValid;
+            PacketObjPool.Return(packetObj);
         }
         #endregion
 

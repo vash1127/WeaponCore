@@ -451,6 +451,7 @@ namespace WeaponCore
             else
                 return Error(data, Msg("SenderId not found"));
 
+            data.Report.PacketValid = true;
             return true;
         }
 
@@ -642,6 +643,7 @@ namespace WeaponCore
 
             SendCompSettingUpdate(comp);
             SendCompStateUpdate(comp);
+            data.Report.PacketValid = true;
             return true;
         }
 
