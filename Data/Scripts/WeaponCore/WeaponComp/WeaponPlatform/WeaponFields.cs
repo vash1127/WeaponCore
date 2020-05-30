@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -11,7 +12,6 @@ using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore.Platform
 {
-
     public partial class Weapon
     {
         internal int NextMuzzle;
@@ -26,8 +26,6 @@ namespace WeaponCore.Platform
         private readonly int _numModelBarrels;
         private int _nextVirtual;
         private uint _ticksUntilShoot;
-        private uint _subpartUpdateTick;
-        private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
         internal bool HeatLoopRunning;
@@ -96,7 +94,8 @@ namespace WeaponCore.Platform
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
         internal WeaponAmmoTypes ActiveAmmoDef;
-        
+        internal ParallelRayCallBack RayCallBack;
+
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter PreFiringEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
@@ -120,7 +119,6 @@ namespace WeaponCore.Platform
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
-        internal uint ShotExtentCount;
         internal uint LastLoadedTick;
         internal int FireCounter;
         internal int RateOfFire;
@@ -148,7 +146,6 @@ namespace WeaponCore.Platform
         internal double MaxTargetDistanceSqr;
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
-        internal double MeasureStep;
 
         internal bool TargetNonThreats;
         internal bool IsTurret;
@@ -181,6 +178,16 @@ namespace WeaponCore.Platform
         internal bool CanUseBeams;
         internal bool PauseShoot;
         internal bool LastEventCanDelay;
+
+        public enum ManualShootActionState
+        {
+            ShootOn,
+            ShootOff,
+            ShootOnce,
+            ShootClick,
+        }
+
+
         internal bool ShotReady
         {
             get
@@ -196,59 +203,35 @@ namespace WeaponCore.Platform
         {
             get
             {
-                if (!Comp.State.Value.Online || State.Sync.Reloading || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)) || State.Sync.CurrentAmmo > 0)
-                    return false;
-
-                if (Comp.Session.IsCreative)
-                    return true;
-                
-                OutOfAmmo = State.Sync.CurrentAmmo == 0 && State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
-
-                if (OutOfAmmo)
+                try
                 {
-                    if (Comp.Ai.OutOfAmmoWeapons.Add(this) && CanHoldMultMags)
+                    if (!Comp.State.Value.Online || State.Sync.Reloading || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)) || State.Sync.CurrentAmmo > 0)
+                        return false;
+
+                    if (Comp.Session.IsCreative)
+                        return true;
+
+                    OutOfAmmo = State.Sync.CurrentAmmo == 0 && State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
+
+                    if (OutOfAmmo)
                     {
-                        EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
-                        Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
+                        if (Comp.Ai.OutOfAmmoWeapons.Add(this) && CanHoldMultMags)
+                        {
+                            EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
+                            Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
+                        }
+                        return false;
                     }
 
-                    return false;
+                    if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
+                        EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+
+                    return true;
                 }
-                else if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
-                    EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+                catch (Exception ex) { Log.Line($"Exception in CanReload: {ex} - CompStateNull:{Comp.State == null} - StateNull{State?.Sync == null} - AmmoDefNull:{ActiveAmmoDef?.AmmoDef == null} TimingsNull{Timings == null} - AiNull:{Comp?.Ai == null} - SessionNull:{Comp?.Session == null} - targetNull:{Target == null}"); }
 
-                return true;
+                return false;
             }
-        }
-
-        public enum ManualShootActionState
-        {
-            ShootOn,
-            ShootOff,
-            ShootOnce,
-            ShootClick,
-        }
-
-        public class Muzzle
-        {
-            public Muzzle(int id, Session session)
-            {
-                MuzzleId = id;
-                UniqueId = session.UniqueMuzzleId;
-                session.VoxelCaches.Add(UniqueId, new VoxelCache());
-            }
-
-            public Vector3D Position;
-            public Vector3D Direction;
-            public Vector3D DeviatedDir;
-            public uint LastUpdateTick;
-            public uint LastAv1Tick;
-            public uint LastAv2Tick;
-            public int MuzzleId;
-            public int UniqueId;
-            public bool Av1Looping;
-            public bool Av2Looping;
-
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
@@ -365,6 +348,7 @@ namespace WeaponCore.Platform
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
+            RayCallBack = new ParallelRayCallBack(this);
             TrackProjectiles = System.TrackProjectile;
         }
     }

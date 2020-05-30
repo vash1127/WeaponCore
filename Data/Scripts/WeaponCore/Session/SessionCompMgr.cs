@@ -106,8 +106,8 @@ namespace WeaponCore
             for (int i = 0; i < DelayedGridAiClean.Count; i++)
             {
                 var gridAi = DelayedGridAiClean[i];
-                gridAi.GridClose(null);
-                if (!gridAi.GridInit)
+                gridAi.GridDelayedClose();
+                if (gridAi.Closed)
                     DelayedGridAiClean.Remove(gridAi);
             }
             DelayedGridAiClean.ApplyRemovals();

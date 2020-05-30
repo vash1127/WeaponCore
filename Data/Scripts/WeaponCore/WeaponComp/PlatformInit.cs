@@ -92,8 +92,7 @@ namespace WeaponCore.Platform
             if (newAi)
             {
                 var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-                for (int i = 0; i < subgrids.Count; i++)
-                {
+                for (int i = 0; i < subgrids.Count; i++) {
                     var grid = (MyCubeGrid)subgrids[i];
                     Comp.Ai.PrevSubGrids.Add(grid);
                     Comp.Ai.SubGrids.Add(grid);
@@ -198,8 +197,6 @@ namespace WeaponCore.Platform
 
                 var weapon = Weapons[i];
                 SetupUi(weapon);
-
-                
 
                 if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
                     comp.Debug = true;
@@ -577,7 +574,12 @@ namespace WeaponCore.Platform
             w.Comp.CanOverload = w.Comp.CanOverload || (w.System.Values.HardPoint.Ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
             w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
             w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
-
+            foreach (var m in w.System.Values.Assignments.MountPoints) {
+                if (m.SubtypeId == Comp.SubtypeHash.String && !string.IsNullOrEmpty(m.IconName)) {
+                    Log.Line($"custom Icon: {m.IconName}");
+                    Comp.CustomIcon = m.IconName;
+                }
+            }
         }
     }
 }

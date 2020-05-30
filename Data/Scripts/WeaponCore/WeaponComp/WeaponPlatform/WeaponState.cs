@@ -650,6 +650,12 @@ namespace WeaponCore.Platform
             RotateEmitter?.StopSound(true);
         }
 
+        internal void RayCallBackClean()
+        {
+            RayCallBack.Weapon = null;
+            RayCallBack = null;
+        }
+
         internal void WakeTargets()
         {
             LastTargetTick = Comp.Session.Tick;

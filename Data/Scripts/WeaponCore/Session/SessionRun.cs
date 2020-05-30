@@ -44,7 +44,6 @@ namespace WeaponCore
                 //
                 // Finish work from last frame
                 //
-
                 DsUtil.Start("damage");
                 if (_effectedCubes.Count > 0)
                     ApplyGridEffect();
@@ -282,7 +281,7 @@ namespace WeaponCore
                     ITask.Wait();
 
                 if (IsServer || DedicatedServer)
-                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ServerReceivedPacket);
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ProccessServerPacket);
                 else
                 {
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);

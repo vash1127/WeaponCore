@@ -62,14 +62,14 @@ namespace WeaponCore
             public bool Valid;
         }
 
-        private NetResult Msg(string message, bool valid = true)
+        private NetResult Msg(string message, bool valid = false)
         {
             return new NetResult { Message = message, Valid = valid };
         }
 
         private bool Error(PacketObj data, params NetResult[] messages)
         {
-            var message = $"[{data.Packet.PType.ToString()}] - ";
+            var message = $"[{data.Packet.PType.ToString()} - PacketError] - ";
 
             for (int i = 0; i < messages.Length; i++)
             {
@@ -77,6 +77,7 @@ namespace WeaponCore
                 message += $"{resultPair.Message}: {resultPair.Valid} - ";
             }
             data.ErrorPacket.Error = message;
+            Log.LineShortDate(data.ErrorPacket.Error, "net");
             return false;
         }
 
@@ -937,17 +938,20 @@ namespace WeaponCore
                 var statsLog = length > 2 && int.TryParse(authorsFaction.PrivateInfo[2].ToString(), out AuthorSettings[2]);
                 if (!statsLog) AuthorSettings[2] = -1;
 
-                var customLog = length > 3 && int.TryParse(authorsFaction.PrivateInfo[3].ToString(), out AuthorSettings[3]);
-                if (!customLog) AuthorSettings[3] = -1;
+                var netLog = length > 3 && int.TryParse(authorsFaction.PrivateInfo[3].ToString(), out AuthorSettings[3]);
+                if (!netLog) AuthorSettings[3] = -1;
 
-                var hasLevel = length > 4 && int.TryParse(authorsFaction.PrivateInfo[4].ToString(), out AuthorSettings[4]);
-                if (!hasLevel) AuthorSettings[4] = -1;
+                var customLog = length > 4 && int.TryParse(authorsFaction.PrivateInfo[4].ToString(), out AuthorSettings[4]);
+                if (!customLog) AuthorSettings[4] = -1;
+
+                var hasLevel = length > 5 && int.TryParse(authorsFaction.PrivateInfo[5].ToString(), out AuthorSettings[5]);
+                if (!hasLevel) AuthorSettings[5] = -1;
 
 
-                if ((debugLog || perfLog || customLog || statsLog) && hasLevel)
+                if ((debugLog || perfLog || netLog || customLog || statsLog) && hasLevel)
                 {
                     AuthLogging = true;
-                    LogLevel = AuthorSettings[4];
+                    LogLevel = AuthorSettings[5];
                     return true;
                 }
 

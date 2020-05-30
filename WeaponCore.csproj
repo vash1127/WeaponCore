@@ -52,6 +52,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiConstruct.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\Enforcements.cs" />
@@ -103,6 +104,7 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\ModelSupport\PartInfo.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponState.cs" />

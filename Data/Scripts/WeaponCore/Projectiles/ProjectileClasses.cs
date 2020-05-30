@@ -501,7 +501,7 @@ namespace WeaponCore.Support
             {
                 double dist;
                 Vector3D.DistanceSquared(ref hit, ref FirstPlanetHit, out dist);
-                if (dist > 2500)
+                if (dist > 625)
                 {
                     //Log.Line("early planet reset");
                     PlanetReset = tick;
@@ -515,18 +515,12 @@ namespace WeaponCore.Support
         {
             double dist;
             Vector3D.Distance(ref PlanetSphere.Center, ref hitPos, out dist);
-            //Log.Line($"surfaceRadiusIncreased: {dist} - was: {PlanetSphere.Radius}");
             PlanetSphere = new BoundingSphereD(PlanetSphere.Center, dist);
         }
 
         internal void DebugDraw()
         {
             DsDebugDraw.DrawSphere(HitSphere, Color.Red);
-            var test = PlanetSphere;
-            test.Radius *= 1.025f;
-            DsDebugDraw.DrawSphere(test, Color.Blue);
-            //Log.Line($"{PlanetSphere.Radius} - {PlanetSphere.Contains(HitSphere.Center)} - {PlanetSphere.Contains(MissSphere.Center)}");
-            //DsDebugDraw.DrawSingleVec(PlanetSphere.Center, (float)PlanetSphere.Radius, Color.Blue);
         }
     }
 }

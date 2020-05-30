@@ -17,6 +17,12 @@ namespace WeaponCore
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
+
+        internal void Clean()
+        {
+            Targeting = null;
+            MyCubeBocks.ClearImmediate();
+        }
     }
 
     internal struct DeferedTypeCleaning
@@ -33,8 +39,6 @@ namespace WeaponCore
             if (DbTask.IsComplete && DbTask.valid && DbTask.Exceptions != null)
                 TaskHasErrors(ref DbTask, "DbTask");
 
-            DbCallBackComplete = false;
-
             DbTask = MyAPIGateway.Parallel.StartBackground(ProcessDbs, ProcessDbsCallBack);
         }
 
@@ -50,33 +54,37 @@ namespace WeaponCore
                 DsUtil.Start("db");
                 for (int d = 0; d < DbsToUpdate.Count; d++)
                 {
-                    var db = DbsToUpdate[d];
-
-                    db.TargetingInfo.Clean();
-
-                    if (db.MyPlanetTmp != null)
-                        db.MyPlanetInfo();
-
-                    foreach (var sub in db.PrevSubGrids) db.SubGrids.Add(sub);
-                    if (db.SubGridsChanged) db.SubGridChanges();
-
-                    for (int i = 0; i < db.SortedTargets.Count; i++)
+                    var ai = DbsToUpdate[d];
+                    if (ai.MyGrid.MarkedForClose || ai.MarkedForClose)
                     {
-                        var tInfo = db.SortedTargets[i];
+                        Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose}");
+                        continue;
+                    }
+
+                    ai.TargetingInfo.Clean();
+
+                    if (ai.MyPlanetTmp != null)
+                        ai.MyPlanetInfo();
+
+                    foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
+                    if (ai.SubGridsChanged) ai.SubGridChanges();
+
+                    for (int i = 0; i < ai.SortedTargets.Count; i++) {
+                        var tInfo = ai.SortedTargets[i];
                         tInfo.Target = null;
                         tInfo.MyAi = null;
                         tInfo.MyGrid = null;
                         tInfo.TargetAi = null;
-                        TargetInfoPool.Return(db.SortedTargets[i]);
+                        TargetInfoPool.Return(tInfo);
                     }
-                    db.SortedTargets.Clear();
-                    db.Targets.Clear();
+                    ai.SortedTargets.Clear();
+                    ai.Targets.Clear();
 
-                    var newEntCnt = db.NewEntities.Count;
-                    db.SortedTargets.Capacity = newEntCnt;
+                    var newEntCnt = ai.NewEntities.Count;
+                    ai.SortedTargets.Capacity = newEntCnt;
                     for (int i = 0; i < newEntCnt; i++)
                     {
-                        var detectInfo = db.NewEntities[i];
+                        var detectInfo = ai.NewEntities[i];
                         var ent = detectInfo.Parent;
                         if (ent.Physics == null) continue;
 
@@ -87,72 +95,72 @@ namespace WeaponCore
                             GridTargetingAIs.TryGetValue(grid, out targetAi);
 
                         var targetInfo = TargetInfoPool.Get();
-                        targetInfo.Init(ref detectInfo, db.MyGrid, db, targetAi);
+                        targetInfo.Init(ref detectInfo, ai.MyGrid, ai, targetAi);
 
-                        db.SortedTargets.Add(targetInfo);
-                        db.Targets[ent] = targetInfo;
+                        ai.SortedTargets.Add(targetInfo);
+                        ai.Targets[ent] = targetInfo;
 
-                        var checkFocus = db.Focus.HasFocus && targetInfo.Target == db.Focus.Target[0] || targetInfo.Target == db.Focus.Target[1];
+                        var checkFocus = ai.Focus.HasFocus && targetInfo.Target == ai.Focus.Target[0] || targetInfo.Target == ai.Focus.Target[1];
 
-                        if (db.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
-                            db.RamProximity = true;
+                        if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
+                            ai.RamProximity = true;
 
-                        if (targetInfo.DistSqr < db.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
+                        if (targetInfo.DistSqr < ai.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
                         {
-                            if (checkFocus || targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies) {
-                                db.TargetingInfo.ThreatInRange = true;
-                                db.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
+                            if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                ai.TargetingInfo.ThreatInRange = true;
+                                ai.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
                             }
 
-                            if (checkFocus || targetInfo.DistSqr < db.TargetingInfo.OthertRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies) {
-                                db.TargetingInfo.OtherInRange = true;
-                                db.TargetingInfo.OthertRangeSqr = targetInfo.DistSqr;
+                            if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.OthertRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                ai.TargetingInfo.OtherInRange = true;
+                                ai.TargetingInfo.OthertRangeSqr = targetInfo.DistSqr;
                             }
                         }
                     }
 
-                    db.NewEntities.Clear();
-                    db.SortedTargets.Sort(TargetCompare);
-                    db.TargetAis.Clear();
-                    db.TargetAis.AddRange(db.TargetAisTmp);
-                    db.TargetAisTmp.Clear();
+                    ai.NewEntities.Clear();
+                    ai.SortedTargets.Sort(TargetCompare);
+                    ai.TargetAis.Clear();
+                    ai.TargetAis.AddRange(ai.TargetAisTmp);
+                    ai.TargetAisTmp.Clear();
 
-                    db.Obstructions.Clear();
-                    db.Obstructions.AddRange(db.ObstructionsTmp);
-                    db.ObstructionsTmp.Clear();
-                    
-                    db.MyShield = null;
-                    db.ShieldNear = false;
-                    db.FriendlyShieldNear = false;
-                    if (db.NearByShieldsTmp.Count > 0)
-                        db.NearByShield();
+                    ai.Obstructions.Clear();
+                    ai.Obstructions.AddRange(ai.ObstructionsTmp);
+                    ai.ObstructionsTmp.Clear();
 
-                    if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
-                    db.StaticsInRange.Clear();
-                    db.StaticsInRange.AddRange(db.StaticsInRangeTmp);
-                    db.StaticsInRangeTmp.Clear();
-                    db.StaticEntitiesInRange = db.StaticsInRange.Count > 0;
-                    db.MyStaticInfo();
+                    ai.MyShield = null;
+                    ai.ShieldNear = false;
+                    ai.FriendlyShieldNear = false;
+                    if (ai.NearByShieldsTmp.Count > 0)
+                        ai.NearByShield();
 
-                    db.DbReady = db.SortedTargets.Count > 0 || db.TargetAis.Count > 0 || Tick - db.LiveProjectileTick < 3600 || db.LiveProjectile.Count > 0 || db.ControllingPlayers.Keys.Count > 0 || db.FirstRun;
-                    db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
-                    db.BlockCount = db.MyGrid.BlocksCount;
+                    if (ai.PlanetSurfaceInRange) ai.StaticsInRangeTmp.Add(ai.MyPlanet);
+                    ai.StaticsInRange.Clear();
+                    ai.StaticsInRange.AddRange(ai.StaticsInRangeTmp);
+                    ai.StaticsInRangeTmp.Clear();
+                    ai.StaticEntitiesInRange = ai.StaticsInRange.Count > 0;
+                    ai.MyStaticInfo();
 
-                    if (!db.TargetingInfo.ThreatInRange && db.LiveProjectile.Count > 0)
+                    ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.ControllingPlayers.Keys.Count > 0 || ai.FirstRun;
+                    ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
+                    ai.BlockCount = ai.MyGrid.BlocksCount;
+                    ai.NearByEntities = ai.NearByEntitiesTmp;
+
+                    if (!ai.TargetingInfo.ThreatInRange && ai.LiveProjectile.Count > 0)
                     {
-                        db.TargetingInfo.ThreatInRange = true;
-                        db.TargetingInfo.ThreatRangeSqr = 0;
+                        ai.TargetingInfo.ThreatInRange = true;
+                        ai.TargetingInfo.ThreatRangeSqr = 0;
                     }
 
-                    if (db.ScanBlockGroups) db.Construct.UpdateConstruct(UpdateType.BlockScan);
-                    if (db.ScanBlockGroupSettings) db.Construct.UpdateConstruct(UpdateType.Overrides);
+                    if (ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
+                    if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
 
-                    db.FirstRun = false;
+                    ai.FirstRun = false;
                 }
                 DbsToUpdate.Clear();
 
                 DsUtil.Complete("db", true);
-                DbCallBackComplete = true;
             }
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
         }

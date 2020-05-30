@@ -23,7 +23,7 @@ namespace WeaponCore
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
 
             if (IsServer || DedicatedServer)
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ProccessServerPacket);
             else
             {
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
@@ -67,6 +67,7 @@ namespace WeaponCore
             {
                 //Client enforcement request
             }
+            LocalVersion = ModContext.ModId == "WeaponCore";
         }
 
         internal void Init()
@@ -76,7 +77,7 @@ namespace WeaponCore
             Log.Init("debug", this);
             Log.Init("perf", this, false);
             Log.Init("stats", this, false);
-
+            Log.Init("net", this, false);
 
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;
@@ -155,9 +156,11 @@ namespace WeaponCore
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];
                 var hasTurret = false;
                 var firstWeapon = true;
+                string modPath = null;
+                foreach (var wepDef in weapons)
+                {
 
-                foreach (var wepDef in weapons) {
-
+                    modPath = wepDef.ModPath;
                     if (wepDef.HardPoint.Ai.TurretAttached)
                         hasTurret = true;
 
@@ -247,7 +250,7 @@ namespace WeaponCore
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-                WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
+                WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons, modPath);
             }
 
 

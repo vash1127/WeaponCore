@@ -773,6 +773,11 @@ namespace WeaponCore.Support
             //FinalScore
             var effectiveModifier = ((effectiveRangeScore * inaccuracyScore) * trackingScore);
 
+            // static weapons get a tracking score of 50%
+            if (MyUtils.IsZero(Math.Abs(Math.Abs(s.MinElevation) + (float)Math.Abs(s.MaxElevation))) || Math.Abs(s.MinAzimuth) + Math.Abs(s.MaxAzimuth) == 0) 
+                trackingScore = 0.5f;
+
+
             //Logs for effective dps
             if (mexLogLevel >= 2) Log.Line($"newInaccuracyRadius = {inaccuracyRadius}");
             if (mexLogLevel >= 2) Log.Line($"DeviationAngle = { wDef.HardPoint.DeviateShotAngle}");
@@ -1079,14 +1084,16 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
+        public readonly string ModPath;
         public readonly Session Session;
 
-        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList, string modPath)
         {
             Session = session;
             var map = tDef.Value;
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
+            ModPath = modPath;
             var muzzlePartNames = new MyStringHash[numOfParts];
             var weaponId = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);

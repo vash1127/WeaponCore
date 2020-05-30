@@ -14,11 +14,9 @@ namespace WeaponCore
                 if (force || Tick - clean.RequestTick > 120)
                 {
                     foreach (var item in clean.Collection)
-                    {
-                        item.Value.ClearImmediate();
                         ConcurrentListPool.Return(item.Value);
-                    }
                     clean.Collection.Clear();
+
                     BlockTypePool.Return(clean.Collection);
 
                     DeferedTypeCleaning removed;
@@ -113,7 +111,6 @@ namespace WeaponCore
             {
                 foreach (var map in gridToMap.Value)
                 {
-                    map.Value.ClearImmediate();
                     ConcurrentListPool.Return(map.Value);
                 }
                 gridToMap.Value.Clear();
@@ -125,7 +122,6 @@ namespace WeaponCore
                 playerGrids.Value.Clear();
 
             PlayerEntityIdInRange.Clear();
-
             DirtyGrids.Clear();
 
             DsUtil.Purge();
@@ -133,7 +129,6 @@ namespace WeaponCore
 
             _effectActive = false;
             ShootingWeapons.Clear();
-            AcquireTargets.Clear();
             RemoveEffectsFromGrid.Clear();
             WeaponToPullAmmo.Clear();
             WeaponToPullAmmoIndexer.Clear();
@@ -145,6 +140,10 @@ namespace WeaponCore
             ChargingWeapons.Clear();
             WeaponsToRemoveAmmo.Clear();
             Hits.Clear();
+            Emitters.Clear();
+            SoundPairs.Clear();
+            GridToMasterAi.Clear();
+            Players.Clear();
 
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
@@ -163,27 +162,25 @@ namespace WeaponCore
             _turretDefinitions.Clear();
 
             foreach (var comp in CompsToStart)
-            {
                 if (comp?.Platform != null)
-                    PlatFormPool.Return(comp.Platform);
-            }
+                    CloseComps(comp.MyCube);
 
             foreach (var readd in CompReAdds)
             {
-                if (readd.Comp?.Platform != null)
-                    PlatFormPool.Return(readd.Comp.Platform);
+                if (!readd.Ai.Closed) readd.Ai.GridForceClose();
+                if (readd.Comp?.Platform != null) {
+                    CloseComps(readd.Comp.MyCube);
+                }
             }
 
-            foreach (var comp in CompsDelayed)
-            {
-                if (comp?.Platform != null) 
-                    PlatFormPool.Return(comp.Platform);
+            foreach (var comp in CompsDelayed) {
+                if (comp?.Platform != null)
+                    CloseComps(comp.MyCube);
             }
 
-            foreach (var gridAi in DelayedGridAiClean)
-            {
-                gridAi.ProjectileTicker = 0;
-                gridAi.GridClose(null);
+            foreach (var gridAi in DelayedGridAiClean) {
+                if (!gridAi.Closed)
+                    gridAi.GridForceClose();
             }
 
             PlatFormPool.Clean();
@@ -193,15 +190,14 @@ namespace WeaponCore
             CompsDelayed.Clear();
             CompReAdds.Clear();
             GridAiPool.Clean();
-
+            
             Av.RipMap.Clear();
             foreach (var mess in Av.KeensBrokenParticles)
                 Av.KeenMessPool.Return(mess);
             
             Av.KeensBrokenParticles.Clear();
 
-            foreach (var av in Av.AvShots)
-            {
+            foreach (var av in Av.AvShots) {
                 av.GlowSteps.Clear();
                 Av.AvShotPool.Return(av);
             }
@@ -222,12 +218,16 @@ namespace WeaponCore
 
             GroupInfoPool.Clean();
             TargetInfoPool.Clean();
+            PacketObjPool.Clean();
 
+            InventoryMoveRequestPool.Clean();
             WeaponCoreBlockDefs.Clear();
             VanillaIds.Clear();
             VanillaCoreIds.Clear();
             WeaponCoreFixedBlockDefs.Clear();
             WeaponCoreTurretBlockDefs.Clear();
+            VoxelCaches.Clear();
+            ArmorCubes.Clear();
 
             foreach (var p in Projectiles.ProjectilePool)
                 p.Info?.AvShot?.AmmoEffect?.Stop();
@@ -242,6 +242,7 @@ namespace WeaponCore
 
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();
+            GridToMasterAi.Clear();
 
             DsUtil = null;
             DsUtil2 = null;

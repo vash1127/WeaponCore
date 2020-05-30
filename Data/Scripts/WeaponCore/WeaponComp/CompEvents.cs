@@ -16,6 +16,8 @@ namespace WeaponCore.Support
         {
             if (register)
             {
+                if (Registered)
+                    Log.Line($"Comp RegisterEvents error");
                 //TODO change this
                 Registered = true;
                 TerminalBlock.AppendingCustomInfo += AppendingCustomInfo;
@@ -29,6 +31,9 @@ namespace WeaponCore.Support
             }
             else
             {
+                if (!Registered)
+                    Log.Line($"Comp UnRegisterEvents error");
+
                 if (Registered)
                 {
                     //TODO change this

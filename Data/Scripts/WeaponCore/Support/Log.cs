@@ -18,10 +18,62 @@ namespace WeaponCore.Support
         {
             internal TextWriter TextWriter = null;
             internal Session Session;
+            internal uint CheckTick;
+            internal uint StartTick;
+            internal uint Messages;
+            internal bool Supress;
+
+            internal bool Paused()
+            {
+                if (Session.Tick < 240)
+                    return false;
+
+                var checkInTime = Session.Tick - CheckTick > 119;
+                var threshold = 122;
+
+                if (!Supress && checkInTime && Messages > threshold || !Supress && Messages > threshold * 3)
+                    return Pause();
+
+                if (Supress && StartTick - Session.Tick > 0)
+                    return true;
+
+                ++Messages;
+
+                if (Supress)
+                    UnPause();
+                else if (checkInTime) {
+                    CheckTick = Session.Tick;
+                    Messages = 0;
+                }
+
+                return false;
+            }
+
+            internal bool Pause()
+            {
+                Supress = true;
+                StartTick = Session.Tick + 7200;
+                var message = $"{DateTime.Now:HH-mm-ss-fff} - " + "Debug flooding detected, supressing logs for two minutes.  Please report the first 500 lines of this file";
+                TextWriter.WriteLine(message);
+                TextWriter.Flush();
+                return true;
+            }
+
+            internal void UnPause()
+            {
+                Supress = false;
+                Messages = 0;
+                CheckTick = Session.Tick;
+            }
+
             internal void Clean()
             {
+                CheckTick = Session.Tick;
+                StartTick = CheckTick;
                 TextWriter = null;
                 Session = null;
+                Supress = false;
+                Messages = 0;
             }
         }
 
@@ -69,13 +121,30 @@ namespace WeaponCore.Support
             MyAPIGateway.Utilities.DeleteFileInLocalStorage(oldName, anyObjectInYourMod);
         }
 
-        public static void NetLogger(Session session, string message)
+        public static void NetLogger(Session session, string message, string name)
         {
-            var test = Encoding.UTF8.GetBytes(message);
-            foreach (var a in session.ConnectedAuthors)
-            {
-                MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.AuthorPacketId, test, a.Value, true);
+            switch (name) {
+                case "perf":
+                    message = "1" + message;
+                    break;
+                case "stats":
+                    message = "2" + message;
+                    break;
+                case "net":
+                    message = "3" + message;
+                    break;
+                case "custom":
+                    message = "4" + message;
+                    break;
+                default:
+                    message = "0" + message;
+                    break;
             }
+
+            var test = Encoding.UTF8.GetBytes(message);
+
+            foreach (var a in session.ConnectedAuthors)
+                MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.AuthorPacketId, test, a.Value, true);
         }
 
         public static void Line(string text, string instanceName = null)
@@ -84,15 +153,18 @@ namespace WeaponCore.Support
             {
                 var name  = instanceName ?? _defaultInstance;
                 var instance = _instances[name];
-                if (instance.TextWriter != null)
-                {
+                if (instance.TextWriter != null) {
+
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
+                        return;
+
                     var message = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - " + text;
                     instance.TextWriter.WriteLine(message);
                     instance.TextWriter.Flush();
                     var set = instance.Session.AuthorSettings;
-                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0 || name == "net" && set[3] >= 0;
                     if (netEnabled)
-                        NetLogger(instance.Session, "[R-LOG] " + message);
+                        NetLogger(instance.Session, "[R-LOG] " + message, name);
                 }
             }
             catch (Exception e)
@@ -106,16 +178,19 @@ namespace WeaponCore.Support
             {
                 var name = instanceName ?? _defaultInstance;
                 var instance = _instances[name];
-                if (instance.TextWriter != null)
-                {
+                if (instance.TextWriter != null) {
+
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
+                        return;
+
                     var message = $"{DateTime.Now:HH-mm-ss-fff} - " + text;
                     instance.TextWriter.WriteLine(message);
                     instance.TextWriter.Flush();
 
                     var set = instance.Session.AuthorSettings;
-                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0 || name == "net" && set[3] >= 0;
                     if (netEnabled)
-                        NetLogger(instance.Session, "[R-LOG] " + message);
+                        NetLogger(instance.Session, "[R-LOG] " + message, name);
                 }
             }
             catch (Exception e)
@@ -126,9 +201,9 @@ namespace WeaponCore.Support
         public static void NetLog(string text, Session session, int logLevel)
         {
             var set = session.AuthorSettings;
-            var netEnabled = session.AuthLogging && set[3] >= 0 && logLevel >= set[4];
+            var netEnabled = session.AuthLogging && set[4] >= 0 && logLevel >= set[5];
             if (netEnabled)
-                NetLogger(session, "[R-LOG] " + text);
+                NetLogger(session, "[R-LOG] " + text, string.Empty);
         }
 
         public static void Chars(string text, string instanceName = null)
@@ -137,15 +212,18 @@ namespace WeaponCore.Support
             {
                 var name = instanceName ?? _defaultInstance;
                 var instance = _instances[name];
-                if (instance.TextWriter != null)
-                {
+                if (instance.TextWriter != null) {
+
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
+                        return;
+
                     instance.TextWriter.Write(text);
                     instance.TextWriter.Flush();
 
                     var set = instance.Session.AuthorSettings;
-                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0 || name == "net" && set[3] >= 0;
                     if (netEnabled)
-                        NetLogger(instance.Session, "[R-LOG] " + text);
+                        NetLogger(instance.Session, "[R-LOG] " + text, name);
                 }
             }
             catch (Exception e)
@@ -159,15 +237,18 @@ namespace WeaponCore.Support
             {
                 var name = instanceName ?? _defaultInstance;
                 var instance = _instances[name];
-                if (instance.TextWriter != null)
-                {
+                if (instance.TextWriter != null) {
+
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
+                        return;
+
                     instance.TextWriter.WriteLine(text);
                     instance.TextWriter.Flush();
 
                     var set = instance.Session.AuthorSettings;
-                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0;
+                    var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0 || name == "net" && set[3] >= 0;
                     if (netEnabled)
-                        NetLogger(instance.Session, "[R-LOG] " + text);
+                        NetLogger(instance.Session, "[R-LOG] " + text, name);
                 }
             }
             catch (Exception e)

@@ -29,6 +29,7 @@ namespace WeaponCore.Support
                 [ProtoMember(4)] internal string AzimuthPartId;
                 [ProtoMember(5)] internal string ElevationPartId;
                 [ProtoMember(6)] internal float DurabilityMod;
+                [ProtoMember(7)] internal string IconName;
             }
         }
 

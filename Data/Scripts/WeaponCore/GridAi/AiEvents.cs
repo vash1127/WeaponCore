@@ -14,17 +14,26 @@ namespace WeaponCore.Support
         internal void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
         {
             if (grid == null) grid = MyGrid;
-            if (register)
-            {
+
+            if (register) {
+
+                if (Registered)
+                    Log.Line($"Ai RegisterMyGridEvents error");
+
                 Registered = true;
+                MarkedForClose = false;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnClose += GridClose;
             }
-            else
-            {
-                if (Registered)
-                {
+            else {
+
+                if (!Registered)
+                    Log.Line($"Ai UnRegisterMyGridEvents error");
+                MarkedForClose = true;
+                if (Registered) {
+
+
                     Registered = false;
                     grid.OnFatBlockAdded -= FatBlockAdded;
                     grid.OnFatBlockRemoved -= FatBlockRemoved;
@@ -102,18 +111,18 @@ namespace WeaponCore.Support
 
         internal void GridClose(MyEntity myEntity)
         {
-            RegisterMyGridEvents(false);
-            if (Session.Tick - ProjectileTicker > 61)
+            if (Session == null || MyGrid == null || Closed)
             {
-                Session.GridAiPool.Return(this);
-                if (Session.IsClient)
-                    Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
+                Log.Line($"[GridClose] Session: {Session != null} - MyGrid:{MyGrid != null} - Closed:{Closed} - myEntity:{myEntity != null}");
+                return;
             }
-            else if (myEntity != null)
-            {
-                Session.DelayedGridAiClean.Add(this);
-                Session.DelayedGridAiClean.ApplyAdditions();
-            }
+
+            ProjectileTicker = Session.Tick;
+            Session.DelayedGridAiClean.Add(this);
+            Session.DelayedGridAiClean.ApplyAdditions();
+
+            if (Session.IsClient)
+                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientEntityClosed);
         }
     }
 }

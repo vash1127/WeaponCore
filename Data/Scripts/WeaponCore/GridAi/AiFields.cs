@@ -27,6 +27,7 @@ namespace WeaponCore.Support
         //internal readonly FakeTarget DummyTarget = new FakeTarget();
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
+        internal readonly Constructs Construct = new Constructs();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -61,6 +62,8 @@ namespace WeaponCore.Support
         internal readonly List<GridAi> TargetAis = new List<GridAi>(32);
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
+        internal readonly List<MyEntity> NearByEntityCache = new List<MyEntity>();
+
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
@@ -70,9 +73,7 @@ namespace WeaponCore.Support
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
-        internal Constructs Construct = new Constructs();
         internal MyCubeBlock PowerBlock;
-        //internal GridAIValues AIValues = new GridAIValues();
         internal MyResourceDistributorComponent PowerDistributor;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal uint CreatedTick;
@@ -86,6 +87,7 @@ namespace WeaponCore.Support
         internal Vector3D PlanetClosestPoint;
         internal Vector3D ClosestPlanetCenter;
         internal Vector3D NaturalGravity;
+        internal BoundingSphereD NearByEntitySphere;
         internal BoundingSphereD GridVolume;
         internal BoundingSphereD ScanVolume;
         internal bool PlanetSurfaceInRange;
@@ -94,6 +96,8 @@ namespace WeaponCore.Support
         internal bool ScanBlockGroups = true;
         internal bool ScanBlockGroupSettings;
         internal bool Registered;
+        internal bool MarkedForClose;
+        internal bool Closed;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
@@ -108,6 +112,10 @@ namespace WeaponCore.Support
         internal int BlockCount;
         internal int NumSyncWeapons;
         internal int Version;
+        internal int MyProjectiles;
+        internal int NearByEntities;
+        internal int NearByEntitiesTmp;
+        internal int ProInMinCacheRange;
         internal long MyOwner;
         internal bool PointDefense;
         internal bool SupressMouseShoot;
@@ -131,6 +139,7 @@ namespace WeaponCore.Support
         internal bool Concealed;
         internal bool RamProtection = true;
         internal bool RamProximity;
+        internal bool AccelChecked;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double ClosestStaticSqr = double.MaxValue;
@@ -163,7 +172,7 @@ namespace WeaponCore.Support
         {
             MyGrid = grid;
             MyGrid.Flags |= (EntityFlags)(1 << 31);
-
+            Closed = false;
             Session = session;
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using VRage.Audio;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -189,6 +190,12 @@ namespace WeaponCore.Support
     {
         public Weapon Weapon;
         public List<InventoryMags> Inventories = new List<InventoryMags>();
+
+        public void Clean()
+        {
+            Weapon = null;
+            Inventories.Clear();
+        }
     }
 
     public struct InventoryMags

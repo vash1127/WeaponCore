@@ -5,7 +5,6 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
 using Sandbox.Game.Entities;
-using VRage.Game.Entity;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
@@ -23,13 +22,15 @@ namespace WeaponCore
                 ///
                 /// GridAi update section
                 ///
-                gridAi.Concealed = ((uint) gridAi.MyGrid.Flags & 4) > 0;
+                gridAi.MyProjectiles = 0;
+                gridAi.ProInMinCacheRange = 0;
+                gridAi.AccelChecked = false;
+                gridAi.Concealed = ((uint)gridAi.MyGrid.Flags & 4) > 0;
+
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;
 
-                var readyToUpdate = Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete;
-
-                if (readyToUpdate && gridAi.UpdateOwner())
+                if (DbTask.IsComplete && Tick - gridAi.TargetsUpdatedTick > 100)
                     gridAi.RequestDbUpdate();
 
                 if (gridAi.DeadProjectiles.Count > 0) {
@@ -51,6 +52,7 @@ namespace WeaponCore
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
                     var comp = gridAi.Weapons[i];
+
                     if (comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 
@@ -87,8 +89,7 @@ namespace WeaponCore
                         leftClick = inputState.MouseButtonLeft;// && currentControl;
                         rightClick = inputState.MouseButtonRight;// && currentControl;
                     }
-                    else
-                        inputState = PlayerMouseStates[-1];
+                    else inputState = PlayerMouseStates[-1];
                     ///
                     /// Weapon update section
                     ///
@@ -124,12 +125,14 @@ namespace WeaponCore
                         ///
                         ///Check Reload
                         ///                        
+                        
                         if (!w.OutOfAmmo && !w.State.Sync.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
                             w.StartReload();
 
                         ///
                         /// Update Weapon Hud Info
                         /// 
+
                         if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && gridAi.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
@@ -267,7 +270,7 @@ namespace WeaponCore
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
             }
 
-            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete)
+            if (DbTask.IsComplete && DbsToUpdate.Count > 0)
                 UpdateDbsInQueue();
         }
 
