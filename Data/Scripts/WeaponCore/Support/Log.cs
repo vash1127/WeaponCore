@@ -155,7 +155,7 @@ namespace WeaponCore.Support
                 var instance = _instances[name];
                 if (instance.TextWriter != null) {
 
-                    if (name == _defaultInstance && instance.Paused())
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
                         return;
 
                     var message = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - " + text;
@@ -180,7 +180,7 @@ namespace WeaponCore.Support
                 var instance = _instances[name];
                 if (instance.TextWriter != null) {
 
-                    if (name == _defaultInstance && instance.Paused())
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
                         return;
 
                     var message = $"{DateTime.Now:HH-mm-ss-fff} - " + text;
@@ -214,7 +214,7 @@ namespace WeaponCore.Support
                 var instance = _instances[name];
                 if (instance.TextWriter != null) {
 
-                    if (name == _defaultInstance && instance.Paused())
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
                         return;
 
                     instance.TextWriter.Write(text);
@@ -238,8 +238,8 @@ namespace WeaponCore.Support
                 var name = instanceName ?? _defaultInstance;
                 var instance = _instances[name];
                 if (instance.TextWriter != null) {
-                    
-                    if (name == _defaultInstance && instance.Paused())
+
+                    if (name == _defaultInstance && !instance.Session.LocalVersion && instance.Paused())
                         return;
 
                     instance.TextWriter.WriteLine(text);

@@ -67,6 +67,7 @@ namespace WeaponCore
             {
                 //Client enforcement request
             }
+            LocalVersion = ModContext.ModId == "WeaponCore";
         }
 
         internal void Init()

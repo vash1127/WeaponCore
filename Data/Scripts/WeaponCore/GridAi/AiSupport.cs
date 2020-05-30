@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -286,16 +287,14 @@ namespace WeaponCore.Support
 
                     using (powerBlock.Pin()) {
                         using (powerBlock.CubeGrid.Pin()) {
-                            try
-                            {
+                            try {
                                 if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null  || powerBlock.CubeGrid.MarkedForClose) {
                                     Log.Line($"skipping closed power block");
                                     continue;
                                 }
 
-                                try
-                                {
-                                    if (PowerBlock != powerBlock) {
+                                try {
+                                    if (PowerBlock != powerBlock || PowerDistributor?.SourcesEnabled == MyMultipleEnabledEnum.NoObjects) {
                                         PowerBlock = powerBlock;
                                         FakeShipController.SlimBlock = powerBlock.SlimBlock;
                                         PowerDistributor = FakeShipController.GridResourceDistributor;
@@ -309,8 +308,7 @@ namespace WeaponCore.Support
                                     return;
                                 }
 
-                                try
-                                {
+                                try {
                                     GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
                                     GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
                                     break;

@@ -241,7 +241,6 @@ namespace WeaponCore
         
         internal ulong MultiplayerId;
         internal long PlayerId;
-        internal long LastTerminalId;
 
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
@@ -252,7 +251,6 @@ namespace WeaponCore
         internal float UiBkOpacity;
         internal float UiOpacity;
         internal bool InMenu;
-        internal bool ScanBlockGroups;
         internal bool GunnerBlackList;
         internal bool MpActive;
         internal bool IsServer;
@@ -280,6 +278,7 @@ namespace WeaponCore
         internal bool HandlesInput;
         internal bool AuthLogging;
         internal bool DamageHandler;
+        internal bool LocalVersion;
 
         internal enum AnimationType
         {

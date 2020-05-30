@@ -44,7 +44,6 @@ namespace WeaponCore
                 //
                 // Finish work from last frame
                 //
-
                 DsUtil.Start("damage");
                 if (_effectedCubes.Count > 0)
                     ApplyGridEffect();

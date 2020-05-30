@@ -26,8 +26,6 @@ namespace WeaponCore.Platform
         private readonly int _numModelBarrels;
         private int _nextVirtual;
         private uint _ticksUntilShoot;
-        private uint _subpartUpdateTick;
-        private uint _prefiredTick;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
         internal bool HeatLoopRunning;
@@ -121,7 +119,6 @@ namespace WeaponCore.Platform
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
-        internal uint ShotExtentCount;
         internal uint LastLoadedTick;
         internal int FireCounter;
         internal int RateOfFire;
@@ -149,7 +146,6 @@ namespace WeaponCore.Platform
         internal double MaxTargetDistanceSqr;
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
-        internal double MeasureStep;
 
         internal bool TargetNonThreats;
         internal bool IsTurret;

@@ -26,7 +26,7 @@ namespace WeaponCore
                 gridAi.ProInMinCacheRange = 0;
                 gridAi.AccelChecked = false;
                 gridAi.Concealed = ((uint)gridAi.MyGrid.Flags & 4) > 0;
-                
+
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;
 
@@ -52,6 +52,7 @@ namespace WeaponCore
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
                     var comp = gridAi.Weapons[i];
+
                     if (comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 
