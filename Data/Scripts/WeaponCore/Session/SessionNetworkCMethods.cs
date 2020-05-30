@@ -262,7 +262,6 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var csPacket = (CurrentGridPlayersPacket)packet;
-
             for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++) {
                 
                 var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
