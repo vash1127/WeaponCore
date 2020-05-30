@@ -125,19 +125,19 @@ namespace WeaponCore.Support
         {
             switch (name) {
                 case "perf":
-                    message += "1" + message;
+                    message = "1" + message;
                     break;
                 case "stats":
-                    message += "2" + message;
+                    message = "2" + message;
                     break;
                 case "net":
-                    message += "3" + message;
+                    message = "3" + message;
                     break;
                 case "custom":
-                    message += "4" + message;
+                    message = "4" + message;
                     break;
                 default:
-                    message += "0" + message;
+                    message = "0" + message;
                     break;
             }
 
