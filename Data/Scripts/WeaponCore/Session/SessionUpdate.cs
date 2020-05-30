@@ -76,6 +76,9 @@ namespace WeaponCore
                             comp.Session.SendTrackReticleUpdate(comp);
                     }
 
+                    //if (Tick60 && comp.TurretBase != null)
+                        //Log.Line($"{comp.TurretBase.AIEnabled} - {comp.TurretBase.HasTarget} - {comp.TurretBase.Target} - {comp.TurretBase.EnableIdleRotation} - {comp.TurretBase.Enabled}");
+
                     comp.WasControlled = comp.UserControlled;
                     
                     var compCurPlayer = comp.State.Value.CurrentPlayerControl;
