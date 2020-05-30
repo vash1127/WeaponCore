@@ -773,6 +773,11 @@ namespace WeaponCore.Support
             //FinalScore
             var effectiveModifier = ((effectiveRangeScore * inaccuracyScore) * trackingScore);
 
+            // static weapons get a tracking score of 50%
+            if (MyUtils.IsZero(Math.Abs(Math.Abs(s.MinElevation) + (float)Math.Abs(s.MaxElevation))) || Math.Abs(s.MinAzimuth) + Math.Abs(s.MaxAzimuth) == 0) 
+                trackingScore = 0.5f;
+
+
             //Logs for effective dps
             if (mexLogLevel >= 2) Log.Line($"newInaccuracyRadius = {inaccuracyRadius}");
             if (mexLogLevel >= 2) Log.Line($"DeviationAngle = { wDef.HardPoint.DeviateShotAngle}");
