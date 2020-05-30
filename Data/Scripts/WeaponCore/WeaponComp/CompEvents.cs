@@ -2,6 +2,7 @@
 using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
@@ -24,7 +25,7 @@ namespace WeaponCore.Support
                 MyCube.OnMarkForClose += OnMarkForClose;
                 IsWorkingChanged(MyCube);
 
-                BlockInventory.ContentsChanged += OnContentsChanged;
+                BlockInventory.InventoryContentChanged += OnContentsChanged;
             }
             else
             {
@@ -39,16 +40,16 @@ namespace WeaponCore.Support
 
                     if (BlockInventory == null) Log.Line($"BlockInventory is null");
                     else
-                        BlockInventory.ContentsChanged -= OnContentsChanged;
+                        BlockInventory.InventoryContentChanged -= OnContentsChanged;
                 }
             }
         }
 
-        private void OnContentsChanged(MyInventoryBase obj)
+        private void OnContentsChanged(MyInventoryBase inv, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
             try
             {
-                if (LastInventoryChangedTick < Session.Tick && Registered)
+                if (LastInventoryChangedTick < Session.Tick && Registered && amount < 0)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
