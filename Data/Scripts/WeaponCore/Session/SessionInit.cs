@@ -23,7 +23,7 @@ namespace WeaponCore
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
 
             if (IsServer || DedicatedServer)
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ServerReceivedPacket);
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ProccessServerPacket);
             else
             {
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
@@ -76,7 +76,7 @@ namespace WeaponCore
             Log.Init("debug", this);
             Log.Init("perf", this, false);
             Log.Init("stats", this, false);
-
+            Log.Init("net", this, false);
 
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;

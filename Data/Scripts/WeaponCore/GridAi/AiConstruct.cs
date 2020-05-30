@@ -96,7 +96,7 @@ namespace WeaponCore.Support
 
                         GridAi checkAi;
                         if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi) && (tmpAi == null || tmpAi.MyGrid.EntityId > grid.EntityId)) tmpAi = checkAi;
-                        else Log.Line($"caller:{caller} - checkAi: {checkAi != null} - isMe: {grid == ai.MyGrid} - InGridTageting:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} - wCnt:{ai.WeaponBase.Count} - Marked: {ai.MyGrid.MarkedForClose}({ai.MarkedForClose}) - Version:{ai.Version} - GridInit:{ai.GridInit} - {ai.MyGrid.DebugName}");
+                        else if (ai.Session.IsClient) Log.Line($"caller:{caller} - checkAi: {checkAi != null} - isMe: {grid == ai.MyGrid} - InGridTageting:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} - wCnt:{ai.WeaponBase.Count} - Marked: {ai.MyGrid.MarkedForClose}({ai.MarkedForClose}) - Version:{ai.Version} - GridInit:{ai.GridInit} - {ai.MyGrid.DebugName}");
 
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
                             BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;

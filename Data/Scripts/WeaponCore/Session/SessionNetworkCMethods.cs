@@ -84,7 +84,7 @@ namespace WeaponCore
                 if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
                 {
                     if (!success)
-                        Log.LineShortDate($"[BadReprocess] Entity:{erroredPacket.Packet.EntityId} Cause:{erroredPacket.Error} Size:{packetObj.PacketSize}");
+                        Log.LineShortDate($"[BadReprocess] Entity:{erroredPacket.Packet.EntityId} Cause:{erroredPacket.Error} Size:{packetObj.PacketSize}", "net");
 
                     ClientSideErrorPktListNew.Remove(packetObj);
                     PacketObjPool.Return(packetObj);

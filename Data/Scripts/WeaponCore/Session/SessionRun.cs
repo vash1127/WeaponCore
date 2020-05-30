@@ -282,7 +282,7 @@ namespace WeaponCore
                     ITask.Wait();
 
                 if (IsServer || DedicatedServer)
-                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ServerReceivedPacket);
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ProccessServerPacket);
                 else
                 {
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);

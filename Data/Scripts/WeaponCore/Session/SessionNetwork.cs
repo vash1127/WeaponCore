@@ -22,12 +22,43 @@ namespace WeaponCore
             {
                 var message = System.Text.Encoding.UTF8.GetString(rawData, 0, rawData.Length); ;
                 if (string.IsNullOrEmpty(message)) return;
-                Log.CleanLine(message);
+                var firstChar = message[0];
+                int logId;
+                if (!int.TryParse(firstChar.ToString(), out logId))
+                    return;
+                message = message.Substring(1);
+
+                switch (logId) {
+
+                    case 0: {
+                        Log.CleanLine(message);
+                        break;
+                    }
+                    case 1: {
+                        Log.CleanLine(message, "perf");
+                        break;
+                    }
+                    case 2: {
+                        Log.CleanLine(message, "stats");
+                        break;
+                    }
+                    case 3: { 
+                        Log.CleanLine(message, "net");
+                        break;
+                    }
+                    case 4: {
+                        Log.CleanLine(message);
+                        break;
+                    }
+                    default:
+                        Log.CleanLine(message);
+                        break;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in AuthorReceivedPacket: {ex}"); }
         }
 
-        #region Client Sync
+        #region NewClientSwitch
         private void ClientReceivedPacket(byte[] rawData)
         {
             try
@@ -49,7 +80,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
 
-        #region NewClientSwitch
         private bool ProccessClientPacket(PacketObj packetObj)
         {
             try {
@@ -148,7 +178,7 @@ namespace WeaponCore
                         }
                     default:
                         if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
-                        Log.Line($"[Bad Client Packet] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}");
+                        Log.LineShortDate($"[Bad Client Packet] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}", "net");
                         invalidType = true;
                         packetObj.Report.PacketValid = false;
                         break;
@@ -176,6 +206,986 @@ namespace WeaponCore
         }
         #endregion
 
+        #region NewServerSwitch
+        internal void ProccessClientPacketsForServer()
+        {
+            if (!IsClient || !MpActive)
+            {
+                Log.Line($"trying to process client packets on a non-client");
+                PacketsToServer.Clear();
+                return;
+            }
+
+            for (int i = 0; i < PacketsToServer.Count; i++)
+                MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, MyAPIGateway.Utilities.SerializeToBinary(PacketsToServer[i]), true);
+
+            PacketsToServer.Clear();
+        }
+
+        private void ProccessServerPacket(byte[] rawData)
+        {
+            var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+            if (packet == null) return;
+
+            var packetSize = rawData.Length;
+
+            var report = Reporter.ReportPool.Get();
+            report.Receiver = NetworkReporter.Report.Received.Server;
+            report.PacketSize = packetSize;
+            Reporter.ReportData[packet.PType].Add(report);
+            var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = packet.PType };
+
+            var packetObj = PacketObjPool.Get();
+            packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+
+            switch (packetObj.Packet.PType) {
+
+                case PacketType.CompStateUpdate: {
+                    ServerCompStateUpdate(packetObj);
+                    break;
+                }
+                case PacketType.CompSettingsUpdate: {
+                    ServerCompSettingsUpdate(packetObj);
+                    break;
+                }
+                case PacketType.ClientMouseEvent: {
+                    ServerClientMouseEvent(packetObj);
+                    break;
+                }
+                case PacketType.ActiveControlUpdate: {
+                    ServerActiveControlUpdate(packetObj);
+                    break;
+                }
+                case PacketType.FakeTargetUpdate: {
+                    ServerFakeTargetUpdate(packetObj);
+                    break;
+                }
+                case PacketType.GridSyncRequestUpdate: {
+                    ServerGridSyncRequestUpdate(packetObj);
+                    break;
+                }
+                case PacketType.ReticleUpdate: {
+                    ServerReticleUpdate(packetObj);
+                    break;
+                }
+                case PacketType.OverRidesUpdate: {
+                    ServerOverRidesUpdate(packetObj);
+                    break;
+                }
+                case PacketType.PlayerControlUpdate: {
+                    ServerPlayerControlUpdate(packetObj);
+                    break;
+                }
+                case PacketType.WeaponUpdateRequest: {
+                    ServerWeaponUpdateRequest(packetObj);
+                    break;
+                }
+                case PacketType.ClientEntityClosed: {
+                    ServerClientEntityClosed(packetObj);
+                    break;
+                }
+                case PacketType.RequestMouseStates: {
+                    ServerRequestMouseStates(packetObj);
+                    break;
+                }
+                case PacketType.CompToolbarShootState: {
+                    ServerCompToolbarShootState(packetObj);
+                    break;
+                }
+                case PacketType.RangeUpdate: {
+                    ServerRangeUpdate(packetObj);
+                    break;
+                }
+                case PacketType.CycleAmmo: {
+                    ServerCycleAmmo(packetObj);
+                    break;
+                }
+                case PacketType.RescanGroupRequest: {
+                    ServerRescanGroupRequest(packetObj);
+                    break;
+                }
+                case PacketType.FixedWeaponHitEvent: {
+                    ServerFixedWeaponHitEvent(packetObj);
+                    break;
+                }
+                case PacketType.CompSyncRequest: {
+                    ServerCompSyncRequest(packetObj);
+                    break;
+                }
+                case PacketType.FocusUpdate:
+                case PacketType.ReassignTargetUpdate:
+                case PacketType.NextActiveUpdate:
+                case PacketType.ReleaseActiveUpdate: {
+                    ServerFocusUpdate(packetObj);
+                    break;
+                }
+                default:
+                    packetObj.Report.PacketValid = false;
+                    Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
+                    break;
+            }
+
+            if (!packetObj.Report.PacketValid)
+                Log.LineShortDate(packetObj.ErrorPacket.Error, "net");
+
+            if (packetObj.Report.PacketValid)
+                PacketObjPool.Return(packetObj);
+
+            //return packetObj.Report.PacketValid;
+        }
+        #endregion
+
+        #region OldServerSwitch
+        private void ServerReceivedPacket(byte[] rawData)
+        {
+            PacketType ptype = PacketType.Invalid;
+            try
+            {
+                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
+                if (packet == null) return;
+
+                var report = Reporter.ReportPool.Get();
+                report.Receiver = NetworkReporter.Report.Received.Server;
+                report.PacketSize = rawData.Length;
+
+                Reporter.ReportData[packet.PType].Add(report);
+                ptype = packet.PType;
+
+                var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = ptype };
+
+                MyEntity ent; // not inited here to avoid extras calls unless needed
+                WeaponComponent comp; // not inited here to avoid extras calls unless needed
+                long playerId;
+
+                switch (packet.PType)
+                {
+                    case PacketType.CompStateUpdate:
+                        {
+                            var statePacket = packet as StatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (statePacket?.Data == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"statePacket?.Data is null: {statePacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
+                                break;
+                            }
+
+                            if (statePacket.MId > comp.MIds[(int)packet.PType])
+                            {
+                                comp.MIds[(int)packet.PType] = statePacket.MId;
+                                comp.State.Value.Sync(statePacket.Data);
+                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                            {
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                errorPacket.Error = $"Mid is old({statePacket.MId}[{comp.MIds[(int)packet.PType]}]), likely multiple clients attempting update";
+                            }
+
+                            break;
+                        }
+                    case PacketType.CompSettingsUpdate:
+                        {
+                            var setPacket = packet as SettingPacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (setPacket?.Data == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"setPacket?.Data is null: {setPacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
+                                break;
+                            }
+
+                            if (setPacket.MId > comp.MIds[(int)packet.PType])
+                            {
+                                comp.MIds[(int)packet.PType] = setPacket.MId;
+                                comp.Set.Value.Sync(comp, setPacket.Data);
+                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                            {
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                            }
+
+                            break;
+                        }
+                    case PacketType.ClientMouseEvent:
+                        {
+                            var inputPacket = packet as InputPacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+
+                            if (inputPacket?.Data == null || ent == null || ent.MarkedForClose)
+                            {
+                                errorPacket.Error = $"mousePacket?.Data is null: {inputPacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent}";
+                                break;
+                            }
+
+                            if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                            {
+                                if (PlayerMouseStates.ContainsKey(playerId))
+                                    PlayerMouseStates[playerId].Sync(inputPacket.Data);
+                                else
+                                    PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
+
+                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "Player Not Found";
+
+                            break;
+                        }
+                    case PacketType.ActiveControlUpdate:
+                        {
+                            var dPacket = packet as BoolUpdatePacket;
+                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+
+                            if (dPacket?.Data == null || block == null || block.MarkedForClose)
+                            {
+                                errorPacket.Error = $"dPacket?.Data is null: {dPacket?.Data == null} block is null: {block == null} ent.MarkedForClose: {block?.MarkedForClose}";
+                                break;
+                            }
+
+                            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
+
+                            UpdateActiveControlDictionary(block, playerId, dPacket.Data);
+
+                            PacketsToClient.Add(new PacketInfo { Entity = block, Packet = dPacket });
+
+                            report.PacketValid = true;
+                            break;
+                        }
+                    case PacketType.FakeTargetUpdate:
+                        {
+                            var targetPacket = packet as FakeTargetPacket;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
+                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
+                            break;
+                        }
+                    case PacketType.GridSyncRequestUpdate:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null: {myGrid == null }";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var c = 0;
+                                var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
+                                foreach (var playerBlockPair in ai.ControllingPlayers)
+                                {
+                                    if (playerBlockPair.Value != null)
+                                    {
+                                        playerToBlocks[c] = new PlayerToBlock
+                                        {
+                                            PlayerId = playerBlockPair.Key,
+                                            EntityId = playerBlockPair.Value.EntityId
+                                        };
+
+                                        c++;
+                                    }
+                                    else
+                                        ai.ControllingPlayers.Remove(playerBlockPair.Key);
+                                }
+
+                                ai.ControllingPlayers.ApplyRemovals();
+
+                                Array.Resize(ref playerToBlocks, c + 1);
+
+                                PacketsToClient.Add(new PacketInfo {
+                                    Entity = myGrid,
+                                    Packet = new CurrentGridPlayersPacket
+                                    {
+                                        EntityId = packet.EntityId,
+                                        SenderId = packet.SenderId,
+                                        PType = PacketType.ActiveControlFullUpdate,
+                                        Data = new ControllingPlayersSync
+                                        {
+                                            PlayersToControlledBlock = playerToBlocks
+                                        }
+                                    },
+                                    SingleClient = true,
+                                });
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = myGrid,
+                                    Packet = new MIdPacket
+                                    {
+                                        EntityId = myGrid.EntityId,
+                                        SenderId = packet.SenderId,
+                                        PType = PacketType.GridAiUiMidUpdate,
+                                        MId = ai.UiMId,
+                                    },
+                                    SingleClient = true,
+                                });
+
+                                var gridPacket = new GridWeaponPacket
+                                {
+                                    EntityId = packet.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.WeaponSyncUpdate,
+                                    Data = new List<WeaponData>()
+                                };
+                                
+                                foreach (var cubeComp in ai.WeaponBase)
+                                {
+                                    comp = cubeComp.Value;
+
+                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
+
+                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                                    {
+                                        var w = comp.Platform.Weapons[j];
+
+                                        if (comp.WeaponValues.Targets == null || comp.WeaponValues.Targets[j].State == TransferTarget.TargetInfo.Expired)
+                                            continue;
+
+                                        var weaponData = new WeaponData
+                                        {
+                                            CompEntityId = comp.MyCube.EntityId,
+                                            SyncData = w.State.Sync,
+                                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                                            TargetData = comp.WeaponValues.Targets[j],
+                                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
+                                        };
+                                        
+                                        gridPacket.Data.Add(weaponData);
+                                    }
+                                }
+
+                                if (gridPacket.Data.Count > 0)
+                                    PacketsToClient.Add(new PacketInfo
+                                    {
+                                        Entity = myGrid,
+                                        Packet = gridPacket,
+                                        SingleClient = true,
+                                    });
+
+                                var overrides = new OverRidesData[ai.BlockGroups.Values.Count];
+
+                                c = 0;
+                                foreach (var group in ai.BlockGroups)
+                                {
+                                    overrides[c].Overrides = GetOverrides(ai, group.Key);
+                                    overrides[c].GroupName = group.Key;
+                                    c++;
+                                }
+
+                                if(overrides.Length > 0)
+                                {
+                                    PacketsToClient.Add(new PacketInfo
+                                    {
+                                        Entity = myGrid, 
+                                        Packet = new GridOverRidesSyncPacket
+                                        {
+                                            EntityId = myGrid.EntityId,
+                                            SenderId = packet.SenderId,
+                                            PType = PacketType.GridOverRidesSync,
+                                            Data = overrides,
+                                        },
+                                        SingleClient = true,
+                                    });
+                                }
+
+                                var focusPacket = new GridFocusListPacket
+                                {
+                                    EntityId = myGrid.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.GridFocusListSync,
+                                    EntityIds = new long[ai.Focus.Target.Length]
+                                };
+
+                                for(int i = 0; i < ai.Focus.Target.Length; i++)
+                                    focusPacket.EntityIds[i] = ai.Focus.Target[i]?.EntityId ?? -1;
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = myGrid,
+                                    Packet = focusPacket,
+                                    SingleClient = true,
+                                });
+
+                                if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                                    PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
+
+                                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
+
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
+                            break;
+                        }
+                    case PacketType.ReticleUpdate:
+                        {
+                            var reticlePacket = packet as BoolUpdatePacket;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (reticlePacket == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"reticlePacket is null: {reticlePacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
+
+                            if(DedicatedServer)
+                                comp.TrackReticle = reticlePacket.Data;
+
+                            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
+
+                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
+
+                            report.PacketValid = true;
+                            break;
+                        }
+                    case PacketType.OverRidesUpdate:
+                        {
+                            var overRidesPacket = (OverRidesPacket) packet;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            var myGrid = ent as MyCubeGrid;
+
+                            if (ent == null || ent.MarkedForClose || comp == null && myGrid == null)
+                            {
+                                errorPacket.Error = $"comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
+
+                            if (comp != null)
+                            {
+                                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId)
+                                {
+                                    comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
+
+                                    GroupInfo group;
+                                    if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
+                                    {
+                                        comp.Ai.ScanBlockGroupSettings = true;
+                                        comp.Ai.GroupsToCheck.Add(group);
+                                    }
+                                    report.PacketValid = true;
+                                }
+                                else
+                                {
+                                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                    errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                                }
+                            }
+                            else if (myGrid != null)
+                            {
+                                GridAi ai;
+                                if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                {
+                                    if (ai.UiMId < overRidesPacket.MId)
+                                    {
+                                        var o = overRidesPacket.Data;
+                                        ai.UiMId = overRidesPacket.MId;
+
+                                        ai.ReScanBlockGroups();
+
+                                        SyncGridOverrides(ai, overRidesPacket.GroupName, o);
+
+                                        GroupInfo groups;
+                                        if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
+                                        {
+                                            foreach (var component in groups.Comps)
+                                            {
+                                                component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
+                                                component.Set.Value.Overrides.Sync(o);
+                                            }
+
+                                            report.PacketValid = true;
+                                        }
+                                        else
+                                            errorPacket.Error = "Block group not found";
+                                    }
+                                    else
+                                    {
+                                        //SendMidResync(packet.PType, ai.UiMId, packet.SenderId, myGrid, null);
+                                        errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                                    }
+                                }
+                                else
+                                    errorPacket.Error = "GridAi not found";
+                            }
+
+                            if (report.PacketValid)
+                            {
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = overRidesPacket,
+                                });
+                            }
+
+                            break;
+                        }
+                    case PacketType.PlayerControlUpdate:
+                        {
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+                            var cPlayerPacket = (ControllingPlayerPacket)packet;
+
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[overRidesPacket] comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose}";
+                                break;
+                            }
+
+                            if (comp.MIds[(int)packet.PType] < cPlayerPacket.MId)
+                            {
+                                comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
+                                comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
+                                report.PacketValid = true;
+                                PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
+                            }
+                            else
+                            {
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                            }
+
+                            break;
+                        }                        
+                    case PacketType.WeaponUpdateRequest:
+                        {
+                            var targetRequestPacket = (RequestTargetsPacket) packet;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"[overRidesPacket] ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null: {myGrid == null }";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var gridPacket = new GridWeaponPacket
+                                {
+                                    EntityId = packet.EntityId,
+                                    SenderId = packet.SenderId,
+                                    PType = PacketType.WeaponSyncUpdate,
+                                    Data = new List<WeaponData>()
+                                };
+
+                                for (int i = 0; i < targetRequestPacket.Comps.Count; i++)
+                                {
+                                    var compId = targetRequestPacket.Comps[i];
+                                    var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
+
+                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp) || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                                        continue;
+
+                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                                    {
+                                        var w = comp.Platform.Weapons[j];
+                                        var weaponData = new WeaponData
+                                        {
+                                            CompEntityId = compId,
+                                            SyncData = w.State.Sync,
+                                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                                            TargetData = comp.WeaponValues.Targets[j],
+                                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
+                                        };
+
+                                        gridPacket.Data.Add(weaponData);
+                                    }
+                                }
+
+                                if (gridPacket.Data.Count > 0)
+                                    PacketsToClient.Add(new PacketInfo
+                                    {
+                                        Entity = myGrid,
+                                        Packet = gridPacket,
+                                        SingleClient = true,
+                                    });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
+                            break;
+                        }
+                    case PacketType.ClientEntityClosed:
+                        {
+                            if (PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                                PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
+                            break;
+                        }                        
+                    case PacketType.RequestMouseStates:
+                        {
+                            var mouseUpdatePacket = new MouseInputSyncPacket
+                            {
+                                EntityId = -1,
+                                SenderId = packet.SenderId,
+                                PType = PacketType.FullMouseUpdate,
+                                Data = new PlayerMouseData[PlayerMouseStates.Count],
+                            };
+
+                            var c = 0;
+                            foreach (var playerMouse in PlayerMouseStates)
+                            {
+                                mouseUpdatePacket.Data[c] = new PlayerMouseData
+                                {
+                                    PlayerId = playerMouse.Key,
+                                    MouseStateData = playerMouse.Value
+                                };
+                            }
+
+                            if (PlayerMouseStates.Count > 0)
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = null,
+                                    Packet = mouseUpdatePacket,
+                                    SingleClient = true,
+                                });
+
+                            report.PacketValid = true;
+                            break;
+                        }
+                    case PacketType.CompToolbarShootState:
+                        {
+                            var shootStatePacket = (ShootStatePacket) packet;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (ent == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
+                                break;
+                            }
+
+                            if (comp.MIds[(int)packet.PType] < shootStatePacket.MId)
+                            {
+                                comp.MIds[(int)packet.PType] = shootStatePacket.MId;
+
+
+                                switch (shootStatePacket.Data)
+                                {
+                                    case ManualShootActionState.ShootClick:
+                                        TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
+                                        break;
+                                    case ManualShootActionState.ShootOff:
+                                        TerminalHelpers.WcShootOffAction(comp, true);
+                                        break;
+                                    case ManualShootActionState.ShootOn:
+                                        TerminalHelpers.WcShootOnAction(comp, true);
+                                        break;
+                                    case ManualShootActionState.ShootOnce:
+                                        TerminalHelpers.WcShootOnceAction(comp, true);
+                                        break;
+                                }
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = shootStatePacket,
+                                });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                            {
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                            }
+                            
+                            break;
+                        }
+                    case PacketType.RangeUpdate:
+                        {
+                            var rangePacket = (RangePacket) packet;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
+                                break;
+                            }
+
+                            if (comp.MIds[(int)packet.PType] < rangePacket.MId)
+                            {
+                                comp.MIds[(int)packet.PType] = rangePacket.MId;
+                                comp.Set.Value.Range = rangePacket.Data;
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = rangePacket,
+                                });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                            {
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                            }
+
+                            break;
+                        }
+                    case PacketType.CycleAmmo:
+                        {
+                            var cyclePacket = (CycleAmmoPacket)packet;
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
+                                break;
+                            }
+
+                            if (cyclePacket.MId > comp.MIds[(int)packet.PType])
+                            {
+                                comp.MIds[(int)packet.PType] = cyclePacket.MId;
+
+                                var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
+
+                                weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
+
+                                if (weapon.State.Sync.CurrentAmmo == 0)
+                                    weapon.StartReload();
+
+                                PacketsToClient.Add(new PacketInfo
+                                {
+                                    Entity = ent,
+                                    Packet = cyclePacket,
+                                });
+
+                                report.PacketValid = true;
+                            }
+                            else
+                            {
+                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
+                            }
+
+                            break;
+                        }
+                    case PacketType.RescanGroupRequest:
+                        {
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"myGrid is null: {myGrid == null} ent.MarkedForClose: {myGrid?.MarkedForClose}";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                                ai.ReScanBlockGroups(true);
+
+                            PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
+
+                            report.PacketValid = true;
+                            break;
+                        }
+                    case PacketType.FixedWeaponHitEvent:
+                        {
+                            var hitPacket = (FixedWeaponHitPacket)packet;
+
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (comp == null || comp.MyCube.MarkedForClose || comp.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                errorPacket.Error = $"comp is null: {comp == null} gridAi is null: {comp.Ai == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
+                                break;
+                            }
+
+                            var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
+                            var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
+                            
+                            if(targetEnt == null || weapon == null)
+                            {
+                                errorPacket.Error = $"targetEnt: {targetEnt == null} weapon: {weapon == null}";
+                                break;
+                            }
+                            var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
+
+                            var direction = hitPacket.Velocity;
+                            direction.Normalize();
+
+                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.WeaponAmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
+
+                            report.PacketValid = true;
+                            break;
+                        }
+                    case PacketType.CompSyncRequest:
+                        {
+                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                            comp = ent?.Components.Get<WeaponComponent>();
+
+                            if (comp == null || comp.MyCube.MarkedForClose)
+                            {
+                                errorPacket.Error = $"comp is null: {comp == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
+                                break;
+                            }
+
+                            SendCompSettingUpdate(comp);
+                            SendCompStateUpdate(comp);
+
+                            break;
+                        }
+                    case PacketType.FocusUpdate:
+                    case PacketType.ReassignTargetUpdate:
+                    case PacketType.NextActiveUpdate:
+                    case PacketType.ReleaseActiveUpdate:
+                        {
+                            var focusPacket = (FocusPacket) packet;
+                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+
+                            if (myGrid == null || myGrid.MarkedForClose)
+                            {
+                                errorPacket.Error = $"targetPacket is null: ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
+                                break;
+                            }
+
+                            GridAi ai;
+                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            {
+                                var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
+
+                                switch (packet.PType)
+                                {
+                                    case PacketType.FocusUpdate:
+                                        if (targetGrid != null)
+                                            ai.Focus.AddFocus(targetGrid, ai, true);
+                                        break;
+                                    case PacketType.ReassignTargetUpdate:
+                                        if (targetGrid != null)
+                                            ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
+                                        break;
+                                    case PacketType.NextActiveUpdate:
+                                        ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
+                                        break;
+                                    case PacketType.ReleaseActiveUpdate:
+                                        ai.Focus.ReleaseActive(ai, true);
+                                        break;
+                                }
+
+                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
+                                report.PacketValid = true;
+                            }
+                            else
+                                errorPacket.Error = "GridAi not found";
+
+                            break;
+                        }
+                    default:
+                        Reporter.ReportData[PacketType.Invalid].Add(report);
+                        report.PacketValid = false;
+
+                        break;
+                }
+
+                if (!report.PacketValid)
+                    Log.Line(errorPacket.Error);
+            }
+            catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: PacketType:{ptype} Exception: {ex}"); }
+        }
+
+        internal void ProccessServerPacketsForClients()
+        {
+
+            if ((!IsServer || !MpActive))
+            {
+                Log.Line($"trying to process server packets on a non-server");
+                return;
+            }
+
+            for (int i = 0; i < PacketsToClient.Count; i++)
+            {
+                var packetInfo = PacketsToClient[i];
+
+                var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
+
+                if (packetInfo.SingleClient)
+                    MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
+                else
+                {
+                    long entityId = packetInfo.Entity?.GetTopMostParent().EntityId ?? -1;
+
+                    foreach (var p in Players.Values)
+                    {
+                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
+                            MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
+                    }
+                }
+            }
+            PacketsToClient.Clear();
+        }
+
+        internal void ProccessGridResyncRequests()
+        {
+            var gridCompsToCheck = new Dictionary<GridAi, HashSet<long>>();
+            
+            for (int i = 0; i < ClientGridResyncRequests.Count; i++)
+            {
+                var comp = ClientGridResyncRequests[i];
+
+                if (!gridCompsToCheck.ContainsKey(comp.Ai))
+                    gridCompsToCheck[comp.Ai] = new HashSet<long>();
+
+                gridCompsToCheck[comp.Ai].Add(comp.MyCube.EntityId);
+            }
+
+            ClientGridResyncRequests.Clear();
+
+            foreach (var gridComps in gridCompsToCheck)
+            {
+
+                var packet = new RequestTargetsPacket
+                {
+                    EntityId = gridComps.Key.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.WeaponUpdateRequest,
+                    Comps = new List<long>(gridComps.Value),
+                };
+
+                PacketsToServer.Add(packet);
+            }
+
+            gridCompsToCheck.Clear();
+        }
+        #endregion
 
         #region OldClientSwitch
         private bool ProccessClientPacket(Packet packet, int packetSize, bool retry = false)
@@ -875,991 +1885,6 @@ namespace WeaponCore
                 if (erroredPacket.MaxAttempts == 0)
                     ClientSideErrorPktList.Remove(erroredPacket);
             }
-        }
-        #endregion
-
-
-        internal void ProccessClientPacketsForServer()
-        {
-            if (!IsClient || !MpActive)
-            {
-                Log.Line($"trying to process client packets on a non-client");
-                PacketsToServer.Clear();
-                return;
-            }
-
-            for (int i = 0; i < PacketsToServer.Count; i++)
-                MyModAPIHelper.MyMultiplayer.Static.SendMessageToServer(ServerPacketId, MyAPIGateway.Utilities.SerializeToBinary(PacketsToServer[i]), true);
-
-            PacketsToServer.Clear();
-        }
-
-        #endregion
-
-
-        #region NewServerSwitch
-        private void ProccessServerPacket(byte[] rawData)
-        {
-            var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-            if (packet == null) return;
-
-            var packetSize = rawData.Length;
-
-            var report = Reporter.ReportPool.Get();
-            report.Receiver = NetworkReporter.Report.Received.Server;
-            report.PacketSize = packetSize;
-            Reporter.ReportData[packet.PType].Add(report);
-            var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = packet.PType };
-
-            var packetObj = PacketObjPool.Get();
-            packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
-
-            switch (packetObj.Packet.PType) {
-
-                case PacketType.CompStateUpdate: {
-                    ServerCompStateUpdate(packetObj);
-                    break;
-                }
-                case PacketType.CompSettingsUpdate: {
-                    ServerCompSettingsUpdate(packetObj);
-                    break;
-                }
-                case PacketType.ClientMouseEvent: {
-                    ServerClientMouseEvent(packetObj);
-                    break;
-                }
-                case PacketType.ActiveControlUpdate: {
-                    ServerActiveControlUpdate(packetObj);
-                    break;
-                }
-                case PacketType.FakeTargetUpdate: {
-                    ServerFakeTargetUpdate(packetObj);
-                    break;
-                }
-                case PacketType.GridSyncRequestUpdate: {
-                    ServerGridSyncRequestUpdate(packetObj);
-                    break;
-                }
-                case PacketType.ReticleUpdate: {
-                    ServerReticleUpdate(packetObj);
-                    break;
-                }
-                case PacketType.OverRidesUpdate: {
-                    ServerOverRidesUpdate(packetObj);
-                    break;
-                }
-                case PacketType.PlayerControlUpdate: {
-                    ServerPlayerControlUpdate(packetObj);
-                    break;
-                }
-                case PacketType.WeaponUpdateRequest: {
-                    ServerWeaponUpdateRequest(packetObj);
-                    break;
-                }
-                case PacketType.ClientEntityClosed: {
-                    ServerClientEntityClosed(packetObj);
-                    break;
-                }
-                case PacketType.RequestMouseStates: {
-                    ServerRequestMouseStates(packetObj);
-                    break;
-                }
-                case PacketType.CompToolbarShootState: {
-                    ServerCompToolbarShootState(packetObj);
-                    break;
-                }
-                case PacketType.RangeUpdate: {
-                    ServerRangeUpdate(packetObj);
-                    break;
-                }
-                case PacketType.CycleAmmo: {
-                    ServerCycleAmmo(packetObj);
-                    break;
-                }
-                case PacketType.RescanGroupRequest: {
-                    ServerRescanGroupRequest(packetObj);
-                    break;
-                }
-                case PacketType.FixedWeaponHitEvent: {
-                    ServerFixedWeaponHitEvent(packetObj);
-                    break;
-                }
-                case PacketType.CompSyncRequest: {
-                    ServerCompSyncRequest(packetObj);
-                    break;
-                }
-                case PacketType.FocusUpdate:
-                case PacketType.ReassignTargetUpdate:
-                case PacketType.NextActiveUpdate:
-                case PacketType.ReleaseActiveUpdate: {
-                    ServerFocusUpdate(packetObj);
-                    break;
-                }
-                default:
-                    packetObj.Report.PacketValid = false;
-                    Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
-                    break;
-            }
-
-            if (!packetObj.Report.PacketValid)
-                Log.Line(packetObj.ErrorPacket.Error);
-
-            if (packetObj.Report.PacketValid)
-                PacketObjPool.Return(packetObj);
-
-            //return packetObj.Report.PacketValid;
-        }
-        #endregion
-
-        #region Server Sync
-        private void ServerReceivedPacket(byte[] rawData)
-        {
-            PacketType ptype = PacketType.Invalid;
-            try
-            {
-                var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                if (packet == null) return;
-
-                var report = Reporter.ReportPool.Get();
-                report.Receiver = NetworkReporter.Report.Received.Server;
-                report.PacketSize = rawData.Length;
-
-                Reporter.ReportData[packet.PType].Add(report);
-                ptype = packet.PType;
-
-                var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = ptype };
-
-                MyEntity ent; // not inited here to avoid extras calls unless needed
-                WeaponComponent comp; // not inited here to avoid extras calls unless needed
-                long playerId;
-
-                switch (packet.PType)
-                {
-                    case PacketType.CompStateUpdate:
-                        {
-                            var statePacket = packet as StatePacket;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (statePacket?.Data == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"statePacket?.Data is null: {statePacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
-                                break;
-                            }
-
-                            if (statePacket.MId > comp.MIds[(int)packet.PType])
-                            {
-                                comp.MIds[(int)packet.PType] = statePacket.MId;
-                                comp.State.Value.Sync(statePacket.Data);
-                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                            {
-                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = $"Mid is old({statePacket.MId}[{comp.MIds[(int)packet.PType]}]), likely multiple clients attempting update";
-                            }
-
-                            break;
-                        }
-                    case PacketType.CompSettingsUpdate:
-                        {
-                            var setPacket = packet as SettingPacket;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (setPacket?.Data == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"setPacket?.Data is null: {setPacket?.Data == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null}";
-                                break;
-                            }
-
-                            if (setPacket.MId > comp.MIds[(int)packet.PType])
-                            {
-                                comp.MIds[(int)packet.PType] = setPacket.MId;
-                                comp.Set.Value.Sync(comp, setPacket.Data);
-                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                            {
-                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                            }
-
-                            break;
-                        }
-                    case PacketType.ClientMouseEvent:
-                        {
-                            var inputPacket = packet as InputPacket;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-
-                            if (inputPacket?.Data == null || ent == null || ent.MarkedForClose)
-                            {
-                                errorPacket.Error = $"mousePacket?.Data is null: {inputPacket?.Data == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent}";
-                                break;
-                            }
-
-                            if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                            {
-                                if (PlayerMouseStates.ContainsKey(playerId))
-                                    PlayerMouseStates[playerId].Sync(inputPacket.Data);
-                                else
-                                    PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
-
-                                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                                errorPacket.Error = "Player Not Found";
-
-                            break;
-                        }
-                    case PacketType.ActiveControlUpdate:
-                        {
-                            var dPacket = packet as BoolUpdatePacket;
-                            var block = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-
-                            if (dPacket?.Data == null || block == null || block.MarkedForClose)
-                            {
-                                errorPacket.Error = $"dPacket?.Data is null: {dPacket?.Data == null} block is null: {block == null} ent.MarkedForClose: {block?.MarkedForClose}";
-                                break;
-                            }
-
-                            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
-
-                            UpdateActiveControlDictionary(block, playerId, dPacket.Data);
-
-                            PacketsToClient.Add(new PacketInfo { Entity = block, Packet = dPacket });
-
-                            report.PacketValid = true;
-                            break;
-                        }
-                    case PacketType.FakeTargetUpdate:
-                        {
-                            var targetPacket = packet as FakeTargetPacket;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-                            if (targetPacket?.Data == null || myGrid == null || myGrid.MarkedForClose)
-                            {
-                                errorPacket.Error = $"targetPacket?.Data is null: {targetPacket?.Data == null} ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
-                                break;
-                            }
-
-                            GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                            {
-                                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
-                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
-                                report.PacketValid = true;
-                            }
-                            else
-                                errorPacket.Error = "GridAi not found";
-
-                            break;
-                        }
-                    case PacketType.GridSyncRequestUpdate:
-                        {
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-                            if (myGrid == null || myGrid.MarkedForClose)
-                            {
-                                errorPacket.Error = $"ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null: {myGrid == null }";
-                                break;
-                            }
-
-                            GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                            {
-                                var c = 0;
-                                var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
-                                foreach (var playerBlockPair in ai.ControllingPlayers)
-                                {
-                                    //if (playerBlockPair.Value != null)
-                                    //{
-                                        playerToBlocks[c] = new PlayerToBlock
-                                        {
-                                            PlayerId = playerBlockPair.Key,
-                                            EntityId = playerBlockPair.Value.EntityId
-                                        };
-
-                                        c++;
-                                    //}
-                                    //else
-                                        //ai.ControllingPlayers.Remove(playerBlockPair.Key);
-                                }
-
-                                ai.ControllingPlayers.ApplyRemovals();
-
-                                //Array.Resize(ref playerToBlocks, c + 1);
-
-                                PacketsToClient.Add(new PacketInfo {
-                                    Entity = myGrid,
-                                    Packet = new CurrentGridPlayersPacket
-                                    {
-                                        EntityId = packet.EntityId,
-                                        SenderId = packet.SenderId,
-                                        PType = PacketType.ActiveControlFullUpdate,
-                                        Data = new ControllingPlayersSync
-                                        {
-                                            PlayersToControlledBlock = playerToBlocks
-                                        }
-                                    },
-                                    SingleClient = true,
-                                });
-
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = myGrid,
-                                    Packet = new MIdPacket
-                                    {
-                                        EntityId = myGrid.EntityId,
-                                        SenderId = packet.SenderId,
-                                        PType = PacketType.GridAiUiMidUpdate,
-                                        MId = ai.UiMId,
-                                    },
-                                    SingleClient = true,
-                                });
-
-                                var gridPacket = new GridWeaponPacket
-                                {
-                                    EntityId = packet.EntityId,
-                                    SenderId = packet.SenderId,
-                                    PType = PacketType.WeaponSyncUpdate,
-                                    Data = new List<WeaponData>()
-                                };
-                                
-                                foreach (var cubeComp in ai.WeaponBase)
-                                {
-                                    comp = cubeComp.Value;
-
-                                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.MyCube.Closed || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
-
-                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                                    {
-                                        var w = comp.Platform.Weapons[j];
-
-                                        if (comp.WeaponValues.Targets == null || comp.WeaponValues.Targets[j].State == TransferTarget.TargetInfo.Expired)
-                                            continue;
-
-                                        var weaponData = new WeaponData
-                                        {
-                                            CompEntityId = comp.MyCube.EntityId,
-                                            SyncData = w.State.Sync,
-                                            Timmings = w.Timings.SyncOffsetServer(Tick),
-                                            TargetData = comp.WeaponValues.Targets[j],
-                                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
-                                        };
-                                        
-                                        gridPacket.Data.Add(weaponData);
-                                    }
-                                }
-
-                                if (gridPacket.Data.Count > 0)
-                                    PacketsToClient.Add(new PacketInfo
-                                    {
-                                        Entity = myGrid,
-                                        Packet = gridPacket,
-                                        SingleClient = true,
-                                    });
-
-                                var overrides = new OverRidesData[ai.BlockGroups.Values.Count];
-
-                                c = 0;
-                                foreach (var group in ai.BlockGroups)
-                                {
-                                    overrides[c].Overrides = GetOverrides(ai, group.Key);
-                                    overrides[c].GroupName = group.Key;
-                                    c++;
-                                }
-
-                                if(overrides.Length > 0)
-                                {
-                                    PacketsToClient.Add(new PacketInfo
-                                    {
-                                        Entity = myGrid, 
-                                        Packet = new GridOverRidesSyncPacket
-                                        {
-                                            EntityId = myGrid.EntityId,
-                                            SenderId = packet.SenderId,
-                                            PType = PacketType.GridOverRidesSync,
-                                            Data = overrides,
-                                        },
-                                        SingleClient = true,
-                                    });
-                                }
-
-                                var focusPacket = new GridFocusListPacket
-                                {
-                                    EntityId = myGrid.EntityId,
-                                    SenderId = packet.SenderId,
-                                    PType = PacketType.GridFocusListSync,
-                                    EntityIds = new long[ai.Focus.Target.Length]
-                                };
-
-                                for(int i = 0; i < ai.Focus.Target.Length; i++)
-                                    focusPacket.EntityIds[i] = ai.Focus.Target[i]?.EntityId ?? -1;
-
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = myGrid,
-                                    Packet = focusPacket,
-                                    SingleClient = true,
-                                });
-
-                                if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                                    PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
-
-                                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
-
-                                report.PacketValid = true;
-                            }
-                            else
-                                errorPacket.Error = "GridAi not found";
-
-                            break;
-                        }
-                    case PacketType.ReticleUpdate:
-                        {
-                            var reticlePacket = packet as BoolUpdatePacket;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (reticlePacket == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"reticlePacket is null: {reticlePacket == null} comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
-                                break;
-                            }
-
-                            if(DedicatedServer)
-                                comp.TrackReticle = reticlePacket.Data;
-
-                            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
-
-                            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
-
-                            report.PacketValid = true;
-                            break;
-                        }
-                    case PacketType.OverRidesUpdate:
-                        {
-                            var overRidesPacket = (OverRidesPacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            var myGrid = ent as MyCubeGrid;
-
-                            if (ent == null || ent.MarkedForClose || comp == null && myGrid == null)
-                            {
-                                errorPacket.Error = $"comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
-                                break;
-                            }
-
-                            if (comp != null)
-                            {
-                                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId)
-                                {
-                                    comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
-
-                                    GroupInfo group;
-                                    if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group))
-                                    {
-                                        comp.Ai.ScanBlockGroupSettings = true;
-                                        comp.Ai.GroupsToCheck.Add(group);
-                                    }
-                                    report.PacketValid = true;
-                                }
-                                else
-                                {
-                                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                    errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                                }
-                            }
-                            else if (myGrid != null)
-                            {
-                                GridAi ai;
-                                if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                                {
-                                    if (ai.UiMId < overRidesPacket.MId)
-                                    {
-                                        var o = overRidesPacket.Data;
-                                        ai.UiMId = overRidesPacket.MId;
-
-                                        ai.ReScanBlockGroups();
-
-                                        SyncGridOverrides(ai, overRidesPacket.GroupName, o);
-
-                                        GroupInfo groups;
-                                        if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
-                                        {
-                                            foreach (var component in groups.Comps)
-                                            {
-                                                component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
-                                                component.Set.Value.Overrides.Sync(o);
-                                            }
-
-                                            report.PacketValid = true;
-                                        }
-                                        else
-                                            errorPacket.Error = "Block group not found";
-                                    }
-                                    else
-                                    {
-                                        //SendMidResync(packet.PType, ai.UiMId, packet.SenderId, myGrid, null);
-                                        errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                                    }
-                                }
-                                else
-                                    errorPacket.Error = "GridAi not found";
-                            }
-
-                            if (report.PacketValid)
-                            {
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = ent,
-                                    Packet = overRidesPacket,
-                                });
-                            }
-
-                            break;
-                        }
-                    case PacketType.PlayerControlUpdate:
-                        {
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-                            var cPlayerPacket = (ControllingPlayerPacket)packet;
-
-                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"[overRidesPacket] comp is null: {comp == null} ent.MarkedForClose: {ent?.MarkedForClose}";
-                                break;
-                            }
-
-                            if (comp.MIds[(int)packet.PType] < cPlayerPacket.MId)
-                            {
-                                comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                                comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
-                                report.PacketValid = true;
-                                PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
-                            }
-                            else
-                            {
-                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                            }
-
-                            break;
-                        }                        
-                    case PacketType.WeaponUpdateRequest:
-                        {
-                            var targetRequestPacket = (RequestTargetsPacket) packet;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-                            if (myGrid == null || myGrid.MarkedForClose)
-                            {
-                                errorPacket.Error = $"[overRidesPacket] ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null: {myGrid == null }";
-                                break;
-                            }
-
-                            GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                            {
-                                var gridPacket = new GridWeaponPacket
-                                {
-                                    EntityId = packet.EntityId,
-                                    SenderId = packet.SenderId,
-                                    PType = PacketType.WeaponSyncUpdate,
-                                    Data = new List<WeaponData>()
-                                };
-
-                                for (int i = 0; i < targetRequestPacket.Comps.Count; i++)
-                                {
-                                    var compId = targetRequestPacket.Comps[i];
-                                    var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
-
-                                    if (compCube == null || !ai.WeaponBase.TryGetValue(compCube, out comp) || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                                        continue;
-
-                                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                                    {
-                                        var w = comp.Platform.Weapons[j];
-                                        var weaponData = new WeaponData
-                                        {
-                                            CompEntityId = compId,
-                                            SyncData = w.State.Sync,
-                                            Timmings = w.Timings.SyncOffsetServer(Tick),
-                                            TargetData = comp.WeaponValues.Targets[j],
-                                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
-                                        };
-
-                                        gridPacket.Data.Add(weaponData);
-                                    }
-                                }
-
-                                if (gridPacket.Data.Count > 0)
-                                    PacketsToClient.Add(new PacketInfo
-                                    {
-                                        Entity = myGrid,
-                                        Packet = gridPacket,
-                                        SingleClient = true,
-                                    });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                                errorPacket.Error = "GridAi not found";
-
-                            break;
-                        }
-                    case PacketType.ClientEntityClosed:
-                        {
-                            if (PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                                PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
-                            break;
-                        }                        
-                    case PacketType.RequestMouseStates:
-                        {
-                            var mouseUpdatePacket = new MouseInputSyncPacket
-                            {
-                                EntityId = -1,
-                                SenderId = packet.SenderId,
-                                PType = PacketType.FullMouseUpdate,
-                                Data = new PlayerMouseData[PlayerMouseStates.Count],
-                            };
-
-                            var c = 0;
-                            foreach (var playerMouse in PlayerMouseStates)
-                            {
-                                mouseUpdatePacket.Data[c] = new PlayerMouseData
-                                {
-                                    PlayerId = playerMouse.Key,
-                                    MouseStateData = playerMouse.Value
-                                };
-                            }
-
-                            if (PlayerMouseStates.Count > 0)
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = null,
-                                    Packet = mouseUpdatePacket,
-                                    SingleClient = true,
-                                });
-
-                            report.PacketValid = true;
-                            break;
-                        }
-                    case PacketType.CompToolbarShootState:
-                        {
-                            var shootStatePacket = (ShootStatePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (ent == null || comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"[shootStatePacket] ent.MarkedForClose: {ent?.MarkedForClose} ent is null:";
-                                break;
-                            }
-
-                            if (comp.MIds[(int)packet.PType] < shootStatePacket.MId)
-                            {
-                                comp.MIds[(int)packet.PType] = shootStatePacket.MId;
-
-
-                                switch (shootStatePacket.Data)
-                                {
-                                    case ManualShootActionState.ShootClick:
-                                        TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
-                                        break;
-                                    case ManualShootActionState.ShootOff:
-                                        TerminalHelpers.WcShootOffAction(comp, true);
-                                        break;
-                                    case ManualShootActionState.ShootOn:
-                                        TerminalHelpers.WcShootOnAction(comp, true);
-                                        break;
-                                    case ManualShootActionState.ShootOnce:
-                                        TerminalHelpers.WcShootOnceAction(comp, true);
-                                        break;
-                                }
-
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = ent,
-                                    Packet = shootStatePacket,
-                                });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                            {
-                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                            }
-                            
-                            break;
-                        }
-                    case PacketType.RangeUpdate:
-                        {
-                            var rangePacket = (RangePacket) packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null }";
-                                break;
-                            }
-
-                            if (comp.MIds[(int)packet.PType] < rangePacket.MId)
-                            {
-                                comp.MIds[(int)packet.PType] = rangePacket.MId;
-                                comp.Set.Value.Range = rangePacket.Data;
-
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = ent,
-                                    Packet = rangePacket,
-                                });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                            {
-                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                            }
-
-                            break;
-                        }
-                    case PacketType.CycleAmmo:
-                        {
-                            var cyclePacket = (CycleAmmoPacket)packet;
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (comp == null || ent.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"[shootStatePacket]  ent.MarkedForClose: {ent?.MarkedForClose} ent is null: {ent == null } comp.Platform.State: {comp?.Platform?.State}";
-                                break;
-                            }
-
-                            if (cyclePacket.MId > comp.MIds[(int)packet.PType])
-                            {
-                                comp.MIds[(int)packet.PType] = cyclePacket.MId;
-
-                                var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
-
-                                weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
-
-                                if (weapon.State.Sync.CurrentAmmo == 0)
-                                    weapon.StartReload();
-
-                                PacketsToClient.Add(new PacketInfo
-                                {
-                                    Entity = ent,
-                                    Packet = cyclePacket,
-                                });
-
-                                report.PacketValid = true;
-                            }
-                            else
-                            {
-                                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                                errorPacket.Error = "Mid is old, likely multiple clients attempting update";
-                            }
-
-                            break;
-                        }
-                    case PacketType.RescanGroupRequest:
-                        {
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-                            if (myGrid == null || myGrid.MarkedForClose)
-                            {
-                                errorPacket.Error = $"myGrid is null: {myGrid == null} ent.MarkedForClose: {myGrid?.MarkedForClose}";
-                                break;
-                            }
-
-                            GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                                ai.ReScanBlockGroups(true);
-
-                            PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
-
-                            report.PacketValid = true;
-                            break;
-                        }
-                    case PacketType.FixedWeaponHitEvent:
-                        {
-                            var hitPacket = (FixedWeaponHitPacket)packet;
-
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (comp == null || comp.MyCube.MarkedForClose || comp.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                            {
-                                errorPacket.Error = $"comp is null: {comp == null} gridAi is null: {comp.Ai == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
-                                break;
-                            }
-
-                            var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
-                            var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
-                            
-                            if(targetEnt == null || weapon == null)
-                            {
-                                errorPacket.Error = $"targetEnt: {targetEnt == null} weapon: {weapon == null}";
-                                break;
-                            }
-                            var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
-
-                            var direction = hitPacket.Velocity;
-                            direction.Normalize();
-
-                            CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.WeaponAmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
-
-                            report.PacketValid = true;
-                            break;
-                        }
-                    case PacketType.CompSyncRequest:
-                        {
-                            ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                            comp = ent?.Components.Get<WeaponComponent>();
-
-                            if (comp == null || comp.MyCube.MarkedForClose)
-                            {
-                                errorPacket.Error = $"comp is null: {comp == null} ent is null: {ent == null} ent.MarkedForClose: {ent?.MarkedForClose}";
-                                break;
-                            }
-
-                            SendCompSettingUpdate(comp);
-                            SendCompStateUpdate(comp);
-
-                            break;
-                        }
-                    case PacketType.FocusUpdate:
-                    case PacketType.ReassignTargetUpdate:
-                    case PacketType.NextActiveUpdate:
-                    case PacketType.ReleaseActiveUpdate:
-                        {
-                            var focusPacket = (FocusPacket) packet;
-                            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-                            if (myGrid == null || myGrid.MarkedForClose)
-                            {
-                                errorPacket.Error = $"targetPacket is null: ent.MarkedForClose: {myGrid?.MarkedForClose} myGrid is null";
-                                break;
-                            }
-
-                            GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                            {
-                                var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
-
-                                switch (packet.PType)
-                                {
-                                    case PacketType.FocusUpdate:
-                                        if (targetGrid != null)
-                                            ai.Focus.AddFocus(targetGrid, ai, true);
-                                        break;
-                                    case PacketType.ReassignTargetUpdate:
-                                        if (targetGrid != null)
-                                            ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
-                                        break;
-                                    case PacketType.NextActiveUpdate:
-                                        ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
-                                        break;
-                                    case PacketType.ReleaseActiveUpdate:
-                                        ai.Focus.ReleaseActive(ai, true);
-                                        break;
-                                }
-
-                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
-                                report.PacketValid = true;
-                            }
-                            else
-                                errorPacket.Error = "GridAi not found";
-
-                            break;
-                        }
-                    default:
-                        Reporter.ReportData[PacketType.Invalid].Add(report);
-                        report.PacketValid = false;
-
-                        break;
-                }
-
-                if (!report.PacketValid)
-                    Log.Line(errorPacket.Error);
-            }
-            catch (Exception ex) { Log.Line($"Exception in ReceivedPacket: PacketType:{ptype} Exception: {ex}"); }
-        }
-
-        internal void ProccessServerPacketsForClients()
-        {
-
-            if ((!IsServer || !MpActive))
-            {
-                Log.Line($"trying to process server packets on a non-server");
-                return;
-            }
-
-            for (int i = 0; i < PacketsToClient.Count; i++)
-            {
-                var packetInfo = PacketsToClient[i];
-
-                var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
-
-                if (packetInfo.SingleClient)
-                    MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
-                else
-                {
-                    long entityId = packetInfo.Entity?.GetTopMostParent().EntityId ?? -1;
-
-                    foreach (var p in Players.Values)
-                    {
-                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
-                            MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
-                    }
-                }
-            }
-            PacketsToClient.Clear();
-        }
-
-        internal void ProccessGridResyncRequests()
-        {
-            var gridCompsToCheck = new Dictionary<GridAi, HashSet<long>>();
-            
-            for (int i = 0; i < ClientGridResyncRequests.Count; i++)
-            {
-                var comp = ClientGridResyncRequests[i];
-
-                if (!gridCompsToCheck.ContainsKey(comp.Ai))
-                    gridCompsToCheck[comp.Ai] = new HashSet<long>();
-
-                gridCompsToCheck[comp.Ai].Add(comp.MyCube.EntityId);
-            }
-
-            ClientGridResyncRequests.Clear();
-
-            foreach (var gridComps in gridCompsToCheck)
-            {
-
-                var packet = new RequestTargetsPacket
-                {
-                    EntityId = gridComps.Key.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.WeaponUpdateRequest,
-                    Comps = new List<long>(gridComps.Value),
-                };
-
-                PacketsToServer.Add(packet);
-            }
-
-            gridCompsToCheck.Clear();
         }
         #endregion
     }
