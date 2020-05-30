@@ -33,6 +33,7 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
+                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.State.Value.CurrentPlayerControl.PlayerId] : null;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
                 p.Info.WeaponId = w.WeaponId;

@@ -199,9 +199,23 @@ namespace WeaponCore
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             GridAi ai;
-            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
-                data.Report.PacketValid = true;
+            FakeTarget dummyTarget;
+            long playerId;
+            //TODO client uses try get in case packets are out of order, needs reprocess set up in case this fails
+            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+            {
+                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                {
+                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
+                    {
+                        dummyTarget.Update(targetPacket.Data, ai, null, true);
+                        data.Report.PacketValid = true;
+                    }
+                    else
+                        return Error(data, Msg("Player dummy target not found"));
+                }
+                else
+                    return Error(data, Msg("SteamToPlayer missing Player"));
             }
             else
                 return Error(data, Msg("Grid", myGrid != null), Msg("Ai"));

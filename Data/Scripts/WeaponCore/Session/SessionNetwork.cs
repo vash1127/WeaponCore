@@ -304,10 +304,23 @@ namespace WeaponCore
                             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
                             GridAi ai;
+                            FakeTarget dummyTarget;
+                            long playerId;
+                            //TODO client uses try get in case packets are out of order, needs reprocess set up in case this fails
                             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
                             {
-                                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
-                                report.PacketValid = true;
+                                if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                                {
+                                    if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
+                                    {
+                                        dummyTarget.Update(targetPacket.Data, ai, null, true);
+                                        report.PacketValid = true;
+                                    }
+                                    else
+                                        errorPacket.Error = "Player dummy target not found";
+                                }
+                                else
+                                    errorPacket.Error = "SteamToPlayer missing Player";
                             }
                             else
                                 errorPacket.Error = $"myGrid was null {myGrid == null} GridTargetingAIs Not Found";
@@ -1149,14 +1162,14 @@ namespace WeaponCore
                             }
 
                             GridAi ai;
-                            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+                            //TODO client uses try get in case packets are out of order, needs reprocess set up in case this fails
+                            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                             {
-                                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
-                                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
+                                PlayerDummyTargets[playerId].Update(targetPacket.Data, ai, null, true);
                                 report.PacketValid = true;
                             }
                             else
-                                errorPacket.Error = "GridAi not found";
+                                errorPacket.Error = $"myGrid was null {myGrid == null} GridTargetingAIs Not Found";
 
                             break;
                         }

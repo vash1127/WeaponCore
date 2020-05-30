@@ -48,7 +48,8 @@ namespace WeaponCore.Support
             else
             {
                 Vector3D predictedPos;
-                if (Weapon.CanShootTarget(w, ref w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
+                FakeTarget dummyTarget;
+                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.State.Value.CurrentPlayerControl.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
