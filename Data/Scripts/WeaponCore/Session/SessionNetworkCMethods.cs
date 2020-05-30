@@ -106,7 +106,7 @@ namespace WeaponCore
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             var statePacket = (StatePacket)packet;
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             if (statePacket.Data == null) return Error(data,  Msg("Data"));
 
             comp.MIds[(int)packet.PType] = statePacket.MId;
@@ -122,7 +122,7 @@ namespace WeaponCore
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             var setPacket = (SettingPacket)packet;
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             if (setPacket.Data == null) return Error(data, Msg("Data"));
 
             comp.MIds[(int)packet.PType] = setPacket.MId;
@@ -200,7 +200,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("Grid", myGrid != null), Msg("Ai"));
+                return Error(data, Msg($"GridId: {packet.EntityId}", myGrid != null), Msg("Ai"));
 
             return true;
         }
@@ -242,7 +242,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var dPacket = (BoolUpdatePacket)packet;
             var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-            if (cube == null) return Error(data, Msg("Cube"));
+            if (cube == null) return Error(data, Msg($"CubeId: {packet.EntityId}"));
 
             long playerId;
             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
@@ -281,7 +281,7 @@ namespace WeaponCore
 
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
             data.Report.PacketValid = true;
@@ -297,7 +297,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             var myGrid = ent as MyCubeGrid;
 
-            if (comp?.Ai == null && myGrid == null) return Error(data, Msg("Comp", comp != null), Msg("Ai+Grid"));
+            if (comp?.Ai == null && myGrid == null) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai+Grid"));
 
             if (overRidesPacket.Data == null) return Error(data, Msg("Data"));
 
@@ -350,7 +350,7 @@ namespace WeaponCore
             var cPlayerPacket = (ControllingPlayerPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
             comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
@@ -366,7 +366,7 @@ namespace WeaponCore
             data.ErrorPacket.NoReprocess = true;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             //saving on extra field with new packet type
             comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick, Target.States.ServerReset);
@@ -402,7 +402,7 @@ namespace WeaponCore
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
 
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             comp.MIds[(int)packet.PType] = shootStatePacket.MId;
 
@@ -432,7 +432,7 @@ namespace WeaponCore
             var rangePacket = (RangePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             comp.MIds[(int)packet.PType] = rangePacket.MId;
             comp.Set.Value.Range = rangePacket.Data;
@@ -463,7 +463,7 @@ namespace WeaponCore
             var cyclePacket = (CycleAmmoPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             comp.MIds[(int)packet.PType] = cyclePacket.MId;
             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
@@ -482,7 +482,7 @@ namespace WeaponCore
             var gridOverRidePacket = (GridOverRidesSyncPacket)packet;
 
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            if (myGrid == null) return Error(data, Msg("Grid"));
+            if (myGrid == null) return Error(data, Msg($"GridId: {packet.EntityId}"));
 
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
@@ -510,7 +510,7 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            if (myGrid == null) return Error(data, Msg("Grid"));
+            if (myGrid == null) return Error(data, Msg($"GridId: {packet.EntityId}"));
 
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
@@ -526,7 +526,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
             var focusPacket = (GridFocusListPacket)packet;
-            if (myGrid == null) return Error(data, Msg("Grid"));
+            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
@@ -535,7 +535,7 @@ namespace WeaponCore
                 {
                     var eId = focusPacket.EntityIds[i];
                     var focusTarget = MyEntities.GetEntityByIdOrDefault(eId);
-                    if (focusTarget == null) return Error(data, Msg($"focusTarget Id:{eId}"));
+                    if (focusTarget == null) return Error(data, Msg($"FocusTargetId: {eId}"));
 
                     ai.Focus.Target[i] = focusTarget;
                 }
@@ -552,7 +552,7 @@ namespace WeaponCore
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             var myGrid = ent as MyCubeGrid;
-            if (comp?.Ai == null && myGrid == null) return Error(data, Msg("Comp", comp != null), Msg("Ai+Grid"));
+            if (comp?.Ai == null && myGrid == null) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai+Grid"));
 
             if (comp != null) {
                 comp.MIds[(int)midPacket.MidType] = midPacket.MId;
@@ -579,7 +579,7 @@ namespace WeaponCore
             var packet = data.Packet;
             var focusPacket = (FocusPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            if (myGrid == null) return Error(data, Msg("Grid"));
+            if (myGrid == null) return Error(data, Msg($"GridId: {packet.EntityId}"));
 
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
