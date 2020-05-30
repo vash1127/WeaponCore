@@ -332,6 +332,72 @@ namespace WeaponCore
             PacketObjPool.Return(packetObj);
         }
         #endregion
+
+        #region ProcessRequests
+        internal void ProccessServerPacketsForClients()
+        {
+
+            if ((!IsServer || !MpActive))
+            {
+                Log.Line($"trying to process server packets on a non-server");
+                return;
+            }
+
+            for (int i = 0; i < PacketsToClient.Count; i++)
+            {
+                var packetInfo = PacketsToClient[i];
+
+                var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
+
+                if (packetInfo.SingleClient)
+                    MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
+                else
+                {
+                    long entityId = packetInfo.Entity?.GetTopMostParent().EntityId ?? -1;
+
+                    foreach (var p in Players.Values)
+                    {
+                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
+                            MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
+                    }
+                }
+            }
+            PacketsToClient.Clear();
+        }
+
+        internal void ProccessGridResyncRequests()
+        {
+            var gridCompsToCheck = new Dictionary<GridAi, HashSet<long>>();
+            
+            for (int i = 0; i < ClientGridResyncRequests.Count; i++)
+            {
+                var comp = ClientGridResyncRequests[i];
+
+                if (!gridCompsToCheck.ContainsKey(comp.Ai))
+                    gridCompsToCheck[comp.Ai] = new HashSet<long>();
+
+                gridCompsToCheck[comp.Ai].Add(comp.MyCube.EntityId);
+            }
+
+            ClientGridResyncRequests.Clear();
+
+            foreach (var gridComps in gridCompsToCheck)
+            {
+
+                var packet = new RequestTargetsPacket
+                {
+                    EntityId = gridComps.Key.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.WeaponUpdateRequest,
+                    Comps = new List<long>(gridComps.Value),
+                };
+
+                PacketsToServer.Add(packet);
+            }
+
+            gridCompsToCheck.Clear();
+        }
+        #endregion
     }
 
     public class NetworkProccessor
