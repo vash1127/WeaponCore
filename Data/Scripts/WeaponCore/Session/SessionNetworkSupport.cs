@@ -69,7 +69,7 @@ namespace WeaponCore
 
         private bool Error(PacketObj data, params NetResult[] messages)
         {
-            var message = $"[{data.Packet.PType.ToString()}] - ";
+            var message = $"[{data.Packet.PType.ToString()} - PacketError] - ";
 
             for (int i = 0; i < messages.Length; i++)
             {
@@ -77,7 +77,7 @@ namespace WeaponCore
                 message += $"{resultPair.Message}: {resultPair.Valid} - ";
             }
             data.ErrorPacket.Error = message;
-            Log.CleanLine($"[PacketError] {data.ErrorPacket.Error}");
+            Log.LineShortDate(data.ErrorPacket.Error);
             return false;
         }
 

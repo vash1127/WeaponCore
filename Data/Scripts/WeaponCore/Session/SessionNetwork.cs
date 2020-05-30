@@ -1178,8 +1178,8 @@ namespace WeaponCore
                                 var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
                                 foreach (var playerBlockPair in ai.ControllingPlayers)
                                 {
-                                    if (playerBlockPair.Value != null)
-                                    {
+                                    //if (playerBlockPair.Value != null)
+                                    //{
                                         playerToBlocks[c] = new PlayerToBlock
                                         {
                                             PlayerId = playerBlockPair.Key,
@@ -1187,14 +1187,14 @@ namespace WeaponCore
                                         };
 
                                         c++;
-                                    }
-                                    else
-                                        ai.ControllingPlayers.Remove(playerBlockPair.Key);
+                                    //}
+                                    //else
+                                        //ai.ControllingPlayers.Remove(playerBlockPair.Key);
                                 }
 
                                 ai.ControllingPlayers.ApplyRemovals();
 
-                                Array.Resize(ref playerToBlocks, c + 1);
+                                //Array.Resize(ref playerToBlocks, c + 1);
 
                                 PacketsToClient.Add(new PacketInfo {
                                     Entity = myGrid,
