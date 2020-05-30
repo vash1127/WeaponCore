@@ -100,14 +100,14 @@ namespace WeaponCore
                 }
 
                 foundTarget = true;
-                ai.DummyTarget.Update(hit.Position, ai, closestEnt);
+                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hit.Position, ai, closestEnt);
                 break;
             }
 
             if (rayHitSelf) {
                 ReticleOnSelfTick = s.Tick;
                 ReticleAgeOnSelf++;
-                if (rayOnlyHitSelf) ai.DummyTarget.Update(end, ai);
+                if (rayOnlyHitSelf) ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
             }
             else ReticleAgeOnSelf = 0;
 
@@ -119,14 +119,14 @@ namespace WeaponCore
                     s.SetTarget(closestEnt, ai);
                     return true;
                 }
-                ai.DummyTarget.Update(hitPos, ai, closestEnt);
+                ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hitPos, ai, closestEnt);
             }
 
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
                 if (!foundTarget) {
-                    ai.DummyTarget.Update(end, ai);
+                    ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
                 }
             }
 

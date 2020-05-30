@@ -109,7 +109,7 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
 
             if (weapon.Comp.TrackReticle)
-                targetCenter = weapon.Comp.Ai.DummyTarget.Position;
+                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.State.Value.CurrentPlayerControl.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -122,8 +122,8 @@ namespace WeaponCore.Platform
 
                 if (weapon.Comp.TrackReticle)
                 {
-                    targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
-                    targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
+                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.State.Value.CurrentPlayerControl.PlayerId].LinearVelocity;
+                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.State.Value.CurrentPlayerControl.PlayerId].Acceleration;
                 }
                 else
                 {
@@ -172,7 +172,7 @@ namespace WeaponCore.Platform
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
             if (weapon.Comp.TrackReticle)
-                targetCenter = weapon.Comp.Ai.DummyTarget.Position;
+                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.State.Value.CurrentPlayerControl.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -183,8 +183,8 @@ namespace WeaponCore.Platform
             if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
                 if (weapon.Comp.TrackReticle) {
-                    targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
-                    targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
+                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.State.Value.CurrentPlayerControl.PlayerId].LinearVelocity;
+                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.State.Value.CurrentPlayerControl.PlayerId].Acceleration;
                 }
                 else {
                     var cube = target.Entity as MyCubeBlock;

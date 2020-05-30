@@ -9,7 +9,7 @@ using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
-
+using static WeaponCore.Support.GridAi;
 
 namespace WeaponCore
 {
@@ -151,8 +151,7 @@ namespace WeaponCore
                         if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
-
-                            if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || gridAi.DummyTarget.ClearTarget))
+                            if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!comp.TrackReticle || PlayerDummyTargets[comp.State.Value.CurrentPlayerControl.PlayerId].ClearTarget))
                                 w.Target.Reset(Tick, States.Expired, !comp.TrackReticle);
                             else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);

@@ -114,9 +114,10 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-                ai.DummyTarget.Update(targetPacket.Data, ai, null, true);
-                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
+            long playerId;
+            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            {
+                PlayerDummyTargets[playerId].Update(targetPacket.Data, ai, null, true);
                 data.Report.PacketValid = true;
             }
             else

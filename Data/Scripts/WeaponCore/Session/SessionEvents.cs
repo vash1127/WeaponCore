@@ -7,6 +7,7 @@ using Sandbox.ModAPI.Weapons;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
+using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore
@@ -228,8 +229,10 @@ namespace WeaponCore
                 if (Players.TryRemove(l, out removedPlayer))
                 {
                     long playerId;
+
                     SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
                     PlayerMouseStates.Remove(playerId);
+                    PlayerDummyTargets.Remove(playerId);
 
                     if (IsServer && MpActive)
                         SendPlayerConnectionUpdate(l, false);
@@ -249,6 +252,8 @@ namespace WeaponCore
                 Players[id] = player;
                 SteamToPlayer[player.SteamUserId] = id;
                 PlayerMouseStates[id] = new InputStateData();
+                PlayerDummyTargets[id] = new FakeTarget();
+
 
                 PlayerEventId++;
                 if (AuthorIds.Contains(player.SteamUserId)) 

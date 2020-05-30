@@ -12,6 +12,7 @@ using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.GridAi;
 
 namespace WeaponCore.Support
 {
@@ -37,6 +38,7 @@ namespace WeaponCore.Support
         internal Vector3D VisualDir;
         internal Hit Hit = new Hit();
         internal WeaponRandomGenerator WeaponRng;
+        internal FakeTarget DummyTarget;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;

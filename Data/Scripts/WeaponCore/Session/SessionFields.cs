@@ -96,6 +96,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
         internal readonly Dictionary<MyStringHash, MyDefinitionId> VanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
         internal readonly Dictionary<long, InputStateData> PlayerMouseStates = new Dictionary<long, InputStateData>() {[-1] = new InputStateData()};
+        internal readonly Dictionary<long, FakeTarget> PlayerDummyTargets = new Dictionary<long, FakeTarget>() { [-1] = new FakeTarget() };
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
         internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();

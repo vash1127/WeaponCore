@@ -605,7 +605,7 @@ namespace WeaponCore.Projectiles
                     }
                     var targetPos = Vector3D.Zero;
                     if (fake)
-                        targetPos = Info.Ai.DummyTarget.Position;
+                        targetPos = Info.DummyTarget.Position;
                     else if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
                     else if (Info.Target.Entity != null) targetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
 
@@ -635,7 +635,7 @@ namespace WeaponCore.Projectiles
                     }
 
                     var tVel = Vector3.Zero;
-                    if (fake) tVel = Info.Ai.DummyTarget.LinearVelocity;
+                    if (fake) tVel = Info.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
                     if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr)
