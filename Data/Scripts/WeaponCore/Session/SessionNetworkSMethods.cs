@@ -136,39 +136,47 @@ namespace WeaponCore
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
-                var c = 0;
-                var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
-                
-                foreach (var playerBlockPair in ai.ControllingPlayers) {
+                if (ai.ControllingPlayers.Keys.Count > 0)
+                {
+                    var i = 0;
+                    var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
 
-                    //if (playerBlockPair.Value != null) {
-                    playerToBlocks[c] = new PlayerToBlock {
-                        PlayerId = playerBlockPair.Key,
-                        EntityId = playerBlockPair.Value.EntityId
-                    };
-                    c++;
-                    //}
-                    //else
+                    foreach (var playerBlockPair in ai.ControllingPlayers)
+                    {
+
+                        //if (playerBlockPair.Value != null) {
+                        playerToBlocks[i] = new PlayerToBlock
+                        {
+                            PlayerId = playerBlockPair.Key,
+                            EntityId = playerBlockPair.Value.EntityId
+                        };
+                        i++;
+                        //}
+                        //else
                         //ai.ControllingPlayers.Remove(playerBlockPair.Key);
+                    }
+
+                    //ai.ControllingPlayers.ApplyRemovals();
+
+                    //Array.Resize(ref playerToBlocks, c + 1);
+
+                    PacketsToClient.Add(new PacketInfo
+                    {
+
+                        Entity = myGrid,
+                        Packet = new CurrentGridPlayersPacket
+                        {
+                            EntityId = packet.EntityId,
+                            SenderId = packet.SenderId,
+                            PType = PacketType.ActiveControlFullUpdate,
+                            Data = new ControllingPlayersSync
+                            {
+                                PlayersToControlledBlock = playerToBlocks
+                            }
+                        },
+                        SingleClient = true,
+                    });
                 }
-
-                //ai.ControllingPlayers.ApplyRemovals();
-
-                //Array.Resize(ref playerToBlocks, c + 1);
-
-                PacketsToClient.Add(new PacketInfo {
-                    
-                    Entity = myGrid,
-                    Packet = new CurrentGridPlayersPacket {
-                        EntityId = packet.EntityId,
-                        SenderId = packet.SenderId,
-                        PType = PacketType.ActiveControlFullUpdate,
-                        Data = new ControllingPlayersSync {
-                            PlayersToControlledBlock = playerToBlocks
-                        }
-                    },
-                    SingleClient = true,
-                });
 
                 PacketsToClient.Add(new PacketInfo {
 
@@ -220,7 +228,7 @@ namespace WeaponCore
 
                 var overrides = new OverRidesData[ai.BlockGroups.Values.Count];
 
-                c = 0;
+                var c = 0;
                 foreach (var group in ai.BlockGroups) {
                     overrides[c].Overrides = GetOverrides(ai, group.Key);
                     overrides[c].GroupName = group.Key;
