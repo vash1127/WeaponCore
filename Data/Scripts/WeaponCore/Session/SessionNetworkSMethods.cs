@@ -140,20 +140,20 @@ namespace WeaponCore
                 
                 foreach (var playerBlockPair in ai.ControllingPlayers) {
 
-                    if (playerBlockPair.Value != null) {
-                        playerToBlocks[c] = new PlayerToBlock {
-                            PlayerId = playerBlockPair.Key,
-                            EntityId = playerBlockPair.Value.EntityId
-                        };
-                        c++;
-                    }
-                    else
-                        ai.ControllingPlayers.Remove(playerBlockPair.Key);
+                    //if (playerBlockPair.Value != null) {
+                    playerToBlocks[c] = new PlayerToBlock {
+                        PlayerId = playerBlockPair.Key,
+                        EntityId = playerBlockPair.Value.EntityId
+                    };
+                    c++;
+                    //}
+                    //else
+                        //ai.ControllingPlayers.Remove(playerBlockPair.Key);
                 }
 
-                ai.ControllingPlayers.ApplyRemovals();
+                //ai.ControllingPlayers.ApplyRemovals();
 
-                Array.Resize(ref playerToBlocks, c + 1);
+                //Array.Resize(ref playerToBlocks, c + 1);
 
                 PacketsToClient.Add(new PacketInfo {
                     

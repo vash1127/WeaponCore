@@ -20,7 +20,7 @@ namespace WeaponCore
         {
             try
             {
-                var message = System.Text.Encoding.UTF8.GetString(rawData, 0, rawData.Length); ;
+                var message = System.Text.Encoding.UTF8.GetString(rawData, 0, rawData.Length); 
                 if (string.IsNullOrEmpty(message)) return;
                 var firstChar = message[0];
                 int logId;
@@ -29,7 +29,6 @@ namespace WeaponCore
                 message = message.Substring(1);
 
                 switch (logId) {
-
                     case 0: {
                         Log.CleanLine(message);
                         break;
