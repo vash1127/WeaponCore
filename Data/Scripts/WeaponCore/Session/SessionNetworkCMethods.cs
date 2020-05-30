@@ -153,6 +153,8 @@ namespace WeaponCore
 
                     weapon.Comp.WeaponValues.WeaponRandom[weapon.WeaponId].Sync(weaponData.WeaponRng);
                 }
+                else
+                    Error(data, Msg("No Timmings"));
 
                 if (weaponData.TargetData != null) {
 
@@ -180,6 +182,8 @@ namespace WeaponCore
                         }
                     }
                 }
+                else
+                    Error(data, Msg("No TargetData"));
 
                 data.Report.PacketValid = true;
             }
@@ -454,6 +458,9 @@ namespace WeaponCore
                 ai.UiMId = midPacket.MId;
                 data.Report.PacketValid = true;
             }
+            else
+                return Error(data, Msg("GridAi not found"));
+
             return true;
         }
 
@@ -472,8 +479,9 @@ namespace WeaponCore
             if (weapon.State.Sync.CurrentAmmo == 0)
                 weapon.StartReload();
 
-            return true;
+            data.Report.PacketValid = true;
 
+            return true;
         }
 
         private bool ClientGridOverRidesSync(PacketObj data)
@@ -502,6 +510,9 @@ namespace WeaponCore
                         return Error(data, Msg("group did not exist"));
                 }
             }
+            else
+                return Error(data, Msg("GridAi not found"));
+
             return true;
 
         }
@@ -515,6 +526,8 @@ namespace WeaponCore
             GridAi ai;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                 ai.ReScanBlockGroups(true);
+            else
+                return Error(data, Msg("GridAi not found"));
 
             data.Report.PacketValid = true;
             return true;
@@ -541,6 +554,8 @@ namespace WeaponCore
                 }
                 data.Report.PacketValid = true;
             }
+            else
+                return Error(data, Msg("GridAi not found"));
 
             return true;
         }
