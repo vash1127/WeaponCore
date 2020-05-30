@@ -201,7 +201,7 @@ namespace WeaponCore
             GridAi ai;
             FakeTarget dummyTarget;
             long playerId;
-            //TODO client uses try get in case packets are out of order, needs reprocess set up in case this fails
+            //TODO client uses try get in case packets are out of order, no need to reprocess as fake targets are sent very often
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
                 if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
@@ -277,13 +277,18 @@ namespace WeaponCore
             var packet = data.Packet;
             var csPacket = (CurrentGridPlayersPacket)packet;
 
-            for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++) {
-                
-                var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
-                var cube = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
-                if (cube?.CubeGrid == null) return Error(data, Msg($"CubeId:{playerBlock.EntityId} - pId:{playerBlock.PlayerId}", cube != null), Msg("Grid"));
+            //null = 0 players in grid on stream/load
+            if (csPacket.Data.PlayersToControlledBlock != null && csPacket.Data.PlayersToControlledBlock.Length > 0)
+            {
+                for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
+                {
 
-                UpdateActiveControlDictionary(cube, playerBlock.PlayerId, true);
+                    var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
+                    var cube = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
+                    if (cube?.CubeGrid == null) return Error(data, Msg($"CubeId:{playerBlock.EntityId} - pId:{playerBlock.PlayerId}", cube != null), Msg("Grid"));
+
+                    UpdateActiveControlDictionary(cube, playerBlock.PlayerId, true);
+                }
             }
 
             data.Report.PacketValid = true;
