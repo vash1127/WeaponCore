@@ -245,15 +245,15 @@ namespace WeaponCore
                 }
 
                 long[] ids = new long[ai.Focus.Target.Length];
-                var valid = false;
+                var validFocus = false;
                 for (int i = 0; i < ai.Focus.Target.Length; i++)
                 {
                     ids[i] = ai.Focus.Target[i]?.EntityId ?? -1;
                     if (ids[i] != -1)
-                        valid = true;
+                        validFocus = true;
                 }
 
-                if (valid)
+                if (validFocus)
                 {
                     var focusPacket = new GridFocusListPacket
                     {
