@@ -107,7 +107,7 @@ namespace WeaponCore.Support
                     RootAi = tmpAi;
 
                     if (RootAi == null) {
-                        Log.Line($"rootAi is null in Update: {ai.SubGrids.Count} - caller:{caller}, forcing rootAi to caller");
+                        Log.Line($"[rootAi is null in Update] subCnt:{ai.SubGrids.Count} - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} -  myGridMarked:{ai.MyGrid.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiCloseTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
                         RootAi = ai;
                     }
 

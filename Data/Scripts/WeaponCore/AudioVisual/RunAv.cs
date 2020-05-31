@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -24,7 +25,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyParticleEffect, KeensMess> RipMap = new Dictionary<MyParticleEffect, KeensMess>();
 
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
-        internal readonly List<AvShot> HitSounds = new List<AvShot>(128);
+        internal readonly List<HitSound> HitSounds = new List<HitSound>(128);
         internal readonly Stack<AfterGlow> Glows = new Stack<AfterGlow>();
 
         internal Session Session;
@@ -398,8 +399,11 @@ namespace WeaponCore.Support
             for (int i = 0; i < HitSounds.Count; i++)
             {
                 var av = HitSounds[i];
-                av.HitEmitter.SetPosition(av.TracerFront);
-                av.HitEmitter.PlaySound(av.HitSound);
+                av.Emitter.SetPosition(av.Position);
+                av.Emitter.PlaySound(av.SoundPair);
+
+                Session.SoundPairs.Push(av.SoundPair);
+                Session.Emitters.Push(av.Emitter);
             }
             HitSounds.Clear();
         }
@@ -540,6 +544,13 @@ namespace WeaponCore.Support
         internal Weapon Weapon;
         internal Weapon.Muzzle Muzzle;
         internal uint StartTick;
+    }
+
+    internal struct HitSound
+    {
+        internal MyEntity3DSoundEmitter Emitter;
+        internal MySoundPair SoundPair;
+        internal Vector3D Position;
     }
 
     internal class KeensMess
