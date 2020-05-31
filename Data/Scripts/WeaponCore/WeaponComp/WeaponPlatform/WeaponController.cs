@@ -54,7 +54,6 @@ namespace WeaponCore.Platform
                     ReturingHome = false;
                     return;
                 }
-
                 ReturingHome = true;
 
                 if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)

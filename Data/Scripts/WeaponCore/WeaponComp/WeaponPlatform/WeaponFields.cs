@@ -173,7 +173,7 @@ namespace WeaponCore.Platform
         internal bool BarrelSpinning;
         internal bool AzimuthOnBase;
         internal bool ReturingHome;
-        internal bool IsHome;
+        internal bool IsHome = true;
         internal bool CanUseEnergyAmmo;
         internal bool CanUseHybridAmmo;
         internal bool CanUseChargeAmmo;
@@ -211,9 +211,12 @@ namespace WeaponCore.Platform
                         return false;
 
                     if (Comp.Session.IsCreative)
+                    {
+                        OutOfAmmo = false;
                         return true;
+                    }
 
-                    OutOfAmmo = State.Sync.CurrentAmmo == 0 && State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
+                    OutOfAmmo = State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
 
                     if (OutOfAmmo)
                     {
