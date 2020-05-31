@@ -41,6 +41,10 @@ namespace WeaponCore
                 else Av.ExplosionCounter = 0;
             }
             if (++SCount == 60) SCount = 0;
+
+            if (++AwakeCount == AwakeBuckets) AwakeCount = 0;
+            if (++AsleepCount == AsleepBuckets) AsleepCount = 0;
+
             if (Count++ == 119)
             {
                 Count = 0;
@@ -503,7 +507,7 @@ namespace WeaponCore
             ent.IsPreview = true;
             ent.Save = false;
             ent.SyncFlag = false;
-            ent.NeedsWorldMatrix = false;
+            //ent.NeedsWorldMatrix = false;
             ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             MyEntities.Add(ent);
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
@@ -224,6 +225,7 @@ namespace WeaponCore
                                         gunDef.RotationSpeed = blockDefs.RotateRate / 60;
                                         gunDef.ElevationSpeed = blockDefs.ElevateRate / 60;
                                         gunDef.AiEnabled = false;
+                                        gunDef.IdleRotation = false;
                                     }
 
                                     var cubeDef = def as MyCubeBlockDefinition;

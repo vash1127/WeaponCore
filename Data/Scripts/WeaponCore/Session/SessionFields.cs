@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ParallelTasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -11,7 +10,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
-using VRage.Profiler;
 using VRage.Utils;
 using VRage.Voxels;
 using VRageMath;
@@ -19,7 +17,6 @@ using WeaponCore.Api;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
-using static WeaponCore.Hud;
 using static WeaponCore.Support.GridAi;
 using Task = ParallelTasks.Task;
 
@@ -36,6 +33,8 @@ namespace WeaponCore
         internal const int VersionControl = 2;
         internal const uint ResyncMinDelayTicks = 720;
         internal const uint ServerTickOffset = 4;
+        internal const int AwakeBuckets = 60;
+        internal const int AsleepBuckets = 180;
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;
@@ -194,6 +193,8 @@ namespace WeaponCore
         internal ShieldApi SApi = new ShieldApi();
         internal NetworkReporter Reporter = new NetworkReporter();
         internal MyStorageData TmpStorage = new MyStorageData();
+        internal AcquireManager AcquireManager;
+
 
         internal RunAv Av;
         internal DSUtils DsUtil;
@@ -223,6 +224,7 @@ namespace WeaponCore
         internal object InitObj = new object();
 
         internal int MuzzleIdCounter;
+        internal int WeaponIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;
         internal int TargetChecks;
@@ -239,7 +241,9 @@ namespace WeaponCore
         internal int LCount;
         internal int SCount;
         internal int LogLevel;
-        
+        internal int AwakeCount = -1;
+        internal int AsleepCount = -1;
+
         internal ulong MultiplayerId;
         internal long PlayerId;
 
@@ -313,6 +317,8 @@ namespace WeaponCore
 
         internal int UniqueMuzzleId => MuzzleIdCounter++;
 
+        internal int UniqueWeaponId => WeaponIdCounter++;
+
         public T CastProhibit<T>(T ptr, object val) => (T) val;
 
         public Session()
@@ -329,6 +335,7 @@ namespace WeaponCore
             ApiServer = new ApiServer(this);
             Projectiles = new Projectiles.Projectiles(this);
             Proccessor = new NetworkProccessor(this);
+            AcquireManager = new AcquireManager(this);
 
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

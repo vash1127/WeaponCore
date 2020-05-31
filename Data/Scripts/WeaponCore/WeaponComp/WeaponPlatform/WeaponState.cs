@@ -39,6 +39,9 @@ namespace WeaponCore.Platform
 
             if (!Target.HasTarget)
             {
+                if (!WeaponAcquire.Enabled)
+                    System.Session.AcquireManager.AddAwake(WeaponAcquire);
+
                 Comp.WeaponValues.Targets[WeaponId].State = TransferTarget.TargetInfo.Expired;
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.TrackReticle)
@@ -659,7 +662,12 @@ namespace WeaponCore.Platform
         internal void WakeTargets()
         {
             LastTargetTick = Comp.Session.Tick;
-            LoadId = Comp.Session.LoadAssigner();
+            //LoadId = Comp.Session.LoadAssigner();
+            if (WeaponAcquire.Enabled)
+                System.Session.AcquireManager.Awaken(WeaponAcquire);
+            else
+                System.Session.AcquireManager.AddAwake(WeaponAcquire);
+
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 

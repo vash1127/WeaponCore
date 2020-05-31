@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Blocks;
+using Sandbox.ModAPI;
 using VRage.Audio;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -137,13 +141,13 @@ namespace WeaponCore.Support
             var topEntId = ent.GetTopMostParent().EntityId;
 
             Set(ent, targetPos, shortDist, origDist, topEntId);
-            if (w.System.Session.MpActive && !w.System.Session.IsClient) 
+            if (w.System.Session.MpActive && !w.System.Session.IsClient)
                 SyncTarget(w.Comp.WeaponValues.Targets[w.WeaponId], w);
         }
 
         internal void SetFake(uint expiredTick, Vector3D pos)
         {
-            Reset(expiredTick, States.Fake,false);
+            Reset(expiredTick, States.Fake, false);
             IsFakeTarget = true;
             TargetPos = pos;
             StateChange(true, States.Fake);
@@ -175,6 +179,210 @@ namespace WeaponCore.Support
             HasTarget = hasTarget;
             PreviousState = CurrentState;
             CurrentState = reason;
+        }
+    }
+
+    internal class AcquireManager
+    {
+        internal Session Session;
+        internal readonly HashSet<WeaponAcquire> Awake = new HashSet<WeaponAcquire>();
+        internal readonly HashSet<WeaponAcquire> Asleep = new HashSet<WeaponAcquire>();
+
+        internal readonly List<WeaponAcquire> Collector = new List<WeaponAcquire>();
+        internal readonly List<WeaponAcquire> Removal = new List<WeaponAcquire>();
+
+        internal int LastSleepSlot = -1;
+        internal int LastAwakeSlot = -1;
+        internal int WasAwake;
+        internal int WasAsleep;
+
+        internal AcquireManager(Session session)
+        {
+            Session = session;
+        }
+
+        internal void Awaken(WeaponAcquire wa)
+        {
+            var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
+            if (notValid)
+            {
+                if (!Session.IsClient) Log.Line($"cannot awaken: wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget}");
+                return;
+            }
+
+            wa.CreatedTick = Session.Tick;
+
+            if (!wa.Asleep)
+                return;
+
+            Asleep.Remove(wa);
+
+            AddAwake(wa);
+        }
+
+        internal void AddAwake(WeaponAcquire wa)
+        {
+            var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
+            if (notValid)
+            {
+                if (!Session.IsClient) Log.Line($"cannot add: wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget}");
+                return;
+            }
+
+            wa.Enabled = true;
+            wa.Asleep = false;
+            wa.CreatedTick = Session.Tick;
+
+            if (LastAwakeSlot < Session.AwakeBuckets - 1) {
+
+                wa.SlotId = ++LastAwakeSlot;
+
+                Awake.Add(wa);
+            }
+            else {
+
+                wa.SlotId = LastAwakeSlot = 0;
+
+                Awake.Add(wa);
+            }
+        }
+
+        internal void Remove(WeaponAcquire wa)
+        {
+            wa.Enabled = false;
+
+            if (wa.Asleep) {
+
+                wa.Asleep = false;
+                Asleep.Remove(wa);
+            }
+            else {
+                Awake.Remove(wa);
+            }
+        }
+
+
+        internal void UpdateAsleep()
+        {
+            WasAwake = 0;
+            WasAwake += Awake.Count;
+
+            foreach (var wa in Awake) { 
+
+                if (Session.Tick - wa.CreatedTick > 599) {
+
+                    if (LastSleepSlot < Session.AsleepBuckets - 1) {
+
+                        wa.SlotId = ++LastSleepSlot;
+                        wa.Asleep = true;
+
+                        Asleep.Add(wa);
+                        Removal.Add(wa);
+                    }
+                    else {
+
+                        wa.SlotId = LastSleepSlot = 0;
+                        wa.Asleep = true;
+
+                        Asleep.Add(wa);
+                        Removal.Add(wa);
+                    }
+                }
+            }
+
+            for (int i = 0; i < Removal.Count; i++)
+                Awake.Remove(Removal[i]);
+
+            Removal.Clear();
+        }
+
+
+        internal void ReorderSleep()
+        {
+            foreach (var wa in Asleep) {
+                
+                var remove = wa.Weapon.Target.HasTarget || !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
+
+                if (remove) {
+                    Removal.Add(wa);
+                    continue;
+                }
+                Collector.Add(wa);
+            }
+
+            Asleep.Clear();
+
+            for (int i = 0; i < Removal.Count; i++)
+                Remove(Removal[i]);
+
+            WasAsleep = Collector.Count;
+
+            ShellSort(Collector);
+
+            LastSleepSlot = -1;
+            for (int i = 0; i < Collector.Count; i++) {
+
+                var wa = Collector[i];
+                if (LastSleepSlot < Session.AsleepBuckets - 1) {
+
+                    wa.SlotId = ++LastSleepSlot;
+
+                    Asleep.Add(wa);
+                }
+                else {
+
+                    wa.SlotId = LastSleepSlot = 0;
+
+                    Asleep.Add(wa);
+                }
+            }
+            Collector.Clear();
+            Removal.Clear();
+        }
+
+        static void ShellSort(List<WeaponAcquire> list)
+        {
+            int length = list.Count;
+
+            for (int h = length / 2; h > 0; h /= 2)
+            {
+                for (int i = h; i < length; i += 1)
+                {
+                    var tempValue = list[i];
+                    var temp = list[i].Weapon.UniqueId;
+
+                    int j;
+                    for (j = i; j >= h && list[j - h].Weapon.UniqueId > temp; j -= h)
+                    {
+                        list[j] = list[j - h];
+                    }
+
+                    list[j] = tempValue;
+                }
+            }
+        }
+
+        internal void Clean()
+        {
+            Awake.Clear();
+            Asleep.Clear();
+            Collector.Clear();
+            Removal.Clear();
+        }
+
+    }
+
+    internal class WeaponAcquire
+    {
+        internal Weapon Weapon;
+        internal uint CreatedTick;
+        internal int SlotId;
+        internal bool Asleep;
+        internal bool Enabled;
+
+        internal WeaponAcquire(Weapon weapon)
+        {
+            Weapon = weapon;
         }
     }
 

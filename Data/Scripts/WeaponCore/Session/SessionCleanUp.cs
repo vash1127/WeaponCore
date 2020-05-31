@@ -53,6 +53,8 @@ namespace WeaponCore
                 PacketPools.Clear();
             }
 
+            AcquireManager.Clean();
+
             foreach (var e in Emitters)
                 e.Cleanup();
             Emitters.Clear();

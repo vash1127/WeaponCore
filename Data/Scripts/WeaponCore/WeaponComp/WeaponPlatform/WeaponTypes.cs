@@ -106,26 +106,27 @@ namespace WeaponCore.Platform
             }
         }
 
-        public class Muzzle
+        internal class Muzzle
         {
-            public Muzzle(int id, Session session)
+            internal Muzzle(int id, Session session)
             {
                 MuzzleId = id;
                 UniqueId = session.UniqueMuzzleId;
                 session.VoxelCaches.Add(UniqueId, new VoxelCache());
             }
 
-            public Vector3D Position;
-            public Vector3D Direction;
-            public Vector3D DeviatedDir;
-            public uint LastUpdateTick;
-            public uint LastAv1Tick;
-            public uint LastAv2Tick;
-            public int MuzzleId;
-            public int UniqueId;
-            public bool Av1Looping;
-            public bool Av2Looping;
+            internal Vector3D Position;
+            internal Vector3D Direction;
+            internal Vector3D DeviatedDir;
+            internal uint LastUpdateTick;
+            internal uint LastAv1Tick;
+            internal uint LastAv2Tick;
+            internal int MuzzleId;
+            internal int UniqueId;
+            internal bool Av1Looping;
+            internal bool Av2Looping;
 
         }
+
     }
 }
