@@ -143,22 +143,13 @@ namespace WeaponCore
 
                     foreach (var playerBlockPair in ai.ControllingPlayers)
                     {
-
-                        //if (playerBlockPair.Value != null) {
                         playerToBlocks[i] = new PlayerToBlock
                         {
                             PlayerId = playerBlockPair.Key,
                             EntityId = playerBlockPair.Value.EntityId
                         };
                         i++;
-                        //}
-                        //else
-                        //ai.ControllingPlayers.Remove(playerBlockPair.Key);
                     }
-
-                    //ai.ControllingPlayers.ApplyRemovals();
-
-                    //Array.Resize(ref playerToBlocks, c + 1);
 
                     PacketsToClient.Add(new PacketInfo
                     {
@@ -235,12 +226,15 @@ namespace WeaponCore
                     c++;
                 }
 
-                if (overrides.Length > 0) {
+                if (overrides.Length > 0)
+                {
 
-                    PacketsToClient.Add(new PacketInfo {
+                    PacketsToClient.Add(new PacketInfo
+                    {
 
                         Entity = myGrid,
-                        Packet = new GridOverRidesSyncPacket {
+                        Packet = new GridOverRidesSyncPacket
+                        {
                             EntityId = myGrid.EntityId,
                             SenderId = packet.SenderId,
                             PType = PacketType.GridOverRidesSync,
@@ -250,21 +244,32 @@ namespace WeaponCore
                     });
                 }
 
-                var focusPacket = new GridFocusListPacket {
-                    EntityId = myGrid.EntityId,
-                    SenderId = packet.SenderId,
-                    PType = PacketType.GridFocusListSync,
-                    EntityIds = new long[ai.Focus.Target.Length]
-                };
-
+                long[] ids = new long[ai.Focus.Target.Length];
+                var validFocus = false;
                 for (int i = 0; i < ai.Focus.Target.Length; i++)
-                    focusPacket.EntityIds[i] = ai.Focus.Target[i]?.EntityId ?? -1;
+                {
+                    ids[i] = ai.Focus.Target[i]?.EntityId ?? -1;
+                    if (ids[i] != -1)
+                        validFocus = true;
+                }
 
-                PacketsToClient.Add(new PacketInfo {
-                    Entity = myGrid,
-                    Packet = focusPacket,
-                    SingleClient = true,
-                });
+                if (validFocus)
+                {
+                    var focusPacket = new GridFocusListPacket
+                    {
+                        EntityId = myGrid.EntityId,
+                        SenderId = packet.SenderId,
+                        PType = PacketType.GridFocusListSync,
+                        EntityIds = ids,
+                    };
+
+                    PacketsToClient.Add(new PacketInfo
+                    {
+                        Entity = myGrid,
+                        Packet = focusPacket,
+                        SingleClient = true,
+                    });
+                }
 
                 if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
                     PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();

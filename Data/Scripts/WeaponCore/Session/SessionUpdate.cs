@@ -212,7 +212,7 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         ///
 
-                        if (w.TurretMode && !w.ReturingHome && !w.IsHome && ((w.Target.TargetChanged && !w.Target.HasTarget) || (comp.WasControlled != comp.UserControlled && !comp.UserControlled)))
+                        if (w.TurretMode && !w.ReturingHome && !w.IsHome && !w.Target.HasTarget && !comp.UserControlled)
                             w.TurretHomePosition(true);
 
                         ///
