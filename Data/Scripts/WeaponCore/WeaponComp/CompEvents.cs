@@ -7,6 +7,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using static WeaponCore.Platform.MyWeaponPlatform;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
 {
@@ -107,6 +108,16 @@ namespace WeaponCore.Support
                             w.StopShooting();
                     }
                     IsWorkingChangedTick = Session.Tick;
+                }
+
+                if (wasFunctional && !IsFunctional && Platform.State == PlatformState.Ready)
+                {
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                    {
+                        var w = Platform.Weapons[i];
+                        for (int j = 0; j < w.AnimationsSet[EventTriggers.TurnOn].Length; j++)
+                            w.PlayEmissives(w.AnimationsSet[EventTriggers.TurnOn][j]);
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
