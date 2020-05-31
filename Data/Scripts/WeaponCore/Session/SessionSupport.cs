@@ -41,6 +41,10 @@ namespace WeaponCore
                 else Av.ExplosionCounter = 0;
             }
             if (++SCount == 60) SCount = 0;
+
+            if (++AwakeCount == AwakeBuckets) AwakeCount = 0;
+            if (++AsleepCount == AsleepBuckets) AsleepCount = 0;
+
             if (Count++ == 119)
             {
                 Count = 0;

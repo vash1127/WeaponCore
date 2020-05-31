@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
@@ -213,6 +214,10 @@ namespace WeaponCore.Support
 
                     if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         ComputeStorage(weapon);
+
+                    var notValid = !weapon.Set.Enable || !State.Value.Online || !Set.Value.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
+                    if (!notValid)
+                        Session.AcquireManager.AddAwake(weapon.WeaponAcquire);
                 }
 
                 if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {
@@ -236,6 +241,8 @@ namespace WeaponCore.Support
                 if (!FunctionalBlock.Enabled)
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                         Session.FutureEvents.Schedule(Platform.Weapons[i].DelayedStart, null, 1);
+
+                TurretBase?.SetTarget(Vector3D.MaxValue);
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }

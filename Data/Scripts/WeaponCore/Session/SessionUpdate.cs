@@ -5,6 +5,7 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Weapons;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
@@ -76,9 +77,6 @@ namespace WeaponCore
                             comp.Session.SendTrackReticleUpdate(comp);
                     }
 
-                    //if (Tick60 && comp.TurretBase != null)
-                        //Log.Line($"{comp.TurretBase.AIEnabled} - {comp.TurretBase.HasTarget} - {comp.TurretBase.Target} - {comp.TurretBase.EnableIdleRotation} - {comp.TurretBase.Enabled}");
-
                     comp.WasControlled = comp.UserControlled;
                     
                     var compCurPlayer = comp.State.Value.CurrentPlayerControl;
@@ -93,6 +91,7 @@ namespace WeaponCore
                         rightClick = inputState.MouseButtonRight;// && currentControl;
                     }
                     else inputState = PlayerMouseStates[-1];
+
                     ///
                     /// Weapon update section
                     ///
@@ -376,6 +375,12 @@ namespace WeaponCore
             }
         }
 
+        internal int LowAcquireChecks = int.MaxValue;
+        internal int HighAcquireChecks = int.MinValue;
+        internal int AverageAcquireChecks;
+        internal int TotalAcquireChecks;
+        internal int AcquireChecks;
+
         private void CheckAcquire()
         {
             for (int i = AcquireTargets.Count - 1; i >= 0; i--)
@@ -390,18 +395,25 @@ namespace WeaponCore
                 }
 
                 var gridAi = w.Comp.Ai;
-                var sinceCheck = Tick - w.Target.CheckTick;
+                //var sinceCheck = Tick - w.Target.CheckTick;
+
+                var wa = w.WeaponAcquire;
+
+                if (!wa.Enabled)
+                    AcquireManager.AddAwake(wa);
+
+                var acquire = (wa.Asleep && AsleepCount == wa.SlotId || !wa.Asleep && AwakeCount == wa.SlotId);
+
                 var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && gridAi.CheckProjectiles;
 
-                var checkTime = w.Target.TargetChanged || sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || seekProjectile;
+                var checkTime = w.Target.TargetChanged || acquire || seekProjectile;
 
-                if (checkTime || gridAi.TargetResetTick == Tick && w.Target.HasTarget)
-                {
-                    if (seekProjectile || comp.TrackReticle || (w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange) && gridAi.TargetingInfo.ValidTargetExists(w))
-                    {
+                if (checkTime || gridAi.TargetResetTick == Tick && w.Target.HasTarget) {
 
-                        if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget)
-                        {
+                    if (seekProjectile || comp.TrackReticle || (w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange) && gridAi.TargetingInfo.ValidTargetExists(w)) {
+                        
+                        AcquireChecks++;
+                        if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
                             var topMost = comp.TrackingWeapon.Target.Entity?.GetTopMostParent();
                             GridAi.AcquireTarget(w, false, topMost);
                         }
@@ -409,9 +421,8 @@ namespace WeaponCore
                             GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                     }
 
+                    if (w.Target.HasTarget || !(w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange)) {
 
-                    if (w.Target.HasTarget || !(w.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange))
-                    {
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         if (w.Target.HasTarget && MpActive) {

@@ -96,6 +96,11 @@ namespace WeaponCore.Support
                         w.Comp.Session.VoxelCaches.Remove(w.Muzzles[i].UniqueId);
 
                     w.RayCallBackClean();
+
+                    if (w.WeaponAcquire.Enabled) 
+                        w.Comp.Session.AcquireManager.Remove(w.WeaponAcquire);
+
+                    w.WeaponAcquire.Weapon = null;
                 }
             }
         }

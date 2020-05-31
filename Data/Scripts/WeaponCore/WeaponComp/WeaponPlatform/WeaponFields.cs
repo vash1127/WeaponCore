@@ -48,7 +48,7 @@ namespace WeaponCore.Platform
         internal double TimePerShot;
         internal float HeatPerc;
 
-        internal int LoadId;
+        //internal int LoadId;
         internal int ShortLoadId;
         internal int BarrelRate;
         internal int ArmorHits;
@@ -79,6 +79,7 @@ namespace WeaponCore.Platform
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
 
+        internal WeaponAcquire WeaponAcquire;
         internal Target Target;
         internal Target NewTarget;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
@@ -121,6 +122,7 @@ namespace WeaponCore.Platform
         internal uint LastSmartLosCheck;
         internal uint LastLoadedTick;
         internal int FireCounter;
+        internal int UniqueId;
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int WeaponId;
@@ -236,8 +238,7 @@ namespace WeaponCore.Platform
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
-            LoadId = comp.Session.LoadAssigner();
-            ShortLoadId = comp.Session.ShortLoadAssigner();
+
             MuzzlePart = new PartInfo { Entity = entity };
             AnimationsSet = animationSets;
             Timings = new WeaponTimings();
@@ -349,7 +350,12 @@ namespace WeaponCore.Platform
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             RayCallBack = new ParallelRayCallBack(this);
+            WeaponAcquire = new WeaponAcquire(this);
             TrackProjectiles = System.TrackProjectile;
+
+            //LoadId = comp.Session.LoadAssigner();
+            UniqueId = comp.Session.UniqueWeaponId;
+            ShortLoadId = comp.Session.ShortLoadAssigner();
         }
     }
 }

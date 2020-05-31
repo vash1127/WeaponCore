@@ -44,6 +44,28 @@ namespace WeaponCore
                 //
                 // Finish work from last frame
                 //
+
+                /*
+                TotalAcquireChecks += AcquireChecks;
+
+                if (AcquireChecks < LowAcquireChecks)
+                    LowAcquireChecks = AcquireChecks;
+                else if (AcquireChecks > HighAcquireChecks)
+                    HighAcquireChecks = AcquireChecks;
+                AcquireChecks = 0;
+                if (Tick60)
+                {
+                    AverageAcquireChecks = TotalAcquireChecks / 60;
+                    Log.Line($"Low:{LowAcquireChecks} - High:{HighAcquireChecks} - Average:{AverageAcquireChecks} - Awake:{AcquireManager.WasAwake} - Asleep:{AcquireManager.WasAsleep}");
+                    TotalAcquireChecks = 0;
+                    LowAcquireChecks = int.MaxValue;
+                    HighAcquireChecks = int.MinValue;
+                }
+                */
+
+                if (Tick60) AcquireManager.UpdateAsleep();
+                if (Tick600) AcquireManager.ReorderSleep();
+
                 DsUtil.Start("damage");
                 if (_effectedCubes.Count > 0)
                     ApplyGridEffect();
