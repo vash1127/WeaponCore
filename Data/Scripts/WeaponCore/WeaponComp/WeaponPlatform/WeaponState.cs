@@ -671,13 +671,13 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
-        public void PlayEmissives(PartAnimation animation, WeaponSystem system)
+        public void PlayEmissives(PartAnimation animation)
         {
             EmissiveState LastEmissive = new EmissiveState();
             for (int i = 0; i < animation.MoveToSetIndexer.Length; i++)
             {
                 EmissiveState currentEmissive;
-                if (system.WeaponEmissiveSet.TryGetValue(animation.EmissiveIds[animation.MoveToSetIndexer[i][(int)Indexer.EmissiveIndex]], out currentEmissive))
+                if (System.WeaponEmissiveSet.TryGetValue(animation.EmissiveIds[animation.MoveToSetIndexer[i][(int)Indexer.EmissiveIndex]], out currentEmissive))
                 {
                     currentEmissive.CurrentPart = animation.CurrentEmissivePart[animation.MoveToSetIndexer[i][(int)Indexer.EmissivePartIndex]];
 

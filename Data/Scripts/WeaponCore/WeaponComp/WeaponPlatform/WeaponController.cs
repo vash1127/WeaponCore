@@ -245,7 +245,7 @@ namespace WeaponCore.Platform
             if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int j = 0; j < AnimationsSet[EventTriggers.TurnOn].Length; j++)
-                PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j], System);
+                PlayEmissives(AnimationsSet[EventTriggers.TurnOn][j]);
 
             PlayParticleEvent(EventTriggers.TurnOn, true, Vector3D.DistanceSquared(Comp.Session.CameraPos, MyPivotPos), null);
         }
@@ -255,7 +255,7 @@ namespace WeaponCore.Platform
             if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int j = 0; j < AnimationsSet[EventTriggers.TurnOff].Length; j++)
-                PlayEmissives(AnimationsSet[EventTriggers.TurnOff][j], System);
+                PlayEmissives(AnimationsSet[EventTriggers.TurnOff][j]);
 
             PlayParticleEvent(EventTriggers.TurnOff, true, Vector3D.DistanceSquared(Comp.Session.CameraPos, MyPivotPos), null);
         }
