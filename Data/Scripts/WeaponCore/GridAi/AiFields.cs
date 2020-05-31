@@ -104,10 +104,11 @@ namespace WeaponCore.Support
         internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
-        internal uint LastSerializedTick;
         internal uint TurnOffManualTick;
         internal uint UiMId;
         internal uint ProjectileTicker;
+        internal uint AiSpawnTick;
+        internal uint AiCloseTick;
         internal int SourceCount;
         internal int BlockCount;
         internal int NumSyncWeapons;
@@ -179,6 +180,8 @@ namespace WeaponCore.Support
 
             if (Session.IsClient)
                 session.SendUpdateRequest(grid.EntityId, PacketType.GridSyncRequestUpdate);
+            
+            AiSpawnTick = Session.Tick;
         }
     }
 }

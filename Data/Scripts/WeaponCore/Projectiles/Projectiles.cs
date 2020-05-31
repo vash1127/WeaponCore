@@ -268,12 +268,12 @@ namespace WeaponCore.Projectiles
                                     ProjectileHit(p, lp, p.Info.AmmoDef.Const.CollisionIsLine, ref p.Beam);
 
                         p.State = ProjectileState.Detonate;
-
-                        if (p.EnableAv)
-                            p.Info.AvShot.ForceHitParticle = true;
                     }
                     else
                         p.State = ProjectileState.Detonate;
+
+                    if (p.EnableAv)
+                        p.Info.AvShot.ForceHitParticle = true;
 
                     p.EarlyEnd = true;
                     p.Info.Hit.HitPos = p.Position;

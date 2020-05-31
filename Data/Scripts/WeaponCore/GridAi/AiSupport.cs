@@ -397,6 +397,8 @@ namespace WeaponCore.Support
 
         internal void CleanUp()
         {
+            AiCloseTick = Session.Tick;
+
             RegisterMyGridEvents(false);
 
             foreach (var grid in SubGrids) {
@@ -412,7 +414,7 @@ namespace WeaponCore.Support
                 tInfo.TargetAi = null;
                 Session.TargetInfoPool.Return(tInfo);
             }
-            
+
             SortedTargets.Clear();
             InventoryIndexer.Clear();
             Construct.Clean();
