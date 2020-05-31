@@ -116,7 +116,7 @@ namespace WeaponCore
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
-        internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
+        internal readonly List<DbScan> DbsToUpdate = new List<DbScan>(32);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
         internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);

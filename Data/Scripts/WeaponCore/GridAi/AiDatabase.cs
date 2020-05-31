@@ -23,7 +23,7 @@ namespace WeaponCore.Support
             GridVolume = MyGrid.PositionComp.WorldVolume;
             ScanVolume = GridVolume;
             ScanVolume.Radius = MaxTargetingRange;
-            Session.DbsToUpdate.Add(this);
+            Session.DbsToUpdate.Add(new DbScan {Ai = this, Version = Version});
             TargetsUpdatedTick = Session.Tick;
         }
 

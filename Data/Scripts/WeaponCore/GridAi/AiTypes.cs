@@ -15,6 +15,12 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
+        internal struct DbScan
+        {
+            internal GridAi Ai;   
+            internal int Version;
+        }
+
         internal class WeaponCount
         {
             internal int Current;
