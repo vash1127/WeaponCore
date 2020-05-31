@@ -507,7 +507,7 @@ namespace WeaponCore
             ent.IsPreview = true;
             ent.Save = false;
             ent.SyncFlag = false;
-            //ent.NeedsWorldMatrix = false;
+            ent.NeedsWorldMatrix = false;
             ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
             MyEntities.Add(ent);
 
