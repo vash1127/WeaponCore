@@ -114,7 +114,7 @@ namespace WeaponCore.Support
 
                         var w = Platform.Weapons[i];
                         PartAnimation[] partArray;
-                        if (w.AnimationsSet.TryGetValue(EventTriggers.TurnOn, out partArray)) {
+                        if (w.AnimationsSet.TryGetValue(EventTriggers.TurnOff, out partArray)) {
                             for (int j = 0; j < partArray.Length; j++) 
                                 w.PlayEmissives(partArray[j]);
                         }
