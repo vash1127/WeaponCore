@@ -145,18 +145,22 @@ namespace WeaponCore
 
                 if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
+                var validTimings = weaponData.Timmings != null && weaponData.SyncData != null && weaponData.WeaponRng != null;
+                var validTargetData = weaponData.TargetData != null;
+                
+                if (!validTargetData && !validTimings)
+                    Error(data, Msg($"No valid weapon Data or Timings for {comp.MyCube.BlockDefinition.Id.SubtypeName} - aiAge:{Tick - comp.Ai.AiSpawnTick}"));
+
                 Weapon weapon;
-                if (weaponData.Timmings != null && weaponData.SyncData != null && weaponData.WeaponRng != null) {
+                if (validTimings) {
                     weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
                     var timings = weaponData.Timmings.SyncOffsetClient(Tick);
                     SyncWeapon(weapon, timings, ref weaponData.SyncData);
 
                     weapon.Comp.WeaponValues.WeaponRandom[weapon.WeaponId].Sync(weaponData.WeaponRng);
                 }
-                else
-                    Error(data, Msg("No Timmings"));
 
-                if (weaponData.TargetData != null) {
+                if (validTargetData) {
 
                     weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
                     weaponData.TargetData.SyncTarget(weapon.Target);
@@ -182,8 +186,6 @@ namespace WeaponCore
                         }
                     }
                 }
-                else
-                    Error(data, Msg("No TargetData"));
 
                 data.Report.PacketValid = true;
             }

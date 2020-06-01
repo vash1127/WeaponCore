@@ -84,39 +84,41 @@ namespace WeaponCore.Support
 
         private void IsWorkingChanged(MyCubeBlock myCubeBlock)
         {
-            try
-            {
+            try {
+
                 var wasFunctional = IsFunctional;
                 IsFunctional = myCubeBlock.IsFunctional;
 
-                if (Platform.State == PlatformState.Incomplete)
-                {
+                if (Platform.State == PlatformState.Incomplete) {
                     Log.Line($"Init on Complete");
                     Init();
                 }
-                else
-                {
+                else {
+
                     if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
                         Status = Start.ReInit;
                     IsWorking = myCubeBlock.IsWorking;
                     State.Value.Online = IsWorking && IsFunctional;
                     if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - online:{State.Value.Online} - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
 
-                    if (!IsWorking && Registered)
-                    {
+                    if (!IsWorking && Registered) {
                         foreach (var w in Platform.Weapons)
                             w.StopShooting();
                     }
                     IsWorkingChangedTick = Session.Tick;
                 }
 
-                if (wasFunctional && !IsFunctional && Platform.State == PlatformState.Ready)
-                {
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
-                    {
+                if (wasFunctional && !IsFunctional && Platform.State == PlatformState.Ready) {
+
+                    for (int i = 0; i < Platform.Weapons.Length; i++) {
+
                         var w = Platform.Weapons[i];
-                        for (int j = 0; j < w.AnimationsSet[EventTriggers.TurnOn].Length; j++)
-                            w.PlayEmissives(w.AnimationsSet[EventTriggers.TurnOn][j]);
+                        PartAnimation[] partArray;
+                        if (w.AnimationsSet.TryGetValue(EventTriggers.TurnOn, out partArray)) {
+                            for (int j = 0; j < partArray.Length; j++) 
+                                w.PlayEmissives(partArray[j]);
+                        }
+                        else Log.Line($"AnimationsSet.TryGetValue failed for weapon: {w.System.WeaponName}");
                     }
                 }
             }

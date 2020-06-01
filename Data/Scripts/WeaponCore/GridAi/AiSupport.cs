@@ -260,9 +260,6 @@ namespace WeaponCore.Support
         internal void CheckReload(object o = null)
         {
             var magId = (MyDefinitionId?)o ?? new MyDefinitionId();
-
-            Log.Line($"magId: {magId} OutOfAmmoWeapons: {OutOfAmmoWeapons.Count}");
-
             foreach (var w in OutOfAmmoWeapons) {
                 if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
                     ComputeStorage(w);
