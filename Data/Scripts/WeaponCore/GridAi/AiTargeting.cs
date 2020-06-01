@@ -129,10 +129,10 @@ namespace WeaponCore.Support
                 }
 
                 var character = info.Target as IMyCharacter;
-                if (character != null && !s.TrackCharacters) continue;
+                if (character != null && !s.TrackCharacters || !overRides.Biologicals) continue;
 
                 var meteor = info.Target as MyMeteor;
-                if (meteor != null && !s.TrackMeteors) continue;
+                if (meteor != null && !s.TrackMeteors || !overRides.Meteors) continue;
 
                 if (Obstruction(ref info, ref targetPos, p))
                     continue;
@@ -245,10 +245,10 @@ namespace WeaponCore.Support
                         return;
                     }
                     var meteor = info.Target as MyMeteor;
-                    if (meteor != null && !s.TrackMeteors) continue;
+                    if (meteor != null && !s.TrackMeteors || !overRides.Meteors) continue;
                     var character = info.Target as IMyCharacter;
 
-                    if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
+                    if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character) || !overRides.Biologicals)) continue;
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
 
