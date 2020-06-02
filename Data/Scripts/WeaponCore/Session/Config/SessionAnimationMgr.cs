@@ -1088,7 +1088,7 @@ namespace WeaponCore
                     var matrix = dummyInfo.DummyMatrix;
                     matrix.Translation = pos;
 
-                    if (particleEvent.Effect == null || particleEvent.Effect.IsStopped)
+                    if (particleEvent.Effect == null)
                     {
                         if (ent == null || !MyParticlesManager.TryCreateParticleEffect(particleEvent.ParticleName, ref matrix, ref pos, ent.Render.GetRenderObjectID(), out particleEvent.Effect))
                         {
