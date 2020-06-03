@@ -9,6 +9,9 @@ namespace WeaponCore.Support
     {
         internal void HealthCheck()
         {
+            if (Platform.State != MyWeaponPlatform.PlatformState.Ready || MyCube.MarkedForClose)
+                return;
+
             switch (Status)
             {
                 case Start.Starting:
@@ -38,6 +41,38 @@ namespace WeaponCore.Support
 
             Status = Start.Started;
         }
+
+        internal void DetectStateChanges()
+        {
+            if (Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            UpdatedState = true;
+
+            var overRides = Set.Value.Overrides;
+            var overActive = overRides.Activate;
+            var attackNeutrals = overActive && overRides.Neutrals;
+            var attackNoOwner = overActive && overRides.Unowned;
+            var attackFriends = overActive && overRides.Friendly;
+            var targetNonThreats = (attackNoOwner || attackNeutrals || attackFriends);
+            
+            TargetNonThreats = targetNonThreats;
+            if (TargetNonThreats)
+                Ai.TargetNonThreats = true;
+
+            var otherRangeSqr = Ai.TargetingInfo.OtherRangeSqr;
+            var threatRangeSqr = Ai.TargetingInfo.ThreatRangeSqr;
+            IsAsleep = false;
+
+            var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
+                : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
+
+            if (!targetInrange && Ai.Construct.RootAi.ControllingPlayers.Keys.Count <= 0) {
+                IsAsleep = true;
+                Ai.SleepingComps++;
+            }
+        }
+
 
         internal void SubpartClosed(MyEntity ent)
         {

@@ -193,8 +193,8 @@ namespace WeaponCore
         internal ShieldApi SApi = new ShieldApi();
         internal NetworkReporter Reporter = new NetworkReporter();
         internal MyStorageData TmpStorage = new MyStorageData();
+        internal InputStateData DefaultInputStateData = new InputStateData();
         internal AcquireManager AcquireManager;
-
 
         internal RunAv Av;
         internal DSUtils DsUtil;
@@ -243,7 +243,6 @@ namespace WeaponCore
         internal int LogLevel;
         internal int AwakeCount = -1;
         internal int AsleepCount = -1;
-
         internal ulong MultiplayerId;
         internal long PlayerId;
 

@@ -7,15 +7,14 @@ namespace WeaponCore.Support
     {
         internal void TerminalRefresh(bool update = true)
         {
+            if (Platform.State != MyWeaponPlatform.PlatformState.Ready || Status != Start.Started)
+                return;
+
             if (Ai?.LastTerminal == MyCube)
-            {
                 TerminalBlock.RefreshCustomInfo();
-            }
 
             if (update && InControlPanel)
-            {
                 MyCube.UpdateTerminal();
-            }
         }
 
         internal void RemoveComp()

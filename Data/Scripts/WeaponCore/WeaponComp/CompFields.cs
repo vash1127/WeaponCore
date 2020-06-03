@@ -33,6 +33,7 @@ namespace WeaponCore.Support
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
         internal MatrixD CubeMatrix;
+        internal InputStateData InputState;
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
@@ -42,7 +43,12 @@ namespace WeaponCore.Support
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
-        //internal float MaxInventoryVolume;
+
+        internal double MaxTargetDistance = double.MinValue;
+        internal double MaxTargetDistanceSqr = double.MinValue;
+        internal double MinTargetDistance = double.MaxValue;
+        internal double MinTargetDistanceSqr = double.MaxValue;
+
         internal float EffectiveDps;
         internal float PeakDps;
         internal float ShotsPerSec;
@@ -58,6 +64,9 @@ namespace WeaponCore.Support
         internal float MaxRequiredPower;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
+
+        internal bool TargetNonThreats;
+        internal bool IsAsleep;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -72,6 +81,7 @@ namespace WeaponCore.Support
         internal bool WasControlled;
         internal bool TrackReticle;
         internal bool WasTrackReticle;
+        internal bool UpdatedState;
         //internal bool OtherPlayerTrackingReticle;
         internal bool UserControlled;
         internal bool Debug;

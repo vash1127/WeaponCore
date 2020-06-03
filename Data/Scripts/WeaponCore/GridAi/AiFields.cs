@@ -68,7 +68,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
 
-        internal readonly CachingDictionary<long, MyCubeBlock> ControllingPlayers = new CachingDictionary<long, MyCubeBlock>();
+        internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
 
 
         internal Session Session;
@@ -109,6 +109,8 @@ namespace WeaponCore.Support
         internal uint ProjectileTicker;
         internal uint AiSpawnTick;
         internal uint AiCloseTick;
+        internal uint LastWeaponTick;
+        internal int SleepingComps;
         internal int SourceCount;
         internal int BlockCount;
         internal int NumSyncWeapons;
@@ -118,6 +120,7 @@ namespace WeaponCore.Support
         internal int NearByEntitiesTmp;
         internal int ProInMinCacheRange;
         internal long MyOwner;
+        internal bool TargetNonThreats;
         internal bool PointDefense;
         internal bool SupressMouseShoot;
         internal bool OverPowered;

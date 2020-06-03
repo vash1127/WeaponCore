@@ -600,9 +600,12 @@ namespace WeaponCore.Support
             }
 
             double scale = 0.1f;
-            ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-            TracerWidth = Math.Max(tracerWidth, scale * ScaleFov * (DistanceToLine / 100));
-            TrailWidth = Math.Max(trailWidth, scale * ScaleFov * (DistanceToLine / 100));
+            ScaleFov = Math.Tan(System.Session.Camera.FovWithZoom * 0.5);
+            var widthScaler = !System.Session.GunnerBlackList ? 1f : (ScaleFov * 1.3f);
+
+            TracerWidth = MathHelperD.Clamp(scale * ScaleFov * (DistanceToLine / 100), tracerWidth * widthScaler, double.MaxValue);
+            TrailWidth = MathHelperD.Clamp(scale * ScaleFov * (DistanceToLine / 100), trailWidth * widthScaler, double.MaxValue);
+
             TrailScaler = ((float)TrailWidth / trailWidth);
 
             var seg = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;

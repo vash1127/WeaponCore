@@ -58,20 +58,15 @@ namespace WeaponCore.Support
             internal bool ThreatInRange;
             internal double ThreatRangeSqr;
             internal bool OtherInRange;
-            internal double OthertRangeSqr;
+            internal double OtherRangeSqr;
+            internal bool SomethingInRange;
 
             internal bool ValidTargetExists(Weapon w)
             {
                 var comp = w.Comp;
                 var ai = comp.Ai;
-                var overRides = comp.Set.Value.Overrides;
-                var overActive = overRides.Activate;
-                var attackNeutrals = overActive && overRides.Neutrals;
-                var attackNoOwner = overActive && overRides.Unowned;
-                var attackFriends = overActive && overRides.Friendly;
-                w.TargetNonThreats = (attackNoOwner || attackNeutrals || attackFriends);
 
-                var targetInrange = w.TargetNonThreats ? OthertRangeSqr <= w.MaxTargetDistanceSqr && OthertRangeSqr >= w.MinTargetDistanceSqr 
+                var targetInrange = comp.TargetNonThreats ? OtherRangeSqr <= w.MaxTargetDistanceSqr && OtherRangeSqr >= w.MinTargetDistanceSqr 
                     : ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr;
 
                 return targetInrange || ai.Focus.HasFocus || ai.LiveProjectile.Count > 0;
@@ -81,8 +76,9 @@ namespace WeaponCore.Support
             {
                 ThreatRangeSqr = double.MaxValue;
                 ThreatInRange = false;
-                OthertRangeSqr = double.MaxValue;
+                OtherRangeSqr = double.MaxValue;
                 OtherInRange = false;
+                SomethingInRange = false;
             }
         }
 

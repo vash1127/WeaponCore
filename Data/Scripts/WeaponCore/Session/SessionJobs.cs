@@ -112,9 +112,9 @@ namespace WeaponCore
                                 ai.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
                             }
 
-                            if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.OthertRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies) {
+                            if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.OtherRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies) {
                                 ai.TargetingInfo.OtherInRange = true;
-                                ai.TargetingInfo.OthertRangeSqr = targetInfo.DistSqr;
+                                ai.TargetingInfo.OtherRangeSqr = targetInfo.DistSqr;
                             }
                         }
                     }
@@ -142,7 +142,6 @@ namespace WeaponCore
                     ai.StaticEntitiesInRange = ai.StaticsInRange.Count > 0;
                     ai.MyStaticInfo();
 
-                    ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.ControllingPlayers.Keys.Count > 0 || ai.FirstRun;
                     ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
                     ai.BlockCount = ai.MyGrid.BlocksCount;
                     ai.NearByEntities = ai.NearByEntitiesTmp;
@@ -153,8 +152,12 @@ namespace WeaponCore
                         ai.TargetingInfo.ThreatRangeSqr = 0;
                     }
 
+                    ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
+
                     if (ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
                     if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
+
+                    ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.ControllingPlayers.Keys.Count > 0 || ai.FirstRun;
 
                     ai.FirstRun = false;
                 }

@@ -118,7 +118,6 @@ namespace WeaponCore.Support
                             for (int j = 0; j < partArray.Length; j++) 
                                 w.PlayEmissives(partArray[j]);
                         }
-                        else Log.Line($"AnimationsSet.TryGetValue failed for weapon: {w.System.WeaponName}");
                     }
                 }
             }

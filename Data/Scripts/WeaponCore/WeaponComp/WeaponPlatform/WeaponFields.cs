@@ -44,6 +44,7 @@ namespace WeaponCore.Platform
         internal uint PosChangedTick = 1;
         internal uint ElevationTick;
         internal uint AzimuthTick;
+        internal uint LastWeaponEvent;
 
         internal double TimePerShot;
         internal float HeatPerc;
@@ -149,7 +150,6 @@ namespace WeaponCore.Platform
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
 
-        internal bool TargetNonThreats;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;

@@ -12,7 +12,6 @@ namespace WeaponCore.Platform
     public partial class Weapon
     {
 
-
         public void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
         {
             ActiveAmmoDef = ammoDef;
@@ -610,6 +609,16 @@ namespace WeaponCore.Platform
             MaxTargetDistanceSqr = MaxTargetDistance * MaxTargetDistance;
             MinTargetDistance = System.Values.Targeting.MinTargetDistance;
             MinTargetDistanceSqr = MinTargetDistance * MinTargetDistance;
+
+            if (Comp.MaxTargetDistance < MaxTargetDistance) {
+                Comp.MaxTargetDistance = MaxTargetDistance;
+                Comp.MaxTargetDistanceSqr = MaxTargetDistanceSqr;
+            }
+
+            if (Comp.MinTargetDistance > MinTargetDistance) {
+                Comp.MinTargetDistance = MinTargetDistance;
+                Comp.MinTargetDistanceSqr = MinTargetDistanceSqr;
+            }
         }
 
         public void StartPreFiringSound()

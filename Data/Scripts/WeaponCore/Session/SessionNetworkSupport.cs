@@ -819,7 +819,6 @@ namespace WeaponCore
                 if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
                 {
                     trackingAi.ControllingPlayers[playerId] = cube;
-                    trackingAi.ControllingPlayers.ApplyAdditionsAndModifications();
                 }
             }
             else //remove
