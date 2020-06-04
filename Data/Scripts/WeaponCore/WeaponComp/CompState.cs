@@ -77,7 +77,7 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (!targetInrange && Ai.Construct.RootAi.ControllingPlayers.Keys.Count <= 0 && Session.TerminalMon.Comp != this) {
+            if (!targetInrange && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;

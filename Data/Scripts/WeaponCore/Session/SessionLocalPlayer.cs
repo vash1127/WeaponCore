@@ -27,8 +27,8 @@ namespace WeaponCore
                 InGridAiBlock = true;
                 MyCubeBlock oldBlock;
                 TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock);
-                TrackingAi.ControllingPlayers[PlayerId] = ActiveControlBlock;
 
+                UpdateActiveControlDictionary(ActiveControlBlock, PlayerId, true, true);
                 if (HandlesInput && oldBlock != ActiveControlBlock)
                     SendActiveControlUpdate(activeBlock, true);
             }
@@ -39,10 +39,14 @@ namespace WeaponCore
                     TrackingAi.Focus.IsFocused(TrackingAi);
 
                     MyCubeBlock oldBlock;
-                    if (HandlesInput && TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock))
-                        SendActiveControlUpdate(oldBlock, false);
+                    if (TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock)) {
 
-                    TrackingAi.ControllingPlayers.Remove(PlayerId);
+                        UpdateActiveControlDictionary(oldBlock, PlayerId, false, true);
+                        
+                        if (HandlesInput)
+                            SendActiveControlUpdate(oldBlock, false);
+                    }
+
                 }
 
                 TrackingAi = null;

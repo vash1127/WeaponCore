@@ -196,6 +196,7 @@ namespace WeaponCore.Support
             Comp = comp;
             Active = true;
             OriginalAiVersion = comp.Ai.Version;
+            comp.Ai.AiSleep = false;
             comp.Ai.Construct.RootAi.ActiveWeaponTerminal = comp.MyCube;
 
             if (Session.IsClient && isCaller) {

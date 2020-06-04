@@ -90,6 +90,8 @@ namespace WeaponCore.Support
         internal BoundingSphereD GridVolume;
         internal BoundingSphereD ScanVolume;
         internal long MyOwner;
+        internal bool AiSleep;
+        internal bool DbUpdated;
         internal bool TargetNonThreats;
         internal bool PointDefense;
         internal bool SupressMouseShoot;
@@ -108,7 +110,6 @@ namespace WeaponCore.Support
         internal bool HasPower;
         internal bool HadPower;
         internal bool CheckProjectiles;
-        internal bool WeaponTerminalAccess;
         internal bool FadeOut;
         internal bool Concealed;
         internal bool RamProtection = true;

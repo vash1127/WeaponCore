@@ -811,20 +811,23 @@ namespace WeaponCore
             }
         }
 
-        public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd)
+        public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd, bool applyToRoot = false)
         {
             GridAi trackingAi;
             if (updateAdd) //update/add
             {
-                if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
-                {
+
+                if (applyToRoot && GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi) || GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi)) {
                     trackingAi.ControllingPlayers[playerId] = cube;
+                    trackingAi.AiSleep = false;
                 }
             }
             else //remove
             {
-                if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi))
-                    trackingAi.ControllingPlayers.TryGetValue(playerId, out cube);
+                if (applyToRoot && GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi) || GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi)) {
+                    trackingAi.ControllingPlayers.Remove(playerId);
+                    trackingAi.AiSleep = false;
+                }
             }
         }
 
