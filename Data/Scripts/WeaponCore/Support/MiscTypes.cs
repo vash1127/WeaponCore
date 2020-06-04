@@ -196,7 +196,7 @@ namespace WeaponCore.Support
             Comp = comp;
             Active = true;
             OriginalAiVersion = comp.Ai.Version;
-            comp.Ai.ActiveWeaponTerminal = comp.MyCube;
+            comp.Ai.Construct.RootAi.ActiveWeaponTerminal = comp.MyCube;
 
             if (Session.IsClient && isCaller) {
                 //SyncGoesHere
@@ -206,7 +206,7 @@ namespace WeaponCore.Support
         internal void Clean(bool isCaller = false)
         {
             if (Comp != null && Comp.Ai.Version == OriginalAiVersion) {
-                Comp.Ai.ActiveWeaponTerminal = null;
+                Comp.Ai.Construct.RootAi.ActiveWeaponTerminal = null;
 
                 if (Session.IsClient && isCaller) {
                     //SyncGoesHere
@@ -239,7 +239,7 @@ namespace WeaponCore.Support
             var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
             var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
             var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-            var sameTerminalBlock = Session.LastTerminal == Comp.Ai.ActiveWeaponTerminal;
+            var sameTerminalBlock = Session.LastTerminal == Comp.Ai.Construct.RootAi?.ActiveWeaponTerminal;
 
             return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
         }

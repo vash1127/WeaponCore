@@ -46,17 +46,8 @@ namespace WeaponCore
                 if (gridAi.UpdatePowerSources || !gridAi.HadPower && gridAi.MyGrid.IsPowered || gridAi.HasPower && !gridAi.MyGrid.IsPowered || Tick10)
                     gridAi.UpdateGridPower();
 
-                if (Tick60) 
-                    Log.Line($"Awake: {gridAi.AwakeComps} - Sleeping:{gridAi.SleepingComps}");
-                if (!gridAi.HasPower || IsServer && Tick - gridAi.LastWeaponTick > 600 && !gridAi.CheckProjectiles && gridAi.ActiveWeaponTerminal?.CubeGrid == gridAi.MyGrid && (!gridAi.TargetingInfo.ThreatInRange && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetNonThreats && gridAi.TargetingInfo.OtherInRange) && gridAi.Construct.RootAi.ControllingPlayers.Keys.Count <= 0)
+                if (!gridAi.HasPower || IsServer && gridAi.AwakeComps == 0 && !gridAi.CheckProjectiles && (!gridAi.TargetingInfo.ThreatInRange && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetNonThreats && gridAi.TargetingInfo.OtherInRange) && gridAi.Construct.RootAi.ControllingPlayers.Count <= 0 && (gridAi.Construct.RootAi.ActiveWeaponTerminal == null || !gridAi.SubGrids.Contains(gridAi.Construct.RootAi.ActiveWeaponTerminal.CubeGrid)))
                     continue;
-
-                if (Tick60)
-                {
-                    gridAi.SleepingComps = 0;
-                    gridAi.AwakeComps = 0;
-                    gridAi.TargetNonThreats = false;
-                }
 
                 ///
                 /// Comp update section
@@ -231,9 +222,8 @@ namespace WeaponCore
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && gridAi.Focus.HasFocus && gridAi.Focus.FocusInRange(w);
-                        var fire = canShoot && (shoot || w.LockOnFireState);
 
-                        if (fire) {
+                        if (canShoot && (shoot || w.LockOnFireState)) {
 
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;
@@ -269,15 +259,6 @@ namespace WeaponCore
 
                         if (comp.Debug && !DedicatedServer)
                             WeaponDebug(w);
-
-                        if (comp.LastCompEvent != Tick && (fire || reloading || !canShoot || !w.IsHome || w.Target.HasTarget)) {
-
-                            //if (!canShoot)
-                                //Log.Line($"AiShooting:{w.AiShooting} || ManualShoot:{w.State.ManualShoot == ShootOff} || TargetLock:{w.Target.TargetLock} || !comp.UserControlled:{!comp.UserControlled}");
-
-                            comp.LastCompEvent = Tick;
-                            gridAi.LastWeaponTick = Tick;
-                        }
                     }
                 }
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;

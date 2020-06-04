@@ -133,7 +133,7 @@ namespace WeaponCore.Support
         internal uint ProjectileTicker;
         internal uint AiSpawnTick;
         internal uint AiCloseTick;
-        internal uint LastWeaponTick;
+        internal uint LastDetectEvent;
         internal int SleepingComps;
         internal int AwakeComps;
         internal int SourceCount;

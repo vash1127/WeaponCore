@@ -47,6 +47,13 @@ namespace WeaponCore.Support
             if (Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
+            if (Session.Tick - Ai.LastDetectEvent > 59) {
+                Ai.LastDetectEvent = Session.Tick;
+                Ai.SleepingComps = 0;
+                Ai.AwakeComps = 0;
+                Ai.TargetNonThreats = false;
+            }
+
             UpdatedState = true;
 
             var overRides = Set.Value.Overrides;
