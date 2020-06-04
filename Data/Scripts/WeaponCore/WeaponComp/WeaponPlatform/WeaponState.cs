@@ -494,7 +494,7 @@ namespace WeaponCore.Platform
                 State.Sync.CurrentAmmo = 0;
                 Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
                 State.Sync.CurrentCharge = 0;
-                Comp.TerminalRefresh();
+                //Comp.TerminalRefresh();
             }
 
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
@@ -555,7 +555,7 @@ namespace WeaponCore.Platform
                     LastSyncTick = Comp.Session.Tick;
                 }
 
-                Comp.TerminalRefresh();
+                //Comp.TerminalRefresh();
             }
         }
 

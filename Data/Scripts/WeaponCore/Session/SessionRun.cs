@@ -87,7 +87,6 @@ namespace WeaponCore
 
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                    //if (ClientSideErrorPktList.Count > 0) ReproccessClientErrorPackets();
                     if (ClientSideErrorPktListNew.Count > 0) ReproccessClientErrorPacketsNew();
                     
                     DsUtil.Complete("network1", true);
@@ -100,7 +99,12 @@ namespace WeaponCore
                 // Finished last frame
                 //
 
-                if (DeformProtection.Count > 0 && Tick - LastDeform > 0) DeformProtection.Clear();
+                if (TerminalMon.Active)
+                    TerminalMon.Monitor();
+
+                if (DeformProtection.Count > 0 && Tick - LastDeform > 0) 
+                    DeformProtection.Clear();
+
                 Timings();
 
                 /*

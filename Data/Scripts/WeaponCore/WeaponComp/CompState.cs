@@ -59,18 +59,23 @@ namespace WeaponCore.Support
             TargetNonThreats = targetNonThreats;
             if (TargetNonThreats)
                 Ai.TargetNonThreats = true;
+            
+            IsAsleep = false;
+
+            if (!Ai.Session.IsServer)
+                return;
 
             var otherRangeSqr = Ai.TargetingInfo.OtherRangeSqr;
             var threatRangeSqr = Ai.TargetingInfo.ThreatRangeSqr;
-            IsAsleep = false;
-
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (!targetInrange && Ai.Construct.RootAi.ControllingPlayers.Keys.Count <= 0) {
+            if (!targetInrange && Ai.Construct.RootAi.ControllingPlayers.Keys.Count <= 0 && Session.TerminalMon.Comp != this) {
+
                 IsAsleep = true;
                 Ai.SleepingComps++;
             }
+            else Ai.AwakeComps++;
         }
 
 

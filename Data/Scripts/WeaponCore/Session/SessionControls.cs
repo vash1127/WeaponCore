@@ -276,18 +276,17 @@ namespace WeaponCore
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
+            LastTerminal = block;
+
             var cube = (MyCubeBlock)block;
             GridAi gridAi;
-
             if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
             {
                 gridAi.LastTerminal = block;
                 WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    gridAi.LastWeaponTerminal = block;
-                    gridAi.WeaponTerminalAccess = true;
-
+                    TerminalMon.Update(comp);
                     int rangeControl = -1;
                     IMyTerminalControl wcRangeControl = null;
                     for (int i = controls.Count - 1; i >= 0; i--)

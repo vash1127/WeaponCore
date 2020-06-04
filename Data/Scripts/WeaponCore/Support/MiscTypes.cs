@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Blocks;
 using Sandbox.ModAPI;
-using VRage.Audio;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -179,6 +176,79 @@ namespace WeaponCore.Support
             HasTarget = hasTarget;
             PreviousState = CurrentState;
             CurrentState = reason;
+        }
+    }
+
+    internal class TerminalMonitor
+    {
+        internal Session Session;
+        internal WeaponComponent Comp;
+        internal int OriginalAiVersion;
+        internal bool Active;
+
+        internal TerminalMonitor(Session session)
+        {
+            Session = session;
+        }
+
+        internal void Update(WeaponComponent comp, bool isCaller = false)
+        {
+            Comp = comp;
+            Active = true;
+            OriginalAiVersion = comp.Ai.Version;
+            comp.Ai.ActiveWeaponTerminal = comp.MyCube;
+
+            if (Session.IsClient && isCaller) {
+                //SyncGoesHere
+            }
+        }
+
+        internal void Clean(bool isCaller = false)
+        {
+            if (Comp != null && Comp.Ai.Version == OriginalAiVersion) {
+                Comp.Ai.ActiveWeaponTerminal = null;
+
+                if (Session.IsClient && isCaller) {
+                    //SyncGoesHere
+                }
+
+            }
+
+            Comp = null;
+            OriginalAiVersion = -1;
+            Active = false;
+        }
+
+        internal void Monitor()
+        {
+            if (IsActive()) {
+
+                if (Session.Tick20) 
+                    Comp.TerminalRefresh();
+            }
+            else if (Active)
+                Clean();
+        }
+
+        internal bool IsActive()
+        {
+            if (Comp?.Ai == null) return false;
+
+            var sameVersion = Comp.Ai.Version == OriginalAiVersion;
+            var nothingMarked = !Comp.MyCube.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose;
+            var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
+            var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
+            var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+            var sameTerminalBlock = Session.LastTerminal == Comp.Ai.ActiveWeaponTerminal;
+
+            return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
+        }
+
+
+        internal void Purge()
+        {
+            Clean();
+            Session = null;
         }
     }
 

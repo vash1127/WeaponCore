@@ -31,6 +31,7 @@ namespace WeaponCore.Support
         internal readonly CompState State;
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
+        internal bool PlayerInTerminal;
 
         internal MatrixD CubeMatrix;
         internal InputStateData InputState;
@@ -43,6 +44,7 @@ namespace WeaponCore.Support
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
+        internal uint LastCompEvent;
 
         internal double MaxTargetDistance = double.MinValue;
         internal double MaxTargetDistanceSqr = double.MinValue;

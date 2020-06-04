@@ -226,8 +226,8 @@ namespace WeaponCore.Platform
                     State.Sync.Overheated = false;
                 }
 
-                if (!Comp.State.Value.Online)
-                    Comp.TerminalRefresh();
+                //if (!Comp.State.Value.Online)
+                    //Comp.TerminalRefresh();
 
                 if (State.Sync.Heat > 0)
                     Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);

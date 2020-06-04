@@ -272,7 +272,7 @@ namespace WeaponCore.Control
                     if(w.IsShooting) w.StopShooting();
                     if (w.DrawingPower) w.StopPowerDraw();
 
-                    comp.TerminalRefresh();
+                    //comp.TerminalRefresh();
 
                     if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         w.State.Sync.Reloading = false;

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Collections;
@@ -182,6 +183,7 @@ namespace WeaponCore
         internal IMyCamera Camera;
         internal IMyGps TargetGps;
         internal IMyBlockPlacerBase Placer;
+        internal IMyTerminalBlock LastTerminal;
         internal GridAi TrackingAi;
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
@@ -206,7 +208,7 @@ namespace WeaponCore
         internal Hud HudUi;
         internal Enforcements Enforced;
         internal NetworkProccessor Proccessor;
-
+        internal TerminalMonitor TerminalMon;
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
@@ -335,7 +337,7 @@ namespace WeaponCore
             Projectiles = new Projectiles.Projectiles(this);
             Proccessor = new NetworkProccessor(this);
             AcquireManager = new AcquireManager(this);
-
+            TerminalMon = new TerminalMonitor(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
             HeatEmissives = CreateHeatEmissive();

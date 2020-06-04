@@ -3,9 +3,11 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
+using Sandbox.Game;
 using VRage.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Weapons;
+using Sandbox.ModAPI;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
@@ -28,11 +30,6 @@ namespace WeaponCore
                 gridAi.AccelChecked = false;
                 gridAi.Concealed = ((uint)gridAi.MyGrid.Flags & 4) > 0;
 
-                if (Tick60) {
-                    gridAi.SleepingComps = 0;
-                    gridAi.TargetNonThreats = false;
-                }
-
                 if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose || gridAi.Concealed)
                     continue;
 
@@ -49,8 +46,17 @@ namespace WeaponCore
                 if (gridAi.UpdatePowerSources || !gridAi.HadPower && gridAi.MyGrid.IsPowered || gridAi.HasPower && !gridAi.MyGrid.IsPowered || Tick10)
                     gridAi.UpdateGridPower();
 
-                if (!gridAi.HasPower || Tick - gridAi.LastWeaponTick > 600 && !gridAi.CheckProjectiles && (!gridAi.TargetingInfo.ThreatInRange && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetNonThreats && gridAi.TargetingInfo.OtherInRange) && gridAi.Construct.RootAi.ControllingPlayers.Keys.Count <= 0)
+                if (Tick60) 
+                    Log.Line($"Awake: {gridAi.AwakeComps} - Sleeping:{gridAi.SleepingComps}");
+                if (!gridAi.HasPower || IsServer && Tick - gridAi.LastWeaponTick > 600 && !gridAi.CheckProjectiles && gridAi.ActiveWeaponTerminal?.CubeGrid == gridAi.MyGrid && (!gridAi.TargetingInfo.ThreatInRange && !gridAi.TargetingInfo.OtherInRange || !gridAi.TargetNonThreats && gridAi.TargetingInfo.OtherInRange) && gridAi.Construct.RootAi.ControllingPlayers.Keys.Count <= 0)
                     continue;
+
+                if (Tick60)
+                {
+                    gridAi.SleepingComps = 0;
+                    gridAi.AwakeComps = 0;
+                    gridAi.TargetNonThreats = false;
+                }
 
                 ///
                 /// Comp update section
@@ -61,8 +67,6 @@ namespace WeaponCore
 
                     if (Tick60 || !comp.UpdatedState) {
                         comp.DetectStateChanges();
-                        if (InMenu && gridAi.LastTerminal == comp.MyCube)
-                            comp.TerminalRefresh();
                     }
 
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
@@ -266,12 +270,12 @@ namespace WeaponCore
                         if (comp.Debug && !DedicatedServer)
                             WeaponDebug(w);
 
-                        if (fire || reloading || !canShoot || !w.IsHome || w.Target.HasTarget) {
+                        if (comp.LastCompEvent != Tick && (fire || reloading || !canShoot || !w.IsHome || w.Target.HasTarget)) {
 
                             //if (!canShoot)
                                 //Log.Line($"AiShooting:{w.AiShooting} || ManualShoot:{w.State.ManualShoot == ShootOff} || TargetLock:{w.Target.TargetLock} || !comp.UserControlled:{!comp.UserControlled}");
 
-                            w.LastWeaponEvent = Tick;
+                            comp.LastCompEvent = Tick;
                             gridAi.LastWeaponTick = Tick;
                         }
                     }

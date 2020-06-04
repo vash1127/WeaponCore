@@ -30,7 +30,7 @@ namespace WeaponCore
             FutureEvents.Purge((int)Tick);
             PurgeTerminalSystem();
             HudUi.Purge();
-
+            TerminalMon.Purge();
             foreach (var reports in Reporter.ReportData.Values)
             {
                 foreach (var report in reports)
@@ -251,6 +251,7 @@ namespace WeaponCore
             SlimsSortedList = null;
             Enforced = null;
             StallReporter = null;
+            TerminalMon = null;
             Proccessor = null;
             Physics = null;
             Camera = null;

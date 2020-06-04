@@ -459,11 +459,11 @@ namespace WeaponCore.Support
             DbReady = false;
             GridInit = false;
             Focus.Clean();
+            ActiveWeaponTerminal = null;
             MyShield = null;
             MyPlanetTmp = null;
             MyPlanet = null;
             TerminalSystem = null;
-            LastWeaponTerminal = null;
             LastTerminal = null;
             PowerDistributor = null;
             PowerBlock = null;
@@ -473,17 +473,5 @@ namespace WeaponCore.Support
             Closed = true;
             Version++;
         }
-
-        internal bool WeaponTerminalReleased()
-        {
-            if (LastWeaponTerminal != null && WeaponTerminalAccess)
-            {
-                if (MyAPIGateway.Gui.ActiveGamePlayScreen == "MyGuiScreenTerminal") return false;
-                WeaponTerminalAccess = false;
-                return true;
-            }
-            return false;
-        }
-
     }
 }
