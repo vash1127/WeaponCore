@@ -393,7 +393,7 @@ namespace WeaponCore.Support
         {
             foreach (var wa in Asleep) {
                 
-                var remove = wa.Weapon.Target.HasTarget || !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
+                var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
 
                 if (remove) {
                     Removal.Add(wa);
