@@ -45,7 +45,6 @@ namespace WeaponCore
                 // Finish work from last frame
                 //
 
-                /*
                 TotalAcquireChecks += AcquireChecks;
 
                 if (AcquireChecks < LowAcquireChecks)
@@ -61,7 +60,6 @@ namespace WeaponCore
                     LowAcquireChecks = int.MaxValue;
                     HighAcquireChecks = int.MinValue;
                 }
-                */
 
                 if (Tick60) AcquireManager.UpdateAsleep();
                 if (Tick600) AcquireManager.ReorderSleep();

@@ -118,6 +118,8 @@ namespace WeaponCore.Support
                             for (int j = 0; j < partArray.Length; j++) 
                                 w.PlayEmissives(partArray[j]);
                         }
+                        if (!Session.IsClient && !State.Value.Online) 
+                            w.Target.Reset(Session.Tick, Target.States.Offline);
                     }
                 }
             }

@@ -713,7 +713,6 @@ namespace WeaponCore.Support
                     if (!AmmoDef.Const.AltHitSounds)
                         hitSoundPair.Init(AmmoDef.AmmoAudio.HitSound, false);
                     else {
-
                         var ent = hitEmitter.Entity;
                         if (ent is MyCubeGrid)
                             hitSoundPair.Init(AmmoDef.AmmoAudio.HitSound, false);
@@ -728,6 +727,7 @@ namespace WeaponCore.Support
                         else hitSoundPair.Init(AmmoDef.AmmoAudio.HitSound, false);
                     }
                     hitEmitter.Entity = Hit.Entity;
+
                     System.Session.Av.HitSounds.Add(new HitSound {Emitter = hitEmitter, SoundPair = hitSoundPair, Position = Hit.HitPos});
                 }
                 LastHitShield = false;

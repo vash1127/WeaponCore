@@ -246,6 +246,8 @@ namespace WeaponCore.Control
         private static void OnOffAnimations(WeaponComponent comp, bool On)
         {   
             if(comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            comp.Session.TerminalMon.Update(comp, true);
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
 
@@ -333,6 +335,7 @@ namespace WeaponCore.Control
 
         internal static void WcShootOnAction(WeaponComponent comp, bool alreadySynced = false)
         {
+            comp.Session.TerminalMon.Update(comp, true);
             var cState = comp.State.Value;
 
             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -365,6 +368,7 @@ namespace WeaponCore.Control
 
         internal static void WcShootOffAction(WeaponComponent comp, bool alreadySynced = false)
         {
+            comp.Session.TerminalMon.Update(comp, true);
             var cState = comp.State.Value;
 
             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -394,6 +398,7 @@ namespace WeaponCore.Control
 
         internal static void WcShootOnceAction(WeaponComponent comp, bool alreadySynced = false)
         {
+            comp.Session.TerminalMon.Update(comp, true);
             var cState = comp.State.Value;
 
             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -426,6 +431,7 @@ namespace WeaponCore.Control
 
         internal static void WcShootClickAction(WeaponComponent comp, bool on, bool isTurret, bool alreadySynced = false)
         {
+            comp.Session.TerminalMon.Update(comp, true);
             var cState = comp.State.Value;
 
             if (!alreadySynced)

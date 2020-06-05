@@ -39,10 +39,11 @@ namespace WeaponCore.Support
         internal MyWeaponPlatform Platform;
         internal WeaponValues WeaponValues = new WeaponValues();
         internal uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
-
         internal uint LastRayCastTick;
         internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
+
+        internal int WeaponsTracking;
 
         internal double MaxTargetDistance = double.MinValue;
         internal double MaxTargetDistanceSqr = double.MinValue;

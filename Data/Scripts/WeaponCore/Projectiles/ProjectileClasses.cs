@@ -2,10 +2,8 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -18,7 +16,7 @@ namespace WeaponCore.Support
 {
     internal class ProInfo
     {
-        internal readonly Target Target = new Target(null);
+        internal readonly Target Target = new Target(null, true);
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal AvShot AvShot;
         internal WeaponSystem System;

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using System;
+using System.Collections.Concurrent;
 using VRage.Collections;
 using VRage.Game;
-using VRage.Game.ModAPI;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 using static WeaponCore.Support.GridAi.Constructs;
+using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 namespace WeaponCore
 {
     public class FatMap
@@ -157,6 +156,7 @@ namespace WeaponCore
                     if (ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
                     if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
 
+                    
                     ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.ControllingPlayers.Count > 0 || ai.FirstRun;
 
                     ai.AiSleep = ai.Construct.RootAi.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Construct.RootAi.ActiveWeaponTerminal == null || !ai.SubGrids.Contains(ai.Construct.RootAi.ActiveWeaponTerminal.CubeGrid));

@@ -25,6 +25,8 @@ namespace WeaponCore.Support
         internal bool TargetLock;
         internal bool TargetChanged;
         internal bool ParentIsWeapon;
+        internal bool IsTargetStorage;
+        internal Weapon Weapon;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
@@ -54,12 +56,16 @@ namespace WeaponCore.Support
             Fake,
             FiredBurst,
             OutOfAmmo,
+            AiLost,
+            Offline,
         }
 
-        internal Target(MyCubeBlock firingCube = null)
+        internal Target(Weapon weapon = null, bool main = false)
         {
-            ParentIsWeapon = firingCube != null;
-            FiringCube = firingCube;
+            ParentIsWeapon = weapon?.Comp?.MyCube != null;
+            FiringCube = weapon?.Comp?.MyCube;
+            Weapon = weapon;
+            IsTargetStorage = main;
         }
 
         internal void TransferTo(Target target, uint expireTick, bool reset = true)
@@ -173,6 +179,19 @@ namespace WeaponCore.Support
         internal void StateChange(bool hasTarget, States reason)
         {
             TargetChanged = !HasTarget && hasTarget || HasTarget && !hasTarget;
+
+            if (TargetChanged && ParentIsWeapon && IsTargetStorage) {
+
+                if (hasTarget) {
+                    Weapon.Comp.Ai.WeaponsTracking++;
+                    Weapon.Comp.WeaponsTracking++;
+                }
+                else {
+                    Weapon.Comp.Ai.WeaponsTracking--;
+                    Weapon.Comp.WeaponsTracking--;
+                }
+            }
+
             HasTarget = hasTarget;
             PreviousState = CurrentState;
             CurrentState = reason;
@@ -196,8 +215,10 @@ namespace WeaponCore.Support
             Comp = comp;
             Active = true;
             OriginalAiVersion = comp.Ai.Version;
-            comp.Ai.AiSleep = false;
             comp.Ai.Construct.RootAi.ActiveWeaponTerminal = comp.MyCube;
+
+            if (comp.IsAsleep)
+                comp.WakeupComp();
 
             if (Session.IsClient && isCaller) {
                 //SyncGoesHere

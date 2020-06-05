@@ -145,6 +145,7 @@ namespace WeaponCore.Support
         internal int NearByEntities;
         internal int NearByEntitiesTmp;
         internal int ProInMinCacheRange;
+        internal int WeaponsTracking;
 
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;

@@ -43,6 +43,7 @@ namespace WeaponCore.Support
                                 var w = comp.Platform.Weapons[i];
                                 w.StopShooting();
                                 w.WeaponCache.HitEntity.Clean();
+                                if (!Session.IsClient) w.Target.Reset(Session.Tick, Target.States.AiLost);
                                 if (w.DrawingPower)
                                     w.StopPowerDraw();
                             }

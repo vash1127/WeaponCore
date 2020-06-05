@@ -355,8 +355,8 @@ namespace WeaponCore.Platform
 
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];
-            Target = new Target(comp.MyCube);
-            NewTarget = new Target(comp.MyCube);
+            Target = new Target(this, true);
+            NewTarget = new Target(this);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             RayCallBack = new ParallelRayCallBack(this);
             WeaponAcquire = new WeaponAcquire(this);

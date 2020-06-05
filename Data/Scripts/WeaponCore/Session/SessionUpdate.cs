@@ -3,16 +3,12 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
-using Sandbox.Game;
 using VRage.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Weapons;
-using Sandbox.ModAPI;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
-using static WeaponCore.Support.GridAi;
 
 namespace WeaponCore
 {
@@ -46,9 +42,11 @@ namespace WeaponCore
                 if (ai.UpdatePowerSources || !ai.HadPower && ai.MyGrid.IsPowered || ai.HasPower && !ai.MyGrid.IsPowered || Tick10)
                     ai.UpdateGridPower();
 
-                if (!ai.HasPower || IsServer && ai.AwakeComps == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated)
-                    continue;
+                if (!ai.HasPower || IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) {
 
+                    DsDebugDraw.DrawSphere(ai.MyGrid.PositionComp.WorldVolume, Color.Red);
+                    continue;
+                }
 
                 ///
                 /// Comp update section

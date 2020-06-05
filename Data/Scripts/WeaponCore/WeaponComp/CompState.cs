@@ -42,6 +42,15 @@ namespace WeaponCore.Support
             Status = Start.Started;
         }
 
+        internal void WakeupComp()
+        {
+            if (IsAsleep) {
+                IsAsleep = false;
+                Ai.AwakeComps += 1;
+                Ai.SleepingComps -= 1;
+            }
+        }
+
         internal void DetectStateChanges()
         {
             if (Platform.State != MyWeaponPlatform.PlatformState.Ready)
@@ -77,12 +86,13 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (!targetInrange && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this) {
+            if (!targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && !State.Value.ClickShoot && !State.Value.ShootOn) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;
             }
-            else Ai.AwakeComps++;
+            else
+                Ai.AwakeComps++;
         }
 
 
