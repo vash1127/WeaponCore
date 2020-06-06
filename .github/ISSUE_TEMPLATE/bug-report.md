@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Leave a bug report, tell us whats wrong! [Pleae read the issue posting guidelines before posting an issue!](https://github.com/sstixrud/WeaponCore/wiki/Issue-Posting-Guidelines)
+about: Leave a bug report, tell us whats wrong! Please read the issue posting guidelines before posting, it's in the wiki!
 title: "(Bug) "
 labels: Housecleaning (Bug)
 assignees: ''
