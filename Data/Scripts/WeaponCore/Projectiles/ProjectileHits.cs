@@ -330,8 +330,8 @@ namespace WeaponCore.Projectiles
                 p.Info.TriggeredPulse = true;
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                 p.Velocity = Vector3D.Zero;
-                p.Info.Hit.HitPos = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
-                p.Info.Hit.VisualHitPos = p.Info.Hit.HitPos;
+                p.Info.Hit.SurfaceHit = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
+                p.Info.Hit.LastHit = p.Info.Hit.SurfaceHit;
                 p.Info.HitList.Clear();
                 return false;
             }
@@ -376,7 +376,7 @@ namespace WeaponCore.Projectiles
                 }
                 else visualHitPos = hitEntity.HitPos;
 
-                p.Info.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, HitPos = hitEntity.HitPos ?? Vector3D.Zero, VisualHitPos = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
+                p.Info.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, LastHit = visualHitPos ?? Vector3D.Zero, SurfaceHit = visualHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero, HitTick = p.Info.System.Session.Tick};
                 if (p.EnableAv)
                 {
                     p.Info.AvShot.LastHitShield = hitEntity.EventType == Shield;

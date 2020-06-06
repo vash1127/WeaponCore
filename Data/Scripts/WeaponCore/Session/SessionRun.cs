@@ -45,6 +45,14 @@ namespace WeaponCore
                 // Finish work from last frame
                 //
 
+
+                DsUtil.Start("av");
+                if (!DedicatedServer) Av.End();
+                DsUtil.Complete("av", true);
+                //
+                // Finished last frame
+                //
+
                 TotalAcquireChecks += AcquireChecks;
 
                 if (AcquireChecks < LowAcquireChecks)
@@ -64,38 +72,6 @@ namespace WeaponCore
                 if (Tick60) AcquireManager.UpdateAsleep();
                 if (Tick600) AcquireManager.ReorderSleep();
 
-                DsUtil.Start("damage");
-                if (_effectedCubes.Count > 0)
-                    ApplyGridEffect();
-
-                if (Tick60)
-                    GridEffects();
-
-                if (Hits.Count > 0) ProcessHits();
-                DsUtil.Complete("damage", true);
-                
-                if (MpActive)
-                {
-                    DsUtil.Start("network1");
-                    if (WeaponsToSync.Count > 0) Proccessor.Proccess();
-                    if (UiInput.InputChanged && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
-                    if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
-                    
-                    Proccessor.AddPackets();
-
-                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
-                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                    if (ClientSideErrorPktListNew.Count > 0) ReproccessClientErrorPacketsNew();
-                    
-                    DsUtil.Complete("network1", true);
-                }
-
-                DsUtil.Start("av");
-                if (!DedicatedServer) Av.End();
-                DsUtil.Complete("av", true);
-                //
-                // Finished last frame
-                //
 
                 if (TerminalMon.Active)
                     TerminalMon.Monitor();
@@ -206,6 +182,37 @@ namespace WeaponCore
                 DsUtil.Start("projectiles2");
                 Projectiles.Stage2();
                 DsUtil.Complete("projectiles2", true);
+
+                DsUtil.Start("damage");
+                if (_effectedCubes.Count > 0)
+                    ApplyGridEffect();
+
+                if (Tick60)
+                    GridEffects();
+
+                if (Hits.Count > 0) ProcessHits();
+                DsUtil.Complete("damage", true);
+
+                if (!DedicatedServer)
+                {
+                    AvShot.DeferedAvStateUpdates(this);
+                }
+
+                if (MpActive)
+                {
+                    DsUtil.Start("network1");
+                    if (WeaponsToSync.Count > 0) Proccessor.Proccess();
+                    if (UiInput.InputChanged && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
+                    if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
+
+                    Proccessor.AddPackets();
+
+                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
+                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
+                    if (ClientSideErrorPktListNew.Count > 0) ReproccessClientErrorPacketsNew();
+
+                    DsUtil.Complete("network1", true);
+                }
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }

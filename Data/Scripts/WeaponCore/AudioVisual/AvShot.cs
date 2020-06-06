@@ -54,6 +54,7 @@ namespace WeaponCore.Support
         internal bool HitParticleActive;
         internal bool FakeExplosion;
         internal bool MarkForClose;
+        internal bool ProEnded;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -280,7 +281,7 @@ namespace WeaponCore.Support
                 if (saveHit)
                 {
                     a.HitVelocity = a.Hit.HitVelocity;
-                    a.Hitting = !a.ShrinkInited;
+                    a.Hitting = !a.ShrinkInited && a.ProEnded;
                     a.HitEffects();
                     a.LastHit = a.System.Session.Tick;
                 }
@@ -296,7 +297,7 @@ namespace WeaponCore.Support
                     {
                         a.Tracer = TracerState.Off;
                     }
-                    else if (a.Hitting && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
+                    else if (a.Hitting  && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
                     {
                         a.Tracer = TracerState.Shrink;
                         a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
@@ -319,7 +320,7 @@ namespace WeaponCore.Support
                     else if (a.AmmoDef.Const.IsBeamWeapon && a.Hitting && a.AmmoDef.Const.HitParticle && !(a.MuzzleId != 0 && (a.AmmoDef.Const.ConvergeBeams || a.AmmoDef.Const.OneHitParticle)))
                     {
                         ContainmentType containment;
-                        s.CameraFrustrum.Contains(ref a.Hit.VisualHitPos, out containment);
+                        s.CameraFrustrum.Contains(ref a.Hit.SurfaceHit, out containment);
                         if (containment != ContainmentType.Disjoint) a.RunBeam();
                     }
 
@@ -477,8 +478,8 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                Hit.VisualHitPos += ShootVelStep;
-                var newTracerFront = Hit.VisualHitPos + -(PointDir * (TracerStep * StepSize));
+                Hit.LastHit += ShootVelStep;
+                var newTracerFront = Hit.LastHit + -(PointDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float)reduced);
             }
@@ -687,12 +688,46 @@ namespace WeaponCore.Support
             Offsets.Clear();
         }
 
+        internal void ShortStepAvUpdate(ProInfo info, bool useCollisionSize, bool hit, bool earlyEnd, Vector3D position)
+        {
+            var endPos = hit ? info.Hit.LastHit : !earlyEnd ? position + -info.Direction * (info.DistanceTraveled - info.MaxTrajectory) : position;
+            var stepSize = (info.DistanceTraveled - info.PrevDistanceTraveled);
+            var avSize = useCollisionSize ? AmmoDef.Const.CollisionSize : info.TracerLength;
+            double remainingTracer;
+            double stepSizeToHit;
+            if (AmmoDef.Const.IsBeamWeapon)
+            {
+                double beamLength;
+                Vector3D.Distance(ref Origin, ref endPos, out beamLength);
+                remainingTracer = MathHelperD.Clamp(beamLength, 0, avSize);
+                stepSizeToHit = remainingTracer;
+            }
+            else
+            {
+                double overShot;
+                Vector3D.Distance(ref endPos, ref position, out overShot);
+                stepSizeToHit = Math.Abs(stepSize - overShot);
+                if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
+                {
+                    remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
+                }
+                else if (avSize >= overShot)
+                {
+                    remainingTracer = MathHelperD.Clamp(avSize - overShot, 0, Math.Min(avSize, info.PrevDistanceTraveled + stepSizeToHit));
+                }
+                else remainingTracer = 0;
+            }
+
+            if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
+            System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = this, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = info.TriggerGrowthSteps, Direction = info.Direction, VisualDir = info.VisualDir });
+        }
+
         internal void HitEffects(bool force = false)
         {
             if (System.Session.Tick - LastHit > 4 || force) {
 
                 double distToCameraSqr;
-                Vector3D.DistanceSquared(ref Hit.HitPos, ref System.Session.CameraPos, out distToCameraSqr);
+                Vector3D.DistanceSquared(ref Hit.SurfaceHit, ref System.Session.CameraPos, out distToCameraSqr);
 
                 if (OnScreen == Screen.Tracer || distToCameraSqr < 360000) {
                     if (FakeExplosion)
@@ -728,7 +763,7 @@ namespace WeaponCore.Support
                     }
                     hitEmitter.Entity = Hit.Entity;
 
-                    System.Session.Av.HitSounds.Add(new HitSound {Emitter = hitEmitter, SoundPair = hitSoundPair, Position = Hit.HitPos});
+                    System.Session.Av.HitSounds.Add(new HitSound {Emitter = hitEmitter, SoundPair = hitSoundPair, Position = Hit.SurfaceHit });
                 }
                 LastHitShield = false;
             }
@@ -852,10 +887,10 @@ namespace WeaponCore.Support
                 if (OnScreen != Screen.None)
                 {
                     MatrixD matrix;
-                    MatrixD.CreateTranslation(ref Hit.VisualHitPos, out matrix);
+                    MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                     if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !System.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
                     {
-                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.VisualHitPos, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
+                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.SurfaceHit, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
                         {
                             if (weapon.HitEffects[MuzzleId] != null)
                             {
@@ -1029,6 +1064,7 @@ namespace WeaponCore.Support
             HitParticleActive = false;
             FakeExplosion = false;
             MarkForClose = false;
+            ProEnded = false;
             TracerShrinks.Clear();
             GlowSteps.Clear();
             Offsets.Clear();

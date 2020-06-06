@@ -202,8 +202,8 @@ namespace WeaponCore.Support
     {
         internal IMySlimBlock Block;
         internal MyEntity Entity;
-        internal Vector3D HitPos;
-        internal Vector3D VisualHitPos;
+        internal Vector3D SurfaceHit;
+        internal Vector3D LastHit;
         internal Vector3D HitVelocity;
         internal uint HitTick;
     }
@@ -363,7 +363,7 @@ namespace WeaponCore.Support
                 frag.UniqueMuzzleId = p.Info.UniqueMuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
-                frag.Origin = !Vector3D.IsZero(p.Info.Hit.HitPos) ? p.Info.Hit.HitPos : p.Position;
+                frag.Origin = !Vector3D.IsZero(p.Info.Hit.LastHit) ? p.Info.Hit.LastHit : p.Position;
                 frag.OriginUp = p.Info.OriginUp;
                 frag.WeaponRng = p.Info.WeaponRng;
                 frag.IsFiringPlayer = p.Info.IsFiringPlayer;

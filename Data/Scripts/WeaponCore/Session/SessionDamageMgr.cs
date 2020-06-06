@@ -57,6 +57,7 @@ namespace WeaponCore
                         if (hitMax || outOfPew || pInvalid)
                         {
                             p.State = Projectile.ProjectileState.Depleted;
+                            if (!DedicatedServer) p.Info.AvShot.ProEnded = true;
                         }
                         Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
@@ -89,8 +90,18 @@ namespace WeaponCore
                     Projectiles.HitEntityPool.Return(hitEnt);
                 }
 
+                if (p.EnableAv && (p.Info.AmmoDef.Const.DrawLine || p.Info.AmmoDef.Const.PrimeModel || p.Info.AmmoDef.Const.TriggerModel))
+                {
+                    var useCollisionSize = p.ModelState == Projectile.EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine;
+                    p.Info.AvShot.TestSphere.Center = p.Info.Hit.LastHit;
+                    p.Info.AvShot.ShortStepAvUpdate(p.Info, useCollisionSize, true, p.EarlyEnd, p.Position);
+                }
+
                 if (info.BaseDamagePool <= 0)
+                {
                     p.State = Projectile.ProjectileState.Depleted;
+                    if (!DedicatedServer) p.Info.AvShot.ProEnded = true;
+                }
 
                 info.HitList.Clear();
             }
@@ -389,7 +400,7 @@ namespace WeaponCore
                 }
             }
 
-            if (rootBlock != null && destroyed > 0 && damagePool <= 0 || objectsHit >= maxObjects)
+            if (rootBlock != null && destroyed > 0)
             {
                 var fat = rootBlock.FatBlock;
                 MyOrientedBoundingBoxD obb;
@@ -404,7 +415,9 @@ namespace WeaponCore
 
                 var dist = obb.Intersects(ref hitEnt.Intersection);
                 if (dist.HasValue)
-                    t.Hit.HitPos = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * dist.Value);
+                {
+                    t.Hit.LastHit = hitEnt.Intersection.From + (hitEnt.Intersection.Direction * dist.Value);
+                }
             }
             if (!countBlocksAsObjects) t.ObjectsHit += 1;
             if (!nova)
