@@ -29,88 +29,79 @@ namespace WeaponCore.Support
 
         internal void Scan()
         {
-            using (_scanLock.AcquireExclusiveUsing()) {
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref ScanVolume, _possibleTargets);
+            NearByEntitiesTmp = _possibleTargets.Count;
 
-                if (!Scanning && Session.Tick - _lastScan > 100) {
+            foreach (var grid in PrevSubGrids)
+                RemSubGrids.Add(grid);
 
-                    Scanning = true;
-                    _lastScan = Session.Tick;
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref ScanVolume, _possibleTargets);
-                    NearByEntitiesTmp = _possibleTargets.Count;
+            PrevSubGrids.Clear();
+            for (int i = 0; i < NearByEntitiesTmp; i++) {
 
-                    foreach (var grid in PrevSubGrids)
-                        RemSubGrids.Add(grid);
+                var ent = _possibleTargets[i];
+                using (ent.Pin()) {
 
-                    PrevSubGrids.Clear();
-                    for (int i = 0; i < NearByEntitiesTmp; i++) {
+                    if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
 
-                        var ent = _possibleTargets[i];
-                        using (ent.Pin()) {
-
-                            if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
-
-                            var grid = ent as MyCubeGrid;
-                            if (grid != null && MyGrid.IsSameConstructAs(grid)) {
-                                PrevSubGrids.Add(grid);
-                                continue;
-                            }
-
-                            Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                            if (!CreateEntInfo(ent, MyOwner, out entInfo)) continue;
-
-                            switch (entInfo.Relationship) {
-                                case MyRelationsBetweenPlayerAndBlock.Owner:
-                                case MyRelationsBetweenPlayerAndBlock.FactionShare:
-                                case MyRelationsBetweenPlayerAndBlock.Friends:
-                                    continue;
-                            }
-
-                            if (grid != null) {
-
-                                FatMap fatMap;
-                                if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
-                                    continue;
-
-                                var allFat = fatMap.MyCubeBocks;
-                                var fatCount = allFat.Count;
-
-                                if (fatCount <= 0 || !grid.IsPowered)
-                                    continue;
-
-                                if (fatCount <= 20)  { // possible debris
-
-                                    var valid = false;
-                                    for (int j = 0; j < fatCount; j++) {
-                                        var fat = allFat[j];
-                                        if (fat is IMyTerminalBlock && fat.IsWorking) {
-                                            valid = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!valid) continue;
-                                }
-
-                                int partCount;
-                                GridAi targetAi;
-                                if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi)) {
-                                    targetAi.TargetAisTmp.Add(this);
-                                    TargetAisTmp.Add(targetAi);
-                                    partCount = targetAi.Construct.BlockCount;
-                                }
-                                else 
-                                    partCount = fatMap.MostBlocks;
-
-                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount));
-                                ValidGrids.Add(ent);
-                            }
-                            else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
-                        }
+                    var grid = ent as MyCubeGrid;
+                    if (grid != null && MyGrid.IsSameConstructAs(grid)) {
+                        PrevSubGrids.Add(grid);
+                        continue;
                     }
-                    FinalizeTargetDb();
-                    SubGridDetect();
+
+                    Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
+                    if (!CreateEntInfo(ent, MyOwner, out entInfo)) continue;
+
+                    switch (entInfo.Relationship) {
+                        case MyRelationsBetweenPlayerAndBlock.Owner:
+                        case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                        case MyRelationsBetweenPlayerAndBlock.Friends:
+                            continue;
+                    }
+
+                    if (grid != null) {
+
+                        FatMap fatMap;
+                        if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
+                            continue;
+
+                        var allFat = fatMap.MyCubeBocks;
+                        var fatCount = allFat.Count;
+
+                        if (fatCount <= 0 || !grid.IsPowered)
+                            continue;
+
+                        if (fatCount <= 20)  { // possible debris
+
+                            var valid = false;
+                            for (int j = 0; j < fatCount; j++) {
+                                var fat = allFat[j];
+                                if (fat is IMyTerminalBlock && fat.IsWorking) {
+                                    valid = true;
+                                    break;
+                                }
+                            }
+                            if (!valid) continue;
+                        }
+
+                        int partCount;
+                        GridAi targetAi;
+                        if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi)) {
+                            targetAi.TargetAisTmp.Add(this);
+                            TargetAisTmp.Add(targetAi);
+                            partCount = targetAi.Construct.BlockCount;
+                        }
+                        else 
+                            partCount = fatMap.MostBlocks;
+
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount));
+                        ValidGrids.Add(ent);
+                    }
+                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
                 }
-                Scanning = false;
             }
+            FinalizeTargetDb();
+            SubGridDetect();
         }
 
         private void FinalizeTargetDb()

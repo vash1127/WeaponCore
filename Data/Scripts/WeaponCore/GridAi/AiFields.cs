@@ -19,7 +19,6 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal volatile bool Scanning;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
         internal volatile bool PowerDirty = true;
@@ -171,8 +170,6 @@ namespace WeaponCore.Support
         }
 
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
-        private readonly FastResourceLock _scanLock = new FastResourceLock();
-        private uint _lastScan;
         private uint _pCacheTick;
 
         internal void Init(MyCubeGrid grid, Session session)

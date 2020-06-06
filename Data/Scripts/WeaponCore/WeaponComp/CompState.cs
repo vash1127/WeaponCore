@@ -75,7 +75,7 @@ namespace WeaponCore.Support
             TargetNonThreats = targetNonThreats;
             if (TargetNonThreats)
                 Ai.TargetNonThreats = true;
-            
+
             IsAsleep = false;
 
             if (!Ai.Session.IsServer)

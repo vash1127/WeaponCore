@@ -359,7 +359,12 @@ namespace WeaponCore.Support
             WasAwake = 0;
             WasAwake += Awake.Count;
 
-            foreach (var wa in Awake) { 
+            foreach (var wa in Awake) {
+
+                if (wa.Weapon.Target.HasTarget) {
+                    Removal.Add(wa);
+                    continue;
+                }
 
                 if (Session.Tick - wa.CreatedTick > 599) {
 

@@ -254,6 +254,7 @@ namespace WeaponCore.Platform
 
                 if (CanReload)
                     StartReload();
+
                 else if (ActiveAmmoDef.AmmoDef.Const.BurstMode) {
 
                     if (State.ShotsFired == System.ShotsPerBurst) {

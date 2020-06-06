@@ -37,19 +37,14 @@ namespace WeaponCore
                     ai.DeadProjectiles.Clear();
                     ai.LiveProjectileTick = Tick;
                 }
+                var enemyProjectiles = ai.LiveProjectile.Count > 0;
                 ai.CheckProjectiles = Tick - ai.NewProjectileTick <= 1;
 
                 if (ai.UpdatePowerSources || !ai.HadPower && ai.MyGrid.IsPowered || ai.HasPower && !ai.MyGrid.IsPowered || Tick10)
                     ai.UpdateGridPower();
 
-                if (ai.ControllingPlayers.Count > 0)
-                    Log.Line($"aiSleep:{ai.AiSleep} - cAwake:{ai.AwakeComps} - cSleep:{ai.SleepingComps} - tracking:{ai.WeaponsTracking} - dbUpdate:{ai.DbUpdated} - power:{ai.HasPower}");
-
-                if (!ai.HasPower || IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) {
-
-                    DsDebugDraw.DrawSphere(ai.MyGrid.PositionComp.WorldVolume, Color.Red);
+                if (!ai.HasPower || IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
-                }
 
                 ///
                 /// Comp update section
@@ -93,19 +88,21 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
+                        var notReady = w.Timings.WeaponReadyTick > Tick;
+                        var skip = notReady || !w.Set.Enable;
+                        
+                        if (skip) {
 
-                        if (!w.Set.Enable) {
-
-                            if (w.Target.HasTarget && !IsClient)
+                            if (!notReady && w.Target.HasTarget && !IsClient)
                                 w.Target.Reset(comp.Session.Tick, States.Expired);
                             continue;
                         }
 
-                        if (w.Timings.WeaponReadyTick > Tick) continue;
-
-                        if (w.AvCapable && (!w.PlayTurretAv || Tick60)) {
+                        if (w.AvCapable && Tick20) {
                             var avWasEnabled = w.PlayTurretAv;
-                            w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
+                            double distSqr;
+                            Vector3D.DistanceSquared(ref CameraPos, ref w.MyPivotPos, out distSqr);
+                            w.PlayTurretAv = distSqr < w.System.HardPointAvMaxDistSqr;
                             if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAv = !w.PlayTurretAv;
 
                         }
@@ -124,14 +121,14 @@ namespace WeaponCore
                         ///Check Reload
                         ///                        
                         
-                        if (!w.OutOfAmmo && !w.State.Sync.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.State.Sync.CurrentAmmo <= 0 && w.CanReload)
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.State.Sync.Reloading && !w.OutOfAmmo && w.State.Sync.CurrentAmmo <= 0 &&  w.CanReload)
                             w.StartReload();
 
                         ///
                         /// Update Weapon Hud Info
                         /// 
 
-                        if (HandlesInput && !Session.Config.MinimalHud && ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30) || (w.State.Sync.Heat > 0)) && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        if ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30 || w.State.Sync.Heat > 0) && HandlesInput && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
@@ -179,7 +176,7 @@ namespace WeaponCore
                             ClientGridResyncRequests.Add(comp);
                         }
 
-                        w.ProjectilesNear = w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId && ai.LiveProjectile.Count > 0);
+                        w.ProjectilesNear = enemyProjectiles && w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
 
                         if (comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
@@ -208,7 +205,7 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         ///
 
-                        if (w.TurretMode && !w.ReturingHome && !w.IsHome && !w.Target.HasTarget && !comp.UserControlled)
+                        if (w.TurretMode && !w.IsHome && !w.ReturingHome  && !w.Target.HasTarget && !comp.UserControlled)
                             w.TurretHomePosition(true);
 
                         ///
@@ -382,30 +379,23 @@ namespace WeaponCore
             {
                 var w = AcquireTargets[i];
                 var comp = w.Comp;
-                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) {
+                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate) {
                     
                     w.AcquiringTarget = false;
                     AcquireTargets.RemoveAtFast(i);
                     continue;
                 }
 
-                var gridAi = w.Comp.Ai;
-                //var sinceCheck = Tick - w.Target.CheckTick;
+                if (!w.WeaponAcquire.Enabled)
+                    AcquireManager.AddAwake(w.WeaponAcquire);
 
-                var wa = w.WeaponAcquire;
-
-                if (!wa.Enabled)
-                    AcquireManager.AddAwake(wa);
-
-                var acquire = (wa.Asleep && AsleepCount == wa.SlotId || !wa.Asleep && AwakeCount == wa.SlotId);
-
-                var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && gridAi.CheckProjectiles;
-
+                var acquire = (w.WeaponAcquire.Asleep && AsleepCount == w.WeaponAcquire.SlotId || !w.WeaponAcquire.Asleep && AwakeCount == w.WeaponAcquire.SlotId);
+                var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && w.Comp.Ai.CheckProjectiles;
                 var checkTime = w.Target.TargetChanged || acquire || seekProjectile;
 
-                if (checkTime || gridAi.TargetResetTick == Tick && w.Target.HasTarget) {
+                if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 
-                    if (seekProjectile || comp.TrackReticle || (comp.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange) && gridAi.TargetingInfo.ValidTargetExists(w)) {
+                    if (seekProjectile || comp.TrackReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
                         
                         AcquireChecks++;
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
@@ -413,10 +403,10 @@ namespace WeaponCore
                             GridAi.AcquireTarget(w, false, topMost);
                         }
                         else
-                            GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
+                            GridAi.AcquireTarget(w, w.Comp.Ai.TargetResetTick == Tick);
                     }
 
-                    if (w.Target.HasTarget || !(comp.TargetNonThreats && gridAi.TargetingInfo.OtherInRange || gridAi.TargetingInfo.ThreatInRange)) {
+                    if (w.Target.HasTarget || !(comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange)) {
 
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);

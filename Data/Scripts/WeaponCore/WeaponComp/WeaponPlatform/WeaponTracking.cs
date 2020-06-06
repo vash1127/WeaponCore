@@ -88,9 +88,9 @@ namespace WeaponCore.Platform
 
                     Vector3D constraintVector;
                     Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out constraintVector);
-                    constraintVector = Vector3D.Rotate(constraintVector, weapon.WeaponConstMatrix);
+                    Vector3D.Rotate(ref constraintVector, ref weapon.WeaponConstMatrix, out constraintVector);
 
-                    var testRay = new RayD(weapon.MyPivotPos, constraintVector);
+                    var testRay = new RayD(ref weapon.MyPivotPos, ref constraintVector);
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
                     if (weapon.Comp.Debug)
@@ -324,15 +324,20 @@ namespace WeaponCore.Platform
             Vector3D deltaPosNorm;
             if (Vector3D.IsZero(deltaPos)) deltaPosNorm = Vector3D.Zero;
             else if (Vector3D.IsUnit(ref deltaPos)) deltaPosNorm = deltaPos;
-            else deltaPosNorm = Vector3D.Normalize(deltaPos);
+            else Vector3D.Normalize(ref deltaPos, out deltaPosNorm);
 
-            double closingSpeed = Vector3D.Dot(deltaVel, deltaPosNorm);
+            double closingSpeed;
+            Vector3D.Dot(ref deltaVel, ref deltaPosNorm, out closingSpeed);
+            
             Vector3D closingVel = closingSpeed * deltaPosNorm;
             Vector3D lateralVel = deltaVel - closingVel;
             double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
             double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
             double projectileClosingSpeed = Math.Sqrt(ttiDiff) - closingSpeed;
-            double closingDistance = Vector3D.Dot(deltaPos, deltaPosNorm);
+            
+            double closingDistance;
+            Vector3D.Dot(ref deltaPos, ref deltaPosNorm, out closingDistance);
+
             double timeToIntercept = ttiDiff < 0 ? 0 : closingDistance / projectileClosingSpeed;
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             double shooterVelScaleFactor = 1;
@@ -366,7 +371,7 @@ namespace WeaponCore.Platform
 
                 if (Vector3D.IsZero(deltaPos)) aimDirectionNorm = Vector3D.Zero;
                 else if (Vector3D.IsUnit(ref deltaPos)) aimDirectionNorm = aimDirection;
-                else aimDirectionNorm = Vector3D.Normalize(aimDirection);
+                else Vector3D.Normalize(ref aimDirection, out aimDirectionNorm);
                 projectileVel += aimDirectionNorm * projectileMaxSpeed;
             }
 
@@ -384,7 +389,12 @@ namespace WeaponCore.Platform
                 targetVel += targetAccStep;
 
                 if (targetVel.LengthSquared() > maxSpeedSqr)
-                    targetVel = Vector3D.Normalize(targetVel) * targetMaxSpeed;
+                {
+                    Vector3D targetNormVel;
+                    Vector3D.Normalize(ref targetVel, out targetNormVel);
+                    targetVel = targetNormVel * targetMaxSpeed;
+
+                }
 
                 targetPos += targetVel * dt;
                 if (projectileAccelerates)
@@ -392,7 +402,9 @@ namespace WeaponCore.Platform
                     projectileVel += projectileAccStep;
                     if (projectileVel.LengthSquared() > projectileMaxSpeedSqr)
                     {
-                        projectileVel = Vector3D.Normalize(projectileVel) * projectileMaxSpeed;
+                        Vector3D pNormVel;
+                        Vector3D.Normalize(ref projectileVel, out pNormVel);
+                        projectileVel = pNormVel * projectileMaxSpeed;
                     }
                 }
 

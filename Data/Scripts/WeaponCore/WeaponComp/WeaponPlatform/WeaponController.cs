@@ -124,29 +124,46 @@ namespace WeaponCore.Platform
 
             if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
-                var forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
+                Vector3D forward;
+                var eLeft = elevationMatrix.Left;
+                Vector3D.Cross(ref eLeft, ref MyPivotUp, out forward);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = elevationMatrix.Left };
             }
             else
             {
                 var forward = AzimuthOnBase ? Comp.CubeMatrix.Forward : AzimuthPart.Parent.PositionComp.WorldMatrixRef.Forward;
-                var left = Vector3D.Cross(MyPivotUp, forward);
+                Vector3D left;
+                Vector3D.Cross(ref MyPivotUp, ref forward, out left);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
             }
 
-            var axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
+            Vector3D axis;
+            Vector3D.Cross(ref MyPivotUp ,ref MyPivotDir, out axis);
             if (Vector3D.IsZero(axis))
                 MyPivotPos = centerTestPos;
             else
             {
                 var perpDir2 = Vector3D.Cross(MyPivotDir, axis);
                 var point1To2 = weaponCenter - centerTestPos;
-                MyPivotPos = centerTestPos + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(MyPivotUp, perpDir2) * MyPivotUp;
+                
+                double point1Dot;
+                Vector3D.Dot(ref point1To2, ref perpDir2, out point1Dot);
+
+                double myPivotUpDot;
+                Vector3D.Dot(ref MyPivotUp, ref perpDir2, out myPivotUpDot);
+
+                MyPivotPos = centerTestPos + point1Dot / myPivotUpDot * MyPivotUp;
             }
 
 
             if (!Vector3D.IsZero(AimOffset))
-                MyPivotPos += Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up });
+            {
+                var pivotRotMatrix = new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up };
+                Vector3D offSet;
+                Vector3D.Rotate(ref AimOffset, ref pivotRotMatrix, out offSet);
+
+                MyPivotPos += offSet;
+            }
 
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));

@@ -187,20 +187,25 @@ namespace WeaponCore.Support
             //Get weapon direction and orientation
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-            currentVector = Vector3D.Rotate(currentVector, weapon.WeaponConstMatrix);
+            Vector3D.Rotate(ref currentVector, ref weapon.WeaponConstMatrix, out currentVector);
 
             var up = weapon.MyPivotUp;
-            var left = Vector3D.Cross(up, currentVector);
+            Vector3D left;
+            Vector3D.Cross(ref up, ref currentVector, out left);
             if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left)) left.Normalize();
-            var forward = Vector3D.Cross(left, up);
+            Vector3D forward;
+            Vector3D.Cross(ref left, ref up, out forward);
             var constraintMatrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
             // ugly as sin inlined compute GetRotationAngles + AngleBetween, returning the desired az/el doubles;
-            var localTargetVector = Vector3D.TransformNormal(targetDir, MatrixD.Transpose(constraintMatrix));
+            var transposeMatrix = MatrixD.Transpose(constraintMatrix);
+            Vector3D localTargetVector;
+            Vector3D.TransformNormal(ref targetDir, ref transposeMatrix, out localTargetVector);
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
-            var azVecIsZero = Vector3D.IsZero(Vector3D.Forward) || Vector3D.IsZero(flattenedTargetVector);
+            var azVecIsZero = Vector3D.IsZero(flattenedTargetVector);
+            var flatSqr = flattenedTargetVector.LengthSquared();
 
-            var desiredAzimuth = azVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(Vector3D.Forward.Dot(flattenedTargetVector) / Math.Sqrt(Vector3D.Forward.LengthSquared() * flattenedTargetVector.LengthSquared()), -1, 1)) * -Math.Sign(localTargetVector.X); //right is positive;
+            var desiredAzimuth = azVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(-flattenedTargetVector.Z / Math.Sqrt(flatSqr), -1, 1)) * -Math.Sign(localTargetVector.X); //right is positive;
 
             if (Math.Abs(desiredAzimuth) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
                 desiredAzimuth = Math.PI;
@@ -210,7 +215,7 @@ namespace WeaponCore.Support
                 desiredElevation = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
             else {
                 var elVecIsZero = Vector3D.IsZero(localTargetVector) || Vector3D.IsZero(flattenedTargetVector);
-                desiredElevation = elVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(localTargetVector.Dot(flattenedTargetVector) / Math.Sqrt(localTargetVector.LengthSquared() * flattenedTargetVector.LengthSquared()), -1, 1)) * Math.Sign(localTargetVector.Y); //up is positive
+                desiredElevation = elVecIsZero ? 0 : Math.Acos(MathHelperD.Clamp(localTargetVector.Dot(flattenedTargetVector) / Math.Sqrt(localTargetVector.LengthSquared() * flatSqr), -1, 1)) * Math.Sign(localTargetVector.Y); //up is positive
             }
 
             // return result of desired values being in tolerances
