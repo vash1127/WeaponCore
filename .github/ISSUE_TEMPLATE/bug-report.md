@@ -1,7 +1,6 @@
 ---
 name: Bug Report
-about: Leave a bug report, tell us whats wrong! Please do not write the whole report
-  in the title. DO NOT LEAVE THE TITLE BLANK.
+about: Leave a bug report, tell us whats wrong! Please read the issue posting guidelines before posting, it's in the wiki!
 title: "(Bug) "
 labels: Housecleaning (Bug)
 assignees: ''
