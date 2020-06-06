@@ -1,7 +1,6 @@
 ---
 name: Bug Report
-about: Leave a bug report, tell us whats wrong! Please do not write the whole report
-  in the title. DO NOT LEAVE THE TITLE BLANK.
+about: Leave a bug report, tell us whats wrong! [Pleae read the issue posting guidelines before posting an issue!](https://github.com/sstixrud/WeaponCore/wiki/Issue-Posting-Guidelines)
 title: "(Bug) "
 labels: Housecleaning (Bug)
 assignees: ''
