@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
@@ -41,14 +39,10 @@ namespace WeaponCore
         {
             try
             {
-                //
-                // Finish work from last frame
-                //
-
-
                 DsUtil.Start("av");
                 if (!DedicatedServer) Av.End();
                 DsUtil.Complete("av", true);
+
                 //
                 // Finished last frame
                 //
@@ -80,16 +74,6 @@ namespace WeaponCore
                     DeformProtection.Clear();
 
                 Timings();
-
-                /*
-                if (IsClient && !ClientAmmoCheck.IsEmpty && CTask.IsComplete)
-                {
-                    if (CTask.valid && CTask.Exceptions != null)
-                        TaskHasErrors(ref CTask, "ITask");
-
-                    CTask = MyAPIGateway.Parallel.StartBackground(ProccessClientAmmoUpdates, ProccessClientReload);
-                }
-                */
 
                 if (!IsClient && (!WeaponToPullAmmo.Empty || !WeaponsToRemoveAmmo.Empty) && ITask.IsComplete)
                     StartAmmoTask();
@@ -129,26 +113,6 @@ namespace WeaponCore
                     CameraPos = CameraMatrix.Translation;
                     PlayerPos = Session.Player?.Character?.WorldAABB.Center ?? Vector3D.Zero;
                 }
-
-                /*
-                foreach (var c in VoxelCaches.Values) {
-                    if (Tick - c.HitRefreshed < 60 && c.HitRefreshed > 0)
-                        c.DebugDraw();
-                }
-
-                if (false)
-                {
-                    foreach (var dLine in DebugLines)
-                    {
-                        if (Tick - dLine.CreateTick > 2400)
-                            DebugLines.Remove(dLine);
-                        else
-                            DsDebugDraw.DrawLine(dLine.Line, dLine.Color, 0.025f);
-                    }
-                    DebugLines.ApplyRemovals();
-                }
-                */
-
 
                 if (GameLoaded) {
                     DsUtil.Start("ai");

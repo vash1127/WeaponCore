@@ -124,14 +124,6 @@ namespace WeaponCore
         internal readonly List<Weapon> WeaponsToSync = new List<Weapon>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
-        internal readonly CachingList<DebugLine> DebugLines = new CachingList<DebugLine>();
-
-        internal struct DebugLine
-        {
-            internal LineD Line;
-            internal Color Color;
-            internal uint CreateTick;
-        }
 
         internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
         internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
