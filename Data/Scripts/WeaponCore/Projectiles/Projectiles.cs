@@ -43,7 +43,7 @@ namespace WeaponCore.Projectiles
             Session = session;
         }
 
-        internal void Stage1() // Methods highly inlined due to keen's mod profiler
+        internal void SpawnAndMove() // Methods highly inlined due to keen's mod profiler
         {
             Session.StallReporter.Start("GenProjectiles", 17);
             if (NewProjectiles.Count > 0) GenProjectiles();
@@ -65,7 +65,7 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
         }
 
-        internal void Stage2() // Methods highly inlined due to keen's mod profiler
+        internal void Intersect() // Methods highly inlined due to keen's mod profiler
         {
             Session.StallReporter.Start("CheckHits", 17);
             if (ActiveProjetiles.Count > 0)
@@ -73,16 +73,31 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start("ConfirmHit", 17);
-            ConfirmHit();
+            ConfirmHits();
             Session.StallReporter.End();
+        }
 
-            if (!Session.DedicatedServer) {
-                Session.StallReporter.Start("UpdateAv", 17);
+        internal void Damage()
+        {
+            if (Session.EffectedCubes.Count > 0)
+                Session.ApplyGridEffect();
+
+            if (Session.Tick60)
+                Session.GridEffects();
+
+            if (Session.Hits.Count > 0) Session.ProcessHits();
+        }
+
+        internal void AvUpdate()
+        {
+            if (!Session.DedicatedServer)
+            {
+                Session.StallReporter.Start("AvUpdate", 17);
                 UpdateAv();
+                DeferedAvStateUpdates(Session);
                 Session.StallReporter.End();
             }
         }
-
 
         private void UpdateState(int end = 0)
         {
@@ -237,7 +252,6 @@ namespace WeaponCore.Projectiles
             for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
 
                 var p = ActiveProjetiles[x];
-                p.Miss = false;
                 
                 if ((int) p.State > 3)
                     continue;
@@ -333,31 +347,8 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
                     ValidateHits.Add(p);
-                    continue;
                 }
-
-                p.Miss = true;
-                p.Info.HitList.Clear();
             }
-        }
-
-        private void ConfirmHit()
-        {
-            for (int i = 0; i < ValidateHits.Count; i++) {
-                
-                var p = ValidateHits[i];
-
-                //if (false)
-                    //p.Info.System.Session.DebugLines.Add(new Session.DebugLine { Color = p.Info.IsShrapnel ? Color.Blue : Color.Red, Line = new LineD(p.LastPosition, p.Position), CreateTick = p.Info.System.Session.Tick });
-                
-                if (GetAllEntitiesInLine(p, p.Beam) && p.Intersected())
-                    continue;
-
-                p.Miss = true;
-                p.Info.HitList.Clear();
-
-            }
-            ValidateHits.Clear();
         }
 
         private void UpdateAv()
@@ -366,13 +357,60 @@ namespace WeaponCore.Projectiles
 
                 var p = ActiveProjetiles[x];
 
-                if (!p.Miss || (int)p.State > 3) continue;
-                if (p.Info.MuzzleId == -1)
-                {
-                    p.CreateFakeBeams(true);
+                if (p.Info.AmmoDef.Const.VirtualBeams) {
+
+                    Vector3D? hitPos = null;
+                    if (!Vector3D.IsZero(p.Info.Hit.SurfaceHit)) hitPos = p.Info.Hit.SurfaceHit;
+                    for (int v = 0; v < p.VrPros.Count; v++) {
+
+                        var vp = p.VrPros[v];
+                        var vs = vp.AvShot;
+
+                        vp.TracerLength = p.Info.TracerLength;
+                        vs.Init(vp, p.StepPerSec * StepConst, p.MaxSpeed);
+
+                        if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
+                            vs.ProEnded = true;
+
+                        vs.Hit = p.Info.Hit;
+
+                        if (p.Info.AmmoDef.Const.ConvergeBeams) {
+                            var beam = p.Intersecting ? new LineD(vs.Origin, hitPos ?? p.Position) : new LineD(vs.Origin, p.Position);
+                            p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = p.Intersecting, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = beam.Direction, VisualDir = beam.Direction });
+                        }
+                        else {
+                            Vector3D beamEnd;
+                            var hit = p.Intersecting && hitPos.HasValue;
+                            if (!hit)
+                                beamEnd = vs.Origin + (vp.Direction * p.Info.MaxTrajectory);
+                            else
+                                beamEnd = vs.Origin + (vp.Direction * p.Info.WeaponCache.HitDistance);
+
+                            var line = new LineD(vs.Origin, beamEnd, !hit ? p.Info.MaxTrajectory : p.Info.WeaponCache.HitDistance);
+                            if (p.Intersecting && hitPos.HasValue)
+                                p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
+                            else
+                                p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
+                        }
+                    }
                     continue;
                 }
-                if (!p.EnableAv) continue;
+
+                if (p.Intersecting) {
+
+                    if (p.EnableAv && (p.Info.AmmoDef.Const.DrawLine || p.Info.AmmoDef.Const.PrimeModel || p.Info.AmmoDef.Const.TriggerModel)) {
+                        var useCollisionSize = p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine;
+                        p.Info.AvShot.TestSphere.Center = p.Info.Hit.LastHit;
+                        p.Info.AvShot.ShortStepAvUpdate(p.Info, useCollisionSize, true, p.EarlyEnd, p.Position);
+                    }
+                    
+                    if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
+                        p.Info.AvShot.ProEnded = true;
+
+                    continue;
+                }
+
+                if (!p.EnableAv || (int)p.State > 3) continue;
 
                 if (p.SmartsOn)
                     p.Info.VisualDir = p.Info.Direction;
@@ -416,7 +454,6 @@ namespace WeaponCore.Projectiles
                 if (p.Info.AvShot.ModelOnly)
                     DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
             }
-            Session.DebugLines.ApplyAdditions();
         }
     }
 }

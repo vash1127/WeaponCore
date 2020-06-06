@@ -74,7 +74,6 @@ namespace WeaponCore.Projectiles
         internal bool MineSeeking;
         internal bool MineActivated;
         internal bool MineTriggered;
-        internal bool Miss;
         internal bool CachedPlanetHit;
         internal bool AtMaxRange;
         internal bool ShieldBypassed;
@@ -86,7 +85,7 @@ namespace WeaponCore.Projectiles
         internal bool HadTarget;
         internal bool WasTracking;
         internal bool UseEntityCache;
-
+        internal bool Intersecting;
         internal enum CheckTypes
         {
             Ray,
@@ -137,6 +136,8 @@ namespace WeaponCore.Projectiles
             FakeGravityNear = false;
             HadTarget = false;
             WasTracking = false;
+            Intersecting = false;
+
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -388,63 +389,6 @@ namespace WeaponCore.Projectiles
             if (MyGamePruningStructure.AnyVoxelMapInBox(ref possiblePos))
             {
                 PruneQuery = MyEntityQueryType.Both;
-            }
-        }
-
-        internal bool Intersected(bool add = true)
-        {
-            if (!Info.AmmoDef.Const.VirtualBeams && add) Info.System.Session.Hits.Add(this);
-            else if (Info.AmmoDef.Const.VirtualBeams)
-            {
-                Info.WeaponCache.VirtualHit = true;
-                Info.WeaponCache.HitEntity.Entity = Info.Hit.Entity;
-                Info.WeaponCache.HitEntity.HitPos = Info.Hit.SurfaceHit;
-                Info.WeaponCache.Hits = VrPros.Count;
-                Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, Info.Hit.SurfaceHit);
-
-                if (Info.Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Info.Hit.Block;
-                if (add) Info.System.Session.Hits.Add(this);
-                if (!Info.System.Session.DedicatedServer) 
-                    CreateFakeBeams(!add);
-            }
-            return true;
-        }
-
-
-
-        internal void CreateFakeBeams(bool miss = false)
-        {
-            Vector3D? hitPos = null;
-            if (!Vector3D.IsZero(Info.Hit.SurfaceHit)) hitPos = Info.Hit.SurfaceHit;
-            for (int i = 0; i < VrPros.Count; i++)
-            {
-
-                var vp = VrPros[i];
-                var vs = vp.AvShot;
-
-                vp.TracerLength = Info.TracerLength;
-                vs.Init(vp, StepPerSec * StepConst, MaxSpeed);
-                vs.Hit = Info.Hit;
-                if (Info.AmmoDef.Const.ConvergeBeams)
-                {
-                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.Origin, Position);
-                    Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = !miss, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = beam.Direction, VisualDir = beam.Direction });
-                }
-                else
-                {
-                    Vector3D beamEnd;
-                    var hit = !miss && hitPos.HasValue;
-                    if (!hit)
-                        beamEnd = vs.Origin + (vp.Direction * Info.MaxTrajectory);
-                    else
-                        beamEnd = vs.Origin + (vp.Direction * Info.WeaponCache.HitDistance);
-
-                    var line = new LineD(vs.Origin, beamEnd, !hit ? Info.MaxTrajectory : Info.WeaponCache.HitDistance);
-                    if (!miss && hitPos.HasValue)
-                        Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
-                    else
-                        Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = Info.DistanceTraveled - Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
-                }
             }
         }
 
@@ -881,7 +825,8 @@ namespace WeaponCore.Projectiles
                     Info.AvShot.ForceHitParticle = true;
                     Info.AvShot.Hit = Info.Hit;
                 }
-                Intersected(false);
+
+                Intersecting = true;
             }
 
             State = ProjectileState.Depleted;

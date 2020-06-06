@@ -61,7 +61,7 @@ namespace WeaponCore
 
             SoundPairs.Clear();
 
-            foreach (var item in _effectedCubes)
+            foreach (var item in EffectedCubes)
             {
                 var cubeid = item.Key;
                 var blockInfo = item.Value;
@@ -82,7 +82,7 @@ namespace WeaponCore
 
             while (_effectPurge.Count != 0)
             {
-                _effectedCubes.Remove(_effectPurge.Dequeue());
+                EffectedCubes.Remove(_effectPurge.Dequeue());
             }
 
             Av.Glows.Clear();

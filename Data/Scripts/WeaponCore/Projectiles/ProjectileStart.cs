@@ -81,7 +81,6 @@ namespace WeaponCore.Projectiles
                     p.Info.WeaponCache.VirtualHit = false;
                     p.Info.WeaponCache.Hits = 0;
                     p.Info.WeaponCache.HitEntity.Entity = null;
-
                     for (int j = 0; j < virts.Count; j++)
                     {
                         var v = virts[j];

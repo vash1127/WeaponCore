@@ -95,18 +95,19 @@ namespace WeaponCore
         internal void ProfilePerformance()
         {
             var netTime1 = DsUtil.GetValue("network1");
-            var projectile1Time = DsUtil.GetValue("projectiles1");
-            var projectile2Time = DsUtil.GetValue("projectiles2");
+            var psTime = DsUtil.GetValue("ps");
+            var piTIme = DsUtil.GetValue("pi");
+            var pdTime = DsUtil.GetValue("pd");
+            var paTime = DsUtil.GetValue("pa");
 
             var updateTime = DsUtil.GetValue("shoot");
-            var damageTime = DsUtil.GetValue("damage");
             var drawTime = DsUtil.GetValue("draw");
             var av = DsUtil.GetValue("av");
             var db = DsUtil.GetValue("db");
             var ai = DsUtil.GetValue("ai");
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
-            Log.LineShortDate($"(CPU-T) --- <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <P1>{projectile1Time.Median:0.0000}/{projectile1Time.Min:0.0000}/{projectile1Time.Max:0.0000} <P2>{projectile2Time.Median:0.0000}/{projectile2Time.Min:0.0000}/{projectile2Time.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}>", "perf");
+            Log.LineShortDate($"(CPU-T) --- <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PS>{psTime.Median:0.0000}/{psTime.Min:0.0000}/{psTime.Max:0.0000} <PI>{piTIme.Median:0.0000}/{piTIme.Min:0.0000}/{piTIme.Max:0.0000} <PD>{pdTime.Median:0.0000}/{pdTime.Min:0.0000}/{pdTime.Max:0.0000} <PA>{paTime.Median:0.0000}/{paTime.Min:0.0000}/{paTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}>", "perf");
             Log.LineShortDate($"(STATS) -------- AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
             TargetRequests = 0;
             TargetChecks = 0;

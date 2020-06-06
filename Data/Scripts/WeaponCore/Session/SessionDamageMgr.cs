@@ -30,8 +30,10 @@ namespace WeaponCore
             for (int x = 0; x < Hits.Count; x++)
             {
                 var p = Hits[x];
+
                 var info = p.Info;
                 var maxObjects = info.AmmoDef.Const.MaxObjectsHit;
+
                 var phantom = info.AmmoDef.BaseDamage <= 0;
                 var pInvalid = (int) p.State > 3;
                 var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
@@ -57,12 +59,11 @@ namespace WeaponCore
                         if (hitMax || outOfPew || pInvalid)
                         {
                             p.State = Projectile.ProjectileState.Depleted;
-                            if (!DedicatedServer) p.Info.AvShot.ProEnded = true;
                         }
                         Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
                     }
-
+                    
                     switch (hitEnt.EventType)
                     {
                         case HitEntity.Type.Shield:
@@ -90,18 +91,8 @@ namespace WeaponCore
                     Projectiles.HitEntityPool.Return(hitEnt);
                 }
 
-                if (p.EnableAv && (p.Info.AmmoDef.Const.DrawLine || p.Info.AmmoDef.Const.PrimeModel || p.Info.AmmoDef.Const.TriggerModel))
-                {
-                    var useCollisionSize = p.ModelState == Projectile.EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine;
-                    p.Info.AvShot.TestSphere.Center = p.Info.Hit.LastHit;
-                    p.Info.AvShot.ShortStepAvUpdate(p.Info, useCollisionSize, true, p.EarlyEnd, p.Position);
-                }
-
                 if (info.BaseDamagePool <= 0)
-                {
                     p.State = Projectile.ProjectileState.Depleted;
-                    if (!DedicatedServer) p.Info.AvShot.ProEnded = true;
-                }
 
                 info.HitList.Clear();
             }

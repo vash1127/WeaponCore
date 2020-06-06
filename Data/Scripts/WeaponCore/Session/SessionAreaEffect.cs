@@ -19,10 +19,10 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private readonly Dictionary<long, BlockState> _effectedCubes = new Dictionary<long, BlockState>();
         private readonly Dictionary<MyCubeGrid, Dictionary<AreaEffectType, GridEffect>> _gridEffects = new Dictionary<MyCubeGrid, Dictionary<AreaEffectType, GridEffect>>();
         internal readonly MyConcurrentPool<Dictionary<AreaEffectType, GridEffect>> GridEffectsPool = new MyConcurrentPool<Dictionary<AreaEffectType, GridEffect>>();
         internal readonly MyConcurrentPool<GridEffect> GridEffectPool = new MyConcurrentPool<GridEffect>();
+        internal readonly Dictionary<long, BlockState> EffectedCubes = new Dictionary<long, BlockState>();
 
         private readonly Queue<long> _effectPurge = new Queue<long>();
         internal readonly HashSet<MyCubeGrid> RemoveEffectsFromGrid = new HashSet<MyCubeGrid>();
@@ -122,7 +122,7 @@ namespace WeaponCore
                 if (damagePool <= 0 || healthPool <= 0) break;
 
                 if (fieldType != DotField)
-                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !_effectedCubes.ContainsKey(cube.EntityId) || !(cube is IMyFunctionalBlock)) continue;
+                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !EffectedCubes.ContainsKey(cube.EntityId) || !(cube is IMyFunctionalBlock)) continue;
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
@@ -183,7 +183,7 @@ namespace WeaponCore
                 {
                     BlockState blockState;
                     var cubeId = cube.EntityId;
-                    if (stack && _effectedCubes.TryGetValue(cubeId, out blockState))
+                    if (stack && EffectedCubes.TryGetValue(cubeId, out blockState))
                     {
                         if (blockState.Health > 0) damagePool = tmpDamagePool;
                         if (!blockDisabled && blockState.Health - scaledDamage > 0)
@@ -220,7 +220,7 @@ namespace WeaponCore
                             blockState.Health = 0;
                         }
                     }
-                    _effectedCubes[cube.EntityId] = blockState;
+                    EffectedCubes[cube.EntityId] = blockState;
                 }
             }
         }
@@ -243,10 +243,10 @@ namespace WeaponCore
             _gridEffects.Clear();
         }
 
-        private void ApplyGridEffect()
+        internal void ApplyGridEffect()
         {
             var tick = Tick;
-            foreach (var item in _effectedCubes)
+            foreach (var item in EffectedCubes)
             {
                 var cubeid = item.Key;
                 var blockInfo = item.Value;
@@ -295,10 +295,10 @@ namespace WeaponCore
 
             while (_effectPurge.Count != 0)
             {
-                _effectedCubes.Remove(_effectPurge.Dequeue());
+                EffectedCubes.Remove(_effectPurge.Dequeue());
             }
 
-            if (_effectedCubes.Count == 0) _effectActive = false;
+            if (EffectedCubes.Count == 0) _effectActive = false;
         }
 
 

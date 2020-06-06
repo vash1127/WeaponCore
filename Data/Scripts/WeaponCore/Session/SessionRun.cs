@@ -175,28 +175,21 @@ namespace WeaponCore
                         TargetSelection();
                 }
 
-                DsUtil.Start("projectiles1");
-                Projectiles.Stage1();
-                DsUtil.Complete("projectiles1", true);
+                DsUtil.Start("ps");
+                Projectiles.SpawnAndMove();
+                DsUtil.Complete("ps", true);
 
-                DsUtil.Start("projectiles2");
-                Projectiles.Stage2();
-                DsUtil.Complete("projectiles2", true);
+                DsUtil.Start("pi");
+                Projectiles.Intersect();
+                DsUtil.Complete("pi", true);
 
-                DsUtil.Start("damage");
-                if (_effectedCubes.Count > 0)
-                    ApplyGridEffect();
+                DsUtil.Start("pd");
+                Projectiles.Damage();
+                DsUtil.Complete("pd", true);
 
-                if (Tick60)
-                    GridEffects();
-
-                if (Hits.Count > 0) ProcessHits();
-                DsUtil.Complete("damage", true);
-
-                if (!DedicatedServer)
-                {
-                    AvShot.DeferedAvStateUpdates(this);
-                }
+                DsUtil.Start("pa");
+                Projectiles.AvUpdate();
+                DsUtil.Complete("pa", true);
 
                 if (MpActive)
                 {
