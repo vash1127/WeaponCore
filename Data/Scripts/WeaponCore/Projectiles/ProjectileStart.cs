@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.AI;
+using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.NewProjectile;
@@ -29,12 +30,14 @@ namespace WeaponCore.Projectiles
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
                 p.Info.Overrides = w.Comp.Set.Value.Overrides;
+                
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
-                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.State.Value.CurrentPlayerControl.PlayerId] : null;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
+
+                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.State.Value.CurrentPlayerControl.PlayerId] : null;
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;
@@ -67,6 +70,14 @@ namespace WeaponCore.Projectiles
                 p.PredictedTargetPos = w.Target.TargetPos;
                 p.DeadSphere.Center = w.MyPivotPos;
                 p.DeadSphere.Radius = w.Comp.Ai.MyGrid.GridSizeHalf + 0.1;
+
+                if (a.Const.FeelsGravity && w.System.Session.Tick - w.GravityTick > 60)
+                {
+                    w.GravityTick = w.System.Session.Tick;
+                    w.GravityPoint = MyParticlesManager.CalculateGravityInPoint(p.Info.Origin);
+                }
+
+                p.Gravity = w.GravityPoint;
 
                 if (t != Kind.Virtual)
                 {

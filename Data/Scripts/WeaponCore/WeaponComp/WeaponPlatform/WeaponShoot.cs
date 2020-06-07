@@ -99,6 +99,7 @@ namespace WeaponCore.Platform
                     Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
+
                 #endregion
 
                 #region Projectile Creation

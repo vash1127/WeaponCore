@@ -309,6 +309,7 @@ namespace WeaponCore.Platform
                 weapon.GravityTick = session.Tick;
                 weapon.GravityPoint = MyParticlesManager.CalculateGravityInPoint(weapon.MyPivotPos);
             }
+
             var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
             var targetMaxSpeed = weapon.Comp.Session.MaxEntitySpeed;
             var shooterPos = weapon.MyPivotPos;

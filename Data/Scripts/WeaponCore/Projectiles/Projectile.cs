@@ -123,8 +123,8 @@ namespace WeaponCore.Projectiles
             NewTargets = 0;
             ZombieLifeTime = 0;
             LastOffsetTime = 0;
-            EntitiesNear = true;
             PruningProxyId = -1;
+            EntitiesNear = false;
             CachedPlanetHit = false;
             PositionChecked = false;
             MineSeeking = false;
@@ -143,7 +143,6 @@ namespace WeaponCore.Projectiles
             Info.DistanceTraveled = 0;
             PrevEndPointToCenterSqr = double.MaxValue;
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
-            Gravity = Vector3.Zero;
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);

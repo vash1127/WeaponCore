@@ -132,12 +132,13 @@ namespace WeaponCore.Projectiles
 
                 if (p.FeelsGravity) {
 
-                    var update = p.FakeGravityNear || p.EntitiesNear || p.Info.InPlanetGravity && p.Info.Age % 30 == 0 || !p.Info.InPlanetGravity && p.Info.Age % 10 == 0;
+                    var update = (p.FakeGravityNear || p.EntitiesNear || p.Info.Age % 60 == 0) && p.Info.Age > 0;
                     if (update) {
                         p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
 
                         if (!p.Info.InPlanetGravity && !MyUtils.IsZero(p.Gravity)) p.FakeGravityNear = true;
                         else p.FakeGravityNear = false;
+                        p.EntitiesNear = false;
                     }
                     p.Velocity += (p.Gravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
                     Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
