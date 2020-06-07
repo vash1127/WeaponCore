@@ -63,7 +63,6 @@ namespace WeaponCore.Support
         internal double TracerWidth;
         internal double SegmentWidth;
         internal double TrailWidth;
-        internal double ScaleFov;
         internal double VisualLength;
         internal double MaxSpeed;
         internal double MaxStepSize;
@@ -457,7 +456,7 @@ namespace WeaponCore.Support
                         width += randomValue;
                     }
 
-                    width = (float)Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
+                    width = (float)Math.Max(width, 0.10f * System.Session.ScaleFov * (DistanceToLine / 100));
                     TracerShrinks.Enqueue(new Shrinks { NewFront = shrunk.Value.NewTracerFront, Color = color, Length = shrunk.Value.Reduced, Thickness = width, Last = last });
                 }
             }
@@ -601,11 +600,10 @@ namespace WeaponCore.Support
             }
 
             double scale = 0.1f;
-            ScaleFov = Math.Tan(System.Session.Camera.FovWithZoom * 0.5);
-            var widthScaler = !System.Session.GunnerBlackList ? 1f : (ScaleFov * 1.3f);
+            var widthScaler = !System.Session.GunnerBlackList ? 1f : (System.Session.ScaleFov * 1.3f);
 
-            TracerWidth = MathHelperD.Clamp(scale * ScaleFov * (DistanceToLine / 100), tracerWidth * widthScaler, double.MaxValue);
-            TrailWidth = MathHelperD.Clamp(scale * ScaleFov * (DistanceToLine / 100), trailWidth * widthScaler, double.MaxValue);
+            TracerWidth = MathHelperD.Clamp(scale * System.Session.ScaleFov * (DistanceToLine / 100), tracerWidth * widthScaler, double.MaxValue);
+            TrailWidth = MathHelperD.Clamp(scale * System.Session.ScaleFov * (DistanceToLine / 100), trailWidth * widthScaler, double.MaxValue);
 
             TrailScaler = ((float)TrailWidth / trailWidth);
 

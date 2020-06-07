@@ -150,7 +150,11 @@ namespace WeaponCore.Projectiles
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             Info.MyPlanet = Info.Ai.MyPlanet;
-            Info.VoxelCache = Info.System.Session.VoxelCaches[Info.UniqueMuzzleId];
+            if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache))
+            {
+                Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.FiringCube?.MarkedForClose}, setting to default cache:");
+                Info.VoxelCache = Info.System.Session.VoxelCaches[long.MaxValue];
+            }
             if (Info.MyPlanet != null)
                 Info.VoxelCache.PlanetSphere.Center = Info.Ai.ClosestPlanetCenter;
 

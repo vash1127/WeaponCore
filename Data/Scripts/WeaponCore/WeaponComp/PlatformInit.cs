@@ -576,7 +576,6 @@ namespace WeaponCore.Platform
             w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
             foreach (var m in w.System.Values.Assignments.MountPoints) {
                 if (m.SubtypeId == Comp.SubtypeHash.String && !string.IsNullOrEmpty(m.IconName)) {
-                    Log.Line($"custom Icon: {m.IconName}");
                     Comp.CustomIcon = m.IconName;
                 }
             }

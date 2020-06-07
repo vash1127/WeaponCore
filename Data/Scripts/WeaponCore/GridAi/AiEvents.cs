@@ -47,14 +47,14 @@ namespace WeaponCore.Support
             try
             {
                 var battery = myCubeBlock as MyBatteryBlock;
-                var isWeaponBase = Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId);
+                var isWeaponBase = Session.ReplaceVanilla && myCubeBlock?.BlockDefinition != null && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || myCubeBlock?.BlockDefinition != null && Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId);
 
                 if (battery != null)
                 {
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
                 }
-                else if (!isWeaponBase && (myCubeBlock is IMyConveyor || myCubeBlock is IMyConveyorTube || myCubeBlock is IMyConveyorSorter || myCubeBlock is IMyCargoContainer || myCubeBlock is IMyCockpit || myCubeBlock is IMyAssembler))
+                else if (!isWeaponBase && (myCubeBlock is MyConveyor || myCubeBlock is IMyConveyorTube || myCubeBlock is MyConveyorSorter || myCubeBlock is MyCargoContainer || myCubeBlock is MyCockpit || myCubeBlock is IMyAssembler))
                 {
                     MyInventory inventory;
                     if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                 else if (isWeaponBase) ScanBlockGroups = true;
 
             }
-            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {myCubeBlock?.BlockDefinition == null}"); }
         }
 
 

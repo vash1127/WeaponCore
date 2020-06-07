@@ -245,7 +245,7 @@ namespace WeaponCore
         internal double SyncDist;
         internal double MaxEntitySpeed;
         internal double Load;
-
+        internal double ScaleFov;
         internal float UiBkOpacity;
         internal float UiOpacity;
         internal bool InMenu;
@@ -332,8 +332,10 @@ namespace WeaponCore
             TerminalMon = new TerminalMonitor(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
-            HeatEmissives = CreateHeatEmissive();
 
+            VoxelCaches[long.MaxValue] = new VoxelCache();
+
+            HeatEmissives = CreateHeatEmissive();
             LoadVanillaData();
             var arrayOfPacketTypes = Enum.GetValues(typeof(PacketType));
             foreach (var suit in (PacketType[]) arrayOfPacketTypes)

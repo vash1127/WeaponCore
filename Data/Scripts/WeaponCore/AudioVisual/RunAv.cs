@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -49,7 +50,7 @@ namespace WeaponCore.Support
         {
             Session = session;
         }
-
+        
         internal void RipParticles()
         {
             for (int i = KeensBrokenParticles.Count - 1; i >= 0; i--)
