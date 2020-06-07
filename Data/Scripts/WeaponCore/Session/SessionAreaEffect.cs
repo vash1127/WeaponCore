@@ -364,7 +364,7 @@ namespace WeaponCore
         }
     }
 
-    public struct BlockState
+    internal struct BlockState
     {
         public MyCubeBlock CubeBlock;
         public IMyFunctionalBlock FunctBlock;
@@ -375,17 +375,17 @@ namespace WeaponCore
         public float Health;
     }
 
-    public class GridEffect
+    internal class GridEffect
     {
-        public Vector3D HitPos;
-        public WeaponSystem System;
-        public GridAi Ai;
-        public AmmoDef AmmoDef;
-        public long AttackerId;
-        public float Damage;
-        public int Hits;
+        internal Vector3D HitPos;
+        internal WeaponSystem System;
+        internal GridAi Ai;
+        internal AmmoDef AmmoDef;
+        internal long AttackerId;
+        internal float Damage;
+        internal int Hits;
 
-        public void Clean()
+        internal void Clean()
         {
             System = null;
             HitPos = Vector3D.Zero;

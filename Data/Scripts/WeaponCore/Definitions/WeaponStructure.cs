@@ -23,15 +23,23 @@ using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.ShapeDef.Shapes;
 namespace WeaponCore.Support
 {
-    public class WeaponSystem
+    internal class WeaponSystem
     {
+        internal class WeaponAmmoTypes
+        {
+            public MyDefinitionId AmmoDefinitionId;
+            public WeaponDefinition.AmmoDef AmmoDef;
+            public string AmmoName;
+            public bool IsShrapnel;
+        }
+
         private const string Arc = "Arc";
 
         public readonly MyStringHash MuzzlePartName;
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
         public readonly WeaponDefinition Values;
-        public readonly WeaponAmmoTypes[] WeaponAmmoTypes;
+        public readonly WeaponAmmoTypes[] AmmoTypes;
 
         public readonly Session Session;
 
@@ -108,7 +116,6 @@ namespace WeaponCore.Support
 
         public bool AnimationsInited;
 
-
         public enum FiringSoundState
         {
             None,
@@ -137,7 +144,7 @@ namespace WeaponCore.Support
             WeaponIdHash = weaponIdHash;
             WeaponId = weaponId;
             WeaponName = weaponName;
-            WeaponAmmoTypes = weaponAmmoTypes;
+            AmmoTypes = weaponAmmoTypes;
             MaxAmmoVolume = Values.HardPoint.HardWare.InventorySize;
             CeaseFireDelay = values.HardPoint.DelayCeaseFire;
             DelayCeaseFire = CeaseFireDelay > 0;
@@ -158,7 +165,7 @@ namespace WeaponCore.Support
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HardPointSoundSetup(out WeaponReloadSound, out HardPointRotationSound, out BarrelRotationSound, out NoAmmoSound, out PreFireSound, out HardPointAvMaxDistSqr, out FiringSound);
-            HardPointSoundDistMaxSqr(WeaponAmmoTypes, out FiringSoundDistSqr, out ReloadSoundDistSqr, out BarrelSoundDistSqr, out HardPointSoundDistSqr, out NoAmmoSoundDistSqr, out HardPointAvMaxDistSqr);
+            HardPointSoundDistMaxSqr(AmmoTypes, out FiringSoundDistSqr, out ReloadSoundDistSqr, out BarrelSoundDistSqr, out HardPointSoundDistSqr, out NoAmmoSoundDistSqr, out HardPointAvMaxDistSqr);
             
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
 
@@ -169,9 +176,9 @@ namespace WeaponCore.Support
                 if (delay > DelayToFire)
                     DelayToFire = (int)delay;
 
-            for (int i = 0; i < WeaponAmmoTypes.Length; i++)
+            for (int i = 0; i < AmmoTypes.Length; i++)
             {
-                var ammo = WeaponAmmoTypes[i];
+                var ammo = AmmoTypes[i];
                 ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
             }
         }
@@ -502,7 +509,7 @@ namespace WeaponCore.Support
         public readonly double SmartsDelayDistSqr;
         public readonly double SegmentStep;
 
-        public AmmoConstants(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
+        internal AmmoConstants(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
         {
             AmmoIdxPos = ammoIndex;
             MyInventory.GetItemVolumeAndMass(ammo.AmmoDefinitionId, out MagMass, out MagVolume);
@@ -584,7 +591,7 @@ namespace WeaponCore.Support
             ComputeSteps(ammo, out ShotFadeStep, out TrajectoryStep);
         }
 
-        internal void ComputeTextures(WeaponAmmoTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
+        internal void ComputeTextures(WeaponSystem.WeaponAmmoTypes ammo, out MyStringId[] tracerTextures, out MyStringId[] segmentTextures, out MyStringId[] trailTextures, out Texture tracerTexture, out Texture trailTexture)
         {
             var lineSegments = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Enable && ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.SegmentLength > 0;
 
@@ -640,7 +647,7 @@ namespace WeaponCore.Support
         }
 
 
-        private void ComputeSteps(WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
+        private void ComputeSteps(WeaponSystem.WeaponAmmoTypes ammo, out float shotFadeStep, out float trajectoryStep)
         {
             var changeFadeSteps = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeEnd - ammo.AmmoDef.AmmoGraphics.Lines.Tracer.VisualFadeStart;
             shotFadeStep = 1f / changeFadeSteps;
@@ -648,7 +655,7 @@ namespace WeaponCore.Support
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
-        private void ComputeAmmoPattern(WeaponAmmoTypes ammo, WeaponDefinition wDef, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern)
+        private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern)
         {
             var pattern = ammo.AmmoDef.Pattern;
             var indexPos = 0;
@@ -688,7 +695,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void GetParticleInfo(WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
+        internal void GetParticleInfo(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
         {
             var list = MyDefinitionManager.Static.GetAllSessionPreloadObjectBuilders();
             var comparer = new Session.HackEqualityComparer();
@@ -714,7 +721,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private void GetPeakDps(WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
+        private void GetPeakDps(WeaponSystem.WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
             var a = ammoDef.AmmoDef;
@@ -997,7 +1004,7 @@ namespace WeaponCore.Support
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
         }
 
-        private void Energy(WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
+        private void Energy(WeaponSystem.WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
         {
             energyAmmo = ammoPair.AmmoDefinitionId.SubtypeId.String == "Energy" || ammoPair.AmmoDefinitionId.SubtypeId.String == string.Empty;
             mustCharge = (energyAmmo || IsHybrid) && system.ReloadTime > 0;
@@ -1076,7 +1083,7 @@ namespace WeaponCore.Support
     }
 
 
-    public class WeaponStructure
+    internal class WeaponStructure
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<int, int> HashToId;
@@ -1129,7 +1136,7 @@ namespace WeaponCore.Support
                 }
                     
 
-                var weaponAmmo = new WeaponAmmoTypes[weaponDef.Ammos.Length];
+                var weaponAmmo = new WeaponSystem.WeaponAmmoTypes[weaponDef.Ammos.Length];
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {
                     var ammo = weaponDef.Ammos[i];
@@ -1140,7 +1147,7 @@ namespace WeaponCore.Support
                             ammoDefId = def.Id;
 
                     Session.AmmoDefIds.Add(ammoDefId);
-                    weaponAmmo[i] = new WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
+                    weaponAmmo[i] = new WeaponSystem.WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
                 var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();

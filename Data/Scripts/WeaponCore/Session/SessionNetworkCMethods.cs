@@ -363,7 +363,7 @@ namespace WeaponCore
                         return Error(data, Msg("Block group not found"));
                 }
                 else
-                    return Error(data, Msg("GridAi not found"));
+                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
             }
 
             return true;
@@ -480,7 +480,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi not found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -528,11 +528,11 @@ namespace WeaponCore
                         data.Report.PacketValid = true;
                     }
                     else
-                        return Error(data, Msg("group did not exist"));
+                        return Error(data, Msg($"group did not exist: {groupName} - gridMarked:{myGrid.MarkedForClose} - aiMarked:{ai.MarkedForClose}({ai.Version})"));
                 }
             }
             else
-                return Error(data, Msg("GridAi not found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
 
@@ -548,7 +548,7 @@ namespace WeaponCore
             if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                 ai.ReScanBlockGroups(true);
             else
-                return Error(data, Msg("GridAi not found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             data.Report.PacketValid = true;
             return true;
@@ -576,7 +576,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi not found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -604,7 +604,7 @@ namespace WeaponCore
                     data.Report.PacketValid = true;
                 }
                 else
-                    return Error(data, Msg("GridAi not found"));
+                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
             }
 
             return true;
@@ -641,7 +641,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi not found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
 

@@ -121,7 +121,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi Not Found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -279,7 +279,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi Not Found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -365,7 +365,7 @@ namespace WeaponCore
                     }
                 }
                 else
-                    return Error(data, Msg("GridAi Not Found"));
+                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
             }
 
             if (data.Report.PacketValid) {
@@ -452,7 +452,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi Not Found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -641,7 +641,7 @@ namespace WeaponCore
             var direction = hitPacket.Velocity;
             direction.Normalize();
 
-            CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.WeaponAmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
+            CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
 
             data.Report.PacketValid = true;
             return true;
@@ -695,7 +695,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg("GridAi not found"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }

@@ -541,11 +541,11 @@ namespace WeaponCore.Control
 
             var w = comp.Platform.Weapons[weaponId];
 
-            var availAmmo = w.System.WeaponAmmoTypes.Length;
+            var availAmmo = w.System.AmmoTypes.Length;
             // cant use w.ActiveAmmoDef as it may not have reloaded yet
-            var currActive = w.System.WeaponAmmoTypes[w.Set.AmmoTypeId];
+            var currActive = w.System.AmmoTypes[w.Set.AmmoTypeId];
             var next = (w.Set.AmmoTypeId + 1) % availAmmo;
-            var currDef = w.System.WeaponAmmoTypes[next];
+            var currDef = w.System.AmmoTypes[next];
 
             var change = false;
 
@@ -564,7 +564,7 @@ namespace WeaponCore.Control
                 }
 
                 next = (next + 1) % availAmmo;
-                currDef = w.System.WeaponAmmoTypes[next];
+                currDef = w.System.AmmoTypes[next];
             }
 
             if (change)

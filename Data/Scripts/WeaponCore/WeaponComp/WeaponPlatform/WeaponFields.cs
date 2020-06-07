@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
 
-        internal WeaponAcquire WeaponAcquire;
+        internal WeaponAcquire Acquire;
         internal Target Target;
         internal Target NewTarget;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
@@ -94,7 +94,7 @@ namespace WeaponCore.Platform
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
         internal WeaponTimings Timings;
-        internal WeaponAmmoTypes ActiveAmmoDef;
+        internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
@@ -238,7 +238,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
+        internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
 
             MuzzlePart = new PartInfo { Entity = entity };
@@ -272,7 +272,7 @@ namespace WeaponCore.Platform
 
 
             bool hitParticle = false;
-            foreach (var ammoType in System.WeaponAmmoTypes)
+            foreach (var ammoType in System.AmmoTypes)
             {
                 var c = ammoType.AmmoDef.Const;
                 if (c.EnergyAmmo) CanUseEnergyAmmo = true;
@@ -359,7 +359,7 @@ namespace WeaponCore.Platform
             NewTarget = new Target(this);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             RayCallBack = new ParallelRayCallBack(this);
-            WeaponAcquire = new WeaponAcquire(this);
+            Acquire = new WeaponAcquire(this);
             TrackProjectiles = System.TrackProjectile;
 
             //LoadId = comp.Session.LoadAssigner();

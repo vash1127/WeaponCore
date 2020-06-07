@@ -53,7 +53,7 @@ namespace WeaponCore
                 PacketPools.Clear();
             }
 
-            AcquireManager.Clean();
+            AcqManager.Clean();
 
             foreach (var e in Emitters)
                 e.Cleanup();
@@ -102,7 +102,7 @@ namespace WeaponCore
             foreach (var structure in WeaponPlatforms.Values)
             {
                 foreach (var system in structure.WeaponSystems)
-                    foreach (var ammo in system.Value.WeaponAmmoTypes)
+                    foreach (var ammo in system.Value.AmmoTypes)
                         ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
 
                 structure.WeaponSystems.Clear();

@@ -217,7 +217,7 @@ namespace WeaponCore.Support
 
                     var notValid = !weapon.Set.Enable || !State.Value.Online || !Set.Value.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
                     if (!notValid)
-                        Session.AcquireManager.AddAwake(weapon.WeaponAcquire);
+                        Session.AcqManager.AddAwake(weapon.Acquire);
                 }
 
                 if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {

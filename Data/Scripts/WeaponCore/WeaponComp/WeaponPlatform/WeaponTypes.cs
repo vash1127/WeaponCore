@@ -128,5 +128,19 @@ namespace WeaponCore.Platform
 
         }
 
+        internal class WeaponAcquire
+        {
+            internal Weapon Weapon;
+            internal uint CreatedTick;
+            internal int SlotId;
+            internal bool Asleep;
+            internal bool Enabled;
+
+            internal WeaponAcquire(Weapon weapon)
+            {
+                Weapon = weapon;
+            }
+        }
+
     }
 }

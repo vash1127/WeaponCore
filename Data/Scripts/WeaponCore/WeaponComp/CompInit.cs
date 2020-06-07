@@ -1,9 +1,7 @@
 ﻿using System;
-using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using WeaponCore.Platform;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore.Support
 {
     public partial class WeaponComponent
@@ -40,7 +38,7 @@ namespace WeaponCore.Support
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
 
-                    weapon.ChangeActiveAmmo(weapon.System.WeaponAmmoTypes.Length > 0 ? weapon.System.WeaponAmmoTypes[weapon.Set.AmmoTypeId] : new WeaponAmmoTypes());
+                    weapon.ChangeActiveAmmo(weapon.System.AmmoTypes.Length > 0 ? weapon.System.AmmoTypes[weapon.Set.AmmoTypeId] : new WeaponSystem.WeaponAmmoTypes());
 
                     if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable)
                     {
@@ -97,10 +95,13 @@ namespace WeaponCore.Support
 
         private void InventoryInit()
         {
-            using (MyCube?.Pin())
+            using (MyCube.Pin())
             {
-                if (InventoryInited || MyCube == null || !MyCube.HasInventory || MyCube.MarkedForClose || Platform == null || Platform.State == MyWeaponPlatform.PlatformState.Invalid || Platform.Weapons == null || Platform.Weapons.Length == 0 || BlockInventory == null) return;
-                
+                if (InventoryInited || !MyCube.HasInventory || MyCube.MarkedForClose || Platform.State != MyWeaponPlatform.PlatformState.Ready || BlockInventory == null)
+                {
+                    Log.Line($"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!MyCube.HasInventory} - Marked:{MyCube.MarkedForClose} - PlatformNotReady:{Platform.State != MyWeaponPlatform.PlatformState.Ready} - nullInventory:{BlockInventory == null}");
+                    return;
+                }
 
                 if (MyCube is IMyConveyorSorter || BlockInventory.Constraint == null) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
 
@@ -118,10 +119,10 @@ namespace WeaponCore.Support
                     var w = Platform.Weapons[i];
 
                     if (w == null) continue;
-                    for (int j = 0; j < w.System?.WeaponAmmoTypes?.Length; j++)
+                    for (int j = 0; j < w.System.AmmoTypes.Length; j++)
                     {
-                        if (w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef != null)
-                            BlockInventory.Constraint.Add(w.System.WeaponAmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
+                        if (w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef != null)
+                            BlockInventory.Constraint.Add(w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef.Id);
                     }
                 }
                 BlockInventory.Refresh();

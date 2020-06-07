@@ -426,9 +426,9 @@ namespace WeaponCore.Api
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
-                for (int i = 0; i < w.System.WeaponAmmoTypes.Length; i++)
+                for (int i = 0; i < w.System.AmmoTypes.Length; i++)
                 {
-                    var ammoType = w.System.WeaponAmmoTypes[i];
+                    var ammoType = w.System.AmmoTypes[i];
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         w.Set.AmmoTypeId = i;

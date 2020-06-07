@@ -39,7 +39,7 @@ namespace WeaponCore.Support
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
                 var shootProjectile = pCount > 0 && w.System.TrackProjectile;
                 var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
-                var onlyCheckProjectile = w.ProjectilesNear && !w.Target.TargetChanged && w.Comp.Session.Count != w.WeaponAcquire.SlotId && !attemptReset;
+                var onlyCheckProjectile = w.ProjectilesNear && !w.Target.TargetChanged && w.Comp.Session.Count != w.Acquire.SlotId && !attemptReset;
 
                 if (!projectilesFirst && w.System.TrackOther && !onlyCheckProjectile) AcquireOther(w, out targetType, attemptReset, targetGrid);
                 else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
@@ -59,7 +59,7 @@ namespace WeaponCore.Support
 
             if (targetType == TargetType.None) {
                 if (w.Target.CurrentState == Target.States.Acquired)
-                    w.System.Session.AcquireManager.Remove(w.WeaponAcquire);
+                    w.System.Session.AcqManager.Remove(w.Acquire);
 
                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
                 if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.TrackReticle);

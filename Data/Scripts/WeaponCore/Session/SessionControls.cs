@@ -159,12 +159,12 @@ namespace WeaponCore
                                     continue;
                                 if (!ws.Value.DesignatorWeapon)
                                 {
-                                    if (ws.Value.WeaponAmmoTypes.Length > 1)
+                                    if (ws.Value.AmmoTypes.Length > 1)
                                     {
                                         var c = 0;
-                                        for(int i = 0; i < ws.Value.WeaponAmmoTypes.Length; i++)
+                                        for(int i = 0; i < ws.Value.AmmoTypes.Length; i++)
                                         {
-                                            if (ws.Value.WeaponAmmoTypes[i].AmmoDef.HardPointUsable)
+                                            if (ws.Value.AmmoTypes[i].AmmoDef.HardPointUsable)
                                                 c++;
                                         }
                                         if(c > 1)

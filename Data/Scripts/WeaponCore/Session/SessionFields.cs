@@ -188,7 +188,7 @@ namespace WeaponCore
         internal NetworkReporter Reporter = new NetworkReporter();
         internal MyStorageData TmpStorage = new MyStorageData();
         internal InputStateData DefaultInputStateData = new InputStateData();
-        internal AcquireManager AcquireManager;
+        internal AcquireManager AcqManager;
 
         internal RunAv Av;
         internal DSUtils DsUtil;
@@ -328,7 +328,7 @@ namespace WeaponCore
             ApiServer = new ApiServer(this);
             Projectiles = new Projectiles.Projectiles(this);
             Proccessor = new NetworkProccessor(this);
-            AcquireManager = new AcquireManager(this);
+            AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

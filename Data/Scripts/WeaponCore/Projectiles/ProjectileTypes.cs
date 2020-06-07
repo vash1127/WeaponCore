@@ -355,7 +355,7 @@ namespace WeaponCore.Support
                 var frag = fragPool.Get();
                 frag.System = p.Info.System;
                 frag.Ai = p.Info.Ai;
-                frag.AmmoDef = p.Info.System.WeaponAmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
+                frag.AmmoDef = p.Info.System.AmmoTypes[p.Info.AmmoDef.Const.ShrapnelId].AmmoDef;
                 frag.Target = p.Info.Target.Entity;
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
@@ -479,7 +479,7 @@ namespace WeaponCore.Support
         public bool LockOnFireState;
     }
 
-    internal class VoxelCache
+    public class VoxelCache
     {
         internal BoundingSphereD HitSphere = new BoundingSphereD(Vector3D.Zero, 2f);
         internal BoundingSphereD MissSphere = new BoundingSphereD(Vector3D.Zero, 1.5f);

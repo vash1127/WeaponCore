@@ -55,7 +55,9 @@
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiConstruct.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\Enforcements.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSMethods.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkCMethods.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSupport.cs" />
@@ -71,7 +73,6 @@
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFocus.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompData.cs" />
@@ -89,7 +90,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionJobs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionLocalPlayer.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionModHandlers.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\CustomController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\AvShot.cs" />

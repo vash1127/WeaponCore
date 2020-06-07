@@ -57,14 +57,14 @@ namespace WeaponCore
                 if (Tick60)
                 {
                     AverageAcquireChecks = TotalAcquireChecks / 60;
-                    Log.Line($"Low:{LowAcquireChecks} - High:{HighAcquireChecks} - Average:{AverageAcquireChecks} - Awake:{AcquireManager.WasAwake} - Asleep:{AcquireManager.WasAsleep}");
+                    Log.Line($"Low:{LowAcquireChecks} - High:{HighAcquireChecks} - Average:{AverageAcquireChecks} - Awake:{AcqManager.WasAwake} - Asleep:{AcqManager.WasAsleep}");
                     TotalAcquireChecks = 0;
                     LowAcquireChecks = int.MaxValue;
                     HighAcquireChecks = int.MinValue;
                 }
 
-                if (Tick60) AcquireManager.UpdateAsleep();
-                if (Tick600) AcquireManager.ReorderSleep();
+                if (Tick60) AcqManager.UpdateAsleep();
+                if (Tick600) AcqManager.ReorderSleep();
 
 
                 if (TerminalMon.Active)

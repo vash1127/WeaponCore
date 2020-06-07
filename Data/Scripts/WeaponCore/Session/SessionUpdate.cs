@@ -386,10 +386,10 @@ namespace WeaponCore
                     continue;
                 }
 
-                if (!w.WeaponAcquire.Enabled)
-                    AcquireManager.AddAwake(w.WeaponAcquire);
+                if (!w.Acquire.Enabled)
+                    AcqManager.AddAwake(w.Acquire);
 
-                var acquire = (w.WeaponAcquire.Asleep && AsleepCount == w.WeaponAcquire.SlotId || !w.WeaponAcquire.Asleep && AwakeCount == w.WeaponAcquire.SlotId);
+                var acquire = (w.Acquire.Asleep && AsleepCount == w.Acquire.SlotId || !w.Acquire.Asleep && AwakeCount == w.Acquire.SlotId);
                 var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && w.Comp.Ai.CheckProjectiles;
                 var checkTime = w.Target.TargetChanged || acquire || seekProjectile;
 

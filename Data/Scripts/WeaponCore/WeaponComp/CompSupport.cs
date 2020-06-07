@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
@@ -92,18 +93,17 @@ namespace WeaponCore.Support
         {
             if (Platform?.State == MyWeaponPlatform.PlatformState.Ready) {
                 foreach (var w in Platform.Weapons) {
-                    for (int i = 0; i < w.Muzzles.Length; i++)
-                        w.Comp.Session.VoxelCaches.Remove(w.Muzzles[i].UniqueId);
 
                     w.RayCallBackClean();
 
-                    if (w.WeaponAcquire.Enabled) 
-                        w.Comp.Session.AcquireManager.Remove(w.WeaponAcquire);
+                    if (w.Acquire.Enabled) 
+                        w.Comp.Session.AcqManager.Remove(w.Acquire);
 
-                    w.WeaponAcquire.Weapon = null;
+                    w.Acquire.Weapon = null;
                 }
             }
         }
+
 
         public void CleanCompParticles()
         {

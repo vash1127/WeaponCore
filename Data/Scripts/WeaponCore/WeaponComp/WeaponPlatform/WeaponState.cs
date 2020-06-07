@@ -7,18 +7,19 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponSystem;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
 
-        public void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
+        internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
         {
             ActiveAmmoDef = ammoDef;
             CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
         }
 
-        public void PositionChanged(MyPositionComponentBase pComp)
+        internal void PositionChanged(MyPositionComponentBase pComp)
         {
             try
             {
@@ -38,8 +39,8 @@ namespace WeaponCore.Platform
 
             if (!Target.HasTarget)
             {
-                if (!WeaponAcquire.Enabled)
-                    System.Session.AcquireManager.AddAwake(WeaponAcquire);
+                if (!Acquire.Enabled)
+                    System.Session.AcqManager.AddAwake(Acquire);
 
                 Comp.WeaponValues.Targets[WeaponId].State = TransferTarget.TargetInfo.Expired;
 
@@ -415,7 +416,7 @@ namespace WeaponCore.Platform
         {
             if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
+            var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
 
             State.Sync.Reloading = true;
             FinishBurst = false;
@@ -461,7 +462,7 @@ namespace WeaponCore.Platform
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
-        public void ChangeAmmo(ref WeaponAmmoTypes newAmmo)
+        internal void ChangeAmmo(ref WeaponAmmoTypes newAmmo)
         {
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
             {
@@ -577,7 +578,7 @@ namespace WeaponCore.Platform
         {
             if (State.Sync.CurrentAmmo == 0)
             {
-                var newAmmo = System.WeaponAmmoTypes[Set.AmmoTypeId];
+                var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
                 if (!ActiveAmmoDef.Equals(newAmmo))
                     ChangeAmmo(ref newAmmo);
             }
@@ -585,7 +586,7 @@ namespace WeaponCore.Platform
                 StartReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
             {
-                ChangeActiveAmmo(System.WeaponAmmoTypes[Set.AmmoTypeId]);
+                ChangeActiveAmmo(System.AmmoTypes[Set.AmmoTypeId]);
                 SetWeaponDps();
                 if (CanReload)
                     StartReload();
@@ -672,10 +673,10 @@ namespace WeaponCore.Platform
         {
             LastTargetTick = Comp.Session.Tick;
             //LoadId = Comp.Session.LoadAssigner();
-            if (WeaponAcquire.Enabled)
-                System.Session.AcquireManager.Awaken(WeaponAcquire);
+            if (Acquire.Enabled)
+                System.Session.AcqManager.Awaken(Acquire);
             else
-                System.Session.AcquireManager.AddAwake(WeaponAcquire);
+                System.Session.AcqManager.AddAwake(Acquire);
 
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
