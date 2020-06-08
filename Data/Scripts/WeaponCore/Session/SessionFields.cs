@@ -27,7 +27,7 @@ namespace WeaponCore
     {
         internal const ushort ServerPacketId = 62518;
         internal const ushort ClientPacketId = 62519;
-        internal const ushort AuthorPacketId = 62520;
+        internal const ushort StringPacketId = 62520;
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
@@ -201,6 +201,7 @@ namespace WeaponCore
         internal Enforcements Enforced;
         internal NetworkProccessor Proccessor;
         internal TerminalMonitor TerminalMon;
+        internal ProblemReport ProblemRep;
 
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
@@ -277,6 +278,7 @@ namespace WeaponCore
         internal bool AuthLogging;
         internal bool DamageHandler;
         internal bool LocalVersion;
+        internal bool SupressLoad;
 
         internal enum AnimationType
         {
@@ -330,6 +332,7 @@ namespace WeaponCore
             Proccessor = new NetworkProccessor(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
+            ProblemRep = new ProblemReport(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
 

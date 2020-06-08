@@ -646,5 +646,17 @@ namespace WeaponCore
             return true;
 
         }
+
+        private bool ClientSentReport(PacketObj data)
+        {
+            var packet = data.Packet;
+            var sentReportPacket = (SendDataReportPacket)packet;
+            if (sentReportPacket.Data == null) return Error(data, Msg("SentReport"));
+
+            ProblemRep.RemoteData = sentReportPacket.Data;
+
+            return true;
+
+        }
     }
 }

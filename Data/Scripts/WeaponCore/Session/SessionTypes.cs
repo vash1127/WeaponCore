@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ProtoBuf;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -11,6 +14,292 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        internal class ProblemReport
+        {
+            internal readonly Dictionary<string, Dictionary<string, Func<string>>> AllDicts = new Dictionary<string, Dictionary<string, Func<string>>>();
+            internal readonly Dictionary<string, Func<string>> SessionFields;
+            internal readonly Dictionary<string, Func<string>> AiFields;
+            internal readonly Dictionary<string, Func<string>> CompFields;
+            internal readonly Dictionary<string, Func<string>> PlatformFields;
+            internal readonly Dictionary<string, Func<string>> WeaponFields;
+
+            internal Session Session;
+            internal bool Generating;
+            internal MyCubeBlock TargetBlock;
+            internal DataReport MyData;
+            internal DataReport RemoteData;
+            internal MyWeaponPlatform TmpPlatform;
+            internal string Report;
+            internal uint RequestTime = 1800;
+            internal uint LastRequestTick = uint.MaxValue - 7200;
+
+            internal ProblemReport(Session session)
+            {
+                Session = session;
+                SessionFields = InitSessionFields();
+                AiFields = InitAiFields();
+                CompFields = InitCompFields();
+                PlatformFields = InitPlatformFields();
+                WeaponFields = InitWeaponFields();
+
+                AllDicts.Add("Session", SessionFields);
+                AllDicts.Add("Ai", AiFields);
+                AllDicts.Add("Comp", CompFields);
+                AllDicts.Add("Platform", PlatformFields);
+                AllDicts.Add("Weapon", WeaponFields);
+            }
+
+            internal void GenerateReport(MyCubeBlock targetBlock)
+            {
+                if (Generating || Session.Tick - LastRequestTick < RequestTime) {
+                    if (Generating) Log.Line($"Report generation already in progress");
+                    else Log.Line($"Report may only be requested every {RequestTime / 60} seconds: {Session.Tick - LastRequestTick}");
+                    return;
+                }
+
+                Generating = true;
+                LastRequestTick = Session.Tick;
+                TargetBlock = targetBlock;
+                MyData = new DataReport();
+
+                if (Session.IsServer) {
+
+                    Compile();
+                    if (Session.MpActive) {
+                        foreach (var player in Session.Players)
+                            NetworkTransfer(false, player.Value.SteamUserId);
+                    }
+                }
+                else {
+                    Compile();
+                    NetworkTransfer(true);
+                }
+
+                Session.FutureEvents.Schedule(CompleteReport, null, 60);
+            }
+
+            internal DataReport PullData()
+            {
+                MyData = new DataReport();
+                
+                Compile();
+                Log.Line($"PullData");
+                return MyData;
+            }
+
+            internal void Compile()
+            {
+                Log.Line($"Compile Data");
+                BuildData(MyData);
+            }
+
+            internal void BuildData(DataReport data)
+            {
+                Log.Line("Build Data");
+                foreach (var d in AllDicts)
+                foreach (var f in d.Value)
+                    GetStorage(data, d.Key)[f.Key] = f.Value.Invoke();
+            }
+
+
+            internal string[] IndexToString = { "Session", "Ai", "Comp", "Platform", "Weapon" };
+            internal Dictionary<string, string> GetStorage(DataReport data, string storageName)
+            {
+                switch (storageName)
+                {
+                    case "Session":
+                        return data.Session;
+                    case "Ai":
+                        return data.Ai;
+                    case "Comp":
+                        return data.Comp;
+                    case "Platform":
+                        return data.Platform;
+                    case "Weapon":
+                        return data.Weapon;
+                    default:
+                        return null;
+                }
+            }
+
+            internal void NetworkTransfer(bool toServer, ulong clientId = 0, DataReport data = null)
+            {
+                Log.Line($"network transfer: toServer: {toServer} - dataNull:{data == null} - clientId:{clientId}");
+                if (toServer) {
+                    Session.PacketsToServer.Add(new RequestDataReportPacket {
+                        SenderId = Session.MultiplayerId,
+                        PType = PacketType.RequestReport,
+                        AllClients = false,
+                    });
+                }
+                else {
+                    Session.PacketsToClient.Add(new PacketInfo {
+                        Packet = new SendDataReportPacket {
+                            SenderId = clientId,
+                            PType = PacketType.SentReport,
+                            Data = data,
+                        }
+                    });
+                }
+            }
+
+            internal void CompleteReport(object o)
+            {
+                if (Session.MpActive && (RemoteData == null || MyData == null))
+                {
+                    Log.Line($"RemoteData:{RemoteData !=null} - MyData:{MyData!= null}, null data detected, waiting 1 second");
+                    Session.FutureEvents.Schedule(CompleteReport, null, 60);
+                    return;
+                }
+
+                CompileReport();
+
+                Log.CleanLine($"{Report}");
+
+                Clean();
+            }
+
+            internal void CompileReport()
+            {
+                Log.Line("Compile Report");
+                Report = string.Empty;
+                var myRole = Session.IsClient ? "Client" : "Server";
+                var otherRole = Session.IsClient ? "Server" : "Client";
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var indexString = IndexToString[i];
+                    var myStorage = GetStorage(MyData, indexString);
+                    var storageCnt = Session.MpActive ? 2 : 1;
+                    Report += $"Class: {indexString}\n";
+
+                    foreach (var p in myStorage)
+                    {
+                        if (storageCnt > 1)
+                        {
+                            var remoteStorage = GetStorage(RemoteData, indexString);
+                            var remoteValue = remoteStorage[p.Key];
+                            Report += $"    [{p.Key}]\n      {myRole}:{p.Value} - {otherRole}:{remoteValue} - Matches:{p.Value == remoteValue}\n";
+                        }
+                        else
+                        {
+                            Report += $"    [{p.Key}]\n      {myRole}:{p.Value}\n";
+                        }
+                    }
+                }
+
+            }
+
+
+            internal Dictionary<string, Func<string>> InitSessionFields()
+            {
+                var sessionFields = new Dictionary<string, Func<string>>
+                {
+                    {"DedicatedServer", () => Session.DedicatedServer.ToString() }
+                };
+
+                return sessionFields;
+            }
+
+            internal Dictionary<string, Func<string>> InitAiFields()
+            {
+                var sessionFields = new Dictionary<string, Func<string>>
+                {
+                    {"Version", () => GetAi()?.Version.ToString() ?? string.Empty }
+                };
+
+                return sessionFields;
+            }
+
+            internal Dictionary<string, Func<string>> InitCompFields()
+            {
+                var sessionFields = new Dictionary<string, Func<string>>
+                {
+                    {"IsAsleep", () => GetComp()?.IsAsleep.ToString() ?? string.Empty }
+                };
+
+                return sessionFields;
+            }
+
+            internal Dictionary<string, Func<string>> InitPlatformFields()
+            {
+                var sessionFields = new Dictionary<string, Func<string>>
+                {
+                    {"State", () => GetPlatform()?.State.ToString() ?? string.Empty }
+                };
+
+                return sessionFields;
+            }
+
+            internal Dictionary<string, Func<string>> InitWeaponFields()
+            {
+                var sessionFields = new Dictionary<string, Func<string>>
+                {
+                    {"AiEnabled", () => {
+                        var message = string.Empty;
+                        return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AiEnabled} ");
+                    } }
+                };
+
+                return sessionFields;
+            }
+
+
+            internal GridAi GetAi()
+            {
+                GridAi ai;
+                if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
+                {
+                    return ai;
+                }
+                return null;
+
+            }
+
+            internal WeaponComponent GetComp()
+            {
+                GridAi ai;
+                if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
+                {
+                    WeaponComponent comp;
+                    if (ai.WeaponBase.TryGetValue(TargetBlock, out comp))
+                    {
+                        return comp;
+                    }
+                }
+                return null;
+
+            }
+
+            internal MyWeaponPlatform GetPlatform()
+            {
+                GridAi ai;
+                if (Session.GridTargetingAIs.TryGetValue(TargetBlock.CubeGrid, out ai))
+                {
+                    WeaponComponent comp;
+                    if (ai.WeaponBase.TryGetValue(TargetBlock, out comp))
+                    {
+                        return comp.Platform;
+                    }
+                }
+                return null;
+
+            }
+
+            internal bool TryGetValidPlatform(out MyWeaponPlatform platform)
+            {
+                platform = GetPlatform();
+                return platform != null;
+            }
+
+            internal void Clean()
+            {
+                MyData = null;
+                RemoteData = null;
+                Generating = false;
+                Log.Line("Clean");
+            }
+        }
 
         internal class TerminalMonitor
         {

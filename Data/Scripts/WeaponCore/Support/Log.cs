@@ -121,7 +121,7 @@ namespace WeaponCore.Support
             MyAPIGateway.Utilities.DeleteFileInLocalStorage(oldName, anyObjectInYourMod);
         }
 
-        public static void NetLogger(Session session, string message, string name)
+        public static void NetLogger(Session session, string message, string name, ulong directedSteamId = ulong.MaxValue)
         {
             switch (name) {
                 case "perf":
@@ -136,15 +136,21 @@ namespace WeaponCore.Support
                 case "custom":
                     message = "4" + message;
                     break;
+                case "report":
+                    message = "9" + message;
+                    break;
                 default:
                     message = "0" + message;
                     break;
             }
 
-            var test = Encoding.UTF8.GetBytes(message);
+            var encodedString = Encoding.UTF8.GetBytes(message);
 
-            foreach (var a in session.ConnectedAuthors)
-                MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.AuthorPacketId, test, a.Value, true);
+            if (directedSteamId != ulong.MaxValue) {
+                foreach (var a in session.ConnectedAuthors)
+                    MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.StringPacketId, encodedString, a.Value, true);
+            }
+            else MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.StringPacketId, encodedString, directedSteamId, true);
         }
 
         public static void Line(string text, string instanceName = null)

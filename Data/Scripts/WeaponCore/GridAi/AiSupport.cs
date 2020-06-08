@@ -285,10 +285,9 @@ namespace WeaponCore.Support
                     using (powerBlock.Pin()) {
                         using (powerBlock.CubeGrid.Pin()) {
                             try {
-                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null  || powerBlock.CubeGrid.MarkedForClose) {
-                                    Log.Line($"skipping closed power block");
+
+                                if (powerBlock.MarkedForClose || powerBlock.SlimBlock == null  || powerBlock.CubeGrid.MarkedForClose) 
                                     continue;
-                                }
 
                                 try {
                                     if (PowerBlock != powerBlock || PowerDistributor?.SourcesEnabled == MyMultipleEnabledEnum.NoObjects) {

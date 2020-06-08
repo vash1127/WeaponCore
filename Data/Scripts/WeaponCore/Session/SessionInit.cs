@@ -28,7 +28,7 @@ namespace WeaponCore
             else
             {
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ClientPacketId, ClientReceivedPacket);
-                MyAPIGateway.Multiplayer.RegisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
+                MyAPIGateway.Multiplayer.RegisterMessageHandler(StringPacketId, StringReceived);
             }
 
             if (DamageHandler)

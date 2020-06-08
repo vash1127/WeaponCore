@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Sandbox.ModAPI;
 using VRage.Input;
+using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Session;
 
@@ -25,6 +26,7 @@ namespace WeaponCore
         internal bool ShiftPressed;
         internal bool LongShift;
         internal bool AltPressed;
+        internal bool ActionKeyPressed;
         internal bool CtrlPressed;
         internal bool AnyKeyPressed;
         internal bool KeyPrevPressed;
@@ -32,6 +34,8 @@ namespace WeaponCore
         internal bool UiKeyWasPressed;
         internal bool PlayerCamera;
         internal bool FirstPersonView;
+        internal bool Debug = true;
+        internal LineD AimRay;
         private readonly Session _session;
         internal readonly InputStateData ClientInputState;
 
@@ -46,6 +50,7 @@ namespace WeaponCore
             var s = _session;
             WheelForward = false;
             WheelBackward = false;
+            AimRay = new LineD();
 
             if (!s.InGridAiBlock) s.UpdateLocalAiAndCockpit();
 
@@ -103,6 +108,16 @@ namespace WeaponCore
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 }
             }
+            else if (!s.InMenu && !s.WheelUi.WheelActive)
+            {
+                CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
+                ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.R);
+
+                if (CtrlPressed && ActionKeyPressed && GetAimRay(s, out AimRay) && Debug)
+                {
+                    DsDebugDraw.DrawLine(AimRay, Color.Red, 0.1f);
+                }
+            }
 
             if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
                 WheelForward = true;
@@ -119,6 +134,18 @@ namespace WeaponCore
                 LeftMouseReleased = false;
                 RightMouseReleased = false;
             }
+        }
+
+        internal bool GetAimRay(Session s, out LineD ray)
+        {
+            var character = MyAPIGateway.Session.Player.Character;
+            if (character != null)
+            {
+                ray = new LineD(s.PlayerPos, s.PlayerPos + (character.WorldMatrix.Forward * 100));
+                return true;
+            }
+            ray = new LineD();
+            return false;
         }
     }
 }

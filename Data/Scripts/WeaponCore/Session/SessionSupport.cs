@@ -173,6 +173,35 @@ namespace WeaponCore
             return _loadCounter;
         }
 
+        internal List<MyLineSegmentOverlapResult<MyEntity>> AimRayEnts = new List<MyLineSegmentOverlapResult<MyEntity>>();
+        internal bool GetAimedAtBlock(out MyCubeBlock cube)
+        {
+            cube = null;
+            if (UiInput.AimRay.Length > 0)
+            {
+                AimRayEnts.Clear();
+                MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref UiInput.AimRay, AimRayEnts);
+                foreach (var ent in AimRayEnts)
+                {
+                    var grid = ent.Element as MyCubeGrid;
+                    if (grid?.Physics != null && grid.Physics.Enabled && !grid.Physics.IsPhantom && grid.InScene && !grid.IsPreview)
+                    {
+                        MyCube myCube;
+                        var hitV3I = grid.RayCastBlocks(UiInput.AimRay.From, UiInput.AimRay.To);
+                        if (hitV3I.HasValue && grid.TryGetCube(hitV3I.Value, out myCube)) {
+
+                            var slim = (IMySlimBlock)myCube.CubeBlock;
+                            if (slim.FatBlock != null) {
+                                cube = (MyCubeBlock)slim.FatBlock;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
 
         private void CheckAdminRights()
         {

@@ -97,9 +97,9 @@ namespace WeaponCore.Support
         {
             using (MyCube.Pin())
             {
-                if (InventoryInited || !MyCube.HasInventory || MyCube.MarkedForClose || Platform.State != MyWeaponPlatform.PlatformState.Ready || BlockInventory == null)
+                if (InventoryInited || !MyCube.HasInventory || MyCube.MarkedForClose || (Platform.State != MyWeaponPlatform.PlatformState.Inited && Platform.State != MyWeaponPlatform.PlatformState.Incomplete) || BlockInventory == null)
                 {
-                    Log.Line($"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!MyCube.HasInventory} - Marked:{MyCube.MarkedForClose} - PlatformNotReady:{Platform.State != MyWeaponPlatform.PlatformState.Ready} - nullInventory:{BlockInventory == null}");
+                    Log.Line($"InventoryInit failed: IsInitted:{InventoryInited} - NoInventory:{!MyCube.HasInventory} - Marked:{MyCube.MarkedForClose} - PlatformNotReady:{Platform.State != MyWeaponPlatform.PlatformState.Ready}({Platform.State}) - nullInventory:{BlockInventory == null}");
                     return;
                 }
 

@@ -47,7 +47,9 @@ namespace WeaponCore
         GridFocusListSync,
         FixedWeaponHitEvent,
         ClientMidUpdate,
-        CompSyncRequest
+        CompSyncRequest,
+        RequestReport,
+        SentReport,
     }
 
     #region packets
@@ -66,6 +68,9 @@ namespace WeaponCore
     [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(16, typeof(ClientMIdUpdatePacket))]
     [ProtoInclude(17, typeof(MIdPacket))]
+    [ProtoInclude(18, typeof(RequestDataReportPacket))]
+    [ProtoInclude(19, typeof(SendDataReportPacket))]
+
 
     public class Packet
     {
@@ -97,6 +102,32 @@ namespace WeaponCore
         public override int GetHashCode()
         {
             return (EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode());
+        }
+    }
+
+    [ProtoContract]
+    public class RequestDataReportPacket : Packet
+    {
+        [ProtoMember(1)] internal bool AllClients;
+        public RequestDataReportPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            AllClients = false;
+        }
+    }
+
+    [ProtoContract]
+    public class SendDataReportPacket : Packet
+    {
+        [ProtoMember(1)] internal DataReport Data;
+        public SendDataReportPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
         }
     }
 
@@ -416,6 +447,19 @@ namespace WeaponCore
     #endregion
 
     #region packet Data
+
+
+    [ProtoContract]
+    internal class DataReport
+    {
+        [ProtoMember(1)] internal Dictionary<string, string> Session = new Dictionary<string, string>();
+        [ProtoMember(2)] internal Dictionary<string, string> Ai = new Dictionary<string, string>();
+        [ProtoMember(3)] internal Dictionary<string, string> Comp = new Dictionary<string, string>();
+        [ProtoMember(4)] internal Dictionary<string, string> Platform = new Dictionary<string, string>();
+        [ProtoMember(5)] internal Dictionary<string, string> Weapon = new Dictionary<string, string>();
+
+        public DataReport() { }
+    }
 
     [ProtoContract]
     public class WeaponData

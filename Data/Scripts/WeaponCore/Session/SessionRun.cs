@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -18,7 +19,10 @@ namespace WeaponCore
         {
             try
             {
-                BeforeStartInit();
+                if (!SupressLoad)
+                {
+                    BeforeStartInit();
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
@@ -27,9 +31,13 @@ namespace WeaponCore
         {
             try
             {
-                Log.Line($"Paused:{Tick}");
-                Paused();
-                _paused = true;
+                if (!SupressLoad)
+                {
+                    Log.Line($"Paused:{Tick}");
+                    Paused();
+                    _paused = true;
+                }
+
             }
             catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
         }
@@ -39,6 +47,9 @@ namespace WeaponCore
         {
             try
             {
+                if (SupressLoad)
+                    return;
+
                 DsUtil.Start("av");
                 if (!DedicatedServer) Av.End();
                 DsUtil.Complete("av", true);
@@ -46,6 +57,10 @@ namespace WeaponCore
                 //
                 // Finished last frame
                 //
+
+                MyCubeBlock cube;
+                if (Tick60 && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                    ProblemRep.GenerateReport(cube);
 
                 TotalAcquireChecks += AcquireChecks;
 
@@ -107,6 +122,9 @@ namespace WeaponCore
         {
             try
             {
+                if (SupressLoad)
+                    return;
+
                 if (!DedicatedServer) {
                     EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
@@ -179,6 +197,9 @@ namespace WeaponCore
         {
             try
             {
+                if (SupressLoad)
+                    return;
+
                 if (Placer != null) UpdatePlacer();
 
                 if(AnimationsToProcess.Count > 0 || ThreadedAnimations.Count > 0) ProcessAnimations();
@@ -193,7 +214,8 @@ namespace WeaponCore
         {
             try
             {
-                if (DedicatedServer || _lastDrawTick == Tick || _paused) return;
+
+                if (SupressLoad || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
 
@@ -220,7 +242,7 @@ namespace WeaponCore
 
         public override void HandleInput()
         {
-            if (HandlesInput)
+            if (HandlesInput && !SupressLoad)
                 UiInput.UpdateInputState();
         }
 
@@ -228,6 +250,25 @@ namespace WeaponCore
         {
             try
             {
+                foreach (var mod in Session.Mods)
+                {
+                    if (mod.PublishedFileId == 1365616918) ShieldMod = true;
+                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\DefenseShields"))
+                        ShieldMod = true;
+                    else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719 || mod.PublishedFileId == 2006751214 || mod.PublishedFileId == 2015560129)
+                        ReplaceVanilla = true;
+                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
+                        ReplaceVanilla = true;
+                    else if (mod.PublishedFileId == 2123506303)
+                    {
+                        if (mod.Name != ModContext.ModId)
+                            SupressLoad = true;
+                    }
+                }
+
+                if (SupressLoad)
+                    return;
+
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
@@ -236,17 +277,6 @@ namespace WeaponCore
 
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
-
-                foreach (var mod in Session.Mods)
-                {
-                    if (mod.PublishedFileId == 1365616918) ShieldMod = true;
-                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\DefenseShields"))
-                        ShieldMod = true;
-                    else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719 || mod.PublishedFileId == 2006751214 || mod.PublishedFileId == 2015560129) 
-                        ReplaceVanilla = true;
-                    else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\VanillaReplacement"))
-                        ReplaceVanilla = true;
-                }
 
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
@@ -260,6 +290,9 @@ namespace WeaponCore
         {
             try
             {
+                if (SupressLoad)
+                    return;
+
                 if (!PTask.IsComplete)
                     PTask.Wait();
 
@@ -274,7 +307,7 @@ namespace WeaponCore
                 else
                 {
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);
-                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(AuthorPacketId, AuthorReceivedPacket);
+                    MyAPIGateway.Multiplayer.UnregisterMessageHandler(StringPacketId, StringReceived);
                 }
 
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);

@@ -699,5 +699,16 @@ namespace WeaponCore
 
             return true;
         }
+        private bool ServerRequestReport(PacketObj data)
+        {
+            var packet = data.Packet;
+            var reportPacket = (RequestDataReportPacket)packet;
+            var reportData = ProblemRep.PullData();
+
+            if (reportData == null) return Error(data, Msg("RequestReport"));
+            ProblemRep.NetworkTransfer(false, reportPacket.SenderId, reportData);
+
+            return true;
+        }
     }
 }

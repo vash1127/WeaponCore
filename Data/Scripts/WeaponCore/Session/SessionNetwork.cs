@@ -16,7 +16,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void AuthorReceivedPacket(byte[] rawData)
+        private void StringReceived(byte[] rawData)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace WeaponCore
                         break;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in AuthorReceivedPacket: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in StringReceivedPacket: {ex}"); }
         }
 
         #region NewClientSwitch
@@ -175,6 +175,10 @@ namespace WeaponCore
                             ClientFocusStates(packetObj);
                             break;
                         }
+                    case PacketType.RequestReport: {
+                        ClientSentReport(packetObj);
+                        break;
+                    }
                     default:
                         if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
                         Log.LineShortDate($"        [BadClientPacket] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}", "net");
@@ -318,6 +322,11 @@ namespace WeaponCore
                 case PacketType.NextActiveUpdate:
                 case PacketType.ReleaseActiveUpdate: {
                     ServerFocusUpdate(packetObj);
+                    break;
+                }
+                case PacketType.RequestReport:
+                {
+                    ServerRequestReport(packetObj);
                     break;
                 }
                 default:
