@@ -711,6 +711,7 @@ namespace WeaponCore
             if (reportData == null) return Error(data, Msg("RequestReport"));
             
             ProblemRep.NetworkTransfer(false, reportPacket.SenderId, reportData);
+            data.Report.PacketValid = true;
 
             return true;
         }

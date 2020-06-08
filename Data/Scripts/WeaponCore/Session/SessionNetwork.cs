@@ -324,7 +324,7 @@ namespace WeaponCore
                     ServerFocusUpdate(packetObj);
                     break;
                 }
-                case PacketType.RequestReport:
+                case PacketType.SentReport:
                 {
                     ServerRequestReport(packetObj);
                     break;

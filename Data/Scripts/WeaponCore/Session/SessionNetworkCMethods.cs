@@ -653,7 +653,9 @@ namespace WeaponCore
             var sentReportPacket = (SendDataReportPacket)packet;
             if (sentReportPacket.Data == null) return Error(data, Msg("SentReport"));
 
+            Log.Line($"remote data received");
             ProblemRep.RemoteData = sentReportPacket.Data;
+            data.Report.PacketValid = true;
 
             return true;
 

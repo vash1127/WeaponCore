@@ -54,6 +54,7 @@ namespace WeaponCore
                 if (Generating || Session.Tick - LastRequestTick < RequestTime) {
                     if (Generating) Log.Line($"Report generation already in progress");
                     else Log.Line($"Report may only be requested every {RequestTime / 60} seconds: {Session.Tick - LastRequestTick}");
+                    Clean();
                     return;
                 }
                 Log.Line($"GenerateReport0");
