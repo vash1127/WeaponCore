@@ -54,7 +54,6 @@ namespace WeaponCore
                 if (Generating || Session.Tick - LastRequestTick < RequestTime) {
                     if (Generating) Log.Line($"Report generation already in progress");
                     else Log.Line($"Report may only be requested every {RequestTime / 60} seconds: {Session.Tick - LastRequestTick}");
-                    Clean();
                     return;
                 }
                 Log.Line($"GenerateReport0");
@@ -156,7 +155,8 @@ namespace WeaponCore
                             SenderId = clientId,
                             PType = PacketType.SentReport,
                             Data = data,
-                        }
+                        },
+                        SingleClient = true,
                     });
                 }
             }
@@ -166,6 +166,7 @@ namespace WeaponCore
                 if (Session.MpActive && (RemoteData == null || MyData == null))
                 {
                     Log.Line($"RemoteData:{RemoteData !=null} - MyData:{MyData!= null}, null data detected, waiting 10 second");
+                    Clean();
                     return;
                 }
                 Log.Line($"CompleteReport");

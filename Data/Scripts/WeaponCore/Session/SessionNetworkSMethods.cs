@@ -710,7 +710,7 @@ namespace WeaponCore
             var reportData = ProblemRep.PullData(cube);
             if (reportData == null) return Error(data, Msg("RequestReport"));
             
-            ProblemRep.NetworkTransfer(false, reportPacket.SenderId, reportData);
+            ProblemRep.NetworkTransfer(false, packet.SenderId, reportData);
             data.Report.PacketValid = true;
 
             return true;
