@@ -703,9 +703,13 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var reportPacket = (RequestDataReportPacket)packet;
-            var reportData = ProblemRep.PullData();
-
+            
+            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+            if (cube == null) return Error(data, Msg("Cube"));
+            
+            var reportData = ProblemRep.PullData(cube);
             if (reportData == null) return Error(data, Msg("RequestReport"));
+            
             ProblemRep.NetworkTransfer(false, reportPacket.SenderId, reportData);
 
             return true;

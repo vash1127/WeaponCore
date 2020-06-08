@@ -56,7 +56,7 @@ namespace WeaponCore
                     else Log.Line($"Report may only be requested every {RequestTime / 60} seconds: {Session.Tick - LastRequestTick}");
                     return;
                 }
-
+                Log.Line($"GenerateReport0");
                 Generating = true;
                 LastRequestTick = Session.Tick;
                 TargetBlock = targetBlock;
@@ -75,30 +75,46 @@ namespace WeaponCore
                     NetworkTransfer(true);
                 }
 
-                Session.FutureEvents.Schedule(CompleteReport, null, 60);
+                Log.Line($"GenerateReport1");
+                Session.FutureEvents.Schedule(CompleteReport, null, 600);
             }
 
-            internal DataReport PullData()
+            internal DataReport PullData(MyCubeBlock targetBlock)
             {
-                MyData = new DataReport();
-                
-                Compile();
                 Log.Line($"PullData");
+
+                MyData = new DataReport();
+                TargetBlock = targetBlock;
+
+                Compile();
+                
+                Log.Line($"ReturnData");
                 return MyData;
             }
 
             internal void Compile()
             {
-                Log.Line($"Compile Data");
-                BuildData(MyData);
+                try
+                {
+                    Log.Line($"Compile Data");
+                    BuildData(MyData);
+                }
+                catch (Exception ex) { Log.Line($"Exception in ReportCompile: {ex}"); }
             }
 
             internal void BuildData(DataReport data)
             {
-                Log.Line("Build Data");
+                if (Session.DedicatedServer) Log.Line("Build Data");
                 foreach (var d in AllDicts)
-                foreach (var f in d.Value)
-                    GetStorage(data, d.Key)[f.Key] = f.Value.Invoke();
+                {
+                    if (Session.DedicatedServer) Log.Line($"dictionary:{d.Key}");
+                    foreach (var f in d.Value)
+                    {
+                        var value = f.Value.Invoke();
+                        GetStorage(data, d.Key)[f.Key] = value;
+                        if (Session.DedicatedServer) Log.Line($"Member:{f.Key} - Value:{value}");
+                    }
+                }
             }
 
 
@@ -129,6 +145,7 @@ namespace WeaponCore
                     Session.PacketsToServer.Add(new RequestDataReportPacket {
                         SenderId = Session.MultiplayerId,
                         PType = PacketType.RequestReport,
+                        EntityId = TargetBlock.EntityId,
                         AllClients = false,
                     });
                 }
@@ -147,11 +164,10 @@ namespace WeaponCore
             {
                 if (Session.MpActive && (RemoteData == null || MyData == null))
                 {
-                    Log.Line($"RemoteData:{RemoteData !=null} - MyData:{MyData!= null}, null data detected, waiting 1 second");
-                    Session.FutureEvents.Schedule(CompleteReport, null, 60);
+                    Log.Line($"RemoteData:{RemoteData !=null} - MyData:{MyData!= null}, null data detected, waiting 10 second");
                     return;
                 }
-
+                Log.Line($"CompleteReport");
                 CompileReport();
 
                 Log.CleanLine($"{Report}");
@@ -203,37 +219,37 @@ namespace WeaponCore
 
             internal Dictionary<string, Func<string>> InitAiFields()
             {
-                var sessionFields = new Dictionary<string, Func<string>>
+                var aiFields = new Dictionary<string, Func<string>>
                 {
                     {"Version", () => GetAi()?.Version.ToString() ?? string.Empty }
                 };
 
-                return sessionFields;
+                return aiFields;
             }
 
             internal Dictionary<string, Func<string>> InitCompFields()
             {
-                var sessionFields = new Dictionary<string, Func<string>>
+                var compFields = new Dictionary<string, Func<string>>
                 {
                     {"IsAsleep", () => GetComp()?.IsAsleep.ToString() ?? string.Empty }
                 };
 
-                return sessionFields;
+                return compFields;
             }
 
             internal Dictionary<string, Func<string>> InitPlatformFields()
             {
-                var sessionFields = new Dictionary<string, Func<string>>
+                var platformFields = new Dictionary<string, Func<string>>
                 {
                     {"State", () => GetPlatform()?.State.ToString() ?? string.Empty }
                 };
 
-                return sessionFields;
+                return platformFields;
             }
 
             internal Dictionary<string, Func<string>> InitWeaponFields()
             {
-                var sessionFields = new Dictionary<string, Func<string>>
+                var weaponFields = new Dictionary<string, Func<string>>
                 {
                     {"AiEnabled", () => {
                         var message = string.Empty;
@@ -241,7 +257,7 @@ namespace WeaponCore
                     } }
                 };
 
-                return sessionFields;
+                return weaponFields;
             }
 
 
@@ -296,6 +312,7 @@ namespace WeaponCore
             {
                 MyData = null;
                 RemoteData = null;
+                TargetBlock = null;
                 Generating = false;
                 Log.Line("Clean");
             }

@@ -59,9 +59,10 @@ namespace WeaponCore
                 //
 
                 MyCubeBlock cube;
-                if (Tick60 && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
                     ProblemRep.GenerateReport(cube);
 
+                /*
                 TotalAcquireChecks += AcquireChecks;
 
                 if (AcquireChecks < LowAcquireChecks)
@@ -77,7 +78,7 @@ namespace WeaponCore
                     LowAcquireChecks = int.MaxValue;
                     HighAcquireChecks = int.MinValue;
                 }
-
+                */
                 if (Tick60) AcqManager.UpdateAsleep();
                 if (Tick600) AcqManager.ReorderSleep();
 
