@@ -3,11 +3,14 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
+using Sandbox.Game;
+using VRage;
 using VRage.Collections;
 using VRage.Game;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi.Constructs;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.Support.GridAi.FatBlockChange;
 namespace WeaponCore
 {
     public class FatMap
@@ -68,15 +71,7 @@ namespace WeaponCore
                     foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
                     if (ai.SubGridsChanged) ai.SubGridChanges();
 
-                    for (int i = 0; i < ai.SortedTargets.Count; i++) {
-                        var tInfo = ai.SortedTargets[i];
-                        tInfo.Target = null;
-                        tInfo.MyAi = null;
-                        tInfo.MyGrid = null;
-                        tInfo.TargetAi = null;
-                        TargetInfoPool.Return(tInfo);
-                    }
-                    ai.SortedTargets.Clear();
+                    ai.CleanSortedTargets();
                     ai.Targets.Clear();
 
                     var newEntCnt = ai.NewEntities.Count;
@@ -169,6 +164,53 @@ namespace WeaponCore
                 DsUtil.Complete("db", true);
             }
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
+        }
+
+        internal void ProcessAiFatChanges()
+        {
+            AiFatBlockChanges.ApplyAdditions();
+            for (int i = 0; i < AiFatBlockChanges.Count; i++)
+            {
+                var c = AiFatBlockChanges[i];
+                var ai = c.Ai;
+                
+                MyInventory inventory;
+                WeaponComponent comp;
+                switch (c.State) {
+
+                    case StateChange.BatteryAdd:
+                        if (ai.Batteries.Add(c.FatBlock as MyBatteryBlock)) ai.SourceCount++;
+                        ai.UpdatePowerSources = true;
+                        break;
+                    case StateChange.BatteryRemove:
+                        if (ai.Batteries.Remove(c.FatBlock as MyBatteryBlock)) ai.SourceCount--;
+                        ai.UpdatePowerSources = true;
+                        break;
+                    case StateChange.InventoryAdd:
+                        if (c.FatBlock.HasInventory && c.FatBlock.TryGetInventory(out inventory) && UniqueListAdd(inventory, ai.InventoryIndexer, ai.Inventories))
+                            inventory.InventoryContentChanged += ai.CheckAmmoInventory;
+                        foreach (var weapon in ai.OutOfAmmoWeapons)
+                            ComputeStorage(weapon);
+                        break;
+                    case StateChange.InventoryRemove:
+                        if (c.FatBlock.TryGetInventory(out inventory) && UniqueListRemove(inventory, ai.InventoryIndexer, ai.Inventories)) {
+
+                            inventory.InventoryContentChanged -= ai.CheckAmmoInventory;
+                            ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
+                            if (InventoryItems.TryRemove(inventory, out removed))
+                                removed.Clear();
+                        }
+                        break;
+                    case StateChange.CompRemove:
+                        if (c.FatBlock.Components.TryGet(out comp)) {
+
+                            foreach (var group in ai.BlockGroups.Values)
+                                group.Comps.Remove(comp);
+                        }
+                        break;
+                }
+            }
+            AiFatBlockChanges.ClearImmediate();
         }
 
         internal void CheckDirtyGrids()

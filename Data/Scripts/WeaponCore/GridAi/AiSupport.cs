@@ -391,6 +391,20 @@ namespace WeaponCore.Support
             Session.GridAiPool.Return(this);
         }
 
+        internal void CleanSortedTargets()
+        {
+            for (int i = 0; i < SortedTargets.Count; i++)
+            {
+                var tInfo = SortedTargets[i];
+                tInfo.Target = null;
+                tInfo.MyAi = null;
+                tInfo.MyGrid = null;
+                tInfo.TargetAi = null;
+                Session.TargetInfoPool.Return(tInfo);
+            }
+            SortedTargets.Clear();
+        }
+
         internal void CleanUp()
         {
             AiCloseTick = Session.Tick;
@@ -402,16 +416,8 @@ namespace WeaponCore.Support
                 RemSubGrids.Add(grid);
             }
 
-            for (int i = 0; i < SortedTargets.Count; i++) {
-                var tInfo = SortedTargets[i];
-                tInfo.Target = null;
-                tInfo.MyAi = null;
-                tInfo.MyGrid = null;
-                tInfo.TargetAi = null;
-                Session.TargetInfoPool.Return(tInfo);
-            }
+            CleanSortedTargets();
 
-            SortedTargets.Clear();
             InventoryIndexer.Clear();
             Construct.Clean();
             AddSubGrids.Clear();

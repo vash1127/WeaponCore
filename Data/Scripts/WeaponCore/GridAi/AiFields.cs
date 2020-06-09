@@ -67,7 +67,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
 
         internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
-
+        internal readonly object FatBlockLock = new object();
 
         internal Session Session;
         internal MyCubeGrid MyGrid;

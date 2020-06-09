@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using ProtoBuf;
-using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Game;
-using VRage.Game.Components;
-using VRage.Utils;
-using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
-using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 
 namespace WeaponCore
@@ -22,27 +14,27 @@ namespace WeaponCore
     [ProtoContract]
     public class CompStateValues
     {
-        [ProtoMember(1), DefaultValue(-1)] public float PowerLevel;
-        [ProtoMember(2)] public bool Online;
-        [ProtoMember(3)] public bool Overload;
-        [ProtoMember(4)] public bool Message;
-        [ProtoMember(5)] public int Heat;
+        [ProtoMember(1), DefaultValue(-1)] public float RetiredPowerLevel; //retired
+        [ProtoMember(2)] public bool Online; //don't save
+        [ProtoMember(3)] public bool RetiredOverload;  //retired
+        [ProtoMember(4)] public bool RetiredMessage;  //retired
+        [ProtoMember(5)] public int Heat; //don't save
         [ProtoMember(6)] public WeaponStateValues[] Weapons;
-        [ProtoMember(7)] public bool ShootOn;
-        [ProtoMember(8)] public bool ClickShoot;
-        [ProtoMember(9)] public PlayerControl CurrentPlayerControl;
-        [ProtoMember(10)] public float CurrentCharge;
-        [ProtoMember(11)] public int Version = Session.VersionControl;
-        [ProtoMember(12)] public string CurrentBlockGroup;
-        [ProtoMember(13)] public bool OtherPlayerTrackingReticle;
-        [ProtoMember(14)] public int RandIncAmount;
+        [ProtoMember(7)] public bool ShootOn; //don't save
+        [ProtoMember(8)] public bool ClickShoot; //don't save
+        [ProtoMember(9)] public PlayerControl CurrentPlayerControl; //don't save
+        [ProtoMember(10)] public float CurrentCharge; //save???
+        [ProtoMember(11)] public int Version = Session.VersionControl; //save
+        [ProtoMember(12)] public string CurrentBlockGroup; //don't save
+        [ProtoMember(13)] public bool OtherPlayerTrackingReticle; //don't save
+        [ProtoMember(14)] public int RetiredRandIncAmount;  //retired
 
         public void Sync(CompStateValues syncFrom)
         {
-            PowerLevel = syncFrom.PowerLevel;
+            RetiredPowerLevel = syncFrom.RetiredPowerLevel;
             Online = syncFrom.Online;
-            Overload = syncFrom.Overload;
-            Message = syncFrom.Message;
+            RetiredOverload = syncFrom.RetiredOverload;
+            RetiredMessage = syncFrom.RetiredMessage;
             Heat = syncFrom.Heat;
             ShootOn = syncFrom.ShootOn;
             ClickShoot = syncFrom.ClickShoot;
@@ -111,9 +103,9 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponStateValues
     {
-        [ProtoMember(1)] public int ShotsFired;
-        [ProtoMember(2)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff;
-        [ProtoMember(3)] public int SingleShotCounter;
+        [ProtoMember(1)] public int ShotsFired; //don't know??
+        [ProtoMember(2)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff; // save
+        [ProtoMember(3)] public int SingleShotCounter; // don't know?
         [ProtoMember(4)] public WeaponSyncValues Sync;
 
     }
@@ -121,14 +113,14 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponSyncValues
     {
-        [ProtoMember(1)] public float Heat;
-        [ProtoMember(2)] public int CurrentAmmo;
-        [ProtoMember(3)] public float CurrentCharge;
-        [ProtoMember(4)] public bool Overheated;
-        [ProtoMember(5)] public bool Reloading;
-        [ProtoMember(6)] public bool Charging;
-        [ProtoMember(7)] public int WeaponId;
-        [ProtoMember(8)] public MyFixedPoint CurrentMags;
+        [ProtoMember(1)] public float Heat; // don't save
+        [ProtoMember(2)] public int CurrentAmmo; //save
+        [ProtoMember(3)] public float CurrentCharge; //save
+        [ProtoMember(4)] public bool Overheated; //don't save
+        [ProtoMember(5)] public bool Reloading; // don't save
+        [ProtoMember(6)] public bool Charging; // don't save
+        [ProtoMember(7)] public int WeaponId; // save
+        [ProtoMember(8)] public MyFixedPoint CurrentMags; // save
 
         public void SetState (WeaponSyncValues sync)
         {

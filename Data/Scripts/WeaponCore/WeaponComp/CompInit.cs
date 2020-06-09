@@ -24,7 +24,7 @@ namespace WeaponCore.Support
                 State.LoadState();
                 Set.LoadSettings();
 
-                if (!Session.IsClient)
+                if (Session.IsServer)
                 {
                     Set.Value.Overrides.TargetPainter = false;
                     Set.Value.Overrides.ManualControl = false;

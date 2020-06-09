@@ -81,6 +81,7 @@ namespace WeaponCore
         internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToPullQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
+        internal readonly ConcurrentCachingList<FatBlockChange> AiFatBlockChanges = new ConcurrentCachingList<FatBlockChange>();
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
 

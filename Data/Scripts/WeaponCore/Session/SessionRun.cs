@@ -94,6 +94,8 @@ namespace WeaponCore
                 if (!IsClient && (!WeaponToPullAmmo.Empty || !WeaponsToRemoveAmmo.Empty) && ITask.IsComplete)
                     StartAmmoTask();
 
+                if (!AiFatBlockChanges.IsEmpty)
+                    ProcessAiFatChanges();
 
                 if (!CompsToStart.IsEmpty)
                     StartComps();

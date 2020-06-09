@@ -26,7 +26,6 @@ namespace WeaponCore
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    weaponComp.RemoveComp();
                     PlatFormPool.Return(weaponComp.Platform);
                     weaponComp.Platform = null;
                     CompsToStart.Remove(weaponComp);
