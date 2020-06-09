@@ -46,29 +46,56 @@ namespace WeaponCore.Support
         {
             try
             {
+                var battery = myCubeBlock as MyBatteryBlock;
                 var isWeaponBase = Session.ReplaceVanilla && myCubeBlock?.BlockDefinition != null && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || myCubeBlock?.BlockDefinition != null && Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId);
 
-                if (myCubeBlock is MyBatteryBlock)
-                    Session.AiFatBlockChanges.Add(new FatBlockChange {Ai = this, FatBlock = myCubeBlock, State = FatBlockChange.StateChange.BatteryAdd});
+                if (battery != null)
+                {
+                    if (Batteries.Add(battery)) SourceCount++;
+                    UpdatePowerSources = true;
+                }
                 else if (!isWeaponBase && (myCubeBlock is MyConveyor || myCubeBlock is IMyConveyorTube || myCubeBlock is MyConveyorSorter || myCubeBlock is MyCargoContainer || myCubeBlock is MyCockpit || myCubeBlock is IMyAssembler))
-                    Session.AiFatBlockChanges.Add(new FatBlockChange { Ai = this, FatBlock = myCubeBlock, State = FatBlockChange.StateChange.InventoryAdd});
+                {
+                    MyInventory inventory;
+                    if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
+                        inventory.InventoryContentChanged += CheckAmmoInventory;
+
+                    foreach (var weapon in OutOfAmmoWeapons)
+                        Session.CheckStorage.Add(weapon);
+                }
                 else if (isWeaponBase) ScanBlockGroups = true;
 
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {myCubeBlock?.BlockDefinition == null}"); }
         }
 
-
         private void FatBlockRemoved(MyCubeBlock myCubeBlock)
         {
             try
             {
-                if (myCubeBlock is MyBatteryBlock)
-                    Session.AiFatBlockChanges.Add(new FatBlockChange { Ai = this, FatBlock = myCubeBlock, State = FatBlockChange.StateChange.BatteryRemove });
-                else if (myCubeBlock.Components.Has<WeaponComponent>())
-                    Session.AiFatBlockChanges.Add(new FatBlockChange { Ai = this, FatBlock = myCubeBlock, State = FatBlockChange.StateChange.CompRemove });
-                else if (myCubeBlock.HasInventory)
-                    Session.AiFatBlockChanges.Add(new FatBlockChange { Ai = this, FatBlock = myCubeBlock, State = FatBlockChange.StateChange.InventoryRemove });
+                WeaponComponent comp;
+                MyInventory inventory;
+
+                var battery = myCubeBlock as MyBatteryBlock;
+
+                if (battery != null)
+                {
+                    if (Batteries.Remove(battery)) SourceCount--;
+                    UpdatePowerSources = true;
+                }
+                else if (myCubeBlock.Components.TryGet(out comp))
+                {
+                    foreach (var group in BlockGroups.Values)
+                        group.Comps.Remove(comp);
+                }
+                else if (myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                {
+                    inventory.InventoryContentChanged -= CheckAmmoInventory;
+
+                    ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
+                    if (Session.InventoryItems.TryRemove(inventory, out removed))
+                        removed.Clear();
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }
         }

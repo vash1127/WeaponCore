@@ -7,10 +7,10 @@ using Sandbox.Game;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi.Constructs;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
-using static WeaponCore.Support.GridAi.FatBlockChange;
 namespace WeaponCore
 {
     public class FatMap
@@ -166,51 +166,17 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
         }
 
-        internal void ProcessAiFatChanges()
+        internal void CheckWeaponStorage()
         {
-            AiFatBlockChanges.ApplyAdditions();
-            for (int i = 0; i < AiFatBlockChanges.Count; i++)
-            {
-                var c = AiFatBlockChanges[i];
-                var ai = c.Ai;
-                
-                MyInventory inventory;
-                WeaponComponent comp;
-                switch (c.State) {
+            for (int i = 0; i < CheckStorage.Count; i++)
+                ComputeStorage(CheckStorage[i]);
+            CheckStorage.Clear();
+        }
 
-                    case StateChange.BatteryAdd:
-                        if (ai.Batteries.Add(c.FatBlock as MyBatteryBlock)) ai.SourceCount++;
-                        ai.UpdatePowerSources = true;
-                        break;
-                    case StateChange.BatteryRemove:
-                        if (ai.Batteries.Remove(c.FatBlock as MyBatteryBlock)) ai.SourceCount--;
-                        ai.UpdatePowerSources = true;
-                        break;
-                    case StateChange.InventoryAdd:
-                        if (c.FatBlock.HasInventory && c.FatBlock.TryGetInventory(out inventory) && UniqueListAdd(inventory, ai.InventoryIndexer, ai.Inventories))
-                            inventory.InventoryContentChanged += ai.CheckAmmoInventory;
-                        foreach (var weapon in ai.OutOfAmmoWeapons)
-                            ComputeStorage(weapon);
-                        break;
-                    case StateChange.InventoryRemove:
-                        if (c.FatBlock.TryGetInventory(out inventory) && UniqueListRemove(inventory, ai.InventoryIndexer, ai.Inventories)) {
-
-                            inventory.InventoryContentChanged -= ai.CheckAmmoInventory;
-                            ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
-                            if (InventoryItems.TryRemove(inventory, out removed))
-                                removed.Clear();
-                        }
-                        break;
-                    case StateChange.CompRemove:
-                        if (c.FatBlock.Components.TryGet(out comp)) {
-
-                            foreach (var group in ai.BlockGroups.Values)
-                                group.Comps.Remove(comp);
-                        }
-                        break;
-                }
-            }
-            AiFatBlockChanges.ClearImmediate();
+        internal void DelayedComputeStorage(object o)
+        {
+            var w = o as Weapon;
+            ComputeStorage(w);
         }
 
         internal void CheckDirtyGrids()

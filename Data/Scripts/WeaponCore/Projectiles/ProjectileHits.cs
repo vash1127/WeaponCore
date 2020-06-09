@@ -19,8 +19,8 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        internal void ConfirmHits() {
-
+        internal void ConfirmHits()
+        {
             for (int x = 0; x < ValidateHits.Count; x++) {
 
                 var p = ValidateHits[x];
@@ -42,6 +42,8 @@ namespace WeaponCore.Projectiles
                 for (int i = 0; i < collectionCount; i++) {
 
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
+
+
                     var grid = ent as MyCubeGrid;
 
                     var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
@@ -51,8 +53,16 @@ namespace WeaponCore.Projectiles
                     if (p.Info.EwarActive && character != null && !genericFields) continue;
 
                     var entSphere = ent.PositionComp.WorldVolume;
-                    if (p.UseEntityCache && (p.CheckType == Projectile.CheckTypes.CachedRay && ray.Intersects(entSphere) > p.Beam.Length || p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(entSphere) == ContainmentType.Disjoint))
-                        continue;
+                    if (useEntityCollection) {
+
+                        if (p.CheckType == Projectile.CheckTypes.CachedRay) {
+                            var dist = ray.Intersects(entSphere);
+                            if (!dist.HasValue || dist > p.Beam.Length)
+                                continue;
+                        }
+                        else if (p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(entSphere) == ContainmentType.Disjoint)
+                            continue;
+                    }
 
                     if (grid != null || character != null) {
                         var extBeam = new LineD(p.Beam.From - p.Beam.Direction * (entSphere.Radius * 2), p.Beam.To);
@@ -62,6 +72,7 @@ namespace WeaponCore.Projectiles
 
                     var safeZone = ent as MySafeZone;
                     if (safeZone != null) {
+
                         var outSideSphere = safeZone.Shape == MySafeZoneShape.Sphere && safeZone.PositionComp.WorldVolume.Contains(p.Info.Origin) == ContainmentType.Disjoint;
                         var outSideBox = safeZone.Shape == MySafeZoneShape.Box && safeZone.PositionComp.WorldAABB.Contains(p.Info.Origin) == ContainmentType.Disjoint;
                         var outside = outSideSphere || outSideBox;
@@ -312,7 +323,6 @@ namespace WeaponCore.Projectiles
 
                 p.Info.HitList.Clear();
             }
-
             ValidateHits.Clear();
         }
 

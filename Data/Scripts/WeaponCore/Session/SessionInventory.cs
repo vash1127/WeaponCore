@@ -51,7 +51,8 @@ namespace WeaponCore
             }
         }
 
-        internal void AmmoPull() {
+        internal void AmmoPull()  // In Thread
+        {
             Weapon weapon = null;
             try
             {
@@ -162,7 +163,7 @@ namespace WeaponCore
             AmmoToPullQueue.ApplyRemovals();
         }
 
-        internal void AmmoToRemove()
+        internal void AmmoToRemove() // In Thread
         {
             for (int i = 0; i < WeaponsToRemoveAmmo.Count; i++) {
 

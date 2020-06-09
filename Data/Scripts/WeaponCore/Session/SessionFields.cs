@@ -81,7 +81,6 @@ namespace WeaponCore
         internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToPullQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
-        internal readonly ConcurrentCachingList<FatBlockChange> AiFatBlockChanges = new ConcurrentCachingList<FatBlockChange>();
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
 
@@ -125,7 +124,7 @@ namespace WeaponCore
         internal readonly List<Weapon> WeaponsToSync = new List<Weapon>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
-
+        internal readonly List<Weapon> CheckStorage = new List<Weapon>();
         internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
         internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
 

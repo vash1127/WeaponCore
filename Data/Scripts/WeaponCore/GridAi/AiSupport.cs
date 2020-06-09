@@ -262,7 +262,7 @@ namespace WeaponCore.Support
             var magId = (MyDefinitionId?)o ?? new MyDefinitionId();
             foreach (var w in OutOfAmmoWeapons) {
                 if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
-                    ComputeStorage(w);
+                    Session.CheckStorage.Add(w);
             }
         }
 

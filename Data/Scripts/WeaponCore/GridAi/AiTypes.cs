@@ -226,21 +226,5 @@ namespace WeaponCore.Support
             internal MyEntity ShieldEnt;
             internal MyCubeBlock ShieldBlock;
         }
-
-        internal struct FatBlockChange
-        {
-            internal enum StateChange
-            {
-                BatteryAdd,
-                InventoryAdd,
-                BatteryRemove,
-                InventoryRemove,
-                CompRemove,
-            }
-
-            internal MyCubeBlock FatBlock;
-            internal GridAi Ai;
-            internal StateChange State;
-        }
     }
 }

@@ -90,7 +90,7 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         var notReady = w.Timings.WeaponReadyTick > Tick;
                         var skip = notReady || !w.Set.Enable;
-                        
+
                         if (skip) {
 
                             if (!notReady && w.Target.HasTarget && !IsClient)

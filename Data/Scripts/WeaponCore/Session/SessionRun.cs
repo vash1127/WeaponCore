@@ -58,9 +58,10 @@ namespace WeaponCore
                 // Finished last frame
                 //
 
-                MyCubeBlock cube;
-                if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
-                    ProblemRep.GenerateReport(cube);
+                if (DeformProtection.Count > 0 && Tick - LastDeform > 0)
+                    DeformProtection.Clear();
+                
+                Timings();
 
                 /*
                 TotalAcquireChecks += AcquireChecks;
@@ -79,6 +80,7 @@ namespace WeaponCore
                     HighAcquireChecks = int.MinValue;
                 }
                 */
+
                 if (Tick60) AcqManager.UpdateAsleep();
                 if (Tick600) AcqManager.ReorderSleep();
 
@@ -86,16 +88,15 @@ namespace WeaponCore
                 if (TerminalMon.Active)
                     TerminalMon.Monitor();
 
-                if (DeformProtection.Count > 0 && Tick - LastDeform > 0) 
-                    DeformProtection.Clear();
+                MyCubeBlock cube;
+                if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
+                    ProblemRep.GenerateReport(cube);
 
-                Timings();
+                if (CheckStorage.Count > 0)
+                    CheckWeaponStorage();
 
                 if (!IsClient && (!WeaponToPullAmmo.Empty || !WeaponsToRemoveAmmo.Empty) && ITask.IsComplete)
                     StartAmmoTask();
-
-                if (!AiFatBlockChanges.IsEmpty)
-                    ProcessAiFatChanges();
 
                 if (!CompsToStart.IsEmpty)
                     StartComps();

@@ -213,7 +213,7 @@ namespace WeaponCore.Support
                         weapon.State.Sync.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                     if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                        ComputeStorage(weapon);
+                        Session.FutureEvents.Schedule(Session.DelayedComputeStorage, weapon, 240);
 
                     var notValid = !weapon.Set.Enable || !State.Value.Online || !Set.Value.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
                     if (!notValid)

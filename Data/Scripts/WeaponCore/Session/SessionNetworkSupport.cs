@@ -768,7 +768,6 @@ namespace WeaponCore
             comp.WeaponValues.Timings[weapon.WeaponId].Sync(timings);
             weapon.Timings.Sync(timings);
 
-            var hasMags = weapon.State.Sync.CurrentMags > 0 || IsCreative;
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
             var canReload = weapon.CanReload;

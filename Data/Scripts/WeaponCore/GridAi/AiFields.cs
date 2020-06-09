@@ -4,7 +4,6 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -13,7 +12,6 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Session;
 
 namespace WeaponCore.Support
 {
@@ -65,9 +63,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
-
         internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
-        internal readonly object FatBlockLock = new object();
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
