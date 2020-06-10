@@ -286,7 +286,7 @@ namespace WeaponCore
                 WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    TerminalMon.Update(comp);
+                    TerminalMon.Update(comp, true);
                     int rangeControl = -1;
                     IMyTerminalControl wcRangeControl = null;
                     for (int i = controls.Count - 1; i >= 0; i--)

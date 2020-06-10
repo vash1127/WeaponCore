@@ -175,7 +175,7 @@ namespace WeaponCore
                             ClientFocusStates(packetObj);
                             break;
                         }
-                    case PacketType.SentReport: {
+                    case PacketType.ProblemReport: {
                         ClientSentReport(packetObj);
                         break;
                     }
@@ -324,9 +324,12 @@ namespace WeaponCore
                     ServerFocusUpdate(packetObj);
                     break;
                 }
-                case PacketType.RequestReport:
-                {
+                case PacketType.ProblemReport: {
                     ServerRequestReport(packetObj);
+                    break;
+                }
+                case PacketType.TerminalMonitor: {
+                    ServerTerminalMonitor(packetObj);
                     break;
                 }
                 default:

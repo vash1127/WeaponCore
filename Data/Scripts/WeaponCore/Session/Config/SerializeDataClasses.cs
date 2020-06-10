@@ -48,8 +48,8 @@ namespace WeaponCore
         FixedWeaponHitEvent,
         ClientMidUpdate,
         CompSyncRequest,
-        RequestReport,
-        SentReport,
+        ProblemReport,
+        TerminalMonitor,
     }
 
     #region packets
@@ -68,8 +68,7 @@ namespace WeaponCore
     [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(16, typeof(ClientMIdUpdatePacket))]
     [ProtoInclude(17, typeof(MIdPacket))]
-    [ProtoInclude(18, typeof(RequestDataReportPacket))]
-    [ProtoInclude(19, typeof(SendDataReportPacket))]
+    [ProtoInclude(18, typeof(ProblemReportPacket))]
 
 
     public class Packet
@@ -106,27 +105,24 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class RequestDataReportPacket : Packet
+    public class ProblemReportPacket : Packet
     {
-        [ProtoMember(1)] internal bool AllClients;
-        public RequestDataReportPacket() { }
-
-        public override void CleanUp()
+        public enum RequestType
         {
-            base.CleanUp();
-            AllClients = false;
+            SendReport,
+            RequestServerReport,
+            RequestAllReport,
         }
-    }
 
-    [ProtoContract]
-    public class SendDataReportPacket : Packet
-    {
-        [ProtoMember(1)] internal DataReport Data;
-        public SendDataReportPacket() { }
+        [ProtoMember(1)] internal RequestType Type;
+        [ProtoMember(2)] internal DataReport Data;
+
+        public ProblemReportPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
+            Type = RequestType.RequestServerReport;
             Data = null;
         }
     }
@@ -311,7 +307,7 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal uint MId;
         [ProtoMember(2)] internal PacketType MidType;
-        [ProtoMember(2)] internal int HashCheck;
+        [ProtoMember(3)] internal int HashCheck;
 
         public ClientMIdUpdatePacket() { }
 
@@ -333,6 +329,8 @@ namespace WeaponCore
     [ProtoInclude(26, typeof(ControllingPlayerPacket))]
     [ProtoInclude(27, typeof(StatePacket))]
     [ProtoInclude(28, typeof(SettingPacket))]
+    [ProtoInclude(29, typeof(TerminalMonitorPacket))]
+
     public class MIdPacket : Packet
     {
         [ProtoMember(1)] internal uint MId;
@@ -345,6 +343,27 @@ namespace WeaponCore
             MId = 0;
         }
     }
+
+
+    [ProtoContract]
+    public class TerminalMonitorPacket : MIdPacket
+    {
+        public enum Change
+        {
+            Update,
+            Clean,
+        }
+
+        [ProtoMember(1)] internal Change State;
+        public TerminalMonitorPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            State = Change.Update;
+        }
+    }
+
 
     [ProtoContract]
     public class RangePacket : MIdPacket

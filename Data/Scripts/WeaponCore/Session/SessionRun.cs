@@ -81,6 +81,8 @@ namespace WeaponCore
                 }
                 */
 
+                // Environment.CurrentManagedThreadId
+
                 if (Tick60) AcqManager.UpdateAsleep();
                 if (Tick600) AcqManager.ReorderSleep();
 
@@ -218,7 +220,6 @@ namespace WeaponCore
         {
             try
             {
-
                 if (SupressLoad || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");

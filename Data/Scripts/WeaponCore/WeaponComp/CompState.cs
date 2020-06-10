@@ -45,6 +45,7 @@ namespace WeaponCore.Support
         internal void WakeupComp()
         {
             if (IsAsleep) {
+                Log.Line($"force comp awake");
                 IsAsleep = false;
                 Ai.AwakeComps += 1;
                 Ai.SleepingComps -= 1;
@@ -75,7 +76,7 @@ namespace WeaponCore.Support
             TargetNonThreats = targetNonThreats;
             if (TargetNonThreats)
                 Ai.TargetNonThreats = true;
-
+            var wasAsleep = IsAsleep;
             IsAsleep = false;
 
             if (!Ai.Session.IsServer)
@@ -91,7 +92,12 @@ namespace WeaponCore.Support
                 IsAsleep = true;
                 Ai.SleepingComps++;
             }
-            else
+            else if (wasAsleep) {
+
+                Log.Line("waking up");
+                Ai.AwakeComps++;
+            }
+            else 
                 Ai.AwakeComps++;
         }
 

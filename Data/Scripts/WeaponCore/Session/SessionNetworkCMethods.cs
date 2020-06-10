@@ -650,7 +650,7 @@ namespace WeaponCore
         private bool ClientSentReport(PacketObj data)
         {
             var packet = data.Packet;
-            var sentReportPacket = (SendDataReportPacket)packet;
+            var sentReportPacket = (ProblemReportPacket)packet;
             if (sentReportPacket.Data == null) return Error(data, Msg("SentReport"));
 
             Log.Line($"remote data received");

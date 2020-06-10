@@ -702,7 +702,6 @@ namespace WeaponCore
         private bool ServerRequestReport(PacketObj data)
         {
             var packet = data.Packet;
-            var reportPacket = (RequestDataReportPacket)packet;
             
             var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
             if (cube == null) return Error(data, Msg("Cube"));
@@ -711,6 +710,39 @@ namespace WeaponCore
             if (reportData == null) return Error(data, Msg("RequestReport"));
             
             ProblemRep.NetworkTransfer(false, packet.SenderId, reportData);
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ServerTerminalMonitor(PacketObj data)
+        {
+            var packet = data.Packet;
+            var terminalMonPacket = (TerminalMonitorPacket)packet;
+
+            if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
+
+                var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+                var comp = ent?.Components.Get<WeaponComponent>();
+                
+                if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+                
+                if (terminalMonPacket.MId > comp.MIds[(int) packet.PType]) {
+                    comp.MIds[(int)packet.PType] = terminalMonPacket.MId;
+                    TerminalMon.Update(comp);
+                    Log.Line("Terminal Update");
+                }
+                else {
+                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                    return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
+                }
+
+            }
+            else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean) {
+                TerminalMon.Clean();
+                Log.Line("Terminal Clean");
+            }
+
             data.Report.PacketValid = true;
 
             return true;

@@ -142,19 +142,22 @@ namespace WeaponCore
             {
                 Log.Line($"network transfer: toServer: {toServer} - dataNull:{data == null} - clientId:{clientId}");
                 if (toServer) {
-                    Session.PacketsToServer.Add(new RequestDataReportPacket {
+                    Session.PacketsToServer.Add(new ProblemReportPacket
+                    {
                         SenderId = Session.MultiplayerId,
-                        PType = PacketType.RequestReport,
+                        PType = PacketType.ProblemReport,
                         EntityId = TargetBlock.EntityId,
-                        AllClients = false,
+                        Type = ProblemReportPacket.RequestType.RequestServerReport,
                     });
                 }
                 else {
                     Session.PacketsToClient.Add(new PacketInfo {
-                        Packet = new SendDataReportPacket {
+                        Packet = new ProblemReportPacket {
                             SenderId = clientId,
-                            PType = PacketType.SentReport,
+                            PType = PacketType.ProblemReport,
                             Data = data,
+                            Type = ProblemReportPacket.RequestType.SendReport,
+
                         },
                         SingleClient = true,
                     });
@@ -335,30 +338,44 @@ namespace WeaponCore
             internal void Update(WeaponComponent comp, bool isCaller = false)
             {
                 Comp = comp;
+
+                var oldActiveWeaponTerminal = comp.Ai.Construct.RootAi.ActiveWeaponTerminal;
+                comp.Ai.Construct.RootAi.ActiveWeaponTerminal = comp.MyCube;
+                var changed = oldActiveWeaponTerminal != comp.Ai.Construct.RootAi.ActiveWeaponTerminal || !Active;
+
                 Active = true;
                 OriginalAiVersion = comp.Ai.Version;
-                comp.Ai.Construct.RootAi.ActiveWeaponTerminal = comp.MyCube;
 
                 if (comp.IsAsleep)
                     comp.WakeupComp();
 
-                if (Session.IsClient && isCaller)
-                {
-                    //SyncGoesHere
+                if (Session.IsClient && isCaller && changed) {
+                    comp.MIds[(int)PacketType.TerminalMonitor]++;
+                    var mId = comp.MIds[(int)PacketType.TerminalMonitor];
+                    Log.Line($"sending terminal update");
+                    Session.PacketsToServer.Add(new TerminalMonitorPacket {
+                        SenderId = Session.MultiplayerId,
+                        PType = PacketType.TerminalMonitor,
+                        EntityId = Comp.MyCube.EntityId,
+                        State = TerminalMonitorPacket.Change.Update,
+                        MId = mId,
+                    });
                 }
             }
 
             internal void Clean(bool isCaller = false)
             {
                 if (Comp != null && Comp.Ai.Version == OriginalAiVersion)
-                {
                     Comp.Ai.Construct.RootAi.ActiveWeaponTerminal = null;
 
-                    if (Session.IsClient && isCaller)
-                    {
-                        //SyncGoesHere
-                    }
-
+                if (isCaller) {
+                    Log.Line($"sending terminal clean");
+                    Session.PacketsToServer.Add(new TerminalMonitorPacket {
+                        SenderId = Session.MultiplayerId,
+                        PType = PacketType.TerminalMonitor,
+                        EntityId = 0,
+                        State = TerminalMonitorPacket.Change.Clean,
+                    });
                 }
 
                 Comp = null;
@@ -368,14 +385,12 @@ namespace WeaponCore
 
             internal void Monitor()
             {
-                if (IsActive())
-                {
-
+                if (IsActive()) {
                     if (Session.Tick20)
                         Comp.TerminalRefresh();
                 }
                 else if (Active)
-                    Clean();
+                    Clean(Session.IsClient);
             }
 
             internal bool IsActive()
@@ -385,7 +400,7 @@ namespace WeaponCore
                 var sameVersion = Comp.Ai.Version == OriginalAiVersion;
                 var nothingMarked = !Comp.MyCube.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose;
                 var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
-                var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
+                var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel || Session.DedicatedServer;
                 var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
                 var sameTerminalBlock = Session.LastTerminal == Comp.Ai.Construct.RootAi?.ActiveWeaponTerminal;
 
