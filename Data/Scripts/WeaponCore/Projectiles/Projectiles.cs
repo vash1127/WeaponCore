@@ -397,21 +397,24 @@ namespace WeaponCore.Projectiles
                     continue;
                 }
 
+                if (!p.EnableAv) continue;
+
                 if (p.Intersecting) {
 
-                    if (p.EnableAv && (p.Info.AmmoDef.Const.DrawLine || p.Info.AmmoDef.Const.PrimeModel || p.Info.AmmoDef.Const.TriggerModel)) {
+                    if (p.Info.AmmoDef.Const.DrawLine || p.Info.AmmoDef.Const.PrimeModel || p.Info.AmmoDef.Const.TriggerModel) {
                         var useCollisionSize = p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine;
                         p.Info.AvShot.TestSphere.Center = p.Info.Hit.LastHit;
                         p.Info.AvShot.ShortStepAvUpdate(p.Info, useCollisionSize, true, p.EarlyEnd, p.Position);
                     }
-                    
+
                     if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
                         p.Info.AvShot.ProEnded = true;
-
+                    
                     continue;
                 }
 
-                if (!p.EnableAv || (int)p.State > 3) continue;
+                if ((int)p.State > 3)
+                    continue;
 
                 if (p.SmartsOn)
                     p.Info.VisualDir = p.Info.Direction;
