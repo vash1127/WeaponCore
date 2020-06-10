@@ -122,6 +122,23 @@ namespace WeaponCore.Support
                 LargeGrid = largeGrid;
             }
         }
+        internal class ActiveTerminal
+        {
+            internal ActiveTerminal(GridAi ai)
+            {
+                Ai = ai;
+            }
+
+            internal readonly GridAi Ai;
+            internal MyCubeBlock ActiveCube;
+            internal bool Active;
+
+            internal void Clean()
+            {
+                ActiveCube = null;
+                Active = false;
+            }
+        }
 
         internal class TargetCompare : IComparer<TargetInfo>
         {

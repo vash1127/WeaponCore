@@ -416,6 +416,7 @@ namespace WeaponCore.Support
                 RemSubGrids.Add(grid);
             }
 
+            ActiveWeaponTerminal.Clean();
             CleanSortedTargets();
 
             InventoryIndexer.Clear();

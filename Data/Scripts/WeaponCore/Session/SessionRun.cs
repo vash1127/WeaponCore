@@ -86,8 +86,7 @@ namespace WeaponCore
                 if (Tick60) AcqManager.UpdateAsleep();
                 if (Tick600) AcqManager.ReorderSleep();
 
-
-                if (TerminalMon.Active)
+                if (!DedicatedServer && TerminalMon.Active)
                     TerminalMon.Monitor();
 
                 MyCubeBlock cube;

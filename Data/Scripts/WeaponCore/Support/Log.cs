@@ -136,9 +136,6 @@ namespace WeaponCore.Support
                 case "custom":
                     message = "4" + message;
                     break;
-                case "report":
-                    message = "9" + message;
-                    break;
                 default:
                     message = "0" + message;
                     break;
@@ -146,7 +143,7 @@ namespace WeaponCore.Support
 
             var encodedString = Encoding.UTF8.GetBytes(message);
 
-            if (directedSteamId != ulong.MaxValue) {
+            if (directedSteamId == ulong.MaxValue) {
                 foreach (var a in session.ConnectedAuthors)
                     MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(Session.StringPacketId, encodedString, a.Value, true);
             }

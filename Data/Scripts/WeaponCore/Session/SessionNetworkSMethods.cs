@@ -719,28 +719,27 @@ namespace WeaponCore
         {
             var packet = data.Packet;
             var terminalMonPacket = (TerminalMonitorPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
 
-            if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-                var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-                var comp = ent?.Components.Get<WeaponComponent>();
-                
-                if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-                
-                if (terminalMonPacket.MId > comp.MIds[(int) packet.PType]) {
+            if (terminalMonPacket.MId > comp.MIds[(int) packet.PType]) {
+
+                if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
                     comp.MIds[(int)packet.PType] = terminalMonPacket.MId;
-                    TerminalMon.Update(comp);
+                    TerminalMon.ServerUpdate(comp);
                     Log.Line("Terminal Update");
                 }
-                else {
-                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                    return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
+                else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean) {
+                    TerminalMon.ServerClean(comp);
+                    Log.Line("Terminal Clean");
                 }
 
             }
-            else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean) {
-                TerminalMon.Clean();
-                Log.Line("Terminal Clean");
+            else {
+                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 
             data.Report.PacketValid = true;

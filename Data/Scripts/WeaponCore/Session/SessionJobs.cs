@@ -154,7 +154,7 @@ namespace WeaponCore
                     
                     ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.ControllingPlayers.Count > 0 || ai.FirstRun;
 
-                    ai.AiSleep = ai.Construct.RootAi.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Construct.RootAi.ActiveWeaponTerminal == null || !ai.SubGrids.Contains(ai.Construct.RootAi.ActiveWeaponTerminal.CubeGrid));
+                    ai.AiSleep = ai.Construct.RootAi.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube == null || !ai.SubGrids.Contains(ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube.CubeGrid));
 
                     ai.DbUpdated = true;
                     ai.FirstRun = false;

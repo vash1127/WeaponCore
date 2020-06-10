@@ -36,6 +36,9 @@ namespace WeaponCore.Support
                         if (wCount.Current == 0) Ai.WeaponCounter.Remove(MyCube.BlockDefinition.Id.SubtypeId);
                     }
 
+                    if (Ai.ActiveWeaponTerminal.ActiveCube == MyCube)
+                        Ai.ActiveWeaponTerminal.Clean();
+
                     WeaponComponent comp;
                     if (Ai.WeaponBase.TryRemove(MyCube, out comp)) {
                         if (Platform.State == MyWeaponPlatform.PlatformState.Ready) {

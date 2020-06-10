@@ -5,6 +5,7 @@ using ProtoBuf;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -325,6 +326,7 @@ namespace WeaponCore
 
         internal class TerminalMonitor
         {
+            internal readonly Dictionary<WeaponComponent, GridAi.ActiveTerminal> ServerTerminalMaps = new Dictionary<WeaponComponent, GridAi.ActiveTerminal>();
             internal Session Session;
             internal WeaponComponent Comp;
             internal int OriginalAiVersion;
@@ -334,13 +336,35 @@ namespace WeaponCore
             {
                 Session = session;
             }
+            internal void Monitor()
+            {
+                if (IsActive()) {
+                    if (Session.Tick20)
+                        Comp.TerminalRefresh();
+                }
+                else if (Active)
+                    Clean();
+            }
+            internal bool IsActive()
+            {
+                if (Comp?.Ai == null) return false;
 
-            internal void Update(WeaponComponent comp, bool isCaller = false)
+                var sameVersion = Comp.Ai.Version == OriginalAiVersion;
+                var nothingMarked = !Comp.MyCube.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose;
+                var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
+                var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
+                var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+                var sameTerminalBlock = Session.LastTerminal == Comp.Ai.Construct.RootAi?.ActiveWeaponTerminal.ActiveCube;
+
+                return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
+            }
+
+            internal void ClientUpdate(WeaponComponent comp)
             {
                 Comp = comp;
 
                 var oldActiveWeaponTerminal = comp.Ai.Construct.RootAi.ActiveWeaponTerminal;
-                comp.Ai.Construct.RootAi.ActiveWeaponTerminal = comp.MyCube;
+                comp.Ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube = comp.MyCube;
                 var changed = oldActiveWeaponTerminal != comp.Ai.Construct.RootAi.ActiveWeaponTerminal || !Active;
 
                 Active = true;
@@ -349,7 +373,7 @@ namespace WeaponCore
                 if (comp.IsAsleep)
                     comp.WakeupComp();
 
-                if (Session.IsClient && isCaller && changed) {
+                if (Session.IsClient && changed) {
                     comp.MIds[(int)PacketType.TerminalMonitor]++;
                     var mId = comp.MIds[(int)PacketType.TerminalMonitor];
                     Log.Line($"sending terminal update");
@@ -363,17 +387,17 @@ namespace WeaponCore
                 }
             }
 
-            internal void Clean(bool isCaller = false)
+            internal void Clean()
             {
                 if (Comp != null && Comp.Ai.Version == OriginalAiVersion)
-                    Comp.Ai.Construct.RootAi.ActiveWeaponTerminal = null;
+                    Comp.Ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube = null;
 
-                if (isCaller) {
+                if (Session.IsClient && Comp != null) {
                     Log.Line($"sending terminal clean");
                     Session.PacketsToServer.Add(new TerminalMonitorPacket {
                         SenderId = Session.MultiplayerId,
                         PType = PacketType.TerminalMonitor,
-                        EntityId = 0,
+                        EntityId = Comp.MyCube.EntityId,
                         State = TerminalMonitorPacket.Change.Clean,
                     });
                 }
@@ -383,30 +407,32 @@ namespace WeaponCore
                 Active = false;
             }
 
-            internal void Monitor()
+
+            internal void ServerUpdate(WeaponComponent comp)
             {
-                if (IsActive()) {
-                    if (Session.Tick20)
-                        Comp.TerminalRefresh();
+                GridAi.ActiveTerminal aTerm;
+                if (!ServerTerminalMaps.TryGetValue(comp, out aTerm)) {
+                    aTerm = comp.Ai.ActiveWeaponTerminal;
+                    ServerTerminalMaps[comp] = aTerm;
                 }
-                else if (Active)
-                    Clean(Session.IsClient);
+                else if (aTerm.Ai != comp.Ai)
+                    aTerm.Clean();
+
+                comp.Ai.ActiveWeaponTerminal.ActiveCube = comp.MyCube;
+                comp.Ai.ActiveWeaponTerminal.Active = true;
+
+                if (comp.IsAsleep)
+                    comp.WakeupComp();
             }
 
-            internal bool IsActive()
+            internal void ServerClean(WeaponComponent comp)
             {
-                if (Comp?.Ai == null) return false;
-
-                var sameVersion = Comp.Ai.Version == OriginalAiVersion;
-                var nothingMarked = !Comp.MyCube.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose && !Comp.Ai.MyGrid.MarkedForClose;
-                var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
-                var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel || Session.DedicatedServer;
-                var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal == Comp.Ai.Construct.RootAi?.ActiveWeaponTerminal;
-
-                return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
+                GridAi.ActiveTerminal aTerm;
+                if (ServerTerminalMaps.TryGetValue(comp, out aTerm))
+                    aTerm.Clean();
+                else
+                    Log.Line($"ServerClean failed ");
             }
-
 
             internal void Purge()
             {

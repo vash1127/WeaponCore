@@ -69,11 +69,11 @@ namespace WeaponCore.Support
         internal MyCubeGrid MyGrid;
         internal MyCubeBlock PowerBlock;
         internal MyResourceDistributorComponent PowerDistributor;
+        internal ActiveTerminal ActiveWeaponTerminal;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal uint CreatedTick;
         internal Vector3 GridVel;
         internal IMyGridTerminalSystem TerminalSystem;
-        internal MyCubeBlock ActiveWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
         internal MyEntity MyShield;
         internal MyPlanet MyPlanetTmp;
@@ -167,6 +167,11 @@ namespace WeaponCore.Support
 
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private uint _pCacheTick;
+
+        public GridAi()
+        {
+            ActiveWeaponTerminal = new ActiveTerminal(this);
+        }
 
         internal void Init(MyCubeGrid grid, Session session)
         {

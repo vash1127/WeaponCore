@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
