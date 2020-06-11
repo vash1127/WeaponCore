@@ -164,7 +164,6 @@ namespace WeaponCore.Support
         internal class TargetInfo
         {
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal Vector3D TargetDir;
             internal Vector3D TargetHeading;
             internal Vector3D TargetPos;
             internal Vector3D Velocity;
@@ -218,13 +217,11 @@ namespace WeaponCore.Support
                 }
                 else if (detectInfo.Armed) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
-
                 var myRadius = myAi.MyGrid.PositionComp.LocalVolume.Radius;
                 var sphereDistance = MyUtils.GetSmallestDistanceToSphere(ref myCenter, ref targetSphere);
                 if (sphereDistance <= myRadius)
                     sphereDistance = 0;
                 else sphereDistance -= myRadius;
-
                 DistSqr = sphereDistance * sphereDistance;
             }
 

@@ -29,7 +29,7 @@ namespace WeaponCore.Projectiles
                 var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 var found = false;
-                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && (!p.Info.EwarActive || !p.Info.AmmoDef.Const.Pulse) && !p.Info.TriggeredPulse;
+                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.AmmoDef.Const.Pulse && !p.Info.TriggeredPulse;
 
                 bool projetileInShield = false;
                 var tick = p.Info.System.Session.Tick;

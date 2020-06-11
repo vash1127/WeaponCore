@@ -207,7 +207,9 @@ namespace WeaponCore.Support
                     }
                     if (info?.Target == null || info.Target.MarkedForClose || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
-                    if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
+                    var character = info.Target as IMyCharacter;
+                    var targetRadius = character != null ? info.TargetRadius * 5 : info.TargetRadius;
+                    if (targetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);
@@ -245,10 +247,9 @@ namespace WeaponCore.Support
                         return;
                     }
                     var meteor = info.Target as MyMeteor;
-                    if (meteor != null && !s.TrackMeteors || !overRides.Meteors) continue;
-                    var character = info.Target as IMyCharacter;
+                    if (meteor != null && !s.TrackMeteors && !overRides.Meteors) continue;
 
-                    if (character != null && (!s.TrackCharacters || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character) || !overRides.Biologicals)) continue;
+                    if (character != null && (!s.TrackCharacters && !overRides.Biologicals || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
 
