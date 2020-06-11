@@ -139,32 +139,53 @@ namespace WeaponCore.Support
             {
                 var status = GetSystemStatus();
 
-                stringBuilder.Append(status +
-                    "\n[Construct DPS]: " + Ai.EffectiveDps.ToString("0.0") +
-                    "\n[ShotsPerSec  ]: " + ShotsPerSec.ToString("0.000") +
+                stringBuilder.Append(status + 
+                    "\nConstruct DPS: " + Ai.EffectiveDps.ToString("0.0") +
+                    "\nShotsPerSec: " + ShotsPerSec.ToString("0.000") +
                     "\n" +
-                    "\n[RealDps]: " + EffectiveDps.ToString("0.0") +
-                    "\n[PeakDps]: " + PeakDps.ToString("0.0") +
-                    "\n[BaseDps]: " + BaseDps.ToString("0.0") +
-                    "\n[AreaDps]: " + AreaDps.ToString("0.0") +
-                    "\n[Explode]: " + DetDps.ToString("0.0") +
-                    "\n[Current]: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/ PeakDps).ToString("P") + ")");
+                    "\nRealDps: " + EffectiveDps.ToString("0.0") +
+                    "\nPeakDps: " + PeakDps.ToString("0.0") +
+                    "\nBaseDps: " + BaseDps.ToString("0.0") +
+                    "\nAreaDps: " + AreaDps.ToString("0.0") +
+                    "\nExplode: " + DetDps.ToString("0.0") +
+                    "\nCurrent: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/ PeakDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +
-                    "\n[Heat Generated / s]: " + HeatPerSecond.ToString("0.0") + " W" +
-                    "\n[Heat Dissipated / s]: " + HeatSinkRate.ToString("0.0") + " W" +
-                    "\n[Current Heat]: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat / MaxHeat).ToString("P")+")");
+                    "\nHeat Generated / s: " + HeatPerSecond.ToString("0.0") + " W" +
+                    "\nHeat Dissipated / s: " + HeatSinkRate.ToString("0.0") + " W" +
+                    "\nCurrent Heat: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat / MaxHeat).ToString("P")+")");
 
                 if (HeatPerSecond > 0 && HasEnergyWeapon)
                     stringBuilder.Append("\n__________________________________");
 
                 if (HasEnergyWeapon)
                 {
-                    stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.00") + " MWs");
-                    if(HasChargeWeapon) stringBuilder.Append("\n[Current Charge]: " + State.Value.CurrentCharge.ToString("0.00") + " MWs");
-                    stringBuilder.Append("\n[Required Power]: " + MaxRequiredPower.ToString("0.00") + " MWs");
+                    stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MWs");
+                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + State.Value.CurrentCharge.ToString("0.00") + " MWs");
+                    stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MWs");
                 }
+                
+                stringBuilder.Append("\n\n==== Weapons ====");
+
+                var weaponCnt = Platform.Weapons.Length;
+                for (int i = 0; i < weaponCnt; i++)
+                {
+                    var w = Platform.Weapons[i];
+                    string shots;
+                    if (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                    {
+                        shots = "\nCharging:" + w.State.Sync.Charging;
+                    }
+                    else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.State.Sync.CurrentAmmo;
+
+                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.State.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
+
+                    var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
+
+                    stringBuilder.Append("\nName: " + w.System.WeaponName + shots + burst + "\nReloading: " + w.State.Sync.Reloading + endReturn);
+                }
+
 
                 stringBuilder.Append("\n\n** Use Weapon Wheel Menu\n** to control weapons using\n** MMB outside of this terminal");
                 if (Debug)

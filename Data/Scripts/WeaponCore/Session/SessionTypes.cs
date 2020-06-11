@@ -387,12 +387,12 @@ namespace WeaponCore
                 }
             }
 
-            internal void Clean()
+            internal void Clean(bool purge = false)
             {
-                if (Comp != null && Comp.Ai.Version == OriginalAiVersion)
+                if (Comp?.Ai != null && Comp.Ai.Version == OriginalAiVersion && !purge)
                     Comp.Ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube = null;
 
-                if (Session.IsClient && Comp != null) {
+                if (Session.IsClient && Comp != null && !purge) {
                     Log.Line($"sending terminal clean");
                     Session.PacketsToServer.Add(new TerminalMonitorPacket {
                         SenderId = Session.MultiplayerId,
@@ -436,7 +436,7 @@ namespace WeaponCore
 
             internal void Purge()
             {
-                Clean();
+                Clean(true);
                 Session = null;
             }
         }

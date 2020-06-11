@@ -24,24 +24,22 @@ namespace WeaponCore.Support
                 State.LoadState();
                 Set.LoadSettings();
 
-                if (Session.IsServer)
-                {
+                if (Session.IsServer) {
                     Set.Value.Overrides.TargetPainter = false;
                     Set.Value.Overrides.ManualControl = false;
-                    State.Value.OtherPlayerTrackingReticle = false;
+                    State.Value.ResetToFreshLoadState();
                 }
 
                 var maxTrajectory = 0f;
-                for (int i = 0; i < Platform.Weapons.Length; i++)
-                {
+                for (int i = 0; i < Platform.Weapons.Length; i++) {
+
                     var weapon = Platform.Weapons[i];
                     weapon.Set = Set.Value.Weapons[i];
                     weapon.State = State.Value.Weapons[i];
 
                     weapon.ChangeActiveAmmo(weapon.System.AmmoTypes.Length > 0 ? weapon.System.AmmoTypes[weapon.Set.AmmoTypeId] : new WeaponSystem.WeaponAmmoTypes());
 
-                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable)
-                    {
+                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable) {
                         Log.Line($"[{weapon.System.WeaponName}] Your first ammoType is broken, I am crashing now Dave.");
                         return;
                     }

@@ -64,13 +64,14 @@ namespace WeaponCore.Support
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
         internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
+        internal readonly ActiveTerminal ActiveWeaponTerminal;
+        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
         internal MyCubeBlock PowerBlock;
         internal MyResourceDistributorComponent PowerDistributor;
-        internal ActiveTerminal ActiveWeaponTerminal;
-        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+
         internal uint CreatedTick;
         internal Vector3 GridVel;
         internal IMyGridTerminalSystem TerminalSystem;

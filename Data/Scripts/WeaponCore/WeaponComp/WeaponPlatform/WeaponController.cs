@@ -1,6 +1,4 @@
 ﻿using System;
-using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;

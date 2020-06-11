@@ -897,6 +897,7 @@ namespace WeaponCore.Support
                             }
                             return;
                         }
+
                         weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
                         weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                         var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
@@ -915,6 +916,7 @@ namespace WeaponCore.Support
                     }
                     else if (weapon.HitEffects[MuzzleId] != null)
                     {
+
                         System.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = System.Session.Tick;
                         System.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
 

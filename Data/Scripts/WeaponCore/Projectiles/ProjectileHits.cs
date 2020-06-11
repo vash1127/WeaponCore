@@ -29,7 +29,8 @@ namespace WeaponCore.Projectiles
                 var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 var found = false;
-                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarActive && !p.Info.TriggeredPulse;
+                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && (!p.Info.EwarActive || !p.Info.AmmoDef.Const.Pulse) && !p.Info.TriggeredPulse;
+
                 bool projetileInShield = false;
                 var tick = p.Info.System.Session.Tick;
 
@@ -42,8 +43,7 @@ namespace WeaponCore.Projectiles
                 for (int i = 0; i < collectionCount; i++) {
 
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
-
-
+                    
                     var grid = ent as MyCubeGrid;
 
                     var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
@@ -241,7 +241,7 @@ namespace WeaponCore.Projectiles
                                     if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock))
                                         continue;
                                 }
-                                if (!p.Info.EwarActive) {
+                                if (!p.Info.AmmoDef.Const.Pulse) {
 
                                     var forwardPos = p.Info.Age != 1 ? hitEntity.Intersection.From : hitEntity.Intersection.From + (hitEntity.Intersection.Direction * Math.Min(grid.GridSizeHalf, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled));
                                     grid.RayCastCells(forwardPos, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
@@ -317,6 +317,7 @@ namespace WeaponCore.Projectiles
 
                         if (p.Info.Hit.Entity is MyCubeGrid) p.Info.WeaponCache.HitBlock = p.Info.Hit.Block;
                     }
+
                     p.Info.System.Session.Hits.Add(p);
                     continue;
                 }
@@ -409,7 +410,6 @@ namespace WeaponCore.Projectiles
                         var to = hitEntity.HitPos.Value + (hitEntity.Intersection.Direction * 3f);
                         p.Info.System.Session.Physics.CastRay(from, to, out hitInfo, 15);
                     }
-
                     visualHitPos = hitInfo?.HitEntity != null ? hitInfo.Position : hitEntity.HitPos;
                 }
                 else visualHitPos = hitEntity.HitPos;
@@ -434,7 +434,6 @@ namespace WeaponCore.Projectiles
             var count = y != null ? 2 : 1;
             var eWarPulse = info.AmmoDef.Const.Ewar && info.AmmoDef.Const.Pulse;
             var triggerEvent = eWarPulse && !info.TriggeredPulse && info.AmmoDef.Const.EwarTriggerRange > 0;
-            
             for (int i = 0; i < count; i++) {
                 var isX = i == 0;
 
@@ -477,7 +476,7 @@ namespace WeaponCore.Projectiles
                     }
                     else {
 
-                        if (hitEnt.SphereCheck || info.EwarActive) {
+                        if (hitEnt.SphereCheck || info.EwarActive && eWarPulse) {
 
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
@@ -553,7 +552,7 @@ namespace WeaponCore.Projectiles
                     if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                     else {
 
-                        if (hitEnt.SphereCheck || info.EwarActive) {
+                        if (hitEnt.SphereCheck || info.EwarActive && eWarPulse) {
                             
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
                             dist = 0;

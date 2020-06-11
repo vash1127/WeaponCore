@@ -262,7 +262,7 @@ namespace WeaponCore.Projectiles
 
                 p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius && !p.Info.Ai.MarkedForClose;
                 var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
-                var useEwarSphere = triggerRange > 0 || p.Info.EwarActive;
+                var useEwarSphere = (triggerRange > 0 || p.Info.EwarActive) && p.Info.AmmoDef.Const.Pulse;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)) {
@@ -357,7 +357,6 @@ namespace WeaponCore.Projectiles
             for (int x = ActiveProjetiles.Count - 1; x >= 0; x--) {
 
                 var p = ActiveProjetiles[x];
-
                 if (p.Info.AmmoDef.Const.VirtualBeams) {
 
                     Vector3D? hitPos = null;

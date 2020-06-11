@@ -1,9 +1,7 @@
 ﻿using ProtoBuf;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using System.Collections.Generic;
 using System.ComponentModel;
-using VRage;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
@@ -67,8 +65,8 @@ namespace WeaponCore
     [ProtoInclude(14, typeof(GridFocusListPacket))]
     [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(16, typeof(ClientMIdUpdatePacket))]
-    [ProtoInclude(17, typeof(MIdPacket))]
-    [ProtoInclude(18, typeof(ProblemReportPacket))]
+    [ProtoInclude(17, typeof(ProblemReportPacket))]
+    [ProtoInclude(18, typeof(MIdPacket))]
 
 
     public class Packet
@@ -322,14 +320,14 @@ namespace WeaponCore
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(22, typeof(RangePacket))]
-    [ProtoInclude(23, typeof(CycleAmmoPacket))]
-    [ProtoInclude(24, typeof(ShootStatePacket))]
-    [ProtoInclude(25, typeof(OverRidesPacket))]
-    [ProtoInclude(26, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(27, typeof(StatePacket))]
-    [ProtoInclude(28, typeof(SettingPacket))]
-    [ProtoInclude(29, typeof(TerminalMonitorPacket))]
+    [ProtoInclude(23, typeof(RangePacket))]
+    [ProtoInclude(24, typeof(CycleAmmoPacket))]
+    [ProtoInclude(25, typeof(ShootStatePacket))]
+    [ProtoInclude(26, typeof(OverRidesPacket))]
+    [ProtoInclude(27, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(28, typeof(StatePacket))]
+    [ProtoInclude(29, typeof(SettingPacket))]
+    [ProtoInclude(30, typeof(TerminalMonitorPacket))]
 
     public class MIdPacket : Packet
     {

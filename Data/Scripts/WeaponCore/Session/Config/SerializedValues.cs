@@ -14,27 +14,20 @@ namespace WeaponCore
     [ProtoContract]
     public class CompStateValues
     {
-        [ProtoMember(1), DefaultValue(-1)] public float RetiredPowerLevel; //retired
-        [ProtoMember(2)] public bool Online; //don't save
-        [ProtoMember(3)] public bool RetiredOverload;  //retired
-        [ProtoMember(4)] public bool RetiredMessage;  //retired
-        [ProtoMember(5)] public int Heat; //don't save
-        [ProtoMember(6)] public WeaponStateValues[] Weapons;
-        [ProtoMember(7)] public bool ShootOn; //don't save
-        [ProtoMember(8)] public bool ClickShoot; //don't save
-        [ProtoMember(9)] public PlayerControl CurrentPlayerControl; //don't save
-        [ProtoMember(10)] public float CurrentCharge; //save???
-        [ProtoMember(11)] public int Version = Session.VersionControl; //save
-        [ProtoMember(12)] public string CurrentBlockGroup; //don't save
-        [ProtoMember(13)] public bool OtherPlayerTrackingReticle; //don't save
-        [ProtoMember(14)] public int RetiredRandIncAmount;  //retired
+        [ProtoMember(1)] public bool Online; //don't save
+        [ProtoMember(2)] public int Heat; //don't save
+        [ProtoMember(3)] public WeaponStateValues[] Weapons;
+        [ProtoMember(4)] public bool ShootOn; //don't save
+        [ProtoMember(5)] public bool ClickShoot; //don't save
+        [ProtoMember(6)] public PlayerControl CurrentPlayerControl; //don't save
+        [ProtoMember(7)] public float CurrentCharge; //save
+        [ProtoMember(8)] public int Version = Session.VersionControl; //save
+        [ProtoMember(9)] public string CurrentBlockGroup; //don't save
+        [ProtoMember(10)] public bool OtherPlayerTrackingReticle; //don't save
 
         public void Sync(CompStateValues syncFrom)
         {
-            RetiredPowerLevel = syncFrom.RetiredPowerLevel;
             Online = syncFrom.Online;
-            RetiredOverload = syncFrom.RetiredOverload;
-            RetiredMessage = syncFrom.RetiredMessage;
             Heat = syncFrom.Heat;
             ShootOn = syncFrom.ShootOn;
             ClickShoot = syncFrom.ClickShoot;
@@ -58,18 +51,41 @@ namespace WeaponCore
                 Weapons[i].Sync.Reloading = syncFrom.Weapons[i].Sync.Reloading;
             }
         }
+
+        public void ResetToFreshLoadState()
+        {
+            Online = false;
+            Heat = 0;
+            ShootOn = false;
+            ClickShoot = false;
+            ClickShoot = false;
+            CurrentPlayerControl.ControlType = ControlType.None;
+            CurrentPlayerControl.PlayerId = -1;
+            CurrentBlockGroup = string.Empty;
+            OtherPlayerTrackingReticle = false;
+
+            foreach (var w in Weapons)
+            {
+                w.ShotsFired = 0;
+                w.Sync.Charging = false;
+                w.Sync.Heat = 0;
+                w.Sync.Overheated = false;
+                w.Sync.Reloading = false;
+            }
+        }
+
     }
 
     [ProtoContract]
     public class CompSettingsValues
     {
-        [ProtoMember(1)] public bool Guidance = true;
-        [ProtoMember(2)] public int Overload = 1;
+        [ProtoMember(1), DefaultValue(true)] public bool Guidance = true;
+        [ProtoMember(2), DefaultValue(1)] public int Overload = 1;
         [ProtoMember(3)] public long Modes;
-        [ProtoMember(4)] public float DpsModifier = 1;
-        [ProtoMember(5)] public float RofModifier = 1;
+        [ProtoMember(4), DefaultValue(1)] public float DpsModifier = 1;
+        [ProtoMember(5), DefaultValue(1)] public float RofModifier = 1;
         [ProtoMember(6)] public WeaponSettingsValues[] Weapons;
-        [ProtoMember(7)] public float Range = 100;
+        [ProtoMember(7), DefaultValue(100)] public float Range = 100;
         [ProtoMember(8)] public GroupOverrides Overrides;
         [ProtoMember(9)] public int Version = Session.VersionControl;
 
@@ -90,7 +106,7 @@ namespace WeaponCore
 
             Overrides.Sync(syncFrom.Overrides);
 
-            if (Overload != syncFrom.Overload || RofModifier != syncFrom.RofModifier || DpsModifier != syncFrom.DpsModifier)
+            if (Overload != syncFrom.Overload || Math.Abs(RofModifier - syncFrom.RofModifier) > 0.0001f || Math.Abs(DpsModifier - syncFrom.DpsModifier) > 0.0001f )
             {
                 Overload = syncFrom.Overload;
                 RofModifier = syncFrom.RofModifier;
@@ -104,8 +120,8 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public int ShotsFired; //don't know??
-        [ProtoMember(2)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff; // save
-        [ProtoMember(3)] public int SingleShotCounter; // don't know?
+        [ProtoMember(2), DefaultValue(ManualShootActionState.ShootOff)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff; // save
+        [ProtoMember(3)] public int SingleShotCounter; // save
         [ProtoMember(4)] public WeaponSyncValues Sync;
 
     }
@@ -138,7 +154,7 @@ namespace WeaponCore
     public class PlayerControl
     {
         [ProtoMember(1), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(2)] public ControlType ControlType = ControlType.None;
+        [ProtoMember(2), DefaultValue(ControlType.None)] public ControlType ControlType = ControlType.None;
 
         public PlayerControl() { }
 
@@ -258,16 +274,24 @@ namespace WeaponCore
 
                     comp.MIds = comp.WeaponValues.MIds;
                     var timings = comp.WeaponValues.Timings;
+                    var targets = comp.WeaponValues.Targets;
 
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
                         var w = comp.Platform.Weapons[i];
+                        var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
+
                         if (comp.Session.IsServer)
+                        {
                             timings[w.WeaponId] = new WeaponTimings();
+                            targets[w.WeaponId] = new TransferTarget();
+                            comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
+
+                            rand.CurrentSeed = Guid.NewGuid().GetHashCode();
+                            rand.AcquireRandom = new Random(rand.CurrentSeed);
+                        }
 
                         var wTiming = comp.Session.IsServer ? timings[w.WeaponId] : timings[w.WeaponId].SyncOffsetClient(comp.Session.Tick);
-
-                        var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
                         rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                         rand.TurretRandom = new Random(rand.CurrentSeed);
 
@@ -332,9 +356,9 @@ namespace WeaponCore
         [ProtoMember(7)] public bool FocusTargets;
         [ProtoMember(8)] public bool FocusSubSystem;
         [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(10)] public bool Meteors;
-        [ProtoMember(11)] public bool Biologicals;
-        [ProtoMember(12)] public bool Projectiles;
+        [ProtoMember(10), DefaultValue(true)] public bool Meteors;
+        [ProtoMember(11), DefaultValue(true)] public bool Biologicals;
+        [ProtoMember(12), DefaultValue(true)] public bool Projectiles;
 
         public GroupOverrides() { }
 
@@ -376,6 +400,31 @@ namespace WeaponCore
                 compared.Biologicals.Equals(Biologicals) && 
                 compared.Projectiles.Equals(Projectiles)
             );
+        }
+
+        protected bool Equals(GroupOverrides other)
+        {
+            return Activate == other.Activate && Neutrals == other.Neutrals && Unowned == other.Unowned && Friendly == other.Friendly && TargetPainter == other.TargetPainter && ManualControl == other.ManualControl && FocusTargets == other.FocusTargets && FocusSubSystem == other.FocusSubSystem && SubSystem == other.SubSystem && Meteors == other.Meteors && Biologicals == other.Biologicals && Projectiles == other.Projectiles;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Activate.GetHashCode();
+                hashCode = (hashCode * 397) ^ Neutrals.GetHashCode();
+                hashCode = (hashCode * 397) ^ Unowned.GetHashCode();
+                hashCode = (hashCode * 397) ^ Friendly.GetHashCode();
+                hashCode = (hashCode * 397) ^ TargetPainter.GetHashCode();
+                hashCode = (hashCode * 397) ^ ManualControl.GetHashCode();
+                hashCode = (hashCode * 397) ^ FocusTargets.GetHashCode();
+                hashCode = (hashCode * 397) ^ FocusSubSystem.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int) SubSystem;
+                hashCode = (hashCode * 397) ^ Meteors.GetHashCode();
+                hashCode = (hashCode * 397) ^ Biologicals.GetHashCode();
+                hashCode = (hashCode * 397) ^ Projectiles.GetHashCode();
+                return hashCode;
+            }
         }
     }
 

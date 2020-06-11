@@ -465,7 +465,6 @@ namespace WeaponCore.Support
             DbReady = false;
             GridInit = false;
             Focus.Clean();
-            ActiveWeaponTerminal = null;
             MyShield = null;
             MyPlanetTmp = null;
             MyPlanet = null;
