@@ -376,7 +376,7 @@ namespace WeaponCore
                 if (Session.IsClient && changed) {
                     comp.MIds[(int)PacketType.TerminalMonitor]++;
                     var mId = comp.MIds[(int)PacketType.TerminalMonitor];
-                    Log.Line($"sending terminal update");
+                    //Log.Line($"sending terminal update");
                     Session.PacketsToServer.Add(new TerminalMonitorPacket {
                         SenderId = Session.MultiplayerId,
                         PType = PacketType.TerminalMonitor,
@@ -393,7 +393,7 @@ namespace WeaponCore
                     Comp.Ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube = null;
 
                 if (Session.IsClient && Comp != null && !purge) {
-                    Log.Line($"sending terminal clean");
+                    //Log.Line($"sending terminal clean");
                     Session.PacketsToServer.Add(new TerminalMonitorPacket {
                         SenderId = Session.MultiplayerId,
                         PType = PacketType.TerminalMonitor,

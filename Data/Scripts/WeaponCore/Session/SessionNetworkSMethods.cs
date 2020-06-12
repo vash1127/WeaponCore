@@ -729,11 +729,11 @@ namespace WeaponCore
                 if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
                     comp.MIds[(int)packet.PType] = terminalMonPacket.MId;
                     TerminalMon.ServerUpdate(comp);
-                    Log.Line("Terminal Update");
+                    //Log.Line("Terminal Update");
                 }
                 else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean) {
                     TerminalMon.ServerClean(comp);
-                    Log.Line("Terminal Clean");
+                    //Log.Line("Terminal Clean");
                 }
 
             }

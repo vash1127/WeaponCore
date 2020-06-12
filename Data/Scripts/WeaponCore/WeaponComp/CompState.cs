@@ -87,7 +87,7 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (!targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && !State.Value.ClickShoot && !State.Value.ShootOn) {
+            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && !State.Value.ClickShoot && !State.Value.ShootOn) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;
