@@ -32,7 +32,7 @@ namespace WeaponCore
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
         internal const int VersionControl = 3;
-        internal const uint ResyncMinDelayTicks = 720;
+        internal const uint ResyncMinDelayTicks = 0;
         internal const uint ServerTickOffset = 4;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
@@ -125,6 +125,8 @@ namespace WeaponCore
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
         internal readonly List<Weapon> CheckStorage = new List<Weapon>();
+        internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
+
         internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
         internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
 

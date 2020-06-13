@@ -29,7 +29,8 @@ namespace WeaponCore.Projectiles
                 var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 var found = false;
-                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.AmmoDef.Const.Pulse && !p.Info.TriggeredPulse;
+                var notPulsing = (p.Info.AmmoDef.Const.EwarTriggerRange <= 0 || !p.Info.TriggeredPulse);
+                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && notPulsing;
 
                 bool projetileInShield = false;
                 var tick = p.Info.System.Session.Tick;
@@ -45,8 +46,8 @@ namespace WeaponCore.Projectiles
                     var ent = !useEntityCollection ? p.MySegmentList[i].Element : entityCollection[i];
                     
                     var grid = ent as MyCubeGrid;
-
                     var entIsSelf = grid != null && (grid == myGrid || myGrid.IsSameConstructAs(grid));
+
                     if (entIsSelf && p.SmartsOn || ent.MarkedForClose || !ent.InScene || ent == p.Info.MyShield) continue;
 
                     var character = ent as IMyCharacter;
@@ -63,13 +64,11 @@ namespace WeaponCore.Projectiles
                         else if (p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(entSphere) == ContainmentType.Disjoint)
                             continue;
                     }
-
                     if (grid != null || character != null) {
                         var extBeam = new LineD(p.Beam.From - p.Beam.Direction * (entSphere.Radius * 2), p.Beam.To);
                         var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.WorldMatrix));
                         if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
                     }
-
                     var safeZone = ent as MySafeZone;
                     if (safeZone != null) {
 
@@ -241,7 +240,7 @@ namespace WeaponCore.Projectiles
                                     if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock))
                                         continue;
                                 }
-                                if (!p.Info.AmmoDef.Const.Pulse) {
+                                if (!notPulsing) {
 
                                     var forwardPos = p.Info.Age != 1 ? hitEntity.Intersection.From : hitEntity.Intersection.From + (hitEntity.Intersection.Direction * Math.Min(grid.GridSizeHalf, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled));
                                     grid.RayCastCells(forwardPos, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
@@ -264,7 +263,7 @@ namespace WeaponCore.Projectiles
 
                             if (!(p.Info.EwarActive && p.Info.AmmoDef.Const.EwarEffect))
                                 hitEntity.EventType = Grid;
-                            else if (!p.Info.AmmoDef.Const.Pulse)
+                            else if (!notPulsing)
                                 hitEntity.EventType = Effect;
                             else
                                 hitEntity.EventType = Field;

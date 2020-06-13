@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -64,6 +65,10 @@ namespace WeaponCore
                 Timings();
 
                 /*
+                for (int i = DebugLines.Count - 1; i >= 0; i--)
+                    if (!DebugLines[i].Draw(Tick))
+                        DebugLines.RemoveAtFast(i);
+
                 TotalAcquireChecks += AcquireChecks;
 
                 if (AcquireChecks < LowAcquireChecks)

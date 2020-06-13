@@ -7,6 +7,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
@@ -15,6 +16,44 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        internal struct DebugLine
+        {
+            internal enum LineType
+            {
+                MainTravel,
+                MainHit,
+                ShrapnelTravel,
+                ShrapnelHit,
+            }
+
+            internal LineType Type;
+            internal LineD Line;
+            internal uint StartTick;
+
+            internal bool Draw(uint tick)
+            {
+                Color color = new Color();
+                switch (Type) {
+                    case LineType.MainTravel:
+                        color = Color.Blue;
+                        break;
+                    case LineType.MainHit:
+                        color = Color.Red;
+                        break;
+                    case LineType.ShrapnelTravel:
+                        color = Color.Green;
+                        break;
+                    case LineType.ShrapnelHit:
+                        color = Color.Orange;
+                        break;
+                }
+
+                DsDebugDraw.DrawLine(Line, color, 0.1f);
+
+                return tick - StartTick < 1200;
+            }
+        }
+
         internal class ProblemReport
         {
             internal readonly Dictionary<string, Dictionary<string, Func<string>>> AllDicts = new Dictionary<string, Dictionary<string, Func<string>>>();
