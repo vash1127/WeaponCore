@@ -681,6 +681,26 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
+        internal bool CheckOutOfAmmo()
+        {
+            OutOfAmmo = State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
+
+            if (OutOfAmmo)
+            {
+                if (Comp.Ai.OutOfAmmoWeapons.Add(this) && CanHoldMultMags)
+                {
+                    EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
+                    Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
+                }
+                return false;
+            }
+
+            if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
+                EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+
+            return OutOfAmmo;
+        }
+
         public void PlayEmissives(PartAnimation animation)
         {
             EmissiveState LastEmissive = new EmissiveState();
