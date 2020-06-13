@@ -32,7 +32,7 @@ namespace WeaponCore
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
         internal const int VersionControl = 3;
-        internal const uint ResyncMinDelayTicks = 0;
+        internal const uint ResyncMinDelayTicks = 720;
         internal const uint ServerTickOffset = 4;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
