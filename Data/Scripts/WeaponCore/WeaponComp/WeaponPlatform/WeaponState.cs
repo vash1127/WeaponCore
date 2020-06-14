@@ -568,7 +568,7 @@ namespace WeaponCore.Platform
                 if (nothingToLoad)
                     return false;
 
-                Log.Line($"[Found MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
+                //Log.Line($"[Found MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
                 Target.Reset(Comp.Session.Tick, Target.States.NoMagsToLoad);
 
@@ -581,7 +581,7 @@ namespace WeaponCore.Platform
             }
             else if (nothingToLoad)
             {
-                Log.Line($"[No MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
+                //Log.Line($"[No MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.OutOfAmmoWeapons.Add(this);
 
@@ -622,9 +622,6 @@ namespace WeaponCore.Platform
                 AnimationDelayTick = Comp.Session.Tick + delay;
                 EventTriggerStateChanged(EventTriggers.Reloading, true);
             }
-
-            //if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
-                //Timings.ReloadedTick = (uint)System.ReloadTime + Comp.Session.Tick;
 
             if (System.Session.IsServer && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) 
                 Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
@@ -684,17 +681,14 @@ namespace WeaponCore.Platform
 
                 if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (System.Session.IsServer || State.Sync.HasInventory)) {
                     
-                    Log.Line($"[Reloaded] currentAmmo: {State.Sync.CurrentAmmo} - hasInventory: {State.Sync.HasInventory}");
-
+                    //Log.Line($"[Reloaded] currentAmmo: {State.Sync.CurrentAmmo} - hasInventory: {State.Sync.HasInventory}");
                     if (State.Sync.CurrentAmmo <= 0)
                         State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
 
                 }
-                else if (System.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                    var hasAmmo = HasAmmo();
-                    if (!hasAmmo) EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
-                    else EventTriggerStateChanged(EventTriggers.Reloading, false);
-                    Log.Line($"[Reloaded failed] hasAmmo: {hasAmmo} - currentAmmo: {State.Sync.CurrentAmmo} - hasInventory: {State.Sync.HasInventory}");
+                else if (System.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !HasAmmo()) {
+                    EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
+                    //Log.Line($"[Reloaded failed] hasAmmo: {hasAmmo} - currentAmmo: {State.Sync.CurrentAmmo} - hasInventory: {State.Sync.HasInventory}");
                 }
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)
