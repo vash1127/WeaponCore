@@ -243,9 +243,9 @@ namespace WeaponCore.Control
             return comp != null && comp.CanOverload && comp.HasRofSlider && comp.HasDamageSlider && comp.HasGuidanceToggle;
         }
 
-        private static void OnOffAnimations(WeaponComponent comp, bool On)
+        private static void OnOffAnimations(WeaponComponent comp, bool @on)
         {   
-            if(comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if(comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             comp.Session.TerminalMon.ClientUpdate(comp);
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
@@ -254,7 +254,7 @@ namespace WeaponCore.Control
                 var w = comp.Platform.Weapons[i];
                 if (w == null) continue;
 
-                if (!On)
+                if (!@on)
                 {
                     if (w.TurretMode)
                     {
@@ -264,7 +264,7 @@ namespace WeaponCore.Control
                         if (azSteps < 0) azSteps *= -1;
                         if (azSteps < 0) azSteps *= -1;
 
-                        w.Timings.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
+                        w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
                         if (!w.Comp.Session.IsClient) w.Target.Reset(comp.Session.Tick, Target.States.Expired);
                         w.TurretHomePosition();
@@ -287,30 +287,30 @@ namespace WeaponCore.Control
                         });
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(TurnOn, out delay))
-                        w.Timings.WeaponReadyTick = comp.Session.Tick + delay;
+                        w.WeaponReadyTick = comp.Session.Tick + delay;
 
-                    if (w.LastEvent == TurnOff && w.Timings.AnimationDelayTick > comp.Session.Tick)
-                        w.Timings.WeaponReadyTick += w.Timings.AnimationDelayTick - comp.Session.Tick;
+                    if (w.LastEvent == TurnOff && w.AnimationDelayTick > comp.Session.Tick)
+                        w.WeaponReadyTick += w.AnimationDelayTick - comp.Session.Tick;
                 }
 
-                if (w.Timings.AnimationDelayTick < comp.Session.Tick || w.LastEvent == TurnOn || w.LastEvent == TurnOff)
+                if (w.AnimationDelayTick < comp.Session.Tick || w.LastEvent == TurnOn || w.LastEvent == TurnOff)
                 {
-                    w.EventTriggerStateChanged(TurnOn, On);
-                    w.EventTriggerStateChanged(TurnOff, !On);
+                    w.EventTriggerStateChanged(TurnOn, @on);
+                    w.EventTriggerStateChanged(TurnOff, !@on);
                 }
                 else
                 {
                     comp.Session.FutureEvents.Schedule(o => 
                         {
-                            w.EventTriggerStateChanged(TurnOn, On);
-                            w.EventTriggerStateChanged(TurnOff, !On);
+                            w.EventTriggerStateChanged(TurnOn, @on);
+                            w.EventTriggerStateChanged(TurnOff, !@on);
                         }, 
                         null, 
-                        w.Timings.AnimationDelayTick - comp.Session.Tick
+                        w.AnimationDelayTick - comp.Session.Tick
                     );
                 }
 
-                w.Set.Enable = On;
+                w.Set.Enable = @on;
             }
         }
         #endregion

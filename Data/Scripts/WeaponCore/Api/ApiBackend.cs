@@ -332,7 +332,7 @@ namespace WeaponCore.Api
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.MaxHeat > 0)
             {
-                return comp.State.Value.Heat / comp.MaxHeat;
+                return 0; //fix me
             }
             return 0f;
         }

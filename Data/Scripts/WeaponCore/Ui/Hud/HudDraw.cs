@@ -243,7 +243,7 @@ namespace WeaponCore
                 if (hasHeat)
                 {
                     int heatBarIndex;
-                    if (weapon.Overheated)
+                    if (weapon.State.Sync.Overheated)
                         heatBarIndex = _heatBarTexture.Length - 1;
                     else
                         heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);

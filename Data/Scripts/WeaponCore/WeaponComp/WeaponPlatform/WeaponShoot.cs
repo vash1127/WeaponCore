@@ -228,16 +228,16 @@ namespace WeaponCore.Platform
                             HeatLoopRunning = true;
                         }
 
-                        Heat += HeatPShot;
+                        State.Sync.Heat += HeatPShot;
                         Comp.CurrentHeat += HeatPShot;
-                        if (Heat >= System.MaxHeat) {
+                        if (State.Sync.Heat >= System.MaxHeat) {
 
                             if (!Comp.Session.IsClient && Comp.Set.Value.Overload > 1) {
                                 var dmg = .02f * Comp.MaxIntegrity;
                                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                             }
                             EventTriggerStateChanged(EventTriggers.Overheated, true);
-                            Overheated = true;
+                            State.Sync.Overheated = true;
                             StopShooting();
                             break;
                         }

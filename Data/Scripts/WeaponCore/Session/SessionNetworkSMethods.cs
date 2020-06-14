@@ -202,7 +202,7 @@ namespace WeaponCore
                         var weaponData = new WeaponData {
                             CompEntityId = comp.MyCube.EntityId,
                             SyncData = w.State.Sync,
-                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                            //Timmings = w.Timings.SyncOffsetServer(Tick),
                             TargetData = comp.WeaponValues.Targets[j],
                             WeaponRng = comp.WeaponValues.WeaponRandom[j]
                         };
@@ -434,7 +434,7 @@ namespace WeaponCore
                         var weaponData = new WeaponData {
                             CompEntityId = compId,
                             SyncData = w.State.Sync,
-                            Timmings = w.Timings.SyncOffsetServer(Tick),
+                            //Timmings = w.Timings.SyncOffsetServer(Tick),
                             TargetData = comp.WeaponValues.Targets[j],
                             WeaponRng = comp.WeaponValues.WeaponRandom[j]
                         };

@@ -167,7 +167,7 @@ namespace WeaponCore.Support
                     var set = instance.Session.AuthorSettings;
                     var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0 || name == "net" && set[3] >= 0;
                     if (netEnabled)
-                        NetLogger(instance.Session, "[R-LOG] " + message, name);
+                        NetLogger(instance.Session, "[R-LOG] " + text, name);
                 }
             }
             catch (Exception e)
@@ -193,7 +193,7 @@ namespace WeaponCore.Support
                     var set = instance.Session.AuthorSettings;
                     var netEnabled = instance.Session.AuthLogging && name == _defaultInstance && set[0] >= 0 || name == "perf" && set[1] >= 0 || name == "stats" && set[2] >= 0 || name == "net" && set[3] >= 0;
                     if (netEnabled)
-                        NetLogger(instance.Session, "[R-LOG] " + message, name);
+                        NetLogger(instance.Session, "[R-LOG] " + text, name);
                 }
             }
             catch (Exception e)

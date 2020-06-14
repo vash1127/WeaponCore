@@ -24,7 +24,6 @@ namespace WeaponCore
         internal void Timings()
         {
             _paused = false;
-            //Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);
             Tick++;
             Tick10 = Tick % 10 == 0;
             Tick20 = Tick % 20 == 0;

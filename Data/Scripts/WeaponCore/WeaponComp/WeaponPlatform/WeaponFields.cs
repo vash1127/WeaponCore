@@ -93,7 +93,7 @@ namespace WeaponCore.Platform
         internal MySoundPair RotateSound;
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
-        internal WeaponTimings Timings;
+        //internal WeaponTimings Timings;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 
@@ -121,7 +121,13 @@ namespace WeaponCore.Platform
         internal uint LastMuzzleCheck;
         internal uint LastSmartLosCheck;
         internal uint LastLoadedTick;
-        internal int MagsLoadedClient;
+        internal uint WeaponReadyTick;
+        internal uint OffDelay;
+        internal uint ChargeUntilTick;
+        internal uint ChargeDelayTicks;
+        internal uint AnimationDelayTick;
+        internal uint LastHeatUpdateTick;
+        internal uint LastAmmoUpdateTick;
         internal int FireCounter;
         internal int UniqueId;
         internal int RateOfFire;
@@ -132,7 +138,6 @@ namespace WeaponCore.Platform
         internal float HeatPShot;
         internal float HsRate;
         internal float CurrentAmmoVolume;
-        internal float Heat;
         internal double Azimuth;
         internal double Elevation;
         internal double AimingTolerance;
@@ -182,7 +187,6 @@ namespace WeaponCore.Platform
         internal bool PauseShoot;
         internal bool LastEventCanDelay;
         internal bool Reloading;
-        internal bool Overheated;
         internal bool Charging;
 
         public enum ManualShootActionState
@@ -199,42 +203,18 @@ namespace WeaponCore.Platform
             get
             {
                 var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || State.Sync.CurrentAmmo <= 0);
-                var canShoot = !Overheated && !reloading && !System.DesignatorWeapon;
-                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (Timings.AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
+                var canShoot = !State.Sync.Overheated && !reloading && !System.DesignatorWeapon;
+                var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;
             }
         }
-        /*
-        internal bool CanReload
-        {
-            get
-            {
-                try
-                {
-                    Log.Line($"CanReload0");
-                    if (!Comp.State.Value.Online || Reloading || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || (Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing)) || State.Sync.CurrentAmmo > 0)
-                        return false;
-
-                    Log.Line($"CanReload1");
-                    if (Comp.Session.IsCreative) return true;
-
-                    Log.Line($"CanReload2");
-
-                    return !CheckOutOfAmmo();
-                }
-                catch (Exception ex) { Log.Line($"Exception in CanReload: {ex} - CompStateNull:{Comp.State == null} - StateNull{State?.Sync == null} - AmmoDefNull:{ActiveAmmoDef?.AmmoDef == null} TimingsNull{Timings == null} - AiNull:{Comp?.Ai == null} - SessionNull:{Comp?.Session == null} - targetNull:{Target == null}"); }
-
-                return false;
-            }
-        }
-        */
 
         internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
 
             MuzzlePart = new PartInfo { Entity = entity };
             AnimationsSet = animationSets;
-            Timings = new WeaponTimings();
+            //Timings = new WeaponTimings();
             if (AnimationsSet != null)
             {
                 foreach (var set in AnimationsSet)

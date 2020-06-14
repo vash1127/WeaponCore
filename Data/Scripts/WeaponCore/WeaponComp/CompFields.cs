@@ -83,13 +83,11 @@ namespace WeaponCore.Support
         internal bool TrackReticle;
         internal bool WasTrackReticle;
         internal bool UpdatedState;
-        //internal bool OtherPlayerTrackingReticle;
         internal bool UserControlled;
         internal bool Debug;
         internal bool UnlimitedPower;
         internal bool Registered;
         internal bool ResettingSubparts;
-        internal bool BuildCompEventAttached;
         internal bool HasArmor;
         internal string CustomIcon;
 

@@ -99,10 +99,14 @@ namespace WeaponCore.Support
 
         internal void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            if (amount <= 0) return;
-            var itemDef = item.Content.GetObjectId();
-            if (Session.AmmoDefIds.Contains(itemDef))
-                Session.FutureEvents.Schedule(CheckReload, itemDef, 1);
+            try
+            {
+                if (amount <= 0 || item.Content == null || inventory == null) return;
+                var itemDef = item.Content.GetObjectId();
+                if (Session.AmmoDefIds.Contains(itemDef))
+                    Session.FutureEvents.Schedule(CheckReload, itemDef, 1);
+            }
+            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex}"); }
         }
 
         internal void GridClose(MyEntity myEntity)

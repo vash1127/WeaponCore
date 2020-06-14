@@ -1,16 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game.Entity;
-using VRageMath;
-using WeaponCore.Control;
-using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
-using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.WeaponDefinition;
 
 namespace WeaponCore
 {
@@ -30,27 +22,27 @@ namespace WeaponCore
 
                 switch (logId) {
                     case 0: {
-                        Log.CleanLine(message);
+                        Log.LineShortDate(message);
                         break;
                     }
                     case 1: {
-                        Log.CleanLine(message, "perf");
+                        Log.LineShortDate(message, "perf");
                         break;
                     }
                     case 2: {
-                        Log.CleanLine(message, "stats");
+                        Log.LineShortDate(message, "stats");
                         break;
                     }
                     case 3: { 
-                        Log.CleanLine(message, "net");
+                        Log.LineShortDate(message, "net");
                         break;
                     }
                     case 4: {
-                        Log.CleanLine(message);
+                        Log.LineShortDate(message);
                         break;
                     }
                     default:
-                        Log.CleanLine(message);
+                        Log.LineShortDate(message);
                         break;
                 }
             }
@@ -470,7 +462,7 @@ namespace WeaponCore
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = null,
-                    Timmings = null,
+                    //Timmings = null,
                     SyncData = null,
                     WeaponRng = null,
                 };
@@ -480,9 +472,8 @@ namespace WeaponCore
                 else if (w.SendTarget)
                     continue;
 
-                if (w.SendSync && w.Timings != null && w.State.Sync != null && w.Comp.WeaponValues.WeaponRandom != null)
+                if (w.SendSync && w.State.Sync != null && w.Comp.WeaponValues.WeaponRandom != null)
                 {
-                    weaponSync.Timmings = w.Timings.SyncOffsetServer(_session.Tick);
                     weaponSync.SyncData = w.State.Sync;
 
                     var rand = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];

@@ -11,7 +11,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal static void ComputeStorage(Weapon weapon, bool force = false)
+        internal static void ComputeStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
             var s = comp.Session;
@@ -42,8 +42,7 @@ namespace WeaponCore
                 else weapon.Reload();
             }
             else if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                //weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-                Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - magsLoaded: {weapon.MagsLoadedClient}({weapon.State.Sync.MagsLoaded}) - noMagsToload:{weapon.NoMagsToLoad}");
+                Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - noMagsToload:{weapon.NoMagsToLoad}");
                 weapon.Reload();
             }
         }

@@ -743,43 +743,21 @@ namespace WeaponCore
 
 
         #region Misc Network Methods
-        internal void SyncWeapon(Weapon weapon, WeaponTimings timings, ref WeaponSyncValues weaponData, bool setState = true)
+        internal void SyncWeapon(Weapon weapon, ref WeaponSyncValues weaponData, bool setState = true)
         {
             if (weapon.System.DesignatorWeapon) return;
 
-            var comp = weapon.Comp;
             var hadInventory = weapon.State.Sync.HasInventory;
-            var oldMagsLoaded = weapon.State.Sync.MagsLoaded;
-            var oldMagsLoadedClient = weapon.MagsLoadedClient;
             if (setState)
             {
                 weaponData.SetState(weapon.State.Sync, weapon);
             }
-            Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory} - MagsLoaded:{oldMagsLoadedClient}({oldMagsLoaded})({weapon.State.Sync.MagsLoaded}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
-            /*
+            Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
 
-            var cState = comp.State.Value;
-            var wState = weapon.State;
-
-            var wasReloading = wState.Sync.Reloading;
-
-            if (setState)
-            {
-                comp.CurrentHeat -= weapon.State.Sync.Heat;
-                cState.CurrentCharge -= weapon.State.Sync.CurrentCharge;
-
-
-                weaponData.SetState(wState.Sync);
-
-                comp.CurrentHeat += weapon.State.Sync.Heat;
-                cState.CurrentCharge += weapon.State.Sync.CurrentCharge;
-            }
-            */
-            comp.WeaponValues.Timings[weapon.WeaponId].Sync(timings);
-            weapon.Timings.Sync(timings);
-            if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+            if (weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable && !weapon.Reloading)
                 weapon.Reload();
             else Log.Line($"no reload in SyncWeapon");
+
             /*
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 

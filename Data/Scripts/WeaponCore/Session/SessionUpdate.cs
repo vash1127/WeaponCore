@@ -88,7 +88,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-                        var notReady = w.Timings.WeaponReadyTick > Tick;
+                        var notReady = w.WeaponReadyTick > Tick;
                         var skip = notReady || !w.Set.Enable;
 
                         if (skip) {
@@ -121,14 +121,14 @@ namespace WeaponCore
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable &&!w.Reloading && w.State.Sync.CurrentAmmo <= 0)
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.Reloading && w.State.Sync.CurrentAmmo <= 0)
                             w.Reload();
 
                         ///
                         /// Update Weapon Hud Info
                         /// 
 
-                        if ((w.Reloading && Tick - w.LastLoadedTick > 30 || w.Heat > 0) && HandlesInput && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        if ((w.Reloading && Tick - w.LastLoadedTick > 30 || w.State.Sync.Heat > 0) && HandlesInput && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
@@ -214,7 +214,7 @@ namespace WeaponCore
                         ///
                         w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.Sync.CurrentAmmo <= 0);
-                        var canShoot = !w.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.Timings.AnimationDelayTick <= Tick);
+                        var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Set.Value.Overrides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                         var manualShot = (compManualMode || w.State.ManualShoot == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
@@ -233,10 +233,10 @@ namespace WeaponCore
                                     w.RecalcPower = true;
                                 else {
                                     w.RecalcPower = false;
-                                    w.Timings.ChargeDelayTicks = 0;
+                                    w.ChargeDelayTicks = 0;
                                 }
                             }
-                            if (w.Timings.ChargeDelayTicks == 0 || w.Timings.ChargeUntilTick <= Tick) {
+                            if (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick) {
 
                                 if (!w.RequestedPower && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge && !w.System.DesignatorWeapon) {
                                     if (!comp.UnlimitedPower)
@@ -246,7 +246,7 @@ namespace WeaponCore
 
                                 ShootingWeapons.Add(w);
                             }
-                            else if (w.Timings.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                            else if (w.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                                 w.Charging = true;
                                 w.StopShooting(false, false);
                             }
@@ -311,7 +311,7 @@ namespace WeaponCore
                     }
                 }
 
-                if (w.Timings.ChargeUntilTick <= Tick || !w.Reloading)
+                if (w.ChargeUntilTick <= Tick || !w.Reloading)
                 {
                     if (w.Reloading)
                         w.Reloaded();
@@ -334,7 +334,7 @@ namespace WeaponCore
                         if(!w.Comp.UnlimitedPower)
                             w.DrawPower();
 
-                        w.Timings.ChargeDelayTicks = 0;
+                        w.ChargeDelayTicks = 0;
                     }
 
                     continue;
@@ -354,8 +354,8 @@ namespace WeaponCore
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                    w.Timings.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                    w.Timings.ChargeUntilTick = w.Timings.ChargeDelayTicks + Tick;
+                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - wState.Sync.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                    w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
                     if (!w.Comp.UnlimitedPower)
                     {
                         if (!w.DrawingPower)
@@ -433,7 +433,7 @@ namespace WeaponCore
                     //TODO add logic for power priority
                     if (!w.System.DesignatorWeapon && w.Comp.Ai.OverPowered && (w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.IsHybrid) && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
-                        if (w.Timings.ChargeDelayTicks == 0) {
+                        if (w.ChargeDelayTicks == 0) {
                             var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                             w.OldUseablePower = w.UseablePower;
                             w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
@@ -443,20 +443,20 @@ namespace WeaponCore
                             else
                                 w.DrawPower();
 
-                            w.Timings.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-                            w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
+                            w.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                             w.Charging = true;
                         }
-                        else if (w.Timings.ChargeUntilTick <= Tick) {
+                        else if (w.ChargeUntilTick <= Tick) {
                             w.Charging = false;
-                            w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
+                            w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower)) {
+                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.Charging || w.ChargeDelayTicks > 0 || w.ResetPower)) {
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         w.DrawPower(true);
-                        w.Timings.ChargeDelayTicks = 0;
+                        w.ChargeDelayTicks = 0;
                         w.Charging = false;
                         w.ResetPower = false;
                     }
@@ -468,7 +468,7 @@ namespace WeaponCore
 
                 w.Shoot();
 
-                if (MpActive && IsServer && !w.IsTurret && w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Tick - w.LastSyncTick > ResyncMinDelayTicks) w.ForceSync();
+                if (MpActive && IsServer && Tick - w.LastSyncTick > ResyncMinDelayTicks) w.ForceSync();
             }
             ShootingWeapons.Clear();
         }
