@@ -55,7 +55,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (LastInventoryChangedTick < Session.Tick && Registered && amount < 0)
+                if (LastInventoryChangedTick < Session.Tick && Registered)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
