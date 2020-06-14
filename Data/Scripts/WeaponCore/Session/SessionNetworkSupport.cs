@@ -774,7 +774,7 @@ namespace WeaponCore
 
             if (!canReload) weapon.CheckOutOfAmmo();
 
-            if (canReload)
+            if (!wasReloading && canReload)
                 weapon.StartReload();
 
             else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
