@@ -56,9 +56,6 @@ namespace WeaponCore
         {
             Online = false;
             Heat = 0;
-            ShootOn = false;
-            ClickShoot = false;
-            ClickShoot = false;
             CurrentPlayerControl.ControlType = ControlType.None;
             CurrentPlayerControl.PlayerId = -1;
             CurrentBlockGroup = string.Empty;
