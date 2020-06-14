@@ -569,8 +569,7 @@ namespace WeaponCore.Platform
 
         internal bool HasAmmo()
         {
-            if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon)
-            {
+            if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon) {
                 NoMagsToLoad = false;
                 return true;
             }
@@ -597,7 +596,6 @@ namespace WeaponCore.Platform
             }
             else if (nothingToLoad)
             {
-
                 Log.Line($"[No MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
                 Comp.Ai.OutOfAmmoWeapons.Add(this);
@@ -705,7 +703,7 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (System.Session.IsServer || State.Sync.HasInventory || State.Sync.MagsLoaded <= MagsLoadedClient++)) {
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (System.Session.IsServer || State.Sync.HasInventory || State.Sync.MagsLoaded <= ++MagsLoadedClient)) {
                     
                     Log.Line($"Reloaded: currentAmmo: {State.Sync.CurrentAmmo}");
                     if (System.Session.IsServer)
