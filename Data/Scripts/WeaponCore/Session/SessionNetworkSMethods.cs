@@ -22,7 +22,7 @@ namespace WeaponCore
 
             if (statePacket.MId > comp.MIds[(int)packet.PType]) {
                 comp.MIds[(int)packet.PType] = statePacket.MId;
-                comp.State.Value.Sync(statePacket.Data);
+                comp.State.Value.Sync(statePacket.Data, comp);
                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
 
                 data.Report.PacketValid = true;
@@ -587,7 +587,7 @@ namespace WeaponCore
                 weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
 
                 if (weapon.State.Sync.CurrentAmmo == 0)
-                    weapon.StartReload();
+                    weapon.Reload();
 
                 PacketsToClient.Add(new PacketInfo {
                     Entity = ent,

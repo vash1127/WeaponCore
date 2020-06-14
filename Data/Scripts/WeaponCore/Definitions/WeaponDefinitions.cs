@@ -93,7 +93,7 @@ namespace WeaponCore.Support
                     TurnOn,
                     TurnOff,
                     BurstReload,
-                    OutOfAmmo,
+                    NoMagsToLoad,
                     PreFire,
                     EmptyOnGameLoad,
                     StopFiring,

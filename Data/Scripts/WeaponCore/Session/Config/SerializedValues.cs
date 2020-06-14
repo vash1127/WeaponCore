@@ -3,6 +3,7 @@ using System.ComponentModel;
 using ProtoBuf;
 using Sandbox.ModAPI;
 using VRage;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
@@ -25,7 +26,7 @@ namespace WeaponCore
         [ProtoMember(9)] public string CurrentBlockGroup; //don't save
         [ProtoMember(10)] public bool OtherPlayerTrackingReticle; //don't save
 
-        public void Sync(CompStateValues syncFrom)
+        public void Sync(CompStateValues syncFrom, WeaponComponent comp)
         {
             Online = syncFrom.Online;
             Heat = syncFrom.Heat;
@@ -38,17 +39,24 @@ namespace WeaponCore
 
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
             {
-                Weapons[i].ShotsFired = syncFrom.Weapons[i].ShotsFired;
-                Weapons[i].ManualShoot = syncFrom.Weapons[i].ManualShoot;
-                Weapons[i].SingleShotCounter = syncFrom.Weapons[i].SingleShotCounter;
+                var w = comp.Platform.Weapons[i];
+                var ws = Weapons[i];
+                var sws = syncFrom.Weapons[i];
+                ws.ShotsFired = sws.ShotsFired;
+                ws.ManualShoot = sws.ManualShoot;
+                ws.SingleShotCounter = sws.SingleShotCounter;
 
-                Weapons[i].Sync.Charging = syncFrom.Weapons[i].Sync.Charging;
-                Weapons[i].Sync.CurrentAmmo = syncFrom.Weapons[i].Sync.CurrentAmmo;
-                Weapons[i].Sync.CurrentCharge = syncFrom.Weapons[i].Sync.CurrentCharge;
-                Weapons[i].Sync.CurrentMags = syncFrom.Weapons[i].Sync.CurrentMags;
-                Weapons[i].Sync.Heat = syncFrom.Weapons[i].Sync.Heat;
-                Weapons[i].Sync.Overheated = syncFrom.Weapons[i].Sync.Overheated;
-                Weapons[i].Sync.Reloading = syncFrom.Weapons[i].Sync.Reloading;
+                //ws.Sync.Charging = sws.Sync.Charging;
+                ws.Sync.CurrentAmmo = sws.Sync.CurrentAmmo;
+                ws.Sync.CurrentCharge = sws.Sync.CurrentCharge;
+                ws.Sync.CurrentMags = sws.Sync.CurrentMags;
+                //ws.Sync.Heat = sws.Sync.Heat;
+                //ws.Sync.Overheated = sws.Sync.Overheated;
+                //ws.Sync.Reloading = sws.Sync.Reloading;
+                ws.Sync.MagsLoaded = sws.Sync.MagsLoaded;
+                ws.Sync.HasInventory = sws.Sync.HasInventory;
+
+                w.MagsLoadedClient = sws.Sync.MagsLoaded;
             }
         }
 
@@ -64,10 +72,12 @@ namespace WeaponCore
             foreach (var w in Weapons)
             {
                 w.ShotsFired = 0;
-                w.Sync.Charging = false;
-                w.Sync.Heat = 0;
-                w.Sync.Overheated = false;
-                w.Sync.Reloading = false;
+               // w.Sync.Charging = false;
+                //w.Sync.Heat = 0;
+               // w.Sync.Overheated = false;
+                //w.Sync.Reloading = false;
+                w.Sync.MagsLoaded = 0;
+                w.Sync.HasInventory = w.Sync.CurrentMags > 0;
             }
         }
 
@@ -126,24 +136,30 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponSyncValues
     {
-        [ProtoMember(1)] public float Heat; // don't save
+        //[ProtoMember(1)] public float Heat; // don't save
         [ProtoMember(2)] public int CurrentAmmo; //save
         [ProtoMember(3)] public float CurrentCharge; //save
-        [ProtoMember(4)] public bool Overheated; //don't save
-        [ProtoMember(5)] public bool Reloading; // don't save
-        [ProtoMember(6)] public bool Charging; // don't save
+        //[ProtoMember(4)] public bool Overheated; //don't save
+        //[ProtoMember(5)] public bool Reloading; // don't save
+        //[ProtoMember(6)] public bool Charging; // don't save
         [ProtoMember(7)] public int WeaponId; // save
         [ProtoMember(8)] public MyFixedPoint CurrentMags; // save
+        [ProtoMember(9)] public int MagsLoaded; // save
+        [ProtoMember(10)] public bool HasInventory; // save
 
-        public void SetState (WeaponSyncValues sync)
+        public void SetState (WeaponSyncValues sync, Weapon weapon)
         {
-            sync.Heat = Heat;
+            //sync.Heat = Heat;
             sync.CurrentAmmo = CurrentAmmo;
             sync.CurrentMags = CurrentMags;
             sync.CurrentCharge = CurrentCharge;
-            sync.Overheated = Overheated;
-            sync.Reloading = Reloading;
-            sync.Charging = Charging;
+            //sync.Overheated = Overheated;
+            //sync.Reloading = Reloading;
+            //sync.Charging = Charging;
+            sync.MagsLoaded = MagsLoaded;
+            sync.HasInventory = HasInventory;
+
+            weapon.MagsLoadedClient = MagsLoaded;
         }
     }
 

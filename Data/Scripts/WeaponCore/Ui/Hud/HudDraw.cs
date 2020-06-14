@@ -209,7 +209,7 @@ namespace WeaponCore
                 var name = weapon.System.WeaponName + ": ";
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
-                var reloading = weapon.State.Sync.Reloading && weapon.State.Sync.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30;
+                var reloading = weapon.Reloading && weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30;
 
                 if (!_textDrawPool.TryDequeue(out textInfo))
                     textInfo = new TextDrawRequest();
@@ -243,7 +243,7 @@ namespace WeaponCore
                 if (hasHeat)
                 {
                     int heatBarIndex;
-                    if (weapon.State.Sync.Overheated)
+                    if (weapon.Overheated)
                         heatBarIndex = _heatBarTexture.Length - 1;
                     else
                         heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);

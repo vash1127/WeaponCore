@@ -117,7 +117,7 @@ namespace WeaponCore.Support
                             }
                         }
 
-                        if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.State.Sync.Reloading)
+                        if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.Reloading)
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
                     }
                 } 

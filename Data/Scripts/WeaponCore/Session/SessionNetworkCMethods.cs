@@ -110,7 +110,7 @@ namespace WeaponCore
             if (statePacket.Data == null) return Error(data,  Msg("Data"));
 
             comp.MIds[(int)packet.PType] = statePacket.MId;
-            comp.State.Value.Sync(statePacket.Data);
+            comp.State.Value.Sync(statePacket.Data, comp);
             data.Report.PacketValid = true;
 
             return true;
@@ -498,7 +498,7 @@ namespace WeaponCore
             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
 
             if (weapon.State.Sync.CurrentAmmo == 0)
-                weapon.StartReload();
+                weapon.Reload();
 
             data.Report.PacketValid = true;
 

@@ -55,7 +55,7 @@ namespace WeaponCore.Support
             Invalid,
             Fake,
             FiredBurst,
-            OutOfAmmo,
+            NoMagsToLoad,
             AiLost,
             Offline,
         }

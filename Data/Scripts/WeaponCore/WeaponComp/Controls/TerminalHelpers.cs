@@ -274,21 +274,15 @@ namespace WeaponCore.Control
                     if(w.IsShooting) w.StopShooting();
                     if (w.DrawingPower) w.StopPowerDraw();
 
-                    //comp.TerminalRefresh();
-
                     if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        w.State.Sync.Reloading = false;
-                    //comp.State.Value.CurrentCharge += w.State.Sync.CurrentCharge;
-                    
+                        w.Reloading = false;
                 }
                 else
                 {
                     if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
                         MyAPIGateway.Utilities.InvokeOnGameThread(() =>
                         {
-                            if (w.CanReload)
-                                w.StartReload();
-                            else
+                            if (!w.Reload())
                                 Session.ComputeStorage(w);
                         });
                     uint delay;

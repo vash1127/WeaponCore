@@ -228,16 +228,16 @@ namespace WeaponCore.Platform
                             HeatLoopRunning = true;
                         }
 
-                        State.Sync.Heat += HeatPShot;
+                        Heat += HeatPShot;
                         Comp.CurrentHeat += HeatPShot;
-                        if (State.Sync.Heat >= System.MaxHeat) {
+                        if (Heat >= System.MaxHeat) {
 
                             if (!Comp.Session.IsClient && Comp.Set.Value.Overload > 1) {
                                 var dmg = .02f * Comp.MaxIntegrity;
                                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                             }
                             EventTriggerStateChanged(EventTriggers.Overheated, true);
-                            State.Sync.Overheated = true;
+                            Overheated = true;
                             StopShooting();
                             break;
                         }
@@ -253,10 +253,7 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (CanReload)
-                    StartReload();
-
-                else if (ActiveAmmoDef.AmmoDef.Const.BurstMode) {
+                if (!Reload() && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
 
                     if (State.ShotsFired == System.ShotsPerBurst) {
                         uint delay = 0;

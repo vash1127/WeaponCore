@@ -109,7 +109,7 @@ namespace WeaponCore
 
                         if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.ManualShoot != ShootOff) {
                             w.State.ManualShoot = ShootOff;
-                            w.State.Sync.Reloading = false;
+                            w.Reloading = false;
                             w.State.Sync.CurrentAmmo = 0;
                             w.FinishBurst = false;
 
@@ -120,15 +120,15 @@ namespace WeaponCore
                         ///
                         ///Check Reload
                         ///                        
-                        
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.State.Sync.Reloading && !w.OutOfAmmo && w.State.Sync.CurrentAmmo <= 0 &&  w.CanReload)
-                            w.StartReload();
+
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable &&!w.Reloading && w.State.Sync.CurrentAmmo <= 0)
+                            w.Reload();
 
                         ///
                         /// Update Weapon Hud Info
                         /// 
 
-                        if ((w.State.Sync.Reloading && Tick - w.LastLoadedTick > 30 || w.State.Sync.Heat > 0) && HandlesInput && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        if ((w.Reloading && Tick - w.LastLoadedTick > 30 || w.Heat > 0) && HandlesInput && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
@@ -213,8 +213,8 @@ namespace WeaponCore
                         ///
                         ///
                         w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.State.Sync.Reloading || w.OutOfAmmo);
-                        var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.Timings.AnimationDelayTick <= Tick);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.Sync.CurrentAmmo <= 0);
+                        var canShoot = !w.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.Timings.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Set.Value.Overrides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                         var manualShot = (compManualMode || w.State.ManualShoot == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
@@ -247,7 +247,7 @@ namespace WeaponCore
                                 ShootingWeapons.Add(w);
                             }
                             else if (w.Timings.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-                                w.State.Sync.Charging = true;
+                                w.Charging = true;
                                 w.StopShooting(false, false);
                             }
                         }
@@ -282,9 +282,9 @@ namespace WeaponCore
 
                     if (w.Comp?.Ai != null) 
                         w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
-                    w.State.Sync.Reloading = false;
+                    w.Reloading = false;
 
-                    w.State.Sync.Reloading = false;
+                    w.Reloading = false;
 
                     UniqueListRemove(w, ChargingWeaponsIndexer, ChargingWeapons);
                     continue;
@@ -311,9 +311,9 @@ namespace WeaponCore
                     }
                 }
 
-                if (w.Timings.ChargeUntilTick <= Tick || !w.State.Sync.Reloading)
+                if (w.Timings.ChargeUntilTick <= Tick || !w.Reloading)
                 {
-                    if (w.State.Sync.Reloading)
+                    if (w.Reloading)
                         w.Reloaded();
 
                     if (w.DrawingPower)
@@ -445,23 +445,23 @@ namespace WeaponCore
 
                             w.Timings.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                             w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
-                            w.State.Sync.Charging = true;
+                            w.Charging = true;
                         }
                         else if (w.Timings.ChargeUntilTick <= Tick) {
-                            w.State.Sync.Charging = false;
+                            w.Charging = false;
                             w.Timings.ChargeUntilTick = Tick + w.Timings.ChargeDelayTicks;
                         }
                     }
-                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.State.Sync.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower)) {
+                    else if (!w.ActiveAmmoDef.AmmoDef.Const.MustCharge && (w.Charging || w.Timings.ChargeDelayTicks > 0 || w.ResetPower)) {
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         w.DrawPower(true);
                         w.Timings.ChargeDelayTicks = 0;
-                        w.State.Sync.Charging = false;
+                        w.Charging = false;
                         w.ResetPower = false;
                     }
 
-                    if (w.State.Sync.Charging)
+                    if (w.Charging)
                         continue;
 
                 }

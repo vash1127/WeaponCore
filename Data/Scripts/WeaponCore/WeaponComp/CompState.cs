@@ -123,7 +123,7 @@ namespace WeaponCore.Support
                             w.Elevation = 0;
 
                             if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                                w.State.Sync.Reloading = false;
+                                w.Reloading = false;
 
                             if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(EventTriggers.TurnOff, true);

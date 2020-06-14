@@ -748,6 +748,16 @@ namespace WeaponCore
             if (weapon.System.DesignatorWeapon) return;
 
             var comp = weapon.Comp;
+            var hadInventory = weapon.State.Sync.HasInventory;
+            var oldMagsLoaded = weapon.State.Sync.MagsLoaded;
+            var oldMagsLoadedClient = weapon.MagsLoadedClient;
+            if (setState)
+            {
+                weaponData.SetState(weapon.State.Sync, weapon);
+            }
+            Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory} - MagsLoaded:{oldMagsLoadedClient}({oldMagsLoaded})({weapon.State.Sync.MagsLoaded}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
+            /*
+
             var cState = comp.State.Value;
             var wState = weapon.State;
 
@@ -764,10 +774,13 @@ namespace WeaponCore
                 comp.CurrentHeat += weapon.State.Sync.Heat;
                 cState.CurrentCharge += weapon.State.Sync.CurrentCharge;
             }
-
+            */
             comp.WeaponValues.Timings[weapon.WeaponId].Sync(timings);
             weapon.Timings.Sync(timings);
-
+            if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                weapon.Reload();
+            else Log.Line($"no reload in SyncWeapon");
+            /*
             var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
 
             var canReload = weapon.CanReload;
@@ -801,12 +814,14 @@ namespace WeaponCore
             else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsIndexer.ContainsKey(weapon))
                 weapon.ChargeReload(true);
 
+
             if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)
             {
                 weapon.HeatLoopRunning = true;
                 var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
                 comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
             }
+            */
         }
 
         public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd, bool applyToRoot = false)

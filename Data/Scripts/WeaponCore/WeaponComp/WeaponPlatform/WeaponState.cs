@@ -107,7 +107,6 @@ namespace WeaponCore.Platform
 
                                     Comp.Session.AnimationsToProcess.Add(animation);
                                     animation.Running = true;
-                                    //animation.Paused = Comp.ResettingSubparts;
                                     animation.CanPlay = canPlay;
 
                                     if (animation.DoesLoop)
@@ -183,7 +182,7 @@ namespace WeaponCore.Platform
                         break;
                     case EventTriggers.EmptyOnGameLoad:
                     case EventTriggers.Overheated:
-                    case EventTriggers.OutOfAmmo:
+                    case EventTriggers.NoMagsToLoad:
                     case EventTriggers.BurstReload:
                     case EventTriggers.Reloading:
                         {
@@ -412,56 +411,6 @@ namespace WeaponCore.Platform
             Comp.MyCube.ResourceSink.Update();
         }
 
-        public void StartReload()
-        {
-            if (State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp?.MyCube == null || Comp.MyCube.MarkedForClose || State.Sync.Reloading || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-            var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
-
-            State.Sync.Reloading = true;
-            FinishBurst = false;
-
-            if (IsShooting)
-                StopShooting();
-
-            State.SingleShotCounter = 0;
-
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay)
-                State.ShotsFired = 0;
-
-            if (!ActiveAmmoDef.Equals(newAmmo))
-                ChangeAmmo(ref newAmmo);
-
-            uint delay;
-            if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay))
-            {
-                Timings.AnimationDelayTick = Comp.Session.Tick + delay;
-                EventTriggerStateChanged(EventTriggers.Reloading, true);
-            }
-
-            if (!Comp.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
-
-            if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
-                ChargeReload();
-            else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge)
-            {
-                CancelableReloadAction += Reloaded;
-                ReloadSubscribed = true;
-                Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
-                Timings.ReloadedTick = (uint)System.ReloadTime + Comp.Session.Tick;
-            }
-
-            if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
-
-            if (ReloadSound == null)
-            {
-                Log.Line($"ReloadSound is null");
-                return;
-            }
-            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
-        }
-
         internal void ChangeAmmo(ref WeaponAmmoTypes newAmmo)
         {
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
@@ -495,7 +444,6 @@ namespace WeaponCore.Platform
                 State.Sync.CurrentAmmo = 0;
                 Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
                 State.Sync.CurrentCharge = 0;
-                //Comp.TerminalRefresh();
             }
 
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
@@ -507,58 +455,6 @@ namespace WeaponCore.Platform
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
         }
 
-        internal void Reloaded(object o = null)
-        {
-
-            if (State?.Sync == null || Comp?.State?.Value == null  || Comp.Ai == null|| Timings == null|| !State.Sync.Reloading || State.Sync.CurrentAmmo > 0) return;
-
-            LastLoadedTick = Comp.Session.Tick;
-
-            using (Comp.MyCube?.Pin())
-            {
-                if (Comp.MyCube != null && Comp.MyCube.MarkedForClose) return;
-
-                if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                {
-                    if(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-
-                    Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
-
-                    State.Sync.CurrentCharge = MaxCharge;
-
-                    Comp.State.Value.CurrentCharge += MaxCharge;
-
-                    Timings.ChargeUntilTick = 0;
-                    Timings.ChargeDelayTicks = 0;
-                }
-                else if (ReloadSubscribed)
-                {
-                    CancelableReloadAction -= Reloaded;
-                    ReloadSubscribed = false;
-                }
-
-                EventTriggerStateChanged(EventTriggers.Reloading, false);
-
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                    State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-
-                State.Sync.Reloading = false;
-
-                if (Comp.Session.IsServer && Comp.Session.MpActive && Comp.Session.Tick - LastSyncTick > Session.ResyncMinDelayTicks && Comp.Session.WeaponsSyncCheck.Add(this))
-                {
-                    Comp.Session.WeaponsToSync.Add(this);
-                    Comp.Ai.NumSyncWeapons++;
-
-                    SendTarget = false;
-                    SendSync = true;
-
-                    LastSyncTick = Comp.Session.Tick;
-                }
-
-                //Comp.TerminalRefresh();
-            }
-        }
 
         internal void ForceSync()
         {
@@ -582,14 +478,11 @@ namespace WeaponCore.Platform
                 if (!ActiveAmmoDef.Equals(newAmmo))
                     ChangeAmmo(ref newAmmo);
             }
-            else if (CanReload)
-                StartReload();
-            else if (!ActiveAmmoDef.AmmoDef.Const.Reloadable)
+            else if (!Reload() && !ActiveAmmoDef.AmmoDef.Const.Reloadable)
             {
                 ChangeActiveAmmo(System.AmmoTypes[Set.AmmoTypeId]);
                 SetWeaponDps();
-                if (CanReload)
-                    StartReload();
+                Reload();
             }
         }
 
@@ -625,10 +518,7 @@ namespace WeaponCore.Platform
         public void StartPreFiringSound()
         {
             if (PreFiringSound == null)
-            {
-                Log.Line($"PreFiringSound is null");
                 return;
-            }
             PreFiringEmitter?.PlaySound(PreFiringSound);
         }
 
@@ -640,10 +530,7 @@ namespace WeaponCore.Platform
         public void StartFiringSound()
         {
             if (FiringSound == null)
-            {
-                Log.Line($"FiringSound is null");
                 return;
-            }
             FiringEmitter?.PlaySound(FiringSound);
         }
 
@@ -672,7 +559,6 @@ namespace WeaponCore.Platform
         internal void WakeTargets()
         {
             LastTargetTick = Comp.Session.Tick;
-            //LoadId = Comp.Session.LoadAssigner();
             if (Acquire.Enabled)
                 System.Session.AcqManager.Awaken(Acquire);
             else
@@ -681,26 +567,166 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
-        internal bool CheckOutOfAmmo()
+        internal bool HasAmmo()
         {
-            OutOfAmmo = State.Sync.CurrentMags <= 0 && !(ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower);
-
-            if (OutOfAmmo)
+            if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon)
             {
-                if (Comp.Ai.OutOfAmmoWeapons.Add(this) && CanHoldMultMags)
-                {
-                    EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
-                    Target.Reset(Comp.Session.Tick, Target.States.OutOfAmmo);
-                }
-                return false;
+                NoMagsToLoad = false;
+                return true;
             }
 
-            if (Comp.Ai.OutOfAmmoWeapons.Remove(this) && CanHoldMultMags)
-                EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+            var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
+            var nothingToLoad = System.Session.IsServer ? State.Sync.CurrentMags <= 0 && !energyDrainable : !State.Sync.HasInventory && !energyDrainable;
 
-            return OutOfAmmo;
+            if (NoMagsToLoad)
+            {
+
+                if (nothingToLoad)
+                    return false;
+
+                Log.Line($"[Found MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
+                EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
+                Target.Reset(Comp.Session.Tick, Target.States.NoMagsToLoad);
+
+                Comp.Ai.OutOfAmmoWeapons.Remove(this);
+
+                if (System.Session.MpActive && System.Session.IsServer)
+                    PushWeaponInventoryToClients(true);
+
+                NoMagsToLoad = false;
+            }
+            else if (nothingToLoad)
+            {
+
+                Log.Line($"[No MagstoLoad] currentMags: {State.Sync.CurrentMags} - currentAmmo: {State.Sync.CurrentAmmo}");
+                EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
+                Comp.Ai.OutOfAmmoWeapons.Add(this);
+
+                if (System.Session.MpActive && System.Session.IsServer)
+                    PushWeaponInventoryToClients(false);
+
+                NoMagsToLoad = true;
+            }
+
+            return !NoMagsToLoad;
         }
 
+
+        internal bool Reload()
+        {
+            var invalidState = State?.Sync == null || Timings == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
+
+            if (invalidState || !Comp.State.Value.Online || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
+                return false;
+
+            if (!HasAmmo() || State.Sync.CurrentAmmo > 0 || Timings.AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+                return false;
+
+            FinishBurst = false;
+            if (IsShooting)
+                StopShooting();
+
+            Reloading = true;
+            State.SingleShotCounter = 0;
+            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) State.ShotsFired = 0;
+
+            var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
+            if (!ActiveAmmoDef.Equals(newAmmo))
+                ChangeAmmo(ref newAmmo);
+
+            uint delay;
+            if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {
+                Timings.AnimationDelayTick = Comp.Session.Tick + delay;
+                EventTriggerStateChanged(EventTriggers.Reloading, true);
+            }
+
+            if (!ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
+                Timings.ReloadedTick = (uint)System.ReloadTime + Comp.Session.Tick;
+            
+            if (System.Session.IsServer && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
+
+            if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
+                ChargeReload();
+            else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+                CancelableReloadAction += Reloaded;
+                ReloadSubscribed = true;
+                Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+            }
+
+            if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return true;
+            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
+
+            return true;
+        }
+
+        internal void PushWeaponInventoryToClients(bool add)
+        {
+            State.Sync.HasInventory = add;
+            if (Comp.Session.WeaponsSyncCheck.Add(this)) {
+                Log.Line($"PushWeaponInventoryToClients: add:{add}");
+                Comp.Session.WeaponsToSync.Add(this);
+                Comp.Ai.NumSyncWeapons++;
+                SendTarget = false;
+                SendSync = true;
+                LastSyncTick = Comp.Session.Tick;
+            }
+            else Log.Line($"PushWeaponInventoryToClients: changed add to:{add}");
+        }
+
+        internal void Reloaded(object o = null)
+        {
+            if (State?.Sync == null || Comp?.State?.Value == null || Comp.Ai == null || Timings == null) return;
+
+            LastLoadedTick = Comp.Session.Tick;
+
+            using (Comp.MyCube?.Pin())
+            {
+                if (Comp.MyCube != null && Comp.MyCube.MarkedForClose) return;
+
+                if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
+
+                    if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+
+                    Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+
+                    State.Sync.CurrentCharge = MaxCharge;
+
+                    Comp.State.Value.CurrentCharge += MaxCharge;
+
+                    Timings.ChargeUntilTick = 0;
+                    Timings.ChargeDelayTicks = 0;
+                }
+                else if (ReloadSubscribed) {
+                    CancelableReloadAction -= Reloaded;
+                    ReloadSubscribed = false;
+                }
+
+                EventTriggerStateChanged(EventTriggers.Reloading, false);
+
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (System.Session.IsServer || State.Sync.HasInventory || State.Sync.MagsLoaded <= MagsLoadedClient++)) {
+                    
+                    Log.Line($"Reloaded: currentAmmo: {State.Sync.CurrentAmmo}");
+                    if (System.Session.IsServer)
+                        ++State.Sync.MagsLoaded;
+                    
+                    if (State.Sync.CurrentAmmo <= 0)
+                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+
+                }
+                else if (System.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                {
+                    var hasAmmo = HasAmmo();
+                    Log.Line($"failed to reload, has ammo: {hasAmmo}");
+                }
+
+                Reloading = false;
+
+                if (Comp.Session.MpActive && Comp.Session.IsServer)
+                    PushWeaponInventoryToClients(State.Sync.HasInventory);
+            }
+        }
         public void PlayEmissives(PartAnimation animation)
         {
             EmissiveState LastEmissive = new EmissiveState();

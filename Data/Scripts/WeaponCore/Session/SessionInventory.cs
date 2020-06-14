@@ -22,32 +22,29 @@ namespace WeaponCore
                 if (!comp.MyCube.HasInventory) return;
                 var ammo = weapon.ActiveAmmoDef;
 
-                if (!ammo.AmmoDef.Const.EnergyAmmo) {
+                if (!ammo.AmmoDef.Const.EnergyAmmo)
+                {
 
                     if (!s.IsCreative) {
-                        
+
                         weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
-                        weapon.CurrentAmmoVolume = (float)weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                        weapon.CurrentAmmoVolume = (float) weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
-                        if (weapon.CanReload)
-                            weapon.StartReload();
-
-                        var freeSpace = weapon.System.MaxAmmoVolume - (float)comp.BlockInventory.CurrentVolume;
+                        weapon.Reload();
+                        var freeSpace = weapon.System.MaxAmmoVolume - (float) comp.BlockInventory.CurrentVolume;
                         if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && freeSpace > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume) {
                             s.UniqueListAdd(weapon, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo);
                             s.UniqueListAdd(comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
                         }
                     }
-                    else if (weapon.CanReload)
-                        weapon.StartReload();
+                    else weapon.Reload();
                 }
-                else if (weapon.CanReload)
-                    weapon.StartReload();
+                else weapon.Reload();
             }
-            else if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-                if (weapon.CanReload)
-                    weapon.StartReload();
+            else if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
+                //weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
+                Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - magsLoaded: {weapon.MagsLoadedClient}({weapon.State.Sync.MagsLoaded}) - noMagsToload:{weapon.NoMagsToLoad}");
+                weapon.Reload();
             }
         }
 
@@ -150,9 +147,8 @@ namespace WeaponCore
                 }
 
                 weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-
-                if (inventoriesToPull.Count > 0 && weapon.CanReload)
-                    weapon.StartReload();
+                if (inventoriesToPull.Count > 0)
+                    weapon.Reload();
 
                 inventoriesToPull.Clear();
                 weaponAmmoToPull.Weapon = null;
