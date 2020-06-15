@@ -580,7 +580,6 @@ namespace WeaponCore
 
             if (cyclePacket.MId > comp.MIds[(int)packet.PType]) {
 
-                Log.Line($"ServerCycleAmmo");
                 comp.MIds[(int)packet.PType] = cyclePacket.MId;
 
                 var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];

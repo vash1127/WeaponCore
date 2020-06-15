@@ -416,14 +416,16 @@ namespace WeaponCore.Platform
             if (ActiveAmmoDef.Equals(newAmmo))
                 return;
 
-            if (System.Session.IsCreative) {
-                ChangeActiveAmmo(newAmmo);
-                return;
-            }
+            var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
-            if (System.Session.IsServer)
-                System.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
-            else
+            if (instantChange) 
+                ChangeActiveAmmo(newAmmo);
+
+            if (System.Session.IsServer) {
+                if (!instantChange)
+                    System.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
+            }
+            else if (System.Session.MpActive)
                 System.Session.SendCycleAmmoNetworkUpdate(this, Set.AmmoTypeId);
         }
 

@@ -495,6 +495,8 @@ namespace WeaponCore
             comp.MIds[(int)packet.PType] = cyclePacket.MId;
             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
+            if (IsCreative || !weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable)
+                weapon.ChangeActiveAmmo(weapon.System.AmmoTypes[cyclePacket.AmmoId]);
 
             data.Report.PacketValid = true;
 
