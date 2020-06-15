@@ -110,7 +110,6 @@ namespace WeaponCore.Projectiles
 
                 Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
-                Log.Line($"spawned: {p.Info.System.WeaponName}");
             }
             NewProjectiles.Clear();
         }

@@ -42,7 +42,7 @@ namespace WeaponCore
                 else weapon.Reload();
             }
             else if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - noMagsToload:{weapon.NoMagsToLoad}");
+                //Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - noMagsToload:{weapon.NoMagsToLoad}");
                 weapon.Reload();
             }
         }

@@ -580,14 +580,13 @@ namespace WeaponCore
 
             if (cyclePacket.MId > comp.MIds[(int)packet.PType]) {
 
+                Log.Line($"ServerCycleAmmo");
                 comp.MIds[(int)packet.PType] = cyclePacket.MId;
 
                 var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
 
                 weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
-
-                if (weapon.State.Sync.CurrentAmmo == 0)
-                    weapon.Reload();
+                weapon.ChangeAmmo(weapon.System.AmmoTypes[cyclePacket.AmmoId]);
 
                 PacketsToClient.Add(new PacketInfo {
                     Entity = ent,

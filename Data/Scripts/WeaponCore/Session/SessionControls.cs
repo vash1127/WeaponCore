@@ -118,65 +118,58 @@ namespace WeaponCore
                 if (obs.Count == 0) return;
 
                 var wepIDs = new HashSet<int>();
-                foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in session.WeaponPlatforms)
-                {
-                    foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in session.WeaponPlatforms[wp.Key].WeaponSystems)
-                    {
+                foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in session.WeaponPlatforms) {
+
+                    foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in session.WeaponPlatforms[wp.Key].WeaponSystems) {
+
                         MyDefinitionId defId;
                         MyDefinitionBase def = null;
-
                         Type type = null;
-                        if (session.ReplaceVanilla && session.VanillaCoreIds.TryGetValue(wp.Key, out defId))
-                        {
+                        if (session.ReplaceVanilla && session.VanillaCoreIds.TryGetValue(wp.Key, out defId)) {
                             if (!MyDefinitionManager.Static.TryGetDefinition(defId, out def)) return;
                             type = defId.TypeId;
                         }
-                        else
-                        {                            
-                            foreach (var tmpdef in session.AllDefinitions)
-                            {
-                                if (tmpdef.Id.SubtypeId == wp.Key)
-                                {
+                        else {
+                            
+                            foreach (var tmpdef in session.AllDefinitions) {
+                                if (tmpdef.Id.SubtypeId == wp.Key) {
                                     type = tmpdef.Id.TypeId;
                                     def = tmpdef;
                                     break;
                                 }
                             }
-                            if (type == null) return;
+
+                            if (type == null)
+                                return;
                         }
 
                         try
                         {
-                            //var ob = def.GetObjectBuilder();
-                            if (obs.Contains(type))
-                            {
+                            if (obs.Contains(type)) {
+
                                 var wepName = ws.Value.WeaponName;
                                 var wepIdHash = ws.Value.WeaponIdHash;
-
                                 if (!wepIDs.Contains(wepIdHash))
                                     wepIDs.Add(wepIdHash);
                                 else
                                     continue;
-                                if (!ws.Value.DesignatorWeapon)
-                                {
-                                    if (ws.Value.AmmoTypes.Length > 1)
-                                    {
+                                
+                                if (!ws.Value.DesignatorWeapon) {
+                                    if (ws.Value.AmmoTypes.Length > 1) {
+
                                         var c = 0;
-                                        for(int i = 0; i < ws.Value.AmmoTypes.Length; i++)
-                                        {
+                                        for(int i = 0; i < ws.Value.AmmoTypes.Length; i++) {
                                             if (ws.Value.AmmoTypes[i].AmmoDef.HardPointUsable)
                                                 c++;
                                         }
-                                        if(c > 1)
+
+                                        if (c > 1)
                                             CreateCycleAmmoOptions<T>(wepName, wepIdHash, session.ModPath());
                                     }
                                 }
                             }
                         }
-                        catch (Exception e)
-                        {
-                            Log.Line($"Keen Broke it: {e}");
-                        }
+                        catch (Exception e) { Log.Line($"Keen Broke it: {e}"); }
                     }
                 }
 

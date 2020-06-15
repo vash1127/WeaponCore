@@ -13,12 +13,6 @@ namespace WeaponCore.Platform
     public partial class Weapon
     {
 
-        internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
-        {
-            ActiveAmmoDef = ammoDef;
-            CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
-        }
-
         internal void PositionChanged(MyPositionComponentBase pComp)
         {
             try
@@ -410,31 +404,27 @@ namespace WeaponCore.Platform
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
         }
-
-        internal void ChangeAmmo(ref WeaponAmmoTypes newAmmo)
+        internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
         {
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
-            {
-                if (Comp.Session.IsServer && !Comp.Session.IsCreative)
-                    Comp.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
-                else
-                {
-                    if (Comp.Session.IsCreative)
-                        ChangeActiveAmmo(newAmmo);
-
-                    Session.ComputeStorage(this);
-                }
-                return;
-            }
-
-            if (!newAmmo.AmmoDef.Const.EnergyAmmo)
-            {
-                ChangeActiveAmmo(newAmmo);
-                Session.ComputeStorage(this);
-                return;
-            }
-            ChangeActiveAmmo(newAmmo);
+            ActiveAmmoDef = ammoDef;
+            CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
             SetWeaponDps();
+        }
+
+        internal void ChangeAmmo(WeaponAmmoTypes newAmmo)
+        {
+            if (ActiveAmmoDef.Equals(newAmmo))
+                return;
+
+            if (System.Session.IsCreative) {
+                ChangeActiveAmmo(newAmmo);
+                return;
+            }
+
+            if (System.Session.IsServer)
+                System.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
+            else
+                System.Session.SendCycleAmmoNetworkUpdate(this, Set.AmmoTypeId);
         }
 
         public void ChargeReload(bool syncCharge = false)
@@ -453,22 +443,6 @@ namespace WeaponCore.Platform
 
             ChargeUntilTick = syncCharge ? ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-        }
-
-        internal void CycleAmmo()
-        {
-            if (State.Sync.CurrentAmmo == 0)
-            {
-                var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
-                if (!ActiveAmmoDef.Equals(newAmmo))
-                    ChangeAmmo(ref newAmmo);
-            }
-            else if (!Reload() && !ActiveAmmoDef.AmmoDef.Const.Reloadable)
-            {
-                ChangeActiveAmmo(System.AmmoTypes[Set.AmmoTypeId]);
-                SetWeaponDps();
-                Reload();
-            }
         }
 
         internal double GetMaxWeaponRange()
@@ -564,7 +538,6 @@ namespace WeaponCore.Platform
 
             if (NoMagsToLoad)
             {
-
                 if (nothingToLoad)
                     return false;
 
@@ -611,11 +584,12 @@ namespace WeaponCore.Platform
 
             Reloading = true;
             State.SingleShotCounter = 0;
+            
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) State.ShotsFired = 0;
 
             var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
             if (!ActiveAmmoDef.Equals(newAmmo))
-                ChangeAmmo(ref newAmmo);
+                ChangeActiveAmmo(newAmmo);
 
             uint delay;
             if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {

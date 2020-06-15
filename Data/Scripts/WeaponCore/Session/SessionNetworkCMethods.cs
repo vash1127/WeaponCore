@@ -496,9 +496,6 @@ namespace WeaponCore
             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
 
-            if (weapon.State.Sync.CurrentAmmo == 0)
-                weapon.Reload();
-
             data.Report.PacketValid = true;
 
             return true;

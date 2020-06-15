@@ -747,51 +747,20 @@ namespace WeaponCore
         {
             if (weapon.System.DesignatorWeapon) return;
 
-            var hadInventory = weapon.State.Sync.HasInventory;
+            //var hadInventory = weapon.State.Sync.HasInventory;
+            
             if (setState)
-            {
                 weaponData.SetState(weapon.State.Sync, weapon);
-            }
-            Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
+
+            //Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
 
             if (weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable && !weapon.Reloading)
                 weapon.Reload();
-            else Log.Line($"no reload in SyncWeapon");
+            //else Log.Line($"no reload in SyncWeapon");
 
             /*
-            var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
-
-            var canReload = weapon.CanReload;
-
-            if (!canReload) weapon.CheckOutOfAmmo();
-
-            if (!wasReloading && canReload)
-                weapon.StartReload();
-
-            else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
-            {
-                if (!weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.ReloadSubscribed)
-                {
-                    weapon.ReloadSubscribed = false;
-                    weapon.CancelableReloadAction -= weapon.Reloaded;
-                }
-
-                weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
-            }
-            else if (wasReloading && weapon.State.Sync.Reloading && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-            {
-                if (weapon.ReloadSubscribed)
-                {
-                    weapon.ReloadSubscribed = false;
-                    weapon.CancelableReloadAction -= weapon.Reloaded;
-                }
-
-                comp.Session.FutureEvents.Schedule(weapon.Reloaded, null, weapon.Timings.ReloadedTick);
-            }
-
             else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsIndexer.ContainsKey(weapon))
                 weapon.ChargeReload(true);
-
 
             if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)
             {

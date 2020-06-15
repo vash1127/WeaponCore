@@ -531,29 +531,26 @@ namespace WeaponCore.Control
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             int weaponId;
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id)
+                return;
 
             var w = comp.Platform.Weapons[weaponId];
 
             var availAmmo = w.System.AmmoTypes.Length;
-            // cant use w.ActiveAmmoDef as it may not have reloaded yet
             var currActive = w.System.AmmoTypes[w.Set.AmmoTypeId];
             var next = (w.Set.AmmoTypeId + 1) % availAmmo;
             var currDef = w.System.AmmoTypes[next];
 
             var change = false;
 
-            while (!(currActive.Equals(currDef)))
-            {
-                if (currDef.AmmoDef.Const.IsTurretSelectable)
-                {
+            while (!(currActive.Equals(currDef))) {
+                if (currDef.AmmoDef.Const.IsTurretSelectable) {
                     w.Set.AmmoTypeId = next;
 
                     if (comp.Session.MpActive)
                         comp.Session.SendCycleAmmoNetworkUpdate(w, next);
 
                     change = true;
-
                     break;
                 }
 
@@ -562,7 +559,7 @@ namespace WeaponCore.Control
             }
 
             if (change)
-                MyAPIGateway.Utilities.InvokeOnGameThread(w.CycleAmmo);
+                w.ChangeAmmo(w.System.AmmoTypes[w.Set.AmmoTypeId]);
         }
 
         internal static void ShootStateWriter(IMyTerminalBlock blk, StringBuilder sb)
