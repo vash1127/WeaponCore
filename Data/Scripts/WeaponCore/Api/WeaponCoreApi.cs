@@ -569,6 +569,7 @@ namespace WeaponCore.Api
                 [ProtoMember(18)] internal bool HardPointUsable;
                 [ProtoMember(19)] internal AmmoPatternDef Pattern;
                 [ProtoMember(20)] internal int EnergyMagazineSize;
+                [ProtoMember(21)] internal float DecayPerShot;
 
                 [ProtoContract]
                 public struct DamageScaleDef

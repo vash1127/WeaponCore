@@ -6,6 +6,7 @@ using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using System;
 using System.Collections.Generic;
+using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
 
 namespace WeaponCore.Platform
@@ -108,6 +109,7 @@ namespace WeaponCore.Platform
 
                 FireCounter++;
                 List<NewVirtual> vProList = null;
+                var selfDamage = 0f;
                 for (int i = 0; i < bps; i++) {
 
                     var current = NextMuzzle;
@@ -177,6 +179,8 @@ namespace WeaponCore.Platform
                         for (int k = 0; k < patternIndex; k++) {
 
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[ActiveAmmoDef.AmmoDef.Const.AmmoShufflePattern[k]];
+
+                            selfDamage += ammoPattern.DecayPerShot;
 
                             long patternCycle = FireCounter;
                             if (ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeStart > 0 && ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd > 0)
@@ -288,6 +292,10 @@ namespace WeaponCore.Platform
                     State.ManualShoot = ManualShootActionState.ShootOff;
 
                 _muzzlesToFire.Clear();
+
+                if (System.Session.IsServer && selfDamage > 0)
+                    ((IMyDestroyableObject)Comp.MyCube.SlimBlock).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.MyCube.EntityId);
+
                 #endregion
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;

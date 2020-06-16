@@ -92,9 +92,6 @@ namespace WeaponCore.Support
                 var av = AvShots[i];
 
                 var refreshed = av.LastTick == Session.Tick;
-                var shrinkCnt = av.TracerShrinks.Count;
-                var glowCnt = av.GlowSteps.Count;
-                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.MarkForClose;
 
                 if (refreshed)
                 {
@@ -198,12 +195,6 @@ namespace WeaponCore.Support
                     {
                         av.AmmoEffect.SetTranslation(ref av.TracerFront);
                     }
-                }
-
-                if (noNextStep)
-                {
-                    AvShotPool.Return(av);
-                    AvShots.RemoveAtFast(i);
                 }
 
                 if (av.EndState.Dirty)
@@ -371,6 +362,11 @@ namespace WeaponCore.Support
                     }
 
                     if (remove) av.GlowSteps.Dequeue();
+                }
+                
+                if (glowCnt == 0 && shrinkCnt == 0 && av.MarkForClose) {
+                    AvShotPool.Return(av);
+                    AvShots.RemoveAtFast(i);
                 }
             }
         }
