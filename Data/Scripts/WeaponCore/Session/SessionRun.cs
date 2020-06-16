@@ -51,14 +51,6 @@ namespace WeaponCore
                 if (SupressLoad)
                     return;
 
-                DsUtil.Start("av");
-                if (!DedicatedServer) Av.End();
-                DsUtil.Complete("av", true);
-
-                //
-                // Finished last frame
-                //
-
                 if (DeformProtection.Count > 0 && Tick - LastDeform > 0)
                     DeformProtection.Clear();
                 
@@ -182,6 +174,10 @@ namespace WeaponCore
                 DsUtil.Start("pa");
                 Projectiles.AvUpdate();
                 DsUtil.Complete("pa", true);
+
+                DsUtil.Start("av");
+                if (!DedicatedServer) Av.End();
+                DsUtil.Complete("av", true);
 
                 if (MpActive)
                 {
