@@ -78,7 +78,6 @@ namespace WeaponCore.Projectiles
                 }
 
                 p.Gravity = w.GravityPoint;
-
                 if (t != Kind.Virtual)
                 {
                     p.Info.PrimeEntity = a.Const.PrimeModel ? a.Const.PrimeEntityPool.Get() : null;

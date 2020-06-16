@@ -313,6 +313,7 @@ namespace WeaponCore.Platform
             var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
             var targetMaxSpeed = weapon.Comp.Session.MaxEntitySpeed;
             var shooterPos = weapon.MyPivotPos;
+            
             var shooterVel = (Vector3D)weapon.Comp.Ai.GridVel;
             var projectileMaxSpeed = ammoDef.Const.DesiredProjectileSpeed;
             var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
@@ -321,7 +322,6 @@ namespace WeaponCore.Platform
             var basic = weapon.System.Prediction != Prediction.Advanced;
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
-
             Vector3D deltaPosNorm;
             if (Vector3D.IsZero(deltaPos)) deltaPosNorm = Vector3D.Zero;
             else if (Vector3D.IsUnit(ref deltaPos)) deltaPosNorm = deltaPos;
@@ -349,9 +349,7 @@ namespace WeaponCore.Platform
                 shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
 
             Vector3D estimatedImpactPoint = targetPos + timeToIntercept * (targetVel - shooterVel * shooterVelScaleFactor);
-
             if (basic) return estimatedImpactPoint;
-
             Vector3D aimDirection = estimatedImpactPoint - shooterPos;
 
             Vector3D projectileVel = shooterVel;

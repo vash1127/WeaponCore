@@ -495,7 +495,6 @@ namespace WeaponCore.Support
         internal Vector3D FirstPlanetHit;
 
         internal uint HitRefreshed;
-        internal uint PlanetReset;
         internal ulong Id;
 
         internal void Update(MyVoxelBase voxel, ref Vector3D? hitPos, uint tick)
@@ -510,7 +509,6 @@ namespace WeaponCore.Support
                 if (dist > 625)
                 {
                     //Log.Line("early planet reset");
-                    PlanetReset = tick;
                     FirstPlanetHit = hit;
                     PlanetSphere.Radius = 0.1f;
                 }
