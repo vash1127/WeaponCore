@@ -29,7 +29,7 @@ namespace WeaponCore
                 if (!ai.GridInit || ai.MyGrid.MarkedForClose || ai.Concealed)
                     continue;
 
-                if (DbTask.IsComplete && Tick - ai.TargetsUpdatedTick > 100)
+                if (DbTask.IsComplete && Tick - ai.TargetsUpdatedTick > 100 && !ai.ScanInProgress)
                     ai.RequestDbUpdate();
 
                 if (ai.DeadProjectiles.Count > 0) {

@@ -152,7 +152,7 @@ namespace WeaponCore.Projectiles
             if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache))
             {
                 Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.FiringCube?.MarkedForClose}, setting to default cache:");
-                Info.VoxelCache = Info.System.Session.VoxelCaches[long.MaxValue];
+                Info.VoxelCache = Info.System.Session.VoxelCaches[ulong.MaxValue];
             }
             if (Info.MyPlanet != null)
                 Info.VoxelCache.PlanetSphere.Center = Info.Ai.ClosestPlanetCenter;
@@ -851,7 +851,6 @@ namespace WeaponCore.Projectiles
         {
             if (GenerateShrapnel)
                 SpawnShrapnel();
-            else Info.IsShrapnel = false;
 
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
             Watchers.Clear();

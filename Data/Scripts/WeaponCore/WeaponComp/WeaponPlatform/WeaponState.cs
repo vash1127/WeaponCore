@@ -605,9 +605,13 @@ namespace WeaponCore.Platform
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-                CancelableReloadAction += Reloaded;
-                ReloadSubscribed = true;
-                Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+
+                if (System.ReloadTime > 0) {
+                    CancelableReloadAction += Reloaded;
+                    ReloadSubscribed = true;
+                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint) System.ReloadTime);
+                }
+                else Reloaded();
             }
 
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return true;

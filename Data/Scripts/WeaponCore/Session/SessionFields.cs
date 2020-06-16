@@ -63,9 +63,10 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
-        
+
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<MySoundPair> SoundPairs = new Stack<MySoundPair>(256);
+        internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<long, IMyCharacter> Admins = new ConcurrentDictionary<long, IMyCharacter>();
@@ -99,8 +100,8 @@ namespace WeaponCore
         internal readonly Dictionary<long, FakeTarget> PlayerDummyTargets = new Dictionary<long, FakeTarget>() { [-1] = new FakeTarget() };
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
-        internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();
-        internal readonly Dictionary<long, VoxelCache> VoxelCaches = new Dictionary<long, VoxelCache>();
+        internal readonly Dictionary<ulong, AvInfoCache> AvShotCache = new Dictionary<ulong, AvInfoCache>();
+        internal readonly Dictionary<ulong, VoxelCache> VoxelCaches = new Dictionary<ulong, VoxelCache>();
         internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
 
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
@@ -220,7 +221,6 @@ namespace WeaponCore
         internal string TriggerEntityModel;
         internal object InitObj = new object();
 
-        internal int MuzzleIdCounter;
         internal int WeaponIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;
@@ -241,8 +241,8 @@ namespace WeaponCore
         internal int AwakeCount = -1;
         internal int AsleepCount = -1;
         internal ulong MultiplayerId;
+        internal ulong MuzzleIdCounter;
         internal long PlayerId;
-
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
@@ -312,7 +312,18 @@ namespace WeaponCore
             }
         }
 
-        internal int UniqueMuzzleId => MuzzleIdCounter++;
+        internal VoxelCache NewVoxelCache
+        {
+            get {
+                if (VoxelCachePool.Count > 0)
+                    return VoxelCachePool.Pop();
+
+                var cache = new VoxelCache { Id = MuzzleIdCounter++ };
+                VoxelCaches.Add(cache.Id, cache);
+                return cache;
+            }   
+            set { VoxelCachePool.Push(value); } 
+        }
 
         internal int UniqueWeaponId => WeaponIdCounter++;
 
@@ -338,7 +349,7 @@ namespace WeaponCore
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
 
-            VoxelCaches[long.MaxValue] = new VoxelCache();
+            VoxelCaches[ulong.MaxValue] = new VoxelCache();
 
             HeatEmissives = CreateHeatEmissive();
             LoadVanillaData();

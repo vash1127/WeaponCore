@@ -377,8 +377,16 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete) 
-                Session.GridAiPool.Return(this);
+            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete && !ScanInProgress) {
+
+                lock (AiLock) {
+                
+                    if (ScanInProgress)
+                        return;
+                    
+                    Session.GridAiPool.Return(this);
+                }
+            }
         }
 
         internal void GridForceClose()

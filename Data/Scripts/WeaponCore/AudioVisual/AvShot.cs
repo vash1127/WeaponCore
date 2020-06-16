@@ -75,7 +75,7 @@ namespace WeaponCore.Support
         internal float GlowShrinkSize;
         internal float DistanceToLine;
         internal ulong ParentId = ulong.MaxValue;
-        internal int UniqueMuzzleId;
+        internal ulong UniqueMuzzleId;
         internal int LifeTime;
         internal int MuzzleId;
         internal int WeaponId;

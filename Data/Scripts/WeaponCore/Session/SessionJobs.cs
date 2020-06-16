@@ -46,7 +46,13 @@ namespace WeaponCore
 
         private void ProcessDbs()
         {
-            for (int i = 0; i < DbsToUpdate.Count; i++) DbsToUpdate[i].Ai.Scan();
+            for (int i = 0; i < DbsToUpdate.Count; i++) {
+                var ai = DbsToUpdate[i].Ai;
+                ai.ScanInProgress = true;
+                
+                lock (ai.AiLock) 
+                    ai.Scan();
+            }
         }
 
         private void ProcessDbsCallBack()
@@ -59,6 +65,7 @@ namespace WeaponCore
                     var ds = DbsToUpdate[d];
                     var ai = ds.Ai;
                     if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || ds.Version != ai.Version) {
+                        ai.ScanInProgress = false;
                         Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose} - versionMismatch: {ds.Version != ai.Version}");
                         continue;
                     }
@@ -158,6 +165,7 @@ namespace WeaponCore
 
                     ai.DbUpdated = true;
                     ai.FirstRun = false;
+                    ai.ScanInProgress = false;
                 }
                 DbsToUpdate.Clear();
 

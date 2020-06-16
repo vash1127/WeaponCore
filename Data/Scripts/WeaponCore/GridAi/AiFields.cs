@@ -17,6 +17,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
+        internal volatile bool ScanInProgress;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
         internal volatile bool PowerDirty = true;
@@ -66,6 +67,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
         internal readonly ActiveTerminal ActiveWeaponTerminal;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+        internal readonly object AiLock = new object();
 
         internal Session Session;
         internal MyCubeGrid MyGrid;

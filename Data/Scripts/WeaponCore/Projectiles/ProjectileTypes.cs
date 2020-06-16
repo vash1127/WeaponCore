@@ -44,7 +44,7 @@ namespace WeaponCore.Support
         internal int Age;
         internal int FireCounter;
         internal int AiVersion;
-        internal int UniqueMuzzleId;
+        internal ulong UniqueMuzzleId;
         internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
@@ -95,6 +95,15 @@ namespace WeaponCore.Support
         {
             Target.Reset(System.Session.Tick, Target.States.ProjectileClosed);
             HitList.Clear();
+
+            if (IsShrapnel)
+            {
+                if (VoxelCache != null && System.Session != null)
+                {
+                    System.Session.NewVoxelCache = VoxelCache;
+                }
+                else Log.Line($"IsShrapnel voxelcache return failure");
+            }
 
             if (PrimeEntity != null)
             {
@@ -360,7 +369,6 @@ namespace WeaponCore.Support
                 frag.Overrides = p.Info.Overrides;
                 frag.WeaponId = p.Info.WeaponId;
                 frag.MuzzleId = p.Info.MuzzleId;
-                frag.UniqueMuzzleId = p.Info.UniqueMuzzleId;
                 frag.FiringCube = p.Info.Target.FiringCube;
                 frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = !Vector3D.IsZero(p.Info.Hit.LastHit) ? p.Info.Hit.LastHit : p.Position;
@@ -423,7 +431,7 @@ namespace WeaponCore.Support
                 p.Info.EnableGuidance = frag.Guidance;
                 p.Info.WeaponId = frag.WeaponId;
                 p.Info.MuzzleId = frag.MuzzleId;
-                p.Info.UniqueMuzzleId = frag.UniqueMuzzleId;
+                p.Info.UniqueMuzzleId = frag.System.Session.NewVoxelCache.Id;
                 p.Info.Origin = frag.Origin;
                 p.Info.OriginUp = frag.OriginUp;
                 p.Info.WeaponRng = frag.WeaponRng;
@@ -471,7 +479,6 @@ namespace WeaponCore.Support
         public BoundingSphereD DeadSphere;
         public int WeaponId;
         public int MuzzleId;
-        public int UniqueMuzzleId;
         public WeaponRandomGenerator WeaponRng;
         public bool Guidance;
         public bool ClientSent;
@@ -489,6 +496,7 @@ namespace WeaponCore.Support
 
         internal uint HitRefreshed;
         internal uint PlanetReset;
+        internal ulong Id;
 
         internal void Update(MyVoxelBase voxel, ref Vector3D? hitPos, uint tick)
         {

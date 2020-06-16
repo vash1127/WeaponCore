@@ -128,8 +128,9 @@ namespace WeaponCore.Projectiles
                         Vector3D? voxelHit = null;
                         if (voxel != null) {
 
+                            if (p.Info.IsShrapnel)
+                                continue;
                             if (voxel.RootVoxel != voxel) continue;
-
                             var pseudoHit = false;
                             if (tick - p.Info.VoxelCache.HitRefreshed < 60) {
 
@@ -180,13 +181,16 @@ namespace WeaponCore.Projectiles
                                                 if (hit?.HitEntity is MyVoxelBase)
                                                     voxelHit = hit.Position;
                                             }
-                                            else
-                                            {
-
+                                            else {
                                                 using (voxel.Pin()) {
                                                     if (!voxel.GetIntersectionWithLine(ref p.Beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, p.Beam.From))
                                                         voxelHit = p.Beam.From;
                                                 }
+                                            }
+
+                                            if (voxelHit.HasValue && p.Info.IsShrapnel && p.Info.Age == 0) {
+                                                if (!VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, voxelHit.Value + (p.Beam.Direction * 1.25f)))
+                                                    voxelHit = null;
                                             }
                                         }
 
@@ -212,6 +216,7 @@ namespace WeaponCore.Projectiles
 
                             if (!pseudoHit)
                                 p.Info.VoxelCache.Update(voxel, ref voxelHit, tick);
+
                         }
                         var hitEntity = HitEntityPool.Get();
                         hitEntity.Info = p.Info;

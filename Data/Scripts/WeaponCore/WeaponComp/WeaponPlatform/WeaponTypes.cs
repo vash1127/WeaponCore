@@ -111,8 +111,7 @@ namespace WeaponCore.Platform
             internal Muzzle(int id, Session session)
             {
                 MuzzleId = id;
-                UniqueId = session.UniqueMuzzleId;
-                session.VoxelCaches.Add(UniqueId, new VoxelCache());
+                UniqueId = session.NewVoxelCache.Id;
             }
 
             internal Vector3D Position;
@@ -122,7 +121,7 @@ namespace WeaponCore.Platform
             internal uint LastAv1Tick;
             internal uint LastAv2Tick;
             internal int MuzzleId;
-            internal int UniqueId;
+            internal ulong UniqueId;
             internal bool Av1Looping;
             internal bool Av2Looping;
 
