@@ -86,7 +86,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    var checkShield = Session.ShieldApiLoaded && ent.Physics != null && !ent.Physics.Enabled && ent.Physics.IsPhantom && ent.Render.Visible;
+                    var checkShield = Session.ShieldApiLoaded && ent.Physics != null && ent.Physics.IsPhantom && ent.Render.Visible;
                     if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
                         var shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);

@@ -218,22 +218,23 @@ namespace WeaponCore.Support
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                    if (info.IsGrid)
-                    {
+                    
+                    if (info.IsGrid) {
+
                         if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
                         session.CanShoot++;
                         Vector3D newCenter;
-                        if (!w.AiEnabled)
-                        {
-                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel) : targetCenter;
+                        if (!w.AiEnabled) {
+
+                            var validEstimate = true;
+                            newCenter = w.System.Prediction != HardPointDef.Prediction.Off && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && w.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) ? Weapon.TrajectoryEstimation(w, targetCenter, targetLinVel, targetAccel, out validEstimate) : targetCenter;
                             var targetSphere = info.Target.PositionComp.WorldVolume;
                             targetSphere.Center = newCenter;
-                            if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
+                            if (!validEstimate || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
                         }
                         else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
 
-                        if (w.Comp.Ai.FriendlyShieldNear)
-                        {
+                        if (w.Comp.Ai.FriendlyShieldNear) {
                             var targetDir = newCenter - weaponPos;
                             if (w.HitFriendlyShield(newCenter, targetDir))
                                 continue;

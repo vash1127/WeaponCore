@@ -23,8 +23,9 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
+            var validEstimate = true;
             if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
-                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel);
+                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel, out validEstimate);
             else
                 targetPos = targetCenter;
             var targetDir = targetPos - weapon.MyPivotPos;
@@ -37,9 +38,9 @@ namespace WeaponCore.Platform
             bool canTrack;
 
             if (weapon == trackingWeapon)
-                canTrack = MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false, true);
+                canTrack = validEstimate && MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false, true);
             else
-                canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             return (inRange && canTrack) || weapon.Comp.TrackReticle;
         }
@@ -55,8 +56,9 @@ namespace WeaponCore.Platform
             var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrixRef);
             var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
+            var validEstimate = true;
             if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)
-                targetPos = TrajectoryEstimation(weapon, obb.Center, targetLinVel, targetAccel);
+                targetPos = TrajectoryEstimation(weapon, obb.Center, targetLinVel, targetAccel, out validEstimate);
             else
                 targetPos = obb.Center;
 
@@ -73,7 +75,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
             bool canTrack = false;
-            if (rangeToTarget <= maxRangeSqr && rangeToTarget >= minRangeSqr)
+            if (validEstimate && rangeToTarget <= maxRangeSqr && rangeToTarget >= minRangeSqr)
             {
                 var targetDir = targetPos - weapon.MyPivotPos;
                 if (weapon == trackingWeapon)
@@ -117,6 +119,7 @@ namespace WeaponCore.Platform
             else
                 targetCenter = Vector3D.Zero;
 
+            var validEstimate = true;
             if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
 
@@ -143,7 +146,7 @@ namespace WeaponCore.Platform
                 }
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel);
+                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel, out validEstimate);
             }
             else
                 targetPos = targetCenter;
@@ -154,7 +157,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
-            var isAligned = (inRange || weapon.Comp.TrackReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = validEstimate && (inRange || weapon.Comp.TrackReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -179,7 +182,8 @@ namespace WeaponCore.Platform
                 targetCenter = target.Entity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
             else
                 targetCenter = Vector3D.Zero;
-            
+
+            var validEstimate = true;
             if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
                 if (weapon.Comp.TrackReticle) {
@@ -201,7 +205,7 @@ namespace WeaponCore.Platform
                 }
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel);
+                targetPos = TrajectoryEstimation(weapon, targetCenter, targetLinVel, targetAccel, out validEstimate);
             }
             else
                 targetPos = targetCenter;
@@ -212,7 +216,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
 
             var targetDir = targetPos - weapon.MyPivotPos;
-            var readyToTrack = !weapon.Comp.ResettingSubparts && (weapon.Comp.TrackReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
+            var readyToTrack = validEstimate && !weapon.Comp.ResettingSubparts && (weapon.Comp.TrackReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
             
             var locked = true;
             weapon.Target.IsTracking = false;
@@ -292,8 +296,9 @@ namespace WeaponCore.Platform
             return predictedPos;
         }
 
-        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc)
+        internal static Vector3D TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
         {
+            valid = true;
             var ai = weapon.Comp.Ai;
             var session = ai.Session;
             var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
@@ -334,12 +339,20 @@ namespace WeaponCore.Platform
             Vector3D lateralVel = deltaVel - closingVel;
             double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
             double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
+
+
             double projectileClosingSpeed = Math.Sqrt(ttiDiff) - closingSpeed;
             
             double closingDistance;
             Vector3D.Dot(ref deltaPos, ref deltaPosNorm, out closingDistance);
 
             double timeToIntercept = ttiDiff < 0 ? 0 : closingDistance / projectileClosingSpeed;
+            
+            if (ttiDiff <= 0 || timeToIntercept <= 0) {
+                valid = false;
+                return targetPos;
+            }
+
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             double shooterVelScaleFactor = 1;
             bool projectileAccelerates = projectileAccMag > 1e-6;
