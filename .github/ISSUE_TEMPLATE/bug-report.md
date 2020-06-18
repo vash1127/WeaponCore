@@ -6,8 +6,6 @@ labels: Housecleaning (Bug)
 assignees: ''
 
 ---
-Things to do before 
-
 
 ## Is this a multiplayer or singleplayer bug?
 
