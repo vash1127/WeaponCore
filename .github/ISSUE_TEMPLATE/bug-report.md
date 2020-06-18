@@ -6,22 +6,27 @@ labels: Housecleaning (Bug)
 assignees: ''
 
 ---
+Things to do before 
 
 
 ## Is this a multiplayer or singleplayer bug?
 
 
+
 ## Describe the bug:
+
 
 
 ## Steps To Reproduce:
 
 
+
 ## Expected behavior:
 
 
-### (Optional) Screenshots or videos:
-(remove if not used)
 
-### (Optional) Additional content/log files/etc:
-(remove if not used)
+### User Error Report (if Weapon-Specific) and log files
+*WeaponCore lets you generate an error report for a specific weapon, while ingame, hold Ctrl+R and aim the red line at the Weapon that is erroring, and an error report will be generated in WeaponCores log cache: `Users\UserName\AppData\Roaming\SpaceEngineers\Storage\1918681825.sbm_WeaponCore`
+
+Zip up that folder and link it here:
+
