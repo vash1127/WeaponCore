@@ -12,6 +12,8 @@ This "mod" by itself does not add new weapons to the game, it is the framework (
 
 ## **ISSUES WITH NO TITLES AND POOR OVERALL QUALITY WILL BE CLOSED**
 
+Please read [this](https://github.com/sstixrud/WeaponCore/wiki/Before-you-post-an-issue) and [this](https://github.com/sstixrud/WeaponCore/wiki/Issue-Posting-Guidelines) before even thinking about posting an issue.
+
 Please only report critical issues here! If you have a problem with a specific weapon not working, this is not the place to be reporting, leave it to the workshop page comments!
 
 ### Issue templates
