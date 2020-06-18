@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using ProtoBuf;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Collections;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -92,15 +91,16 @@ namespace WeaponCore
             internal void GenerateReport(MyCubeBlock targetBlock)
             {
                 if (Generating || Session.Tick - LastRequestTick < RequestTime) {
-                    if (Generating) Log.Line($"Report generation already in progress");
-                    else Log.Line($"Report may only be requested every {RequestTime / 60} seconds: {Session.Tick - LastRequestTick}");
                     return;
                 }
-                Log.Line($"GenerateReport0");
+                Log.Line($"Generate User Weapon Report");
                 Generating = true;
                 LastRequestTick = Session.Tick;
                 TargetBlock = targetBlock;
                 MyData = new DataReport();
+
+                if (!Session.DedicatedServer)
+                    MyAPIGateway.Utilities.ShowNotification($"Generating a error report for WC Block: {TargetBlock.BlockDefinition.Id.SubtypeName} - with id: {TargetBlock.EntityId}", 7000, "Red");
 
                 if (Session.IsServer) {
 
@@ -114,21 +114,16 @@ namespace WeaponCore
                     Compile();
                     NetworkTransfer(true);
                 }
-
-                Log.Line($"GenerateReport1");
                 Session.FutureEvents.Schedule(CompleteReport, null, 600);
             }
 
             internal DataReport PullData(MyCubeBlock targetBlock)
             {
-                Log.Line($"PullData");
-
                 MyData = new DataReport();
                 TargetBlock = targetBlock;
 
                 Compile();
                 
-                Log.Line($"ReturnData");
                 return MyData;
             }
 
@@ -136,7 +131,6 @@ namespace WeaponCore
             {
                 try
                 {
-                    Log.Line($"Compile Data");
                     BuildData(MyData);
                 }
                 catch (Exception ex) { Log.Line($"Exception in ReportCompile: {ex}"); }
@@ -144,21 +138,16 @@ namespace WeaponCore
 
             internal void BuildData(DataReport data)
             {
-                if (Session.DedicatedServer) Log.Line("Build Data");
-                foreach (var d in AllDicts)
-                {
-                    if (Session.DedicatedServer) Log.Line($"dictionary:{d.Key}");
-                    foreach (var f in d.Value)
-                    {
+                foreach (var d in AllDicts) {
+                    foreach (var f in d.Value) {
                         var value = f.Value.Invoke();
                         GetStorage(data, d.Key)[f.Key] = value;
-                        if (Session.DedicatedServer) Log.Line($"Member:{f.Key} - Value:{value}");
                     }
                 }
             }
 
 
-            internal string[] IndexToString = { "Session", "Ai", "Comp", "Platform", "Weapon" };
+            internal string[] IndexToString = { "Session", "Ai", "Platform", "Comp", "Weapon" };
             internal Dictionary<string, string> GetStorage(DataReport data, string storageName)
             {
                 switch (storageName)
@@ -212,51 +201,62 @@ namespace WeaponCore
                     Clean();
                     return;
                 }
-                Log.Line($"CompleteReport");
                 CompileReport();
 
-                Log.CleanLine($"{Report}");
+                Log.CleanLine($"{Report}", "report");
 
                 Clean();
             }
 
             internal void CompileReport()
             {
-                Log.Line("Compile Report");
                 Report = string.Empty;
-                var myRole = Session.IsClient ? "Client" : "Server";
-                var otherRole = Session.IsClient ? "Server" : "Client";
+                var myRole = !Session.MpActive ? "" : Session.IsClient ? "Client:" : "Server:";
+                var otherRole = !Session.MpActive ? "" : Session.IsClient ? "Server:" : "Client:";
+                var loopCnt = Session.MpActive ? 2 : 1;
+                var lastLoop = loopCnt > 1 ? 1 : 0;
 
-                for (int i = 0; i < 5; i++)
+                for (int x = 0; x < loopCnt; x++)
                 {
-                    var indexString = IndexToString[i];
-                    var myStorage = GetStorage(MyData, indexString);
-                    var storageCnt = Session.MpActive ? 2 : 1;
-                    Report += $"Class: {indexString}\n";
+                    
+                    if (x != lastLoop)
+                        Report += $"\n== Mismatched variables ==\n";
+                    else if (x == lastLoop && lastLoop > 0)
+                        Report += $"== End of mismatch section ==\n\n";
 
-                    foreach (var p in myStorage)
+                    for (int i = 0; i < 5; i++)
                     {
-                        if (storageCnt > 1)
+                        var indexString = IndexToString[i];
+                        var myStorage = GetStorage(MyData, indexString);
+                        var storageCnt = Session.MpActive ? 2 : 1;
+                        Report += $"Class: {indexString}\n";
+
+                        foreach (var p in myStorage)
                         {
-                            var remoteStorage = GetStorage(RemoteData, indexString);
-                            var remoteValue = remoteStorage[p.Key];
-                            Report += $"    [{p.Key}]\n      {myRole}:{p.Value} - {otherRole}:{remoteValue} - Matches:{p.Value == remoteValue}\n";
-                        }
-                        else
-                        {
-                            Report += $"    [{p.Key}]\n      {myRole}:{p.Value}\n";
+                            if (storageCnt > 1)
+                            {
+                                var remoteStorage = GetStorage(RemoteData, indexString);
+                                var remoteValue = remoteStorage[p.Key];
+                                if (x == lastLoop) Report += $"    [{p.Key}]\n      {myRole}{p.Value} - {otherRole}{remoteValue} - Matches:{p.Value == remoteValue}\n";
+                                else if (p.Value != remoteValue && !MatchSkip.Contains(p.Key)) Report += $"    [{p.Key}]\n      {myRole}{p.Value} - {otherRole}{remoteValue}\n";
+                            }
+                            else
+                            {
+                                if (x == lastLoop) Report += $"    [{p.Key}]\n      {myRole}{p.Value}\n";
+                            }
                         }
                     }
                 }
-
             }
-
-
+            
+            internal HashSet<string> MatchSkip = new HashSet<string> { "AcquireEnabled", "AcquireAsleep", "WeaponReadyTick", "AwakeComps" };
+        
             internal Dictionary<string, Func<string>> InitSessionFields()
             {
                 var sessionFields = new Dictionary<string, Func<string>>
                 {
-                    {"DedicatedServer", () => Session.DedicatedServer.ToString() }
+                    {"HasFatMap", () => (GetComp() != null && Session.GridToFatMap.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
+                    {"HasGridAi", () => (GetComp() != null && Session.GridTargetingAIs.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
                 };
 
                 return sessionFields;
@@ -266,7 +266,26 @@ namespace WeaponCore
             {
                 var aiFields = new Dictionary<string, Func<string>>
                 {
-                    {"Version", () => GetAi()?.Version.ToString() ?? string.Empty }
+                    {"Version", () => GetAi()?.Version.ToString() ?? string.Empty },
+                    {"RootAiId", () => GetAi()?.Construct.RootAi?.MyGrid.EntityId.ToString() ?? string.Empty },
+                    {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
+                    {"BlockGroups", () => GetAi()?.BlockGroups.Reader.Count.ToString() ?? string.Empty },
+                    {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
+                    {"ControllingPlayers", () => GetAi()?.ControllingPlayers.Count.ToString() ?? string.Empty },
+                    {"Inventories", () => GetAi()?.Inventories.Count.ToString() ?? string.Empty },
+                    {"OutOfAmmoWeapons", () => GetAi()?.OutOfAmmoWeapons.Count.ToString() ?? string.Empty },
+                    {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
+                    {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
+                    {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
+                    {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
+                    {"WeaponBase", () => GetAi()?.WeaponBase.Count.ToString() ?? string.Empty },
+                    {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
+                    {"MyOwner", () => GetAi()?.MyOwner.ToString() ?? string.Empty },
+                    {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
+                    {"BlockCount", () => GetAi()?.BlockCount.ToString() ?? string.Empty },
+                    {"WeaponsTracking", () => GetAi()?.WeaponsTracking.ToString() ?? string.Empty },
+                    {"GridAvailablePower", () => GetAi()?.GridAvailablePower.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
+                    {"MaxTargetingRange", () => GetAi()?.MaxTargetingRange.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                 };
 
                 return aiFields;
@@ -276,7 +295,23 @@ namespace WeaponCore
             {
                 var compFields = new Dictionary<string, Func<string>>
                 {
-                    {"IsAsleep", () => GetComp()?.IsAsleep.ToString() ?? string.Empty }
+                    {"IsAsleep", () => GetComp()?.IsAsleep.ToString() ?? string.Empty },
+                    {"GridId", () => GetComp()?.MyCube.CubeGrid.EntityId.ToString() ?? string.Empty },
+                    {"BaseType", () => GetComp()?.BaseType.ToString() ?? string.Empty },
+                    {"AiGridMatchCubeGrid", () => (GetComp()?.Ai?.MyGrid == GetComp()?.MyCube.CubeGrid).ToString() ?? string.Empty },
+                    {"IsWorking", () => GetComp()?.IsWorking.ToString() ?? string.Empty },
+                    {"cubeIsWorking", () => GetComp()?.MyCube.IsWorking.ToString() ?? string.Empty },
+                    {"MaxTargetDistance", () => GetComp()?.MaxTargetDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
+                    {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
+                    {"ControlType", () => GetComp()?.State.Value.CurrentPlayerControl.ControlType.ToString() ?? string.Empty },
+                    {"PlayerId", () => GetComp()?.State.Value.CurrentPlayerControl.PlayerId.ToString() ?? string.Empty },
+                    {"Online", () => GetComp()?.State.Value.Online.ToString() ?? string.Empty },
+                    {"CurrentBlockGroup", () => GetComp()?.State.Value.CurrentBlockGroup ?? string.Empty },
+                    {"ClickShoot", () => GetComp()?.State.Value.ClickShoot.ToString() ?? string.Empty },
+                    {"Modes", () => GetComp()?.Set.Value.Modes.ToString() ?? string.Empty },
+                    {"Activate", () => GetComp()?.Set.Value.Overrides.Activate.ToString() ?? string.Empty },
+                    {"FocusSubSystem", () => GetComp()?.Set.Value.Overrides.FocusSubSystem.ToString() ?? string.Empty },
+                    {"FocusTargets", () => GetComp()?.Set.Value.Overrides.FocusTargets.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -286,7 +321,7 @@ namespace WeaponCore
             {
                 var platformFields = new Dictionary<string, Func<string>>
                 {
-                    {"State", () => GetPlatform()?.State.ToString() ?? string.Empty }
+                    {"State", () => GetPlatform()?.State.ToString() ?? string.Empty },
                 };
 
                 return platformFields;
@@ -298,8 +333,100 @@ namespace WeaponCore
                 {
                     {"AiEnabled", () => {
                         var message = string.Empty;
-                        return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AiEnabled} ");
-                    } }
+                        return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AiEnabled}"); }
+                    },
+                    {"AcquireEnabled", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.Enabled}"); }
+                    },
+                    {"AcquireAsleep", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.Asleep}"); }
+                    },
+                    {"MaxTargetDistance", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.MaxTargetDistance}"); }
+                    },
+                    {"AmmoName", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ActiveAmmoDef.AmmoName}"); }
+                    },
+                    {"AcquiringTarget", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AcquiringTarget}"); }
+                    },
+                    {"HasTarget", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.HasTarget}"); }
+                    },
+                    {"TargetCurrentState", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.CurrentState}"); }
+                    },
+                    {"IsShooting", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.IsShooting}"); }
+                    },
+                    {"NoMagsToLoad", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.NoMagsToLoad}"); }
+                    },
+                    {"Reloading", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reloading}"); }
+                    },
+                    {"WeaponReadyTick", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.System.Session.Tick - w.WeaponReadyTick}"); }
+                    },
+                    {"Charging", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Charging}"); }
+                    },
+                    {"Enable", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Set.Enable}"); }
+                    },
+                    {"AmmoTypeId", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Set.AmmoTypeId}"); }
+                    },
+                    {"ManualShoot", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.ManualShoot}"); }
+                    },
+                    {"ShotsFired", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.ShotsFired}"); }
+                    },
+                    {"SingleShotCounter", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.SingleShotCounter}"); }
+                    },
+                    {"Overheated", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.Overheated}"); }
+                    },
+                    {"Heat", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.Heat}"); }
+                    },
+                    {"CurrentAmmo", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.CurrentAmmo}"); }
+                    },
+                    {"CurrentCharge", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.CurrentCharge}"); }
+                    },
+                    {"CurrentMags", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.CurrentMags}"); }
+                    },
+                    {"HasInventory", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.HasInventory}"); }
+                    },
                 };
 
                 return weaponFields;

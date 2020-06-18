@@ -78,6 +78,7 @@ namespace WeaponCore
             Log.Init("perf", this, false);
             Log.Init("stats", this, false);
             Log.Init("net", this, false);
+            Log.Init("report", this, false);
 
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;

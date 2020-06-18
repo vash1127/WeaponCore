@@ -339,7 +339,11 @@ namespace WeaponCore.Platform
             Vector3D lateralVel = deltaVel - closingVel;
             double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
             double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
-
+            
+            if (ttiDiff < 0) {
+                valid = false;
+                return targetPos;
+            }
 
             double projectileClosingSpeed = Math.Sqrt(ttiDiff) - closingSpeed;
             
@@ -348,7 +352,7 @@ namespace WeaponCore.Platform
 
             double timeToIntercept = ttiDiff < 0 ? 0 : closingDistance / projectileClosingSpeed;
             
-            if (ttiDiff <= 0 || timeToIntercept <= 0) {
+            if (timeToIntercept < 0) {
                 valid = false;
                 return targetPos;
             }

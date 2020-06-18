@@ -37,8 +37,7 @@ namespace WeaponCore.Support
             GridAi ai = null;
             foreach (var comp in Comps)
             {
-                if (ai == null)
-                {
+                if (ai == null) {
                     if (comp?.Ai == null)
                         return;
                     ai = comp.Ai;
@@ -124,7 +123,7 @@ namespace WeaponCore.Support
                 comp.State.Value.CurrentBlockGroup = blockGroup;
             }
             
-            if (ai != null && ai.Session.HandlesInput && ai.Session.MpActive && o != null)
+            if (ai != null && ai.Session.HandlesInput && ai.Session.MpActive)
                 ai.Session.SendOverRidesUpdate(ai, blockGroup, o);
         }
 

@@ -200,13 +200,13 @@ namespace WeaponCore
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             GridAi ai;
-            FakeTarget dummyTarget;
-            long playerId;
             //TODO client uses try get in case packets are out of order, no need to reprocess as fake targets are sent very often
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
+                long playerId;
                 if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                 {
+                    FakeTarget dummyTarget;
                     if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
                     {
                         dummyTarget.Update(targetPacket.Data, ai, null, true);
