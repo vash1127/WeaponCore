@@ -54,12 +54,12 @@ namespace WeaponCore.Projectiles
                 AddProjectileTargets();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("UpdateState", 17);
+            Session.StallReporter.Start($"UpdateState: {ActiveProjetiles.Count}", 17);
             if (ActiveProjetiles.Count > 0) 
                 UpdateState();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("Spawn", 17);
+            Session.StallReporter.Start($"Spawn: {ShrapnelToSpawn.Count}", 17);
             if (ShrapnelToSpawn.Count > 0)
                 SpawnFragments();
             Session.StallReporter.End();
@@ -67,7 +67,7 @@ namespace WeaponCore.Projectiles
 
         internal void Intersect() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("CheckHits", 17);
+            Session.StallReporter.Start($"CheckHits: {ActiveProjetiles.Count}", 17);
             if (ActiveProjetiles.Count > 0)
                 CheckHits();
             Session.StallReporter.End();
@@ -132,7 +132,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.FeelsGravity) {
 
-                    var update = (p.FakeGravityNear || p.EntitiesNear || p.Info.Age % 60 == 0) && p.Info.Age > 0;
+                    var update = (p.Info.Age % 60 == 0 || (p.FakeGravityNear || p.EntitiesNear) && p.Info.Age % 10 == 0) && p.Info.Age > 0;
                     if (update) {
                         p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
 

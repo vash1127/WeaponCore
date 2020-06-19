@@ -128,8 +128,7 @@ namespace WeaponCore
         internal readonly List<Weapon> CheckStorage = new List<Weapon>();
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
 
-        internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
-        internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
+        internal readonly CachingHashSet<ErrorPacket> ClientSideErrorPkt = new CachingHashSet<ErrorPacket>();
 
         /// <summary>
         /// DsUniqueListFastRemove without the class for less method calls

@@ -209,9 +209,9 @@ namespace WeaponCore
             Av.AvShots.Clear();
             Av.HitSounds.Clear();
 
-            foreach (var errorpkt in ClientSideErrorPktList)
+            foreach (var errorpkt in ClientSideErrorPkt)
                 errorpkt.Packet.CleanUp();
-            ClientSideErrorPktList.Clear();
+            ClientSideErrorPkt.Clear();
 
             GridEffectPool.Clean();
             GridEffectsPool.Clean();

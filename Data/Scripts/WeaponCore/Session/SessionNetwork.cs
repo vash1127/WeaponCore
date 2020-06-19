@@ -180,21 +180,21 @@ namespace WeaponCore
                 }
                 if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
                 {
-                    if (!ClientSideErrorPktListNew.Contains(packetObj))
-                        ClientSideErrorPktListNew.Add(packetObj);
+                    if (!ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
+                        ClientSideErrorPkt.Add(packetObj.ErrorPacket);
                     else {
                         //this only works because hashcode override in ErrorPacket
-                        ClientSideErrorPktListNew.Remove(packetObj);
-                        ClientSideErrorPktListNew.Add(packetObj);
+                        ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
+                        ClientSideErrorPkt.Add(packetObj.ErrorPacket);
                     }
                 }
-                else if (packetObj.Report.PacketValid && ClientSideErrorPktListNew.Contains(packetObj))
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                else if (!packetObj.Report.PacketValid)
-                    PacketObjPool.Return(packetObj);
+                else if (packetObj.Report.PacketValid && ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
+                    ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
+
+                ClientSideErrorPkt.ApplyChanges();
+                PacketObjPool.Return(packetObj);
 
                 if (packetObj.Report.PacketValid) {
-                    PacketObjPool.Return(packetObj);
                     return true;
                 }
             }

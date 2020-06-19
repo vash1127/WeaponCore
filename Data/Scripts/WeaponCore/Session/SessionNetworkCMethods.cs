@@ -9,95 +9,103 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        public void ReproccessClientErrorPacketsNew()
+        public void ReproccessClientErrorPackets()
         {
-            for (int i = ClientSideErrorPktListNew.Count - 1; i >= 0; i--)
+            foreach (var errorPacket in ClientSideErrorPkt)
             {
-                var packetObj = ClientSideErrorPktListNew[i];
+                if (errorPacket == null) {
+                    Log.Line($"ClientSideErrorPktListNew errorPacket is null");
+                    continue;
+                }
 
-                var erroredPacket = packetObj.ErrorPacket;
-                if (erroredPacket.MaxAttempts == 0)
+                if (errorPacket.MaxAttempts == 0)
                 {
                     //set packet retry variables, based on type
                     //erroredPacket.MaxAttempts = 3;
                     //erroredPacket.RetryAttempt = 0;                    
 
-                    switch (erroredPacket.PType)
+                    switch (errorPacket.PType)
                     {
                         case PacketType.WeaponSyncUpdate:
-                            erroredPacket.MaxAttempts = 7;
-                            erroredPacket.RetryDelayTicks = 15;
+                            errorPacket.MaxAttempts = 7;
+                            errorPacket.RetryDelayTicks = 15;
                             break;
 
                         default:
-                            erroredPacket.MaxAttempts = 7;
-                            erroredPacket.RetryDelayTicks = 15;
+                            errorPacket.MaxAttempts = 7;
+                            errorPacket.RetryDelayTicks = 15;
                             break;
                     }
 
-                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+                    errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
                 }
 
                 //proccess packet logic
 
-                if (erroredPacket.RetryTick > Tick) continue;
-                erroredPacket.RetryAttempt++;
+                if (errorPacket.RetryTick > Tick) continue;
+                errorPacket.RetryAttempt++;
 
                 var success = false;
 
-                switch (erroredPacket.PType)
+                switch (errorPacket.PType)
                 {
                     case PacketType.WeaponSyncUpdate:
-                        var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
+                        var ent = MyEntities.GetEntityByIdOrDefault(errorPacket.Packet.EntityId);
                         if (ent == null) break;
 
-                        var packet = erroredPacket.Packet as GridWeaponPacket;
-                        if (packet == null)
-                        {
-                            erroredPacket.MaxAttempts = 0;
+                        var packet = errorPacket.Packet as GridWeaponPacket;
+                        if (packet?.Data == null) {
+                            Log.Line($"GridWeaponPacket errorPacket is null");
+                            errorPacket.MaxAttempts = 0;
                             break;
                         }
 
                         var compsToCheck = new HashSet<long>();
-                        for (int j = 0; j < packet.Data.Count; j++)
-                        {
-                            if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
-                                compsToCheck.Add(packet.Data[j].CompEntityId);
+                        for (int j = 0; j < packet.Data.Count; j++) {
+                            var weaponData = packet.Data[j];
+                            if (weaponData != null)
+                                compsToCheck.Add(weaponData.CompEntityId);
                         }
 
-                        PacketsToServer.Add(new RequestTargetsPacket
+                        if (compsToCheck.Count > 0)
                         {
-                            EntityId = erroredPacket.Packet.EntityId,
-                            SenderId = MultiplayerId,
-                            PType = PacketType.WeaponUpdateRequest,
-                            Comps = new List<long>(compsToCheck),
-                        });
-
-                        success = true;
+                            PacketsToServer.Add(new RequestTargetsPacket
+                            {
+                                EntityId = errorPacket.Packet.EntityId,
+                                SenderId = MultiplayerId,
+                                PType = PacketType.WeaponUpdateRequest,
+                                Comps = new List<long>(compsToCheck),
+                            });
+                            success = true;
+                        }
                         break;
 
                     default:
+                        var report = Reporter.ReportPool.Get();
+                        report.Receiver = NetworkReporter.Report.Received.Client;
+                        report.PacketSize = 0;
+                        Reporter.ReportData[errorPacket.Packet.PType].Add(report);
+                        var packetObj = PacketObjPool.Get();
+                        packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+
                         success = ProccessClientPacket(packetObj);
                         break;
                 }
 
-                if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
+                if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)
                 {
                     if (!success)
-                        Log.LineShortDate($"        [BadReprocess] Entity:{erroredPacket.Packet.EntityId} Cause:{erroredPacket.Error} Size:{packetObj.PacketSize}", "net");
+                        Log.LineShortDate($"        [BadReprocess] Entity:{errorPacket.Packet?.EntityId} Cause:{errorPacket.Error ?? string.Empty}", "net");
 
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                    PacketObjPool.Return(packetObj);
+                    ClientSideErrorPkt.Remove(errorPacket);
                 }
                 else
-                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+                    errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
 
-                if (erroredPacket.MaxAttempts == 0)
-                {
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                    PacketObjPool.Return(packetObj);
-                }
+                if (errorPacket.MaxAttempts == 0)
+                    ClientSideErrorPkt.Remove(errorPacket);
             }
+            ClientSideErrorPkt.ApplyChanges();
         }
 
         private bool ClientCompStateUpdate(PacketObj data)
