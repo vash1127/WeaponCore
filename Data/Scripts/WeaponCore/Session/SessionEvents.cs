@@ -127,7 +127,7 @@ namespace WeaponCore
                 grid.AddedToScene -= GridAddedToScene;
                 DirtyGrids.Add(grid);
             }
-            else Log.Line($"grid not removed and list not cleaned");
+            else Log.Line($"grid not removed and list not cleaned: marked:{grid.MarkedForClose}({grid.Closed}) - inScene:{grid.InScene}");
         }
 
         private void ToFatMap(MyCubeBlock myCubeBlock)

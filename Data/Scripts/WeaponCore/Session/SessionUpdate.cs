@@ -190,13 +190,6 @@ namespace WeaponCore
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
                         }
-                        else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange)) {
-
-                            if (w.Target != w.Comp.TrackingWeapon.Target) {
-                                w.Target = w.Comp.TrackingWeapon.Target;
-                                if (MpActive) w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w);
-                            }
-                        }
 
                         if (w.Target.TargetChanged) // Target changed
                             w.TargetChanged();

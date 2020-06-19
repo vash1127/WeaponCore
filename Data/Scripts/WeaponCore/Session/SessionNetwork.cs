@@ -71,7 +71,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
         }
 
-        private bool ProccessClientPacket(PacketObj packetObj)
+        private bool ProccessClientPacket(PacketObj packetObj, bool firstRun = true)
         {
             try {
                 var invalidType = false;
@@ -191,14 +191,16 @@ namespace WeaponCore
                 else if (packetObj.Report.PacketValid && ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
                     ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
 
-                ClientSideErrorPkt.ApplyChanges();
-                PacketObjPool.Return(packetObj);
+                if (firstRun) 
+                    ClientSideErrorPkt.ApplyChanges();
 
                 if (packetObj.Report.PacketValid) {
+                    PacketObjPool.Return(packetObj);
                     return true;
                 }
+                PacketObjPool.Return(packetObj);
             }
-            catch (Exception ex) { Log.Line($"Exception in ProccessClientPacket: {ex} - pObjNull:{packetObj == null} - packetNull:{packetObj?.Packet == null} - error:{packetObj?.ErrorPacket == null} - report:{packetObj?.Report == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in ProccessClientPacket: {ex} - packetSize:{packetObj?.PacketSize} - pObjNull:{packetObj == null} - packetNull:{packetObj?.Packet == null} - error:{packetObj?.ErrorPacket == null} - report:{packetObj?.Report == null}"); }
             return false;
         }
         #endregion

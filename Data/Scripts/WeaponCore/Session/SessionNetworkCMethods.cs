@@ -88,7 +88,7 @@ namespace WeaponCore
                         var packetObj = PacketObjPool.Get();
                         packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
 
-                        success = ProccessClientPacket(packetObj);
+                        success = ProccessClientPacket(packetObj, false);
                         break;
                 }
 

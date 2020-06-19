@@ -17,6 +17,7 @@ namespace WeaponCore.Platform
     {
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly MySoundPair RotationSound = new MySoundPair();
+        private readonly List<int> _orderToCreate = new List<int>();
         internal Weapon[] Weapons = new Weapon[1];
         internal WeaponStructure Structure;
         internal WeaponComponent Comp;
@@ -126,8 +127,18 @@ namespace WeaponCore.Platform
 
         private PlatformState GetParts(WeaponComponent comp)
         {
-            Parts.CheckSubparts();
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
+                _orderToCreate.Add(i);
+
+            if (Structure.PrimaryWeapon > 0) {
+                var tmpPos = _orderToCreate[Structure.PrimaryWeapon];
+                _orderToCreate[tmpPos] = _orderToCreate[0];
+                _orderToCreate[0] = tmpPos;
+            }
+
+            Parts.CheckSubparts();
+
+            foreach (var i in _orderToCreate)
             {
                 var muzzlePartHash = Structure.MuzzlePartNames[i];
                 var barrelCount = Structure.WeaponSystems[muzzlePartHash].Barrels.Length;                
@@ -210,6 +221,8 @@ namespace WeaponCore.Platform
                         RotationSound.Init(weapon.System.Values.HardPoint.Audio.HardPointRotationSound, false);
                 }
             }
+            _orderToCreate.Clear();
+
             CompileTurret(comp);
 
             State = PlatformState.Inited;

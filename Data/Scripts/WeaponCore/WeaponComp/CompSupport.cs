@@ -101,8 +101,6 @@ namespace WeaponCore.Support
 
                     if (w.Acquire.Enabled) 
                         w.Comp.Session.AcqManager.Remove(w.Acquire);
-
-                    w.Acquire.Weapon = null;
                 }
             }
         }

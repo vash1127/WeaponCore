@@ -414,7 +414,7 @@ namespace WeaponCore.Support
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
 
-                if (!muzzle.Av1Looping && ticksAgo >= weapon.System.Barrel1AvTicks || weapon.StopBarrelAv) {
+                if (!muzzle.Av1Looping && ticksAgo >= weapon.System.Barrel1AvTicks || weapon.StopBarrelAv || weapon.Comp.MyCube.MarkedForClose) {
 
                     if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
 
@@ -481,7 +481,7 @@ namespace WeaponCore.Support
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
 
-                if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || !weapon.Comp.State.Value.Online || !weapon.Comp.Set.Value.Overrides.Activate || !weapon.Set.Enable) {
+                if (!muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || !weapon.Comp.State.Value.Online || !weapon.Comp.Set.Value.Overrides.Activate || !weapon.Set.Enable || weapon.Comp.MyCube.MarkedForClose) {
 
                     if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
 
