@@ -65,12 +65,6 @@ namespace WeaponCore
                 }
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();
-
-                if (Session.HandlesInput) {
-                    var updatedItem = GetCurrentMenuItem();
-                    if (updatedItem.Dirty)
-                        GetCurrentMenu().ReportInfo(updatedItem);
-                }
             }
         }
 

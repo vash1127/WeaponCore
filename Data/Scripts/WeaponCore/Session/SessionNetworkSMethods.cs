@@ -735,9 +735,6 @@ namespace WeaponCore
                 }
 
             }
-            else {
-                return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-            }
 
             data.Report.PacketValid = true;
 

@@ -122,6 +122,7 @@ namespace WeaponCore
 
             internal void PickMessage(Item item)
             {
+                Log.Line("pickmessage");
                 if (Wheel.BlockGroups == null || item == null || Wheel.BlockGroups.Count == 0) return;
 
                 GroupInfo groupInfo;
@@ -172,13 +173,13 @@ namespace WeaponCore
 
             internal void SetInfo(Item item)
             {
+                Log.Line("set info");
                 GroupInfo groupInfo;
                 switch (Name)
                 {
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
                         SetGroupSettings(groupInfo, Wheel.ActiveGroupName);
-                        item.Dirty = true;
                         break;
                 }
                 switch (Name)
@@ -189,7 +190,6 @@ namespace WeaponCore
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             SetMemberSettings(groupInfo, groupMember);
-                            item.Dirty = true;
                         }
                         break;
                 }
@@ -197,13 +197,13 @@ namespace WeaponCore
 
             internal void ReportInfo(Item item)
             {
+                Log.Line("report info");
                 GroupInfo groupInfo;
                 switch (Name)
                 {
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
                         ReportGroupSettings(groupInfo, item);
-                        item.Dirty = false;
                         break;
                 }
                 switch (Name)
@@ -214,7 +214,6 @@ namespace WeaponCore
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             ReportMemberSettings(groupInfo, groupMember, item);
-                            item.Dirty = false;
                         }
                         break;
                 }

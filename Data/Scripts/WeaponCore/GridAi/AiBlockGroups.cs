@@ -24,6 +24,7 @@ namespace WeaponCore.Support
 
         internal string Name;
         internal ChangeStates ChangeState;
+
         internal enum ChangeStates
         {
             None,

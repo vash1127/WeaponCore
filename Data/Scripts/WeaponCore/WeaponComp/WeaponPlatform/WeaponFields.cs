@@ -29,8 +29,13 @@ namespace WeaponCore.Platform
         internal readonly Target Target;
         internal readonly Target NewTarget;
         internal readonly PartInfo MuzzlePart;
+        internal readonly Dummy[] Dummies;
+        internal readonly Muzzle[] Muzzles;
+        internal readonly PartInfo AzimuthPart;
+        internal readonly PartInfo ElevationPart;
+        internal readonly bool AzimuthOnBase;
+        internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
 
-        internal Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;
         private int _nextVirtual;
@@ -62,8 +67,7 @@ namespace WeaponCore.Platform
         internal int BarrelRate;
         internal int ArmorHits;
 
-        internal PartInfo AzimuthPart;
-        internal PartInfo ElevationPart;
+
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
@@ -76,8 +80,7 @@ namespace WeaponCore.Platform
         internal LineD MyPivotTestLine;
         internal LineD MyAimTestLine;
         internal LineD MyShootAlignmentLine;
-        internal Dummy[] Dummies;
-        internal Muzzle[] Muzzles;
+
         internal uint[] BeamSlot;
 
 
@@ -96,7 +99,6 @@ namespace WeaponCore.Platform
         internal MySoundPair RotateSound;
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
-        //internal WeaponTimings Timings;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 
@@ -108,6 +110,7 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly bool TrackProjectiles;
         internal readonly bool PrimaryWeaponGroup;
+        internal readonly bool AiOnlyWeapon;
 
         internal EventTriggers LastEvent;
         internal float RequiredPower;
@@ -171,7 +174,6 @@ namespace WeaponCore.Platform
         internal bool NoMagsToLoad;
         internal bool CurrentlyDegrading;
         internal bool FixedOffset;
-        internal bool AiOnlyWeapon;
         internal bool DrawingPower;
         internal bool RequestedPower;
         internal bool ResetPower;
@@ -180,7 +182,6 @@ namespace WeaponCore.Platform
         internal bool StopBarrelAv;
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;
-        internal bool AzimuthOnBase;
         internal bool ReturingHome;
         internal bool IsHome = true;
         internal bool CanUseEnergyAmmo;
@@ -213,12 +214,13 @@ namespace WeaponCore.Platform
         }
 
         internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp,
-            Dictionary<EventTriggers, PartAnimation[]> animationSets)
+            Dictionary<EventTriggers, PartAnimation[]> animationSets, int barrelCount, MyEntity elevationPart,
+            MyEntity azimuthPart, string azimuthPartName, string elevationPartName,
+            Dictionary<EventTriggers, ParticleEvent[]> wepParticleEvents)
         {
 
             MuzzlePart = new PartInfo {Entity = entity};
             AnimationsSet = animationSets;
-            //Timings = new WeaponTimings();
             if (AnimationsSet != null)
             {
                 foreach (var set in AnimationsSet)
@@ -355,9 +357,16 @@ namespace WeaponCore.Platform
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             RayCallBack = new ParallelRayCallBack(this);
             Acquire = new WeaponAcquire(this);
+            Muzzles = new Muzzle[barrelCount];
+            Dummies = new Dummy[barrelCount];
+            AzimuthPart = new PartInfo {Entity = azimuthPart};
+            ElevationPart = new PartInfo {Entity = elevationPart};
+            AzimuthOnBase = azimuthPart.Parent == comp.MyCube;
+            ParticleEvents = wepParticleEvents;
+            AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
+
             TrackProjectiles = System.TrackProjectile;
 
-            //LoadId = comp.Session.LoadAssigner();
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
 
