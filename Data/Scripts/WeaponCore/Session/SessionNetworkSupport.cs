@@ -405,7 +405,7 @@ namespace WeaponCore
                     MId = comp.MIds[(int)PacketType.CompStateUpdate]
                 });
             }
-            else if (HandlesInput)
+            else 
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -436,7 +436,7 @@ namespace WeaponCore
                     MId = comp.MIds[(int)PacketType.CompSettingsUpdate]
                 });
             }
-            else if (HandlesInput)
+            else 
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -475,7 +475,7 @@ namespace WeaponCore
                     Data = comp.TrackReticle
                 });
             }
-            else if (IsServer)
+            else 
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -531,7 +531,7 @@ namespace WeaponCore
                     PType = PacketType.RescanGroupRequest,
                 });
             }
-            else if (IsServer)
+            else 
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -724,28 +724,11 @@ namespace WeaponCore
         {
             if (weapon.System.DesignatorWeapon) return;
 
-            //var hadInventory = weapon.State.Sync.HasInventory;
-            
             if (setState)
                 weaponData.SetState(weapon.State.Sync, weapon);
 
-            //Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
-
             if (weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable && !weapon.Reloading)
                 weapon.Reload();
-            //else Log.Line($"no reload in SyncWeapon");
-
-            /*
-            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsIndexer.ContainsKey(weapon))
-                weapon.ChargeReload(true);
-
-            if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)
-            {
-                weapon.HeatLoopRunning = true;
-                var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
-                comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
-            }
-            */
         }
 
         public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd, bool applyToRoot = false)
@@ -802,44 +785,6 @@ namespace WeaponCore
 
             return o;
         }
-
-        /*
-        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
-        {
-            var comp = weapon.Comp;
-            var p = comp.Session.Projectiles.ProjectilePool.Count > 0 ? comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
-            p.Info.Id = comp.Session.Projectiles.CurrentProjectileId++;
-            p.Info.System = weapon.System;
-            p.Info.Ai = comp.Ai;
-            p.Info.ClientSent = true;
-            p.Info.AmmoDef = ammoDef;
-            p.Info.Overrides = comp.Set.Value.Overrides;
-            p.Info.Target.Entity = targetEntity;
-            p.Info.Target.Projectile = null;
-            p.Info.Target.IsProjectile = false;
-            p.Info.Target.IsFakeTarget = false;
-            p.Info.Target.FiringCube = comp.MyCube;
-            p.Info.WeaponId = weapon.WeaponId;
-            p.Info.MuzzleId = muzzleId;
-            p.Info.BaseDamagePool = weapon.BaseDamage;
-            p.Info.EnableGuidance = false;
-            p.Info.WeaponCache = weapon.WeaponCache;
-            p.Info.WeaponCache.VirutalId = -1;
-            p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
-            p.Info.LockOnFireState = false;
-            p.Info.ShooterVel = comp.Ai.GridVel;
-            p.Velocity = velocity;
-            p.Info.Origin = origin;
-            p.Info.OriginUp = originUp;
-            p.PredictedTargetPos = Vector3D.Zero;
-            p.Info.Direction = direction;
-            p.State = Projectile.ProjectileState.Start;
-            p.Info.PrimeEntity = weapon.ActiveAmmoDef.AmmoDef.Const.PrimeModel ? weapon.ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
-            p.Info.TriggerEntity = weapon.ActiveAmmoDef.AmmoDef.Const.TriggerModel ? comp.Session.TriggerEntityPool.Get() : null;
-            p.Info.MaxTrajectory = maxTrajectory;
-
-            comp.Session.Projectiles.ActiveProjetiles.Add(p);
-        }*/
 
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {

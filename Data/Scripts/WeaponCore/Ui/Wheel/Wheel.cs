@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -64,6 +65,12 @@ namespace WeaponCore
                 }
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();
+
+                if (Session.HandlesInput) {
+                    var updatedItem = GetCurrentMenuItem();
+                    if (updatedItem.Dirty)
+                        GetCurrentMenu().ReportInfo(updatedItem);
+                }
             }
         }
 
@@ -171,7 +178,9 @@ namespace WeaponCore
 
         internal Menu GetCurrentMenu()
         {
-            return Menus[_currentMenu];
+            var menu = Menus[_currentMenu];
+
+            return menu;
         }
 
         internal Item GetCurrentMenuItem()

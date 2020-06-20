@@ -72,27 +72,31 @@ namespace WeaponCore.Support
         {
             try
             {
-                MyInventory inventory;
-                var battery = myCubeBlock as MyBatteryBlock;
                 var isWeaponBase = myCubeBlock?.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || !string.IsNullOrEmpty(myCubeBlock.BlockDefinition.Id.SubtypeName) && Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId));
 
-                if (isWeaponBase)
-                    ScanBlockGroups = true;
-                else if (myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories)) {
+                try {
+                    var battery = myCubeBlock as MyBatteryBlock;
+                    MyInventory inventory;
+                    if (isWeaponBase)
+                        ScanBlockGroups = true;
+                    else if (myCubeBlock != null && myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                    {
+                        try {
 
-                    try {
-
-                        inventory.InventoryContentChanged -= CheckAmmoInventory;
-                        ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
-                        if (Session.InventoryItems.TryRemove(inventory, out removed))
-                            removed.Clear();
+                            inventory.InventoryContentChanged -= CheckAmmoInventory;
+                            ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
+                            if (Session.InventoryItems.TryRemove(inventory, out removed))
+                                removed.Clear();
+                        }
+                        catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
                     }
-                    catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
+                    else if (battery != null)
+                    {
+                        if (Batteries.Remove(battery)) SourceCount--;
+                        UpdatePowerSources = true;
+                    }
                 }
-                else if (battery != null) {
-                    if (Batteries.Remove(battery)) SourceCount--;
-                    UpdatePowerSources = true;
-                }
+                catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
             }
             catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved: {ex}"); }
         }

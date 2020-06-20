@@ -31,170 +31,171 @@ namespace WeaponCore.Support
             Modify
         }
 
+        internal void RequestApplySettings(string blockGroup, string setting, int newValue, Session session)
+        {
+            if (session.IsServer)
+            {
+                Settings[setting] = newValue;
+                ApplySettings(blockGroup);
+            }
+            else if (session.IsClient)
+            {
+
+            }
+        }
+
+        internal void RequestSetValue(WeaponComponent comp, string setting, int v, Session session)
+        {
+            if (session.IsServer)
+                SetValue(comp, setting, v);
+            else if (session.IsClient)
+            {
+
+            }
+        }
+
         internal void ApplySettings(string blockGroup)
         {
             GroupOverrides o = null;
             GridAi ai = null;
-            foreach (var comp in Comps)
-            {
+            var somethingChanged = false;
+            foreach (var comp in Comps) {
+
                 if (ai == null) {
-                    if (comp?.Ai == null)
+                    if (comp.Ai == null) {
+                        Log.Line($"ApplySettings - null Ai");
                         return;
+                    }
                     ai = comp.Ai;
                 }
 
                 o = comp.Set.Value.Overrides;
-                foreach (var setting in Settings)
-                {
-                    switch (setting.Key)
-                    {
+                var change = false;
+
+                if (comp.State.Value.CurrentBlockGroup != blockGroup) {
+                    comp.State.Value.CurrentBlockGroup = blockGroup;
+                    change = true;
+                }
+
+                foreach (var setting in Settings) {
+
+                    var v = setting.Value;
+                    var enabled = v > 0;
+                    switch (setting.Key) {
                         case "Active":
-                            o.Activate = setting.Value > 0;
+                            if (!change && o.Activate != enabled) change = true;
+                            o.Activate = enabled;
                             if (!o.Activate) ClearTargets(comp);
                             break;
                         case "SubSystems":
-                            o.SubSystem = (TargetingDef.BlockTypes)setting.Value;
+                            var blockType = (TargetingDef.BlockTypes)v;
+                            if (!change && o.SubSystem != blockType) change = true;
+                            o.SubSystem = blockType;
                             break;
                         case "FocusSubSystem":
-                            o.FocusSubSystem = setting.Value > 0;
+                            if (!change && o.FocusSubSystem != enabled) change = true;
+                            o.FocusSubSystem = enabled;
                             break;
                         case "FocusTargets":
-                            o.FocusTargets = setting.Value > 0;
+                            if (!change && o.FocusTargets != enabled) change = true;
+                            o.FocusTargets = enabled;
                             break;
                         case "ManualControl":
-                            o.ManualControl = setting.Value > 0;
+                            if (!change && o.ManualControl != enabled) change = true;
+                            o.ManualControl = enabled;
                             break;
                         case "TargetPainter":
-                            o.TargetPainter = setting.Value > 0;
+                            if (!change && o.TargetPainter != enabled) change = true;
+                            o.TargetPainter = enabled;
                             break;
                         case "Unowned":
-                            o.Unowned = setting.Value > 0;
+                            if (!change && o.Unowned != enabled) change = true;
+                            o.Unowned = enabled;
                             break;
                         case "Friendly":
-                            o.Friendly = setting.Value > 0;
+                            if (!change && o.Friendly != enabled) change = true;
+                            o.Friendly = enabled;
                             break;
                         case "Meteors":
-                            o.Meteors = setting.Value > 0;
+                            if (!change && o.Meteors != enabled) change = true;
+                            o.Meteors = enabled;
                             break;
                         case "Biologicals":
-                            o.Biologicals = setting.Value > 0;
+                            if (!change && o.Biologicals != enabled) change = true;
+                            o.Biologicals = enabled;
                             break;
                         case "Projectiles":
-                            o.Projectiles = setting.Value > 0;
+                            if (!change && o.Projectiles != enabled) change = true;
+                            o.Projectiles = enabled;
                             break;
                         case "Neutrals":
-                            o.Neutrals = setting.Value > 0;
+                            if (!change && o.Neutrals != enabled) change = true;
+                            o.Neutrals = enabled;
                             break;
                     }
                 }
 
-                if (o.ManualControl || o.TargetPainter)
-                {
-                    if (comp.Platform.State != Platform.MyWeaponPlatform.PlatformState.Ready) continue;
-
-                    comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
-
-                    if (o.ManualControl)
-                    {
-                        o.TargetPainter = false;
-                        Settings["TargetPainter"] = 0;
-                    }
-                    else
-                    {
-                        o.ManualControl = false;
-                        Settings["ManualControl"] = 0;
-                    }
-
-                    comp.State.Value.ClickShoot = false;
-                    comp.State.Value.ShootOn = false;
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                        comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
-                }
-                else
-                {
-                    comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                    comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                if (change) {
+                    var userControl = o.ManualControl || o.TargetPainter;
+                    ResetCompState(comp, userControl, true);
+                    somethingChanged = true;
                 }
 
-                if(comp.Session.MpActive)
-                    comp.Session.SendControlingPlayer(comp);
-
-                comp.State.Value.CurrentBlockGroup = blockGroup;
             }
             
-            if (ai != null && ai.Session.HandlesInput && ai.Session.MpActive)
+            if (somethingChanged && ai != null && ai.Session.HandlesInput && ai.Session.MpActive)
                 ai.Session.SendOverRidesUpdate(ai, blockGroup, o);
         }
 
-        internal void SetValue(WeaponComponent comp, string setting, int value)
+        internal void SetValue(WeaponComponent comp, string setting, int v)
         {
             var o = comp.Set.Value.Overrides;
-            switch (setting)
-            {
+            var enabled = v > 0;
+            switch (setting) {
+
                 case "Active":
-                    o.Activate = value > 0;
+                    o.Activate = enabled;
                     if (!o.Activate) ClearTargets(comp);
                     break;
                 case "SubSystems":
-                    o.SubSystem = (TargetingDef.BlockTypes)value;
+                    o.SubSystem = (TargetingDef.BlockTypes)v;
                     break;
                 case "FocusSubSystem":
-                    o.FocusSubSystem = value > 0;
+                    o.FocusSubSystem = enabled;
                     break;
                 case "FocusTargets":
-                    o.FocusTargets = value > 0;
+                    o.FocusTargets = enabled;
                     break;
                 case "ManualControl":
-                    o.ManualControl = value > 0;
+                    o.ManualControl = enabled;
                     break;
                 case "TargetPainter":
-                    o.TargetPainter = value > 0;
+                    o.TargetPainter = enabled;
                     break;
                 case "Unowned":
-                    o.Unowned = value > 0;
+                    o.Unowned = enabled;
                     break;
                 case "Friendly":
-                    o.Friendly = value > 0;
+                    o.Friendly = enabled;
                     break;
                 case "Meteors":
-                    o.Meteors = value > 0;
+                    o.Meteors = enabled;
                     break;
                 case "Biologicals":
-                    o.Biologicals = value > 0;
+                    o.Biologicals = enabled;
                     break;
                 case "Projectiles":
-                    o.Projectiles = value > 0;
+                    o.Projectiles = enabled;
                     break;
                 case "Neutrals":
-                    o.Neutrals = value > 0;
+                    o.Neutrals = enabled;
                     break;
             }
 
-            if (o.ManualControl || o.TargetPainter)
-            {
-                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+            var userControl = o.ManualControl || o.TargetPainter;
+            ResetCompState(comp, userControl, false);
 
-                if (o.ManualControl)
-                    o.TargetPainter = false;
-                else
-                    o.ManualControl = false;
-
-                comp.State.Value.ClickShoot = false;
-                comp.State.Value.ShootOn = false;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
-            }
-            else
-            {
-                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-            }
-
-            if (comp.Session.MpActive)
-            {
-                comp.Session.SendControlingPlayer(comp);
+            if (comp.Session.MpActive) {
                 comp.Session.SendOverRidesUpdate(comp, o);
             }
         }
@@ -203,8 +204,8 @@ namespace WeaponCore.Support
         {
             var value = 0;
             var o = comp.Set.Value.Overrides;
-            switch (setting)
-            {
+            switch (setting) {
+
                 case "Active":
                     value = o.Activate ? 1 : 0;
                     break;
@@ -245,11 +246,43 @@ namespace WeaponCore.Support
             return value;
         }
 
+        internal void ResetCompState(WeaponComponent comp, bool userControl, bool apply)
+        {
+            var o = comp.Set.Value.Overrides;
+            if (userControl) {
+
+                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+
+                if (o.ManualControl) {
+                    o.TargetPainter = false;
+                    if (apply) Settings["TargetPainter"] = 0;
+                }
+                else {
+                    o.ManualControl = false;
+                    if (apply) Settings["ManualControl"] = 0;
+                }
+
+                comp.State.Value.ClickShoot = false;
+                comp.State.Value.ShootOn = false;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
+            }
+            else {
+                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
+                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+            }
+
+            if (comp.Session.MpActive)
+                comp.Session.SendControlingPlayer(comp);
+
+        }
+
         private void ClearTargets(WeaponComponent comp)
         {
             if (comp.Session.IsClient) return;
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+
                 var weapon = comp.Platform.Weapons[i];
                 if (weapon.Target.HasTarget)
                     comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.Expired);

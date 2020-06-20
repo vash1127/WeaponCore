@@ -177,7 +177,8 @@ namespace WeaponCore
                 {
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
-                        SetGroupSettings(groupInfo, item, Wheel.ActiveGroupName);
+                        SetGroupSettings(groupInfo, Wheel.ActiveGroupName);
+                        item.Dirty = true;
                         break;
                 }
                 switch (Name)
@@ -187,7 +188,33 @@ namespace WeaponCore
                         {
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
-                            SetMemberSettings(groupInfo, groupMember, item);
+                            SetMemberSettings(groupInfo, groupMember);
+                            item.Dirty = true;
+                        }
+                        break;
+                }
+            }
+
+            internal void ReportInfo(Item item)
+            {
+                GroupInfo groupInfo;
+                switch (Name)
+                {
+                    case "GroupSettings":
+                        if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                        ReportGroupSettings(groupInfo, item);
+                        item.Dirty = false;
+                        break;
+                }
+                switch (Name)
+                {
+                    case "CompSettings":
+                        if (Wheel.BlockGroups.Count > 0)
+                        {
+                            var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
+                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
+                            ReportMemberSettings(groupInfo, groupMember, item);
+                            item.Dirty = false;
                         }
                         break;
                 }
@@ -204,19 +231,18 @@ namespace WeaponCore
                 Message = message;
             }
 
-            internal void SetGroupSettings(GroupInfo groupInfo, Item item, string groupName)
+            internal void SetGroupSettings(GroupInfo groupInfo, string groupName)
             {
+                var s = Wheel.Session;
                 var currentSettingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var currentValue = groupInfo.Settings[currentSettingName];
                 var map = Wheel.SettingCycleStrMap[currentSettingName];
                 var nextValueStr = map[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
-                groupInfo.Settings[currentSettingName] = nextValue;
-                groupInfo.ApplySettings(groupName);
-                ReportGroupSettings(groupInfo, item);
+                groupInfo.RequestApplySettings(groupName, currentSettingName, nextValue, s);
             }
 
-            internal void SetMemberSettings(GroupInfo groupInfo, GroupMember groupMember, Item item)
+            internal void SetMemberSettings(GroupInfo groupInfo, GroupMember groupMember)
             {
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var settingMap = Wheel.SettingCycleStrMap[settingName];
@@ -225,7 +251,6 @@ namespace WeaponCore
                 var nextValue = Wheel.SettingStrToValues[settingName][nextValueToStr];
 
                 groupInfo.SetValue(groupMember.Comp, settingName, nextValue);
-                ReportMemberSettings(groupInfo, groupMember, item);
             }
 
             internal void FormatCompMessage(GroupMember groupMember, Color color)
