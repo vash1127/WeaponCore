@@ -736,7 +736,6 @@ namespace WeaponCore
 
             }
             else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 

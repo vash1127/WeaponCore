@@ -58,7 +58,7 @@ namespace WeaponCore
                     using (weapon.Comp.Ai?.MyGrid.Pin())
                     using (weapon.Comp.MyCube.Pin()) {
 
-                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) {
+                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
                             continue;
                         }
@@ -129,9 +129,7 @@ namespace WeaponCore
                 var weaponAmmoToPull = AmmoToPullQueue[i];
                 var weapon = weaponAmmoToPull.Weapon;
                 var inventoriesToPull = weaponAmmoToPull.Inventories;
-                if (!weapon.Comp.InventoryInited || weapon?.Comp == null || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
-                    inventoriesToPull.Clear();
-                    weaponAmmoToPull.Weapon = null;
+                if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     InventoryMoveRequestPool.Return(weaponAmmoToPull);
                     continue;
                 }
@@ -149,8 +147,6 @@ namespace WeaponCore
                 if (inventoriesToPull.Count > 0)
                     weapon.Reload();
 
-                inventoriesToPull.Clear();
-                weaponAmmoToPull.Weapon = null;
                 InventoryMoveRequestPool.Return(weaponAmmoToPull);
 
                 AmmoToPullQueue.Remove(weaponAmmoToPull);
