@@ -914,7 +914,7 @@ namespace WeaponCore.Support
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
         {
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;
-            growTime = ammoDef.AreaEffect.Pulse.GrowTime;
+            growTime = ammoDef.AreaEffect.Pulse.GrowTime == 0 && pulseInterval > 0 ? 60 : ammoDef.AreaEffect.Pulse.GrowTime;
             pulseChance = ammoDef.AreaEffect.Pulse.PulseChance;
             pulse = pulseInterval > 0 && pulseChance > 0;
         }

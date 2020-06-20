@@ -126,6 +126,7 @@ namespace WeaponCore.Support
 
                         if (av.OnScreen != AvShot.Screen.None && av.AmmoDef.Const.FieldParticle && av.FieldEffect != null)
                             av.AmmoEffect.WorldMatrix = av.PrimeMatrix;
+                        Log.Line($"{av.TriggerEntity.InScene}");
                     }
 
                     if (av.HasTravelSound)

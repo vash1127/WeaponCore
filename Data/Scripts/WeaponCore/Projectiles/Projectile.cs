@@ -428,6 +428,7 @@ namespace WeaponCore.Projectiles
         {
             var ent = Info.Target.Entity;
             MineActivated = true;
+            AtMaxRange = false;
             var targetPos = ent.PositionComp.WorldAABB.Center;
             var deltaPos = targetPos - Position;
             var targetVel = ent.Physics?.LinearVelocity ?? Vector3.Zero;
@@ -618,7 +619,7 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (Info.AmmoDef.Const.Pulse && !Info.TriggeredPulse && VelocityLengthSqr <= 0 && !Info.AmmoDef.Const.IsMine)
+            if (Info.AmmoDef.Const.Pulse && !Info.TriggeredPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.AmmoDef.Const.IsMine)
             {
                 Info.TriggeredPulse = true;
                 Velocity = Vector3D.Zero;
