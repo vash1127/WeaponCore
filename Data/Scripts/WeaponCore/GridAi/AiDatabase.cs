@@ -50,7 +50,10 @@ namespace WeaponCore.Support
                     }
 
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                    if (!CreateEntInfo(ent, MyOwner, out entInfo)) continue;
+                    if (!CreateEntInfo(ent, MyOwner, out entInfo))
+                    {
+                        continue;
+                    }
 
                     switch (entInfo.Relationship) {
                         case MyRelationsBetweenPlayerAndBlock.Owner:
@@ -134,7 +137,10 @@ namespace WeaponCore.Support
                     StaticsInRangeTmp.Add(ent);
                 }
 
-                if (grid != null && (PrevSubGrids.Contains(grid) || ValidGrids.Contains(ent) || grid.PositionComp.LocalVolume.Radius < 6)) continue;
+                FatMap map;
+                if (grid != null && (PrevSubGrids.Contains(grid) || ValidGrids.Contains(ent) || grid.PositionComp.LocalVolume.Radius < 10 || Session.GridToFatMap.TryGetValue(grid, out map) && map.Trash || grid.BigOwners.Count == 0) ) continue;
+                if (voxel != null && (voxel != voxel.RootVoxel || voxel.RootVoxel is MyPlanet || voxel.VoxelSize < 2)) continue;
+
                 ObstructionsTmp.Add(ent);
             }
             ValidGrids.Clear();

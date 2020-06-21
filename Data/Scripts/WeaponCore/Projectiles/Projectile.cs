@@ -61,6 +61,7 @@ namespace WeaponCore.Projectiles
         internal int CachedId;
         internal int MaxChaseTime;
         internal int NewTargets;
+        internal int SmartSlot;
         internal bool PickTarget;
         internal bool EnableAv;
         internal bool ConstantSpeed;
@@ -166,11 +167,13 @@ namespace WeaponCore.Projectiles
             {
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
+                SmartSlot = MyUtils.GetRandomInt(0, 10);
             }
             else
             {
                 MaxChaseTime = int.MaxValue;
                 SmartsOn = false;
+                SmartSlot = 0;
             }
 
             if (Info.Target.IsProjectile)
@@ -407,7 +410,6 @@ namespace WeaponCore.Projectiles
             var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
-
             if (giveUp || !GridAi.ReacquireTarget(this)) {
                 Info.Target.Entity = null;
                 if (Info.Target.IsProjectile) UnAssignProjectile(true);
@@ -499,10 +501,10 @@ namespace WeaponCore.Projectiles
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime && HadTarget;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
-                var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
-                var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && Info.Age % 30 == 0;
+                var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && (ZombieLifeTime + SmartSlot) % 30 == 0;
+                var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && (Info.Age + SmartSlot) % 30 == 0;
 
-                if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
+                if ((PickTarget && (Info.Age + SmartSlot) % 30 == 0 || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
                 {
                     HadTarget = true;
                     if (ZombieLifeTime > 0)

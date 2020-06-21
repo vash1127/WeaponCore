@@ -107,19 +107,26 @@ namespace WeaponCore.Support
                 else if (i <= lastOffset && betaInfo != null) info = betaInfo;
                 else info = ai.SortedTargets[deck[i - offset]];
 
-                if (info.Target == null || info.Target.MarkedForClose || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
-                var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
-                var targetPos = info.Target.PositionComp.WorldAABB.Center;
-
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || Vector3D.DistanceSquared(targetPos, p.Position) >= p.DistanceToTravelSqr) continue;
-
-                if (!focusTarget && info.OffenseRating <= 0)
-                    continue;
-
-                if (focusTarget && !attackFriends && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Friends) continue;
+                if (!focusTarget && info.OffenseRating <= 0 || focusTarget && !attackFriends && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Friends || info.Target == null || info.Target.MarkedForClose || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) {continue;}
 
                 if (!attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
+                var character = info.Target as IMyCharacter;
+                if (character != null && (!s.TrackCharacters || !overRides.Biologicals)) continue;
+
+                var meteor = info.Target as MyMeteor;
+                if (meteor != null && (!s.TrackMeteors || !overRides.Meteors)) continue;
+
+                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+
+                double distSqr;
+                Vector3D.DistanceSquared(ref targetPos, ref p.Position, out distSqr);
+
+                if (distSqr > p.DistanceToTravelSqr)
+                    continue;
+
+                var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
                 if (info.IsGrid && s.TrackGrids)
                 {
                     if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
@@ -127,12 +134,6 @@ namespace WeaponCore.Support
                     if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, null, !focusTarget)) continue;
                     return true;
                 }
-
-                var character = info.Target as IMyCharacter;
-                if (character != null && !s.TrackCharacters || !overRides.Biologicals) continue;
-
-                var meteor = info.Target as MyMeteor;
-                if (meteor != null && !s.TrackMeteors || !overRides.Meteors) continue;
 
                 if (Obstruction(ref info, ref targetPos, p))
                     continue;
@@ -685,6 +686,7 @@ namespace WeaponCore.Support
             for (int j = 0; j < ai.Obstructions.Count; j++)
             {
                 var ent = ai.Obstructions[j];
+
                 var voxel = ent as MyVoxelBase;
                 var dir = (targetPos - p.Position);
                 if (voxel != null)
@@ -743,15 +745,26 @@ namespace WeaponCore.Support
 
                 if (!obstruction && ai.PlanetSurfaceInRange && ai.MyPlanet != null)
                 {
-                    Vector3D dirNorm;
-                    Vector3D.Normalize(ref dir, out dirNorm);
-                    var targetDist = Vector3D.Distance(p.Position, targetPos);
+                    double targetDist;
+                    Vector3D.Distance(ref p.Position, ref targetPos, out targetDist);
+                    var dirNorm = dir / targetDist;
+
                     var tRadius = info.Target.PositionComp.LocalVolume.Radius;
-                    var testPos = p.Position + (dirNorm * (targetDist - tRadius));
+                    targetDist = targetDist > tRadius ? (targetDist - tRadius) : targetDist;
 
-                    var lineTest = new LineD(p.Position, testPos, (targetDist - tRadius));
+                    var targetEdgePos = targetPos + (-dirNorm * tRadius);
 
-                    obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest, 2);
+                    if (targetDist > 300) {
+                        var lineTest1 = new LineD(p.Position, p.Position + (dirNorm * 150), 150);
+                        var lineTest2 = new LineD(targetEdgePos, targetEdgePos + (-dirNorm * 150), 150);
+                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest1, 3);
+                        if (!obstruction)
+                            obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest2, 3);
+                    }
+                    else {
+                        var lineTest = new LineD(p.Position, targetEdgePos, targetDist);
+                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, ref lineTest, 3);
+                    }
                 }
             }
             return obstruction;
