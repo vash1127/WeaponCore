@@ -128,18 +128,15 @@ namespace WeaponCore.Support
                 }
                 var voxel = ent as MyVoxelBase;
                 var grid = ent as MyCubeGrid;
-                var blockingThings = ent.Physics != null && (voxel != null && voxel.RootVoxel == voxel || grid != null);
-                if (!blockingThings) continue;
-                
-                if (ent.Physics.IsStatic) {
 
-                    if (voxel is MyPlanet) continue;
+                var blockingThings = ent.Physics != null && grid != null || voxel != null && voxel == voxel.RootVoxel;
+                if (!blockingThings || voxel != null && (voxel.RootVoxel is MyPlanet || voxel.PositionComp.LocalVolume.Radius < 15)) continue;
+
+                if (voxel != null || ent.Physics.IsStatic)
                     StaticsInRangeTmp.Add(ent);
-                }
 
                 FatMap map;
                 if (grid != null && (PrevSubGrids.Contains(grid) || ValidGrids.Contains(ent) || grid.PositionComp.LocalVolume.Radius < 10 || Session.GridToFatMap.TryGetValue(grid, out map) && map.Trash || grid.BigOwners.Count == 0) ) continue;
-                if (voxel != null && (voxel != voxel.RootVoxel || voxel.RootVoxel is MyPlanet || voxel.VoxelSize < 2)) continue;
 
                 ObstructionsTmp.Add(ent);
             }

@@ -327,7 +327,7 @@ namespace WeaponCore.Projectiles
             {
                 var ai = Info.Ai;
                 LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
-                var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory));
+                var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory), Info.MaxTrajectory);
 
                 for (int i = 0; i < ai.StaticsInRange.Count; i++)
                 {
@@ -341,31 +341,13 @@ namespace WeaponCore.Projectiles
                     {
                         if (voxel != null && voxel == voxel.RootVoxel)
                         {
-                            if (voxel == Info.MyPlanet)
-                            {
-                                if (!Info.AmmoDef.Const.IsBeamWeapon)
-                                {
-                                    //Info.System.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
-                                    LinePlanetCheck = true;
-                                }
-                                else if (!Info.WeaponCache.VoxelHits[CachedId].Cached(lineTest, Info))
-                                {
-                                    LinePlanetCheck = true;
-                                }
-                                else CachedPlanetHit = true;
-
-                                PruneQuery = MyEntityQueryType.Both;
-                            }
-                            else
-                            {
-                                LinePlanetCheck = true;
-                                PruneQuery = MyEntityQueryType.Both;
-                            }
+                            LinePlanetCheck = true;
+                            PruneQuery = MyEntityQueryType.Both;
                             break;
                         }
                         if (grid != null && grid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid)) continue;
                         PruneQuery = MyEntityQueryType.Both;
-                        if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
+                        break;
                     }
                 }
             }
