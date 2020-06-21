@@ -122,9 +122,8 @@ namespace WeaponCore
 
             internal void PickMessage(Item item)
             {
-                Log.Line("pickmessage");
                 if (Wheel.BlockGroups == null || item == null || Wheel.BlockGroups.Count == 0) return;
-
+                Wheel.Dirty = false;
                 GroupInfo groupInfo;
                 switch (Name)
                 {
@@ -171,7 +170,7 @@ namespace WeaponCore
                 }
             }
 
-            internal void SetInfo(Item item)
+            internal void SetInfo()
             {
                 Log.Line("set info");
                 GroupInfo groupInfo;
@@ -179,7 +178,7 @@ namespace WeaponCore
                 {
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
-                        SetGroupSettings(groupInfo, Wheel.ActiveGroupName);
+                        SetGroupSettings(groupInfo);
                         break;
                 }
                 switch (Name)
@@ -217,6 +216,7 @@ namespace WeaponCore
                         }
                         break;
                 }
+                Wheel.Dirty = false;
             }
 
             internal void ReportGroupSettings(GroupInfo groupInfo, Item item)
@@ -230,7 +230,7 @@ namespace WeaponCore
                 Message = message;
             }
 
-            internal void SetGroupSettings(GroupInfo groupInfo, string groupName)
+            internal void SetGroupSettings(GroupInfo groupInfo)
             {
                 var s = Wheel.Session;
                 var currentSettingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
@@ -238,7 +238,8 @@ namespace WeaponCore
                 var map = Wheel.SettingCycleStrMap[currentSettingName];
                 var nextValueStr = map[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
-                groupInfo.RequestApplySettings(groupName, currentSettingName, nextValue, s);
+                groupInfo.RequestApplySettings(Wheel.Ai, currentSettingName, nextValue, s);
+                if (Wheel.Session.IsServer) Wheel.Dirty = true;
             }
 
             internal void SetMemberSettings(GroupInfo groupInfo, GroupMember groupMember)
@@ -248,8 +249,8 @@ namespace WeaponCore
                 var currentValue = groupInfo.GetCompSetting(settingName, groupMember.Comp);
                 var nextValueToStr = settingMap[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[settingName][nextValueToStr];
-
-                groupInfo.SetValue(groupMember.Comp, settingName, nextValue);
+                groupInfo.RequestSetValue(groupMember.Comp, settingName, nextValue);
+                if (Wheel.Session.IsServer) Wheel.Dirty = true;
             }
 
             internal void FormatCompMessage(GroupMember groupMember, Color color)

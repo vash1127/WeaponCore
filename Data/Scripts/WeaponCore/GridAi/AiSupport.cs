@@ -243,7 +243,7 @@ namespace WeaponCore.Support
                     overRides.TargetPainter = false;
                     overRides.ManualControl = false;
                     if (comp.Session.MpActive) {
-                        comp.Session.SendOverRidesUpdate(comp, overRides);
+                        //comp.Session.SendOverRidesUpdate(comp, overRides);
                         comp.TrackReticle = false;
                         comp.Session.SendTrackReticleUpdate(comp);
                     }

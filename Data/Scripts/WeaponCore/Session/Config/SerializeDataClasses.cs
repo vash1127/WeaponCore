@@ -409,6 +409,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal GroupOverrides Data;
         [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
+        [ProtoMember(3), DefaultValue("")] internal string Setting = "";
+        [ProtoMember(4)] internal int Value;
 
         public OverRidesPacket() { }
 
@@ -416,7 +418,9 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
-            GroupName = "";
+            GroupName = string.Empty;
+            Setting = string.Empty;
+            Value = 0;
         }
     }
 

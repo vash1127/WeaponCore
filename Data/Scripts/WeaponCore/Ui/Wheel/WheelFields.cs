@@ -28,7 +28,7 @@ namespace WeaponCore
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
         internal int CurrentTextureId;
-        internal int Version;
+        internal bool Dirty;
 
         internal enum Update
         {

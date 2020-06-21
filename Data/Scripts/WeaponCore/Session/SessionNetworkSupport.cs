@@ -193,6 +193,40 @@ namespace WeaponCore
             }
         }
 
+        internal void SendOverRidesUpdate(WeaponComponent comp, string settings, int value)
+        {
+            if (MpActive)
+            {
+                comp.MIds[(int)PacketType.OverRidesUpdate]++;
+                if (IsClient)
+                {
+                    PacketsToServer.Add(new OverRidesPacket
+                    {
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                        PType = PacketType.OverRidesUpdate,
+                        Setting = settings,
+                        Value = value,
+                    });
+                }
+                else if (IsServer)
+                {
+                    PacketsToClient.Add(new PacketInfo
+                    {
+                        Entity = comp.MyCube,
+                        Packet = new OverRidesPacket
+                        {
+                            EntityId = comp.MyCube.EntityId,
+                            SenderId = 0,
+                            MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                            PType = PacketType.OverRidesUpdate,
+                        }
+                    });
+                }
+            }
+        }
+
         internal void SendOverRidesUpdate(GridAi ai, string groupName, GroupOverrides overRides)
         {
             if (MpActive)
@@ -229,6 +263,45 @@ namespace WeaponCore
             }
         }
 
+        internal void SendOverRidesUpdate(GridAi ai, string groupName, string settings, int value)
+        {
+            if (MpActive)
+            {
+                ai.UiMId++;
+                if (IsClient)
+                {
+                    PacketsToServer.Add(new OverRidesPacket
+                    {
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        MId = ai.UiMId,
+                        GroupName = groupName,
+                        Setting = settings,
+                        Value = value,
+                        PType = PacketType.OverRidesUpdate,
+                    });
+                }
+                else if (IsServer)
+                {
+                    PacketsToClient.Add(new PacketInfo
+                    {
+                        Entity = ai.MyGrid,
+                        Packet = new OverRidesPacket
+                        {
+                            EntityId = ai.MyGrid.EntityId,
+                            SenderId = 0,
+                            MId = ai.UiMId,
+                            GroupName = groupName,
+                            Setting = settings,
+                            Value = value,
+                            PType = PacketType.OverRidesUpdate,
+                        }
+                    });
+                }
+            }
+        }
+
+        /*
         internal void SendOverRidesUpdate(WeaponComponent comp, GroupOverrides overRides)
         {
             if (MpActive)
@@ -262,7 +335,7 @@ namespace WeaponCore
                 }
             }
         }
-
+        */
         internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state)
         {
             if (!HandlesInput) return;
@@ -298,7 +371,7 @@ namespace WeaponCore
                 });
             }
         }
-
+        /*
         internal void SendRangeUpdate(WeaponComponent comp, float range)
         {
             comp.MIds[(int)PacketType.RangeUpdate]++;
@@ -330,7 +403,7 @@ namespace WeaponCore
                 });
             }
         }
-
+        */
         internal void SendControlingPlayer(WeaponComponent comp)
         {
             comp.MIds[(int)PacketType.PlayerControlUpdate]++;

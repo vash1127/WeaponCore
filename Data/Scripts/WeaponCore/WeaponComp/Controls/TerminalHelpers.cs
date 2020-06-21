@@ -355,8 +355,8 @@ namespace WeaponCore.Control
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOn);
-                if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                //if (update)
+                    //comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
             }
         }
 
@@ -385,8 +385,8 @@ namespace WeaponCore.Control
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOff);
-                if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                //if (update)
+                    //comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
             }
         }
 
@@ -418,8 +418,8 @@ namespace WeaponCore.Control
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOnce);
-                if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                //if (update)
+                    //comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
             }
         }
 

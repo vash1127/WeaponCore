@@ -32,30 +32,32 @@ namespace WeaponCore.Support
             Modify
         }
 
-        internal void RequestApplySettings(string blockGroup, string setting, int newValue, Session session)
+        internal void RequestApplySettings(GridAi ai, string setting, int value, Session session)
         {
             if (session.IsServer)
             {
-                Settings[setting] = newValue;
-                ApplySettings(blockGroup);
+                Settings[setting] = value;
+                ApplySettings();
             }
             else if (session.IsClient)
             {
-
+                session.SendOverRidesUpdate(ai, Name, setting, value);
             }
         }
 
-        internal void RequestSetValue(WeaponComponent comp, string setting, int v, Session session)
+        internal void RequestSetValue(WeaponComponent comp, string setting, int value)
         {
-            if (session.IsServer)
-                SetValue(comp, setting, v);
-            else if (session.IsClient)
+            if (comp.Session.IsServer)
             {
-
+                SetValue(comp, setting, value);
+            }
+            else if (comp.Session.IsClient)
+            {
+                comp.Session.SendOverRidesUpdate(comp, setting, value);
             }
         }
 
-        internal void ApplySettings(string blockGroup)
+        internal void ApplySettings()
         {
             GroupOverrides o = null;
             GridAi ai = null;
@@ -73,8 +75,8 @@ namespace WeaponCore.Support
                 o = comp.Set.Value.Overrides;
                 var change = false;
 
-                if (comp.State.Value.CurrentBlockGroup != blockGroup) {
-                    comp.State.Value.CurrentBlockGroup = blockGroup;
+                if (comp.State.Value.CurrentBlockGroup != Name) {
+                    comp.State.Value.CurrentBlockGroup = Name;
                     change = true;
                 }
 
@@ -86,7 +88,7 @@ namespace WeaponCore.Support
                         case "Active":
                             if (!change && o.Activate != enabled) change = true;
                             o.Activate = enabled;
-                            if (!o.Activate) ClearTargets(comp);
+                            if (!comp.Session.IsClient && !o.Activate) ClearTargets(comp);
                             break;
                         case "SubSystems":
                             var blockType = (TargetingDef.BlockTypes)v;
@@ -145,7 +147,7 @@ namespace WeaponCore.Support
             }
             
             if (somethingChanged && ai != null && ai.Session.HandlesInput && ai.Session.MpActive)
-                ai.Session.SendOverRidesUpdate(ai, blockGroup, o);
+                ai.Session.SendOverRidesUpdate(ai, Name, o);
         }
 
         internal void SetValue(WeaponComponent comp, string setting, int v)
@@ -156,7 +158,7 @@ namespace WeaponCore.Support
 
                 case "Active":
                     o.Activate = enabled;
-                    if (!o.Activate) ClearTargets(comp);
+                    if (!comp.Session.IsClient && !o.Activate) ClearTargets(comp);
                     break;
                 case "SubSystems":
                     o.SubSystem = (TargetingDef.BlockTypes)v;
@@ -197,7 +199,7 @@ namespace WeaponCore.Support
             ResetCompState(comp, userControl, false);
 
             if (comp.Session.MpActive) {
-                comp.Session.SendOverRidesUpdate(comp, o);
+                comp.Session.SendOverRidesUpdate(comp, setting, v);
             }
         }
 
@@ -250,8 +252,10 @@ namespace WeaponCore.Support
         internal void ResetCompState(WeaponComponent comp, bool userControl, bool apply)
         {
             var o = comp.Set.Value.Overrides;
-            if (userControl) {
-
+            bool change;
+            if (userControl)
+            {
+                change = true;
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
 
@@ -270,18 +274,21 @@ namespace WeaponCore.Support
                     comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
             }
             else {
+                change = comp.State.Value.CurrentPlayerControl.PlayerId != -1 || comp.State.Value.CurrentPlayerControl.ControlType != ControlType.None;
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
 
-            if (comp.Session.MpActive)
-                comp.Session.SendControlingPlayer(comp);
+            if (comp.Session.MpActive && change)
+            {
+                comp.Session.SendCompStateUpdate(comp);
+                //comp.Session.SendControlingPlayer(comp);
+            }
 
         }
 
         private void ClearTargets(WeaponComponent comp)
         {
-            if (comp.Session.IsClient) return;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
 
                 var weapon = comp.Platform.Weapons[i];
