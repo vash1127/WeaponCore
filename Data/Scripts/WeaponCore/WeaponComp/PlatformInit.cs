@@ -141,13 +141,8 @@ namespace WeaponCore.Platform
             foreach (var i in _orderToCreate)
             {
                 var muzzlePartHash = Structure.MuzzlePartNames[i];
-                Log.Line($"0: {muzzlePartHash.String} - {muzzlePartHash.m_hash}");
-                var barrelCount = Structure.WeaponSystems[muzzlePartHash].Barrels.Length;                
-
-                Log.Line("1");
                 WeaponSystem system;
-                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system))
-                {
+                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system)) {
                     Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
@@ -155,76 +150,52 @@ namespace WeaponCore.Platform
 
                 var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
-                Log.Line("2");
-
                 MyEntity muzzlePartEntity;
-                if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
-                {
+                if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity)) {
                     Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid barrelPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
-                foreach (var part in Parts.NameToEntity)
-                {
+                foreach (var part in Parts.NameToEntity) {
                     part.Value.OnClose += comp.SubpartClosed;
                     break;
                 }
-                Log.Line("3");
 
                 //compatability with old configs of converted turrets
                 var azimuthPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
                 var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                 MyEntity azimuthPart = null;
-                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart))
-                {
+                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart)) {
                     Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
-                Log.Line("4");
 
                 MyEntity elevationPart = null;
-                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart))
-                {
+                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart)) {
                     Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid elevationPart, I am crashing now Dave.");
                     State = PlatformState.Invalid;
                     return State;
                 }
-                Log.Line("5");
 
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
-                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Parts);
-                var wepParticleEvents = comp.Session.CreateWeaponParticleEvents(system, Parts);
-                Log.Line("6");
 
-                foreach (var triggerSet in wepAnimationSet)
-                    for (int j = 0; j < triggerSet.Value.Length; j++)
-                        comp.AllAnimations.Add(triggerSet.Value[j]);
-                Log.Line("7");
-
-                Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, wepAnimationSet, barrelCount, azimuthPart, elevationPart, azimuthPartName, elevationPartName, wepParticleEvents);
-                Log.Line("8");
-
-                var weapon = Weapons[i];
+                var weapon = Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, Parts, azimuthPart, elevationPart, azimuthPartName, elevationPartName);
+                
                 SetupUi(weapon);
-                Log.Line("9");
 
                 if (!comp.Debug && weapon.System.Values.HardPoint.Other.Debug)
                     comp.Debug = true;
 
-                Log.Line("10");
-
-                if (weapon.System.Values.HardPoint.Ai.TurretController)
-                {
+                if (weapon.System.Values.HardPoint.Ai.TurretController) {
                     if (weapon.System.Values.HardPoint.Ai.PrimaryTracking && comp.TrackingWeapon == null)
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                         RotationSound.Init(weapon.System.Values.HardPoint.Audio.HardPointRotationSound, false);
                 }
-                Log.Line("11");
             }
             _orderToCreate.Clear();
 

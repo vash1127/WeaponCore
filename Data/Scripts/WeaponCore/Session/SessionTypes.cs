@@ -631,7 +631,7 @@ namespace WeaponCore
                 var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
                 if (notValid)
                 {
-                    if (!Session.IsClient) Log.Line($"cannot awaken: wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget}");
+                    if (!Session.IsClient) Log.Line($"[Awaken] isAsleep:{wa.Asleep} - wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
                     return;
                 }
 
@@ -650,7 +650,7 @@ namespace WeaponCore
                 var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
                 if (notValid)
                 {
-                    if (!Session.IsClient) Log.Line($"cannot add: wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget}");
+                    if (!Session.IsClient) Log.Line($"[AddAwake] isAsleep:{wa.Asleep} - wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
                     return;
                 }
 

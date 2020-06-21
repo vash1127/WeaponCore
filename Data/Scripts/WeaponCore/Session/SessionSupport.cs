@@ -508,8 +508,7 @@ namespace WeaponCore
 
         private void Paused()
         {
-            Pause = true;
-            Log.Line($"Stopping all AV due to pause");
+            _paused = true;
             if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
         }
 

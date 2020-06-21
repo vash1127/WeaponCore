@@ -971,7 +971,7 @@ namespace WeaponCore.Support
                 size = 1;
             }
             else if (!isLine) size *= 0.5;
-            if (size > 2.5) Log.Line($"largeCollisionSize: {size}");
+            if (size > 5) Log.Line($"{ammoDef.AmmoRound} has large largeCollisionSize: {size} meters");
             collisionIsLine = isLine;
             collisionSize = size;
         }

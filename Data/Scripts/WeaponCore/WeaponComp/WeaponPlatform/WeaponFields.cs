@@ -213,33 +213,24 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp,
-            Dictionary<EventTriggers, PartAnimation[]> animationSets, int barrelCount, MyEntity elevationPart,
-            MyEntity azimuthPart, string azimuthPartName, string elevationPartName,
-            Dictionary<EventTriggers, ParticleEvent[]> wepParticleEvents)
+        internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
-
-            MuzzlePart = new PartInfo {Entity = entity};
-            AnimationsSet = animationSets;
-            if (AnimationsSet != null)
-            {
-                foreach (var set in AnimationsSet)
-                {
-                    for (int j = 0; j < set.Value.Length; j++)
-                    {
-                        var animation = set.Value[j];
-                        AnimationLookup.Add(animation.AnimationId, animation);
-                    }
-                }
-            }
 
             System = system;
             Comp = comp;
 
+            AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
+            foreach (var set in AnimationsSet) {
+                foreach (var pa in set.Value) {
+                    comp.AllAnimations.Add(pa);
+                    AnimationLookup.Add(pa.AnimationId, pa);
+                }
+            }
+
+            ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts); 
+
             MyStringHash subtype;
-            if (comp.MyCube.DefinitionId.HasValue &&
-                comp.Session.VanillaIds.TryGetValue(comp.MyCube.DefinitionId.Value, out subtype))
-            {
+            if (comp.MyCube.DefinitionId.HasValue && comp.Session.VanillaIds.TryGetValue(comp.MyCube.DefinitionId.Value, out subtype)) {
                 if (subtype.String.Contains("Gatling"))
                     _numModelBarrels = 6;
                 else
@@ -353,24 +344,22 @@ namespace WeaponCore.Platform
 
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];
+            Muzzles = new Muzzle[_numOfBarrels];
+            Dummies = new Dummy[_numOfBarrels];
+            WeaponCache = new WeaponFrameCache(_numOfBarrels);
             NewTarget = new Target(this);
-            WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             RayCallBack = new ParallelRayCallBack(this);
             Acquire = new WeaponAcquire(this);
-            Muzzles = new Muzzle[barrelCount];
-            Dummies = new Dummy[barrelCount];
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
+            MuzzlePart = new PartInfo { Entity = entity };
             AzimuthOnBase = azimuthPart.Parent == comp.MyCube;
-            ParticleEvents = wepParticleEvents;
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
             TrackProjectiles = System.TrackProjectile;
 
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
-
-
         }
     }
 }

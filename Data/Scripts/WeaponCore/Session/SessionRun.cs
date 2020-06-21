@@ -21,9 +21,7 @@ namespace WeaponCore
             try
             {
                 if (!SupressLoad)
-                {
                     BeforeStartInit();
-                }
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
@@ -33,11 +31,7 @@ namespace WeaponCore
             try
             {
                 if (!SupressLoad)
-                {
-                    Log.Line($"Paused:{Tick}");
                     Paused();
-                    _paused = true;
-                }
 
             }
             catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }

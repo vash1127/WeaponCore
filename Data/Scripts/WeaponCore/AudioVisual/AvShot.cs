@@ -26,7 +26,7 @@ namespace WeaponCore.Support
         internal List<Vector3D> Offsets = new List<Vector3D>(64);
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect FieldEffect;
-        internal WeaponComponent FiringWeapon;
+        internal MyCubeBlock FiringBlock;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool Offset;
         internal bool AmmoSound;
@@ -176,7 +176,7 @@ namespace WeaponCore.Support
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-            info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
+            FiringBlock = info.Target.FiringCube;
             MaxTrajectory = info.MaxTrajectory;
             ShotFade = info.ShotFade;
             FireCounter = info.FireCounter;
@@ -791,7 +791,7 @@ namespace WeaponCore.Support
 
                 FireEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
                 FireEmitter.CanPlayLoopSounds = true;
-                FireEmitter.Entity = FiringWeapon.MyCube;
+                FireEmitter.Entity = FiringBlock;
                 FireSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
 
                 FireSound.Init(System.Values.HardPoint.Audio.FiringSound, false);
@@ -879,58 +879,42 @@ namespace WeaponCore.Support
 
         internal void RunBeam()
         {
-            if (FiringWeapon != null)
-            {
-                var weapon = FiringWeapon.Platform.Weapons[WeaponId];
-                if (OnScreen != Screen.None)
-                {
-                    MatrixD matrix;
-                    MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
-                    if (weapon.HitEffects[MuzzleId] == null || weapon.HitEffects[MuzzleId].IsEmittingStopped || !System.Session.Av.RipMap.ContainsKey(weapon.HitEffects[MuzzleId]))
-                    {
-                        if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.SurfaceHit, uint.MaxValue, out weapon.HitEffects[MuzzleId]))
-                        {
-                            if (weapon.HitEffects[MuzzleId] != null)
-                            {
-                                weapon.HitEffects[MuzzleId].Stop();
-                                weapon.HitEffects[MuzzleId] = null;
-                            }
-                            return;
-                        }
+            KeensMess mess;
+            MatrixD matrix;
+            if (!System.Session.Av.RipMap.TryGetValue(UniqueMuzzleId, out mess)) {
 
-                        weapon.HitEffects[MuzzleId].UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                        weapon.HitEffects[MuzzleId].UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
-                        weapon.HitEffects[MuzzleId].UserScale = scale;
-                        Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
-
-                        var mess = System.Session.Av.KeenMessPool.Get();
-                        mess.Effect = weapon.HitEffects[MuzzleId];
-                        mess.AmmoDef = AmmoDef;
-                        mess.Velocity = HitVelocity;
-                        mess.LastTick = System.Session.Tick;
-                        mess.Looping = mess.Effect.Loop;
-                        System.Session.Av.KeensBrokenParticles.Add(mess);
-                        System.Session.Av.RipMap.Add(mess.Effect, mess);
-                    }
-                    else if (weapon.HitEffects[MuzzleId] != null)
-                    {
-
-                        System.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].LastTick = System.Session.Tick;
-                        System.Session.Av.RipMap[weapon.HitEffects[MuzzleId]].Velocity = HitVelocity;
-
-                        var scale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                        weapon.HitEffects[MuzzleId].UserScale = scale;
-                        weapon.HitEffects[MuzzleId].WorldMatrix = matrix;
-                    }
-
+                MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
+                MyParticleEffect effect;
+                if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.SurfaceHit, uint.MaxValue, out effect)) {
+                    Log.Line("failed to spawn");
+                    return;
                 }
-                else if (weapon.HitEffects[MuzzleId] != null)
-                {
-                    weapon.HitEffects[MuzzleId].Stop(weapon.HitEffects[MuzzleId].Loop);
-                    weapon.HitEffects[MuzzleId] = null;
-                }
+
+                effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
+                effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
+                effect.WorldMatrix = matrix;
+                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                var looping = effect.Loop;
+                Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
+
+                mess = System.Session.Av.KeenMessPool.Get();
+                mess.Effect = effect;
+                mess.AmmoDef = AmmoDef;
+                mess.Velocity = HitVelocity;
+                mess.LastTick = System.Session.Tick;
+                mess.Looping = looping;
+                mess.Id = UniqueMuzzleId;
+                System.Session.Av.KeensBrokenParticles.Add(mess);
+                System.Session.Av.RipMap.Add(UniqueMuzzleId, mess);
+
+            }
+            else if (mess.Effect != null && !mess.Effect.IsEmittingStopped) {
+                MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
+                Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
+                mess.LastTick = System.Session.Tick;
+                mess.Velocity = HitVelocity;
+                mess.Effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance); ;
+                mess.Effect.WorldMatrix = matrix;
             }
         }
 
@@ -1077,7 +1061,7 @@ namespace WeaponCore.Support
             TextureLastUpdate = 0;
             //
 
-            FiringWeapon = null;
+            FiringBlock = null;
             PrimeEntity = null;
             TriggerEntity = null;
             AmmoDef = null;

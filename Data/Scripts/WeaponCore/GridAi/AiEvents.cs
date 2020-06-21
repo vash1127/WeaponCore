@@ -72,7 +72,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                var isWeaponBase = myCubeBlock?.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || !string.IsNullOrEmpty(myCubeBlock.BlockDefinition.Id.SubtypeName) && Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId));
+                var isWeaponBase = myCubeBlock?.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId));
 
                 try {
                     var battery = myCubeBlock as MyBatteryBlock;

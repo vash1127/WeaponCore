@@ -43,7 +43,6 @@ namespace WeaponCore
         internal volatile bool FixedGunControls;
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;
-        internal volatile bool Pause;
         internal volatile int AmmoPulls;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
