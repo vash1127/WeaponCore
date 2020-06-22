@@ -498,7 +498,7 @@ namespace WeaponCore
 
             return true;
         }
-        /*
+
         private bool ServerCompToolbarShootState(PacketObj data)
         {
             var packet = data.Packet;
@@ -512,58 +512,10 @@ namespace WeaponCore
 
                 comp.MIds[(int)packet.PType] = shootStatePacket.MId;
 
-                switch (shootStatePacket.Data) {
-                    case ManualShootActionState.ShootClick:
-                        TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
-                        break;
-                    case ManualShootActionState.ShootOff:
-                        TerminalHelpers.WcShootOffAction(comp, true);
-                        break;
-                    case ManualShootActionState.ShootOn:
-                        TerminalHelpers.WcShootOnAction(comp, true);
-                        break;
-                    case ManualShootActionState.ShootOnce:
-                        TerminalHelpers.WcShootOnceAction(comp, true);
-                        break;
-                }
-
-                PacketsToClient.Add(new PacketInfo {
-                    Entity = ent,
-                    Packet = shootStatePacket,
-                });
-
+                comp.RequestShootUpdate(shootStatePacket.Action, shootStatePacket.PlayerId);
                 data.Report.PacketValid = true;
             }
             else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-            }
-            return true;
-        }
-        */
-        private bool ServerCompShootUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var shootPacket = (CompShootPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            if (comp.MIds[(int)packet.PType] < shootPacket.MId) {
-
-                comp.MIds[(int)packet.PType] = shootPacket.MId;
-                comp.Set.Value.Range = shootPacket.Data;
-
-                PacketsToClient.Add(new PacketInfo {
-                    Entity = ent,
-                    Packet = shootPacket,
-                });
-
-                data.Report.PacketValid = true;
-            }
-            else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
             return true;
@@ -639,7 +591,10 @@ namespace WeaponCore
             var direction = hitPacket.Velocity;
             direction.Normalize();
 
-            Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, Muzzle = weapon.Muzzles[hitPacket.MuzzleId], Weapon = weapon, TargetEnt = targetEnt, Origin = origin, OriginUp = hitPacket.Up, Direction = direction, Velocity = hitPacket.Velocity, MaxTrajectory = hitPacket.MaxTrajectory, Type = NewProjectile.Kind.Client });
+            Projectiles.NewProjectiles.Add(new NewProjectile
+            {
+                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, Muzzle = weapon.Muzzles[hitPacket.MuzzleId], Weapon = weapon, TargetEnt = targetEnt, Origin = origin, OriginUp = hitPacket.Up, Direction = direction, Velocity = hitPacket.Velocity, MaxTrajectory = hitPacket.MaxTrajectory, Type = NewProjectile.Kind.Client
+            });
             //CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
 
             data.Report.PacketValid = true;

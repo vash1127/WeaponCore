@@ -17,16 +17,15 @@ namespace WeaponCore
         GridSyncRequestUpdate,
         CompStateUpdate,
         CompSettingsUpdate,
-        CompShootState,
         WeaponSyncUpdate,
-        WeaponPacket,
+        //WeaponPacket,
         FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
         PlayerIdUpdate,
         ActiveControlFullUpdate,
         FocusUpdate,
-        MagUpdate,
+        //MagUpdate,
         ReticleUpdate,
         OverRidesUpdate,
         PlayerControlUpdate,
@@ -35,7 +34,7 @@ namespace WeaponCore
         ClientEntityClosed,
         RequestMouseStates,
         FullMouseUpdate,
-        //CompToolbarShootState,
+        CompToolbarShootState,
         GridAiUiMidUpdate,
         CycleAmmo,
         ReassignTargetUpdate,
@@ -321,7 +320,7 @@ namespace WeaponCore
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(23, typeof(CompShootPacket))]
+    //[ProtoInclude(23, typeof(CompShootPacket))]
     [ProtoInclude(24, typeof(CycleAmmoPacket))]
     [ProtoInclude(25, typeof(ShootStatePacket))]
     [ProtoInclude(26, typeof(OverRidesPacket))]
@@ -363,20 +362,6 @@ namespace WeaponCore
         }
     }
 
-
-    [ProtoContract]
-    public class CompShootPacket : MIdPacket
-    {
-        [ProtoMember(1)] internal float Data;
-        public CompShootPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = 0f;
-        }
-    }
-
     [ProtoContract]
     public class CycleAmmoPacket : MIdPacket
     {
@@ -395,13 +380,16 @@ namespace WeaponCore
     [ProtoContract]
     public class ShootStatePacket : MIdPacket
     {
-        [ProtoMember(1)] internal ShootActions Data = ShootActions.ShootOff;
+        [ProtoMember(1)] internal ShootActions Action = ShootActions.ShootOff;
+        [ProtoMember(2), DefaultValue(-1)] internal long PlayerId = -1;
+
         public ShootStatePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = ShootActions.ShootOff;
+            Action = ShootActions.ShootOff;
+            PlayerId = -1;
         }
     }
 

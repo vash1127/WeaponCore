@@ -426,52 +426,6 @@ namespace WeaponCore
             return true;
 
         }
-        /*
-        private bool ClientCompToolbarShootState(PacketObj data)
-        {
-            var packet = data.Packet;
-            var shootStatePacket = (ShootStatePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            comp.MIds[(int)packet.PType] = shootStatePacket.MId;
-
-            switch (shootStatePacket.Data)
-            {
-                case ManualShootActionState.ShootClick:
-                    TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
-                    break;
-                case ManualShootActionState.ShootOff:
-                    TerminalHelpers.WcShootOffAction(comp, true);
-                    break;
-                case ManualShootActionState.ShootOn:
-                    TerminalHelpers.WcShootOnAction(comp, true);
-                    break;
-                case ManualShootActionState.ShootOnce:
-                    TerminalHelpers.WcShootOnceAction(comp, true);
-                    break;
-            }
-
-            data.Report.PacketValid = true;
-            return true;
-        }
-        */
-        private bool ClientCompShootUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var shootPacket = (CompShootPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            comp.MIds[(int)packet.PType] = shootPacket.MId;
-            comp.Set.Value.Range = shootPacket.Data;
-
-            data.Report.PacketValid = true;
-            return true;
-        }
 
         private bool ClientGridAiUiMidUpdate(PacketObj data)
         {

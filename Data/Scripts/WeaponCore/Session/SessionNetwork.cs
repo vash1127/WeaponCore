@@ -134,10 +134,6 @@ namespace WeaponCore
                             break;
                         }
                         */
-                    case PacketType.CompShootState: {
-                            ClientCompShootUpdate(packetObj);
-                            break;
-                        }
                     case PacketType.GridAiUiMidUpdate: {
                             ClientGridAiUiMidUpdate(packetObj);
                             break;
@@ -289,14 +285,8 @@ namespace WeaponCore
                     ServerRequestMouseStates(packetObj);
                     break;
                 }
-                /*
                 case PacketType.CompToolbarShootState: {
                     ServerCompToolbarShootState(packetObj);
-                    break;
-                }
-                */
-                case PacketType.CompShootState: {
-                    ServerCompShootUpdate(packetObj);
                     break;
                 }
                 case PacketType.CycleAmmo: {

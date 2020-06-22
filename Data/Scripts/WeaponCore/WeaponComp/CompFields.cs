@@ -112,8 +112,8 @@ namespace WeaponCore.Support
 
         public enum ShootActions
         {
-            ShootOn,
             ShootOff,
+            ShootOn,
             ShootOnce,
             ShootClick,
             Painter,

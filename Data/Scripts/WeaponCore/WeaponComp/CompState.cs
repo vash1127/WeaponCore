@@ -22,8 +22,6 @@ namespace WeaponCore.Support
                     Status = Start.Started;
                     break;
             }
-
-            //UpdateNetworkState();
         }
 
         private void Startup()
@@ -52,24 +50,26 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void RequestShootUpdate(ShootActions action, bool on = false, bool isTurret = false)
+        internal void RequestShootUpdate(ShootActions action, long playerId = -1)
         {
             Session.TerminalMon.ClientUpdate(this);
-            var uiShootModeOn = Set.Value.Overrides.ManualControl || Set.Value.Overrides.TargetPainter;
-
             if (Session.IsServer) {
                 
-                ResetShootState(action, uiShootModeOn, on, isTurret);
+                ResetShootState(action, playerId);
+                if (Session.MpActive)
+                    Session.SendCompStateUpdate(this);
             }
-            else {
-
-            }
+            else
+                Session.SendActionShootUpdate(this, action);
         }
 
-        internal void ResetShootState(ShootActions action, bool uiShootModeOn, bool on = false, bool isTurret = false)
+        internal void ResetShootState(ShootActions action, long playerId)
         {
             var clickOnce = action == ShootActions.ShootClick;
-            if (uiShootModeOn) {
+            var on = !State.Value.ClickShoot;
+            playerId = playerId == -1 ? Session.PlayerId : playerId;
+
+            if (Set.Value.Overrides.ManualControl || Set.Value.Overrides.TargetPainter) {
                 Set.Value.Overrides.ManualControl = false;
                 Set.Value.Overrides.TargetPainter = false;
             }
@@ -83,7 +83,7 @@ namespace WeaponCore.Support
                     w.State.SingleShotCounter = clickOnce ? w.State.SingleShotCounter++ : 0;
             }
 
-            if (action == ShootActions.ShootClick && isTurret) {
+            if (action == ShootActions.ShootClick && HasTurret) {
                 State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
             }
             else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce || action == ShootActions.ShootOn) {
@@ -93,7 +93,7 @@ namespace WeaponCore.Support
                 State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
 
-            State.Value.CurrentPlayerControl.PlayerId = (action == ShootActions.ShootClick && !on || action == ShootActions.ShootOff) ? -1 : Session.PlayerId;
+            State.Value.CurrentPlayerControl.PlayerId = (action == ShootActions.ShootClick && !on || action == ShootActions.ShootOff) ? -1 : playerId;
             State.Value.ClickShoot = action == ShootActions.ShootClick && on;
             State.Value.ShootOn = action == ShootActions.ShootOn || (action == ShootActions.ShootOn && !on && State.Value.ShootOn);
         }

@@ -10,7 +10,6 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Control
 {
@@ -472,7 +471,7 @@ namespace WeaponCore.Control
 
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
+            var on = blk.Components.Get<WeaponComponent>()?.State.Value.ClickShoot ?? false;
 
             if (on)
                 sb.Append("On");
@@ -485,7 +484,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootClick, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
+            comp.RequestShootUpdate(ShootClick);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)

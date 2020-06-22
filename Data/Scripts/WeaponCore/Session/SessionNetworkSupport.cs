@@ -10,6 +10,7 @@ using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -300,43 +301,22 @@ namespace WeaponCore
                 }
             }
         }
-        /*
-        internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state)
-        {
-            if (!HandlesInput) return;
 
-                
+        internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
+        {
             comp.MIds[(int)PacketType.CompToolbarShootState]++;
             var mId = comp.MIds[(int)PacketType.CompToolbarShootState];
 
-            if (IsClient)
+            comp.Session.PacketsToServer.Add(new ShootStatePacket
             {
-                comp.Session.PacketsToServer.Add(new ShootStatePacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = comp.Session.MultiplayerId,
-                    PType = PacketType.CompToolbarShootState,
-                    MId = mId,
-                    Data = state,
-                });
-            }
-            else
-            {
-                comp.Session.PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new ShootStatePacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        PType = PacketType.CompToolbarShootState,
-                        MId = mId,
-                        Data = state,
-                    }
-                });
-            }
+                EntityId = comp.MyCube.EntityId,
+                SenderId = comp.Session.MultiplayerId,
+                PType = PacketType.CompToolbarShootState,
+                MId = mId,
+                Action = action,
+                PlayerId = PlayerId,
+            });
         }
-        */
 
         internal void SendControlingPlayer(WeaponComponent comp)
         {
@@ -400,19 +380,7 @@ namespace WeaponCore
         internal void SendCompStateUpdate(WeaponComponent comp)
         {
             comp.MIds[(int)PacketType.CompStateUpdate]++;
-
-            if (IsClient)// client, send settings to server
-            {
-                PacketsToServer.Add(new StatePacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    PType = PacketType.CompStateUpdate,
-                    SenderId = MultiplayerId,
-                    Data = comp.State.Value,
-                    MId = comp.MIds[(int)PacketType.CompStateUpdate]
-                });
-            }
-            else 
+            if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -426,24 +394,14 @@ namespace WeaponCore
                     }
                 });
             }
+            else Log.Line($"SendCompStateUpdate should never be called on Client");
         }
 
         internal void SendCompSettingUpdate(WeaponComponent comp)
         {
             comp.MIds[(int)PacketType.CompSettingsUpdate]++;
 
-            if (IsClient)// client, send settings to server
-            {
-                PacketsToServer.Add(new SettingPacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    PType = PacketType.CompSettingsUpdate,
-                    SenderId = MultiplayerId,
-                    Data = comp.Set.Value,
-                    MId = comp.MIds[(int)PacketType.CompSettingsUpdate]
-                });
-            }
-            else 
+            if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -458,6 +416,7 @@ namespace WeaponCore
                     }
                 });
             }
+            else Log.Line($"SendCompSettingUpdate should never be called on Client");
         }
 
         internal void SendUpdateRequest(long entityId, PacketType ptype)
