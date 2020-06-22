@@ -167,7 +167,8 @@ namespace WeaponCore.Projectiles
             {
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
-                SmartSlot = MyUtils.GetRandomInt(0, 10);
+                SmartSlot = Info.WeaponRng.ClientProjectileRandom.Next(10);
+                Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
             else
             {

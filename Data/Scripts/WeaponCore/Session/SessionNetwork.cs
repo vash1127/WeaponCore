@@ -481,7 +481,7 @@ namespace WeaponCore
                     var rand = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
                     rand.TurretCurrentCounter = 0;
                     rand.ClientProjectileCurrentCounter = 0;
-                    rand.CurrentSeed = Guid.NewGuid().GetHashCode();
+                    rand.CurrentSeed = w.UniqueId;
                     rand.TurretRandom = new Random(rand.CurrentSeed);
                     rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                     rand.AcquireRandom = new Random(rand.CurrentSeed);

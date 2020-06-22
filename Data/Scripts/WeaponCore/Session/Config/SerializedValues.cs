@@ -3,6 +3,7 @@ using System.ComponentModel;
 using ProtoBuf;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Utils;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
@@ -223,9 +224,9 @@ namespace WeaponCore
                         if (comp.Session.IsServer)
                         {
                             targets[w.WeaponId] = new TransferTarget();
-                            comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
+                            comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator(w.UniqueId);
 
-                            rand.CurrentSeed = Guid.NewGuid().GetHashCode();
+                            rand.CurrentSeed = w.UniqueId;
                             rand.AcquireRandom = new Random(rand.CurrentSeed);
                         }
 
@@ -262,10 +263,10 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
 
                 comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
-                comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
+                comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator(w.UniqueId);
 
                 var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
-                rand.CurrentSeed = Guid.NewGuid().GetHashCode();
+                rand.CurrentSeed = w.UniqueId;
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
                 rand.AcquireRandom = new Random(rand.CurrentSeed);
@@ -382,9 +383,9 @@ namespace WeaponCore
         [ProtoMember(1)] public int TurretCurrentCounter;
         [ProtoMember(2)] public int ClientProjectileCurrentCounter;
         [ProtoMember(3)] public int CurrentSeed;
-        public Random TurretRandom = new Random();
-        public Random ClientProjectileRandom = new Random();
-        public Random AcquireRandom = new Random();
+        public Random TurretRandom;
+        public Random ClientProjectileRandom;
+        public Random AcquireRandom;
 
         public enum RandomType
         {
@@ -393,7 +394,13 @@ namespace WeaponCore
             Acquire,
         }
 
-        public WeaponRandomGenerator() { }
+        public WeaponRandomGenerator(int uniqueId)
+        {
+            CurrentSeed = uniqueId;
+            TurretRandom = new Random(uniqueId);
+            ClientProjectileRandom = new Random(uniqueId);
+            AcquireRandom = new Random(uniqueId);
+        }
 
         public void Sync(WeaponRandomGenerator syncFrom)
         {

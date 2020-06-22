@@ -182,7 +182,7 @@ namespace WeaponCore.Platform
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
 
-                var weapon = Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, Parts, azimuthPart, elevationPart, azimuthPartName, elevationPartName);
+                var weapon = Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, Parts, elevationPart, azimuthPart, azimuthPartName, elevationPartName);
                 
                 SetupUi(weapon);
 
@@ -246,18 +246,26 @@ namespace WeaponCore.Platform
                     {
                         var azimuthPart = weapon.AzimuthPart.Entity;
                         var elevationPart = weapon.ElevationPart.Entity;
-
                         if (azimuthPart != null && azimuthPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.ElevationOnly)
                         {
+
                             var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
+                            if (partDummy == null)
+                            {
+                                Log.Line($"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
+                                continue;
+                            }
 
                             var azPartPosTo = MatrixD.CreateTranslation(-azimuthPartLocation);
                             var azPrtPosFrom = MatrixD.CreateTranslation(azimuthPartLocation);
+
                             var fullStepAzRotation = azPartPosTo * MatrixD.CreateFromAxisAngle(partDummy.Matrix.Up, - m.Value.AzStep) * azPrtPosFrom;
+
                             var rFullStepAzRotation = MatrixD.Invert(fullStepAzRotation);
 
                             weapon.AzimuthPart.RotationAxis = partDummy.Matrix.Up;
+
                             weapon.AzimuthPart.ToTransformation = azPartPosTo;
                             weapon.AzimuthPart.FromTransformation = azPrtPosFrom;
                             weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
@@ -275,14 +283,18 @@ namespace WeaponCore.Platform
                             weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
                             //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
-                        }
 
+                        }
 
                         if (elevationPart != null && elevationPartName != "None" && weapon.System.TurretMovement != WeaponSystem.TurretType.AzimuthOnly)
                         {
                             var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
-
+                            if (partDummy == null)
+                            {
+                                Log.Line($"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
+                                continue;
+                            }
                             var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = MatrixD.CreateTranslation(elevationPartLocation);
 
@@ -297,6 +309,7 @@ namespace WeaponCore.Platform
                             weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
                             weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
                             //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
+
                         }
                         else if (elevationPartName == "None")
                         {
@@ -316,11 +329,11 @@ namespace WeaponCore.Platform
                     {
                         weapon.MuzzlePart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                         weapon.MuzzlePart.Entity.OnMarkForClose += weapon.EntPartClose;
-                        
+
                     }
                     else
                     {
-                        if(weapon.ElevationPart.Entity != null)
+                        if (weapon.ElevationPart.Entity != null)
                         {
                             weapon.ElevationPart.Entity.PositionComp.OnPositionChanged += weapon.PositionChanged;
                             weapon.ElevationPart.Entity.OnMarkForClose += weapon.EntPartClose;
@@ -347,7 +360,7 @@ namespace WeaponCore.Platform
                             weapon.Dummies[i].Entity = weapon.MuzzlePart.Entity;
                     }
 
-                    for(int i = 0; i < m.Value.HeatingSubparts.Length; i++)
+                    for (int i = 0; i < m.Value.HeatingSubparts.Length; i++)
                     {
                         var partName = m.Value.HeatingSubparts[i];
                         MyEntity ent;
