@@ -286,10 +286,12 @@ namespace WeaponCore.Platform
                     else if (System.AlwaysFireFullBurst && State.ShotsFired < System.ShotsPerBurst)
                         FinishBurst = true;
                 }
-                
+
 
                 if (State.ManualShoot == ShootActions.ShootOnce && --State.SingleShotCounter <= 0)
-                    State.ManualShoot = ShootActions.ShootOff;
+                {
+                    ShootOnceDirty();
+                }
 
                 _muzzlesToFire.Clear();
 

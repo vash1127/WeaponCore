@@ -279,6 +279,8 @@ namespace WeaponCore
         internal bool DamageHandler;
         internal bool LocalVersion;
         internal bool SupressLoad;
+        internal bool PbApiInited;
+        internal bool PbActivate;
 
         internal enum AnimationType
         {

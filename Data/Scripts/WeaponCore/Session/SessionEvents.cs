@@ -24,11 +24,13 @@ namespace WeaponCore
 
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
+                if (!PbApiInited) PbActivate = true;
 
                 var cube = myEntity as MyCubeBlock;
                 var sorter = cube as MyConveyorSorter;
                 var turret = cube as IMyLargeTurretBase;
                 var controllableGun = cube as IMyUserControllableGun;
+
                 if (sorter != null || turret != null || controllableGun != null)
                 {
                     if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;

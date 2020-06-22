@@ -8,6 +8,7 @@ using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponSystem;
+using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -526,6 +527,25 @@ namespace WeaponCore.Platform
                 System.Session.AcqManager.AddAwake(Acquire);
 
             ShortLoadId = Comp.Session.ShortLoadAssigner();
+        }
+
+        internal void ShootOnceDirty()
+        {
+            State.ManualShoot = ShootActions.ShootOff;
+            var clickToShootDirty = true;
+            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+            {
+                var w = Comp.Platform.Weapons[i];
+                if (w.State.ManualShoot  ==  ShootActions.ShootClick && w.State.SingleShotCounter > 0)
+                    clickToShootDirty = false;
+            }
+
+            if (clickToShootDirty)
+            {
+                Comp.State.Value.ClickShoot = false;
+                Comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+            }
+            Log.Line($"{clickToShootDirty} - {Comp.State.Value.ShootOn} - {Comp.State.Value.CurrentPlayerControl.ControlType}");
         }
 
         internal bool HasAmmo()

@@ -51,6 +51,8 @@ namespace WeaponCore
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
                 CheckAdminRights();
                 if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
+                
+                if (PbActivate) Api.PbInit();
             }
             LCount++;
             if (LCount == 129)
