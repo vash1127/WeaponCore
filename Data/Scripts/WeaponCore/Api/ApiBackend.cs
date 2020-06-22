@@ -18,7 +18,6 @@ namespace WeaponCore.Api
         private readonly Session _session;
         internal readonly Dictionary<string, Delegate> ModApiMethods;
         internal Dictionary<string, Delegate> PbApiMethods;
-        internal bool PbInited;
         
         internal ApiBackend(Session session)
         {

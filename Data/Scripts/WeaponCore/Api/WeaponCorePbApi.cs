@@ -17,36 +17,36 @@ namespace WeaponCore.Api
         private Action<ICollection<MyDefinitionId>> _getCoreWeapons;
         private Action<ICollection<MyDefinitionId>> _getCoreStaticLaunchers;
         private Action<ICollection<MyDefinitionId>> _getCoreTurrets;
-        private Func<IMyTerminalBlock, IDictionary<string, int>, bool> _getBlockWeaponMap;
-        private Func<IMyEntity, MyTuple<bool, int, int>> _getProjectilesLockedOn;
-        private Action<IMyEntity, ICollection<MyTuple<IMyEntity, float>>> _getSortedThreats;
-        private Func<IMyEntity, int, IMyEntity> _getAiFocus;
-        private Func<IMyEntity, IMyEntity, int, bool> _setAiFocus;
-        private Func<IMyTerminalBlock, int, MyTuple<bool, bool, bool, IMyEntity>> _getWeaponTarget;
-        private Action<IMyTerminalBlock, IMyEntity, int> _setWeaponTarget;
-        private Action<IMyTerminalBlock, bool, int> _fireWeaponOnce;
-        private Action<IMyTerminalBlock, bool, bool, int> _toggleWeaponFire;
-        private Func<IMyTerminalBlock, int, bool, bool, bool> _isWeaponReadyToFire;
-        private Func<IMyTerminalBlock, int, float> _getMaxWeaponRange;
-        private Func<IMyTerminalBlock, ICollection<string>, int, bool> _getTurretTargetTypes;
-        private Action<IMyTerminalBlock, ICollection<string>, int> _setTurretTargetTypes;
-        private Action<IMyTerminalBlock, float> _setBlockTrackingRange;
-        private Func<IMyTerminalBlock, IMyEntity, int, bool> _isTargetAligned;
-        private Func<IMyTerminalBlock, IMyEntity, int, bool> _canShootTarget;
-        private Func<IMyTerminalBlock, IMyEntity, int, Vector3D?> _getPredictedTargetPos;
-        private Func<IMyTerminalBlock, float> _getHeatLevel;
-        private Func<IMyTerminalBlock, float> _currentPowerConsumption;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool> _getBlockWeaponMap;
+        private Func<VRage.Game.ModAPI.Ingame.IMyEntity, MyTuple<bool, int, int>> _getProjectilesLockedOn;
+        private Action<VRage.Game.ModAPI.Ingame.IMyEntity, ICollection<MyTuple<VRage.Game.ModAPI.Ingame.IMyEntity, float>>> _getSortedThreats;
+        private Func<VRage.Game.ModAPI.Ingame.IMyEntity, int, VRage.Game.ModAPI.Ingame.IMyEntity> _getAiFocus;
+        private Func<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool> _setAiFocus;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<bool, bool, bool, VRage.Game.ModAPI.Ingame.IMyEntity>> _getWeaponTarget;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int> _setWeaponTarget;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, int> _fireWeaponOnce;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, bool, int> _toggleWeaponFire;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, bool, bool, bool> _isWeaponReadyToFire;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, float> _getMaxWeaponRange;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int, bool> _getTurretTargetTypes;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int> _setTurretTargetTypes;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _setBlockTrackingRange;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool> _isTargetAligned;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool> _canShootTarget;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, Vector3D?> _getPredictedTargetPos;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _getHeatLevel;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _currentPowerConsumption;
         private Func<MyDefinitionId, float> _getMaxPower;
-        private Func<IMyEntity, bool> _hasGridAi;
-        private Func<IMyTerminalBlock, bool> _hasCoreWeapon;
-        private Func<IMyEntity, float> _getOptimalDps;
-        private Func<IMyTerminalBlock, int, string> _getActiveAmmo;
-        private Action<IMyTerminalBlock, int, string> _setActiveAmmo;
+        private Func<VRage.Game.ModAPI.Ingame.IMyEntity, bool> _hasGridAi;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool> _hasCoreWeapon;
+        private Func<VRage.Game.ModAPI.Ingame.IMyEntity, float> _getOptimalDps;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string> _getActiveAmmo;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string> _setActiveAmmo;
         private Action<Action<Vector3, float>> _registerProjectileAdded;
         private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
-        private Func<IMyEntity, float> _getConstructEffectiveDps;
+        private Func<VRage.Game.ModAPI.Ingame.IMyEntity, float> _getConstructEffectiveDps;
 
-        private bool Activate(IMyTerminalBlock pbBlock)
+        private bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
         {
             var dict = pbBlock.GetProperty("WcPbAPI")?.As<Dictionary<string, Delegate>>().GetValue(pbBlock);
             if (dict == null) throw new Exception($"WcPbAPI failed to activate");
@@ -117,68 +117,68 @@ namespace WeaponCore.Api
 
         public void GetAllCoreTurrets(ICollection<MyDefinitionId> collection) => _getCoreTurrets?.Invoke(collection);
 
-        public bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection) =>
+        public bool GetBlockWeaponMap(Sandbox.ModAPI.Ingame.IMyTerminalBlock weaponBlock, IDictionary<string, int> collection) =>
             _getBlockWeaponMap?.Invoke(weaponBlock, collection) ?? false;
 
-        public MyTuple<bool, int, int> GetProjectilesLockedOn(IMyEntity victim) =>
+        public MyTuple<bool, int, int> GetProjectilesLockedOn(VRage.Game.ModAPI.Ingame.IMyEntity victim) =>
             _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
 
-        public void GetSortedThreats(IMyEntity shooter, ICollection<MyTuple<IMyEntity, float>> collection) =>
+        public void GetSortedThreats(VRage.Game.ModAPI.Ingame.IMyEntity shooter, ICollection<MyTuple<VRage.Game.ModAPI.Ingame.IMyEntity, float>> collection) =>
             _getSortedThreats?.Invoke(shooter, collection);
 
-        public IMyEntity GetAiFocus(IMyEntity shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
+        public VRage.Game.ModAPI.Ingame.IMyEntity GetAiFocus(VRage.Game.ModAPI.Ingame.IMyEntity shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
 
-        public bool SetAiFocus(IMyEntity shooter, IMyEntity target, int priority = 0) =>
+        public bool SetAiFocus(VRage.Game.ModAPI.Ingame.IMyEntity shooter, VRage.Game.ModAPI.Ingame.IMyEntity target, int priority = 0) =>
             _setAiFocus?.Invoke(shooter, target, priority) ?? false;
 
-        public MyTuple<bool, bool, bool, IMyEntity> GetWeaponTarget(IMyTerminalBlock weapon, int weaponId = 0) =>
-            _getWeaponTarget?.Invoke(weapon, weaponId) ?? new MyTuple<bool, bool, bool, IMyEntity>();
+        public MyTuple<bool, bool, bool, VRage.Game.ModAPI.Ingame.IMyEntity> GetWeaponTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId = 0) =>
+            _getWeaponTarget?.Invoke(weapon, weaponId) ?? new MyTuple<bool, bool, bool, VRage.Game.ModAPI.Ingame.IMyEntity>();
 
-        public void SetWeaponTarget(IMyTerminalBlock weapon, IMyEntity target, int weaponId = 0) =>
+        public void SetWeaponTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, VRage.Game.ModAPI.Ingame.IMyEntity target, int weaponId = 0) =>
             _setWeaponTarget?.Invoke(weapon, target, weaponId);
 
-        public void FireWeaponOnce(IMyTerminalBlock weapon, bool allWeapons = true, int weaponId = 0) =>
+        public void FireWeaponOnce(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, bool allWeapons = true, int weaponId = 0) =>
             _fireWeaponOnce?.Invoke(weapon, allWeapons, weaponId);
 
-        public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on, bool allWeapons, int weaponId = 0) =>
+        public void ToggleWeaponFire(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, bool on, bool allWeapons, int weaponId = 0) =>
             _toggleWeaponFire?.Invoke(weapon, on, allWeapons, weaponId);
 
-        public bool IsWeaponReadyToFire(IMyTerminalBlock weapon, int weaponId = 0, bool anyWeaponReady = true,
+        public bool IsWeaponReadyToFire(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId = 0, bool anyWeaponReady = true,
             bool shootReady = false) =>
             _isWeaponReadyToFire?.Invoke(weapon, weaponId, anyWeaponReady, shootReady) ?? false;
 
-        public float GetMaxWeaponRange(IMyTerminalBlock weapon, int weaponId) =>
+        public float GetMaxWeaponRange(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
             _getMaxWeaponRange?.Invoke(weapon, weaponId) ?? 0f;
 
-        public bool GetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) =>
+        public bool GetTurretTargetTypes(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) =>
             _getTurretTargetTypes?.Invoke(weapon, collection, weaponId) ?? false;
 
-        public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) =>
+        public void SetTurretTargetTypes(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, IList<string> collection, int weaponId = 0) =>
             _setTurretTargetTypes?.Invoke(weapon, collection, weaponId);
 
-        public void SetBlockTrackingRange(IMyTerminalBlock weapon, float range) =>
+        public void SetBlockTrackingRange(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, float range) =>
             _setBlockTrackingRange?.Invoke(weapon, range);
 
-        public bool IsTargetAligned(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+        public bool IsTargetAligned(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, VRage.Game.ModAPI.Ingame.IMyEntity targetEnt, int weaponId) =>
             _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
-        public bool CanShootTarget(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+        public bool CanShootTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, VRage.Game.ModAPI.Ingame.IMyEntity targetEnt, int weaponId) =>
             _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
-        public Vector3D? GetPredictedTargetPosition(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+        public Vector3D? GetPredictedTargetPosition(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, VRage.Game.ModAPI.Ingame.IMyEntity targetEnt, int weaponId) =>
             _getPredictedTargetPos?.Invoke(weapon, targetEnt, weaponId) ?? null;
 
-        public float GetHeatLevel(IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon) ?? 0f;
-        public float GetCurrentPower(IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
+        public float GetHeatLevel(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _getHeatLevel?.Invoke(weapon) ?? 0f;
+        public float GetCurrentPower(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _currentPowerConsumption?.Invoke(weapon) ?? 0f;
         public float GetMaxPower(MyDefinitionId weaponDef) => _getMaxPower?.Invoke(weaponDef) ?? 0f;
-        public bool HasGridAi(IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
-        public bool HasCoreWeapon(IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
-        public float GetOptimalDps(IMyEntity entity) => _getOptimalDps?.Invoke(entity) ?? 0f;
+        public bool HasGridAi(VRage.Game.ModAPI.Ingame.IMyEntity entity) => _hasGridAi?.Invoke(entity) ?? false;
+        public bool HasCoreWeapon(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _hasCoreWeapon?.Invoke(weapon) ?? false;
+        public float GetOptimalDps(VRage.Game.ModAPI.Ingame.IMyEntity entity) => _getOptimalDps?.Invoke(entity) ?? 0f;
 
-        public string GetActiveAmmo(IMyTerminalBlock weapon, int weaponId) =>
+        public string GetActiveAmmo(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
             _getActiveAmmo?.Invoke(weapon, weaponId) ?? null;
 
-        public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) =>
+        public void SetActiveAmmo(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId, string ammoType) =>
             _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
 
         public void RegisterProjectileAddedCallback(Action<Vector3, float> action) =>
@@ -187,7 +187,7 @@ namespace WeaponCore.Api
         public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) =>
             _unRegisterProjectileAdded?.Invoke(action);
 
-        public float GetConstructEffectiveDps(IMyEntity entity) => _getConstructEffectiveDps?.Invoke(entity) ?? 0f;
+        public float GetConstructEffectiveDps(VRage.Game.ModAPI.Ingame.IMyEntity entity) => _getConstructEffectiveDps?.Invoke(entity) ?? 0f;
 
     }
 }
