@@ -68,7 +68,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WcShootToggleAction(comp);
+                        comp.RequestShootUpdate(comp.State.Value.ShootOn ? ShootOff : ShootOn);
                     };
 
                     var oldWriter = a.Writer;
@@ -315,6 +315,7 @@ namespace WeaponCore.Control
         #endregion
 
         #region Shoot Actions
+        /*
 
         internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
         {
@@ -324,7 +325,6 @@ namespace WeaponCore.Control
                 comp.RequestShootUpdate(ShootOn);
         }
 
-        /*
         internal static void WcShootOnAction(WeaponComponent comp, bool alreadySynced = false)
         {
             comp.Session.TerminalMon.ClientUpdate(comp);
@@ -494,7 +494,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            WcShootToggleAction(comp);
+            comp.RequestShootUpdate(comp.State.Value.ShootOn ? ShootOff : ShootOn);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
