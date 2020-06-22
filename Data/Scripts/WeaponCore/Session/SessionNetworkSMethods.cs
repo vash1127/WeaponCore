@@ -498,7 +498,7 @@ namespace WeaponCore
 
             return true;
         }
-
+        /*
         private bool ServerCompToolbarShootState(PacketObj data)
         {
             var packet = data.Packet;
@@ -540,24 +540,24 @@ namespace WeaponCore
             }
             return true;
         }
-
-        private bool ServerRangeUpdate(PacketObj data)
+        */
+        private bool ServerCompShootUpdate(PacketObj data)
         {
             var packet = data.Packet;
-            var rangePacket = (RangePacket)packet;
+            var shootPacket = (CompShootPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < rangePacket.MId) {
+            if (comp.MIds[(int)packet.PType] < shootPacket.MId) {
 
-                comp.MIds[(int)packet.PType] = rangePacket.MId;
-                comp.Set.Value.Range = rangePacket.Data;
+                comp.MIds[(int)packet.PType] = shootPacket.MId;
+                comp.Set.Value.Range = shootPacket.Data;
 
                 PacketsToClient.Add(new PacketInfo {
                     Entity = ent,
-                    Packet = rangePacket,
+                    Packet = shootPacket,
                 });
 
                 data.Report.PacketValid = true;
@@ -639,7 +639,8 @@ namespace WeaponCore
             var direction = hitPacket.Velocity;
             direction.Normalize();
 
-            CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
+            Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, Muzzle = weapon.Muzzles[hitPacket.MuzzleId], Weapon = weapon, TargetEnt = targetEnt, Origin = origin, OriginUp = hitPacket.Up, Direction = direction, Velocity = hitPacket.Velocity, MaxTrajectory = hitPacket.MaxTrajectory, Type = NewProjectile.Kind.Client });
+            //CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
 
             data.Report.PacketValid = true;
             return true;

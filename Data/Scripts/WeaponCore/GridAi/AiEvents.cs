@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 
@@ -22,6 +23,7 @@ namespace WeaponCore.Support
 
                 Registered = true;
                 MarkedForClose = false;
+                AiMarkedTick = Session.Tick;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnClose += GridClose;
@@ -31,6 +33,7 @@ namespace WeaponCore.Support
                 if (!Registered)
                     Log.Line($"Ai UnRegisterMyGridEvents error");
                 MarkedForClose = true;
+                AiMarkedTick = Session.Tick;
                 if (Registered) {
 
 

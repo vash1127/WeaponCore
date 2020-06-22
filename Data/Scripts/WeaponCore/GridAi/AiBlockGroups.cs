@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponComponent;
+
 namespace WeaponCore.Support
 {
     internal class GroupInfo
@@ -271,7 +273,7 @@ namespace WeaponCore.Support
                 comp.State.Value.ClickShoot = false;
                 comp.State.Value.ShootOn = false;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    comp.Platform.Weapons[i].State.ManualShoot = Platform.Weapon.ManualShootActionState.ShootOff;
+                    comp.Platform.Weapons[i].State.ManualShoot = ShootActions.ShootOff;
             }
             else {
                 change = comp.State.Value.CurrentPlayerControl.PlayerId != -1 || comp.State.Value.CurrentPlayerControl.ControlType != ControlType.None;

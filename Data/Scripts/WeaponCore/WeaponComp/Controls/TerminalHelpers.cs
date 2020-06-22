@@ -8,7 +8,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
-using static WeaponCore.Platform.Weapon.ManualShootActionState;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -51,7 +51,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        WcShootOnceAction(comp);
+                        comp.RequestShootUpdate(ShootOnce);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -100,7 +100,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WcShootOnAction(comp);
+                        comp.RequestShootUpdate(ShootOn);
                     };
 
                     var oldWriter = a.Writer;
@@ -131,8 +131,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-
-                        WcShootOffAction(comp);
+                        comp.RequestShootUpdate(ShootOff);
                     };
 
                     var oldWriter = a.Writer;
@@ -319,14 +318,13 @@ namespace WeaponCore.Control
 
         internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
         {
-            var cState = comp.State.Value;
-
-            if (cState.ShootOn)
-                WcShootOffAction(comp, alreadySynced);
+            if (comp.State.Value.ShootOn)
+                comp.RequestShootUpdate(ShootOff);
             else
-                WcShootOnAction(comp, alreadySynced);
+                comp.RequestShootUpdate(ShootOn);
         }
 
+        /*
         internal static void WcShootOnAction(WeaponComponent comp, bool alreadySynced = false)
         {
             comp.Session.TerminalMon.ClientUpdate(comp);
@@ -337,10 +335,10 @@ namespace WeaponCore.Control
                 comp.Platform.Weapons[j].State.ManualShoot = ShootOn;
                 comp.Platform.Weapons[j].State.SingleShotCounter = 0;
             }
-
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
+
 
             if (!alreadySynced)
             {
@@ -355,8 +353,8 @@ namespace WeaponCore.Control
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOn);
-                //if (update)
-                    //comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
             }
         }
 
@@ -374,7 +372,6 @@ namespace WeaponCore.Control
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
-
             comp.State.Value.CurrentPlayerControl.PlayerId = -1;
             comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
 
@@ -385,8 +382,8 @@ namespace WeaponCore.Control
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOff);
-                //if (update)
-                    //comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
             }
         }
 
@@ -404,22 +401,20 @@ namespace WeaponCore.Control
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
-
             if (!alreadySynced)
             {
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
             }
-
-            cState.ClickShoot = false;
             cState.ShootOn = false;
+            cState.ClickShoot = false;
 
             if (comp.Session.MpActive && !alreadySynced)
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOnce);
-                //if (update)
-                    //comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                if (update)
+                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
             }
         }
 
@@ -464,6 +459,7 @@ namespace WeaponCore.Control
             cState.ClickShoot = on;
             cState.ShootOn = !on && cState.ShootOn;
         }
+        */
         #endregion
 
         #region Support methods
@@ -489,7 +485,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
+            comp.RequestShootUpdate(ShootClick, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
@@ -507,7 +503,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            WcShootOnAction(comp);
+            comp.RequestShootUpdate(ShootOn);
         }
 
         internal static void TerminalActionShootOff(IMyTerminalBlock blk)
@@ -516,7 +512,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            WcShootOffAction(comp);
+            comp.RequestShootUpdate(ShootOff);
         }
 
         internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
@@ -524,7 +520,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            WcShootOnceAction(comp);
+            comp.RequestShootUpdate(ShootOnce);
         }
 
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)

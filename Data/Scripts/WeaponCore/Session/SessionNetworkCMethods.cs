@@ -426,7 +426,7 @@ namespace WeaponCore
             return true;
 
         }
-
+        /*
         private bool ClientCompToolbarShootState(PacketObj data)
         {
             var packet = data.Packet;
@@ -457,17 +457,17 @@ namespace WeaponCore
             data.Report.PacketValid = true;
             return true;
         }
-
-        private bool ClientRangeUpdate(PacketObj data)
+        */
+        private bool ClientCompShootUpdate(PacketObj data)
         {
             var packet = data.Packet;
-            var rangePacket = (RangePacket)packet;
+            var shootPacket = (CompShootPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            comp.MIds[(int)packet.PType] = rangePacket.MId;
-            comp.Set.Value.Range = rangePacket.Data;
+            comp.MIds[(int)packet.PType] = shootPacket.MId;
+            comp.Set.Value.Range = shootPacket.Data;
 
             data.Report.PacketValid = true;
             return true;

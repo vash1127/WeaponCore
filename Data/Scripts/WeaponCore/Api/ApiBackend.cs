@@ -7,11 +7,10 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
-using static WeaponCore.Platform.Weapon.ManualShootActionState;
-using static WeaponCore.Platform.MyWeaponPlatform.PlatformState;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-
+using static WeaponCore.Support.WeaponComponent.ShootActions;
+using static WeaponCore.Platform.MyWeaponPlatform.PlatformState;
 namespace WeaponCore.Api
 {
     internal class ApiBackend

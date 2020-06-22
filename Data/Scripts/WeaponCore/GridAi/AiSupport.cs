@@ -10,6 +10,8 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
 using static WeaponCore.WeaponRandomGenerator;
+using static WeaponCore.Support.WeaponComponent;
+
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -230,13 +232,13 @@ namespace WeaponCore.Support
                         var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
 
                         if (cState.ClickShoot)
-                            wState.ManualShoot = Weapon.ManualShootActionState.ShootOff;
+                            wState.ManualShoot = ShootActions.ShootOff;
                     }
 
                     cState.ClickShoot = false;
 
-                    if (comp.Session.MpActive)
-                        comp.Session.SendActionShootUpdate(comp, Weapon.ManualShootActionState.ShootOff);
+                    //if (comp.Session.MpActive)
+                        //comp.Session.SendActionShootUpdate(comp, ShootActions.ShootOff);
                 }
                 else if (overRides.TargetPainter || overRides.ManualControl) {
 
@@ -377,13 +379,12 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete && !ScanInProgress) {
+            if (!ScanInProgress && Session.DbTask.IsComplete && Session.Tick - ProjectileTicker > 59 && Session.Tick - AiMarkedTick > 59) {
 
                 lock (AiLock) {
                 
                     if (ScanInProgress)
                         return;
-                    
                     Session.GridAiPool.Return(this);
                 }
             }

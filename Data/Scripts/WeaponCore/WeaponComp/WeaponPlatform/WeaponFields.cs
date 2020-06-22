@@ -193,15 +193,6 @@ namespace WeaponCore.Platform
         internal bool Reloading;
         internal bool Charging;
 
-        public enum ManualShootActionState
-        {
-            ShootOn,
-            ShootOff,
-            ShootOnce,
-            ShootClick,
-        }
-
-
         internal bool ShotReady
         {
             get

@@ -21,6 +21,9 @@ namespace WeaponCore.Support
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
         internal volatile bool PowerDirty = true;
+        internal volatile uint AiSpawnTick;
+        internal volatile uint AiCloseTick;
+        internal volatile uint AiMarkedTick;
         internal readonly Focus Focus = new Focus(2);
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
@@ -130,8 +133,7 @@ namespace WeaponCore.Support
         internal uint TurnOffManualTick;
         internal uint UiMId;
         internal uint ProjectileTicker;
-        internal uint AiSpawnTick;
-        internal uint AiCloseTick;
+
         internal uint LastDetectEvent;
         internal int SleepingComps;
         internal int AwakeComps;

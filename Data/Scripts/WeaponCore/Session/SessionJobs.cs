@@ -47,11 +47,15 @@ namespace WeaponCore
         private void ProcessDbs()
         {
             for (int i = 0; i < DbsToUpdate.Count; i++) {
-                var ai = DbsToUpdate[i].Ai;
+
+                var db = DbsToUpdate[i];
+                var ai = db.Ai;
                 ai.ScanInProgress = true;
-                
-                lock (ai.AiLock) 
-                    ai.Scan();
+
+                lock (ai.AiLock) {
+                    if (!ai.MarkedForClose && !ai.Closed && ai.Version == db.Version) 
+                        ai.Scan();
+                }
             }
         }
 
@@ -168,7 +172,6 @@ namespace WeaponCore
                     ai.ScanInProgress = false;
                 }
                 DbsToUpdate.Clear();
-
                 DsUtil.Complete("db", true);
             }
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }

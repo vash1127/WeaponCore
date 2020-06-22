@@ -3,12 +3,12 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using System;
 using System.Collections.Generic;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
-
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -288,8 +288,8 @@ namespace WeaponCore.Platform
                 }
                 
 
-                if (State.ManualShoot == ManualShootActionState.ShootOnce && --State.SingleShotCounter <= 0)
-                    State.ManualShoot = ManualShootActionState.ShootOff;
+                if (State.ManualShoot == ShootActions.ShootOnce && --State.SingleShotCounter <= 0)
+                    State.ManualShoot = ShootActions.ShootOff;
 
                 _muzzlesToFire.Clear();
 

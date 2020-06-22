@@ -3,6 +3,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore.Platform
 {
@@ -47,14 +48,14 @@ namespace WeaponCore.Platform
             {
                 if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                if (State.ManualShoot != ManualShootActionState.ShootOff || Comp.UserControlled || Target.HasTarget)
+                if (State.ManualShoot != ShootActions.ShootOff || Comp.UserControlled || Target.HasTarget)
                 {
                     ReturingHome = false;
                     return;
                 }
                 ReturingHome = true;
 
-                if (Comp.BaseType == WeaponComponent.BlockType.Turret && Comp.TurretBase != null)
+                if (Comp.BaseType == BlockType.Turret && Comp.TurretBase != null)
                 {
                     Azimuth = Comp.TurretBase.Azimuth;
                     Elevation = Comp.TurretBase.Elevation;

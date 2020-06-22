@@ -300,42 +300,7 @@ namespace WeaponCore
                 }
             }
         }
-
         /*
-        internal void SendOverRidesUpdate(WeaponComponent comp, GroupOverrides overRides)
-        {
-            if (MpActive)
-            {
-                comp.MIds[(int)PacketType.OverRidesUpdate]++;
-                if (IsClient)
-                {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = MultiplayerId,
-                        MId = comp.MIds[(int)PacketType.OverRidesUpdate],
-                        PType = PacketType.OverRidesUpdate,
-                        Data = comp.Set.Value.Overrides,
-                    });
-                }
-                else
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = comp.MyCube,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = comp.MyCube.EntityId,
-                            SenderId = 0,
-                            MId = comp.MIds[(int)PacketType.OverRidesUpdate],
-                            PType = PacketType.OverRidesUpdate,
-                            Data = comp.Set.Value.Overrides,
-                        }
-                    });
-                }
-            }
-        }
-        */
         internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state)
         {
             if (!HandlesInput) return;
@@ -371,39 +336,8 @@ namespace WeaponCore
                 });
             }
         }
-        /*
-        internal void SendRangeUpdate(WeaponComponent comp, float range)
-        {
-            comp.MIds[(int)PacketType.RangeUpdate]++;
-
-            if (IsClient)
-            {
-                comp.Session.PacketsToServer.Add(new RangePacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = comp.Session.MultiplayerId,
-                    PType = PacketType.RangeUpdate,
-                    MId = comp.MIds[(int)PacketType.RangeUpdate],
-                    Data = range,
-                });
-            }
-            else if (HandlesInput)
-            {
-                comp.Session.PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new RangePacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        PType = PacketType.RangeUpdate,
-                        MId = comp.MIds[(int)PacketType.RangeUpdate],
-                        Data = range,
-                    }
-                });
-            }
-        }
         */
+
         internal void SendControlingPlayer(WeaponComponent comp)
         {
             comp.MIds[(int)PacketType.PlayerControlUpdate]++;
@@ -434,7 +368,7 @@ namespace WeaponCore
                 });
             }
         }
-        
+
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
         {
             if (IsClient)
@@ -861,9 +795,7 @@ namespace WeaponCore
 
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {
-            var muzzle = weapon.Muzzles[muzzleId];
-            var session = weapon.Comp.Session;
-            session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, Muzzle = muzzle, Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Client });
+            weapon.Comp.Session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, Muzzle = weapon.Muzzles[muzzleId], Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Client });
         }
 
         private bool AuthorDebug()

@@ -52,6 +52,52 @@ namespace WeaponCore.Support
             }
         }
 
+        internal void RequestShootUpdate(ShootActions action, bool on = false, bool isTurret = false)
+        {
+            Session.TerminalMon.ClientUpdate(this);
+            var uiShootModeOn = Set.Value.Overrides.ManualControl || Set.Value.Overrides.TargetPainter;
+
+            if (Session.IsServer) {
+                
+                ResetShootState(action, uiShootModeOn, on, isTurret);
+            }
+            else {
+
+            }
+        }
+
+        internal void ResetShootState(ShootActions action, bool uiShootModeOn, bool on = false, bool isTurret = false)
+        {
+            var clickOnce = action == ShootActions.ShootClick;
+            if (uiShootModeOn) {
+                Set.Value.Overrides.ManualControl = false;
+                Set.Value.Overrides.TargetPainter = false;
+            }
+
+            foreach (var w in Platform.Weapons) {
+                
+                w.State.ManualShoot = action;
+                if (action == ShootActions.ShootClick)
+                    w.State.ManualShoot = on ? ShootActions.ShootClick : ShootActions.ShootOff;
+                else
+                    w.State.SingleShotCounter = clickOnce ? w.State.SingleShotCounter++ : 0;
+            }
+
+            if (action == ShootActions.ShootClick && isTurret) {
+                State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+            }
+            else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce || action == ShootActions.ShootOn) {
+                State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            }
+            else{
+                State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+            }
+
+            State.Value.CurrentPlayerControl.PlayerId = (action == ShootActions.ShootClick && !on || action == ShootActions.ShootOff) ? -1 : Session.PlayerId;
+            State.Value.ClickShoot = action == ShootActions.ShootClick && on;
+            State.Value.ShootOn = action == ShootActions.ShootOn || (action == ShootActions.ShootOn && !on && State.Value.ShootOn);
+        }
+
         internal void DetectStateChanges()
         {
             if (Platform.State != MyWeaponPlatform.PlatformState.Ready)

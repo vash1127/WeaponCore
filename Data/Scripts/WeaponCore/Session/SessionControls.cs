@@ -13,7 +13,6 @@ using VRage.Game;
 using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI.Interfaces;
-using static WeaponCore.Platform.Weapon.ManualShootActionState;
 using Sandbox.Common.ObjectBuilders;
 using VRage.ObjectBuilders;
 

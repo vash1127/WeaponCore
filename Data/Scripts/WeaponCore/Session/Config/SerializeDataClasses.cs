@@ -6,6 +6,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.Target;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -16,6 +17,7 @@ namespace WeaponCore
         GridSyncRequestUpdate,
         CompStateUpdate,
         CompSettingsUpdate,
+        CompShootState,
         WeaponSyncUpdate,
         WeaponPacket,
         FakeTargetUpdate,
@@ -33,8 +35,7 @@ namespace WeaponCore
         ClientEntityClosed,
         RequestMouseStates,
         FullMouseUpdate,
-        CompToolbarShootState,
-        RangeUpdate,
+        //CompToolbarShootState,
         GridAiUiMidUpdate,
         CycleAmmo,
         ReassignTargetUpdate,
@@ -320,7 +321,7 @@ namespace WeaponCore
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(23, typeof(RangePacket))]
+    [ProtoInclude(23, typeof(CompShootPacket))]
     [ProtoInclude(24, typeof(CycleAmmoPacket))]
     [ProtoInclude(25, typeof(ShootStatePacket))]
     [ProtoInclude(26, typeof(OverRidesPacket))]
@@ -364,10 +365,10 @@ namespace WeaponCore
 
 
     [ProtoContract]
-    public class RangePacket : MIdPacket
+    public class CompShootPacket : MIdPacket
     {
         [ProtoMember(1)] internal float Data;
-        public RangePacket() { }
+        public CompShootPacket() { }
 
         public override void CleanUp()
         {
@@ -394,13 +395,13 @@ namespace WeaponCore
     [ProtoContract]
     public class ShootStatePacket : MIdPacket
     {
-        [ProtoMember(1)] internal ManualShootActionState Data = ManualShootActionState.ShootOff;
+        [ProtoMember(1)] internal ShootActions Data = ShootActions.ShootOff;
         public ShootStatePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = ManualShootActionState.ShootOff;
+            Data = ShootActions.ShootOff;
         }
     }
 

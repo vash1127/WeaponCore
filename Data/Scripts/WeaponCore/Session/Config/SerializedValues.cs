@@ -8,6 +8,7 @@ using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -121,7 +122,7 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public int ShotsFired; //don't know??
-        [ProtoMember(2), DefaultValue(ManualShootActionState.ShootOff)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff; // save
+        [ProtoMember(2), DefaultValue(ShootActions.ShootOff)] public ShootActions ManualShoot = ShootActions.ShootOff; // save
         [ProtoMember(3)] public int SingleShotCounter; // save
         [ProtoMember(4)] public WeaponSyncValues Sync;
 
@@ -224,8 +225,8 @@ namespace WeaponCore
                         if (comp.Session.IsServer)
                         {
                             targets[w.WeaponId] = new TransferTarget();
-                            comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator(w.UniqueId);
-
+                            comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
+                            comp.WeaponValues.WeaponRandom[w.WeaponId].Init(w.UniqueId);
                             rand.CurrentSeed = w.UniqueId;
                             rand.AcquireRandom = new Random(rand.CurrentSeed);
                         }
@@ -263,8 +264,8 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
 
                 comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
-                comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator(w.UniqueId);
-
+                comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
+                comp.WeaponValues.WeaponRandom[w.WeaponId].Init(w.UniqueId);
                 var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
                 rand.CurrentSeed = w.UniqueId;
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
@@ -394,12 +395,14 @@ namespace WeaponCore
             Acquire,
         }
 
-        public WeaponRandomGenerator(int uniqueId)
+        public WeaponRandomGenerator() { }
+
+        public void Init(int uniqueId)
         {
             CurrentSeed = uniqueId;
-            TurretRandom = new Random(uniqueId);
-            ClientProjectileRandom = new Random(uniqueId);
-            AcquireRandom = new Random(uniqueId);
+            TurretRandom = new Random(CurrentSeed);
+            ClientProjectileRandom = new Random(CurrentSeed);
+            AcquireRandom = new Random(CurrentSeed);
         }
 
         public void Sync(WeaponRandomGenerator syncFrom)
