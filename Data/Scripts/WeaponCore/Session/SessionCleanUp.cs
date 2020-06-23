@@ -244,7 +244,6 @@ namespace WeaponCore
 
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();
-            GridToMasterAi.Clear();
 
             DsUtil = null;
             DsUtil2 = null;

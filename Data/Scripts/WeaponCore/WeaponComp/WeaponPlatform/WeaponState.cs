@@ -545,7 +545,6 @@ namespace WeaponCore.Platform
                 Comp.State.Value.ClickShoot = false;
                 Comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
-            Log.Line($"{clickToShootDirty} - {Comp.State.Value.ShootOn} - {Comp.State.Value.CurrentPlayerControl.ControlType}");
         }
 
         internal bool HasAmmo()

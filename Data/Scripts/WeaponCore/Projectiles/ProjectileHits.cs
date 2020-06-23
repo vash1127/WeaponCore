@@ -128,8 +128,6 @@ namespace WeaponCore.Projectiles
                         Vector3D? voxelHit = null;
                         if (voxel != null) {
 
-                            if (p.Info.IsShrapnel)
-                                continue;
                             if (voxel.RootVoxel != voxel) continue;
                             var pseudoHit = false;
                             if (tick - p.Info.VoxelCache.HitRefreshed < 60) {

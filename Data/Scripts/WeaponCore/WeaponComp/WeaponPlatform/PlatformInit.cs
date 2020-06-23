@@ -60,23 +60,20 @@ namespace WeaponCore.Platform
         internal PlatformState Init(WeaponComponent comp)
         {
 
-            if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
-            {
+            if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose) {
                 State = PlatformState.Invalid;
                 Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) closed, init platform invalid, I am crashing now Dave.");
                 return State;
             }
             
-            if (!comp.MyCube.IsFunctional)
-            {
+            if (!comp.MyCube.IsFunctional) {
                 State = PlatformState.Delay;
                 return State;
             }
 
             //Get or init Ai
             var newAi = false;
-            if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.MyCube.CubeGrid, out Comp.Ai))
-            {
+            if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.MyCube.CubeGrid, out Comp.Ai)) {
                 newAi = true;
                 Comp.Ai = Comp.Session.GridAiPool.Get();
                 Comp.Ai.Init(Comp.MyCube.CubeGrid, Comp.Session);
@@ -90,8 +87,7 @@ namespace WeaponCore.Platform
             var wCounter = comp.Ai.WeaponCounter[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
             
-            if (newAi)
-            {
+            if (newAi) {
                 var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
                 for (int i = 0; i < subgrids.Count; i++) {
                     var grid = (MyCubeGrid)subgrids[i];
@@ -102,23 +98,17 @@ namespace WeaponCore.Platform
                 Comp.Ai.SubGridChanges();
             }
 
-            if (wCounter.Max > 0)
-            {
-                if (Comp.Ai.Construct.GetWeaponCount(blockDef) + 1 <= wCounter.Max)
-                {
-                    wCounter.Current++;
-                    Comp.Ai.Construct.AddWeaponCount(blockDef);
-                    State = PlatformState.Valid;
-                }
-                else
-                {
-                    State = PlatformState.Invalid;
-                    Log.Line($"{blockDef.String} over block limits.");
-                    return State;
-                }
+            if (wCounter.Max == 0 || Comp.Ai.Construct.GetWeaponCount(blockDef) + 1 <= wCounter.Max) {
+                wCounter.Current++;
+                GridAi.Constructs.UpdateWeaponCounters(Comp.Ai);
+                State = PlatformState.Valid;
             }
             else
-                State = PlatformState.Valid;
+            {
+                State = PlatformState.Invalid;
+                Log.Line($"{blockDef.String} over block limits: {wCounter.Current}.");
+                return State;
+            }
 
             Parts.Entity = comp.Entity as MyEntity;
 
