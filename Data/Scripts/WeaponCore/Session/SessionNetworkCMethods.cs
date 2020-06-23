@@ -119,6 +119,9 @@ namespace WeaponCore
 
             comp.MIds[(int)packet.PType] = statePacket.MId;
             comp.State.Value.Sync(statePacket.Data, comp);
+            if (WheelUi.WheelActive)
+                WheelUi.Dirty = true;
+
             data.Report.PacketValid = true;
 
             return true;

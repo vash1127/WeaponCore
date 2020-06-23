@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Gui;
 using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -314,6 +315,50 @@ namespace WeaponCore
 
             if (comp?.Ai == null && myGrid == null) return Error(data, Msg("Comp", comp != null), Msg("Ai+Grid"));
 
+            if (comp?.Ai != null) {
+
+                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
+                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
+
+                    comp.Ai.ReScanBlockGroups();
+
+                    GroupInfo group;
+                    if (comp.Ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
+                    {
+                        group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value);
+                        data.Report.PacketValid = true;
+                    }
+                    else Log.Line($"ServerOverRidesUpdate couldn't find group: {overRidesPacket.GroupName}");
+                }
+                else
+                    return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
+            }
+            else if (myGrid != null)
+            {
+                GridAi ai;
+                if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
+
+                    if (ai.UiMId < overRidesPacket.MId) {
+                        ai.UiMId = overRidesPacket.MId;
+
+                        ai.ReScanBlockGroups();
+
+                        GroupInfo groups;
+                        if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
+                        {
+                            groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session);
+                            data.Report.PacketValid = true;
+                        }
+                        else
+                            return Error(data, Msg("Block group not found"));
+                    }
+                    else
+                        return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
+                }
+                else
+                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+            }
+            /*
             if (comp != null) {
 
                 if (comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
@@ -374,6 +419,7 @@ namespace WeaponCore
                     Packet = overRidesPacket,
                 });
             }
+            */
             return true;
         }
 

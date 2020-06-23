@@ -194,7 +194,7 @@ namespace WeaponCore
             }
         }
 
-        internal void SendOverRidesUpdate(WeaponComponent comp, string settings, int value)
+        internal void SendOverRidesUpdate(WeaponComponent comp, string groupName, string settings, int value)
         {
             if (MpActive)
             {

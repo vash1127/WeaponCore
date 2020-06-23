@@ -55,26 +55,15 @@ namespace WeaponCore.Support
             }
             else if (comp.Session.IsClient)
             {
-                comp.Session.SendOverRidesUpdate(comp, setting, value);
+                comp.Session.SendOverRidesUpdate(comp, Name, setting, value);
             }
         }
 
         internal void ApplySettings()
         {
-            GroupOverrides o = null;
-            GridAi ai = null;
-            var somethingChanged = false;
             foreach (var comp in Comps) {
 
-                if (ai == null) {
-                    if (comp.Ai == null) {
-                        Log.Line($"ApplySettings - null Ai");
-                        return;
-                    }
-                    ai = comp.Ai;
-                }
-
-                o = comp.Set.Value.Overrides;
+                var o = comp.Set.Value.Overrides;
                 var change = false;
 
                 if (comp.State.Value.CurrentBlockGroup != Name) {
@@ -141,15 +130,10 @@ namespace WeaponCore.Support
                 }
 
                 if (change) {
-                    var userControl = o.ManualControl || o.TargetPainter;
-                    ResetCompState(comp, userControl, true);
-                    somethingChanged = true;
+                    ResetCompState(comp, true);
+                    if (comp.Session.MpActive) comp.Session.SendCompStateUpdate(comp);
                 }
-
             }
-            
-            if (somethingChanged && ai != null && ai.Session.HandlesInput && ai.Session.MpActive)
-                ai.Session.SendOverRidesUpdate(ai, Name, o);
         }
 
         internal void SetValue(WeaponComponent comp, string setting, int v)
@@ -197,12 +181,10 @@ namespace WeaponCore.Support
                     break;
             }
 
-            var userControl = o.ManualControl || o.TargetPainter;
-            ResetCompState(comp, userControl, false);
+            ResetCompState(comp, false);
 
-            if (comp.Session.MpActive) {
-                comp.Session.SendOverRidesUpdate(comp, setting, v);
-            }
+            if (comp.Session.MpActive) 
+                comp.Session.SendCompStateUpdate(comp);
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)
@@ -251,13 +233,13 @@ namespace WeaponCore.Support
             return value;
         }
 
-        internal void ResetCompState(WeaponComponent comp, bool userControl, bool apply)
+        internal void ResetCompState(WeaponComponent comp, bool apply)
         {
             var o = comp.Set.Value.Overrides;
-            bool change;
+            var userControl = o.ManualControl || o.TargetPainter;
+
             if (userControl)
             {
-                change = true;
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
 
@@ -276,17 +258,9 @@ namespace WeaponCore.Support
                     comp.Platform.Weapons[i].State.ManualShoot = ShootActions.ShootOff;
             }
             else {
-                change = comp.State.Value.CurrentPlayerControl.PlayerId != -1 || comp.State.Value.CurrentPlayerControl.ControlType != ControlType.None;
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
             }
-
-            if (comp.Session.MpActive && change)
-            {
-                comp.Session.SendCompStateUpdate(comp);
-                //comp.Session.SendControlingPlayer(comp);
-            }
-
         }
 
         private void ClearTargets(WeaponComponent comp)

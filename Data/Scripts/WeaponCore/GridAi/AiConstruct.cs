@@ -84,7 +84,7 @@ namespace WeaponCore.Support
             {
                 BlockScan,
                 Overrides,
-                ManualShootingOff,
+                //ManualShootingOff,
                 None,
             }
 
@@ -137,10 +137,12 @@ namespace WeaponCore.Support
                                 ai.UpdateGroupOverRides();
                                 break;
                             }
+                            /*
                             case UpdateType.ManualShootingOff: {
                                 ai.TurnManualShootOff();
                                 break;
                             }
+                            */
                         }
                     }
                 }

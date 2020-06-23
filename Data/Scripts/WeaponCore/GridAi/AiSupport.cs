@@ -203,6 +203,7 @@ namespace WeaponCore.Support
             }
         }
 
+        /*
         internal void TurnManualShootOff()
         {
             if (TurnOffManualTick == Session.Tick) return;
@@ -258,6 +259,7 @@ namespace WeaponCore.Support
                 }
             }
         }
+        */
 
         internal void CheckReload(object o = null)
         {
