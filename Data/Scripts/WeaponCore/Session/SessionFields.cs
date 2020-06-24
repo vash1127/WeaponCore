@@ -196,7 +196,7 @@ namespace WeaponCore
         internal DSUtils DsUtil2;
         internal StallReporter StallReporter;
         internal UiInput UiInput;
-        internal Wheel WheelUi;
+        internal Wheel Wheel;
         internal TargetUi TargetUi;
         internal Hud HudUi;
         internal Enforcements Enforced;
@@ -333,7 +333,7 @@ namespace WeaponCore
         {
             UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
-            WheelUi = new Wheel(this);
+            Wheel = new Wheel(this);
             HudUi = new Hud(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);

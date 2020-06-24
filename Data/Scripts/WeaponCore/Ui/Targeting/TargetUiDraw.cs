@@ -17,7 +17,7 @@ namespace WeaponCore
             
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
-            if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
+            if (!s.Wheel.WheelActive && ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && GetTargetState(s)) DrawTarget();
         }
 
@@ -76,7 +76,7 @@ namespace WeaponCore
             var focus = s.TrackingAi.Focus;
             for (int i = 0; i < focus.TargetState.Length; i++)
             {
-                if (focus.Target[i] == null || s.WheelUi.WheelActive && i > 0) continue;
+                if (focus.Target[i] == null || s.Wheel.WheelActive && i > 0) continue;
 
                 var targetState = focus.TargetState[i];
 
@@ -89,7 +89,7 @@ namespace WeaponCore
                     Vector3D offset;
                     float scale;
                     MyStringId textureName;
-                    _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, s.WheelUi.WheelActive, s, out textureName, out scale, out offset);
+                    _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, s.Wheel.WheelActive, s, out textureName, out scale, out offset);
                     var color = Color.White;
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
 

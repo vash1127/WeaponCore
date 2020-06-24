@@ -109,7 +109,7 @@ namespace WeaponCore
                     ProfilePerformance();
                 FutureEvents.Tick(Tick);
 
-                if (!DedicatedServer && ActiveControlBlock != null && !InMenu) WheelUi.UpdatePosition();
+                if (!DedicatedServer && ActiveControlBlock != null && !InMenu) Wheel.UpdatePosition();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -147,7 +147,7 @@ namespace WeaponCore
 
                 }
 
-                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu) {
+                if (!DedicatedServer && !Wheel.WheelActive && !InMenu) {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
@@ -228,7 +228,7 @@ namespace WeaponCore
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
 
-                    if (WheelUi.WheelActive) WheelUi.DrawWheel();
+                    if (Wheel.WheelActive) Wheel.DrawWheel();
                     TargetUi.DrawTargetUi();
                 }
 

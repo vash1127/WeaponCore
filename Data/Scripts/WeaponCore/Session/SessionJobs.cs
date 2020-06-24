@@ -160,7 +160,7 @@ namespace WeaponCore
                     ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
 
                     if (ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
-                    if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
+                    //if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
 
                     
                     ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.ControllingPlayers.Count > 0 || ai.FirstRun;

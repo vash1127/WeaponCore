@@ -133,11 +133,11 @@ namespace WeaponCore.Support
                                 ai.ReScanBlockGroups();
                                 break; 
                             }
+                            /*
                             case UpdateType.Overrides: {
                                 ai.UpdateGroupOverRides();
                                 break;
                             }
-                            /*
                             case UpdateType.ManualShootingOff: {
                                 ai.TurnManualShootOff();
                                 break;

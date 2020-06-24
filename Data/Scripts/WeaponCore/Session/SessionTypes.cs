@@ -306,7 +306,6 @@ namespace WeaponCore
                     {"ControlType", () => GetComp()?.State.Value.CurrentPlayerControl.ControlType.ToString() ?? string.Empty },
                     {"PlayerId", () => GetComp()?.State.Value.CurrentPlayerControl.PlayerId.ToString() ?? string.Empty },
                     {"Online", () => GetComp()?.State.Value.Online.ToString() ?? string.Empty },
-                    {"CurrentBlockGroup", () => GetComp()?.State.Value.CurrentBlockGroup ?? string.Empty },
                     {"ClickShoot", () => GetComp()?.State.Value.ClickShoot.ToString() ?? string.Empty },
                     {"Modes", () => GetComp()?.Set.Value.Modes.ToString() ?? string.Empty },
                     {"Activate", () => GetComp()?.Set.Value.Overrides.Activate.ToString() ?? string.Empty },

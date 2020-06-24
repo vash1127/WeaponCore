@@ -117,6 +117,7 @@ namespace WeaponCore.Support
             }
         }
 
+        /*
         internal void UpdateGroupOverRides()
         {
             var resetOverRides = new GroupOverrides {Activate = true };
@@ -138,7 +139,7 @@ namespace WeaponCore.Support
             GroupsToCheck.Clear();
             ScanBlockGroupSettings = false;
         }
-
+        */
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
         {
             var count = cardsToSort - firstCard;

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
-using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
@@ -116,7 +113,7 @@ namespace WeaponCore
 
             GridAi ai;
             long playerId;
-            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
                 PlayerDummyTargets[playerId].Update(targetPacket.Data, ai, null, true);
                 data.Report.PacketValid = true;
@@ -307,6 +304,7 @@ namespace WeaponCore
 
         private bool ServerOverRidesUpdate(PacketObj data)
         {
+            Log.Line($"ServerOverRidesUpdate0");
             var packet = data.Packet;
             var overRidesPacket = (OverRidesPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
@@ -314,17 +312,22 @@ namespace WeaponCore
             var myGrid = ent as MyCubeGrid;
 
             if (comp?.Ai == null && myGrid == null) return Error(data, Msg("Comp", comp != null), Msg("Ai+Grid"));
+            Log.Line($"ServerOverRidesUpdate1");
 
             if (comp?.Ai != null) {
+                Log.Line($"ServerOverRidesUpdate Comp0");
 
                 if (comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
                     comp.MIds[(int)packet.PType] = overRidesPacket.MId;
+                    Log.Line($"ServerOverRidesUpdate Comp1");
 
                     comp.Ai.ReScanBlockGroups();
 
                     GroupInfo group;
                     if (comp.Ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
                     {
+                        Log.Line($"ServerOverRidesUpdate Comp2");
+
                         group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value);
                         data.Report.PacketValid = true;
                     }
@@ -335,17 +338,21 @@ namespace WeaponCore
             }
             else if (myGrid != null)
             {
+                Log.Line($"ServerOverRidesUpdate myGrid0");
                 GridAi ai;
                 if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
+                    Log.Line($"ServerOverRidesUpdate myGrid1");
                     if (ai.UiMId < overRidesPacket.MId) {
                         ai.UiMId = overRidesPacket.MId;
+                        Log.Line($"ServerOverRidesUpdate myGrid2");
 
                         ai.ReScanBlockGroups();
 
                         GroupInfo groups;
                         if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                         {
+                            Log.Line($"ServerOverRidesUpdate myGrid3");
                             groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session);
                             data.Report.PacketValid = true;
                         }

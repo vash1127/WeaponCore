@@ -194,112 +194,75 @@ namespace WeaponCore
             }
         }
 
-        internal void SendOverRidesUpdate(WeaponComponent comp, string groupName, string settings, int value)
+        internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
-            if (MpActive)
+
+            comp.MIds[(int)PacketType.OverRidesUpdate]++;
+            PacketsToServer.Add(new OverRidesPacket
             {
-                comp.MIds[(int)PacketType.OverRidesUpdate]++;
-                if (IsClient)
+                MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                PType = PacketType.OverRidesUpdate,
+                EntityId = comp.MyCube.EntityId,
+                SenderId = MultiplayerId,
+                GroupName = groupName,
+                Setting = settings,
+                Value = value,
+            });
+        }
+
+
+
+        internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
+        {
+            ai.UiMId++;
+            if (IsClient)
+            {
+                PacketsToServer.Add(new OverRidesPacket
                 {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = MultiplayerId,
-                        MId = comp.MIds[(int)PacketType.OverRidesUpdate],
-                        PType = PacketType.OverRidesUpdate,
-                        Setting = settings,
-                        Value = value,
-                    });
-                }
-                else if (IsServer)
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = comp.MyCube,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = comp.MyCube.EntityId,
-                            SenderId = 0,
-                            MId = comp.MIds[(int)PacketType.OverRidesUpdate],
-                            PType = PacketType.OverRidesUpdate,
-                        }
-                    });
-                }
+                    MId = ai.UiMId,
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    GroupName = groupName,
+                    Setting = settings,
+                    Value = value,
+                });
             }
         }
 
-        internal void SendOverRidesUpdate(GridAi ai, string groupName, GroupOverrides overRides)
+        internal void SendOverRidesServerAi(GridAi ai, string groupName, GroupOverrides data)
         {
-            if (MpActive)
+            ai.UiMId++;
+            PacketsToClient.Add(new PacketInfo
             {
-                ai.UiMId++;
-                if (IsClient)
+                Entity = ai.MyGrid,
+                Packet = new OverRidesPacket
                 {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = MultiplayerId,
-                        MId = ai.UiMId,
-                        GroupName = groupName,
-                        PType = PacketType.OverRidesUpdate,
-                        Data = overRides,
-                    });
+                    MId = ai.UiMId,
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = 0,
+                    GroupName = groupName,
+                    Data = data,
                 }
-                else if (IsServer)
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = ai.MyGrid,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = ai.MyGrid.EntityId,
-                            SenderId = 0,
-                            MId = ai.UiMId,
-                            GroupName = groupName,
-                            PType = PacketType.OverRidesUpdate,
-                            Data = overRides,
-                        }
-                    });
-                }
-            }
+            });
         }
 
-        internal void SendOverRidesUpdate(GridAi ai, string groupName, string settings, int value)
+        internal void SendOverRidesServerComp(WeaponComponent comp, string groupName, GroupOverrides data)
         {
-            if (MpActive)
+            PacketsToClient.Add(new PacketInfo
             {
-                ai.UiMId++;
-                if (IsClient)
+                Entity = comp.MyCube,
+                Packet = new OverRidesPacket
                 {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = MultiplayerId,
-                        MId = ai.UiMId,
-                        GroupName = groupName,
-                        Setting = settings,
-                        Value = value,
-                        PType = PacketType.OverRidesUpdate,
-                    });
+                    MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = comp.MyCube.EntityId,
+                    SenderId = 0,
+                    GroupName = groupName,
+                    Data = data,
                 }
-                else if (IsServer)
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = ai.MyGrid,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = ai.MyGrid.EntityId,
-                            SenderId = 0,
-                            MId = ai.UiMId,
-                            GroupName = groupName,
-                            Setting = settings,
-                            Value = value,
-                            PType = PacketType.OverRidesUpdate,
-                        }
-                    });
-                }
-            }
+            });
         }
 
         internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)

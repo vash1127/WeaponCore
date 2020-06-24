@@ -38,12 +38,14 @@ namespace WeaponCore.Support
         {
             if (session.IsServer)
             {
+                Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
                 Settings[setting] = value;
                 ApplySettings();
             }
             else if (session.IsClient)
             {
-                session.SendOverRidesUpdate(ai, Name, setting, value);
+                Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
+                session.SendOverRidesClientAi(ai, Name, setting, value);
             }
         }
 
@@ -51,11 +53,13 @@ namespace WeaponCore.Support
         {
             if (comp.Session.IsServer)
             {
+                Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
                 SetValue(comp, setting, value);
             }
             else if (comp.Session.IsClient)
             {
-                comp.Session.SendOverRidesUpdate(comp, Name, setting, value);
+                Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
+                comp.Session.SendOverRidesClientComp(comp, Name, setting, value);
             }
         }
 
@@ -65,11 +69,6 @@ namespace WeaponCore.Support
 
                 var o = comp.Set.Value.Overrides;
                 var change = false;
-
-                if (comp.State.Value.CurrentBlockGroup != Name) {
-                    comp.State.Value.CurrentBlockGroup = Name;
-                    change = true;
-                }
 
                 foreach (var setting in Settings) {
 
@@ -130,8 +129,13 @@ namespace WeaponCore.Support
                 }
 
                 if (change) {
+                    Log.Line($"ApplySettings change detected");
                     ResetCompState(comp, true);
-                    if (comp.Session.MpActive) comp.Session.SendCompStateUpdate(comp);
+                    if (comp.Session.MpActive)
+                    {
+                        comp.Session.SendCompStateUpdate(comp);
+                        comp.Session.SendOverRidesServerAi(comp.Ai, Name, o);
+                    }
                 }
             }
         }
@@ -183,8 +187,9 @@ namespace WeaponCore.Support
 
             ResetCompState(comp, false);
 
-            if (comp.Session.MpActive) 
+            if (comp.Session.MpActive) {
                 comp.Session.SendCompStateUpdate(comp);
+            }
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)

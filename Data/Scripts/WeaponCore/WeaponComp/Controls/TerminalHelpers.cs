@@ -413,7 +413,7 @@ namespace WeaponCore.Control
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOnce);
                 if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                    comp.Session.`(comp, comp.Set.Value.Overrides);
             }
         }
 

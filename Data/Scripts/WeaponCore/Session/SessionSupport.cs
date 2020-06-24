@@ -68,7 +68,8 @@ namespace WeaponCore
                     InitRayCast();
 
                     GameLoaded = true;                   
-
+                    if (LocalVersion)
+                        Log.Line($"Local WeaponCore Detected");
                 }
                 else if (!FirstLoop)
                 {
@@ -511,7 +512,7 @@ namespace WeaponCore
         private void Paused()
         {
             _paused = true;
-            if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
+            if (Wheel.WheelActive && Wheel.Ai != null) Wheel.CloseWheel();
         }
 
         public bool TaskHasErrors(ref Task task, string taskName)

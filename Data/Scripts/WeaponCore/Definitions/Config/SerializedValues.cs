@@ -24,7 +24,7 @@ namespace WeaponCore
         [ProtoMember(5)] public PlayerControl CurrentPlayerControl; //don't save
         [ProtoMember(6)] public float CurrentCharge; //save
         [ProtoMember(7)] public int Version = Session.VersionControl; //save
-        [ProtoMember(8)] public string CurrentBlockGroup; //don't save
+        //[ProtoMember(8)] public string CurrentBlockGroup; //don't save
         [ProtoMember(9)] public bool OtherPlayerTrackingReticle; //don't save
 
         public void Sync(CompStateValues syncFrom, WeaponComponent comp)
@@ -34,7 +34,6 @@ namespace WeaponCore
             ClickShoot = syncFrom.ClickShoot;
             CurrentPlayerControl = syncFrom.CurrentPlayerControl;
             CurrentCharge = syncFrom.CurrentCharge;
-            CurrentBlockGroup = syncFrom.CurrentBlockGroup;
             OtherPlayerTrackingReticle = syncFrom.OtherPlayerTrackingReticle;
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
             {
@@ -64,7 +63,6 @@ namespace WeaponCore
             Online = false;
             CurrentPlayerControl.ControlType = ControlType.None;
             CurrentPlayerControl.PlayerId = -1;
-            CurrentBlockGroup = string.Empty;
             OtherPlayerTrackingReticle = false;
 
             foreach (var w in Weapons)

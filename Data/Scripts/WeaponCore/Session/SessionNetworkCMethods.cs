@@ -119,8 +119,8 @@ namespace WeaponCore
 
             comp.MIds[(int)packet.PType] = statePacket.MId;
             comp.State.Value.Sync(statePacket.Data, comp);
-            if (WheelUi.WheelActive)
-                WheelUi.Dirty = true;
+            if (Wheel.WheelActive)
+                Wheel.Dirty = true;
 
             data.Report.PacketValid = true;
 
@@ -323,7 +323,6 @@ namespace WeaponCore
             return true;
 
         }
-
         private bool ClientOverRidesUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -337,37 +336,30 @@ namespace WeaponCore
             if (overRidesPacket.Data == null) return Error(data, Msg("Data"));
 
             if (comp?.Ai != null && comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
-
-                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                 comp.MIds[(int)packet.PType] = overRidesPacket.MId;
-
-                GroupInfo group;
-                if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group)) {
-                    comp.Ai.ScanBlockGroupSettings = true;
-                    comp.Ai.GroupsToCheck.Add(group);
-                }
+                
+                comp.Ai.ReScanBlockGroups();
+                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                 data.Report.PacketValid = true;
             }
             else if (myGrid != null)
             {
                 GridAi ai;
                 if (GridTargetingAIs.TryGetValue(myGrid, out ai) && ai.UiMId < overRidesPacket.MId) {
-                    var o = overRidesPacket.Data;
                     ai.UiMId = overRidesPacket.MId;
 
                     ai.ReScanBlockGroups();
 
-                    SyncGridOverrides(ai, overRidesPacket.GroupName, o);
+                    SyncGridOverrides(ai, overRidesPacket.GroupName, overRidesPacket.Data);
 
                     GroupInfo groups;
                     if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups)) {
 
                         foreach (var component in groups.Comps) {
-                            component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
-                            component.Set.Value.Overrides.Sync(o);
+                            component.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                            data.Report.PacketValid = true;
                         }
 
-                        data.Report.PacketValid = true;
                     }
                     else
                         return Error(data, Msg("Block group not found"));
@@ -467,7 +459,6 @@ namespace WeaponCore
 
             return true;
         }
-
         private bool ClientGridOverRidesSync(PacketObj data)
         {
             var packet = data.Packet;
@@ -500,7 +491,6 @@ namespace WeaponCore
             return true;
 
         }
-
         private bool ClientRescanGroupRequest(PacketObj data)
         {
             var packet = data.Packet;
