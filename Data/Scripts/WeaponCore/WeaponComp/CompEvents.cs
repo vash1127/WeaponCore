@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using static WeaponCore.Platform.MyWeaponPlatform;
+using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
@@ -28,7 +33,24 @@ namespace WeaponCore.Support
                 MyCube.OnMarkForClose += OnMarkForClose;
                 IsWorkingChanged(MyCube);
 
-                BlockInventory.InventoryContentChanged += OnContentsChanged;
+                if (BlockInventory == null) Log.Line($"BlockInventory is null");
+                else
+                {
+                    BlockInventory.InventoryContentChanged += OnContentsChanged;
+                    Session.BlockInventoryItems[BlockInventory] = new ConcurrentDictionary<uint, BetterInventoryItem>();
+                    Session.AmmoThreadItemList[BlockInventory] = new List<BetterInventoryItem>();
+
+                    var items = BlockInventory.GetItems();
+                    for (int i = 0; i < items.Count; i++)
+                    {
+                        var bItem = Session.BetterInventoryItems.Count > 0 ? Session.BetterInventoryItems.Pop() : new BetterInventoryItem();
+                        bItem.Amount = (int)items[i].Amount;
+                        bItem.ItemId = items[i].ItemId;
+                        bItem.Content = items[i].Content;
+
+                        Session.BlockInventoryItems[BlockInventory][items[i].ItemId] = bItem;
+                    }
+                }
             }
             else
             {
@@ -46,7 +68,22 @@ namespace WeaponCore.Support
 
                     if (BlockInventory == null) Log.Line($"BlockInventory is null");
                     else
+                    {
                         BlockInventory.InventoryContentChanged -= OnContentsChanged;
+                        ConcurrentDictionary<uint, BetterInventoryItem> removedItems;
+                        List<BetterInventoryItem> removedList;
+
+                        if (Session.BlockInventoryItems.TryRemove(BlockInventory, out removedItems))
+                        {
+                            foreach (var inventoryItems in removedItems)
+                                Session.BetterInventoryItems.Push(inventoryItems.Value);
+
+                            removedItems.Clear();
+                        }
+
+                        if (Session.AmmoThreadItemList.TryRemove(BlockInventory, out removedList))
+                            removedList.Clear();
+                    }
                 }
             }
         }
@@ -55,16 +92,44 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (LastInventoryChangedTick < Session.Tick && Registered)
+                if (Registered)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
                         var w = Platform.Weapons[i];
-                        if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                            MyAPIGateway.Utilities.InvokeOnGameThread(() => { Session.ComputeStorage(w); });
+
+                        if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDefinitionId == item.Content.GetId())
+                        {
+                            BetterInventoryItem cachedItem;
+
+                            if (!Session.BlockInventoryItems[BlockInventory].TryGetValue(item.ItemId, out cachedItem) || BlockInventory.IsUniqueId(item.ItemId))
+                            {
+                                cachedItem = Session.BetterInventoryItems.Count > 0 ? Session.BetterInventoryItems.Pop() : new BetterInventoryItem();
+                                cachedItem.Amount = (int)amount;
+                                cachedItem.Content = item.Content;
+                                cachedItem.ItemId = item.ItemId;
+                            }
+                            else if (cachedItem.Amount + amount > 0)
+                                cachedItem.Amount += (int)amount;
+                            else if (cachedItem.Amount + amount < 0)
+                            {
+                                BetterInventoryItem removedItem;
+                                if (Session.BlockInventoryItems[BlockInventory].TryRemove(item.ItemId, out removedItem))
+                                    Session.BetterInventoryItems.Push(removedItem);
+                            }
+
+                            if (!Session.IsCreative)
+                            {
+                                if (amount < 0)
+                                    ComputeStorage(w);
+                                else
+                                {
+                                    w.State.Sync.CurrentMags = BlockInventory.GetItemAmount(w.ActiveAmmoDef.AmmoDefinitionId);
+                                    w.Reload();
+                                }
+                            }
+                        }
                     }
-                    
-                    LastInventoryChangedTick = Session.Tick;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsChanged: {ex}");

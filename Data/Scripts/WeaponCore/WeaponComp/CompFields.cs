@@ -40,7 +40,6 @@ namespace WeaponCore.Support
         internal WeaponValues WeaponValues = new WeaponValues();
         internal uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal uint LastRayCastTick;
-        internal uint LastInventoryChangedTick;
         internal uint IsWorkingChangedTick;
 
         internal int WeaponsTracking;

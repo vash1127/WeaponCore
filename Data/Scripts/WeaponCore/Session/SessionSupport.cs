@@ -270,10 +270,47 @@ namespace WeaponCore
             MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
         }
 
+        //threaded
         internal void ProccessAmmoMoves()
         {
+            foreach (var inventoryItems in InventoryItems)
+            {
+                for (int i = 0; i < inventoryItems.Value.Count; i++)
+                {
+                    if (AmmoDefIds.Contains(inventoryItems.Value[i].Content.GetId()))
+                    {
+                        var newItem = BetterInventoryItems.Count > 0 ? BetterInventoryItems.Pop() : new BetterInventoryItem();
+                        newItem.ItemId = inventoryItems.Value[i].ItemId;
+                        newItem.Amount = (int)inventoryItems.Value[i].Amount;
+                        newItem.Content = inventoryItems.Value[i].Content;
+                        AmmoThreadItemList[inventoryItems.Key].Add(newItem);
+                    }
+                }
+                inventoryItems.Value.Clear();
+            }
+
+            foreach (var blockInventoryItems in BlockInventoryItems)
+            {
+                foreach (var itemList in blockInventoryItems.Value)
+                {
+                    var newItem = BetterInventoryItems.Count > 0 ? BetterInventoryItems.Pop() : new BetterInventoryItem();
+                    newItem.ItemId = itemList.Value.ItemId;
+                    newItem.Amount = itemList.Value.Amount;
+                    newItem.Content = itemList.Value.Content;
+                    AmmoThreadItemList[blockInventoryItems.Key].Add(newItem);
+                }
+            }
+
             AmmoToRemove();
             AmmoPull();
+
+            foreach (var itemList in AmmoThreadItemList)
+            {
+                for (int i = 0; i < itemList.Value.Count; i++)
+                    BetterInventoryItems.Push(itemList.Value[i]);
+
+                itemList.Value.Clear();
+            }
         }
 
         internal void ProccessAmmoCallback()
@@ -291,24 +328,12 @@ namespace WeaponCore
             {
                 for (int j = 0; j < GridsToUpdateInvetories[i].Inventories.Count; j++)
                 {
-                    var inventory = GridsToUpdateInvetories[i].Inventories[j];
-                    if (InventoryItems.ContainsKey(inventory))
-                        InventoryItems[inventory].Clear();
-                    else
-                        InventoryItems[inventory] = new ConcurrentDictionary<MyDefinitionId, VRage.MyFixedPoint>(MyDefinitionId.Comparer);
-
-                    var items = inventory.GetItems();
-                    for (int l = 0; l < items.Count; l++)
-                    {
-                        var item = items[l];
-                        var defId = item.Content.GetId();
-
-                        if (AmmoDefIds.Contains(defId))
-                            InventoryItems[inventory][defId] = item.Amount;
-                    }
+                    var inventory = GridsToUpdateInvetories[i].Inventories[j];                 
+                    InventoryItems[inventory].AddRange(inventory.GetItems());
                 }
             }
 
+            DefIdsComparer.Clear();
             GridsToUpdateInvetories.Clear();
             GridsToUpdateInvetoriesIndexer.Clear();
 

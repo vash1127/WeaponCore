@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
+using static WeaponCore.Session;
 
 namespace WeaponCore.Support
 {
@@ -54,7 +56,11 @@ namespace WeaponCore.Support
                 {
                     MyInventory inventory;
                     if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
+                    {
                         inventory.InventoryContentChanged += CheckAmmoInventory;
+                        Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
+                        Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
+                    }
 
                     foreach (var weapon in OutOfAmmoWeapons)
                         Session.CheckStorage.Add(weapon);
@@ -83,9 +89,14 @@ namespace WeaponCore.Support
                     try {
 
                         inventory.InventoryContentChanged -= CheckAmmoInventory;
-                        ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
-                        if (Session.InventoryItems.TryRemove(inventory, out removed))
-                            removed.Clear();
+                        List<MyPhysicalInventoryItem> removedPhysical;
+                        List<BetterInventoryItem> removedBetter;
+                        if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
+                            removedPhysical.Clear();
+
+                        if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
+                            removedBetter.Clear();
+                        
                     }
                     catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
                 }

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ProtoBuf;
 using Sandbox.Game.Entities;
+using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;

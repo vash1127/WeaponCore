@@ -587,7 +587,7 @@ namespace WeaponCore
                 weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
 
                 if (weapon.State.Sync.CurrentAmmo == 0)
-                    weapon.Reload();
+                    weapon.ChangeAmmo(ref weapon.System.AmmoTypes[cyclePacket.AmmoId]);
 
                 PacketsToClient.Add(new PacketInfo {
                     Entity = ent,
