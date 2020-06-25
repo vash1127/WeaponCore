@@ -407,7 +407,6 @@ namespace WeaponCore.Platform
         }
         internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
         {
-            Log.Line($"change ammo");
             ActiveAmmoDef = ammoDef;
             CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
             ScheduleAmmoChange = false;
@@ -418,8 +417,6 @@ namespace WeaponCore.Platform
         {
             if (ActiveAmmoDef.Equals(newAmmo))
                 return;
-
-            Log.Line($"newAmmo: {newAmmo.AmmoName}");
 
             var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
@@ -433,10 +430,7 @@ namespace WeaponCore.Platform
             if (System.Session.IsServer)
             {
                 if (ActiveAmmoDef.AmmoDef.Const.Reloadable && canReload)
-                {
                     Session.ComputeStorage(this);
-                    Log.Line($"ComputeStorage change");
-                }
             }
             else if (System.Session.MpActive)
                 System.Session.SendCycleAmmoNetworkUpdate(this, Set.AmmoTypeId);
@@ -637,15 +631,11 @@ namespace WeaponCore.Platform
             if(!hasAmmo)
                 return false;
 
-
             FinishBurst = false;
             if (IsShooting)
                 StopShooting();
 
             Reloading = true;
-
-            Log.Line($"Reloading");
-
             State.SingleShotCounter = 0;
             
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) State.ShotsFired = 0;
