@@ -5,6 +5,9 @@ using System.Linq;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
+using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -830,8 +833,24 @@ namespace WeaponCore
         public struct InventoryMags
         {
             public MyInventory Inventory;
+            public BetterInventoryItem Item;
             public int Amount;
         }
 
+        public class BetterInventoryItem
+        {
+            public int Amount;
+            public MyObjectBuilder_PhysicalObject Content;
+            public uint ItemId;
+            public MyDefinitionId DefId;
+
+            public void Transfer(BetterInventoryItem item)
+            {
+                Amount = item.Amount;
+                Content = item.Content;
+                ItemId = item.ItemId;
+                DefId = item.DefId;
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -7,6 +8,7 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using static WeaponCore.Session;
 
 namespace WeaponCore.Support
 {
@@ -58,7 +60,11 @@ namespace WeaponCore.Support
                 {
                     MyInventory inventory;
                     if (cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
+                    {
                         inventory.InventoryContentChanged += CheckAmmoInventory;
+                        Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
+                        Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
+                    }
 
                     foreach (var weapon in OutOfAmmoWeapons)
                         Session.CheckStorage.Add(weapon);
@@ -88,18 +94,22 @@ namespace WeaponCore.Support
                     {
                         try {
 
-                            inventory.InventoryContentChanged -= CheckAmmoInventory;
-                            ConcurrentDictionary<MyDefinitionId, MyFixedPoint> removed;
-                            if (Session.InventoryItems.TryRemove(inventory, out removed))
-                                removed.Clear();
-                        }
-                        catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
+                        inventory.InventoryContentChanged -= CheckAmmoInventory;
+                        List<MyPhysicalInventoryItem> removedPhysical;
+                        List<BetterInventoryItem> removedBetter;
+                        if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
+                            removedPhysical.Clear();
+
+                        if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
+                            removedBetter.Clear();
+                        
                     }
-                    else if (battery != null)
-                    {
-                        if (Batteries.Remove(battery)) SourceCount--;
-                        UpdatePowerSources = true;
-                    }
+                    catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
+                }
+                else if (battery != null) {
+                    if (Batteries.Remove(battery)) SourceCount--;
+                    UpdatePowerSources = true;
+                }
                 }
                 catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
             }
@@ -113,7 +123,7 @@ namespace WeaponCore.Support
                 if (amount <= 0 || item.Content == null || inventory == null) return;
                 var itemDef = item.Content.GetObjectId();
                 if (Session.AmmoDefIds.Contains(itemDef))
-                    Session.FutureEvents.Schedule(CheckReload, itemDef, 1);
+                    CheckReload(itemDef);
             }
             catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex}"); }
         }

@@ -262,9 +262,8 @@ namespace WeaponCore.Support
         }
         */
 
-        internal void CheckReload(object o = null)
+        internal void CheckReload(MyDefinitionId magId)
         {
-            var magId = (MyDefinitionId?)o ?? new MyDefinitionId();
             foreach (var w in OutOfAmmoWeapons) {
                 if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
                     Session.CheckStorage.Add(w);

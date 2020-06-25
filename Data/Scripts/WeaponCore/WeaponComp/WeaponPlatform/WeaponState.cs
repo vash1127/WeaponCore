@@ -409,6 +409,7 @@ namespace WeaponCore.Platform
         {
             ActiveAmmoDef = ammoDef;
             CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
+            ScheduleAmmoChange = false;
             SetWeaponDps();
         }
 
@@ -419,12 +420,17 @@ namespace WeaponCore.Platform
 
             var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
-            if (instantChange) 
-                ChangeActiveAmmo(newAmmo);
+            var canReload = State.Sync.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
-            if (System.Session.IsServer) {
-                if (!instantChange)
-                    System.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
+            if (instantChange || canReload)
+                ChangeActiveAmmo(newAmmo);
+            else
+                ScheduleAmmoChange = true;
+
+            if (System.Session.IsServer)
+            {
+                if (ActiveAmmoDef.AmmoDef.Const.Reloadable && canReload)
+                    Session.ComputeStorage(this);
             }
             else if (System.Session.MpActive)
                 System.Session.SendCycleAmmoNetworkUpdate(this, Set.AmmoTypeId);
@@ -536,6 +542,8 @@ namespace WeaponCore.Platform
                 return true;
             }
 
+            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
+
             var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
             var nothingToLoad = System.Session.IsServer ? State.Sync.CurrentMags <= 0 && !energyDrainable : !State.Sync.HasInventory && !energyDrainable;
 
@@ -565,6 +573,8 @@ namespace WeaponCore.Platform
                     ForceSync(true, false);
 
                 NoMagsToLoad = true;
+
+                Session.ComputeStorage(this);
             }
 
             return !NoMagsToLoad;
@@ -573,12 +583,34 @@ namespace WeaponCore.Platform
 
         internal bool Reload()
         {
+
             var invalidState = State?.Sync == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
 
             if (invalidState || !Comp.Data.Repo.State.Online || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
                 return false;
 
-            if (!HasAmmo() || State.Sync.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+            if (State.Sync.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+                return false;
+
+            var hasAmmo = HasAmmo();
+            if (ScheduleAmmoChange)
+            {
+                if (hasAmmo && !RemovingAmmo)
+                {
+                    Comp.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
+                    RemovingAmmo = true;
+                }
+                else if (!RemovingAmmo)
+                {
+                    var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
+                    if (!ActiveAmmoDef.Equals(newAmmo))
+                        ChangeActiveAmmo(newAmmo);
+                }
+
+                return false;
+            }
+
+            if(!hasAmmo)
                 return false;
 
             FinishBurst = false;
@@ -589,10 +621,6 @@ namespace WeaponCore.Platform
             State.SingleShotCounter = 0;
             
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) State.ShotsFired = 0;
-
-            var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
-            if (!ActiveAmmoDef.Equals(newAmmo))
-                ChangeActiveAmmo(newAmmo);
 
             uint delay;
             if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {

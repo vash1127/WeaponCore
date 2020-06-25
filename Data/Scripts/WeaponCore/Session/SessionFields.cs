@@ -66,6 +66,7 @@ namespace WeaponCore
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<MySoundPair> SoundPairs = new Stack<MySoundPair>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
+        internal readonly Stack<BetterInventoryItem> BetterInventoryItems = new Stack<BetterInventoryItem>(256);
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<long, IMyCharacter> Admins = new ConcurrentDictionary<long, IMyCharacter>();
@@ -73,13 +74,13 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<ulong, long> SteamToPlayer = new ConcurrentDictionary<ulong, long>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
-        internal readonly ConcurrentDictionary<MyInventory, ConcurrentDictionary<MyDefinitionId, MyFixedPoint>> InventoryItems = new ConcurrentDictionary<MyInventory, ConcurrentDictionary<MyDefinitionId, MyFixedPoint>>();
+        internal readonly ConcurrentDictionary<MyInventory, List<MyPhysicalInventoryItem>> InventoryItems = new ConcurrentDictionary<MyInventory, List<MyPhysicalInventoryItem>>();
+        internal readonly ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>> BlockInventoryItems = new ConcurrentDictionary<MyInventory, ConcurrentDictionary<uint, BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridToMasterAi = new ConcurrentDictionary<MyCubeGrid, GridAi>();
+        internal readonly ConcurrentDictionary<MyInventory, List<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, List<BetterInventoryItem>>();
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
-        internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
-        internal readonly ConcurrentCachingList<WeaponAmmoMoveRequest> AmmoToPullQueue = new ConcurrentCachingList<WeaponAmmoMoveRequest>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
@@ -102,6 +103,8 @@ namespace WeaponCore
         internal readonly Dictionary<ulong, AvInfoCache> AvShotCache = new Dictionary<ulong, AvInfoCache>();
         internal readonly Dictionary<ulong, VoxelCache> VoxelCaches = new Dictionary<ulong, VoxelCache>();
         internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
+        internal readonly Dictionary<MyInventory, MyFixedPoint> InventoryVolume = new Dictionary<MyInventory, MyFixedPoint>();
+        internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
 
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -126,6 +129,8 @@ namespace WeaponCore
         internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
         internal readonly List<Weapon> CheckStorage = new List<Weapon>();
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
+        internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
+        internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
 
         internal readonly CachingHashSet<ErrorPacket> ClientSideErrorPkt = new CachingHashSet<ErrorPacket>();
 
