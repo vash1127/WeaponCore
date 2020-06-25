@@ -48,7 +48,6 @@ namespace WeaponCore
                 }
 
                 ws.ShotsFired = sws.ShotsFired;
-                ws.ManualShoot = sws.ManualShoot;
                 ws.SingleShotCounter = sws.SingleShotCounter;
                 ws.Sync.CurrentMags = sws.Sync.CurrentMags;
                 ws.Sync.Heat = sws.Sync.Heat;
@@ -88,6 +87,8 @@ namespace WeaponCore
         [ProtoMember(7), DefaultValue(100)] public float Range = 100;
         [ProtoMember(8)] public GroupOverrides Overrides;
         [ProtoMember(9)] public int Version = Session.VersionControl;
+        [ProtoMember(10)] public int ActiveWeapons;
+
 
         public CompSettingsValues()
         {
@@ -101,8 +102,13 @@ namespace WeaponCore
             
             Range = syncFrom.Range;
 
-            foreach (var w in comp.Platform.Weapons)
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                var w = comp.Platform.Weapons[i];
+                var ws = Weapons[i];
+                var sws = syncFrom.Weapons[i];
+                ws.WeaponMode(this, sws.Action);
                 w.UpdateWeaponRange();
+            }
 
             Overrides.Sync(syncFrom.Overrides);
 
@@ -120,7 +126,6 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public int ShotsFired; //don't know??
-        [ProtoMember(2), DefaultValue(ShootActions.ShootOff)] public ShootActions ManualShoot = ShootActions.ShootOff; // save
         [ProtoMember(3)] public int SingleShotCounter; // save
         [ProtoMember(4)] public WeaponSyncValues Sync;
 
@@ -181,6 +186,17 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public bool Enable = true;
         [ProtoMember(2)] public int AmmoTypeId;
+        [ProtoMember(3), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+
+        public void WeaponMode(CompSettingsValues settings, ShootActions action)
+        {
+            if (action == ShootActions.ShootOff && Action != ShootActions.ShootOff) 
+                settings.ActiveWeapons--;
+            else if (action != ShootActions.ShootOff && Action == ShootActions.ShootOff)
+                settings.ActiveWeapons++;
+
+            Action = action;
+        }
     }
 
     [ProtoContract]

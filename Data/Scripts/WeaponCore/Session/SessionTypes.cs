@@ -393,9 +393,9 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Set.AmmoTypeId}"); }
                     },
-                    {"ManualShoot", () => {
+                    {"Action", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.ManualShoot}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Set.Action}"); }
                     },
                     {"ShotsFired", () => {
                             var message = string.Empty;

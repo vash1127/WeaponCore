@@ -234,12 +234,7 @@ namespace WeaponCore.Api
                 {
                     if (!allWeapons && i != weaponId) continue;
 
-                    var w = comp.Platform.Weapons[i];
-                    
-                    if (w.State.ManualShoot != ShootOff)
-                        w.State.ManualShoot = ShootOnce;
-                    else
-                        w.State.ManualShoot = ShootOnce;
+                    comp.Platform.Weapons[i].Set.WeaponMode(comp.Set.Value, ShootOnce);
                 }
             }
         }
@@ -255,15 +250,15 @@ namespace WeaponCore.Api
 
                     var w = comp.Platform.Weapons[i];
 
-                    if (!on && w.State.ManualShoot == ShootOn)
+                    if (!on && w.Set.Action == ShootOn)
                     {
-                        w.State.ManualShoot = ShootOff;
+                        w.Set.WeaponMode(comp.Set.Value, ShootOff);
                         w.StopShooting();
                     }
-                    else if (on && w.State.ManualShoot != ShootOff)
-                        w.State.ManualShoot = ShootOn;
+                    else if (on && w.Set.Action != ShootOff)
+                        w.Set.WeaponMode(comp.Set.Value, ShootOn);
                     else if (on)
-                        w.State.ManualShoot = ShootOn;
+                        w.Set.WeaponMode(comp.Set.Value, ShootOn);
                 }
             }
         }
