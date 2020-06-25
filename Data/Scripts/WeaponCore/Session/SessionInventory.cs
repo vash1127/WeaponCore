@@ -232,7 +232,6 @@ namespace WeaponCore
                     }
 
                     var inventoriesToAddTo = request.Inventories;
-                    var def = weapon.ActiveAmmoDef.AmmoDefinitionId;
                     var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
 
                     for (int j = 0; j < inventoriesToAddTo.Count; j++) {
@@ -242,8 +241,6 @@ namespace WeaponCore
                     }
 
                     weapon.RemovingAmmo = false;
-                    request.Inventories.Clear();
-                    request.Weapon = null;
                     InventoryMoveRequestPool.Return(request);
                 }
                 catch (Exception ex) { Log.Line($"Exception in RemoveAmmo: {ex} - { AmmoToRemoveQueue[i] == null} - {AmmoToRemoveQueue[i]?.Weapon == null} - {AmmoToRemoveQueue[i]?.Weapon?.ActiveAmmoDef == null}"); }
