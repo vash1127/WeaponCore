@@ -167,7 +167,7 @@ namespace WeaponCore
                     weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
                     SyncWeapon(weapon, ref weaponData.SyncData);
 
-                    weapon.Comp.WeaponValues.WeaponRandom[weapon.WeaponId].Sync(weaponData.WeaponRng);
+                    weapon.Comp.Data.Repo.WepVal.WeaponRandom[weapon.WeaponId].Sync(weaponData.WeaponRng);
                 }
 
                 if (validTargetData) {

@@ -17,7 +17,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public CompSettingsValues Set;
         [ProtoMember(2)] public CompStateValues State;
-        [ProtoMember(3)] public int Version = Session.VersionControl;
+        [ProtoMember(3)] public WeaponValues WepVal;
+        [ProtoMember(4)] public int Version = Session.VersionControl;
 
         public void Sync(WeaponComponent comp, CompDataValues syncFrom)
         {
@@ -150,6 +151,7 @@ namespace WeaponCore
             foreach (var w in Weapons)
             {
                 w.ShotsFired = 0;
+                w.SingleShotCounter = 0;
                 w.Sync.Heat = 0;
                 w.Sync.Overheated = false;
                 w.Sync.HasInventory = w.Sync.CurrentMags > 0;
@@ -234,72 +236,23 @@ namespace WeaponCore
 
         }
 
-        public static void Load(WeaponComponent comp)
+        public static void Init(WeaponComponent comp)
         {
-            string rawData;
-            if (comp.MyCube.Storage.TryGetValue(comp.Session.MpWeaponSyncGuid, out rawData))
-            {
-                var base64 = Convert.FromBase64String(rawData);
-                try
-                {
-                    comp.WeaponValues = MyAPIGateway.Utilities.SerializeFromBinary<WeaponValues>(base64);
-
-                    if (!comp.Session.IsClient || comp.WeaponValues.MIds == null || comp.WeaponValues.MIds?.Length != Enum.GetValues(typeof(PacketType)).Length)
-                        comp.WeaponValues.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
-
-                    comp.MIds = comp.WeaponValues.MIds;
-                    var targets = comp.WeaponValues.Targets;
-
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    {
-                        var w = comp.Platform.Weapons[i];
-                        var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
-
-                        if (comp.Session.IsServer)
-                        {
-                            targets[w.WeaponId] = new TransferTarget();
-                            comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
-                            comp.WeaponValues.WeaponRandom[w.WeaponId].Init(w.UniqueId);
-                            rand.CurrentSeed = w.UniqueId;
-                            rand.AcquireRandom = new Random(rand.CurrentSeed);
-                        }
-
-                        rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-                        rand.TurretRandom = new Random(rand.CurrentSeed);
-
-                        for (int j = 0; j < rand.TurretCurrentCounter; j++)
-                            rand.TurretRandom.Next();
-
-                        for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
-                            rand.ClientProjectileRandom.Next();
-
-                        comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State.Sync, false); }, null, 1);
-                    }
-                    return;
-                }
-                catch (Exception e)
-                {
-                    Log.Line($"Weapon Values Failed To load re-initing");
-                }
-
-            }            
-
-            comp.WeaponValues = new WeaponValues
-            {
+            comp.Data.Repo.WepVal = new WeaponValues {
                 Targets = new TransferTarget[comp.Platform.Weapons.Length],
                 WeaponRandom = new WeaponRandomGenerator[comp.Platform.Weapons.Length],
                 MIds = new uint[Enum.GetValues(typeof(PacketType)).Length]
             };
 
-            comp.MIds = comp.WeaponValues.MIds;
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
+            comp.MIds = comp.Data.Repo.WepVal.MIds;
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+
                 var w = comp.Platform.Weapons[i];
 
-                comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
-                comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
-                comp.WeaponValues.WeaponRandom[w.WeaponId].Init(w.UniqueId);
-                var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
+                comp.Data.Repo.WepVal.Targets[w.WeaponId] = new TransferTarget();
+                comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
+                comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId].Init(w.UniqueId);
+                var rand = comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
                 rand.CurrentSeed = w.UniqueId;
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
@@ -307,8 +260,39 @@ namespace WeaponCore
 
                 comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State.Sync, false); }, null, 1);
             }
+        }
 
+        public static void RefreshClient(WeaponComponent comp)
+        {
+            try
+            {
+                if (!comp.Session.IsClient || comp.Data.Repo.WepVal.MIds == null || comp.Data.Repo.WepVal.MIds?.Length != Enum.GetValues(typeof(PacketType)).Length)
+                    comp.Data.Repo.WepVal.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
+                comp.MIds = comp.Data.Repo.WepVal.MIds;
+
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+
+                    var w = comp.Platform.Weapons[i];
+                    var rand = comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
+
+                    rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+                    rand.TurretRandom = new Random(rand.CurrentSeed);
+
+                    for (int j = 0; j < rand.TurretCurrentCounter; j++)
+                        rand.TurretRandom.Next();
+
+                    for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
+                        rand.ClientProjectileRandom.Next();
+
+                    comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State.Sync, false); }, null, 1);
+                }
+                return;
+            }
+            catch (Exception e) { Log.Line($"Client Weapon Values Failed To load re-initing... how?"); }
+
+            Init(comp);
         }
 
         public WeaponValues() { }

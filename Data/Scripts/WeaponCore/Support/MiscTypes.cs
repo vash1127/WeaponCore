@@ -145,7 +145,7 @@ namespace WeaponCore.Support
 
             Set(ent, targetPos, shortDist, origDist, topEntId);
             if (w.System.Session.MpActive && !w.System.Session.IsClient)
-                SyncTarget(w.Comp.WeaponValues.Targets[w.WeaponId], w);
+                SyncTarget(w.Comp.Data.Repo.WepVal.Targets[w.WeaponId], w);
         }
 
         internal void SetFake(uint expiredTick, Vector3D pos)

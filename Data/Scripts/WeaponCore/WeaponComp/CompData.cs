@@ -27,7 +27,7 @@ namespace WeaponCore
             }
         }
 
-        public void Save(bool createStorage = false)
+        public void Save()
         {
             if (Comp.MyCube.Storage == null) return;
 
@@ -76,6 +76,11 @@ namespace WeaponCore
                 for (int i = 0; i < Repo.Set.Weapons.Length; i++) Repo.Set.Weapons[i] = new WeaponSettingsValues();
 
                 Repo.Set.Range = -1;
+
+                Repo.WepVal = new WeaponValues();
+                if (Comp.Session.IsServer)
+                    WeaponValues.Init(Comp);
+                else WeaponValues.RefreshClient(Comp);
             }
 
             //for (int i = 0; i < Comp.Platform.Weapons.Length; i++)

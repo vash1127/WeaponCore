@@ -51,8 +51,7 @@ namespace WeaponCore.Support
 
                 if (Data.Repo.Set.Range < 0)
                     Data.Repo.Set.Range = maxTrajectory;
-
-                WeaponValues.Load(this);
+                
             }
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }

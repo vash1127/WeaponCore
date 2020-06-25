@@ -43,7 +43,7 @@ namespace WeaponCore.Projectiles
                 p.Info.BaseDamagePool = w.BaseDamage;
                 p.Info.EnableGuidance = w.Comp.Data.Repo.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
-                p.Info.WeaponRng = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
+                p.Info.WeaponRng = w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
                 p.Info.LockOnFireState = w.LockOnFireState;
                 p.Info.ShooterVel = w.Comp.Ai.GridVel;
 

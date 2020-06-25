@@ -104,7 +104,7 @@ namespace WeaponCore.Platform
                 #endregion
 
                 #region Projectile Creation
-                var rnd = Comp.WeaponValues.WeaponRandom[WeaponId];
+                var rnd = Comp.Data.Repo.WepVal.WeaponRandom[WeaponId];
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;

@@ -38,7 +38,6 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal WeaponValues WeaponValues = new WeaponValues();
         internal uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal uint LastRayCastTick;
         internal uint IsWorkingChangedTick;

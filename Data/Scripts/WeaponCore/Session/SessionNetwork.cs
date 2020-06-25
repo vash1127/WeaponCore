@@ -463,16 +463,16 @@ namespace WeaponCore
                     WeaponRng = null,
                 };
 
-                if (w.SendTarget && w.Comp.WeaponValues.Targets != null)
-                    weaponSync.TargetData = w.Comp.WeaponValues.Targets[w.WeaponId];
+                if (w.SendTarget && w.Comp.Data.Repo.WepVal.Targets != null)
+                    weaponSync.TargetData = w.Comp.Data.Repo.WepVal.Targets[w.WeaponId];
                 else if (w.SendTarget)
                     continue;
 
-                if (w.SendSync && w.State.Sync != null && w.Comp.WeaponValues.WeaponRandom != null)
+                if (w.SendSync && w.State.Sync != null && w.Comp.Data.Repo.WepVal.WeaponRandom != null)
                 {
                     weaponSync.SyncData = w.State.Sync;
 
-                    var rand = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
+                    var rand = w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
                     rand.TurretCurrentCounter = 0;
                     rand.ClientProjectileCurrentCounter = 0;
                     rand.CurrentSeed = w.UniqueId;

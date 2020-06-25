@@ -171,7 +171,7 @@ namespace WeaponCore
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
-                        else if (w.Target.HasTarget && MyEntities.EntityExists(comp.WeaponValues.Targets[w.WeaponId].EntityId)) {
+                        else if (w.Target.HasTarget && MyEntities.EntityExists(comp.Data.Repo.WepVal.Targets[w.WeaponId].EntityId)) {
                             w.Target.HasTarget = false;
                             ClientGridResyncRequests.Add(comp);
                         }
@@ -404,7 +404,7 @@ namespace WeaponCore
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         if (w.Target.HasTarget && MpActive) {
-                            w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w);
+                            w.Target.SyncTarget(comp.Data.Repo.WepVal.Targets[w.WeaponId], w);
                         }
                     }
                 }

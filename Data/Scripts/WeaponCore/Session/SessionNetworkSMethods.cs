@@ -194,15 +194,15 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-                        if (comp.WeaponValues.Targets == null || comp.WeaponValues.Targets[j].State == TransferTarget.TargetInfo.Expired)
+                        if (comp.Data.Repo.WepVal.Targets == null || comp.Data.Repo.WepVal.Targets[j].State == TransferTarget.TargetInfo.Expired)
                             continue;
 
                         var weaponData = new WeaponData {
                             CompEntityId = comp.MyCube.EntityId,
                             SyncData = w.State.Sync,
                             //Timmings = w.Timings.SyncOffsetServer(Tick),
-                            TargetData = comp.WeaponValues.Targets[j],
-                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
+                            TargetData = comp.Data.Repo.WepVal.Targets[j],
+                            WeaponRng = comp.Data.Repo.WepVal.WeaponRandom[j]
                         };
                         gridPacket.Data.Add(weaponData);
                     }
@@ -488,8 +488,8 @@ namespace WeaponCore
                             CompEntityId = compId,
                             SyncData = w.State.Sync,
                             //Timmings = w.Timings.SyncOffsetServer(Tick),
-                            TargetData = comp.WeaponValues.Targets[j],
-                            WeaponRng = comp.WeaponValues.WeaponRandom[j]
+                            TargetData = comp.Data.Repo.WepVal.Targets[j],
+                            WeaponRng = comp.Data.Repo.WepVal.WeaponRandom[j]
                         };
                         gridPacket.Data.Add(weaponData);
                     }

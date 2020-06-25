@@ -95,7 +95,7 @@ namespace WeaponCore.Support
 
                         if (Session.IsClient)
                         {
-                            var target = WeaponValues.Targets[weapon.WeaponId];
+                            var target = Data.Repo.WepVal.Targets[weapon.WeaponId];
                             if (target.State != TransferTarget.TargetInfo.Expired)
                                 target.SyncTarget(weapon.Target, false);
                             if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
@@ -266,7 +266,6 @@ namespace WeaponCore.Support
                 if (MyCube?.Storage != null) {
 
                     Data.Save();
-                    WeaponValues.Save(this);                        
                 }
             }
             return false;
