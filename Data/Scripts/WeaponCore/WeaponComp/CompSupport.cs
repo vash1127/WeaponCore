@@ -181,7 +181,7 @@ namespace WeaponCore.Support
                 }
             }
         }
-
+        /*
         public int GetSyncHash()
         {
             var hash = State.Value.ClickShoot.GetHashCode() + State.Value.ClickShoot.GetHashCode();
@@ -193,7 +193,7 @@ namespace WeaponCore.Support
 
             return hash;
         }
-
+        */
         public void StopAllAv()
         {
             if (Platform?.State != MyWeaponPlatform.PlatformState.Ready) return;

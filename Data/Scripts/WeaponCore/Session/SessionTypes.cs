@@ -303,14 +303,14 @@ namespace WeaponCore
                     {"cubeIsWorking", () => GetComp()?.MyCube.IsWorking.ToString() ?? string.Empty },
                     {"MaxTargetDistance", () => GetComp()?.MaxTargetDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
-                    {"ControlType", () => GetComp()?.State.Value.CurrentPlayerControl.ControlType.ToString() ?? string.Empty },
-                    {"PlayerId", () => GetComp()?.State.Value.CurrentPlayerControl.PlayerId.ToString() ?? string.Empty },
-                    {"Online", () => GetComp()?.State.Value.Online.ToString() ?? string.Empty },
-                    {"ClickShoot", () => GetComp()?.State.Value.ClickShoot.ToString() ?? string.Empty },
-                    {"Modes", () => GetComp()?.Set.Value.Modes.ToString() ?? string.Empty },
-                    {"Activate", () => GetComp()?.Set.Value.Overrides.Activate.ToString() ?? string.Empty },
-                    {"FocusSubSystem", () => GetComp()?.Set.Value.Overrides.FocusSubSystem.ToString() ?? string.Empty },
-                    {"FocusTargets", () => GetComp()?.Set.Value.Overrides.FocusTargets.ToString() ?? string.Empty },
+                    {"ControlType", () => GetComp()?.Data.Repo.State.CurrentPlayerControl.ControlType.ToString() ?? string.Empty },
+                    {"PlayerId", () => GetComp()?.Data.Repo.State.CurrentPlayerControl.PlayerId.ToString() ?? string.Empty },
+                    {"Online", () => GetComp()?.Data.Repo.State.Online.ToString() ?? string.Empty },
+                    //{"ClickShoot", () => GetComp()?.State.Value.ClickShoot.ToString() ?? string.Empty },
+                    {"Modes", () => GetComp()?.Data.Repo.Set.Modes.ToString() ?? string.Empty },
+                    {"Activate", () => GetComp()?.Data.Repo.Set.Overrides.Activate.ToString() ?? string.Empty },
+                    {"FocusSubSystem", () => GetComp()?.Data.Repo.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
+                    {"FocusTargets", () => GetComp()?.Data.Repo.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -627,10 +627,10 @@ namespace WeaponCore
 
             internal void Awaken(WeaponAcquire wa)
             {
-                var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
+                var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.Data.Repo.State.Online || !wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
                 if (notValid)
                 {
-                    if (!Session.IsClient) Log.Line($"[Awaken] isAsleep:{wa.Asleep} - wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
+                    if (!Session.IsClient) Log.Line($"[Awaken] isAsleep:{wa.Asleep} - wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.Data.Repo.State.Online} - cOverride:{wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
                     return;
                 }
 
@@ -646,10 +646,10 @@ namespace WeaponCore
 
             internal void AddAwake(WeaponAcquire wa)
             {
-                var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
+                var notValid = !wa.Weapon.Set.Enable || !wa.Weapon.Comp.Data.Repo.State.Online || !wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
                 if (notValid)
                 {
-                    if (!Session.IsClient) Log.Line($"[AddAwake] isAsleep:{wa.Asleep} - wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.State.Value.Online} - cOverride:{wa.Weapon.Comp.Set.Value.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
+                    if (!Session.IsClient) Log.Line($"[AddAwake] isAsleep:{wa.Asleep} - wEnable:{wa.Weapon.Set.Enable} - cOnline:{wa.Weapon.Comp.Data.Repo.State.Online} - cOverride:{wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
                     return;
                 }
 
@@ -740,7 +740,7 @@ namespace WeaponCore
                 foreach (var wa in Asleep)
                 {
 
-                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Set.Enable || !wa.Weapon.Comp.State.Value.Online || !wa.Weapon.Comp.Set.Value.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
+                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Set.Enable || !wa.Weapon.Comp.Data.Repo.State.Online || !wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
 
                     if (remove)
                     {

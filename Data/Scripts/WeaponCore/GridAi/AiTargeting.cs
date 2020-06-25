@@ -49,7 +49,7 @@ namespace WeaponCore.Support
             {
                 Vector3D predictedPos;
                 FakeTarget dummyTarget;
-                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.State.Value.CurrentPlayerControl.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
+                if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
@@ -153,7 +153,7 @@ namespace WeaponCore.Support
         private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
             var comp = w.Comp;
-            var overRides = comp.Set.Value.Overrides;
+            var overRides = comp.Data.Repo.Set.Overrides;
             var overActive = overRides.Activate;
             var attackNeutrals = overActive && overRides.Neutrals;
             var attackFriends = overActive && overRides.Friendly;
@@ -297,11 +297,11 @@ namespace WeaponCore.Support
                 var subSystems = system.Values.Targeting.SubSystems;
                 var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 var targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                var focusSubSystem = w != null && w.Comp.Set.Value.Overrides.FocusSubSystem;
+                var focusSubSystem = w != null && w.Comp.Data.Repo.Set.Overrides.FocusSubSystem;
                 
                 foreach (var blockType in subSystems)
                 {
-                    var bt = focusSubSystem ? w.Comp.Set.Value.Overrides.SubSystem : blockType;
+                    var bt = focusSubSystem ? w.Comp.Data.Repo.Set.Overrides.SubSystem : blockType;
 
                     ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     system.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
@@ -322,7 +322,7 @@ namespace WeaponCore.Support
                     if (focusSubSystem) break;
                 }
 
-                if (system.OnlySubSystems || focusSubSystem && w.Comp.Set.Value.Overrides.SubSystem != Any) return false;
+                if (system.OnlySubSystems || focusSubSystem && w.Comp.Data.Repo.Set.Overrides.SubSystem != Any) return false;
             }
             FatMap fatMap;
             return system.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, type, checkPower);

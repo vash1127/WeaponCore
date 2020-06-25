@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer = w.Comp.State.Value.CurrentPlayerControl.PlayerId == w.Comp.Session.PlayerId;
+                var firingPlayer = w.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId == w.Comp.Session.PlayerId;
                 var patternCycle = gen.PatternCycle;
                 var targetable = w.ActiveAmmoDef.AmmoDef.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
@@ -29,7 +29,7 @@ namespace WeaponCore.Projectiles
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.Overrides = w.Comp.Set.Value.Overrides;
+                p.Info.Overrides = w.Comp.Data.Repo.Set.Overrides;
                 
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
@@ -37,11 +37,11 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
-                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.State.Value.CurrentPlayerControl.PlayerId] : null;
+                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId] : null;
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;
-                p.Info.EnableGuidance = w.Comp.Set.Value.Guidance;
+                p.Info.EnableGuidance = w.Comp.Data.Repo.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
                 p.Info.WeaponRng = w.Comp.WeaponValues.WeaponRandom[w.WeaponId];
                 p.Info.LockOnFireState = w.LockOnFireState;

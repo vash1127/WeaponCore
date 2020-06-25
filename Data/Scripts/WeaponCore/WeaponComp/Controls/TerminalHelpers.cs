@@ -67,7 +67,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        comp.RequestShootUpdate(comp.State.Value.ShootOn ? ShootOff : ShootOn);
+                        comp.RequestShootUpdate(ShootOn);
                     };
 
                     var oldWriter = a.Writer;
@@ -79,7 +79,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.State.Value.ShootOn)
+                        if (comp.Data.Repo.Set.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -111,7 +111,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.State.Value.ShootOn)
+                        if (comp.Data.Repo.Set.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -142,7 +142,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.State.Value.ShootOn)
+                        if (comp.Data.Repo.Set.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -471,7 +471,7 @@ namespace WeaponCore.Control
 
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            var on = blk.Components.Get<WeaponComponent>()?.State.Value.ClickShoot ?? false;
+            var on = blk.Components.Get<WeaponComponent>()?.Data.Repo?.Set.TerminalAction == ShootClick;
 
             if (on)
                 sb.Append("On");
@@ -493,7 +493,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(comp.State.Value.ShootOn ? ShootOff : ShootOn);
+            comp.RequestShootUpdate(ShootOn);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
@@ -561,7 +561,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            if (comp.State.Value.ShootOn)
+            if (comp.Data.Repo.Set.TerminalAction == ShootOn)
                 sb.Append("On");
             else
                 sb.Append("Off");

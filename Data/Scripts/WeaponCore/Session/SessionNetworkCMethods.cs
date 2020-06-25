@@ -118,7 +118,7 @@ namespace WeaponCore
             if (statePacket.Data == null) return Error(data,  Msg("Data"));
 
             comp.MIds[(int)packet.PType] = statePacket.MId;
-            comp.State.Value.Sync(statePacket.Data, comp);
+            comp.Data.Repo.State.Sync(comp, statePacket.Data);
             if (Wheel.WheelActive)
                 Wheel.Dirty = true;
 
@@ -137,7 +137,7 @@ namespace WeaponCore
             if (setPacket.Data == null) return Error(data, Msg("Data"));
 
             comp.MIds[(int)packet.PType] = setPacket.MId;
-            comp.Set.Value.Sync(comp, setPacket.Data);
+            comp.Data.Repo.Set.Sync(comp, setPacket.Data);
             data.Report.PacketValid = true;
             return true;
         }
@@ -318,7 +318,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
+            comp.Data.Repo.State.OtherPlayerTrackingReticle = reticlePacket.Data;
             data.Report.PacketValid = true;
             return true;
 
@@ -339,7 +339,7 @@ namespace WeaponCore
                 comp.MIds[(int)packet.PType] = overRidesPacket.MId;
                 
                 comp.Ai.ReScanBlockGroups();
-                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                comp.Data.Repo.Set.Overrides.Sync(overRidesPacket.Data);
                 data.Report.PacketValid = true;
             }
             else if (myGrid != null)
@@ -356,7 +356,7 @@ namespace WeaponCore
                     if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups)) {
 
                         foreach (var component in groups.Comps) {
-                            component.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                            component.Data.Repo.Set.Overrides.Sync(overRidesPacket.Data);
                             data.Report.PacketValid = true;
                         }
 
@@ -379,7 +379,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
+            comp.Data.Repo.State.CurrentPlayerControl.Sync(cPlayerPacket.Data);
             comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
             data.Report.PacketValid = true;
 
@@ -545,8 +545,8 @@ namespace WeaponCore
 
             if (comp != null) {
                 comp.MIds[(int)midPacket.MidType] = midPacket.MId;
-                if (comp.GetSyncHash() != midPacket.HashCheck)
-                    RequestCompSync(comp);
+                //if (comp.GetSyncHash() != midPacket.HashCheck)
+                    //RequestCompSync(comp);
 
                 data.Report.PacketValid = true;
             }

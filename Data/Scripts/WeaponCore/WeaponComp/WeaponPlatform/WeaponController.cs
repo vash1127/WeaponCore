@@ -210,8 +210,8 @@ namespace WeaponCore.Platform
 
                 if (set && System.DegRof && State.Sync.Heat >= (System.MaxHeat * .8))
                 {
-                    var systemRate = System.RateOfFire * Comp.Set.Value.RofModifier;
-                    var barrelRate = System.BarrelSpinRate * Comp.Set.Value.RofModifier;
+                    var systemRate = System.RateOfFire * Comp.Data.Repo.Set.RofModifier;
+                    var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Set.RofModifier;
                     var heatModifier = MathHelper.Lerp(1f, .25f, State.Sync.Heat / System.MaxHeat);
 
                     systemRate *= heatModifier;
@@ -229,8 +229,8 @@ namespace WeaponCore.Platform
                 else if (set && CurrentlyDegrading)
                 {
                     CurrentlyDegrading = false;
-                    RateOfFire = (int)(System.RateOfFire * Comp.Set.Value.RofModifier);
-                    BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Set.Value.RofModifier);
+                    RateOfFire = (int)(System.RateOfFire * Comp.Data.Repo.Set.RofModifier);
+                    BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Data.Repo.Set.RofModifier);
                     TicksPerShot = (uint)(3600f / RateOfFire);
 
                     if (System.HasBarrelRotation) UpdateBarrelRotation();
@@ -250,7 +250,7 @@ namespace WeaponCore.Platform
                     LastHeatUpdateTick = 0;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null} - Value:{Comp.Data.Repo == null} - Weapons:{Comp.Data.Repo?.State.Weapons[WeaponId] == null}"); }
         }
 
         internal void TurnOnAV(object o)
@@ -280,12 +280,12 @@ namespace WeaponCore.Platform
             var newBase = 0f;
 
             if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Set.Value.DpsModifier;
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Set.DpsModifier;
             else
                 newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
 
             if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-                newBase *= Comp.Set.Value.Overload;
+                newBase *= Comp.Data.Repo.Set.Overload;
 
             if (newBase < 0)
                 newBase = 0;

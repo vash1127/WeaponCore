@@ -59,7 +59,7 @@ namespace WeaponCore.Platform
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            if (Comp?.State == null || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (Comp?.Data.Repo == null || Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Ai == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             try
             {
                 var session = Comp.Session;
@@ -435,7 +435,7 @@ namespace WeaponCore.Platform
             if (!syncCharge)
             {
                 State.Sync.CurrentAmmo = 0;
-                Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+                Comp.Data.Repo.State.CurrentCharge -= State.Sync.CurrentCharge;
                 State.Sync.CurrentCharge = 0;
             }
 
@@ -457,7 +457,7 @@ namespace WeaponCore.Platform
 
         internal void UpdateWeaponRange()
         {
-            var range = Comp.Set.Value.Range < 0 ? double.MaxValue : Comp.Set.Value.Range; 
+            var range = Comp.Data.Repo.Set.Range < 0 ? double.MaxValue : Comp.Data.Repo.Set.Range; 
             var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
             var weaponRange = Math.Min(hardPointMax, ammoMax);
@@ -529,24 +529,6 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
-        internal void ShootOnceDirty()
-        {
-            Set.WeaponMode(Comp.Set.Value, ShootActions.ShootOff);
-            var clickToShootDirty = true;
-            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-            {
-                var w = Comp.Platform.Weapons[i];
-                if (w.Set.Action  ==  ShootActions.ShootClick && w.State.SingleShotCounter > 0)
-                    clickToShootDirty = false;
-            }
-
-            if (clickToShootDirty)
-            {
-                Comp.State.Value.ClickShoot = false;
-                Comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-            }
-        }
-
         internal bool HasAmmo()
         {
             if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon) {
@@ -593,7 +575,7 @@ namespace WeaponCore.Platform
         {
             var invalidState = State?.Sync == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
 
-            if (invalidState || !Comp.State.Value.Online || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
+            if (invalidState || !Comp.Data.Repo.State.Online || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
                 return false;
 
             if (!HasAmmo() || State.Sync.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
@@ -655,7 +637,7 @@ namespace WeaponCore.Platform
         {
             using (Comp.MyCube.Pin()) {
 
-                if (State?.Sync == null || Comp.State.Value == null || Comp.Ai == null || Comp.MyCube.MarkedForClose) return;
+                if (State?.Sync == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.MyCube.MarkedForClose) return;
 
                 LastLoadedTick = Comp.Session.Tick;
 
@@ -664,9 +646,9 @@ namespace WeaponCore.Platform
                     if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
-                    Comp.State.Value.CurrentCharge -= State.Sync.CurrentCharge;
+                    Comp.Data.Repo.State.CurrentCharge -= State.Sync.CurrentCharge;
                     State.Sync.CurrentCharge = MaxCharge;
-                    Comp.State.Value.CurrentCharge += MaxCharge;
+                    Comp.Data.Repo.State.CurrentCharge += MaxCharge;
 
                     ChargeUntilTick = 0;
                     ChargeDelayTicks = 0;

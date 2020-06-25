@@ -524,7 +524,7 @@ namespace WeaponCore.Platform
                         //cant check for emissives so may be null ref
                     }
 
-                    if (weapon.Comp.State.Value.Online)
+                    if (weapon.Comp.Data.Repo.State.Online)
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
                         else

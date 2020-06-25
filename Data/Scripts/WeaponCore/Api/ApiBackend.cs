@@ -234,7 +234,7 @@ namespace WeaponCore.Api
                 {
                     if (!allWeapons && i != weaponId) continue;
 
-                    comp.Platform.Weapons[i].Set.WeaponMode(comp.Set.Value, ShootOnce);
+                    comp.Platform.Weapons[i].Set.WeaponMode(comp, ShootOnce);
                 }
             }
         }
@@ -252,13 +252,13 @@ namespace WeaponCore.Api
 
                     if (!on && w.Set.Action == ShootOn)
                     {
-                        w.Set.WeaponMode(comp.Set.Value, ShootOff);
+                        w.Set.WeaponMode(comp, ShootOff);
                         w.StopShooting();
                     }
                     else if (on && w.Set.Action != ShootOff)
-                        w.Set.WeaponMode(comp.Set.Value, ShootOn);
+                        w.Set.WeaponMode(comp, ShootOn);
                     else if (on)
-                        w.Set.WeaponMode(comp.Set.Value, ShootOn);
+                        w.Set.WeaponMode(comp, ShootOn);
                 }
             }
         }
@@ -266,7 +266,7 @@ namespace WeaponCore.Api
         private static bool IsWeaponReadyToFire(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId && comp.State.Value.Online && comp.Set.Value.Overrides.Activate)
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId && comp.Data.Repo.State.Online && comp.Data.Repo.Set.Overrides.Activate)
             {
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
@@ -316,7 +316,7 @@ namespace WeaponCore.Api
                     if (w.MaxTargetDistance > maxTargetDistance) 
                         maxTargetDistance = w.MaxTargetDistance;
                 
-                comp.Set.Value.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
+                comp.Data.Repo.Set.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
             }
         }
 

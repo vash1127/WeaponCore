@@ -27,8 +27,9 @@ namespace WeaponCore.Support
         internal readonly IMyTerminalBlock TerminalBlock;
         internal readonly IMyFunctionalBlock FunctionalBlock;
         internal readonly IMyLargeTurretBase TurretBase;
-        internal readonly CompSettings Set;
-        internal readonly CompState State;
+        //internal readonly CompSettings Set;
+        //internal readonly CompState State;
+        internal readonly CompData Data;
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
@@ -147,9 +148,9 @@ namespace WeaponCore.Support
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
-
-            State = new CompState(this);
-            Set = new CompSettings(this);
+            Data = new CompData(this);
+            //Data.State = new CompState(this);
+            //Data.Set = new CompSettings(this);
 
             MyCube.OnClose += Session.CloseComps;
         }        

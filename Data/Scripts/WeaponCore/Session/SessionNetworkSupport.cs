@@ -292,7 +292,7 @@ namespace WeaponCore
                     SenderId = MultiplayerId,
                     MId = comp.MIds[(int)PacketType.PlayerControlUpdate],
                     PType = PacketType.PlayerControlUpdate,
-                    Data = comp.State.Value.CurrentPlayerControl,
+                    Data = comp.Data.Repo.State.CurrentPlayerControl,
                 });
             }
             else if (HandlesInput)
@@ -306,7 +306,7 @@ namespace WeaponCore
                         SenderId = 0,
                         MId = comp.MIds[(int)PacketType.PlayerControlUpdate],
                         PType = PacketType.PlayerControlUpdate,
-                        Data = comp.State.Value.CurrentPlayerControl,
+                        Data = comp.Data.Repo.State.CurrentPlayerControl,
                     }
                 });
             }
@@ -353,7 +353,7 @@ namespace WeaponCore
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CompStateUpdate,
-                        Data = comp.State.Value
+                        Data = comp.Data.Repo.State
                     }
                 });
             }
@@ -374,7 +374,7 @@ namespace WeaponCore
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CompSettingsUpdate,
-                        Data = comp.Set.Value,
+                        Data = comp.Data.Repo.Set,
                         MId = comp.MIds[(int)PacketType.CompSettingsUpdate]
                     }
                 });
@@ -500,6 +500,7 @@ namespace WeaponCore
             }
         }
 
+        /*
         internal void SendMidResync(PacketType type, uint mid, ulong playerId, MyEntity ent, WeaponComponent comp)
         {
             var hash = -1;
@@ -521,7 +522,8 @@ namespace WeaponCore
                 SingleClient = true,
             });
         }
-
+        */
+        /*
         internal void RequestCompSync(WeaponComponent comp)
         {
             PacketsToServer.Add(new Packet
@@ -531,7 +533,7 @@ namespace WeaponCore
                 PType = PacketType.CompSyncRequest,
             });
         }
-
+        */
         #region AIFocus packets
         internal void SendFocusTargetUpdate(GridAi ai, long targetId)
         {

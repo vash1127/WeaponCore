@@ -19,23 +19,22 @@ namespace WeaponCore.Support
             try
             {
                 if (MyCube.Storage == null)
-                    State.StorageInit();
+                    Data.StorageInit();
 
-                State.LoadState();
-                Set.LoadSettings();
+                Data.Load();
 
                 if (Session.IsServer) {
-                    Set.Value.Overrides.TargetPainter = false;
-                    Set.Value.Overrides.ManualControl = false;
-                    State.Value.ResetToFreshLoadState();
+                    Data.Repo.Set.Overrides.TargetPainter = false;
+                    Data.Repo.Set.Overrides.ManualControl = false;
+                    Data.Repo.State.ResetToFreshLoadState();
                 }
 
                 var maxTrajectory = 0f;
                 for (int i = 0; i < Platform.Weapons.Length; i++) {
 
                     var weapon = Platform.Weapons[i];
-                    weapon.Set = Set.Value.Weapons[i];
-                    weapon.State = State.Value.Weapons[i];
+                    weapon.Set = Data.Repo.Set.Weapons[i];
+                    weapon.State = Data.Repo.State.Weapons[i];
 
                     weapon.ChangeActiveAmmo(weapon.System.AmmoTypes.Length > 0 ? weapon.System.AmmoTypes[weapon.Set.AmmoTypeId] : new WeaponSystem.WeaponAmmoTypes());
 
@@ -50,20 +49,20 @@ namespace WeaponCore.Support
 
                 }
 
-                if (Set.Value.Range < 0)
-                    Set.Value.Range = maxTrajectory;
+                if (Data.Repo.Set.Range < 0)
+                    Data.Repo.Set.Range = maxTrajectory;
 
                 WeaponValues.Load(this);
             }
-            catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{State == null}({State?.Value == null})[{State?.Value?.Weapons == null}] - SetNull:{Set == null}({Set?.Value == null})[{Set?.Value?.Weapons == null}] - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
 
         private void DpsAndHeatInit(Weapon weapon, out double maxTrajectory)
         {
             MaxHeat += weapon.System.MaxHeat;
 
-            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
-            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Set.Value.RofModifier);
+            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Set.RofModifier);
+            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Set.RofModifier);
             HeatSinkRate += weapon.HsRate;
 
             if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();

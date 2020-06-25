@@ -236,7 +236,7 @@ namespace WeaponCore.Platform
                         Comp.CurrentHeat += HeatPShot;
                         if (State.Sync.Heat >= System.MaxHeat) {
 
-                            if (!Comp.Session.IsClient && Comp.Set.Value.Overload > 1) {
+                            if (!Comp.Session.IsClient && Comp.Data.Repo.Set.Overload > 1) {
                                 var dmg = .02f * Comp.MaxIntegrity;
                                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                             }
@@ -290,7 +290,7 @@ namespace WeaponCore.Platform
 
                 if (Set.Action == ShootActions.ShootOnce && --State.SingleShotCounter <= 0)
                 {
-                    ShootOnceDirty();
+                    Set.WeaponMode(Comp, ShootActions.ShootOff);
                 }
 
                 _muzzlesToFire.Clear();

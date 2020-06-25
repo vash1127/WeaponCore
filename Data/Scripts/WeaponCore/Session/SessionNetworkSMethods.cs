@@ -20,13 +20,13 @@ namespace WeaponCore
 
             if (statePacket.MId > comp.MIds[(int)packet.PType]) {
                 comp.MIds[(int)packet.PType] = statePacket.MId;
-                comp.State.Value.Sync(statePacket.Data, comp);
+                comp.Data.Repo.State.Sync(comp, statePacket.Data);
                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
 
                 data.Report.PacketValid = true;
             }
             else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg($"Mid is old({statePacket.MId}[{comp.MIds[(int)packet.PType]}]), likely multiple clients attempting update"));
             }
 
@@ -45,13 +45,13 @@ namespace WeaponCore
 
             if (setPacket.MId > comp.MIds[(int)packet.PType]) {
                 comp.MIds[(int)packet.PType] = setPacket.MId;
-                comp.Set.Value.Sync(comp, setPacket.Data);
+                comp.Data.Repo.Set.Sync(comp, setPacket.Data);
                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                 data.Report.PacketValid = true;
             }
             else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp); // is this really required?
+                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp); // is this really required?
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 
@@ -294,7 +294,7 @@ namespace WeaponCore
             if (DedicatedServer)
                 comp.TrackReticle = reticlePacket.Data;
 
-            comp.State.Value.OtherPlayerTrackingReticle = reticlePacket.Data;
+            comp.Data.Repo.State.OtherPlayerTrackingReticle = reticlePacket.Data;
 
             PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
 
@@ -440,13 +440,13 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             if (comp.MIds[(int)packet.PType] < cPlayerPacket.MId) {
-                comp.State.Value.CurrentPlayerControl.Sync(cPlayerPacket.Data);
+                comp.Data.Repo.State.CurrentPlayerControl.Sync(cPlayerPacket.Data);
                 comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
                 data.Report.PacketValid = true;
                 PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
             }
             else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 
@@ -600,7 +600,7 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else {
-                SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
+                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 

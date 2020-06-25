@@ -67,7 +67,7 @@ namespace WeaponCore.Support
         {
             foreach (var comp in Comps) {
 
-                var o = comp.Set.Value.Overrides;
+                var o = comp.Data.Repo.Set.Overrides;
                 var change = false;
 
                 foreach (var setting in Settings) {
@@ -142,7 +142,7 @@ namespace WeaponCore.Support
 
         internal void SetValue(WeaponComponent comp, string setting, int v)
         {
-            var o = comp.Set.Value.Overrides;
+            var o = comp.Data.Repo.Set.Overrides;
             var enabled = v > 0;
             switch (setting) {
 
@@ -195,7 +195,7 @@ namespace WeaponCore.Support
         internal int GetCompSetting(string setting, WeaponComponent comp)
         {
             var value = 0;
-            var o = comp.Set.Value.Overrides;
+            var o = comp.Data.Repo.Set.Overrides;
             switch (setting) {
 
                 case "Active":
@@ -240,13 +240,13 @@ namespace WeaponCore.Support
 
         internal void ResetCompState(WeaponComponent comp, bool apply)
         {
-            var o = comp.Set.Value.Overrides;
+            var o = comp.Data.Repo.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
 
             if (userControl)
             {
-                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+                comp.Data.Repo.State.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
+                comp.Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Ui;
 
                 if (o.ManualControl) {
                     o.TargetPainter = false;
@@ -256,16 +256,11 @@ namespace WeaponCore.Support
                     o.ManualControl = false;
                     if (apply) Settings["ManualControl"] = 0;
                 }
-
-                comp.State.Value.ClickShoot = false;
-                comp.State.Value.ShootOn = false;
-
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    comp.Platform.Weapons[i].Set.WeaponMode(comp.Set.Value, ShootActions.ShootOff); ;
+                comp.Data.Repo.Set.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
             else {
-                comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+                comp.Data.Repo.State.CurrentPlayerControl.PlayerId = -1;
+                comp.Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.None;
             }
         }
 

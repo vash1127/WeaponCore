@@ -215,7 +215,7 @@ namespace WeaponCore.Support
                     if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         Session.FutureEvents.Schedule(Session.DelayedComputeStorage, weapon, 240);
 
-                    var notValid = !weapon.Set.Enable || !State.Value.Online || !Set.Value.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
+                    var notValid = !weapon.Set.Enable || !Data.Repo.State.Online || !Data.Repo.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
                     if (!notValid)
                         Session.AcqManager.AddAwake(weapon.Acquire);
                 }
@@ -265,8 +265,7 @@ namespace WeaponCore.Support
 
                 if (MyCube?.Storage != null) {
 
-                    State.SaveState();
-                    Set.SaveSettings();
+                    Data.Save();
                     WeaponValues.Save(this);                        
                 }
             }

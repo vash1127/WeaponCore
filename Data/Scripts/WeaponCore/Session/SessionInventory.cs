@@ -225,7 +225,7 @@ namespace WeaponCore
                         inventoriesToAddTo[i].Inventory.Add(magItem, amt);
                     }
 
-                    WepUi.SetDps(weapon.Comp, weapon.Comp.Set.Value.DpsModifier, false, true);
+                    WepUi.SetDps(weapon.Comp, weapon.Comp.Data.Repo.Set.DpsModifier, false, true);
 
                     ComputeStorage(weapon);
 

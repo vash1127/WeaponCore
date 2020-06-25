@@ -28,7 +28,7 @@ namespace WeaponCore.Support
         {
             IsWorking = MyCube.IsWorking;
             IsFunctional = MyCube.IsFunctional;
-            State.Value.Online = IsWorking && IsFunctional;
+            Data.Repo.State.Online = IsWorking && IsFunctional;
 
             if (MyCube != null)
                 if (FunctionalBlock.Enabled)
@@ -57,7 +57,10 @@ namespace WeaponCore.Support
                 
                 ResetShootState(action, playerId);
                 if (Session.MpActive)
+                {
                     Session.SendCompStateUpdate(this);
+                    Session.SendCompSettingUpdate(this);
+                }
             }
             else
                 Session.SendActionShootUpdate(this, action);
@@ -65,37 +68,35 @@ namespace WeaponCore.Support
 
         internal void ResetShootState(ShootActions action, long playerId)
         {
-            var clickOnce = action == ShootActions.ShootClick;
-            var on = !State.Value.ClickShoot;
-            playerId = playerId == -1 ? Session.PlayerId : playerId;
+            var cycleShootClick = Data.Repo.Set.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
+            var cycleShootOn = Data.Repo.Set.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
+            var cycleSomething = cycleShootOn || cycleShootClick;
 
-            if (Set.Value.Overrides.ManualControl || Set.Value.Overrides.TargetPainter) {
-                Set.Value.Overrides.ManualControl = false;
-                Set.Value.Overrides.TargetPainter = false;
+            var addShot = !cycleShootClick && action == ShootActions.ShootClick;
+
+            if (Data.Repo.Set.Overrides.ManualControl || Data.Repo.Set.Overrides.TargetPainter) {
+                Data.Repo.Set.Overrides.ManualControl = false;
+                Data.Repo.Set.Overrides.TargetPainter = false;
             }
 
-            foreach (var w in Platform.Weapons) {
-                
-                w.Set.WeaponMode(Set.Value, action);
-                if (action == ShootActions.ShootClick)
-                    w.Set.WeaponMode(Set.Value, on ? ShootActions.ShootClick : ShootActions.ShootOff);
-                else
-                    w.State.SingleShotCounter = clickOnce ? w.State.SingleShotCounter++ : 0;
+            Data.Repo.Set.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
+
+            for (int i = 0; i < Platform.Weapons.Length; i++) {
+                var w = Platform.Weapons[i];
+                w.State.SingleShotCounter = addShot ? w.State.SingleShotCounter++ : 0;
             }
 
             if (action == ShootActions.ShootClick && HasTurret) {
-                State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+                Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Ui;
             }
             else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce || action == ShootActions.ShootOn) {
-                State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+                Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Toolbar;
             }
-            else{
-                State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-            }
+            else
+                Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.None;
 
-            State.Value.CurrentPlayerControl.PlayerId = (action == ShootActions.ShootClick && !on || action == ShootActions.ShootOff) ? -1 : playerId;
-            State.Value.ClickShoot = action == ShootActions.ShootClick && on;
-            State.Value.ShootOn = action == ShootActions.ShootOn || (action == ShootActions.ShootOn && !on && State.Value.ShootOn);
+            playerId = playerId == -1 ? Session.PlayerId : playerId;
+            Data.Repo.State.CurrentPlayerControl.PlayerId = action == ShootActions.ShootOff ? -1 : playerId;
         }
 
         internal void DetectStateChanges()
@@ -112,7 +113,7 @@ namespace WeaponCore.Support
 
             UpdatedState = true;
 
-            var overRides = Set.Value.Overrides;
+            var overRides = Data.Repo.Set.Overrides;
             var overActive = overRides.Activate;
             var attackNeutrals = overActive && overRides.Neutrals;
             var attackNoOwner = overActive && overRides.Unowned;
@@ -133,7 +134,7 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && !State.Value.ClickShoot && !State.Value.ShootOn) {
+            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Set.TerminalAction == ShootActions.ShootOff) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;
