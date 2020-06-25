@@ -22,8 +22,6 @@ namespace WeaponCore.Support
                     Status = Start.Started;
                     break;
             }
-
-            //UpdateNetworkState();
         }
 
         private void Startup()
@@ -50,6 +48,54 @@ namespace WeaponCore.Support
                 Ai.AwakeComps += 1;
                 Ai.SleepingComps -= 1;
             }
+        }
+
+        internal void RequestShootUpdate(ShootActions action, long playerId = -1)
+        {
+            Session.TerminalMon.ClientUpdate(this);
+            if (Session.IsServer) {
+                
+                ResetShootState(action, playerId);
+                if (Session.MpActive)
+                    Session.SendCompStateUpdate(this);
+            }
+            else
+                Session.SendActionShootUpdate(this, action);
+        }
+
+        internal void ResetShootState(ShootActions action, long playerId)
+        {
+            var clickOnce = action == ShootActions.ShootClick;
+            var on = !State.Value.ClickShoot;
+            playerId = playerId == -1 ? Session.PlayerId : playerId;
+
+            if (Set.Value.Overrides.ManualControl || Set.Value.Overrides.TargetPainter) {
+                Set.Value.Overrides.ManualControl = false;
+                Set.Value.Overrides.TargetPainter = false;
+            }
+
+            foreach (var w in Platform.Weapons) {
+                
+                w.State.ManualShoot = action;
+                if (action == ShootActions.ShootClick)
+                    w.State.ManualShoot = on ? ShootActions.ShootClick : ShootActions.ShootOff;
+                else
+                    w.State.SingleShotCounter = clickOnce ? w.State.SingleShotCounter++ : 0;
+            }
+
+            if (action == ShootActions.ShootClick && HasTurret) {
+                State.Value.CurrentPlayerControl.ControlType = ControlType.Ui;
+            }
+            else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce || action == ShootActions.ShootOn) {
+                State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+            }
+            else{
+                State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+            }
+
+            State.Value.CurrentPlayerControl.PlayerId = (action == ShootActions.ShootClick && !on || action == ShootActions.ShootOff) ? -1 : playerId;
+            State.Value.ClickShoot = action == ShootActions.ShootClick && on;
+            State.Value.ShootOn = action == ShootActions.ShootOn || (action == ShootActions.ShootOn && !on && State.Value.ShootOn);
         }
 
         internal void DetectStateChanges()

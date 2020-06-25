@@ -61,6 +61,7 @@ namespace WeaponCore.Projectiles
         internal int CachedId;
         internal int MaxChaseTime;
         internal int NewTargets;
+        internal int SmartSlot;
         internal bool PickTarget;
         internal bool EnableAv;
         internal bool ConstantSpeed;
@@ -152,7 +153,7 @@ namespace WeaponCore.Projectiles
             if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache))
             {
                 Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.FiringCube?.MarkedForClose}, setting to default cache:");
-                Info.VoxelCache = Info.System.Session.VoxelCaches[long.MaxValue];
+                Info.VoxelCache = Info.System.Session.VoxelCaches[ulong.MaxValue];
             }
             if (Info.MyPlanet != null)
                 Info.VoxelCache.PlanetSphere.Center = Info.Ai.ClosestPlanetCenter;
@@ -166,11 +167,14 @@ namespace WeaponCore.Projectiles
             {
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
+                SmartSlot = Info.WeaponRng.ClientProjectileRandom.Next(10);
+                Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
             else
             {
                 MaxChaseTime = int.MaxValue;
                 SmartsOn = false;
+                SmartSlot = 0;
             }
 
             if (Info.Target.IsProjectile)
@@ -261,7 +265,7 @@ namespace WeaponCore.Projectiles
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
             var desiredSpeed = (Info.Direction * DesiredSpeed);
             var relativeSpeedCap = StartSpeed + desiredSpeed;
-            MaxVelocity = relativeSpeedCap.LengthSquared() > desiredSpeed.LengthSquared() ? relativeSpeedCap : Vector3D.Zero + desiredSpeed;
+            MaxVelocity = relativeSpeedCap;
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = accelPerSec * StepConst;
@@ -324,7 +328,7 @@ namespace WeaponCore.Projectiles
             {
                 var ai = Info.Ai;
                 LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
-                var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory));
+                var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory), Info.MaxTrajectory);
 
                 for (int i = 0; i < ai.StaticsInRange.Count; i++)
                 {
@@ -338,31 +342,13 @@ namespace WeaponCore.Projectiles
                     {
                         if (voxel != null && voxel == voxel.RootVoxel)
                         {
-                            if (voxel == Info.MyPlanet)
-                            {
-                                if (!Info.AmmoDef.Const.IsBeamWeapon)
-                                {
-                                    //Info.System.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
-                                    LinePlanetCheck = true;
-                                }
-                                else if (!Info.WeaponCache.VoxelHits[CachedId].Cached(lineTest, Info))
-                                {
-                                    LinePlanetCheck = true;
-                                }
-                                else CachedPlanetHit = true;
-
-                                PruneQuery = MyEntityQueryType.Both;
-                            }
-                            else
-                            {
-                                LinePlanetCheck = true;
-                                PruneQuery = MyEntityQueryType.Both;
-                            }
+                            LinePlanetCheck = true;
+                            PruneQuery = MyEntityQueryType.Both;
                             break;
                         }
                         if (grid != null && grid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid)) continue;
                         PruneQuery = MyEntityQueryType.Both;
-                        if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
+                        break;
                     }
                 }
             }
@@ -407,7 +393,6 @@ namespace WeaponCore.Projectiles
             var giveUp = HadTarget && ++NewTargets > Info.AmmoDef.Const.MaxTargets && Info.AmmoDef.Const.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
-
             if (giveUp || !GridAi.ReacquireTarget(this)) {
                 Info.Target.Entity = null;
                 if (Info.Target.IsProjectile) UnAssignProjectile(true);
@@ -428,6 +413,7 @@ namespace WeaponCore.Projectiles
         {
             var ent = Info.Target.Entity;
             MineActivated = true;
+            AtMaxRange = false;
             var targetPos = ent.PositionComp.WorldAABB.Center;
             var deltaPos = targetPos - Position;
             var targetVel = ent.Physics?.LinearVelocity ?? Vector3.Zero;
@@ -498,10 +484,10 @@ namespace WeaponCore.Projectiles
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime && HadTarget;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
-                var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
-                var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && Info.Age % 30 == 0;
+                var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && (ZombieLifeTime + SmartSlot) % 30 == 0;
+                var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && (Info.Age + SmartSlot) % 30 == 0;
 
-                if ((PickTarget || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
+                if ((PickTarget && (Info.Age + SmartSlot) % 30 == 0 || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
                 {
                     HadTarget = true;
                     if (ZombieLifeTime > 0)
@@ -618,7 +604,7 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (Info.AmmoDef.Const.Pulse && !Info.TriggeredPulse && VelocityLengthSqr <= 0 && !Info.AmmoDef.Const.IsMine)
+            if (Info.AmmoDef.Const.Pulse && !Info.TriggeredPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.AmmoDef.Const.IsMine)
             {
                 Info.TriggeredPulse = true;
                 Velocity = Vector3D.Zero;
@@ -783,8 +769,10 @@ namespace WeaponCore.Projectiles
             else
                 TriggerMine(true);
 
-            if (Info.AvShot.Cloaked && minDist <= deCloakRadius) Info.AvShot.Cloaked = false;
-            else if (!Info.AvShot.Cloaked && minDist > deCloakRadius) Info.AvShot.Cloaked = true;
+            if (EnableAv) {
+                if (Info.AvShot.Cloaked && minDist <= deCloakRadius) Info.AvShot.Cloaked = false;
+                else if (!Info.AvShot.Cloaked && minDist > deCloakRadius) Info.AvShot.Cloaked = true;
+            }
 
             if (minDist <= Info.AmmoDef.Const.CollisionSize) activate = true;
             if (minDist <= detectRadius) inRange = true;
@@ -851,7 +839,6 @@ namespace WeaponCore.Projectiles
         {
             if (GenerateShrapnel)
                 SpawnShrapnel();
-            else Info.IsShrapnel = false;
 
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
             Watchers.Clear();

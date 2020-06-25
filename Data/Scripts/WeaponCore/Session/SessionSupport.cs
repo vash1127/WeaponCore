@@ -51,6 +51,8 @@ namespace WeaponCore
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
                 CheckAdminRights();
                 if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
+                
+                if (PbActivate) Api.PbInit();
             }
             LCount++;
             if (LCount == 129)
@@ -66,7 +68,8 @@ namespace WeaponCore
                     InitRayCast();
 
                     GameLoaded = true;                   
-
+                    if (LocalVersion)
+                        Log.Line($"Local WeaponCore Detected");
                 }
                 else if (!FirstLoop)
                 {
@@ -149,7 +152,7 @@ namespace WeaponCore
                     Reporter.ReportPool.Return(report);
                 }
                 var packetCount = reports.Value.Count;
-                if (packetCount > 0) Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers} ({IsClient})] unknownReceive:[{noneReceivers} ({IsServer})]", "net");
+                if (packetCount > 0) Log.LineShortDate($"(NINFO) - <{typeStr}> packets:[{packetCount}] dataTransfer:[{dataTransfer}] validPackets:[{validPackets}] invalidPackets:[{invalidPackets}] serverReceive:[{serverReceivers}({IsServer})] clientReceive:[{clientReceivers}] unknownReceive:[{noneReceivers}]", "net");
             }
 
             foreach (var list in Reporter.ReportData.Values)
@@ -533,9 +536,8 @@ namespace WeaponCore
 
         private void Paused()
         {
-            Pause = true;
-            Log.Line($"Stopping all AV due to pause");
-            if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
+            _paused = true;
+            if (Wheel.WheelActive && Wheel.Ai != null) Wheel.CloseWheel();
         }
 
         public bool TaskHasErrors(ref Task task, string taskName)

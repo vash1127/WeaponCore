@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -41,7 +42,7 @@ namespace WeaponCore
                         UpdateState(menu, item, Update.Sub);
                     }
                     else if (item.Dynamic)
-                        menu.SetInfo(item);
+                        menu.SetInfo();
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
@@ -63,7 +64,10 @@ namespace WeaponCore
                     GetCurrentMenu().Move(Movement.Backward);
                 }
 
-                if (previousMenu != _currentMenu) SetCurrentMessage();
+                if (previousMenu != _currentMenu) {
+                    Dirty = false;
+                    SetCurrentMessage();
+                }
             }
         }
 
@@ -96,6 +100,7 @@ namespace WeaponCore
         internal void OpenWheel()
         {
             WheelActive = true;
+            Ai.ReScanBlockGroups(true);
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (string.IsNullOrEmpty(_currentMenu))
             {
@@ -133,7 +138,7 @@ namespace WeaponCore
 
             if (_currentMenu == "Group")
                 currentMessage = currentMenu.CurrentItemMessage();
-
+            
             if (currentMenu.GpsEntity != null)
             {
                 var gpsName = currentMenu.GpsEntity.DisplayNameText;
@@ -161,6 +166,10 @@ namespace WeaponCore
                     font = "White";
                     break;
             }
+
+            if (Dirty)
+                currentMenu.ReportInfo(GetCurrentMenuItem());
+
             HudNotify.Font = font; // BuildInfoHighlight, Red, Blue, Green, White, DarkBlue, 
             var oldText = HudNotify.Text;
             if (oldText != currentMessage)
@@ -171,7 +180,9 @@ namespace WeaponCore
 
         internal Menu GetCurrentMenu()
         {
-            return Menus[_currentMenu];
+            var menu = Menus[_currentMenu];
+
+            return menu;
         }
 
         internal Item GetCurrentMenuItem()
@@ -195,6 +206,7 @@ namespace WeaponCore
 
         internal bool UpdateState(Menu oldMenu, Item item, Update update, bool reset = true)
         {
+            Dirty = false;
             if (reset)
             {
                 oldMenu.CleanUp();

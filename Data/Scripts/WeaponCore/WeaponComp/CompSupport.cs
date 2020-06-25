@@ -33,8 +33,14 @@ namespace WeaponCore.Support
                     WeaponCount wCount;
                     if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount)) {
                         wCount.Current--;
-                        if (wCount.Current == 0) Ai.WeaponCounter.Remove(MyCube.BlockDefinition.Id.SubtypeId);
+                        Constructs.UpdateWeaponCounters(Ai);
+                        if (wCount.Current == 0)
+                        {
+                            Ai.WeaponCounter.Remove(MyCube.BlockDefinition.Id.SubtypeId);
+                            Session.WeaponCountPool.Return(wCount);
+                        }
                     }
+                    else Log.Line($"didnt find counter");
 
                     if (Ai.ActiveWeaponTerminal.ActiveCube == MyCube)
                         Ai.ActiveWeaponTerminal.Clean();
@@ -56,11 +62,7 @@ namespace WeaponCore.Support
                     }
                     else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)}");
 
-                    if (Ai.WeaponBase.Count == 0)
-                    {
-                        if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
-                            Session.WeaponCountPool.Return(wCount);
-
+                    if (Ai.WeaponBase.Count == 0) {
                         GridAi gridAi;
                         Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
                     }
@@ -101,8 +103,6 @@ namespace WeaponCore.Support
 
                     if (w.Acquire.Enabled) 
                         w.Comp.Session.AcqManager.Remove(w.Acquire);
-
-                    w.Acquire.Weapon = null;
                 }
             }
         }

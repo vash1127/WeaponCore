@@ -45,7 +45,7 @@ namespace WeaponCore
                 else weapon.Reload();
             }
             else if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - noMagsToload:{weapon.NoMagsToLoad}");
+                //Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - noMagsToload:{weapon.NoMagsToLoad}");
                 weapon.Reload();
             }
         }
@@ -61,7 +61,7 @@ namespace WeaponCore
                     using (weapon.Comp.Ai?.MyGrid.Pin())
                     using (weapon.Comp.MyCube.Pin()) {
 
-                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || weapon.Comp.MyCube == null) {
+                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                             UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
                             continue;
                         }
@@ -143,9 +143,7 @@ namespace WeaponCore
                 var weaponAmmoToPull = AmmoToPullQueue[i];
                 var weapon = weaponAmmoToPull.Weapon;
                 var inventoriesToPull = weaponAmmoToPull.Inventories;
-                if (!weapon.Comp.InventoryInited || weapon?.Comp == null || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
-                    inventoriesToPull.Clear();
-                    weaponAmmoToPull.Weapon = null;
+                if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     InventoryMoveRequestPool.Return(weaponAmmoToPull);
                     continue;
                 }
@@ -162,8 +160,6 @@ namespace WeaponCore
                 weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
                 weapon.PullingAmmo = false;
 
-                inventoriesToPull.Clear();
-                weaponAmmoToPull.Weapon = null;
                 InventoryMoveRequestPool.Return(weaponAmmoToPull);
             }
             AmmoToPullQueue.Clear();

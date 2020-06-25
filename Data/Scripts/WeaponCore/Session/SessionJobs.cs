@@ -46,7 +46,17 @@ namespace WeaponCore
 
         private void ProcessDbs()
         {
-            for (int i = 0; i < DbsToUpdate.Count; i++) DbsToUpdate[i].Ai.Scan();
+            for (int i = 0; i < DbsToUpdate.Count; i++) {
+
+                var db = DbsToUpdate[i];
+                var ai = db.Ai;
+                ai.ScanInProgress = true;
+
+                lock (ai.AiLock) {
+                    if (!ai.MarkedForClose && !ai.Closed && ai.Version == db.Version) 
+                        ai.Scan();
+                }
+            }
         }
 
         private void ProcessDbsCallBack()
@@ -59,6 +69,7 @@ namespace WeaponCore
                     var ds = DbsToUpdate[d];
                     var ai = ds.Ai;
                     if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || ds.Version != ai.Version) {
+                        ai.ScanInProgress = false;
                         Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose} - versionMismatch: {ds.Version != ai.Version}");
                         continue;
                     }
@@ -149,7 +160,7 @@ namespace WeaponCore
                     ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
 
                     if (ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
-                    if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
+                    //if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
 
                     
                     ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.ControllingPlayers.Count > 0 || ai.FirstRun;
@@ -158,9 +169,9 @@ namespace WeaponCore
 
                     ai.DbUpdated = true;
                     ai.FirstRun = false;
+                    ai.ScanInProgress = false;
                 }
                 DbsToUpdate.Clear();
-
                 DsUtil.Complete("db", true);
             }
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }

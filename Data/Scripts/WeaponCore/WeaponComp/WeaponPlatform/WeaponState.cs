@@ -8,16 +8,11 @@ using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponSystem;
+using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-
-        internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
-        {
-            ActiveAmmoDef = ammoDef;
-            CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
-        }
 
         internal void PositionChanged(MyPositionComponentBase pComp)
         {
@@ -410,31 +405,29 @@ namespace WeaponCore.Platform
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
         }
-
-        internal void ChangeAmmo(ref WeaponAmmoTypes newAmmo)
+        internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
         {
-            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && State.Sync.CurrentMags > 0)
-            {
-                if (Comp.Session.IsServer && !Comp.Session.IsCreative)
-                    Comp.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
-                else
-                {
-                    if (Comp.Session.IsCreative)
-                        ChangeActiveAmmo(newAmmo);
-
-                    Session.ComputeStorage(this);
-                }
-                return;
-            }
-
-            if (!newAmmo.AmmoDef.Const.EnergyAmmo)
-            {
-                ChangeActiveAmmo(newAmmo);
-                Session.ComputeStorage(this);
-                return;
-            }
-            ChangeActiveAmmo(newAmmo);
+            ActiveAmmoDef = ammoDef;
+            CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
             SetWeaponDps();
+        }
+
+        internal void ChangeAmmo(WeaponAmmoTypes newAmmo)
+        {
+            if (ActiveAmmoDef.Equals(newAmmo))
+                return;
+
+            var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
+
+            if (instantChange) 
+                ChangeActiveAmmo(newAmmo);
+
+            if (System.Session.IsServer) {
+                if (!instantChange)
+                    System.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
+            }
+            else if (System.Session.MpActive)
+                System.Session.SendCycleAmmoNetworkUpdate(this, Set.AmmoTypeId);
         }
 
         public void ChargeReload(bool syncCharge = false)
@@ -453,22 +446,6 @@ namespace WeaponCore.Platform
 
             ChargeUntilTick = syncCharge ? ChargeUntilTick : (uint)System.ReloadTime + Comp.Session.Tick;
             Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-        }
-
-        internal void CycleAmmo()
-        {
-            if (State.Sync.CurrentAmmo == 0)
-            {
-                var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
-                if (!ActiveAmmoDef.Equals(newAmmo))
-                    ChangeAmmo(ref newAmmo);
-            }
-            else if (!Reload() && !ActiveAmmoDef.AmmoDef.Const.Reloadable)
-            {
-                ChangeActiveAmmo(System.AmmoTypes[Set.AmmoTypeId]);
-                SetWeaponDps();
-                Reload();
-            }
         }
 
         internal double GetMaxWeaponRange()
@@ -552,6 +529,24 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
+        internal void ShootOnceDirty()
+        {
+            State.ManualShoot = ShootActions.ShootOff;
+            var clickToShootDirty = true;
+            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+            {
+                var w = Comp.Platform.Weapons[i];
+                if (w.State.ManualShoot  ==  ShootActions.ShootClick && w.State.SingleShotCounter > 0)
+                    clickToShootDirty = false;
+            }
+
+            if (clickToShootDirty)
+            {
+                Comp.State.Value.ClickShoot = false;
+                Comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
+            }
+        }
+
         internal bool HasAmmo()
         {
             if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon) {
@@ -564,7 +559,6 @@ namespace WeaponCore.Platform
 
             if (NoMagsToLoad)
             {
-
                 if (nothingToLoad)
                     return false;
 
@@ -611,11 +605,12 @@ namespace WeaponCore.Platform
 
             Reloading = true;
             State.SingleShotCounter = 0;
+            
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) State.ShotsFired = 0;
 
             var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
             if (!ActiveAmmoDef.Equals(newAmmo))
-                ChangeAmmo(ref newAmmo);
+                ChangeActiveAmmo(newAmmo);
 
             uint delay;
             if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {
@@ -629,9 +624,13 @@ namespace WeaponCore.Platform
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
-                CancelableReloadAction += Reloaded;
-                ReloadSubscribed = true;
-                Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint)System.ReloadTime);
+
+                if (System.ReloadTime > 0) {
+                    CancelableReloadAction += Reloaded;
+                    ReloadSubscribed = true;
+                    Comp.Session.FutureEvents.Schedule(CancelableReloadAction, null, (uint) System.ReloadTime);
+                }
+                else Reloaded();
             }
 
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return true;

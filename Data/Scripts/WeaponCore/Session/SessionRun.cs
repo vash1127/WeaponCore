@@ -21,9 +21,7 @@ namespace WeaponCore
             try
             {
                 if (!SupressLoad)
-                {
                     BeforeStartInit();
-                }
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
@@ -33,11 +31,7 @@ namespace WeaponCore
             try
             {
                 if (!SupressLoad)
-                {
-                    Log.Line($"Paused:{Tick}");
                     Paused();
-                    _paused = true;
-                }
 
             }
             catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
@@ -50,14 +44,6 @@ namespace WeaponCore
             {
                 if (SupressLoad)
                     return;
-
-                DsUtil.Start("av");
-                if (!DedicatedServer) Av.End();
-                DsUtil.Complete("av", true);
-
-                //
-                // Finished last frame
-                //
 
                 if (DeformProtection.Count > 0 && Tick - LastDeform > 0)
                     DeformProtection.Clear();
@@ -123,7 +109,7 @@ namespace WeaponCore
                     ProfilePerformance();
                 FutureEvents.Tick(Tick);
 
-                if (!DedicatedServer && ActiveControlBlock != null && !InMenu) WheelUi.UpdatePosition();
+                if (!DedicatedServer && ActiveControlBlock != null && !InMenu) Wheel.UpdatePosition();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -161,7 +147,7 @@ namespace WeaponCore
 
                 }
 
-                if (!DedicatedServer && !WheelUi.WheelActive && !InMenu) {
+                if (!DedicatedServer && !Wheel.WheelActive && !InMenu) {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
@@ -183,6 +169,10 @@ namespace WeaponCore
                 Projectiles.AvUpdate();
                 DsUtil.Complete("pa", true);
 
+                DsUtil.Start("av");
+                if (!DedicatedServer) Av.End();
+                DsUtil.Complete("av", true);
+
                 if (MpActive)
                 {
                     DsUtil.Start("network1");
@@ -194,7 +184,7 @@ namespace WeaponCore
 
                     if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
                     if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                    if (ClientSideErrorPktListNew.Count > 0) ReproccessClientErrorPacketsNew();
+                    if (ClientSideErrorPkt.Count > 0) ReproccessClientErrorPackets();
 
                     DsUtil.Complete("network1", true);
                 }
@@ -238,7 +228,7 @@ namespace WeaponCore
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
 
-                    if (WheelUi.WheelActive) WheelUi.DrawWheel();
+                    if (Wheel.WheelActive) Wheel.DrawWheel();
                     TargetUi.DrawTargetUi();
                 }
 

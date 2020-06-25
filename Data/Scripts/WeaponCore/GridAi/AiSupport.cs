@@ -10,6 +10,8 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Session;
 using static WeaponCore.WeaponRandomGenerator;
+using static WeaponCore.Support.WeaponComponent;
+
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -115,6 +117,7 @@ namespace WeaponCore.Support
             }
         }
 
+        /*
         internal void UpdateGroupOverRides()
         {
             var resetOverRides = new GroupOverrides {Activate = true };
@@ -136,7 +139,7 @@ namespace WeaponCore.Support
             GroupsToCheck.Clear();
             ScanBlockGroupSettings = false;
         }
-
+        */
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
         {
             var count = cardsToSort - firstCard;
@@ -201,6 +204,7 @@ namespace WeaponCore.Support
             }
         }
 
+        /*
         internal void TurnManualShootOff()
         {
             if (TurnOffManualTick == Session.Tick) return;
@@ -230,20 +234,20 @@ namespace WeaponCore.Support
                         var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
 
                         if (cState.ClickShoot)
-                            wState.ManualShoot = Weapon.ManualShootActionState.ShootOff;
+                            wState.ManualShoot = ShootActions.ShootOff;
                     }
 
                     cState.ClickShoot = false;
 
-                    if (comp.Session.MpActive)
-                        comp.Session.SendActionShootUpdate(comp, Weapon.ManualShootActionState.ShootOff);
+                    //if (comp.Session.MpActive)
+                        //comp.Session.SendActionShootUpdate(comp, ShootActions.ShootOff);
                 }
                 else if (overRides.TargetPainter || overRides.ManualControl) {
 
                     overRides.TargetPainter = false;
                     overRides.ManualControl = false;
                     if (comp.Session.MpActive) {
-                        comp.Session.SendOverRidesUpdate(comp, overRides);
+                        //comp.Session.SendOverRidesUpdate(comp, overRides);
                         comp.TrackReticle = false;
                         comp.Session.SendTrackReticleUpdate(comp);
                     }
@@ -256,6 +260,7 @@ namespace WeaponCore.Support
                 }
             }
         }
+        */
 
         internal void CheckReload(object o = null)
         {
@@ -377,8 +382,15 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (Session.Tick - ProjectileTicker > 59 && Session.DbTask.IsComplete) 
-                Session.GridAiPool.Return(this);
+            if (!ScanInProgress && Session.DbTask.IsComplete && Session.Tick - ProjectileTicker > 59 && Session.Tick - AiMarkedTick > 59) {
+
+                lock (AiLock) {
+                
+                    if (ScanInProgress)
+                        return;
+                    Session.GridAiPool.Return(this);
+                }
+            }
         }
 
         internal void GridForceClose()

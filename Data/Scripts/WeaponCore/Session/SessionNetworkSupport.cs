@@ -10,6 +10,7 @@ using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -30,29 +31,6 @@ namespace WeaponCore
                 Report = null;
                 ErrorPacket = null;
                 PacketSize = 0;
-            }
-
-            public virtual bool Equals(ErrorPacket other)
-            {
-                if (Packet == null) return false;
-
-                return Packet.Equals(other.Packet);
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (Packet == null) return false;
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != GetType()) return false;
-                return Equals((ErrorPacket)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                if (Packet == null) return 0;
-
-                return Packet.GetHashCode();
             }
         }
 
@@ -216,142 +194,91 @@ namespace WeaponCore
             }
         }
 
-        internal void SendOverRidesUpdate(GridAi ai, string groupName, GroupOverrides overRides)
+        internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
-            if (MpActive)
+
+            comp.MIds[(int)PacketType.OverRidesUpdate]++;
+            PacketsToServer.Add(new OverRidesPacket
             {
-                ai.UiMId++;
-                if (IsClient)
+                MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                PType = PacketType.OverRidesUpdate,
+                EntityId = comp.MyCube.EntityId,
+                SenderId = MultiplayerId,
+                GroupName = groupName,
+                Setting = settings,
+                Value = value,
+            });
+        }
+
+
+
+        internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
+        {
+            ai.UiMId++;
+            if (IsClient)
+            {
+                PacketsToServer.Add(new OverRidesPacket
                 {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = MultiplayerId,
-                        MId = ai.UiMId,
-                        GroupName = groupName,
-                        PType = PacketType.OverRidesUpdate,
-                        Data = overRides,
-                    });
-                }
-                else if (IsServer)
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = ai.MyGrid,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = ai.MyGrid.EntityId,
-                            SenderId = 0,
-                            MId = ai.UiMId,
-                            GroupName = groupName,
-                            PType = PacketType.OverRidesUpdate,
-                            Data = overRides,
-                        }
-                    });
-                }
+                    MId = ai.UiMId,
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    GroupName = groupName,
+                    Setting = settings,
+                    Value = value,
+                });
             }
         }
 
-        internal void SendOverRidesUpdate(WeaponComponent comp, GroupOverrides overRides)
+        internal void SendOverRidesServerAi(GridAi ai, string groupName, GroupOverrides data)
         {
-            if (MpActive)
+            ai.UiMId++;
+            PacketsToClient.Add(new PacketInfo
             {
-                comp.MIds[(int)PacketType.OverRidesUpdate]++;
-                if (IsClient)
+                Entity = ai.MyGrid,
+                Packet = new OverRidesPacket
                 {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = MultiplayerId,
-                        MId = comp.MIds[(int)PacketType.OverRidesUpdate],
-                        PType = PacketType.OverRidesUpdate,
-                        Data = comp.Set.Value.Overrides,
-                    });
+                    MId = ai.UiMId,
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = 0,
+                    GroupName = groupName,
+                    Data = data,
                 }
-                else
-                {
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = comp.MyCube,
-                        Packet = new OverRidesPacket
-                        {
-                            EntityId = comp.MyCube.EntityId,
-                            SenderId = 0,
-                            MId = comp.MIds[(int)PacketType.OverRidesUpdate],
-                            PType = PacketType.OverRidesUpdate,
-                            Data = comp.Set.Value.Overrides,
-                        }
-                    });
-                }
-            }
+            });
         }
 
-        internal void SendActionShootUpdate(WeaponComponent comp, ManualShootActionState state)
+        internal void SendOverRidesServerComp(WeaponComponent comp, string groupName, GroupOverrides data)
         {
-            if (!HandlesInput) return;
+            PacketsToClient.Add(new PacketInfo
+            {
+                Entity = comp.MyCube,
+                Packet = new OverRidesPacket
+                {
+                    MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = comp.MyCube.EntityId,
+                    SenderId = 0,
+                    GroupName = groupName,
+                    Data = data,
+                }
+            });
+        }
 
-                
+        internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
+        {
             comp.MIds[(int)PacketType.CompToolbarShootState]++;
             var mId = comp.MIds[(int)PacketType.CompToolbarShootState];
 
-            if (IsClient)
+            comp.Session.PacketsToServer.Add(new ShootStatePacket
             {
-                comp.Session.PacketsToServer.Add(new ShootStatePacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = comp.Session.MultiplayerId,
-                    PType = PacketType.CompToolbarShootState,
-                    MId = mId,
-                    Data = state,
-                });
-            }
-            else
-            {
-                comp.Session.PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new ShootStatePacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        PType = PacketType.CompToolbarShootState,
-                        MId = mId,
-                        Data = state,
-                    }
-                });
-            }
-        }
-
-        internal void SendRangeUpdate(WeaponComponent comp, float range)
-        {
-            comp.MIds[(int)PacketType.RangeUpdate]++;
-
-            if (IsClient)
-            {
-                comp.Session.PacketsToServer.Add(new RangePacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = comp.Session.MultiplayerId,
-                    PType = PacketType.RangeUpdate,
-                    MId = comp.MIds[(int)PacketType.RangeUpdate],
-                    Data = range,
-                });
-            }
-            else if (HandlesInput)
-            {
-                comp.Session.PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new RangePacket
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = comp.Session.MultiplayerId,
-                        PType = PacketType.RangeUpdate,
-                        MId = comp.MIds[(int)PacketType.RangeUpdate],
-                        Data = range,
-                    }
-                });
-            }
+                EntityId = comp.MyCube.EntityId,
+                SenderId = comp.Session.MultiplayerId,
+                PType = PacketType.CompToolbarShootState,
+                MId = mId,
+                Action = action,
+                PlayerId = PlayerId,
+            });
         }
 
         internal void SendControlingPlayer(WeaponComponent comp)
@@ -384,7 +311,7 @@ namespace WeaponCore
                 });
             }
         }
-        
+
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
         {
             if (IsClient)
@@ -416,19 +343,7 @@ namespace WeaponCore
         internal void SendCompStateUpdate(WeaponComponent comp)
         {
             comp.MIds[(int)PacketType.CompStateUpdate]++;
-
-            if (IsClient)// client, send settings to server
-            {
-                PacketsToServer.Add(new StatePacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    PType = PacketType.CompStateUpdate,
-                    SenderId = MultiplayerId,
-                    Data = comp.State.Value,
-                    MId = comp.MIds[(int)PacketType.CompStateUpdate]
-                });
-            }
-            else if (HandlesInput)
+            if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -442,24 +357,14 @@ namespace WeaponCore
                     }
                 });
             }
+            else Log.Line($"SendCompStateUpdate should never be called on Client");
         }
 
         internal void SendCompSettingUpdate(WeaponComponent comp)
         {
             comp.MIds[(int)PacketType.CompSettingsUpdate]++;
 
-            if (IsClient)// client, send settings to server
-            {
-                PacketsToServer.Add(new SettingPacket
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    PType = PacketType.CompSettingsUpdate,
-                    SenderId = MultiplayerId,
-                    Data = comp.Set.Value,
-                    MId = comp.MIds[(int)PacketType.CompSettingsUpdate]
-                });
-            }
-            else if (HandlesInput)
+            if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -474,6 +379,7 @@ namespace WeaponCore
                     }
                 });
             }
+            else Log.Line($"SendCompSettingUpdate should never be called on Client");
         }
 
         internal void SendUpdateRequest(long entityId, PacketType ptype)
@@ -498,7 +404,7 @@ namespace WeaponCore
                     Data = comp.TrackReticle
                 });
             }
-            else if (IsServer)
+            else 
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -554,7 +460,7 @@ namespace WeaponCore
                     PType = PacketType.RescanGroupRequest,
                 });
             }
-            else if (IsServer)
+            else 
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -747,59 +653,11 @@ namespace WeaponCore
         {
             if (weapon.System.DesignatorWeapon) return;
 
-            var hadInventory = weapon.State.Sync.HasInventory;
             if (setState)
-            {
                 weaponData.SetState(weapon.State.Sync, weapon);
-            }
-            Log.Line($"SyncWeapon: setState:{setState} hadInventory:{hadInventory} - hasInventory: {weapon.State.Sync.HasInventory}) - currentMags:{weapon.State.Sync.CurrentMags} - currentAmmo:{weapon.State.Sync.CurrentAmmo}");
 
             if (weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable && !weapon.Reloading)
                 weapon.Reload();
-            else Log.Line($"no reload in SyncWeapon");
-
-            /*
-            var hasAmmo = weapon.State.Sync.CurrentAmmo > 0;
-
-            var canReload = weapon.CanReload;
-
-            if (!canReload) weapon.CheckOutOfAmmo();
-
-            if (!wasReloading && canReload)
-                weapon.StartReload();
-
-            else if (wasReloading && !weapon.State.Sync.Reloading && hasAmmo)
-            {
-                if (!weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.ReloadSubscribed)
-                {
-                    weapon.ReloadSubscribed = false;
-                    weapon.CancelableReloadAction -= weapon.Reloaded;
-                }
-
-                weapon.EventTriggerStateChanged(EventTriggers.Reloading, false);
-            }
-            else if (wasReloading && weapon.State.Sync.Reloading && !weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-            {
-                if (weapon.ReloadSubscribed)
-                {
-                    weapon.ReloadSubscribed = false;
-                    weapon.CancelableReloadAction -= weapon.Reloaded;
-                }
-
-                comp.Session.FutureEvents.Schedule(weapon.Reloaded, null, weapon.Timings.ReloadedTick);
-            }
-
-            else if (weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge && weapon.State.Sync.Reloading && !comp.Session.ChargingWeaponsIndexer.ContainsKey(weapon))
-                weapon.ChargeReload(true);
-
-
-            if (weapon.State.Sync.Heat > 0 && !weapon.HeatLoopRunning)
-            {
-                weapon.HeatLoopRunning = true;
-                var delay = weapon.Timings.LastHeatUpdateTick > 0 ? weapon.Timings.LastHeatUpdateTick : 20;
-                comp.Session.FutureEvents.Schedule(weapon.UpdateWeaponHeat, null, delay);
-            }
-            */
         }
 
         public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd, bool applyToRoot = false)
@@ -857,49 +715,9 @@ namespace WeaponCore
             return o;
         }
 
-        /*
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {
-            var comp = weapon.Comp;
-            var p = comp.Session.Projectiles.ProjectilePool.Count > 0 ? comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
-            p.Info.Id = comp.Session.Projectiles.CurrentProjectileId++;
-            p.Info.System = weapon.System;
-            p.Info.Ai = comp.Ai;
-            p.Info.ClientSent = true;
-            p.Info.AmmoDef = ammoDef;
-            p.Info.Overrides = comp.Set.Value.Overrides;
-            p.Info.Target.Entity = targetEntity;
-            p.Info.Target.Projectile = null;
-            p.Info.Target.IsProjectile = false;
-            p.Info.Target.IsFakeTarget = false;
-            p.Info.Target.FiringCube = comp.MyCube;
-            p.Info.WeaponId = weapon.WeaponId;
-            p.Info.MuzzleId = muzzleId;
-            p.Info.BaseDamagePool = weapon.BaseDamage;
-            p.Info.EnableGuidance = false;
-            p.Info.WeaponCache = weapon.WeaponCache;
-            p.Info.WeaponCache.VirutalId = -1;
-            p.Info.WeaponRng = comp.WeaponValues.WeaponRandom[weapon.WeaponId];
-            p.Info.LockOnFireState = false;
-            p.Info.ShooterVel = comp.Ai.GridVel;
-            p.Velocity = velocity;
-            p.Info.Origin = origin;
-            p.Info.OriginUp = originUp;
-            p.PredictedTargetPos = Vector3D.Zero;
-            p.Info.Direction = direction;
-            p.State = Projectile.ProjectileState.Start;
-            p.Info.PrimeEntity = weapon.ActiveAmmoDef.AmmoDef.Const.PrimeModel ? weapon.ActiveAmmoDef.AmmoDef.Const.PrimeEntityPool.Get() : null;
-            p.Info.TriggerEntity = weapon.ActiveAmmoDef.AmmoDef.Const.TriggerModel ? comp.Session.TriggerEntityPool.Get() : null;
-            p.Info.MaxTrajectory = maxTrajectory;
-
-            comp.Session.Projectiles.ActiveProjetiles.Add(p);
-        }*/
-
-        internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
-        {
-            var muzzle = weapon.Muzzles[muzzleId];
-            var session = weapon.Comp.Session;
-            session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, Muzzle = muzzle, Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Client });
+            weapon.Comp.Session.Projectiles.NewProjectiles.Add(new NewProjectile { AmmoDef = ammoDef, Muzzle = weapon.Muzzles[muzzleId], Weapon = weapon, TargetEnt = targetEntity, Origin = origin, OriginUp = originUp, Direction = direction, Velocity = velocity, MaxTrajectory = maxTrajectory, Type = NewProjectile.Kind.Client });
         }
 
         private bool AuthorDebug()

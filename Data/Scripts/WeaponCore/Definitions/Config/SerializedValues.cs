@@ -3,10 +3,12 @@ using System.ComponentModel;
 using ProtoBuf;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Utils;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -22,7 +24,7 @@ namespace WeaponCore
         [ProtoMember(5)] public PlayerControl CurrentPlayerControl; //don't save
         [ProtoMember(6)] public float CurrentCharge; //save
         [ProtoMember(7)] public int Version = Session.VersionControl; //save
-        [ProtoMember(8)] public string CurrentBlockGroup; //don't save
+        //[ProtoMember(8)] public string CurrentBlockGroup; //don't save
         [ProtoMember(9)] public bool OtherPlayerTrackingReticle; //don't save
 
         public void Sync(CompStateValues syncFrom, WeaponComponent comp)
@@ -32,7 +34,6 @@ namespace WeaponCore
             ClickShoot = syncFrom.ClickShoot;
             CurrentPlayerControl = syncFrom.CurrentPlayerControl;
             CurrentCharge = syncFrom.CurrentCharge;
-            CurrentBlockGroup = syncFrom.CurrentBlockGroup;
             OtherPlayerTrackingReticle = syncFrom.OtherPlayerTrackingReticle;
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
             {
@@ -62,7 +63,6 @@ namespace WeaponCore
             Online = false;
             CurrentPlayerControl.ControlType = ControlType.None;
             CurrentPlayerControl.PlayerId = -1;
-            CurrentBlockGroup = string.Empty;
             OtherPlayerTrackingReticle = false;
 
             foreach (var w in Weapons)
@@ -120,7 +120,7 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public int ShotsFired; //don't know??
-        [ProtoMember(2), DefaultValue(ManualShootActionState.ShootOff)] public ManualShootActionState ManualShoot = ManualShootActionState.ShootOff; // save
+        [ProtoMember(2), DefaultValue(ShootActions.ShootOff)] public ShootActions ManualShoot = ShootActions.ShootOff; // save
         [ProtoMember(3)] public int SingleShotCounter; // save
         [ProtoMember(4)] public WeaponSyncValues Sync;
 
@@ -224,8 +224,8 @@ namespace WeaponCore
                         {
                             targets[w.WeaponId] = new TransferTarget();
                             comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
-
-                            rand.CurrentSeed = Guid.NewGuid().GetHashCode();
+                            comp.WeaponValues.WeaponRandom[w.WeaponId].Init(w.UniqueId);
+                            rand.CurrentSeed = w.UniqueId;
                             rand.AcquireRandom = new Random(rand.CurrentSeed);
                         }
 
@@ -263,9 +263,9 @@ namespace WeaponCore
 
                 comp.WeaponValues.Targets[w.WeaponId] = new TransferTarget();
                 comp.WeaponValues.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
-
+                comp.WeaponValues.WeaponRandom[w.WeaponId].Init(w.UniqueId);
                 var rand = comp.WeaponValues.WeaponRandom[w.WeaponId];
-                rand.CurrentSeed = Guid.NewGuid().GetHashCode();
+                rand.CurrentSeed = w.UniqueId;
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
                 rand.AcquireRandom = new Random(rand.CurrentSeed);
@@ -382,9 +382,9 @@ namespace WeaponCore
         [ProtoMember(1)] public int TurretCurrentCounter;
         [ProtoMember(2)] public int ClientProjectileCurrentCounter;
         [ProtoMember(3)] public int CurrentSeed;
-        public Random TurretRandom = new Random();
-        public Random ClientProjectileRandom = new Random();
-        public Random AcquireRandom = new Random();
+        public Random TurretRandom;
+        public Random ClientProjectileRandom;
+        public Random AcquireRandom;
 
         public enum RandomType
         {
@@ -394,6 +394,14 @@ namespace WeaponCore
         }
 
         public WeaponRandomGenerator() { }
+
+        public void Init(int uniqueId)
+        {
+            CurrentSeed = uniqueId;
+            TurretRandom = new Random(CurrentSeed);
+            ClientProjectileRandom = new Random(CurrentSeed);
+            AcquireRandom = new Random(CurrentSeed);
+        }
 
         public void Sync(WeaponRandomGenerator syncFrom)
         {

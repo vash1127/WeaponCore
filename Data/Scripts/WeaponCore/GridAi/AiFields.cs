@@ -17,9 +17,13 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
+        internal volatile bool ScanInProgress;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
         internal volatile bool PowerDirty = true;
+        internal volatile uint AiSpawnTick;
+        internal volatile uint AiCloseTick;
+        internal volatile uint AiMarkedTick;
         internal readonly Focus Focus = new Focus(2);
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
@@ -40,7 +44,6 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
-        internal readonly HashSet<GroupInfo> GroupsToCheck = new HashSet<GroupInfo>();
         internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
 
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
@@ -66,6 +69,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
         internal readonly ActiveTerminal ActiveWeaponTerminal;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+        internal readonly object AiLock = new object();
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
@@ -128,8 +132,7 @@ namespace WeaponCore.Support
         internal uint TurnOffManualTick;
         internal uint UiMId;
         internal uint ProjectileTicker;
-        internal uint AiSpawnTick;
-        internal uint AiCloseTick;
+
         internal uint LastDetectEvent;
         internal int SleepingComps;
         internal int AwakeComps;

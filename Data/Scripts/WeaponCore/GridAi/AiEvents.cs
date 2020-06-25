@@ -5,6 +5,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using static WeaponCore.Session;
@@ -24,6 +25,7 @@ namespace WeaponCore.Support
 
                 Registered = true;
                 MarkedForClose = false;
+                AiMarkedTick = Session.Tick;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnClose += GridClose;
@@ -33,6 +35,7 @@ namespace WeaponCore.Support
                 if (!Registered)
                     Log.Line($"Ai UnRegisterMyGridEvents error");
                 MarkedForClose = true;
+                AiMarkedTick = Session.Tick;
                 if (Registered) {
 
 
@@ -44,15 +47,16 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void FatBlockAdded(MyCubeBlock myCubeBlock)
+        internal void FatBlockAdded(MyCubeBlock cube)
         {
             try
             {
-                var battery = myCubeBlock as MyBatteryBlock;
-                var isWeaponBase = myCubeBlock?.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || !string.IsNullOrEmpty(myCubeBlock.BlockDefinition.Id.SubtypeName) && Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId));
+                var battery = cube as MyBatteryBlock;
+                var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
+                var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId));
 
                 if (isWeaponBase) ScanBlockGroups = true;
-                else if (myCubeBlock is MyConveyor || myCubeBlock is IMyConveyorTube || myCubeBlock is MyConveyorSorter || myCubeBlock is MyCargoContainer || myCubeBlock is MyCockpit || myCubeBlock is IMyAssembler)
+                else if (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler)
                 {
                     MyInventory inventory;
                     if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
@@ -71,22 +75,24 @@ namespace WeaponCore.Support
                 }
 
             }
-            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {myCubeBlock?.BlockDefinition == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null}"); }
         }
 
-        private void FatBlockRemoved(MyCubeBlock myCubeBlock)
+        private void FatBlockRemoved(MyCubeBlock cube)
         {
             try
             {
-                MyInventory inventory;
-                var battery = myCubeBlock as MyBatteryBlock;
-                var isWeaponBase = myCubeBlock?.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(myCubeBlock.BlockDefinition.Id) || !string.IsNullOrEmpty(myCubeBlock.BlockDefinition.Id.SubtypeName) && Session.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId));
+                var battery = cube as MyBatteryBlock;
+                var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
+                var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId));
 
-                if (isWeaponBase)
-                    ScanBlockGroups = true;
-                else if (myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories)) {
-
-                    try {
+                try {
+                    MyInventory inventory;
+                    if (isWeaponBase)
+                        ScanBlockGroups = true;
+                    else if (cube != null && cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                    {
+                        try {
 
                         inventory.InventoryContentChanged -= CheckAmmoInventory;
                         List<MyPhysicalInventoryItem> removedPhysical;
@@ -104,6 +110,8 @@ namespace WeaponCore.Support
                     if (Batteries.Remove(battery)) SourceCount--;
                     UpdatePowerSources = true;
                 }
+                }
+                catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
             }
             catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved: {ex}"); }
         }

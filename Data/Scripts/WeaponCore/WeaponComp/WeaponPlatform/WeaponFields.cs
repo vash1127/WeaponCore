@@ -21,7 +21,21 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
-        internal Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
+        
+        internal readonly WeaponComponent Comp;
+        internal readonly WeaponSystem System;
+        internal readonly WeaponFrameCache WeaponCache;
+        internal readonly WeaponAcquire Acquire;
+        internal readonly Target Target;
+        internal readonly Target NewTarget;
+        internal readonly PartInfo MuzzlePart;
+        internal readonly Dummy[] Dummies;
+        internal readonly Muzzle[] Muzzles;
+        internal readonly PartInfo AzimuthPart;
+        internal readonly PartInfo ElevationPart;
+        internal readonly bool AzimuthOnBase;
+        internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
+
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;
         private int _nextVirtual;
@@ -55,9 +69,7 @@ namespace WeaponCore.Platform
         internal int BarrelRate;
         internal int ArmorHits;
 
-        internal PartInfo MuzzlePart;
-        internal PartInfo AzimuthPart;
-        internal PartInfo ElevationPart;
+
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
@@ -70,20 +82,14 @@ namespace WeaponCore.Platform
         internal LineD MyPivotTestLine;
         internal LineD MyAimTestLine;
         internal LineD MyShootAlignmentLine;
-        internal WeaponSystem System;
-        internal Dummy[] Dummies;
-        internal Muzzle[] Muzzles;
-        internal uint[] BeamSlot;
-        internal WeaponComponent Comp;
 
-        internal WeaponFrameCache WeaponCache;
+        internal uint[] BeamSlot;
+
 
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
 
-        internal WeaponAcquire Acquire;
-        internal Target Target;
-        internal Target NewTarget;
+
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
         internal MyParticleEffect[] BarrelEffects1;
@@ -95,7 +101,6 @@ namespace WeaponCore.Platform
         internal MySoundPair RotateSound;
         internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
-        //internal WeaponTimings Timings;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 
@@ -107,6 +112,7 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly bool TrackProjectiles;
         internal readonly bool PrimaryWeaponGroup;
+        internal readonly bool AiOnlyWeapon;
 
         internal EventTriggers LastEvent;
         internal float RequiredPower;
@@ -170,7 +176,6 @@ namespace WeaponCore.Platform
         internal bool NoMagsToLoad;
         internal bool CurrentlyDegrading;
         internal bool FixedOffset;
-        internal bool AiOnlyWeapon;
         internal bool DrawingPower;
         internal bool RequestedPower;
         internal bool ResetPower;
@@ -179,7 +184,6 @@ namespace WeaponCore.Platform
         internal bool StopBarrelAv;
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;
-        internal bool AzimuthOnBase;
         internal bool ReturingHome;
         internal bool IsHome = true;
         internal bool CanUseEnergyAmmo;
@@ -190,15 +194,6 @@ namespace WeaponCore.Platform
         internal bool LastEventCanDelay;
         internal bool Reloading;
         internal bool Charging;
-
-        public enum ManualShootActionState
-        {
-            ShootOn,
-            ShootOff,
-            ShootOnce,
-            ShootClick,
-        }
-
 
         internal bool ShotReady
         {
@@ -211,30 +206,24 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
+        internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
 
-            MuzzlePart = new PartInfo { Entity = entity };
-            AnimationsSet = animationSets;
-            //Timings = new WeaponTimings();
-            if (AnimationsSet != null)
-            {
-                foreach (var set in AnimationsSet)
-                {
-                    for (int j = 0; j < set.Value.Length; j++)
-                    {
-                        var animation = set.Value[j];
-                        AnimationLookup.Add(animation.AnimationId, animation);
-                    }
-                }
-            }
-            
             System = system;
             Comp = comp;
 
+            AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
+            foreach (var set in AnimationsSet) {
+                foreach (var pa in set.Value) {
+                    comp.AllAnimations.Add(pa);
+                    AnimationLookup.Add(pa.AnimationId, pa);
+                }
+            }
+
+            ParticleEvents = comp.Session.CreateWeaponParticleEvents(system, parts); 
+
             MyStringHash subtype;
-            if (comp.MyCube.DefinitionId.HasValue && comp.Session.VanillaIds.TryGetValue(comp.MyCube.DefinitionId.Value, out subtype))
-            {
+            if (comp.MyCube.DefinitionId.HasValue && comp.Session.VanillaIds.TryGetValue(comp.MyCube.DefinitionId.Value, out subtype)) {
                 if (subtype.String.Contains("Gatling"))
                     _numModelBarrels = 6;
                 else
@@ -261,7 +250,9 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
-                FiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                FiringEmitter = System.Session.Emitters.Count > 0
+                    ? System.Session.Emitters.Pop()
+                    : new MyEntity3DSoundEmitter(null, true, 1f);
                 FiringEmitter.CanPlayLoopSounds = true;
                 FiringEmitter.Entity = Comp.MyCube;
                 FiringSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
@@ -270,17 +261,23 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.PreFireSound)
             {
-                PreFiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                PreFiringEmitter = System.Session.Emitters.Count > 0
+                    ? System.Session.Emitters.Pop()
+                    : new MyEntity3DSoundEmitter(null, true, 1f);
                 PreFiringEmitter.CanPlayLoopSounds = true;
 
                 PreFiringEmitter.Entity = Comp.MyCube;
-                PreFiringSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
+                PreFiringSound = System.Session.SoundPairs.Count > 0
+                    ? System.Session.SoundPairs.Pop()
+                    : new MySoundPair();
                 PreFiringSound.Init(System.Values.HardPoint.Audio.PreFiringSound);
             }
 
             if (AvCapable && system.WeaponReloadSound)
             {
-                ReloadEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                ReloadEmitter = System.Session.Emitters.Count > 0
+                    ? System.Session.Emitters.Pop()
+                    : new MyEntity3DSoundEmitter(null, true, 1f);
                 ReloadEmitter.CanPlayLoopSounds = true;
 
                 ReloadEmitter.Entity = Comp.MyCube;
@@ -290,7 +287,9 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.BarrelRotationSound)
             {
-                RotateEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                RotateEmitter = System.Session.Emitters.Count > 0
+                    ? System.Session.Emitters.Pop()
+                    : new MyEntity3DSoundEmitter(null, true, 1f);
                 RotateEmitter.CanPlayLoopSounds = true;
 
                 RotateEmitter.Entity = Comp.MyCube;
@@ -300,20 +299,23 @@ namespace WeaponCore.Platform
 
             if (AvCapable)
             {
-                if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
-                if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
-                if (hitParticle && CanUseBeams) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                if (System.BarrelEffect1)
+                    BarrelEffects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                if (System.BarrelEffect2)
+                    BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                if (hitParticle && CanUseBeams)
+                    HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
             if (System.Armor != ArmorState.IsWeapon)
                 Comp.HasArmor = true;
-            
+
             WeaponId = weaponId;
             PrimaryWeaponGroup = WeaponId % 2 == 0;
             IsTurret = System.Values.HardPoint.Ai.TurretAttached;
             TurretMode = System.Values.HardPoint.Ai.TurretController;
             TrackTarget = System.Values.HardPoint.Ai.TrackTargets;
-            
+
             if (System.Values.HardPoint.Ai.TurretController)
                 AiEnabled = true;
 
@@ -326,16 +328,29 @@ namespace WeaponCore.Platform
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
 
+            if (Comp.Platform.Structure.PrimaryWeapon ==  weaponId)
+                comp.TrackingWeapon = this;
+
+            if (IsTurret && !TrackTarget)
+                Target = comp.TrackingWeapon.Target;
+            else Target = new Target(this, true);
+
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];
-            Target = new Target(this, true);
+            Muzzles = new Muzzle[_numOfBarrels];
+            Dummies = new Dummy[_numOfBarrels];
+            WeaponCache = new WeaponFrameCache(_numOfBarrels);
             NewTarget = new Target(this);
-            WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             RayCallBack = new ParallelRayCallBack(this);
             Acquire = new WeaponAcquire(this);
+            AzimuthPart = new PartInfo {Entity = azimuthPart};
+            ElevationPart = new PartInfo {Entity = elevationPart};
+            MuzzlePart = new PartInfo { Entity = entity };
+            AzimuthOnBase = azimuthPart.Parent == comp.MyCube;
+            AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
+
             TrackProjectiles = System.TrackProjectile;
 
-            //LoadId = comp.Session.LoadAssigner();
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
         }

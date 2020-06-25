@@ -109,6 +109,17 @@ namespace WeaponCore.Support
             Sorter
         }
 
+        public enum ShootActions
+        {
+            ShootOff,
+            ShootOn,
+            ShootOnce,
+            ShootClick,
+            Painter,
+            Manual
+        }
+
+
         public WeaponComponent(Session session,  MyCubeBlock myCube, MyStringHash subtype)
         {
             Session = session;

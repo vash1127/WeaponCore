@@ -914,7 +914,7 @@ namespace WeaponCore.Support
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
         {
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;
-            growTime = ammoDef.AreaEffect.Pulse.GrowTime;
+            growTime = ammoDef.AreaEffect.Pulse.GrowTime == 0 && pulseInterval > 0 ? 60 : ammoDef.AreaEffect.Pulse.GrowTime;
             pulseChance = ammoDef.AreaEffect.Pulse.PulseChance;
             pulse = pulseInterval > 0 && pulseChance > 0;
         }
@@ -971,7 +971,7 @@ namespace WeaponCore.Support
                 size = 1;
             }
             else if (!isLine) size *= 0.5;
-            if (size > 2.5) Log.Line($"largeCollisionSize: {size}");
+            if (size > 5) Log.Line($"{ammoDef.AmmoRound} has large largeCollisionSize: {size} meters");
             collisionIsLine = isLine;
             collisionSize = size;
         }
@@ -1091,6 +1091,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
+        public readonly int PrimaryWeapon;
         public readonly string ModPath;
         public readonly Session Session;
 
@@ -1105,7 +1106,7 @@ namespace WeaponCore.Support
             var weaponId = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             HashToId = new Dictionary<int, int>();
-
+            PrimaryWeapon = -1;
             var gridWeaponCap = 0;
             foreach (var w in map)
             {
@@ -1125,8 +1126,11 @@ namespace WeaponCore.Support
                 if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
                 else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
 
-                weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
+                if (weaponDef.HardPoint.Ai.PrimaryTracking && PrimaryWeapon < 0)
+                    PrimaryWeapon = weaponId;
 
+                weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
+                
                 var shrapnelNames = new HashSet<string>();
                 for (int i = 0; i < weaponDef.Ammos.Length; i++)
                 {

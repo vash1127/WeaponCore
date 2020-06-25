@@ -7,7 +7,7 @@ using VRage.Game;
 using Sandbox.Game.Entities;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
-using static WeaponCore.Platform.Weapon.ManualShootActionState;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
 
 namespace WeaponCore
@@ -29,7 +29,7 @@ namespace WeaponCore
                 if (!ai.GridInit || ai.MyGrid.MarkedForClose || ai.Concealed)
                     continue;
 
-                if (DbTask.IsComplete && Tick - ai.TargetsUpdatedTick > 100)
+                if (DbTask.IsComplete && Tick - ai.TargetsUpdatedTick > 100 && !ai.ScanInProgress)
                     ai.RequestDbUpdate();
 
                 if (ai.DeadProjectiles.Count > 0) {
@@ -189,13 +189,6 @@ namespace WeaponCore
                         {
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
-                        }
-                        else if (!IsClient && w.IsTurret && !w.TrackTarget && !w.Target.HasTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange)) {
-
-                            if (w.Target != w.Comp.TrackingWeapon.Target) {
-                                w.Target = w.Comp.TrackingWeapon.Target;
-                                if (MpActive) w.Target.SyncTarget(comp.WeaponValues.Targets[w.WeaponId], w);
-                            }
                         }
 
                         if (w.Target.TargetChanged) // Target changed

@@ -43,7 +43,6 @@ namespace WeaponCore
         internal volatile bool FixedGunControls;
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;
-        internal volatile bool Pause;
         internal volatile int AmmoPulls;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
@@ -63,9 +62,10 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
-        
+
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<MySoundPair> SoundPairs = new Stack<MySoundPair>(256);
+        internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
         internal readonly Stack<BetterInventoryItem> BetterInventoryItems = new Stack<BetterInventoryItem>(256);
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
@@ -100,8 +100,8 @@ namespace WeaponCore
         internal readonly Dictionary<long, FakeTarget> PlayerDummyTargets = new Dictionary<long, FakeTarget>() { [-1] = new FakeTarget() };
         internal readonly Dictionary<ulong, HashSet<long>> PlayerEntityIdInRange = new Dictionary<ulong, HashSet<long>>();
         internal readonly Dictionary<long, ulong> ConnectedAuthors = new Dictionary<long, ulong>();
-        internal readonly Dictionary<long, AvInfoCache> AvShotCache = new Dictionary<long, AvInfoCache>();
-        internal readonly Dictionary<long, VoxelCache> VoxelCaches = new Dictionary<long, VoxelCache>();
+        internal readonly Dictionary<ulong, AvInfoCache> AvShotCache = new Dictionary<ulong, AvInfoCache>();
+        internal readonly Dictionary<ulong, VoxelCache> VoxelCaches = new Dictionary<ulong, VoxelCache>();
         internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyInventory, MyFixedPoint> InventoryVolume = new Dictionary<MyInventory, MyFixedPoint>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
@@ -132,8 +132,7 @@ namespace WeaponCore
         internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
 
-        internal readonly DsUniqueListFastRemove<PacketObj> ClientSideErrorPktListNew = new DsUniqueListFastRemove<PacketObj>(128);
-        internal readonly DsUniqueListFastRemove<ErrorPacket> ClientSideErrorPktList = new DsUniqueListFastRemove<ErrorPacket>(128);
+        internal readonly CachingHashSet<ErrorPacket> ClientSideErrorPkt = new CachingHashSet<ErrorPacket>();
 
         /// <summary>
         /// DsUniqueListFastRemove without the class for less method calls
@@ -202,7 +201,7 @@ namespace WeaponCore
         internal DSUtils DsUtil2;
         internal StallReporter StallReporter;
         internal UiInput UiInput;
-        internal Wheel WheelUi;
+        internal Wheel Wheel;
         internal TargetUi TargetUi;
         internal Hud HudUi;
         internal Enforcements Enforced;
@@ -225,7 +224,6 @@ namespace WeaponCore
         internal string TriggerEntityModel;
         internal object InitObj = new object();
 
-        internal int MuzzleIdCounter;
         internal int WeaponIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;
@@ -246,8 +244,8 @@ namespace WeaponCore
         internal int AwakeCount = -1;
         internal int AsleepCount = -1;
         internal ulong MultiplayerId;
+        internal ulong MuzzleIdCounter;
         internal long PlayerId;
-
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
@@ -286,6 +284,8 @@ namespace WeaponCore
         internal bool DamageHandler;
         internal bool LocalVersion;
         internal bool SupressLoad;
+        internal bool PbApiInited;
+        internal bool PbActivate;
 
         internal enum AnimationType
         {
@@ -317,7 +317,18 @@ namespace WeaponCore
             }
         }
 
-        internal int UniqueMuzzleId => MuzzleIdCounter++;
+        internal VoxelCache NewVoxelCache
+        {
+            get {
+                if (VoxelCachePool.Count > 0)
+                    return VoxelCachePool.Pop();
+
+                var cache = new VoxelCache { Id = MuzzleIdCounter++ };
+                VoxelCaches.Add(cache.Id, cache);
+                return cache;
+            }   
+            set { VoxelCachePool.Push(value); } 
+        }
 
         internal int UniqueWeaponId => WeaponIdCounter++;
 
@@ -327,7 +338,7 @@ namespace WeaponCore
         {
             UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
-            WheelUi = new Wheel(this);
+            Wheel = new Wheel(this);
             HudUi = new Hud(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
@@ -343,7 +354,7 @@ namespace WeaponCore
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
 
-            VoxelCaches[long.MaxValue] = new VoxelCache();
+            VoxelCaches[ulong.MaxValue] = new VoxelCache();
 
             HeatEmissives = CreateHeatEmissive();
             LoadVanillaData();

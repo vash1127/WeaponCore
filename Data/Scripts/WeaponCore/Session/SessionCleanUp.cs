@@ -208,9 +208,9 @@ namespace WeaponCore
             Av.AvShots.Clear();
             Av.HitSounds.Clear();
 
-            foreach (var errorpkt in ClientSideErrorPktList)
+            foreach (var errorpkt in ClientSideErrorPkt)
                 errorpkt.Packet.CleanUp();
-            ClientSideErrorPktList.Clear();
+            ClientSideErrorPkt.Clear();
 
             GridEffectPool.Clean();
             GridEffectsPool.Clean();
@@ -243,7 +243,6 @@ namespace WeaponCore
 
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();
-            GridToMasterAi.Clear();
 
             DsUtil = null;
             DsUtil2 = null;
@@ -259,7 +258,7 @@ namespace WeaponCore
             UiInput = null;
             TargetUi = null;
             Placer = null;
-            WheelUi = null;
+            Wheel = null;
             TargetGps = null;
             SApi.Unload();
             SApi = null;

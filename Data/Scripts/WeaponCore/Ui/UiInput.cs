@@ -108,7 +108,7 @@ namespace WeaponCore
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 }
             }
-            else if (!s.InMenu && !s.WheelUi.WheelActive)
+            else if (!s.InMenu && !s.Wheel.WheelActive)
             {
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
                 ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.R);
@@ -124,7 +124,7 @@ namespace WeaponCore
             else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
                 WheelBackward = true;
 
-            if (s.WheelUi.WheelActive)
+            if (s.Wheel.WheelActive)
             {
                 LeftMouseReleased = MyAPIGateway.Input.IsNewLeftMouseReleased();
                 RightMouseReleased = MyAPIGateway.Input.IsNewRightMouseReleased();

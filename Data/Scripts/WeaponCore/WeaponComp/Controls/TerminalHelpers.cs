@@ -8,9 +8,8 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
-using static WeaponCore.Platform.Weapon.ManualShootActionState;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Control
 {
@@ -51,7 +50,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        WcShootOnceAction(comp);
+                        comp.RequestShootUpdate(ShootOnce);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -68,7 +67,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WcShootToggleAction(comp);
+                        comp.RequestShootUpdate(comp.State.Value.ShootOn ? ShootOff : ShootOn);
                     };
 
                     var oldWriter = a.Writer;
@@ -100,7 +99,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        WcShootOnAction(comp);
+                        comp.RequestShootUpdate(ShootOn);
                     };
 
                     var oldWriter = a.Writer;
@@ -131,8 +130,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-
-                        WcShootOffAction(comp);
+                        comp.RequestShootUpdate(ShootOff);
                     };
 
                     var oldWriter = a.Writer;
@@ -316,15 +314,14 @@ namespace WeaponCore.Control
         #endregion
 
         #region Shoot Actions
+        /*
 
         internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
         {
-            var cState = comp.State.Value;
-
-            if (cState.ShootOn)
-                WcShootOffAction(comp, alreadySynced);
+            if (comp.State.Value.ShootOn)
+                comp.RequestShootUpdate(ShootOff);
             else
-                WcShootOnAction(comp, alreadySynced);
+                comp.RequestShootUpdate(ShootOn);
         }
 
         internal static void WcShootOnAction(WeaponComponent comp, bool alreadySynced = false)
@@ -337,10 +334,10 @@ namespace WeaponCore.Control
                 comp.Platform.Weapons[j].State.ManualShoot = ShootOn;
                 comp.Platform.Weapons[j].State.SingleShotCounter = 0;
             }
-
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
+
 
             if (!alreadySynced)
             {
@@ -374,7 +371,6 @@ namespace WeaponCore.Control
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
-
             comp.State.Value.CurrentPlayerControl.PlayerId = -1;
             comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
 
@@ -404,22 +400,20 @@ namespace WeaponCore.Control
             var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
             comp.Set.Value.Overrides.ManualControl = false;
             comp.Set.Value.Overrides.TargetPainter = false;
-
             if (!alreadySynced)
             {
                 comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
                 comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
             }
-
-            cState.ClickShoot = false;
             cState.ShootOn = false;
+            cState.ClickShoot = false;
 
             if (comp.Session.MpActive && !alreadySynced)
             {
                 comp.Session.SendControlingPlayer(comp);
                 comp.Session.SendActionShootUpdate(comp, ShootOnce);
                 if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
+                    comp.Session.`(comp, comp.Set.Value.Overrides);
             }
         }
 
@@ -464,6 +458,7 @@ namespace WeaponCore.Control
             cState.ClickShoot = on;
             cState.ShootOn = !on && cState.ShootOn;
         }
+        */
         #endregion
 
         #region Support methods
@@ -476,7 +471,7 @@ namespace WeaponCore.Control
 
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            var on = blk.Components.Get<WeaponComponent>()?.State?.Value.ClickShoot ?? false;
+            var on = blk.Components.Get<WeaponComponent>()?.State.Value.ClickShoot ?? false;
 
             if (on)
                 sb.Append("On");
@@ -489,7 +484,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            WcShootClickAction(comp, !(comp.State?.Value.ClickShoot ?? false), comp.HasTurret);
+            comp.RequestShootUpdate(ShootClick);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
@@ -498,7 +493,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            WcShootToggleAction(comp);
+            comp.RequestShootUpdate(comp.State.Value.ShootOn ? ShootOff : ShootOn);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
@@ -507,7 +502,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            WcShootOnAction(comp);
+            comp.RequestShootUpdate(ShootOn);
         }
 
         internal static void TerminalActionShootOff(IMyTerminalBlock blk)
@@ -516,7 +511,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            WcShootOffAction(comp);
+            comp.RequestShootUpdate(ShootOff);
         }
 
         internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
@@ -524,36 +519,33 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            WcShootOnceAction(comp);
+            comp.RequestShootUpdate(ShootOnce);
         }
 
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             int weaponId;
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id)
+                return;
 
             var w = comp.Platform.Weapons[weaponId];
 
             var availAmmo = w.System.AmmoTypes.Length;
-            // cant use w.ActiveAmmoDef as it may not have reloaded yet
             var currActive = w.System.AmmoTypes[w.Set.AmmoTypeId];
             var next = (w.Set.AmmoTypeId + 1) % availAmmo;
             var currDef = w.System.AmmoTypes[next];
 
             var change = false;
 
-            while (!(currActive.Equals(currDef)))
-            {
-                if (currDef.AmmoDef.Const.IsTurretSelectable)
-                {
+            while (!(currActive.Equals(currDef))) {
+                if (currDef.AmmoDef.Const.IsTurretSelectable) {
                     w.Set.AmmoTypeId = next;
 
                     if (comp.Session.MpActive)
                         comp.Session.SendCycleAmmoNetworkUpdate(w, next);
 
                     change = true;
-
                     break;
                 }
 
@@ -562,7 +554,7 @@ namespace WeaponCore.Control
             }
 
             if (change)
-                MyAPIGateway.Utilities.InvokeOnGameThread(w.CycleAmmo);
+                w.ChangeAmmo(w.System.AmmoTypes[w.Set.AmmoTypeId]);
         }
 
         internal static void ShootStateWriter(IMyTerminalBlock blk, StringBuilder sb)

@@ -86,7 +86,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    var checkShield = Session.ShieldApiLoaded && ent.Physics != null && !ent.Physics.Enabled && ent.Physics.IsPhantom && ent.Render.Visible;
+                    var checkShield = Session.ShieldApiLoaded && ent.Physics != null && ent.Physics.IsPhantom && ent.Render.Visible && !ent.Physics.Enabled;
                     if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
                         var shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
@@ -129,7 +129,6 @@ namespace WeaponCore.Projectiles
                         if (voxel != null) {
 
                             if (voxel.RootVoxel != voxel) continue;
-
                             var pseudoHit = false;
                             if (tick - p.Info.VoxelCache.HitRefreshed < 60) {
 
@@ -162,7 +161,7 @@ namespace WeaponCore.Projectiles
                                         var estiamtedSurfaceDistance = ray.Intersects(p.Info.VoxelCache.PlanetSphere);
                                         var fullCheck = p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint || !estiamtedSurfaceDistance.HasValue;
 
-                                        if (!fullCheck && estiamtedSurfaceDistance.HasValue && estiamtedSurfaceDistance.Value <= p.Beam.Length) {
+                                        if (!fullCheck && estiamtedSurfaceDistance.HasValue && (estiamtedSurfaceDistance.Value <= p.Beam.Length || p.Info.VoxelCache.PlanetSphere.Radius < 1)) {
 
                                             double distSqr;
                                             var estimatedHit = ray.Position + (ray.Direction * estiamtedSurfaceDistance.Value);
@@ -180,13 +179,16 @@ namespace WeaponCore.Projectiles
                                                 if (hit?.HitEntity is MyVoxelBase)
                                                     voxelHit = hit.Position;
                                             }
-                                            else
-                                            {
-
+                                            else {
                                                 using (voxel.Pin()) {
                                                     if (!voxel.GetIntersectionWithLine(ref p.Beam, out voxelHit, true, IntersectionFlags.DIRECT_TRIANGLES) && VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, p.Beam.From))
                                                         voxelHit = p.Beam.From;
                                                 }
+                                            }
+
+                                            if (voxelHit.HasValue && p.Info.IsShrapnel && p.Info.Age == 0) {
+                                                if (!VoxelIntersect.PointInsideVoxel(voxel, p.Info.System.Session.TmpStorage, voxelHit.Value + (p.Beam.Direction * 1.25f)))
+                                                    voxelHit = null;
                                             }
                                         }
 
@@ -212,6 +214,7 @@ namespace WeaponCore.Projectiles
 
                             if (!pseudoHit)
                                 p.Info.VoxelCache.Update(voxel, ref voxelHit, tick);
+
                         }
                         var hitEntity = HitEntityPool.Get();
                         hitEntity.Info = p.Info;

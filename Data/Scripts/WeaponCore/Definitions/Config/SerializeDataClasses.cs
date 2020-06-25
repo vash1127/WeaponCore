@@ -6,6 +6,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.Target;
+using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
 {
@@ -17,14 +18,14 @@ namespace WeaponCore
         CompStateUpdate,
         CompSettingsUpdate,
         WeaponSyncUpdate,
-        WeaponPacket,
+        //WeaponPacket,
         FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
         PlayerIdUpdate,
         ActiveControlFullUpdate,
         FocusUpdate,
-        MagUpdate,
+        //MagUpdate,
         ReticleUpdate,
         OverRidesUpdate,
         PlayerControlUpdate,
@@ -34,7 +35,6 @@ namespace WeaponCore
         RequestMouseStates,
         FullMouseUpdate,
         CompToolbarShootState,
-        RangeUpdate,
         GridAiUiMidUpdate,
         CycleAmmo,
         ReassignTargetUpdate,
@@ -320,7 +320,7 @@ namespace WeaponCore
 
     #region MId Based Packets
     [ProtoContract]
-    [ProtoInclude(23, typeof(RangePacket))]
+    //[ProtoInclude(23, typeof(CompShootPacket))]
     [ProtoInclude(24, typeof(CycleAmmoPacket))]
     [ProtoInclude(25, typeof(ShootStatePacket))]
     [ProtoInclude(26, typeof(OverRidesPacket))]
@@ -362,20 +362,6 @@ namespace WeaponCore
         }
     }
 
-
-    [ProtoContract]
-    public class RangePacket : MIdPacket
-    {
-        [ProtoMember(1)] internal float Data;
-        public RangePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = 0f;
-        }
-    }
-
     [ProtoContract]
     public class CycleAmmoPacket : MIdPacket
     {
@@ -394,13 +380,16 @@ namespace WeaponCore
     [ProtoContract]
     public class ShootStatePacket : MIdPacket
     {
-        [ProtoMember(1)] internal ManualShootActionState Data = ManualShootActionState.ShootOff;
+        [ProtoMember(1)] internal ShootActions Action = ShootActions.ShootOff;
+        [ProtoMember(2), DefaultValue(-1)] internal long PlayerId = -1;
+
         public ShootStatePacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = ManualShootActionState.ShootOff;
+            Action = ShootActions.ShootOff;
+            PlayerId = -1;
         }
     }
 
@@ -409,6 +398,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal GroupOverrides Data;
         [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
+        [ProtoMember(3), DefaultValue("")] internal string Setting = "";
+        [ProtoMember(4)] internal int Value;
 
         public OverRidesPacket() { }
 
@@ -416,7 +407,9 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
-            GroupName = "";
+            GroupName = string.Empty;
+            Setting = string.Empty;
+            Value = 0;
         }
     }
 

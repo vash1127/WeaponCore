@@ -116,7 +116,11 @@ namespace WeaponCore.Support
                 for (int i = 0; i < Platform.Weapons.Length; i++) {
                     var w = Platform.Weapons[i];
 
-                    if (w == null) continue;
+                    if (w == null)
+                    {
+                        Log.Line($"InventoryInit weapon null");
+                        continue;
+                    }
                     for (int j = 0; j < w.System.AmmoTypes.Length; j++)
                     {
                         if (w.System.AmmoTypes[j].AmmoDef.Const.MagazineDef != null)

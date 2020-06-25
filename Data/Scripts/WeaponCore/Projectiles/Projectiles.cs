@@ -54,12 +54,12 @@ namespace WeaponCore.Projectiles
                 AddProjectileTargets();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("UpdateState", 17);
+            Session.StallReporter.Start($"UpdateState: {ActiveProjetiles.Count}", 17);
             if (ActiveProjetiles.Count > 0) 
                 UpdateState();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("Spawn", 17);
+            Session.StallReporter.Start($"Spawn: {ShrapnelToSpawn.Count}", 17);
             if (ShrapnelToSpawn.Count > 0)
                 SpawnFragments();
             Session.StallReporter.End();
@@ -67,7 +67,7 @@ namespace WeaponCore.Projectiles
 
         internal void Intersect() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("CheckHits", 17);
+            Session.StallReporter.Start($"CheckHits: {ActiveProjetiles.Count}", 17);
             if (ActiveProjetiles.Count > 0)
                 CheckHits();
             Session.StallReporter.End();
@@ -130,112 +130,115 @@ namespace WeaponCore.Projectiles
                     if (p.Info.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
 
-                if (p.FeelsGravity) {
+                if (!p.AtMaxRange) {
 
-                    var update = (p.FakeGravityNear || p.EntitiesNear || p.Info.Age % 60 == 0) && p.Info.Age > 0;
-                    if (update) {
-                        p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+                    if (p.FeelsGravity) {
 
-                        if (!p.Info.InPlanetGravity && !MyUtils.IsZero(p.Gravity)) p.FakeGravityNear = true;
-                        else p.FakeGravityNear = false;
-                        p.EntitiesNear = false;
-                    }
-                    p.Velocity += (p.Gravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
-                    Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
-                }
-
-                if (p.AccelLength > 0 && !p.Info.TriggeredPulse) {
-
-                    if (p.SmartsOn) p.RunSmart();
-                    else {
-                        var accel = true;
-                        Vector3D newVel;
-                        if (p.FieldTime > 0) {
-                            var distToMax = p.Info.MaxTrajectory - p.Info.DistanceTraveled;
-
-                            var stopDist = p.VelocityLengthSqr / 2 / (p.StepPerSec);
-                            if (distToMax <= stopDist)
-                                accel = false;
-
-                            newVel = accel ? p.Velocity + p.AccelVelocity : p.Velocity - p.AccelVelocity;
-                            p.VelocityLengthSqr = newVel.LengthSquared();
-
-                            if (accel && p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Info.Direction * p.MaxSpeed;
-                            else if (!accel && distToMax <= 0)
-                            {
-                                newVel = Vector3D.Zero;
-                                p.VelocityLengthSqr = 0;
-                            }
+                        var update = (p.Info.Age % 60 == 0 || (p.FakeGravityNear || p.EntitiesNear) && p.Info.Age % 10 == 0) && p.Info.Age > 0;
+                        if (update) {
+                            
+                            p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+                            if (!p.Info.InPlanetGravity && !MyUtils.IsZero(p.Gravity)) p.FakeGravityNear = true;
+                            else p.FakeGravityNear = false;
+                            p.EntitiesNear = false;
                         }
+                        p.Velocity += (p.Gravity * p.Info.AmmoDef.Trajectory.GravityMultiplier) * Projectile.StepConst;
+                        Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
+                    }
+
+                    if (p.AccelLength > 0 && !p.Info.TriggeredPulse) {
+
+                        if (p.SmartsOn) p.RunSmart();
                         else {
-                            newVel = p.Velocity + p.AccelVelocity;
-                            p.VelocityLengthSqr = newVel.LengthSquared();
-                            if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Info.Direction * p.MaxSpeed;
-                        }
 
-                        p.Velocity = newVel;
+                            var accel = true;
+                            Vector3D newVel;
+                            if (p.FieldTime > 0) {
+
+                                var distToMax = p.Info.MaxTrajectory - p.Info.DistanceTraveled;
+
+                                var stopDist = p.VelocityLengthSqr / 2 / (p.StepPerSec);
+                                if (distToMax <= stopDist)
+                                    accel = false;
+
+                                newVel = accel ? p.Velocity + p.AccelVelocity : p.Velocity - p.AccelVelocity;
+                                p.VelocityLengthSqr = newVel.LengthSquared();
+
+                                if (accel && p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Info.Direction * p.MaxSpeed;
+                                else if (!accel && distToMax <= 0) {
+                                    newVel = Vector3D.Zero;
+                                    p.VelocityLengthSqr = 0;
+                                }
+                            }
+                            else {
+                                newVel = p.Velocity + p.AccelVelocity;
+                                p.VelocityLengthSqr = newVel.LengthSquared();
+                                if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Info.Direction * p.MaxSpeed;
+                            }
+
+                            p.Velocity = newVel;
+                        }
+                    }
+
+                    if (p.State == ProjectileState.OneAndDone) {
+
+                        p.LastPosition = p.Position;
+                        var beamEnd = p.Position + (p.Info.Direction * p.Info.MaxTrajectory);
+                        p.TravelMagnitude = p.Position - beamEnd;
+                        p.Position = beamEnd;
+                    }
+                    else {
+
+                        if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
+                            p.LastPosition = p.Position;
+
+                        p.TravelMagnitude = p.Info.Age != 0 ? p.Velocity * StepConst : p.InitalStep;
+                        p.Position += p.TravelMagnitude;
+                    }
+
+                    p.Info.PrevDistanceTraveled = p.Info.DistanceTraveled;
+
+                    double distChanged;
+                    Vector3D.Dot(ref p.Info.Direction, ref p.TravelMagnitude, out distChanged);
+                    p.Info.DistanceTraveled += Math.Abs(distChanged);
+                    if (p.Info.DistanceTraveled <= 500) ++p.Info.Ai.ProInMinCacheRange;
+
+                    if (p.DynamicGuidance) {
+                        if (p.PruningProxyId != -1) {
+                            var sphere = new BoundingSphereD(p.Position, p.Info.AmmoDef.Const.AreaEffectSize);
+                            BoundingBoxD result;
+                            BoundingBoxD.CreateFromSphere(ref sphere, out result);
+                            Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, p.Velocity);
+                        }
                     }
                 }
-
-                if (p.State == ProjectileState.OneAndDone) {
-                    p.LastPosition = p.Position;
-                    var beamEnd = p.Position + (p.Info.Direction * p.Info.MaxTrajectory);
-                    p.TravelMagnitude = p.Position - beamEnd;
-                    p.Position = beamEnd;
-                }
-                else {
-                    if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
-                        p.LastPosition = p.Position;
-
-                    p.TravelMagnitude = p.Info.Age != 0 ? p.Velocity * StepConst : p.InitalStep;
-                    p.Position += p.TravelMagnitude;
-                }
-
-                p.Info.PrevDistanceTraveled = p.Info.DistanceTraveled;
-
-                double distChanged;
-                Vector3D.Dot(ref p.Info.Direction, ref p.TravelMagnitude, out distChanged);
-                p.Info.DistanceTraveled += Math.Abs(distChanged);
-                if (p.Info.DistanceTraveled <= 500) ++p.Info.Ai.ProInMinCacheRange;
 
                 if (p.ModelState == EntityState.Exists) {
 
                     var up = MatrixD.Identity.Up;
                     MatrixD matrix;
                     MatrixD.CreateWorld(ref p.Position, ref p.Info.VisualDir, ref up, out matrix);
-                    
+
                     if (p.Info.AmmoDef.Const.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
-                    if (p.Info.AmmoDef.Const.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize)
+                    if (p.Info.AmmoDef.Const.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.AmmoDef.Const.AreaEffectSize) 
                         p.Info.TriggerMatrix = matrix;
-                }
-
-                if (p.DynamicGuidance) {
-
-                    if (p.PruningProxyId != -1) {
-                        var sphere = new BoundingSphereD(p.Position, p.Info.AmmoDef.Const.AreaEffectSize);
-                        BoundingBoxD result;
-                        BoundingBoxD.CreateFromSphere(ref sphere, out result);
-                        Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, p.Velocity);
-                    }
                 }
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
-                    if (!p.SmartsOn && p.Info.Age > p.Info.AmmoDef.Const.MaxLifeTime)
-                    {
+                    if (!p.SmartsOn && p.Info.Age > p.Info.AmmoDef.Const.MaxLifeTime) {
                         p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                         p.EarlyEnd = true;
                     }
 
-                    if (p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)
-                    {
-                        p.AtMaxRange = true;
-                        if (p.FieldTime > 0)
-                        {
+                    if (p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr) {
+
+                        p.AtMaxRange = !p.MineSeeking;
+                        if (p.FieldTime > 0) {
+
                             p.FieldTime--;
-                            if (p.Info.AmmoDef.Const.IsMine && !p.MineSeeking && !p.MineActivated)
-                            {
+                            if (p.Info.AmmoDef.Const.IsMine && !p.MineSeeking && !p.MineActivated) {
                                 if (p.EnableAv) p.Info.AvShot.Cloaked = p.Info.AmmoDef.Trajectory.Mines.Cloak;
                                 p.MineSeeking = true;
                             }

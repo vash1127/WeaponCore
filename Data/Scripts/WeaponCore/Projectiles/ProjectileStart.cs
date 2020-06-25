@@ -78,7 +78,6 @@ namespace WeaponCore.Projectiles
                 }
 
                 p.Gravity = w.GravityPoint;
-
                 if (t != Kind.Virtual)
                 {
                     p.Info.PrimeEntity = a.Const.PrimeModel ? a.Const.PrimeEntityPool.Get() : null;
@@ -110,7 +109,6 @@ namespace WeaponCore.Projectiles
 
                 Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
-                Log.Line($"spawned: {p.Info.System.WeaponName}");
             }
             NewProjectiles.Clear();
         }

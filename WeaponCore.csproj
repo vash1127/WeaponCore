@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiServer.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCorePbApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
@@ -56,7 +57,7 @@
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Config\Enforcements.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\Enforcements.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSMethods.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkCMethods.cs" />
@@ -76,9 +77,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompData.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializeDataClasses.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializedValues.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Config\SessionAnimationMgr.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\SerializeDataClasses.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\SerializedValues.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\SessionAnimationMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionAreaEffect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionCleanUp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionCompMgr.cs" />
@@ -102,7 +103,7 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompRun.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\PlatformInit.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\ModelSupport\PartInfo.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponFields.cs" />

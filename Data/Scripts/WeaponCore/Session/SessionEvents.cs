@@ -24,11 +24,13 @@ namespace WeaponCore
 
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
+                if (!PbApiInited) PbActivate = true;
 
                 var cube = myEntity as MyCubeBlock;
                 var sorter = cube as MyConveyorSorter;
                 var turret = cube as IMyLargeTurretBase;
                 var controllableGun = cube as IMyUserControllableGun;
+
                 if (sorter != null || turret != null || controllableGun != null)
                 {
                     if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
@@ -127,7 +129,7 @@ namespace WeaponCore
                 grid.AddedToScene -= GridAddedToScene;
                 DirtyGrids.Add(grid);
             }
-            else Log.Line($"grid not removed and list not cleaned");
+            else Log.Line($"grid not removed and list not cleaned: marked:{grid.MarkedForClose}({grid.Closed}) - inScene:{grid.InScene}");
         }
 
         private void ToFatMap(MyCubeBlock myCubeBlock)
@@ -202,9 +204,13 @@ namespace WeaponCore
         private void PlayerControlAcquired(MyEntity lastEnt)
         {
             var cube = lastEnt as MyCubeBlock;
-            GridAi rootAi;
-            if (cube!= null && GridToMasterAi.TryGetValue(cube.CubeGrid, out rootAi))
-                rootAi.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.ManualShootingOff);
+            GridAi gridAi;
+            if (cube != null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi)) {
+
+                WeaponComponent comp;
+                if (gridAi.WeaponBase.TryGetValue(cube, out comp))
+                    comp.RequestShootUpdate(WeaponComponent.ShootActions.ShootOff);
+            }
         }
 
         private void PlayerConnected(long id)

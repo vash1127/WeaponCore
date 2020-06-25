@@ -9,95 +9,103 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        public void ReproccessClientErrorPacketsNew()
+        public void ReproccessClientErrorPackets()
         {
-            for (int i = ClientSideErrorPktListNew.Count - 1; i >= 0; i--)
+            foreach (var errorPacket in ClientSideErrorPkt)
             {
-                var packetObj = ClientSideErrorPktListNew[i];
+                if (errorPacket == null) {
+                    Log.Line($"ClientSideErrorPktListNew errorPacket is null");
+                    continue;
+                }
 
-                var erroredPacket = packetObj.ErrorPacket;
-                if (erroredPacket.MaxAttempts == 0)
+                if (errorPacket.MaxAttempts == 0)
                 {
                     //set packet retry variables, based on type
                     //erroredPacket.MaxAttempts = 3;
                     //erroredPacket.RetryAttempt = 0;                    
 
-                    switch (erroredPacket.PType)
+                    switch (errorPacket.PType)
                     {
                         case PacketType.WeaponSyncUpdate:
-                            erroredPacket.MaxAttempts = 7;
-                            erroredPacket.RetryDelayTicks = 15;
+                            errorPacket.MaxAttempts = 7;
+                            errorPacket.RetryDelayTicks = 15;
                             break;
 
                         default:
-                            erroredPacket.MaxAttempts = 7;
-                            erroredPacket.RetryDelayTicks = 15;
+                            errorPacket.MaxAttempts = 7;
+                            errorPacket.RetryDelayTicks = 15;
                             break;
                     }
 
-                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+                    errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
                 }
 
                 //proccess packet logic
 
-                if (erroredPacket.RetryTick > Tick) continue;
-                erroredPacket.RetryAttempt++;
+                if (errorPacket.RetryTick > Tick) continue;
+                errorPacket.RetryAttempt++;
 
                 var success = false;
 
-                switch (erroredPacket.PType)
+                switch (errorPacket.PType)
                 {
                     case PacketType.WeaponSyncUpdate:
-                        var ent = MyEntities.GetEntityByIdOrDefault(erroredPacket.Packet.EntityId);
+                        var ent = MyEntities.GetEntityByIdOrDefault(errorPacket.Packet.EntityId);
                         if (ent == null) break;
 
-                        var packet = erroredPacket.Packet as GridWeaponPacket;
-                        if (packet == null)
-                        {
-                            erroredPacket.MaxAttempts = 0;
+                        var packet = errorPacket.Packet as GridWeaponPacket;
+                        if (packet?.Data == null) {
+                            Log.Line($"GridWeaponPacket errorPacket is null");
+                            errorPacket.MaxAttempts = 0;
                             break;
                         }
 
                         var compsToCheck = new HashSet<long>();
-                        for (int j = 0; j < packet.Data.Count; j++)
-                        {
-                            if (!compsToCheck.Contains(packet.Data[j].CompEntityId))
-                                compsToCheck.Add(packet.Data[j].CompEntityId);
+                        for (int j = 0; j < packet.Data.Count; j++) {
+                            var weaponData = packet.Data[j];
+                            if (weaponData != null)
+                                compsToCheck.Add(weaponData.CompEntityId);
                         }
 
-                        PacketsToServer.Add(new RequestTargetsPacket
+                        if (compsToCheck.Count > 0)
                         {
-                            EntityId = erroredPacket.Packet.EntityId,
-                            SenderId = MultiplayerId,
-                            PType = PacketType.WeaponUpdateRequest,
-                            Comps = new List<long>(compsToCheck),
-                        });
-
-                        success = true;
+                            PacketsToServer.Add(new RequestTargetsPacket
+                            {
+                                EntityId = errorPacket.Packet.EntityId,
+                                SenderId = MultiplayerId,
+                                PType = PacketType.WeaponUpdateRequest,
+                                Comps = new List<long>(compsToCheck),
+                            });
+                            success = true;
+                        }
                         break;
 
                     default:
-                        success = ProccessClientPacket(packetObj);
+                        var report = Reporter.ReportPool.Get();
+                        report.Receiver = NetworkReporter.Report.Received.Client;
+                        report.PacketSize = 0;
+                        Reporter.ReportData[errorPacket.Packet.PType].Add(report);
+                        var packetObj = PacketObjPool.Get();
+                        packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+
+                        success = ProccessClientPacket(packetObj, false);
                         break;
                 }
 
-                if (success || erroredPacket.RetryAttempt > erroredPacket.MaxAttempts)
+                if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)
                 {
                     if (!success)
-                        Log.LineShortDate($"        [BadReprocess] Entity:{erroredPacket.Packet.EntityId} Cause:{erroredPacket.Error} Size:{packetObj.PacketSize}", "net");
+                        Log.LineShortDate($"        [BadReprocess] Entity:{errorPacket.Packet?.EntityId} Cause:{errorPacket.Error ?? string.Empty}", "net");
 
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                    PacketObjPool.Return(packetObj);
+                    ClientSideErrorPkt.Remove(errorPacket);
                 }
                 else
-                    erroredPacket.RetryTick = Tick + erroredPacket.RetryDelayTicks;
+                    errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
 
-                if (erroredPacket.MaxAttempts == 0)
-                {
-                    ClientSideErrorPktListNew.Remove(packetObj);
-                    PacketObjPool.Return(packetObj);
-                }
+                if (errorPacket.MaxAttempts == 0)
+                    ClientSideErrorPkt.Remove(errorPacket);
             }
+            ClientSideErrorPkt.ApplyChanges();
         }
 
         private bool ClientCompStateUpdate(PacketObj data)
@@ -111,6 +119,9 @@ namespace WeaponCore
 
             comp.MIds[(int)packet.PType] = statePacket.MId;
             comp.State.Value.Sync(statePacket.Data, comp);
+            if (Wheel.WheelActive)
+                Wheel.Dirty = true;
+
             data.Report.PacketValid = true;
 
             return true;
@@ -200,13 +211,13 @@ namespace WeaponCore
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
 
             GridAi ai;
-            FakeTarget dummyTarget;
-            long playerId;
             //TODO client uses try get in case packets are out of order, no need to reprocess as fake targets are sent very often
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
+                long playerId;
                 if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
                 {
+                    FakeTarget dummyTarget;
                     if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
                     {
                         dummyTarget.Update(targetPacket.Data, ai, null, true);
@@ -312,7 +323,6 @@ namespace WeaponCore
             return true;
 
         }
-
         private bool ClientOverRidesUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -326,37 +336,30 @@ namespace WeaponCore
             if (overRidesPacket.Data == null) return Error(data, Msg("Data"));
 
             if (comp?.Ai != null && comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
-
-                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                 comp.MIds[(int)packet.PType] = overRidesPacket.MId;
-
-                GroupInfo group;
-                if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group)) {
-                    comp.Ai.ScanBlockGroupSettings = true;
-                    comp.Ai.GroupsToCheck.Add(group);
-                }
+                
+                comp.Ai.ReScanBlockGroups();
+                comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
                 data.Report.PacketValid = true;
             }
             else if (myGrid != null)
             {
                 GridAi ai;
                 if (GridTargetingAIs.TryGetValue(myGrid, out ai) && ai.UiMId < overRidesPacket.MId) {
-                    var o = overRidesPacket.Data;
                     ai.UiMId = overRidesPacket.MId;
 
                     ai.ReScanBlockGroups();
 
-                    SyncGridOverrides(ai, overRidesPacket.GroupName, o);
+                    SyncGridOverrides(ai, overRidesPacket.GroupName, overRidesPacket.Data);
 
                     GroupInfo groups;
                     if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups)) {
 
                         foreach (var component in groups.Comps) {
-                            component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
-                            component.Set.Value.Overrides.Sync(o);
+                            component.Set.Value.Overrides.Sync(overRidesPacket.Data);
+                            data.Report.PacketValid = true;
                         }
 
-                        data.Report.PacketValid = true;
                     }
                     else
                         return Error(data, Msg("Block group not found"));
@@ -419,52 +422,6 @@ namespace WeaponCore
 
         }
 
-        private bool ClientCompToolbarShootState(PacketObj data)
-        {
-            var packet = data.Packet;
-            var shootStatePacket = (ShootStatePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            comp.MIds[(int)packet.PType] = shootStatePacket.MId;
-
-            switch (shootStatePacket.Data)
-            {
-                case ManualShootActionState.ShootClick:
-                    TerminalHelpers.WcShootClickAction(comp, true, comp.HasTurret, true);
-                    break;
-                case ManualShootActionState.ShootOff:
-                    TerminalHelpers.WcShootOffAction(comp, true);
-                    break;
-                case ManualShootActionState.ShootOn:
-                    TerminalHelpers.WcShootOnAction(comp, true);
-                    break;
-                case ManualShootActionState.ShootOnce:
-                    TerminalHelpers.WcShootOnceAction(comp, true);
-                    break;
-            }
-
-            data.Report.PacketValid = true;
-            return true;
-        }
-
-        private bool ClientRangeUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var rangePacket = (RangePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            comp.MIds[(int)packet.PType] = rangePacket.MId;
-            comp.Set.Value.Range = rangePacket.Data;
-
-            data.Report.PacketValid = true;
-            return true;
-        }
-
         private bool ClientGridAiUiMidUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -495,15 +452,13 @@ namespace WeaponCore
             comp.MIds[(int)packet.PType] = cyclePacket.MId;
             var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
             weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
-
-            if (weapon.State.Sync.CurrentAmmo == 0)
-                weapon.Reload();
+            if (IsCreative || !weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable)
+                weapon.ChangeActiveAmmo(weapon.System.AmmoTypes[cyclePacket.AmmoId]);
 
             data.Report.PacketValid = true;
 
             return true;
         }
-
         private bool ClientGridOverRidesSync(PacketObj data)
         {
             var packet = data.Packet;
@@ -536,7 +491,6 @@ namespace WeaponCore
             return true;
 
         }
-
         private bool ClientRescanGroupRequest(PacketObj data)
         {
             var packet = data.Packet;

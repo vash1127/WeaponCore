@@ -51,12 +51,12 @@ namespace WeaponCore.Support
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
                 GridAi removeAi;
-                Session.GridToMasterAi.TryRemove(grid, out removeAi);
+                if (!Session.GridTargetingAIs.ContainsKey(grid)) 
+                    Session.GridToMasterAi.TryRemove(grid, out removeAi);
             }
             RemSubGrids.Clear();
 
             if (!clean) {
-
                 Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
                 foreach (var grid in SubGrids) {
                     if (Construct.RootAi != null)
@@ -68,6 +68,7 @@ namespace WeaponCore.Support
 
         internal class Constructs
         {
+            internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
             internal float OptimalDps;
             internal int BlockCount;
@@ -83,7 +84,7 @@ namespace WeaponCore.Support
             {
                 BlockScan,
                 Overrides,
-                ManualShootingOff,
+                //ManualShootingOff,
                 None,
             }
 
@@ -106,7 +107,7 @@ namespace WeaponCore.Support
                     RootAi = tmpAi;
 
                     if (RootAi == null) {
-                        Log.Line($"[rootAi is null in Update] subCnt:{ai.SubGrids.Count} - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} -  myGridMarked:{ai.MyGrid.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiCloseTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
+                        Log.Line($"[rootAi is null in Update] subCnt:{ai.SubGrids.Count}(includeMe:{ai.SubGrids.Contains(ai.MyGrid)}) - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} -  myGridMarked:{ai.MyGrid.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiCloseTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
                         RootAi = ai;
                     }
 
@@ -132,6 +133,7 @@ namespace WeaponCore.Support
                                 ai.ReScanBlockGroups();
                                 break; 
                             }
+                            /*
                             case UpdateType.Overrides: {
                                 ai.UpdateGroupOverRides();
                                 break;
@@ -140,48 +142,50 @@ namespace WeaponCore.Support
                                 ai.TurnManualShootOff();
                                 break;
                             }
+                            */
                         }
                     }
                 }
             }
 
-            internal void UpdateWeaponCounters(GridAi ai)
+            internal static void UpdateWeaponCounters(GridAi cAi)
             {
-                Counter.Clear();
-                foreach (var grid in ai.SubGrids)
-                {
-                    GridAi checkAi;
-                    if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi))
-                    {
-                        foreach (var wc in checkAi.WeaponCounter)
-                        {
-                            if (Counter.ContainsKey(wc.Key))
-                                Counter[wc.Key] += wc.Value.Current;
-                            else Counter.Add(wc.Key, wc.Value.Current);
-                        }
+                cAi.Construct.RefreshedAis.Clear();
+                cAi.Construct.RefreshedAis.Add(cAi);
+
+                if (cAi.SubGrids.Count > 1) {
+                    foreach (var sub in cAi.SubGrids) {
+                        if (sub == cAi.MyGrid) continue;
+
+                        GridAi subAi;
+                        if (cAi.Session.GridTargetingAIs.TryGetValue(sub, out subAi))
+                            cAi.Construct.RefreshedAis.Add(subAi);
+                    }
+                }
+
+                for (int i = 0; i < cAi.Construct.RefreshedAis.Count; i++) {
+
+                    var checkAi = cAi.Construct.RefreshedAis[i];
+                    checkAi.Construct.Counter.Clear();
+
+                    for (int x = 0; x < cAi.Construct.RefreshedAis.Count; x++) {
+                        foreach (var wc in cAi.Construct.RefreshedAis[x].WeaponCounter)
+                            checkAi.Construct.AddWeaponCount(wc.Key, wc.Value.Current);
                     }
                 }
             }
 
-            internal void AddWeaponCount(MyStringHash weaponHash)
+            internal void AddWeaponCount(MyStringHash weaponHash, int incrementBy = 1)
             {
-                if (Counter.ContainsKey(weaponHash))
-                    Counter[weaponHash]++;
-                else Counter[weaponHash] = 1;
-            }
-
-            internal void RemoveWeaponCount(MyStringHash weaponHash)
-            {
-                if (Counter.ContainsKey(weaponHash))
-                    Counter[weaponHash]--;
-                else Counter[weaponHash] = 0;
+                if (!Counter.ContainsKey(weaponHash))
+                    Counter.Add(weaponHash, incrementBy);
+                else Counter[weaponHash] += incrementBy;
             }
 
             internal int GetWeaponCount(MyStringHash weaponHash)
             {
                 int value;
-                Counter.TryGetValue(weaponHash, out value);
-                return value;
+                return Counter.TryGetValue(weaponHash, out value) ? value : 0;
             }
 
             internal void Clean()
@@ -190,6 +194,7 @@ namespace WeaponCore.Support
                 BlockCount = 0;
                 RootAi = null;
                 Counter.Clear();
+                RefreshedAis.Clear();
             }
         }
     }
