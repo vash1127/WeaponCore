@@ -259,8 +259,9 @@ namespace WeaponCore.Support
 
                 comp.State.Value.ClickShoot = false;
                 comp.State.Value.ShootOn = false;
+
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    comp.Platform.Weapons[i].State.ManualShoot = ShootActions.ShootOff;
+                    comp.Platform.Weapons[i].Set.WeaponMode(comp.Set.Value, ShootActions.ShootOff); ;
             }
             else {
                 comp.State.Value.CurrentPlayerControl.PlayerId = -1;

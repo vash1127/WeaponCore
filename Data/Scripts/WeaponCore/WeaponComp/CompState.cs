@@ -76,9 +76,9 @@ namespace WeaponCore.Support
 
             foreach (var w in Platform.Weapons) {
                 
-                w.State.ManualShoot = action;
+                w.Set.WeaponMode(Set.Value, action);
                 if (action == ShootActions.ShootClick)
-                    w.State.ManualShoot = on ? ShootActions.ShootClick : ShootActions.ShootOff;
+                    w.Set.WeaponMode(Set.Value, on ? ShootActions.ShootClick : ShootActions.ShootOff);
                 else
                     w.State.SingleShotCounter = clickOnce ? w.State.SingleShotCounter++ : 0;
             }

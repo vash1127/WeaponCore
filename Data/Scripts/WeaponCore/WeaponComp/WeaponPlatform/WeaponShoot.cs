@@ -288,7 +288,7 @@ namespace WeaponCore.Platform
                 }
 
 
-                if (State.ManualShoot == ShootActions.ShootOnce && --State.SingleShotCounter <= 0)
+                if (Set.Action == ShootActions.ShootOnce && --State.SingleShotCounter <= 0)
                 {
                     ShootOnceDirty();
                 }

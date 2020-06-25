@@ -531,12 +531,12 @@ namespace WeaponCore.Platform
 
         internal void ShootOnceDirty()
         {
-            State.ManualShoot = ShootActions.ShootOff;
+            Set.WeaponMode(Comp.Set.Value, ShootActions.ShootOff);
             var clickToShootDirty = true;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
             {
                 var w = Comp.Platform.Weapons[i];
-                if (w.State.ManualShoot  ==  ShootActions.ShootClick && w.State.SingleShotCounter > 0)
+                if (w.Set.Action  ==  ShootActions.ShootClick && w.State.SingleShotCounter > 0)
                     clickToShootDirty = false;
             }
 

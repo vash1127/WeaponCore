@@ -107,8 +107,8 @@ namespace WeaponCore
 
                         }
 
-                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.ManualShoot != ShootOff) {
-                            w.State.ManualShoot = ShootOff;
+                        if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.Set.Action != ShootOff) {
+                            w.Set.WeaponMode(comp.Set.Value, ShootOff);
                             w.Reloading = false;
                             w.State.Sync.CurrentAmmo = 0;
                             w.FinishBurst = false;
@@ -184,7 +184,7 @@ namespace WeaponCore
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
-                        w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.ManualShoot == ShootClick)) || comp.TrackReticle && !w.Target.IsFakeTarget;
+                        w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.Set.Action == ShootClick)) || comp.TrackReticle && !w.Target.IsFakeTarget;
                         if (!IsClient && (w.SeekTarget || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.State.Value.CurrentPlayerControl.ControlType == ControlType.None || comp.State.Value.CurrentPlayerControl.ControlType == ControlType.Ui))
                         {
                             w.AcquiringTarget = true;
@@ -209,8 +209,8 @@ namespace WeaponCore
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.Sync.CurrentAmmo <= 0);
                         var canShoot = !w.State.Sync.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Set.Value.Overrides.TargetPainter && comp.TrackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
-                        var validShootStates = fakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                        var manualShot = (compManualMode || w.State.ManualShoot == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
+                        var validShootStates = fakeTarget || w.Set.Action == ShootOn || w.Set.Action == ShootOnce || w.AiShooting && w.Set.Action == ShootOff;
+                        var manualShot = (compManualMode || w.Set.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Focus.HasFocus && ai.Focus.FocusInRange(w);

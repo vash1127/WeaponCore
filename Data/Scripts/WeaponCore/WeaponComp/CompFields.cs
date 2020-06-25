@@ -116,8 +116,6 @@ namespace WeaponCore.Support
             ShootOn,
             ShootOnce,
             ShootClick,
-            Painter,
-            Manual
         }
 
 
