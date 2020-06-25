@@ -1,10 +1,8 @@
 ﻿using WeaponCore.Support;
-using static WeaponCore.Support.WeaponComponent.BlockType;
 
 namespace WeaponCore
 {
     using System;
-    using Sandbox.Game.Entities;
     using Sandbox.Game.EntityComponents;
     using Sandbox.ModAPI;
     using static Session;
@@ -61,30 +59,29 @@ namespace WeaponCore
                 Repo = loadedState;
                 loadedSomething = true;
             }
-            else
-            {
-                Repo = new CompDataValues();
-                Repo.State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length] };
-                for (int i = 0; i < Repo.State.Weapons.Length; i++)
-                {
-                    Repo.State.Weapons[i] = new WeaponStateValues { Sync = new WeaponSyncValues() { WeaponId = i } };
-                }
-                Repo.State.CurrentPlayerControl = new PlayerControl();
-                //
+            else {
 
-                Repo.Set = new CompSettingsValues { Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length] };
-                for (int i = 0; i < Repo.Set.Weapons.Length; i++) Repo.Set.Weapons[i] = new WeaponSettingsValues();
+                Repo = new CompDataValues {
+                    State = new CompStateValues {
+
+                        Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length],
+                        CurrentPlayerControl = new PlayerControl()
+                    },
+                    WepVal = new WeaponValues(),
+                    Set = new CompSettingsValues {Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length]}
+                };
+
+                for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
+                    Repo.State.Weapons[i] = new WeaponStateValues { Sync = new WeaponSyncValues { WeaponId = i } };
+                    Repo.Set.Weapons[i] = new WeaponSettingsValues();
+                }
 
                 Repo.Set.Range = -1;
 
-                Repo.WepVal = new WeaponValues();
                 if (Comp.Session.IsServer)
                     WeaponValues.Init(Comp);
                 else WeaponValues.RefreshClient(Comp);
             }
-
-            //for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-                //Comp.Platform.Weapons[i].State = Value.Weapons[i];
 
             return loadedSomething;
         }

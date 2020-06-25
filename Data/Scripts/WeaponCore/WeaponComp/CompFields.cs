@@ -27,8 +27,6 @@ namespace WeaponCore.Support
         internal readonly IMyTerminalBlock TerminalBlock;
         internal readonly IMyFunctionalBlock FunctionalBlock;
         internal readonly IMyLargeTurretBase TurretBase;
-        //internal readonly CompSettings Set;
-        //internal readonly CompState State;
         internal readonly CompData Data;
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
