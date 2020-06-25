@@ -53,6 +53,7 @@ namespace WeaponCore.Platform
         internal bool CanHoldMultMags;
         internal bool PullingAmmo;
         internal bool RemovingAmmo;
+        internal bool ScheduleAmmoChange;
         internal uint GravityTick;
         internal uint ShootTick;
         internal uint TicksPerShot;

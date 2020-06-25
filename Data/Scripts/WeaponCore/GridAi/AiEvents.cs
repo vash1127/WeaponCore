@@ -59,7 +59,7 @@ namespace WeaponCore.Support
                 else if (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler)
                 {
                     MyInventory inventory;
-                    if (myCubeBlock.HasInventory && myCubeBlock.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
+                    if (cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
                     {
                         inventory.InventoryContentChanged += CheckAmmoInventory;
                         Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
@@ -123,7 +123,7 @@ namespace WeaponCore.Support
                 if (amount <= 0 || item.Content == null || inventory == null) return;
                 var itemDef = item.Content.GetObjectId();
                 if (Session.AmmoDefIds.Contains(itemDef))
-                    Session.FutureEvents.Schedule(CheckReload, itemDef, 1);
+                    CheckReload(itemDef);
             }
             catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex}"); }
         }

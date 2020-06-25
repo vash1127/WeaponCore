@@ -181,6 +181,7 @@ namespace WeaponCore
         {
             for (int i = 0; i < CheckStorage.Count; i++)
                 ComputeStorage(CheckStorage[i]);
+
             CheckStorage.Clear();
         }
 

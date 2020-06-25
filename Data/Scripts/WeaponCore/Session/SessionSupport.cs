@@ -286,6 +286,7 @@ namespace WeaponCore
                         newItem.ItemId = inventoryItems.Value[i].ItemId;
                         newItem.Amount = (int)inventoryItems.Value[i].Amount;
                         newItem.Content = inventoryItems.Value[i].Content;
+                        newItem.DefId = inventoryItems.Value[i].Content.GetId();
                         AmmoThreadItemList[inventoryItems.Key].Add(newItem);
                     }
                 }
@@ -300,6 +301,7 @@ namespace WeaponCore
                     newItem.ItemId = itemList.Value.ItemId;
                     newItem.Amount = itemList.Value.Amount;
                     newItem.Content = itemList.Value.Content;
+                    newItem.DefId = itemList.Value.Content.GetId();
                     AmmoThreadItemList[blockInventoryItems.Key].Add(newItem);
                 }
             }

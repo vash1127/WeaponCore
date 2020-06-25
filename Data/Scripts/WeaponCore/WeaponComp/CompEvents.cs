@@ -90,49 +90,38 @@ namespace WeaponCore.Support
 
         private void OnContentsChanged(MyInventoryBase inv, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            try
+            if (!Registered) return;
+
+            BetterInventoryItem cachedItem;
+
+            if (!Session.BlockInventoryItems[BlockInventory].TryGetValue(item.ItemId, out cachedItem))
             {
-                if (Registered)
-                {
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
-                    {
-                        var w = Platform.Weapons[i];
-
-                        if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDefinitionId == item.Content.GetId())
-                        {
-                            BetterInventoryItem cachedItem;
-
-                            if (!Session.BlockInventoryItems[BlockInventory].TryGetValue(item.ItemId, out cachedItem) || BlockInventory.IsUniqueId(item.ItemId))
-                            {
-                                cachedItem = Session.BetterInventoryItems.Count > 0 ? Session.BetterInventoryItems.Pop() : new BetterInventoryItem();
-                                cachedItem.Amount = (int)amount;
-                                cachedItem.Content = item.Content;
-                                cachedItem.ItemId = item.ItemId;
-                            }
-                            else if (cachedItem.Amount + amount > 0)
-                                cachedItem.Amount += (int)amount;
-                            else if (cachedItem.Amount + amount < 0)
-                            {
-                                BetterInventoryItem removedItem;
-                                if (Session.BlockInventoryItems[BlockInventory].TryRemove(item.ItemId, out removedItem))
-                                    Session.BetterInventoryItems.Push(removedItem);
-                            }
-
-                            if (!Session.IsCreative)
-                            {
-                                if (amount < 0)
-                                    ComputeStorage(w);
-                                else
-                                {
-                                    w.State.Sync.CurrentMags = BlockInventory.GetItemAmount(w.ActiveAmmoDef.AmmoDefinitionId);
-                                    w.Reload();
-                                }
-                            }
-                        }
-                    }
-                }
+                cachedItem = Session.BetterInventoryItems.Count > 0 ? Session.BetterInventoryItems.Pop() : new BetterInventoryItem();
+                cachedItem.Amount = (int)amount;
+                cachedItem.Content = item.Content;
+                cachedItem.ItemId = item.ItemId;
+                Session.BlockInventoryItems[BlockInventory].TryAdd(item.ItemId, cachedItem);
             }
-            catch (Exception ex) { Log.Line($"Exception in OnContentsChanged: {ex}");
+            else if (cachedItem.Amount + amount > 0)
+                cachedItem.Amount += (int)amount;
+            else if (cachedItem.Amount + amount <= 0)
+            {
+                BetterInventoryItem removedItem;
+                if (Session.BlockInventoryItems[BlockInventory].TryRemove(item.ItemId, out removedItem))
+                    Session.BetterInventoryItems.Push(removedItem);
+            }
+
+            for (int i = 0; i < Platform.Weapons.Length; i++)
+            {
+                var w = Platform.Weapons[i];
+
+                if (!Session.IsCreative && !w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDefinitionId == item.Content.GetId())
+                {
+                    if (amount < 0)
+                        ComputeStorage(w);
+                    else
+                        w.Reload();
+                }
             }
         }
 

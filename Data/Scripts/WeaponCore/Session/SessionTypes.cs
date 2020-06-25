@@ -842,12 +842,14 @@ namespace WeaponCore
             public int Amount;
             public MyObjectBuilder_PhysicalObject Content;
             public uint ItemId;
+            public MyDefinitionId DefId;
 
             public void Transfer(BetterInventoryItem item)
             {
                 Amount = item.Amount;
                 Content = item.Content;
                 ItemId = item.ItemId;
+                DefId = item.DefId;
             }
         }
     }
