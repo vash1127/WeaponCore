@@ -306,8 +306,8 @@ namespace WeaponCore
                     {"cubeIsWorking", () => GetComp()?.MyCube.IsWorking.ToString() ?? string.Empty },
                     {"MaxTargetDistance", () => GetComp()?.MaxTargetDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
-                    {"ControlType", () => GetComp()?.Data.Repo.State.CurrentPlayerControl.ControlType.ToString() ?? string.Empty },
-                    {"PlayerId", () => GetComp()?.Data.Repo.State.CurrentPlayerControl.PlayerId.ToString() ?? string.Empty },
+                    {"ControlType", () => GetComp()?.Data.Repo.State.Control.ToString() ?? string.Empty },
+                    {"PlayerId", () => GetComp()?.Data.Repo.State.PlayerId.ToString() ?? string.Empty },
                     {"Online", () => GetComp()?.Data.Repo.State.Online.ToString() ?? string.Empty },
                     //{"ClickShoot", () => GetComp()?.State.Value.ClickShoot.ToString() ?? string.Empty },
                     {"Modes", () => GetComp()?.Data.Repo.Set.Modes.ToString() ?? string.Empty },
@@ -407,27 +407,27 @@ namespace WeaponCore
                     },
                     {"Overheated", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.Overheated}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Overheated}"); }
                     },
                     {"Heat", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.Heat}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Heat}"); }
                     },
                     {"CurrentAmmo", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.CurrentAmmo}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentAmmo}"); }
                     },
                     {"CurrentCharge", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.CurrentCharge}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentCharge}"); }
                     },
                     {"CurrentMags", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.CurrentMags}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentMags}"); }
                     },
                     {"HasInventory", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.Sync.HasInventory}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.HasInventory}"); }
                     },
                 };
 

@@ -1,12 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using ProtoBuf;
-using Sandbox.ModAPI;
 using VRage;
-using VRage.Utils;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
 
@@ -15,30 +12,32 @@ namespace WeaponCore
     [ProtoContract]
     public class CompDataValues
     {
-        [ProtoMember(1)] public CompSettingsValues Set;
-        [ProtoMember(2)] public CompStateValues State;
-        [ProtoMember(3)] public WeaponValues WepVal;
-        [ProtoMember(4)] public int Version = Session.VersionControl;
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2)] public CompSettingsValues Set;
+        [ProtoMember(3)] public CompStateValues State;
+        [ProtoMember(4)] public WeaponValues WepVal;
+        [ProtoMember(5)] public long LastRequesterId;
+        [ProtoMember(6)] public int Version = Session.VersionControl;
 
-        public void Sync(WeaponComponent comp, CompDataValues syncFrom)
+        public void Sync(WeaponComponent comp, CompDataPacket packet)
         {
-            Set.Sync(comp, syncFrom.Set);
-            State.Sync(comp, syncFrom.State);
+            Set.Sync(comp, packet.Data.Set);
+            State.Sync(comp, packet.Data.State);
         }
     }
 
     [ProtoContract]
     public class CompSettingsValues
     {
-        [ProtoMember(1), DefaultValue(true)] public bool Guidance = true;
-        [ProtoMember(2), DefaultValue(1)] public int Overload = 1;
-        [ProtoMember(3)] public long Modes;
-        [ProtoMember(4), DefaultValue(1)] public float DpsModifier = 1;
-        [ProtoMember(5), DefaultValue(1)] public float RofModifier = 1;
-        [ProtoMember(6)] public WeaponSettingsValues[] Weapons;
-        [ProtoMember(7), DefaultValue(100)] public float Range = 100;
-        [ProtoMember(8)] public GroupOverrides Overrides;
-        //[ProtoMember(9)] public int Version = Session.VersionControl;
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2), DefaultValue(true)] public bool Guidance = true;
+        [ProtoMember(3), DefaultValue(1)] public int Overload = 1;
+        [ProtoMember(4)] public long Modes;
+        [ProtoMember(5), DefaultValue(1)] public float DpsModifier = 1;
+        [ProtoMember(6), DefaultValue(1)] public float RofModifier = 1;
+        [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
+        [ProtoMember(8), DefaultValue(100)] public float Range = 100;
+        [ProtoMember(9)] public GroupOverrides Overrides;
         [ProtoMember(10)] public ShootActions TerminalAction;
 
 
@@ -47,30 +46,34 @@ namespace WeaponCore
             Overrides = new GroupOverrides();
         }
 
-        public void Sync(WeaponComponent comp, CompSettingsValues syncFrom)
+        public bool Sync(WeaponComponent comp, CompSettingsValues sync)
         {
-            Guidance = syncFrom.Guidance;
-            Modes = syncFrom.Modes;
+            if (sync.Revision > Revision) {
 
-            Range = syncFrom.Range;
+                Revision = sync.Revision;
+                Guidance = sync.Guidance;
+                Modes = sync.Modes;
+                Range = sync.Range;
 
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
-                var w = comp.Platform.Weapons[i];
-                var ws = Weapons[i];
-                var sws = syncFrom.Weapons[i];
-                ws.WeaponMode(comp, sws.Action);
-                w.UpdateWeaponRange();
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                    var w = comp.Platform.Weapons[i];
+                    var ws = Weapons[i];
+                    var sws = sync.Weapons[i];
+                    ws.WeaponMode(comp, sws.Action);
+                    w.UpdateWeaponRange();
+                }
+
+                Overrides.Sync(sync.Overrides);
+
+                if (Overload != sync.Overload || Math.Abs(RofModifier - sync.RofModifier) > 0.0001f || Math.Abs(DpsModifier - sync.DpsModifier) > 0.0001f) {
+                    Overload = sync.Overload;
+                    RofModifier = sync.RofModifier;
+                    WepUi.SetDps(comp, sync.DpsModifier, true);
+                }
+
+                return true;
             }
-
-            Overrides.Sync(syncFrom.Overrides);
-
-            if (Overload != syncFrom.Overload || Math.Abs(RofModifier - syncFrom.RofModifier) > 0.0001f || Math.Abs(DpsModifier - syncFrom.DpsModifier) > 0.0001f)
-            {
-                Overload = syncFrom.Overload;
-                RofModifier = syncFrom.RofModifier;
-                WepUi.SetDps(comp, syncFrom.DpsModifier, true);
-            }
+            return false;
         }
 
         public void TerminalActionSetter(WeaponComponent comp, ShootActions action)
@@ -84,9 +87,17 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponSettingsValues
     {
-        [ProtoMember(1)] public bool Enable = true;
-        [ProtoMember(2)] public int AmmoTypeId;
-        [ProtoMember(3), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2)] public bool Enable = true;
+        [ProtoMember(3)] public int AmmoTypeId;
+        [ProtoMember(4), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+
+        public void Sync(WeaponSettingsValues comp, WeaponSettingsValues syncFrom)
+        {
+            Revision = syncFrom.Revision;
+            Enable = syncFrom.Enable;
+            AmmoTypeId = syncFrom.AmmoTypeId;
+        }
 
         public void WeaponMode(WeaponComponent comp, ShootActions action, bool calledByTerminal = false)
         {
@@ -101,60 +112,79 @@ namespace WeaponCore
     [ProtoContract]
     public class CompStateValues
     {
-        [ProtoMember(1)] public bool Online; //don't save
-        [ProtoMember(2)] public WeaponStateValues[] Weapons;
-        //[ProtoMember(3)] public bool ShootOn; //don't save
-        //[ProtoMember(4)] public bool ClickShoot; //don't save
-        [ProtoMember(5)] public PlayerControl CurrentPlayerControl; //don't save
-        [ProtoMember(6)] public float CurrentCharge; //save
-        //[ProtoMember(7)] public int Version = Session.VersionControl; //save
-        //[ProtoMember(8)] public string CurrentBlockGroup; //don't save
-        [ProtoMember(9)] public bool OtherPlayerTrackingReticle; //don't save
+        public enum ControlMode
+        {
+            None,
+            Ui,
+            Toolbar,
+            Camera
+        }
 
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2)] public bool Online; //don't save
+        [ProtoMember(3)] public WeaponStateValues[] Weapons;
+        [ProtoMember(4)] public float CurrentCharge; //save
+        [ProtoMember(5)] public bool OtherPlayerTrackingReticle; //don't save
+        [ProtoMember(6), DefaultValue(-1)] public long PlayerId = -1;
+        [ProtoMember(7), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         public void Sync(WeaponComponent comp, CompStateValues syncFrom)
         {
+            Revision = syncFrom.Revision;
             Online = syncFrom.Online;
-            //ShootOn = syncFrom.ShootOn;
-            //ClickShoot = syncFrom.ClickShoot;
-            CurrentPlayerControl = syncFrom.CurrentPlayerControl;
             CurrentCharge = syncFrom.CurrentCharge;
             OtherPlayerTrackingReticle = syncFrom.OtherPlayerTrackingReticle;
+            PlayerId = syncFrom.PlayerId;
+            Control = syncFrom.Control;
+
             for (int i = 0; i < syncFrom.Weapons.Length; i++)
             {
                 var ws = Weapons[i];
                 var sws = syncFrom.Weapons[i];
                 var w = comp.Platform.Weapons[i];
 
-                if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.Sync.CurrentAmmo < sws.Sync.CurrentAmmo || ws.Sync.CurrentCharge < sws.Sync.CurrentCharge) {
-                    ws.Sync.CurrentAmmo = sws.Sync.CurrentAmmo;
-                    ws.Sync.CurrentCharge = sws.Sync.CurrentCharge;
+                if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge) {
+                    ws.CurrentAmmo = sws.CurrentAmmo;
+                    ws.CurrentCharge = sws.CurrentCharge;
                     w.LastAmmoUpdateTick = comp.Session.Tick;
                 }
 
                 ws.ShotsFired = sws.ShotsFired;
                 ws.SingleShotCounter = sws.SingleShotCounter;
-                ws.Sync.CurrentMags = sws.Sync.CurrentMags;
-                ws.Sync.Heat = sws.Sync.Heat;
-                ws.Sync.Overheated = sws.Sync.Overheated;
-                ws.Sync.HasInventory = sws.Sync.HasInventory;
+                ws.CurrentMags = sws.CurrentMags;
+                ws.Heat = sws.Heat;
+                ws.Overheated = sws.Overheated;
+                ws.HasInventory = sws.HasInventory;
 
             }
+        }
+
+        public bool PlayerControlSync(WeaponComponent comp, ControllingPlayerPacket packet)
+        {
+            if (comp.Data.Repo.WepVal.MIds[(int) packet.PType] < packet.MId) {
+                comp.Data.Repo.WepVal.MIds[(int) packet.PType] = packet.MId;
+
+                PlayerId = packet.PlayerId;
+                Control = packet.Control;
+                return true;
+            }
+
+            return false;
         }
 
         public void ResetToFreshLoadState()
         {
             Online = false;
-            CurrentPlayerControl.ControlType = ControlType.None;
-            CurrentPlayerControl.PlayerId = -1;
+            Control = ControlMode.None;
+            PlayerId = -1;
             OtherPlayerTrackingReticle = false;
 
             foreach (var w in Weapons)
             {
                 w.ShotsFired = 0;
                 w.SingleShotCounter = 0;
-                w.Sync.Heat = 0;
-                w.Sync.Overheated = false;
-                w.Sync.HasInventory = w.Sync.CurrentMags > 0;
+                w.Heat = 0;
+                w.Overheated = false;
+                w.HasInventory = w.CurrentMags > 0;
             }
         }
 
@@ -163,30 +193,30 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponStateValues
     {
-        [ProtoMember(1)] public int ShotsFired; //don't know??
-        [ProtoMember(3)] public int SingleShotCounter; // save
-        [ProtoMember(4)] public WeaponSyncValues Sync;
+        [ProtoMember(1)] public uint Revision; //dont save
+        [ProtoMember(2)] public int ShotsFired; //dont save
+        [ProtoMember(3)] public int SingleShotCounter; // dont save
+        [ProtoMember(4)] public float Heat; // don't save
+        [ProtoMember(5)] public int CurrentAmmo; //save
+        [ProtoMember(6)] public float CurrentCharge; //save
+        [ProtoMember(7)] public bool Overheated; //don't save
+        [ProtoMember(8)] public int WeaponId; // save
+        [ProtoMember(9)] public MyFixedPoint CurrentMags; // save
+        [ProtoMember(10)] public bool HasInventory; // save
 
-    }
-
-    [ProtoContract]
-    public class WeaponSyncValues
-    {
-        [ProtoMember(1)] public float Heat; // don't save
-        [ProtoMember(2)] public int CurrentAmmo; //save
-        [ProtoMember(3)] public float CurrentCharge; //save
-        [ProtoMember(4)] public bool Overheated; //don't save
-        [ProtoMember(5)] public int WeaponId; // save
-        [ProtoMember(6)] public MyFixedPoint CurrentMags; // save
-        [ProtoMember(7)] public bool HasInventory; // save
-
-        public void SetState (WeaponSyncValues sync, Weapon weapon)
+        public void Sync(WeaponStateValues sync, Weapon weapon)
         {
             if (weapon.System.Session.Tick - weapon.LastAmmoUpdateTick > 3600 || sync.CurrentAmmo < CurrentAmmo || sync.CurrentCharge < CurrentCharge) {
                 sync.CurrentAmmo = CurrentAmmo;
                 sync.CurrentCharge = CurrentCharge;
                 weapon.LastAmmoUpdateTick = weapon.System.Session.Tick;
             }
+
+            if (sync.ShotsFired < ShotsFired)
+                ShotsFired = sync.ShotsFired;
+            
+            if (sync.SingleShotCounter < SingleShotCounter)
+                SingleShotCounter = sync.SingleShotCounter;
 
             sync.Heat = Heat;
             sync.CurrentMags = CurrentMags;
@@ -197,44 +227,11 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class PlayerControl
-    {
-        [ProtoMember(1), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(2), DefaultValue(ControlType.None)] public ControlType ControlType = ControlType.None;
-
-        public PlayerControl() { }
-
-        public void Sync(PlayerControl syncFrom)
-        {
-            PlayerId = syncFrom.PlayerId;
-            ControlType = syncFrom.ControlType;
-        }
-    }
-    
-    public enum ControlType
-    {
-        None,
-        Ui,
-        Toolbar,
-        Camera        
-    }
-
-
-    [ProtoContract]
     public class WeaponValues
     {
         [ProtoMember(1)] public TransferTarget[] Targets;
-        [ProtoMember(3)] public WeaponRandomGenerator[] WeaponRandom;
-        [ProtoMember(4)] public uint[] MIds;
-
-        public void Save(WeaponComponent comp)
-        {
-            if (comp.MyCube?.Storage == null) return;
-            var sv = new WeaponValues {Targets = Targets, WeaponRandom = WeaponRandom, MIds = comp.MIds };
-            var binary = MyAPIGateway.Utilities.SerializeToBinary(sv);
-            comp.MyCube.Storage[comp.Session.MpWeaponSyncGuid] = Convert.ToBase64String(binary);
-
-        }
+        [ProtoMember(2)] public WeaponRandomGenerator[] WeaponRandom;
+        [ProtoMember(3)] public uint[] MIds;
 
         public static void Init(WeaponComponent comp)
         {
@@ -244,7 +241,6 @@ namespace WeaponCore
                 MIds = new uint[Enum.GetValues(typeof(PacketType)).Length]
             };
 
-            comp.MIds = comp.Data.Repo.WepVal.MIds;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
 
                 var w = comp.Platform.Weapons[i];
@@ -258,7 +254,7 @@ namespace WeaponCore
                 rand.TurretRandom = new Random(rand.CurrentSeed);
                 rand.AcquireRandom = new Random(rand.CurrentSeed);
 
-                comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State.Sync, false); }, null, 1);
+                comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
             }
         }
 
@@ -268,8 +264,6 @@ namespace WeaponCore
             {
                 if (!comp.Session.IsClient || comp.Data.Repo.WepVal.MIds == null || comp.Data.Repo.WepVal.MIds?.Length != Enum.GetValues(typeof(PacketType)).Length)
                     comp.Data.Repo.WepVal.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
-
-                comp.MIds = comp.Data.Repo.WepVal.MIds;
 
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
@@ -286,7 +280,7 @@ namespace WeaponCore
                     for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
                         rand.ClientProjectileRandom.Next();
 
-                    comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State.Sync, false); }, null, 1);
+                    comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
                 }
                 return;
             }

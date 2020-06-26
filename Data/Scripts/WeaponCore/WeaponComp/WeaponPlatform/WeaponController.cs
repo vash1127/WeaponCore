@@ -178,15 +178,15 @@ namespace WeaponCore.Platform
             try
             {
                 Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
-                State.Sync.Heat = State.Sync.Heat >= HsRate ? State.Sync.Heat - HsRate : 0;
+                State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
 
-                var set = State.Sync.Heat - LastHeat > 0.001 || State.Sync.Heat - LastHeat < 0.001;
+                var set = State.Heat - LastHeat > 0.001 || State.Heat - LastHeat < 0.001;
 
                 LastHeatUpdateTick = Comp.Session.Tick;
 
                 if (!Comp.Session.DedicatedServer)
                 {
-                    var heatOffset = HeatPerc = State.Sync.Heat / System.MaxHeat;
+                    var heatOffset = HeatPerc = State.Heat / System.MaxHeat;
 
                     if (set && heatOffset > .33)
                     {
@@ -205,14 +205,14 @@ namespace WeaponCore.Platform
                         for(int i = 0; i < HeatingParts.Count; i++)
                             HeatingParts[i]?.SetEmissiveParts("Heating", Color.Transparent, 0);
 
-                    LastHeat = State.Sync.Heat;
+                    LastHeat = State.Heat;
                 }
 
-                if (set && System.DegRof && State.Sync.Heat >= (System.MaxHeat * .8))
+                if (set && System.DegRof && State.Heat >= (System.MaxHeat * .8))
                 {
                     var systemRate = System.RateOfFire * Comp.Data.Repo.Set.RofModifier;
                     var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Set.RofModifier;
-                    var heatModifier = MathHelper.Lerp(1f, .25f, State.Sync.Heat / System.MaxHeat);
+                    var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
 
                     systemRate *= heatModifier;
 
@@ -236,13 +236,13 @@ namespace WeaponCore.Platform
                     if (System.HasBarrelRotation) UpdateBarrelRotation();
                 }
 
-                if (State.Sync.Overheated && State.Sync.Heat <= (System.MaxHeat * System.WepCoolDown))
+                if (State.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
                 {                        
                     EventTriggerStateChanged(EventTriggers.Overheated, false);
-                    State.Sync.Overheated = false;
+                    State.Overheated = false;
                 }
 
-                if (State.Sync.Heat > 0)
+                if (State.Heat > 0)
                     Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
                 else
                 {

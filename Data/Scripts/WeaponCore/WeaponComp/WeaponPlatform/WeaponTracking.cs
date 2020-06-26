@@ -111,7 +111,7 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
 
             if (weapon.Comp.TrackReticle)
-                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId].Position;
+                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -125,8 +125,8 @@ namespace WeaponCore.Platform
 
                 if (weapon.Comp.TrackReticle)
                 {
-                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId].LinearVelocity;
-                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId].Acceleration;
+                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].LinearVelocity;
+                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Acceleration;
                 }
                 else
                 {
@@ -171,11 +171,11 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             Vector3D targetCenter;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.Data.Repo.State.CurrentPlayerControl.ControlType == ControlType.None || weapon.Comp.Data.Repo.State.CurrentPlayerControl.ControlType == ControlType.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
             if (weapon.Comp.TrackReticle)
-                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId].Position;
+                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
             else if (!target.IsFakeTarget)
@@ -187,8 +187,8 @@ namespace WeaponCore.Platform
             if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
                 if (weapon.Comp.TrackReticle) {
-                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId].LinearVelocity;
-                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId].Acceleration;
+                    targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].LinearVelocity;
+                    targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Acceleration;
                 }
                 else {
                     var cube = target.Entity as MyCubeBlock;
@@ -220,7 +220,7 @@ namespace WeaponCore.Platform
             
             var locked = true;
             weapon.Target.IsTracking = false;
-            if (readyToTrack && weapon.Comp.Data.Repo.State.CurrentPlayerControl.ControlType != ControlType.Camera) {
+            if (readyToTrack && weapon.Comp.Data.Repo.State.Control != CompStateValues.ControlMode.Camera) {
 
                 if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false)) {
 
@@ -229,7 +229,7 @@ namespace WeaponCore.Platform
                 }
             }
 
-            if (weapon.Comp.Data.Repo.State.CurrentPlayerControl.ControlType == ControlType.Camera)
+            if (weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.Camera)
                 return weapon.Target.IsTracking;
 
             var isAligned = false;

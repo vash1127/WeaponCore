@@ -11,6 +11,7 @@ using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
+using static WeaponCore.CompStateValues;
 namespace WeaponCore
 {
     public partial class Session
@@ -30,7 +31,7 @@ namespace WeaponCore
 
                 UpdateActiveControlDictionary(ActiveControlBlock, PlayerId, true, true);
                 if (HandlesInput && oldBlock != ActiveControlBlock)
-                    SendActiveControlUpdate(activeBlock, true);
+                    SendActiveControlUpdate(TrackingAi, activeBlock, true);
             }
             else
             {
@@ -44,7 +45,7 @@ namespace WeaponCore
                         UpdateActiveControlDictionary(oldBlock, PlayerId, false, true);
                         
                         if (HandlesInput)
-                            SendActiveControlUpdate(oldBlock, false);
+                            SendActiveControlUpdate(TrackingAi, oldBlock, false);
                     }
 
                 }
@@ -78,8 +79,8 @@ namespace WeaponCore
                         if (gridAi.WeaponBase.TryGetValue(cube, out comp))
                         {
                             GunnerBlackList = true;
-                            comp.Data.Repo.State.CurrentPlayerControl.PlayerId = PlayerId;
-                            comp.Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Camera;
+                            comp.Data.Repo.State.PlayerId = PlayerId;
+                            comp.Data.Repo.State.Control = ControlMode.Camera;
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, false);
@@ -89,7 +90,7 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, false);
 
                             if (HandlesInput && MpActive)
-                                SendControlingPlayer(comp);
+                                ControllingPlayerRequest(comp, false);
                         }
                     }
                 }
@@ -111,8 +112,9 @@ namespace WeaponCore
                             WeaponComponent comp;
                             if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
                             {
-                                comp.Data.Repo.State.CurrentPlayerControl.PlayerId = -1;
-                                comp.Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.None;
+                                if (HandlesInput && MpActive)
+                                    ControllingPlayerRequest(comp, true);
+
                                 ActiveControlBlock = null;
                             }
                         }

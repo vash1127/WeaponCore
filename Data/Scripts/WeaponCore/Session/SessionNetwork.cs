@@ -134,10 +134,6 @@ namespace WeaponCore
                             break;
                         }
                         */
-                    case PacketType.GridAiUiMidUpdate: {
-                            ClientGridAiUiMidUpdate(packetObj);
-                            break;
-                        }
                     case PacketType.CycleAmmo: {
                             ClientCycleAmmo(packetObj);
                             break;
@@ -152,10 +148,6 @@ namespace WeaponCore
                         }
                     case PacketType.GridFocusListSync: {
                             ClientGridFocusListSync(packetObj);
-                            break;
-                        }
-                    case PacketType.ClientMidUpdate: {
-                            ClientClientMidUpdate(packetObj);
                             break;
                         }
                     case PacketType.FocusUpdate:
@@ -458,7 +450,6 @@ namespace WeaponCore
                 {
                     CompEntityId = w.Comp.MyCube.EntityId,
                     TargetData = null,
-                    //Timmings = null,
                     SyncData = null,
                     WeaponRng = null,
                 };
@@ -468,9 +459,9 @@ namespace WeaponCore
                 else if (w.SendTarget)
                     continue;
 
-                if (w.SendSync && w.State.Sync != null && w.Comp.Data.Repo.WepVal.WeaponRandom != null)
+                if (w.SendSync && w.State != null && w.Comp.Data.Repo.WepVal.WeaponRandom != null)
                 {
-                    weaponSync.SyncData = w.State.Sync;
+                    weaponSync.SyncData = w.State;
 
                     var rand = w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
                     rand.TurretCurrentCounter = 0;

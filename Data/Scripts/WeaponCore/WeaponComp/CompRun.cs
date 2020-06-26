@@ -117,7 +117,7 @@ namespace WeaponCore.Support
                             }
                         }
 
-                        if (weapon.State.Sync.CurrentAmmo == 0 && !weapon.Reloading)
+                        if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading)
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
                     }
                 } 
@@ -209,8 +209,8 @@ namespace WeaponCore.Support
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
 
-                    if (weapon.State.Sync.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                        weapon.State.Sync.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                    if (weapon.State.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                        weapon.State.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                     if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         Session.FutureEvents.Schedule(Session.DelayedComputeStorage, weapon, 240);

@@ -245,8 +245,8 @@ namespace WeaponCore.Support
 
             if (userControl)
             {
-                comp.Data.Repo.State.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                comp.Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Ui;
+                comp.Data.Repo.State.PlayerId = comp.Session.PlayerId;
+                comp.Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
 
                 if (o.ManualControl) {
                     o.TargetPainter = false;
@@ -259,8 +259,8 @@ namespace WeaponCore.Support
                 comp.Data.Repo.Set.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
             else {
-                comp.Data.Repo.State.CurrentPlayerControl.PlayerId = -1;
-                comp.Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.None;
+                comp.Data.Repo.State.PlayerId = -1;
+                comp.Data.Repo.State.Control = CompStateValues.ControlMode.None;
             }
         }
 

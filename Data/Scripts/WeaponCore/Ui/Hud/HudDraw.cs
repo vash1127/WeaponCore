@@ -243,7 +243,7 @@ namespace WeaponCore
                 if (hasHeat)
                 {
                     int heatBarIndex;
-                    if (weapon.State.Sync.Overheated)
+                    if (weapon.State.Overheated)
                         heatBarIndex = _heatBarTexture.Length - 1;
                     else
                         heatBarIndex = (int)MathHelper.Clamp(weapon.HeatPerc * 10, 0, _heatBarTexture.Length - 1);
@@ -274,7 +274,7 @@ namespace WeaponCore
                     {
 
                         if (mustCharge)
-                            stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.State.Sync.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
+                            stackedInfo.ReloadIndex = MathHelper.Clamp((int)(MathHelper.Lerp(0, texture.Length - 1, weapon.State.CurrentCharge / weapon.MaxCharge)), 0, texture.Length - 1);
 
                         stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                         stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;

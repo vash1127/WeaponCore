@@ -420,7 +420,7 @@ namespace WeaponCore.Platform
 
             var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
-            var canReload = State.Sync.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+            var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
             if (instantChange || canReload)
                 ChangeActiveAmmo(newAmmo);
@@ -440,9 +440,9 @@ namespace WeaponCore.Platform
         {
             if (!syncCharge)
             {
-                State.Sync.CurrentAmmo = 0;
-                Comp.Data.Repo.State.CurrentCharge -= State.Sync.CurrentCharge;
-                State.Sync.CurrentCharge = 0;
+                State.CurrentAmmo = 0;
+                Comp.Data.Repo.State.CurrentCharge -= State.CurrentCharge;
+                State.CurrentCharge = 0;
             }
 
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
@@ -542,10 +542,10 @@ namespace WeaponCore.Platform
                 return true;
             }
 
-            State.Sync.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
+            State.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
 
             var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-            var nothingToLoad = System.Session.IsServer ? State.Sync.CurrentMags <= 0 && !energyDrainable : !State.Sync.HasInventory && !energyDrainable;
+            var nothingToLoad = System.Session.IsServer ? State.CurrentMags <= 0 && !energyDrainable : !State.HasInventory && !energyDrainable;
 
             if (NoMagsToLoad)
             {
@@ -584,12 +584,12 @@ namespace WeaponCore.Platform
         internal bool Reload()
         {
 
-            var invalidState = State?.Sync == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
+            var invalidState = State == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
 
             if (invalidState || !Comp.Data.Repo.State.Online || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
                 return false;
 
-            if (State.Sync.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+            if (State.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
                 return false;
 
             var hasAmmo = HasAmmo();
@@ -651,7 +651,7 @@ namespace WeaponCore.Platform
 
         internal void ForceSync(bool modifyInventory = false, bool hasInventory = true)
         {
-            if (modifyInventory) State.Sync.HasInventory = hasInventory;
+            if (modifyInventory) State.HasInventory = hasInventory;
             if (Comp.Session.WeaponsSyncCheck.Add(this)) {
                 Comp.Session.WeaponsToSync.Add(this);
                 Comp.Ai.NumSyncWeapons++;
@@ -665,17 +665,17 @@ namespace WeaponCore.Platform
         {
             using (Comp.MyCube.Pin()) {
 
-                if (State?.Sync == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.MyCube.MarkedForClose) return;
+                if (State == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.MyCube.MarkedForClose) return;
 
                 LastLoadedTick = Comp.Session.Tick;
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
                     if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
+                        State.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
-                    Comp.Data.Repo.State.CurrentCharge -= State.Sync.CurrentCharge;
-                    State.Sync.CurrentCharge = MaxCharge;
+                    Comp.Data.Repo.State.CurrentCharge -= State.CurrentCharge;
+                    State.CurrentCharge = MaxCharge;
                     Comp.Data.Repo.State.CurrentCharge += MaxCharge;
 
                     ChargeUntilTick = 0;
@@ -688,11 +688,11 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (System.Session.IsServer || State.Sync.HasInventory)) {
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && (System.Session.IsServer || State.HasInventory)) {
                     
                     //Log.Line($"[Reloaded] currentAmmo: {State.Sync.CurrentAmmo} - hasInventory: {State.Sync.HasInventory}");
-                    if (State.Sync.CurrentAmmo <= 0)
-                        State.Sync.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+                    if (State.CurrentAmmo <= 0)
+                        State.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
 
                 }
                 else if (System.Session.IsClient && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && !HasAmmo()) {
@@ -701,7 +701,7 @@ namespace WeaponCore.Platform
                 }
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)
-                    ForceSync(true, State.Sync.HasInventory);
+                    ForceSync(true, State.HasInventory);
                 
                 Reloading = false;
             }

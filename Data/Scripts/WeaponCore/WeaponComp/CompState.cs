@@ -87,16 +87,16 @@ namespace WeaponCore.Support
             }
 
             if (action == ShootActions.ShootClick && HasTurret) {
-                Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Ui;
+                Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
             }
             else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce || action == ShootActions.ShootOn) {
-                Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.Toolbar;
+                Data.Repo.State.Control = CompStateValues.ControlMode.Toolbar;
             }
             else
-                Data.Repo.State.CurrentPlayerControl.ControlType = ControlType.None;
+                Data.Repo.State.Control = CompStateValues.ControlMode.None;
 
             playerId = playerId == -1 ? Session.PlayerId : playerId;
-            Data.Repo.State.CurrentPlayerControl.PlayerId = action == ShootActions.ShootOff ? -1 : playerId;
+            Data.Repo.State.PlayerId = action == ShootActions.ShootOff ? -1 : playerId;
         }
 
         internal void DetectStateChanges()
@@ -177,7 +177,7 @@ namespace WeaponCore.Support
                             else if (w.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                                 Session.FutureEvents.Schedule(w.TurnOnAV, null, 100);
 
-                            if (w.State.Sync.CurrentAmmo == 0)
+                            if (w.State.CurrentAmmo == 0)
                                 w.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);                            
                         }
                     }

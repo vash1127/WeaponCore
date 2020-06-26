@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent;
 
@@ -18,14 +17,12 @@ namespace WeaponCore
         CompStateUpdate,
         CompSettingsUpdate,
         WeaponSyncUpdate,
-        //WeaponPacket,
         FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
         PlayerIdUpdate,
         ActiveControlFullUpdate,
         FocusUpdate,
-        //MagUpdate,
         ReticleUpdate,
         OverRidesUpdate,
         PlayerControlUpdate,
@@ -35,7 +32,7 @@ namespace WeaponCore
         RequestMouseStates,
         FullMouseUpdate,
         CompToolbarShootState,
-        GridAiUiMidUpdate,
+        CompData,
         CycleAmmo,
         ReassignTargetUpdate,
         NextActiveUpdate,
@@ -44,7 +41,6 @@ namespace WeaponCore
         RescanGroupRequest,
         GridFocusListSync,
         FixedWeaponHitEvent,
-        ClientMidUpdate,
         CompSyncRequest,
         ProblemReport,
         TerminalMonitor,
@@ -52,31 +48,40 @@ namespace WeaponCore
 
     #region packets
     [ProtoContract]
-    [ProtoInclude(4, typeof(GridWeaponPacket))]
-    [ProtoInclude(5, typeof(InputPacket))]
-    [ProtoInclude(6, typeof(BoolUpdatePacket))]
-    [ProtoInclude(7, typeof(FakeTargetPacket))]
-    [ProtoInclude(8, typeof(CurrentGridPlayersPacket))]
-    [ProtoInclude(9, typeof(FocusPacket))]
-    [ProtoInclude(10, typeof(WeaponIdPacket))]
-    [ProtoInclude(11, typeof(RequestTargetsPacket))]
-    [ProtoInclude(12, typeof(MouseInputSyncPacket))]
-    [ProtoInclude(13, typeof(GridOverRidesSyncPacket))]
-    [ProtoInclude(14, typeof(GridFocusListPacket))]
-    [ProtoInclude(15, typeof(FixedWeaponHitPacket))]
-    [ProtoInclude(16, typeof(ClientMIdUpdatePacket))]
+    [ProtoInclude(5, typeof(GridWeaponPacket))]
+    [ProtoInclude(6, typeof(InputPacket))]
+    [ProtoInclude(7, typeof(BoolUpdatePacket))]
+    [ProtoInclude(8, typeof(FakeTargetPacket))]
+    [ProtoInclude(9, typeof(CurrentGridPlayersPacket))]
+    [ProtoInclude(10, typeof(FocusPacket))]
+    [ProtoInclude(11, typeof(WeaponIdPacket))]
+    [ProtoInclude(12, typeof(RequestTargetsPacket))]
+    [ProtoInclude(13, typeof(MouseInputSyncPacket))]
+    [ProtoInclude(14, typeof(GridOverRidesSyncPacket))]
+    [ProtoInclude(15, typeof(GridFocusListPacket))]
+    [ProtoInclude(16, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(17, typeof(ProblemReportPacket))]
-    [ProtoInclude(18, typeof(MIdPacket))]
+    [ProtoInclude(18, typeof(CycleAmmoPacket))]
+    [ProtoInclude(19, typeof(ShootStatePacket))]
+    [ProtoInclude(20, typeof(OverRidesPacket))]
+    [ProtoInclude(21, typeof(ControllingPlayerPacket))]
+    [ProtoInclude(22, typeof(StatePacket))]
+    [ProtoInclude(23, typeof(SettingPacket))]
+    [ProtoInclude(24, typeof(TerminalMonitorPacket))]
+    [ProtoInclude(25, typeof(CompDataPacket))]
+
 
 
     public class Packet
     {
-        [ProtoMember(1)] internal long EntityId;
-        [ProtoMember(2)] internal ulong SenderId;
-        [ProtoMember(3)] internal PacketType PType;
+        [ProtoMember(1)] internal uint MId;
+        [ProtoMember(2)] internal long EntityId;
+        [ProtoMember(3)] internal ulong SenderId;
+        [ProtoMember(4)] internal PacketType PType;
 
         public virtual void CleanUp()
         {
+            MId = 0;
             EntityId = 0;
             SenderId = 0;
             PType = PacketType.Invalid;
@@ -85,7 +90,7 @@ namespace WeaponCore
         //can override in other packet
         protected bool Equals(Packet other)
         {
-            return (EntityId.Equals(other.EntityId) && SenderId.Equals(other.SenderId) && PType.Equals(other.PType));
+            return (EntityId.Equals(other.EntityId) && SenderId.Equals(other.SenderId) && PType.Equals(other.PType) && MId.Equals(other.MId));
         }
 
         public override bool Equals(object obj)
@@ -99,6 +104,19 @@ namespace WeaponCore
         public override int GetHashCode()
         {
             return (EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode());
+        }
+    }
+
+    [ProtoContract]
+    public class CompDataPacket : Packet
+    {
+        [ProtoMember(1)] internal CompDataValues Data;
+        public CompDataPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
         }
     }
 
@@ -301,50 +319,9 @@ namespace WeaponCore
         }
     }
 
-    public class ClientMIdUpdatePacket : Packet
-    {
-        [ProtoMember(1)] internal uint MId;
-        [ProtoMember(2)] internal PacketType MidType;
-        [ProtoMember(3)] internal int HashCheck;
-
-        public ClientMIdUpdatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            MId = 0;
-            MidType = PacketType.Invalid;
-        }
-    }
-    #endregion
-
-    #region MId Based Packets
-    [ProtoContract]
-    //[ProtoInclude(23, typeof(CompShootPacket))]
-    [ProtoInclude(24, typeof(CycleAmmoPacket))]
-    [ProtoInclude(25, typeof(ShootStatePacket))]
-    [ProtoInclude(26, typeof(OverRidesPacket))]
-    [ProtoInclude(27, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(28, typeof(StatePacket))]
-    [ProtoInclude(29, typeof(SettingPacket))]
-    [ProtoInclude(30, typeof(TerminalMonitorPacket))]
-
-    public class MIdPacket : Packet
-    {
-        [ProtoMember(1)] internal uint MId;
-
-        public MIdPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            MId = 0;
-        }
-    }
-
 
     [ProtoContract]
-    public class TerminalMonitorPacket : MIdPacket
+    public class TerminalMonitorPacket : Packet
     {
         public enum Change
         {
@@ -363,7 +340,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CycleAmmoPacket : MIdPacket
+    public class CycleAmmoPacket : Packet
     {
         [ProtoMember(1)] internal int AmmoId;
         [ProtoMember(2)] internal int WeaponId;
@@ -378,7 +355,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ShootStatePacket : MIdPacket
+    public class ShootStatePacket : Packet
     {
         [ProtoMember(1)] internal ShootActions Action = ShootActions.ShootOff;
         [ProtoMember(2), DefaultValue(-1)] internal long PlayerId = -1;
@@ -394,7 +371,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class OverRidesPacket : MIdPacket
+    public class OverRidesPacket : Packet
     {
         [ProtoMember(1)] internal GroupOverrides Data;
         [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
@@ -414,21 +391,24 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ControllingPlayerPacket : MIdPacket
+    public class ControllingPlayerPacket : Packet
     {
-        [ProtoMember(1)] internal PlayerControl Data;
+        [ProtoMember(1)] internal long PlayerId;
+        [ProtoMember(2)] internal CompStateValues.ControlMode Control;
+
 
         public ControllingPlayerPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = null;
+            PlayerId = -1;
+            Control = CompStateValues.ControlMode.None;
         }
     }
 
     [ProtoContract]
-    public class StatePacket : MIdPacket
+    public class StatePacket : Packet
     {
         [ProtoMember(1)] internal CompStateValues Data;
 
@@ -442,7 +422,7 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class SettingPacket : MIdPacket
+    public class SettingPacket : Packet
     {
         [ProtoMember(1)] internal CompSettingsValues Data;
         public SettingPacket() { }
@@ -476,9 +456,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal TransferTarget TargetData;
         [ProtoMember(2)] internal long CompEntityId;
-        [ProtoMember(3)] internal WeaponSyncValues SyncData;
-        //[ProtoMember(4)] internal WeaponTimings Timmings;
-        [ProtoMember(5)] internal WeaponRandomGenerator WeaponRng;
+        [ProtoMember(3)] internal WeaponStateValues SyncData;
+        [ProtoMember(4)] internal WeaponRandomGenerator WeaponRng;
 
         public WeaponData() { }
     }
@@ -512,13 +491,6 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal long PlayerId;
         [ProtoMember(2)] internal InputStateData MouseStateData;
-    }
-
-    [ProtoContract]
-    internal class GroupSettingsData
-    {
-        [ProtoMember(1)] internal string SettingName;
-        [ProtoMember(2)] internal bool Value;
     }
 
     [ProtoContract]

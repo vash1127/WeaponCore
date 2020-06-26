@@ -117,13 +117,15 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             if (statePacket.Data == null) return Error(data,  Msg("Data"));
 
-            comp.MIds[(int)packet.PType] = statePacket.MId;
-            comp.Data.Repo.State.Sync(comp, statePacket.Data);
-            if (Wheel.WheelActive)
-                Wheel.Dirty = true;
+            if (statePacket.MId > comp.Data.Repo.Revision) {
 
-            data.Report.PacketValid = true;
+                comp.MIds[(int)packet.PType] = statePacket.MId;
+                comp.Data.Repo.State.Sync(comp, statePacket.Data);
+                if (Wheel.WheelActive)
+                    Wheel.Dirty = true;
 
+                data.Report.PacketValid = true;
+            }
             return true;
         }
 
@@ -136,9 +138,9 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             if (setPacket.Data == null) return Error(data, Msg("Data"));
 
-            comp.MIds[(int)packet.PType] = setPacket.MId;
-            comp.Data.Repo.Set.Sync(comp, setPacket.Data);
-            data.Report.PacketValid = true;
+            if (comp.Data.Repo.Set.Sync(comp, setPacket.Data)) 
+                data.Report.PacketValid = true;
+
             return true;
         }
 
@@ -345,13 +347,8 @@ namespace WeaponCore
             else if (myGrid != null)
             {
                 GridAi ai;
-                if (GridTargetingAIs.TryGetValue(myGrid, out ai) && ai.UiMId < overRidesPacket.MId) {
-                    ai.UiMId = overRidesPacket.MId;
-
-                    ai.ReScanBlockGroups();
-
-                    SyncGridOverrides(ai, overRidesPacket.GroupName, overRidesPacket.Data);
-
+                if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SyncGridOverrides(ai, packet, overRidesPacket.Data, overRidesPacket.GroupName)) {
+                    
                     GroupInfo groups;
                     if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups)) {
 
@@ -365,7 +362,7 @@ namespace WeaponCore
                         return Error(data, Msg("Block group not found"));
                 }
                 else
-                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+                    return Error(data, Msg($"GridAi found: {ai != null}, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
             }
 
             return true;
@@ -379,9 +376,8 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            comp.Data.Repo.State.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-            comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
-            data.Report.PacketValid = true;
+            if (comp.Data.Repo.State.PlayerControlSync(comp, cPlayerPacket))
+                data.Report.PacketValid = true;
 
             return true;
         }
@@ -422,25 +418,6 @@ namespace WeaponCore
 
         }
 
-        private bool ClientGridAiUiMidUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            var midPacket = (MIdPacket)packet;
-
-            if (myGrid == null) return Error(data, Msg("Grid"));
-
-            GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-                ai.UiMId = midPacket.MId;
-                data.Report.PacketValid = true;
-            }
-            else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-
-            return true;
-        }
-
         private bool ClientCycleAmmo(PacketObj data)
         {
             var packet = data.Packet;
@@ -477,8 +454,7 @@ namespace WeaponCore
                     var groupName = gridOverRidePacket.Data[i].GroupName;
                     var overRides = gridOverRidePacket.Data[i].Overrides;
 
-                    if (ai.BlockGroups.ContainsKey(groupName)) {
-                        SyncGridOverrides(ai, groupName, overRides);
+                    if (ai.BlockGroups.ContainsKey(groupName) && SyncGridOverrides(ai, packet, overRides, groupName)) {
                         data.Report.PacketValid = true;
                     }
                     else
@@ -534,35 +510,6 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientClientMidUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var midPacket = (ClientMIdUpdatePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            var myGrid = ent as MyCubeGrid;
-            if (comp?.Ai == null && myGrid == null) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai+Grid"));
-
-            if (comp != null) {
-                comp.MIds[(int)midPacket.MidType] = midPacket.MId;
-                //if (comp.GetSyncHash() != midPacket.HashCheck)
-                    //RequestCompSync(comp);
-
-                data.Report.PacketValid = true;
-            }
-            else  {
-                GridAi ai;
-                if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-                    ai.UiMId = midPacket.MId;
-                    data.Report.PacketValid = true;
-                }
-                else
-                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-            }
-
-            return true;
-
-        }
         private bool ClientFocusStates(PacketObj data)
         {
             var packet = data.Packet;
@@ -599,6 +546,7 @@ namespace WeaponCore
             return true;
 
         }
+
         private bool ClientSentReport(PacketObj data)
         {
             var packet = data.Packet;

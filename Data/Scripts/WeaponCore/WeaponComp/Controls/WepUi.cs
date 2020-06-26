@@ -40,7 +40,7 @@ namespace WeaponCore
             SetDps(comp, newValue);
         }
 
-            internal static void SetDps(WeaponComponent comp, float newValue, bool isNetworkUpdate = false, bool ammoChange = false)
+        internal static void SetDps(WeaponComponent comp, float newValue, bool isNetworkUpdate = false, bool ammoChange = false)
         {
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Data.Repo.Set.DpsModifier = newValue;
@@ -53,8 +53,8 @@ namespace WeaponCore
                 comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
             }
 
-            if (!isNetworkUpdate && comp.Session.HandlesInput)
-                comp.Session.SendCompSettingUpdate(comp);
+            //if (!isNetworkUpdate && comp.Session.HandlesInput)
+                //comp.Session.SendCompSettingUpdate(comp);
 
             comp.Ai.UpdatePowerSources = true;
             comp.SettingsUpdated = true;

@@ -28,8 +28,8 @@ namespace WeaponCore
                 {
                     if (!s.IsCreative) {
 
-                        weapon.State.Sync.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
-                        weapon.CurrentAmmoVolume = (float) weapon.State.Sync.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                        weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
+                        weapon.CurrentAmmoVolume = (float) weapon.State.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
                         weapon.Reload();
 
@@ -155,7 +155,7 @@ namespace WeaponCore
                     weapon.Comp.BlockInventory.Add(weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem, amt);
                 }
 
-                weapon.State.Sync.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
+                weapon.State.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
                 weapon.PullingAmmo = false;
 
                 InventoryMoveRequestPool.Return(weaponAmmoToPull);

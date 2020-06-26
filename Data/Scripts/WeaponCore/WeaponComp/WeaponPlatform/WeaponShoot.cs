@@ -123,8 +123,8 @@ namespace WeaponCore.Platform
                     }
 
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        if (State.Sync.CurrentAmmo == 0) break;
-                        State.Sync.CurrentAmmo--;
+                        if (State.CurrentAmmo == 0) break;
+                        State.CurrentAmmo--;
                     }
 
                     if (ActiveAmmoDef.AmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic)
@@ -232,16 +232,16 @@ namespace WeaponCore.Platform
                             HeatLoopRunning = true;
                         }
 
-                        State.Sync.Heat += HeatPShot;
+                        State.Heat += HeatPShot;
                         Comp.CurrentHeat += HeatPShot;
-                        if (State.Sync.Heat >= System.MaxHeat) {
+                        if (State.Heat >= System.MaxHeat) {
 
                             if (!Comp.Session.IsClient && Comp.Data.Repo.Set.Overload > 1) {
                                 var dmg = .02f * Comp.MaxIntegrity;
                                 Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                             }
                             EventTriggerStateChanged(EventTriggers.Overheated, true);
-                            State.Sync.Overheated = true;
+                            State.Overheated = true;
                             StopShooting();
                             break;
                         }

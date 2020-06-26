@@ -2,7 +2,6 @@
 using Sandbox.Game.Entities;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 
 namespace WeaponCore
 {
@@ -18,16 +17,15 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             if (statePacket.Data == null) return Error(data, Msg("Data"));
 
-            if (statePacket.MId > comp.MIds[(int)packet.PType]) {
-                comp.MIds[(int)packet.PType] = statePacket.MId;
+            if (statePacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
+                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = statePacket.MId;
                 comp.Data.Repo.State.Sync(comp, statePacket.Data);
                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
 
                 data.Report.PacketValid = true;
             }
             else {
-                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
-                return Error(data, Msg($"Mid is old({statePacket.MId}[{comp.MIds[(int)packet.PType]}]), likely multiple clients attempting update"));
+                return Error(data, Msg($"Mid is old({statePacket.MId}[{comp.Data.Repo.WepVal.MIds[(int)packet.PType]}]), likely multiple clients attempting update"));
             }
 
             return true;
@@ -43,15 +41,14 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
             if (setPacket.Data == null) return Error(data, Msg("Data"));
 
-            if (setPacket.MId > comp.MIds[(int)packet.PType]) {
-                comp.MIds[(int)packet.PType] = setPacket.MId;
+            if (setPacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
+                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = setPacket.MId;
                 comp.Data.Repo.Set.Sync(comp, setPacket.Data);
                 PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
 
                 data.Report.PacketValid = true;
             }
             else {
-                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp); // is this really required?
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 
@@ -167,18 +164,6 @@ namespace WeaponCore
                     });
                 }
 
-                PacketsToClient.Add(new PacketInfo {
-
-                    Entity = myGrid,
-                    Packet = new MIdPacket {
-                        EntityId = myGrid.EntityId,
-                        SenderId = packet.SenderId,
-                        PType = PacketType.GridAiUiMidUpdate,
-                        MId = ai.UiMId,
-                    },
-                    SingleClient = true,
-                });
-
                 var gridPacket = new GridWeaponPacket {
                     EntityId = packet.EntityId,
                     SenderId = packet.SenderId,
@@ -199,8 +184,7 @@ namespace WeaponCore
 
                         var weaponData = new WeaponData {
                             CompEntityId = comp.MyCube.EntityId,
-                            SyncData = w.State.Sync,
-                            //Timmings = w.Timings.SyncOffsetServer(Tick),
+                            SyncData = w.State,
                             TargetData = comp.Data.Repo.WepVal.Targets[j],
                             WeaponRng = comp.Data.Repo.WepVal.WeaponRandom[j]
                         };
@@ -317,8 +301,8 @@ namespace WeaponCore
             if (comp?.Ai != null) {
                 Log.Line($"ServerOverRidesUpdate Comp0");
 
-                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
-                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
+                if (comp.Data.Repo.WepVal.MIds[(int)packet.PType] < overRidesPacket.MId) {
+                    comp.Data.Repo.WepVal.MIds[(int)packet.PType] = overRidesPacket.MId;
                     Log.Line($"ServerOverRidesUpdate Comp1");
 
                     comp.Ai.ReScanBlockGroups();
@@ -343,10 +327,10 @@ namespace WeaponCore
                 if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                     Log.Line($"ServerOverRidesUpdate myGrid1");
-                    if (ai.UiMId < overRidesPacket.MId) {
-                        ai.UiMId = overRidesPacket.MId;
+                    if (ai.MIds[(int) overRidesPacket.PType] < overRidesPacket.MId) {
+                        ai.MIds[(int)overRidesPacket.PType] = overRidesPacket.MId;
+                        
                         Log.Line($"ServerOverRidesUpdate myGrid2");
-
                         ai.ReScanBlockGroups();
 
                         GroupInfo groups;
@@ -365,68 +349,6 @@ namespace WeaponCore
                 else
                     return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
             }
-            /*
-            if (comp != null) {
-
-                if (comp.MIds[(int)packet.PType] < overRidesPacket.MId) {
-
-                    comp.Set.Value.Overrides.Sync(overRidesPacket.Data);
-                    comp.MIds[(int)packet.PType] = overRidesPacket.MId;
-
-                    GroupInfo group;
-                    if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && comp.Ai.BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group)) {
-                        comp.Ai.ScanBlockGroupSettings = true;
-                        comp.Ai.GroupsToCheck.Add(group);
-                    }
-                    data.Report.PacketValid = true;
-                }
-                else {
-                    SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp); // is this really required?
-                    return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-                }
-            }
-            else {
-                GridAi ai;
-                if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-
-                    if (ai.UiMId < overRidesPacket.MId) {
-
-                        var o = overRidesPacket.Data;
-                        ai.UiMId = overRidesPacket.MId;
-
-                        ai.ReScanBlockGroups();
-
-                        SyncGridOverrides(ai, overRidesPacket.GroupName, o);
-
-                        GroupInfo groups;
-                        if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups)) {
-
-                            foreach (var component in groups.Comps) {
-                                component.State.Value.CurrentBlockGroup = overRidesPacket.GroupName;
-                                component.Set.Value.Overrides.Sync(o);
-                            }
-
-                            data.Report.PacketValid = true;
-                        }
-                        else
-                            return Error(data, Msg("Block group not found"));
-                    }
-                    else {
-                        SendMidResync(packet.PType, ai.UiMId, packet.SenderId, myGrid, null); // is this really required?
-                        return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-                    }
-                }
-                else
-                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-            }
-
-            if (data.Report.PacketValid) {
-                PacketsToClient.Add(new PacketInfo {
-                    Entity = ent,
-                    Packet = overRidesPacket,
-                });
-            }
-            */
             return true;
         }
 
@@ -439,14 +361,12 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < cPlayerPacket.MId) {
-                comp.Data.Repo.State.CurrentPlayerControl.Sync(cPlayerPacket.Data);
-                comp.MIds[(int)packet.PType] = cPlayerPacket.MId;
+            if (comp.Data.Repo.State.PlayerControlSync(comp, cPlayerPacket)) {
+                
+                SendCompStateUpdate(comp);
                 data.Report.PacketValid = true;
-                PacketsToClient.Add(new PacketInfo { Entity = comp.MyCube, Packet = cPlayerPacket });
             }
             else {
-                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 
@@ -486,8 +406,7 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         var weaponData = new WeaponData {
                             CompEntityId = compId,
-                            SyncData = w.State.Sync,
-                            //Timmings = w.Timings.SyncOffsetServer(Tick),
+                            SyncData = w.State,
                             TargetData = comp.Data.Repo.WepVal.Targets[j],
                             WeaponRng = comp.Data.Repo.WepVal.WeaponRandom[j]
                         };
@@ -561,9 +480,8 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < shootStatePacket.MId) {
-
-                comp.MIds[(int)packet.PType] = shootStatePacket.MId;
+            if (comp.Data.Repo.WepVal.MIds[(int)packet.PType] < shootStatePacket.MId) {
+                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = shootStatePacket.MId;
 
                 comp.RequestShootUpdate(shootStatePacket.Action, shootStatePacket.PlayerId);
                 data.Report.PacketValid = true;
@@ -583,9 +501,9 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (cyclePacket.MId > comp.MIds[(int)packet.PType]) {
+            if (cyclePacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
 
-                comp.MIds[(int)packet.PType] = cyclePacket.MId;
+                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = cyclePacket.MId;
 
                 var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
 
@@ -600,7 +518,6 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else {
-                //SendMidResync(packet.PType, comp.MIds[(int)packet.PType], packet.SenderId, ent, comp);
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
 
@@ -731,10 +648,10 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (terminalMonPacket.MId > comp.MIds[(int) packet.PType]) {
+            if (terminalMonPacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
 
                 if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
-                    comp.MIds[(int)packet.PType] = terminalMonPacket.MId;
+                    comp.Data.Repo.WepVal.MIds[(int)packet.PType] = terminalMonPacket.MId;
                     TerminalMon.ServerUpdate(comp);
                     //Log.Line("Terminal Update");
                 }

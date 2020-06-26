@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -70,6 +71,7 @@ namespace WeaponCore.Support
         internal readonly ActiveTerminal ActiveWeaponTerminal;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly object AiLock = new object();
+        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
@@ -130,7 +132,6 @@ namespace WeaponCore.Support
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
         internal uint TurnOffManualTick;
-        internal uint UiMId;
         internal uint ProjectileTicker;
 
         internal uint LastDetectEvent;

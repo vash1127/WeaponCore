@@ -4,11 +4,8 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
 
@@ -103,7 +100,7 @@ namespace WeaponCore
             }
         }
 
-        internal void SendMouseUpdate(MyEntity entity)
+        internal void SendMouseUpdate(GridAi ai, MyEntity entity)
         {
             if (!HandlesInput) return;
 
@@ -111,6 +108,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new InputPacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.ClientMouseEvent],
                     EntityId = entity.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ClientMouseEvent,
@@ -124,6 +122,7 @@ namespace WeaponCore
                     Entity = entity,
                     Packet = new InputPacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.ClientMouseEvent],
                         EntityId = entity.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ClientMouseEvent,
@@ -133,12 +132,13 @@ namespace WeaponCore
             }
         }
 
-        internal void SendActiveControlUpdate(MyCubeBlock controlBlock, bool active)
+        internal void SendActiveControlUpdate(GridAi ai, MyCubeBlock controlBlock, bool active)
         {
             if (IsClient)
             {
                 PacketsToServer.Add(new BoolUpdatePacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.ActiveControlUpdate],
                     EntityId = controlBlock.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ActiveControlUpdate,
@@ -152,6 +152,7 @@ namespace WeaponCore
                     Entity = controlBlock,
                     Packet = new BoolUpdatePacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.ActiveControlUpdate],
                         EntityId = controlBlock.EntityId,
                         SenderId = 0,
                         PType = PacketType.ActiveControlUpdate,
@@ -163,17 +164,17 @@ namespace WeaponCore
 
         internal void SendCycleAmmoNetworkUpdate(Weapon weapon, int ammoId)
         {
-            weapon.Comp.MIds[(int)PacketType.CycleAmmo]++;
+            
             if (IsClient)
             {
                 PacketsToServer.Add(new CycleAmmoPacket
                 {
+                    MId = ++weapon.Comp.MIds[(int)PacketType.CycleAmmo],
                     EntityId = weapon.Comp.MyCube.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.CycleAmmo,
                     AmmoId = ammoId,
-                    MId = weapon.Comp.MIds[(int)PacketType.CycleAmmo],
-                    WeaponId = weapon.WeaponId
+                WeaponId = weapon.WeaponId
                 });
             }
             else
@@ -183,11 +184,11 @@ namespace WeaponCore
                     Entity = weapon.Comp.MyCube,
                     Packet = new CycleAmmoPacket
                     {
+                        MId = ++weapon.Comp.Data.Repo.Revision,
                         EntityId = weapon.Comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CycleAmmo,
                         AmmoId = ammoId,
-                        MId = weapon.Comp.MIds[(int)PacketType.CycleAmmo],
                         WeaponId = weapon.WeaponId
                     }
                 });
@@ -197,10 +198,10 @@ namespace WeaponCore
         internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
 
-            comp.MIds[(int)PacketType.OverRidesUpdate]++;
+            
             PacketsToServer.Add(new OverRidesPacket
             {
-                MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                MId = ++comp.MIds[(int)PacketType.OverRidesUpdate],
                 PType = PacketType.OverRidesUpdate,
                 EntityId = comp.MyCube.EntityId,
                 SenderId = MultiplayerId,
@@ -214,12 +215,11 @@ namespace WeaponCore
 
         internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
         {
-            ai.UiMId++;
             if (IsClient)
             {
                 PacketsToServer.Add(new OverRidesPacket
                 {
-                    MId = ai.UiMId,
+                    MId = ++ai.MIds[(int)PacketType.OverRidesUpdate],
                     PType = PacketType.OverRidesUpdate,
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
@@ -232,13 +232,12 @@ namespace WeaponCore
 
         internal void SendOverRidesServerAi(GridAi ai, string groupName, GroupOverrides data)
         {
-            ai.UiMId++;
             PacketsToClient.Add(new PacketInfo
             {
                 Entity = ai.MyGrid,
                 Packet = new OverRidesPacket
                 {
-                    MId = ai.UiMId,
+                    MId = ++ai.MIds[(int)PacketType.OverRidesUpdate],
                     PType = PacketType.OverRidesUpdate,
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = 0,
@@ -255,7 +254,7 @@ namespace WeaponCore
                 Entity = comp.MyCube,
                 Packet = new OverRidesPacket
                 {
-                    MId = comp.MIds[(int)PacketType.OverRidesUpdate],
+                    MId = ++comp.Data.Repo.Revision,
                     PType = PacketType.OverRidesUpdate,
                     EntityId = comp.MyCube.EntityId,
                     SenderId = 0,
@@ -267,32 +266,29 @@ namespace WeaponCore
 
         internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
         {
-            comp.MIds[(int)PacketType.CompToolbarShootState]++;
-            var mId = comp.MIds[(int)PacketType.CompToolbarShootState];
-
             comp.Session.PacketsToServer.Add(new ShootStatePacket
             {
+                MId = ++comp.MIds[(int)PacketType.CompToolbarShootState],
                 EntityId = comp.MyCube.EntityId,
                 SenderId = comp.Session.MultiplayerId,
                 PType = PacketType.CompToolbarShootState,
-                MId = mId,
                 Action = action,
                 PlayerId = PlayerId,
             });
         }
 
-        internal void SendControlingPlayer(WeaponComponent comp)
+        internal void ControllingPlayerRequest(WeaponComponent comp, bool reset)
         {
-            comp.MIds[(int)PacketType.PlayerControlUpdate]++;
             if (IsClient)
             {
                 PacketsToServer.Add(new ControllingPlayerPacket
                 {
+                    MId = ++comp.MIds[(int)PacketType.PlayerControlUpdate],
                     EntityId = comp.MyCube.EntityId,
                     SenderId = MultiplayerId,
-                    MId = comp.MIds[(int)PacketType.PlayerControlUpdate],
                     PType = PacketType.PlayerControlUpdate,
-                    Data = comp.Data.Repo.State.CurrentPlayerControl,
+                    PlayerId = reset ? -1 : PlayerId,
+                    Control = reset ? CompStateValues.ControlMode.None : CompStateValues.ControlMode.Camera,
                 });
             }
             else if (HandlesInput)
@@ -302,11 +298,12 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new ControllingPlayerPacket
                     {
+                        MId = ++comp.Data.Repo.Revision,
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
-                        MId = comp.MIds[(int)PacketType.PlayerControlUpdate],
                         PType = PacketType.PlayerControlUpdate,
-                        Data = comp.Data.Repo.State.CurrentPlayerControl,
+                        PlayerId = reset ? -1 : PlayerId,
+                        Control = reset ? CompStateValues.ControlMode.None : CompStateValues.ControlMode.Camera,
                     }
                 });
             }
@@ -318,6 +315,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FakeTargetPacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.FakeTargetUpdate],
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = ai.Session.MultiplayerId,
                     PType = PacketType.FakeTargetUpdate,
@@ -331,6 +329,7 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FakeTargetPacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.FakeTargetUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.FakeTargetUpdate,
@@ -342,7 +341,6 @@ namespace WeaponCore
         
         internal void SendCompStateUpdate(WeaponComponent comp)
         {
-            comp.MIds[(int)PacketType.CompStateUpdate]++;
             if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
@@ -350,6 +348,7 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new StatePacket
                     {
+                        MId = ++comp.Data.Repo.Revision,
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CompStateUpdate,
@@ -362,8 +361,6 @@ namespace WeaponCore
 
         internal void SendCompSettingUpdate(WeaponComponent comp)
         {
-            comp.MIds[(int)PacketType.CompSettingsUpdate]++;
-
             if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
@@ -371,11 +368,11 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new SettingPacket
                     {
+                        MId = ++comp.Data.Repo.Revision,
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CompSettingsUpdate,
                         Data = comp.Data.Repo.Set,
-                        MId = comp.MIds[(int)PacketType.CompSettingsUpdate]
                     }
                 });
             }
@@ -398,6 +395,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new BoolUpdatePacket
                 {
+                    MId = ++comp.MIds[(int)PacketType.ReticleUpdate],
                     EntityId = comp.MyCube.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ReticleUpdate,
@@ -411,6 +409,7 @@ namespace WeaponCore
                     Entity = comp.MyCube,
                     Packet = new BoolUpdatePacket
                     {
+                        MId = ++comp.Data.Repo.Revision,
                         EntityId = comp.MyCube.EntityId,
                         PType = PacketType.ReticleUpdate,
                         Data = comp.TrackReticle
@@ -441,6 +440,7 @@ namespace WeaponCore
                 Entity = comp.MyCube,
                 Packet = new WeaponIdPacket
                 {
+                    MId = ++comp.Data.Repo.Revision,
                     EntityId = comp.MyCube.EntityId,
                     SenderId = 0,
                     PType = PacketType.TargetExpireUpdate,
@@ -455,6 +455,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new Packet
                 {
+                    MId = ++ai.MIds[(int)PacketType.RescanGroupRequest],
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.RescanGroupRequest,
@@ -467,6 +468,7 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new Packet
                     {
+                        MId = ++ai.MIds[(int)PacketType.RescanGroupRequest],
                         EntityId = ai.MyGrid.EntityId,
                         PType = PacketType.RescanGroupRequest,
                     }
@@ -485,6 +487,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FixedWeaponHitPacket
                 {
+                    MId = ++comp.MIds[(int)PacketType.FixedWeaponHitEvent],
                     EntityId = firingCube.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.FixedWeaponHitEvent,
@@ -534,6 +537,8 @@ namespace WeaponCore
             });
         }
         */
+
+        #endregion
         #region AIFocus packets
         internal void SendFocusTargetUpdate(GridAi ai, long targetId)
         {
@@ -541,6 +546,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FocusPacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.FocusUpdate],
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.FocusUpdate,
@@ -554,6 +560,7 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.FocusUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.FocusUpdate,
@@ -569,6 +576,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FocusPacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.ReassignTargetUpdate],
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ReassignTargetUpdate,
@@ -583,6 +591,7 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.ReassignTargetUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ReassignTargetUpdate,
@@ -599,6 +608,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FocusPacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.NextActiveUpdate],
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.NextActiveUpdate,
@@ -612,6 +622,7 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.NextActiveUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.NextActiveUpdate,
@@ -627,6 +638,7 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FocusPacket
                 {
+                    MId = ++ai.MIds[(int)PacketType.ReleaseActiveUpdate],
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ReleaseActiveUpdate
@@ -639,6 +651,7 @@ namespace WeaponCore
                     Entity = ai.MyGrid,
                     Packet = new FocusPacket
                     {
+                        MId = ++ai.MIds[(int)PacketType.ReleaseActiveUpdate],
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.ReleaseActiveUpdate
@@ -647,16 +660,15 @@ namespace WeaponCore
             }
         }
         #endregion
-        #endregion
 
 
         #region Misc Network Methods
-        internal void SyncWeapon(Weapon weapon, ref WeaponSyncValues weaponData, bool setState = true)
+        internal void SyncWeapon(Weapon weapon, ref WeaponStateValues weaponData, bool setState = true)
         {
             if (weapon.System.DesignatorWeapon) return;
 
             if (setState)
-                weaponData.SetState(weapon.State.Sync, weapon);
+                weaponData.Sync(weapon.State, weapon);
 
             if (weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable && !weapon.Reloading)
                 weapon.Reload();
@@ -682,20 +694,29 @@ namespace WeaponCore
             }
         }
 
-        internal static void SyncGridOverrides(GridAi ai, string groupName, GroupOverrides o)
+        internal static bool SyncGridOverrides(GridAi ai, Packet packet, GroupOverrides o, string groupName)
         {
-            ai.BlockGroups[groupName].Settings["Active"] = o.Activate ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["Neutrals"] = o.Neutrals ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["Projectiles"] = o.Projectiles ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["Biologicals"] = o.Biologicals ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["Meteors"] = o.Meteors ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["Friendly"] = o.Friendly ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["Unowned"] = o.Unowned ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["TargetPainter"] = o.TargetPainter ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["ManualControl"] = o.ManualControl ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["FocusTargets"] = o.FocusTargets ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["FocusSubSystem"] = o.FocusSubSystem ? 1 : 0;
-            ai.BlockGroups[groupName].Settings["SubSystems"] = (int)o.SubSystem;
+            if (ai.MIds[(int) packet.PType] < packet.MId) {
+                ai.MIds[(int) packet.PType] = packet.MId;
+
+                ai.ReScanBlockGroups();
+
+                ai.BlockGroups[groupName].Settings["Active"] = o.Activate ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["Neutrals"] = o.Neutrals ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["Projectiles"] = o.Projectiles ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["Biologicals"] = o.Biologicals ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["Meteors"] = o.Meteors ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["Friendly"] = o.Friendly ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["Unowned"] = o.Unowned ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["TargetPainter"] = o.TargetPainter ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["ManualControl"] = o.ManualControl ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["FocusTargets"] = o.FocusTargets ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["FocusSubSystem"] = o.FocusSubSystem ? 1 : 0;
+                ai.BlockGroups[groupName].Settings["SubSystems"] = (int)o.SubSystem;
+                return true;
+            }
+
+            return false;
         }
 
         internal static GroupOverrides GetOverrides(GridAi ai, string groupName)

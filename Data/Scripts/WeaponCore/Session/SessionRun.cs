@@ -177,7 +177,7 @@ namespace WeaponCore
                 {
                     DsUtil.Start("network1");
                     if (WeaponsToSync.Count > 0) Proccessor.Proccess();
-                    if (UiInput.InputChanged && ActiveControlBlock != null) SendMouseUpdate(ActiveControlBlock);
+                    if (UiInput.InputChanged && ActiveControlBlock != null) SendMouseUpdate(TrackingAi, ActiveControlBlock);
                     if (ClientGridResyncRequests.Count > 0) ProccessGridResyncRequests();
 
                     Proccessor.AddPackets();

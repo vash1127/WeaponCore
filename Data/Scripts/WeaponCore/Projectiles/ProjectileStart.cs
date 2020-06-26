@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer = w.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId == w.Comp.Session.PlayerId;
+                var firingPlayer = w.Comp.Data.Repo.State.PlayerId == w.Comp.Session.PlayerId;
                 var patternCycle = gen.PatternCycle;
                 var targetable = w.ActiveAmmoDef.AmmoDef.Health > 0 && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon;
                 var p = Session.Projectiles.ProjectilePool.Count > 0 ? Session.Projectiles.ProjectilePool.Pop() : new Projectile();
@@ -37,7 +37,7 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
-                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.State.CurrentPlayerControl.PlayerId] : null;
+                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.State.PlayerId] : null;
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;
