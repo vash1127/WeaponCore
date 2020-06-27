@@ -333,10 +333,14 @@ namespace WeaponCore.Projectiles
                 for (int i = 0; i < ai.StaticsInRange.Count; i++)
                 {
                     var staticEnt = ai.StaticsInRange[i];
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                     var voxel = staticEnt as MyVoxelBase;
                     var grid = staticEnt as MyCubeGrid;
+                    if (voxel == null && grid == null || grid != null && (grid.Physics == null || grid.Physics.IsPhantom || grid.IsPreview))
+                        continue;
+
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+
 
                     if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
                     {

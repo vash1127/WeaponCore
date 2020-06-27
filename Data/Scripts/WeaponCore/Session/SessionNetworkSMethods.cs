@@ -666,5 +666,19 @@ namespace WeaponCore
 
             return true;
         }
+
+        private bool ServerSendSingleShot(PacketObj data)
+        {
+            var packet = data.Packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            PacketsToClient.Add(new PacketInfo { Packet = packet });
+
+            data.Report.PacketValid = true;
+            return true;
+        }
     }
 }

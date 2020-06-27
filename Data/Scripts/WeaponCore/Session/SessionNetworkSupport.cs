@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
@@ -377,6 +376,29 @@ namespace WeaponCore
                 });
             }
             else Log.Line($"SendCompSettingUpdate should never be called on Client");
+        }
+
+        internal void SendSingleShot(WeaponComponent comp)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new Packet
+                {
+                    EntityId = comp.MyCube.EntityId,
+                    PType = PacketType.SendSingleShot,
+                });
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Packet = new Packet
+                    {
+                        EntityId = comp.MyCube.EntityId,
+                        PType = PacketType.SendSingleShot,
+                    }
+                });
+            }
         }
 
         internal void SendUpdateRequest(long entityId, PacketType ptype)

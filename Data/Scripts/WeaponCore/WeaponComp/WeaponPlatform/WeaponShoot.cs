@@ -86,12 +86,12 @@ namespace WeaponCore.Platform
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
 
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++State.ShotsFired > System.ShotsPerBurst) {
-                    State.ShotsFired = 1;
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && ++ShotsFired > System.ShotsPerBurst) {
+                    ShotsFired = 1;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
-                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++State.ShotsFired == System.ShotsPerBurst) {
-                    State.ShotsFired = 0;
+                else if (ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay && System.ShotsPerBurst > 0 && ++ShotsFired == System.ShotsPerBurst) {
+                    ShotsFired = 0;
                     ShootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
                 }
 
@@ -259,7 +259,7 @@ namespace WeaponCore.Platform
 
                 if (!Reload() && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
 
-                    if (State.ShotsFired == System.ShotsPerBurst) {
+                    if (ShotsFired == System.ShotsPerBurst) {
                         uint delay = 0;
                         FinishBurst = false;
                         if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
@@ -283,12 +283,12 @@ namespace WeaponCore.Platform
                         if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
                             Target.Reset(Comp.Session.Tick, Target.States.FiredBurst);
                     }
-                    else if (System.AlwaysFireFullBurst && State.ShotsFired < System.ShotsPerBurst)
+                    else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
                         FinishBurst = true;
                 }
 
 
-                if (Set.Action == ShootActions.ShootOnce && --State.SingleShotCounter <= 0)
+                if (Set.Action == ShootActions.ShootOnce && --SingleShotCounter <= 0)
                 {
                     Set.WeaponMode(Comp, ShootActions.ShootOff);
                 }

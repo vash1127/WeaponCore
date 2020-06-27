@@ -240,7 +240,7 @@ namespace WeaponCore.Support
                 ExplosionFlags = eFlags,
                 VoxelCutoutScale = 0.3f,
                 PlaySound = playSound,
-                ApplyForceAndDamage = false,
+                ApplyForceAndDamage = true,
                 KeepAffectedBlocks = true,
                 CustomEffect = eInfo.CustomParticle,
                 CreateParticleEffect = drawParticles,

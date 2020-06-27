@@ -16,13 +16,18 @@ namespace WeaponCore
         [ProtoMember(2)] public CompSettingsValues Set;
         [ProtoMember(3)] public CompStateValues State;
         [ProtoMember(4)] public WeaponValues WepVal;
-        [ProtoMember(5)] public long LastRequesterId;
-        [ProtoMember(6)] public int Version = Session.VersionControl;
+        [ProtoMember(5)] public int Version = Session.VersionControl;
 
-        public void Sync(WeaponComponent comp, CompDataPacket packet)
+        public void Sync(WeaponComponent comp, CompDataValues data)
         {
-            Set.Sync(comp, packet.Data.Set);
-            State.Sync(comp, packet.Data.State);
+            if (data.Revision > Revision) {
+
+                Revision = data.Revision;
+                
+                Set.Sync(comp, data.Set);
+                State.Sync(comp, data.State);
+                WepVal.Sync(comp, data.WepVal);
+            }
         }
     }
 
@@ -32,13 +37,12 @@ namespace WeaponCore
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2), DefaultValue(true)] public bool Guidance = true;
         [ProtoMember(3), DefaultValue(1)] public int Overload = 1;
-        [ProtoMember(4)] public long Modes;
-        [ProtoMember(5), DefaultValue(1)] public float DpsModifier = 1;
-        [ProtoMember(6), DefaultValue(1)] public float RofModifier = 1;
-        [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
-        [ProtoMember(8), DefaultValue(100)] public float Range = 100;
-        [ProtoMember(9)] public GroupOverrides Overrides;
-        [ProtoMember(10)] public ShootActions TerminalAction;
+        [ProtoMember(4), DefaultValue(1)] public float DpsModifier = 1;
+        [ProtoMember(5), DefaultValue(1)] public float RofModifier = 1;
+        [ProtoMember(6)] public WeaponSettingsValues[] Weapons;
+        [ProtoMember(7), DefaultValue(100)] public float Range = 100;
+        [ProtoMember(8)] public GroupOverrides Overrides;
+        [ProtoMember(9)] public ShootActions TerminalAction;
 
 
         public CompSettingsValues()
@@ -52,7 +56,6 @@ namespace WeaponCore
 
                 Revision = sync.Revision;
                 Guidance = sync.Guidance;
-                Modes = sync.Modes;
                 Range = sync.Range;
 
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
@@ -87,17 +90,9 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponSettingsValues
     {
-        [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public bool Enable = true;
-        [ProtoMember(3)] public int AmmoTypeId;
-        [ProtoMember(4), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
-
-        public void Sync(WeaponSettingsValues comp, WeaponSettingsValues syncFrom)
-        {
-            Revision = syncFrom.Revision;
-            Enable = syncFrom.Enable;
-            AmmoTypeId = syncFrom.AmmoTypeId;
-        }
+        [ProtoMember(1)] public bool Enable = true;
+        [ProtoMember(2)] public int AmmoTypeId;
+        [ProtoMember(3), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
 
         public void WeaponMode(WeaponComponent comp, ShootActions action, bool calledByTerminal = false)
         {
@@ -108,6 +103,84 @@ namespace WeaponCore
         }
     }
 
+    [ProtoContract]
+    public class GroupOverrides
+    {
+        [ProtoMember(1), DefaultValue(true)] public bool Activate = true;
+        [ProtoMember(2)] public bool Neutrals;
+        [ProtoMember(3)] public bool Unowned;
+        [ProtoMember(4)] public bool Friendly;
+        [ProtoMember(5)] public bool TargetPainter;
+        [ProtoMember(6)] public bool ManualControl;
+        [ProtoMember(7)] public bool FocusTargets;
+        [ProtoMember(8)] public bool FocusSubSystem;
+        [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
+        [ProtoMember(10), DefaultValue(true)] public bool Meteors;
+        [ProtoMember(11), DefaultValue(true)] public bool Biologicals;
+        [ProtoMember(12), DefaultValue(true)] public bool Projectiles;
+
+        public GroupOverrides() { }
+
+        public void Sync(GroupOverrides syncFrom)
+        {
+            Activate = syncFrom.Activate;
+            Neutrals = syncFrom.Neutrals;
+            Unowned = syncFrom.Unowned;
+            Friendly = syncFrom.Friendly;
+            TargetPainter = syncFrom.TargetPainter;
+            ManualControl = syncFrom.ManualControl;
+            FocusTargets = syncFrom.FocusTargets;
+            FocusSubSystem = syncFrom.FocusSubSystem;
+            SubSystem = syncFrom.SubSystem;
+            Meteors = syncFrom.Meteors;
+            Biologicals = syncFrom.Biologicals;
+            Projectiles = syncFrom.Projectiles;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+
+            var compared = (GroupOverrides)obj;
+
+            return (
+                compared.Activate.Equals(Activate) &&
+                compared.Neutrals.Equals(Neutrals) &&
+                compared.Unowned.Equals(Unowned) &&
+                compared.Friendly.Equals(Friendly) &&
+                compared.TargetPainter.Equals(TargetPainter) &&
+                compared.ManualControl.Equals(ManualControl) &&
+                compared.FocusTargets.Equals(FocusTargets) &&
+                compared.FocusSubSystem.Equals(FocusSubSystem) &&
+                compared.SubSystem.Equals(SubSystem) &&
+                compared.Meteors.Equals(Meteors) &&
+                compared.Biologicals.Equals(Biologicals) &&
+                compared.Projectiles.Equals(Projectiles)
+            );
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Activate.GetHashCode();
+                hashCode = (hashCode * 397) ^ Neutrals.GetHashCode();
+                hashCode = (hashCode * 397) ^ Unowned.GetHashCode();
+                hashCode = (hashCode * 397) ^ Friendly.GetHashCode();
+                hashCode = (hashCode * 397) ^ TargetPainter.GetHashCode();
+                hashCode = (hashCode * 397) ^ ManualControl.GetHashCode();
+                hashCode = (hashCode * 397) ^ FocusTargets.GetHashCode();
+                hashCode = (hashCode * 397) ^ FocusSubSystem.GetHashCode();
+                hashCode = (hashCode * 397) ^ (int)SubSystem;
+                hashCode = (hashCode * 397) ^ Meteors.GetHashCode();
+                hashCode = (hashCode * 397) ^ Biologicals.GetHashCode();
+                hashCode = (hashCode * 397) ^ Projectiles.GetHashCode();
+                return hashCode;
+            }
+        }
+    }
 
     [ProtoContract]
     public class CompStateValues
@@ -121,17 +194,13 @@ namespace WeaponCore
         }
 
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public bool Online; //don't save
-        [ProtoMember(3)] public WeaponStateValues[] Weapons;
-        [ProtoMember(4)] public float CurrentCharge; //save
-        [ProtoMember(5)] public bool OtherPlayerTrackingReticle; //don't save
-        [ProtoMember(6), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(7), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
+        [ProtoMember(2)] public WeaponStateValues[] Weapons;
+        [ProtoMember(3)] public bool OtherPlayerTrackingReticle; //don't save
+        [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
+        [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         public void Sync(WeaponComponent comp, CompStateValues syncFrom)
         {
             Revision = syncFrom.Revision;
-            Online = syncFrom.Online;
-            CurrentCharge = syncFrom.CurrentCharge;
             OtherPlayerTrackingReticle = syncFrom.OtherPlayerTrackingReticle;
             PlayerId = syncFrom.PlayerId;
             Control = syncFrom.Control;
@@ -142,14 +211,12 @@ namespace WeaponCore
                 var sws = syncFrom.Weapons[i];
                 var w = comp.Platform.Weapons[i];
 
-                if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge) {
+                if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge) { // check order on these
                     ws.CurrentAmmo = sws.CurrentAmmo;
                     ws.CurrentCharge = sws.CurrentCharge;
                     w.LastAmmoUpdateTick = comp.Session.Tick;
                 }
 
-                ws.ShotsFired = sws.ShotsFired;
-                ws.SingleShotCounter = sws.SingleShotCounter;
                 ws.CurrentMags = sws.CurrentMags;
                 ws.Heat = sws.Heat;
                 ws.Overheated = sws.Overheated;
@@ -173,15 +240,12 @@ namespace WeaponCore
 
         public void ResetToFreshLoadState()
         {
-            Online = false;
             Control = ControlMode.None;
             PlayerId = -1;
             OtherPlayerTrackingReticle = false;
 
             foreach (var w in Weapons)
             {
-                w.ShotsFired = 0;
-                w.SingleShotCounter = 0;
                 w.Heat = 0;
                 w.Overheated = false;
                 w.HasInventory = w.CurrentMags > 0;
@@ -194,30 +258,22 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public uint Revision; //dont save
-        [ProtoMember(2)] public int ShotsFired; //dont save
-        [ProtoMember(3)] public int SingleShotCounter; // dont save
-        [ProtoMember(4)] public float Heat; // don't save
-        [ProtoMember(5)] public int CurrentAmmo; //save
-        [ProtoMember(6)] public float CurrentCharge; //save
-        [ProtoMember(7)] public bool Overheated; //don't save
-        [ProtoMember(8)] public int WeaponId; // save
-        [ProtoMember(9)] public MyFixedPoint CurrentMags; // save
-        [ProtoMember(10)] public bool HasInventory; // save
+        [ProtoMember(2)] public float Heat; // don't save
+        [ProtoMember(3)] public int CurrentAmmo; //save
+        [ProtoMember(4)] public float CurrentCharge; //save
+        [ProtoMember(5)] public bool Overheated; //don't save
+        [ProtoMember(6)] public int WeaponId; // save
+        [ProtoMember(7)] public MyFixedPoint CurrentMags; // save
+        [ProtoMember(8)] public bool HasInventory; // save
 
         public void Sync(WeaponStateValues sync, Weapon weapon)
         {
-            if (weapon.System.Session.Tick - weapon.LastAmmoUpdateTick > 3600 || sync.CurrentAmmo < CurrentAmmo || sync.CurrentCharge < CurrentCharge) {
+            if (weapon.System.Session.Tick - weapon.LastAmmoUpdateTick > 3600 || sync.CurrentAmmo < CurrentAmmo || sync.CurrentCharge < CurrentCharge) { // Check order on these
                 sync.CurrentAmmo = CurrentAmmo;
                 sync.CurrentCharge = CurrentCharge;
                 weapon.LastAmmoUpdateTick = weapon.System.Session.Tick;
             }
-
-            if (sync.ShotsFired < ShotsFired)
-                ShotsFired = sync.ShotsFired;
             
-            if (sync.SingleShotCounter < SingleShotCounter)
-                SingleShotCounter = sync.SingleShotCounter;
-
             sync.Heat = Heat;
             sync.CurrentMags = CurrentMags;
 
@@ -231,7 +287,19 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public TransferTarget[] Targets;
         [ProtoMember(2)] public WeaponRandomGenerator[] WeaponRandom;
-        [ProtoMember(3)] public uint[] MIds;
+        [ProtoMember(3)] public uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
+
+        public void Sync(WeaponComponent comp, WeaponValues sync)
+        {
+            for (int i = 0; i < Targets.Length; i++)
+            {
+                Targets[i] = sync.Targets[i];
+                WeaponRandom[i] = sync.WeaponRandom[i];
+            }
+
+            for (int i = 0; i < MIds.Length; i++)
+                MIds[i] = sync.MIds[i];
+        }
 
         public static void Init(WeaponComponent comp)
         {
@@ -292,90 +360,7 @@ namespace WeaponCore
         public WeaponValues() { }
     }
 
-    [ProtoContract]
-    public class GroupOverrides
-    {
-        [ProtoMember(1), DefaultValue(true)] public bool Activate = true;
-        [ProtoMember(2)] public bool Neutrals;
-        [ProtoMember(3)] public bool Unowned;
-        [ProtoMember(4)] public bool Friendly;
-        [ProtoMember(5)] public bool TargetPainter;
-        [ProtoMember(6)] public bool ManualControl;
-        [ProtoMember(7)] public bool FocusTargets;
-        [ProtoMember(8)] public bool FocusSubSystem;
-        [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(10), DefaultValue(true)] public bool Meteors;
-        [ProtoMember(11), DefaultValue(true)] public bool Biologicals;
-        [ProtoMember(12), DefaultValue(true)] public bool Projectiles;
-
-        public GroupOverrides() { }
-
-        public void Sync(GroupOverrides syncFrom)
-        {
-            Activate = syncFrom.Activate;
-            Neutrals = syncFrom.Neutrals;
-            Unowned = syncFrom.Unowned;
-            Friendly = syncFrom.Friendly;
-            TargetPainter = syncFrom.TargetPainter;
-            ManualControl = syncFrom.ManualControl;
-            FocusTargets = syncFrom.FocusTargets;
-            FocusSubSystem = syncFrom.FocusSubSystem;
-            SubSystem = syncFrom.SubSystem;
-            Meteors = syncFrom.Meteors;
-            Biologicals = syncFrom.Biologicals;
-            Projectiles = syncFrom.Projectiles;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-
-            var compared = (GroupOverrides)obj;
-
-            return (
-                compared.Activate.Equals(Activate) && 
-                compared.Neutrals.Equals(Neutrals) && 
-                compared.Unowned.Equals(Unowned) && 
-                compared.Friendly.Equals(Friendly) && 
-                compared.TargetPainter.Equals(TargetPainter) && 
-                compared.ManualControl.Equals(ManualControl) && 
-                compared.FocusTargets.Equals(FocusTargets) && 
-                compared.FocusSubSystem.Equals(FocusSubSystem) && 
-                compared.SubSystem.Equals(SubSystem) && 
-                compared.Meteors.Equals(Meteors) && 
-                compared.Biologicals.Equals(Biologicals) && 
-                compared.Projectiles.Equals(Projectiles)
-            );
-        }
-
-        protected bool Equals(GroupOverrides other)
-        {
-            return Activate == other.Activate && Neutrals == other.Neutrals && Unowned == other.Unowned && Friendly == other.Friendly && TargetPainter == other.TargetPainter && ManualControl == other.ManualControl && FocusTargets == other.FocusTargets && FocusSubSystem == other.FocusSubSystem && SubSystem == other.SubSystem && Meteors == other.Meteors && Biologicals == other.Biologicals && Projectiles == other.Projectiles;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = Activate.GetHashCode();
-                hashCode = (hashCode * 397) ^ Neutrals.GetHashCode();
-                hashCode = (hashCode * 397) ^ Unowned.GetHashCode();
-                hashCode = (hashCode * 397) ^ Friendly.GetHashCode();
-                hashCode = (hashCode * 397) ^ TargetPainter.GetHashCode();
-                hashCode = (hashCode * 397) ^ ManualControl.GetHashCode();
-                hashCode = (hashCode * 397) ^ FocusTargets.GetHashCode();
-                hashCode = (hashCode * 397) ^ FocusSubSystem.GetHashCode();
-                hashCode = (hashCode * 397) ^ (int) SubSystem;
-                hashCode = (hashCode * 397) ^ Meteors.GetHashCode();
-                hashCode = (hashCode * 397) ^ Biologicals.GetHashCode();
-                hashCode = (hashCode * 397) ^ Projectiles.GetHashCode();
-                return hashCode;
-            }
-        }
-    }
-
+   
     [ProtoContract]
     public struct ControllingPlayersSync
     {

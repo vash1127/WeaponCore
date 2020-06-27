@@ -352,6 +352,7 @@ namespace WeaponCore
             Proccessor = new NetworkProccessor(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
+
             ProblemRep = new ProblemReport(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

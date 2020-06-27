@@ -44,6 +44,7 @@ namespace WeaponCore
         CompSyncRequest,
         ProblemReport,
         TerminalMonitor,
+        SendSingleShot,
     }
 
     #region packets
@@ -69,8 +70,6 @@ namespace WeaponCore
     [ProtoInclude(23, typeof(SettingPacket))]
     [ProtoInclude(24, typeof(TerminalMonitorPacket))]
     [ProtoInclude(25, typeof(CompDataPacket))]
-
-
 
     public class Packet
     {

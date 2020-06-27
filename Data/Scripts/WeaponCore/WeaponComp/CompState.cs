@@ -27,9 +27,6 @@ namespace WeaponCore.Support
         private void Startup()
         {
             IsWorking = MyCube.IsWorking;
-            IsFunctional = MyCube.IsFunctional;
-            Data.Repo.State.Online = IsWorking && IsFunctional;
-
             if (MyCube != null)
                 if (FunctionalBlock.Enabled)
                 {
@@ -54,25 +51,27 @@ namespace WeaponCore.Support
         {
             Session.TerminalMon.ClientUpdate(this);
             if (Session.IsServer) {
-                
-                ResetShootState(action, playerId);
-                if (Session.MpActive)
-                {
+
+                bool singleShot;
+                ResetShootState(action, playerId, out singleShot);
+                if (Session.MpActive) {
                     Session.SendCompStateUpdate(this);
                     Session.SendCompSettingUpdate(this);
+                    if (singleShot)
+                        Session.SendSingleShot(this);
                 }
             }
             else
                 Session.SendActionShootUpdate(this, action);
         }
 
-        internal void ResetShootState(ShootActions action, long playerId)
+        internal void ResetShootState(ShootActions action, long playerId, out bool addShot)
         {
             var cycleShootClick = Data.Repo.Set.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
             var cycleShootOn = Data.Repo.Set.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
 
-            var addShot = !cycleShootClick && action == ShootActions.ShootClick;
+            addShot = !cycleShootClick && action == ShootActions.ShootClick;
 
             if (Data.Repo.Set.Overrides.ManualControl || Data.Repo.Set.Overrides.TargetPainter) {
                 Data.Repo.Set.Overrides.ManualControl = false;
@@ -83,7 +82,7 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
-                w.State.SingleShotCounter = addShot ? w.State.SingleShotCounter++ : 0;
+                w.SingleShotCounter = addShot ? w.SingleShotCounter++ : 0;
             }
 
             if (action == ShootActions.ShootClick && HasTurret) {

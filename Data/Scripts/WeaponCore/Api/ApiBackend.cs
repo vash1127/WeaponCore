@@ -266,7 +266,7 @@ namespace WeaponCore.Api
         private static bool IsWeaponReadyToFire(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId && comp.Data.Repo.State.Online && comp.Data.Repo.Set.Overrides.Activate)
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId && comp.IsWorking && comp.Data.Repo.Set.Overrides.Activate)
             {
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {

@@ -1,9 +1,7 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore
 {
@@ -559,6 +557,21 @@ namespace WeaponCore
 
             return true;
 
+        }
+
+        private bool ClientSendSingleShot(PacketObj data)
+        {
+            var packet = data.Packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                comp.Platform.Weapons[i].SingleShotCounter++;
+
+            data.Report.PacketValid = true;
+
+            return true;
         }
     }
 }

@@ -152,8 +152,7 @@ namespace WeaponCore.Support
                     if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
                         Status = Start.ReInit;
                     IsWorking = myCubeBlock.IsWorking;
-                    Data.Repo.State.Online = IsWorking && IsFunctional;
-                    if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - online:{Data.Repo.State.Online} - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
+                    if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
 
                     if (!IsWorking && Registered) {
                         foreach (var w in Platform.Weapons)
@@ -172,7 +171,7 @@ namespace WeaponCore.Support
                             for (int j = 0; j < partArray.Length; j++) 
                                 w.PlayEmissives(partArray[j]);
                         }
-                        if (!Session.IsClient && !Data.Repo.State.Online) 
+                        if (!Session.IsClient && !IsWorking) 
                             w.Target.Reset(Session.Tick, Target.States.Offline);
                     }
                 }
@@ -182,8 +181,8 @@ namespace WeaponCore.Support
 
         internal string GetSystemStatus()
         {
-            if (!Data.Repo.State.Online && !MyCube.IsFunctional) return "[Fault]";
-            if (!Data.Repo.State.Online && !MyCube.IsWorking) return "[Offline]";
+            if (!MyCube.IsFunctional) return "[Fault]";
+            if (!MyCube.IsWorking) return "[Offline]";
             return "[Online]";
         }
 
@@ -216,7 +215,7 @@ namespace WeaponCore.Support
                 if (HasEnergyWeapon)
                 {
                     stringBuilder.Append("\nCurrent Draw: " + SinkPower.ToString("0.00") + " MWs");
-                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + Data.Repo.State.CurrentCharge.ToString("0.00") + " MWs");
+                    if(HasChargeWeapon) stringBuilder.Append("\nCurrent Charge: " + CurrentCharge.ToString("0.00") + " MWs");
                     stringBuilder.Append("\nRequired Power: " + MaxRequiredPower.ToString("0.00") + " MWs");
                 }
                 
@@ -233,7 +232,7 @@ namespace WeaponCore.Support
                     }
                     else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.State.CurrentAmmo;
 
-                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.State.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
+                    var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
 
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
@@ -246,14 +245,14 @@ namespace WeaponCore.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
-                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {weapon.Set.Enable && weapon.Comp.Data.Repo.State.Online && weapon.Comp.Data.Repo.Set.Overrides.Activate}");
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {weapon.Set.Enable && IsWorking && weapon.Comp.Data.Repo.Set.Overrides.Activate}");
                         stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned} - Tracking: {weapon.Target.IsTracking}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
-                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {Data.Repo.State.CurrentCharge}({weapon.State.CurrentCharge})");
+                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.State.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
                         stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }

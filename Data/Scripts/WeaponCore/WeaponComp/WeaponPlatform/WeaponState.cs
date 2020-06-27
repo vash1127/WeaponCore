@@ -8,7 +8,6 @@ using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponSystem;
-using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -362,7 +361,7 @@ namespace WeaponCore.Platform
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
-                State.SingleShotCounter = 0;
+                SingleShotCounter = 0;
                 PreFired = false;
                 if (IsShooting && !System.DesignatorWeapon)
                 {
@@ -441,7 +440,7 @@ namespace WeaponCore.Platform
             if (!syncCharge)
             {
                 State.CurrentAmmo = 0;
-                Comp.Data.Repo.State.CurrentCharge -= State.CurrentCharge;
+                Comp.CurrentCharge -= State.CurrentCharge;
                 State.CurrentCharge = 0;
             }
 
@@ -586,7 +585,7 @@ namespace WeaponCore.Platform
 
             var invalidState = State == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
 
-            if (invalidState || !Comp.Data.Repo.State.Online || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
+            if (invalidState || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
                 return false;
 
             if (State.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
@@ -618,9 +617,9 @@ namespace WeaponCore.Platform
                 StopShooting();
 
             Reloading = true;
-            State.SingleShotCounter = 0;
+            SingleShotCounter = 0;
             
-            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) State.ShotsFired = 0;
+            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             uint delay;
             if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {
@@ -674,9 +673,9 @@ namespace WeaponCore.Platform
                     if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         State.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
-                    Comp.Data.Repo.State.CurrentCharge -= State.CurrentCharge;
+                    Comp.CurrentCharge -= State.CurrentCharge;
                     State.CurrentCharge = MaxCharge;
-                    Comp.Data.Repo.State.CurrentCharge += MaxCharge;
+                    Comp.CurrentCharge += MaxCharge;
 
                     ChargeUntilTick = 0;
                     ChargeDelayTicks = 0;

@@ -414,7 +414,7 @@ namespace WeaponCore.Support
 
                 var somethingEnded = !muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
-                if (somethingEnded || !weapon.Comp.Data.Repo.State.Online || !weapon.Comp.Data.Repo.Set.Overrides.Activate || !weapon.Set.Enable ) {
+                if (somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Set.Overrides.Activate || !weapon.Set.Enable ) {
                     if (weapon.BarrelEffects1[muzzle.MuzzleId] != null) {
 
                         weapon.BarrelEffects1[muzzle.MuzzleId].Stop();
@@ -476,7 +476,7 @@ namespace WeaponCore.Support
 
                 var somethingEnded = !muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null ||  weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
-                if (somethingEnded || !weapon.Comp.Data.Repo.State.Online || !weapon.Comp.Data.Repo.Set.Overrides.Activate || !weapon.Set.Enable) {
+                if (somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Set.Overrides.Activate || !weapon.Set.Enable) {
 
                     if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
 

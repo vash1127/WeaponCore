@@ -128,12 +128,10 @@ namespace WeaponCore
                             ClientFullMouseUpdate(packetObj);
                             break;
                         }
-                    /*
-                    case PacketType.CompToolbarShootState: {
-                            ClientCompToolbarShootState(packetObj);
+                    case PacketType.SendSingleShot: {
+                            ClientSendSingleShot(packetObj);
                             break;
                         }
-                        */
                     case PacketType.CycleAmmo: {
                             ClientCycleAmmo(packetObj);
                             break;
@@ -259,6 +257,11 @@ namespace WeaponCore
                 }
                 case PacketType.OverRidesUpdate: {
                     ServerOverRidesUpdate(packetObj);
+                    break;
+                }
+                case PacketType.SendSingleShot:
+                {
+                    ServerSendSingleShot(packetObj);
                     break;
                 }
                 case PacketType.PlayerControlUpdate: {

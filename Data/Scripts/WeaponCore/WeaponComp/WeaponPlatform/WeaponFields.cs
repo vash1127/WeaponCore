@@ -69,7 +69,8 @@ namespace WeaponCore.Platform
         internal int ShortLoadId;
         internal int BarrelRate;
         internal int ArmorHits;
-
+        internal int ShotsFired;
+        internal int SingleShotCounter;
 
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;

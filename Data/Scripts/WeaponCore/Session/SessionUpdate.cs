@@ -57,7 +57,7 @@ namespace WeaponCore
                         comp.DetectStateChanges();
                     }
 
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.Data.Repo.State.Online || !comp.Data.Repo.Set.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
                         
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
@@ -268,7 +268,7 @@ namespace WeaponCore
                 var w = ChargingWeapons[i];
                 var comp = w.Comp;
                 var gridAi = comp.Ai;
-                if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.Data.Repo.State.Online || !comp.Data.Repo.Set.Overrides.Activate)
+                if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !w.Set.Enable || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate)
                 {
                     if (w.DrawingPower)
                         w.StopPowerDraw();
@@ -287,19 +287,18 @@ namespace WeaponCore
                     continue;
 
                 var wState = w.Comp.Data.Repo.State.Weapons[w.WeaponId];
-                var cState = w.Comp.Data.Repo.State;
 
                 if (Tick60 && w.DrawingPower)
                 {
                     if ((wState.CurrentCharge + w.UseablePower) < w.MaxCharge)
                     {
                         wState.CurrentCharge += w.UseablePower;
-                        cState.CurrentCharge += w.UseablePower;
+                        comp.CurrentCharge += w.UseablePower;
 
                     }
                     else
                     {
-                        cState.CurrentCharge -= (wState.CurrentCharge - w.MaxCharge);
+                        comp.CurrentCharge -= (wState.CurrentCharge - w.MaxCharge);
                         wState.CurrentCharge = w.MaxCharge;
                     }
                 }
@@ -372,7 +371,7 @@ namespace WeaponCore
             {
                 var w = AcquireTargets[i];
                 var comp = w.Comp;
-                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.Data.Repo.State.Online || !comp.Data.Repo.Set.Overrides.Activate) {
+                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate) {
                     
                     w.AcquiringTarget = false;
                     AcquireTargets.RemoveAtFast(i);

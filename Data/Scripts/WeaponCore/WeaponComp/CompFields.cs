@@ -62,7 +62,7 @@ namespace WeaponCore.Support
         internal float MaxRequiredPower;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
-
+        internal float CurrentCharge;
         internal bool TargetNonThreats;
         internal bool IsAsleep;
         internal bool SettingsUpdated;
