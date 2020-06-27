@@ -18,7 +18,7 @@ namespace WeaponCore
         [ProtoMember(4)] public WeaponValues WepVal;
         [ProtoMember(5)] public int Version = Session.VersionControl;
 
-        public void Sync(WeaponComponent comp, CompDataValues data)
+        public bool Sync(WeaponComponent comp, CompDataValues data)
         {
             if (data.Revision > Revision) {
 
@@ -27,7 +27,10 @@ namespace WeaponCore
                 Set.Sync(comp, data.Set);
                 State.Sync(comp, data.State);
                 WepVal.Sync(comp, data.WepVal);
+                return true;
             }
+
+            return false;
         }
     }
 
@@ -223,19 +226,6 @@ namespace WeaponCore
                 ws.HasInventory = sws.HasInventory;
 
             }
-        }
-
-        public bool PlayerControlSync(WeaponComponent comp, ControllingPlayerPacket packet)
-        {
-            if (comp.Data.Repo.WepVal.MIds[(int) packet.PType] < packet.MId) {
-                comp.Data.Repo.WepVal.MIds[(int) packet.PType] = packet.MId;
-
-                PlayerId = packet.PlayerId;
-                Control = packet.Control;
-                return true;
-            }
-
-            return false;
         }
 
         public void ResetToFreshLoadState()

@@ -161,39 +161,6 @@ namespace WeaponCore
             }
         }
 
-        internal void SendCycleAmmoNetworkUpdate(Weapon weapon, int ammoId)
-        {
-            
-            if (IsClient)
-            {
-                PacketsToServer.Add(new CycleAmmoPacket
-                {
-                    MId = ++weapon.Comp.MIds[(int)PacketType.CycleAmmo],
-                    EntityId = weapon.Comp.MyCube.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.CycleAmmo,
-                    AmmoId = ammoId,
-                WeaponId = weapon.WeaponId
-                });
-            }
-            else
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = weapon.Comp.MyCube,
-                    Packet = new CycleAmmoPacket
-                    {
-                        MId = ++weapon.Comp.Data.Repo.Revision,
-                        EntityId = weapon.Comp.MyCube.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.CycleAmmo,
-                        AmmoId = ammoId,
-                        WeaponId = weapon.WeaponId
-                    }
-                });
-            }
-        }
-
         internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
 
@@ -267,45 +234,13 @@ namespace WeaponCore
         {
             comp.Session.PacketsToServer.Add(new ShootStatePacket
             {
-                MId = ++comp.MIds[(int)PacketType.CompToolbarShootState],
+                MId = ++comp.MIds[(int)PacketType.RequestShootUpdate],
                 EntityId = comp.MyCube.EntityId,
                 SenderId = comp.Session.MultiplayerId,
-                PType = PacketType.CompToolbarShootState,
+                PType = PacketType.RequestShootUpdate,
                 Action = action,
                 PlayerId = PlayerId,
             });
-        }
-
-        internal void ControllingPlayerRequest(WeaponComponent comp, bool reset)
-        {
-            if (IsClient)
-            {
-                PacketsToServer.Add(new ControllingPlayerPacket
-                {
-                    MId = ++comp.MIds[(int)PacketType.PlayerControlUpdate],
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.PlayerControlUpdate,
-                    PlayerId = reset ? -1 : PlayerId,
-                    Control = reset ? CompStateValues.ControlMode.None : CompStateValues.ControlMode.Camera,
-                });
-            }
-            else if (HandlesInput)
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new ControllingPlayerPacket
-                    {
-                        MId = ++comp.Data.Repo.Revision,
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.PlayerControlUpdate,
-                        PlayerId = reset ? -1 : PlayerId,
-                        Control = reset ? CompStateValues.ControlMode.None : CompStateValues.ControlMode.Camera,
-                    }
-                });
-            }
         }
 
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
@@ -337,45 +272,25 @@ namespace WeaponCore
                 });
             }
         }
-        
-        internal void SendCompStateUpdate(WeaponComponent comp)
-        {
-            if (IsServer)
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new StatePacket
-                    {
-                        MId = ++comp.Data.Repo.Revision,
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.CompStateUpdate,
-                        Data = comp.Data.Repo.State
-                    }
-                });
-            }
-            else Log.Line($"SendCompStateUpdate should never be called on Client");
-        }
 
-        internal void SendCompSettingUpdate(WeaponComponent comp)
+        internal void SendCompData(WeaponComponent comp)
         {
             if (IsServer)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = comp.MyCube,
-                    Packet = new SettingPacket
+                    Packet = new CompDataPacket
                     {
                         MId = ++comp.Data.Repo.Revision,
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
-                        PType = PacketType.CompSettingsUpdate,
-                        Data = comp.Data.Repo.Set,
+                        PType = PacketType.CompData,
+                        Data = comp.Data.Repo
                     }
                 });
             }
-            else Log.Line($"SendCompSettingUpdate should never be called on Client");
+            else Log.Line($"SendCompData should never be called on Client");
         }
 
         internal void SendSingleShot(WeaponComponent comp)
@@ -413,10 +328,9 @@ namespace WeaponCore
         
         internal void SendTrackReticleUpdate(WeaponComponent comp)
         {
-            if (IsClient)
-            {
-                PacketsToServer.Add(new BoolUpdatePacket
-                {
+            if (IsClient) {
+
+                PacketsToServer.Add(new BoolUpdatePacket {
                     MId = ++comp.MIds[(int)PacketType.ReticleUpdate],
                     EntityId = comp.MyCube.EntityId,
                     SenderId = MultiplayerId,
@@ -424,19 +338,9 @@ namespace WeaponCore
                     Data = comp.TrackReticle
                 });
             }
-            else 
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new BoolUpdatePacket
-                    {
-                        MId = ++comp.Data.Repo.Revision,
-                        EntityId = comp.MyCube.EntityId,
-                        PType = PacketType.ReticleUpdate,
-                        Data = comp.TrackReticle
-                    }
-                });
+            else {
+                comp.Data.Repo.State.OtherPlayerTrackingReticle = comp.TrackReticle;
+                SendCompData(comp);
             }
         }
 
@@ -462,7 +366,7 @@ namespace WeaponCore
                 Entity = comp.MyCube,
                 Packet = new WeaponIdPacket
                 {
-                    MId = ++comp.Data.Repo.Revision,
+                    MId = ++comp.MIds[(int)PacketType.TargetExpireUpdate],
                     EntityId = comp.MyCube.EntityId,
                     SenderId = 0,
                     PType = PacketType.TargetExpireUpdate,

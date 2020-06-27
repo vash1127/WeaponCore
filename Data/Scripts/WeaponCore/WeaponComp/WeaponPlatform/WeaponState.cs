@@ -432,7 +432,7 @@ namespace WeaponCore.Platform
                     Session.ComputeStorage(this);
             }
             else if (System.Session.MpActive)
-                System.Session.SendCycleAmmoNetworkUpdate(this, Set.AmmoTypeId);
+                System.Session.SendCompData(Comp);
         }
 
         public void ChargeReload(bool syncCharge = false)

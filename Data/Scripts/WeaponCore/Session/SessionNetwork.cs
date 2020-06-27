@@ -76,14 +76,6 @@ namespace WeaponCore
             try {
                 var invalidType = false;
                 switch (packetObj.Packet.PType) {
-                    case PacketType.CompStateUpdate: {
-                            ClientCompStateUpdate(packetObj);
-                            break;
-                        }
-                    case PacketType.CompSettingsUpdate: {
-                            ClientCompSettingsUpdate(packetObj);
-                            break;
-                        }
                     case PacketType.WeaponSyncUpdate: {
                             ClientWeaponSyncUpdate(packetObj);
                             break;
@@ -108,16 +100,8 @@ namespace WeaponCore
                             ClientActiveControlFullUpdate(packetObj);
                             break;
                         }
-                    case PacketType.ReticleUpdate: {
-                            ClientReticleUpdate(packetObj);
-                            break;
-                        }
                     case PacketType.OverRidesUpdate: {
                             ClientOverRidesUpdate(packetObj);
-                            break;
-                        }
-                    case PacketType.PlayerControlUpdate: {
-                            ClientPlayerControlUpdate(packetObj);
                             break;
                         }
                     case PacketType.TargetExpireUpdate: {
@@ -130,10 +114,6 @@ namespace WeaponCore
                         }
                     case PacketType.SendSingleShot: {
                             ClientSendSingleShot(packetObj);
-                            break;
-                        }
-                    case PacketType.CycleAmmo: {
-                            ClientCycleAmmo(packetObj);
                             break;
                         }
                     case PacketType.GridOverRidesSync: {
@@ -157,6 +137,11 @@ namespace WeaponCore
                         }
                     case PacketType.ProblemReport: {
                         ClientSentReport(packetObj);
+                        break;
+                    }
+                    case PacketType.CompData:
+                    {
+                        ClientCompData(packetObj);
                         break;
                     }
                     default:
@@ -227,14 +212,6 @@ namespace WeaponCore
 
             switch (packetObj.Packet.PType) {
 
-                case PacketType.CompStateUpdate: {
-                    ServerCompStateUpdate(packetObj);
-                    break;
-                }
-                case PacketType.CompSettingsUpdate: {
-                    ServerCompSettingsUpdate(packetObj);
-                    break;
-                }
                 case PacketType.ClientMouseEvent: {
                     ServerClientMouseEvent(packetObj);
                     break;
@@ -264,10 +241,6 @@ namespace WeaponCore
                     ServerSendSingleShot(packetObj);
                     break;
                 }
-                case PacketType.PlayerControlUpdate: {
-                    ServerPlayerControlUpdate(packetObj);
-                    break;
-                }
                 case PacketType.WeaponUpdateRequest: {
                     ServerWeaponUpdateRequest(packetObj);
                     break;
@@ -280,12 +253,8 @@ namespace WeaponCore
                     ServerRequestMouseStates(packetObj);
                     break;
                 }
-                case PacketType.CompToolbarShootState: {
-                    ServerCompToolbarShootState(packetObj);
-                    break;
-                }
-                case PacketType.CycleAmmo: {
-                    ServerCycleAmmo(packetObj);
+                case PacketType.RequestShootUpdate: {
+                    ServerRequestShootUpdate(packetObj);
                     break;
                 }
                 case PacketType.RescanGroupRequest: {
@@ -294,10 +263,6 @@ namespace WeaponCore
                 }
                 case PacketType.FixedWeaponHitEvent: {
                     ServerFixedWeaponHitEvent(packetObj);
-                    break;
-                }
-                case PacketType.CompSyncRequest: {
-                    ServerCompSyncRequest(packetObj);
                     break;
                 }
                 case PacketType.FocusUpdate:

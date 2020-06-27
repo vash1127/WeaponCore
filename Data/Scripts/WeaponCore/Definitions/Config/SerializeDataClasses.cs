@@ -14,8 +14,6 @@ namespace WeaponCore
     {
         Invalid,
         GridSyncRequestUpdate,
-        CompStateUpdate,
-        CompSettingsUpdate,
         WeaponSyncUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
@@ -25,15 +23,13 @@ namespace WeaponCore
         FocusUpdate,
         ReticleUpdate,
         OverRidesUpdate,
-        PlayerControlUpdate,
         TargetExpireUpdate,
         WeaponUpdateRequest,
         ClientEntityClosed,
         RequestMouseStates,
         FullMouseUpdate,
-        CompToolbarShootState,
+        RequestShootUpdate,
         CompData,
-        CycleAmmo,
         ReassignTargetUpdate,
         NextActiveUpdate,
         ReleaseActiveUpdate,
@@ -41,7 +37,6 @@ namespace WeaponCore
         RescanGroupRequest,
         GridFocusListSync,
         FixedWeaponHitEvent,
-        CompSyncRequest,
         ProblemReport,
         TerminalMonitor,
         SendSingleShot,
@@ -62,12 +57,8 @@ namespace WeaponCore
     [ProtoInclude(15, typeof(GridFocusListPacket))]
     [ProtoInclude(16, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(17, typeof(ProblemReportPacket))]
-    [ProtoInclude(18, typeof(CycleAmmoPacket))]
     [ProtoInclude(19, typeof(ShootStatePacket))]
     [ProtoInclude(20, typeof(OverRidesPacket))]
-    [ProtoInclude(21, typeof(ControllingPlayerPacket))]
-    [ProtoInclude(22, typeof(StatePacket))]
-    [ProtoInclude(23, typeof(SettingPacket))]
     [ProtoInclude(24, typeof(TerminalMonitorPacket))]
     [ProtoInclude(25, typeof(CompDataPacket))]
 
@@ -389,49 +380,6 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class ControllingPlayerPacket : Packet
-    {
-        [ProtoMember(1)] internal long PlayerId;
-        [ProtoMember(2)] internal CompStateValues.ControlMode Control;
-
-
-        public ControllingPlayerPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            PlayerId = -1;
-            Control = CompStateValues.ControlMode.None;
-        }
-    }
-
-    [ProtoContract]
-    public class StatePacket : Packet
-    {
-        [ProtoMember(1)] internal CompStateValues Data;
-
-        public StatePacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
-    public class SettingPacket : Packet
-    {
-        [ProtoMember(1)] internal CompSettingsValues Data;
-        public SettingPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
 
     #endregion
 

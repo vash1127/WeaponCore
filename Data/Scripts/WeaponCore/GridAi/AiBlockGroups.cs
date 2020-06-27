@@ -133,7 +133,7 @@ namespace WeaponCore.Support
                     ResetCompState(comp, true);
                     if (comp.Session.MpActive)
                     {
-                        comp.Session.SendCompStateUpdate(comp);
+                        comp.Session.SendCompData(comp);
                         comp.Session.SendOverRidesServerAi(comp.Ai, Name, o);
                     }
                 }
@@ -188,7 +188,7 @@ namespace WeaponCore.Support
             ResetCompState(comp, false);
 
             if (comp.Session.MpActive) {
-                comp.Session.SendCompStateUpdate(comp);
+                comp.Session.SendCompData(comp);
             }
         }
 

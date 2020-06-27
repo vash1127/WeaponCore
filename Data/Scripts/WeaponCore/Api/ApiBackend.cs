@@ -471,7 +471,7 @@ namespace WeaponCore.Api
                     {
                         w.Set.AmmoTypeId = i;
                         if (comp.Session.MpActive)
-                            comp.Session.SendCycleAmmoNetworkUpdate(w, i);
+                            comp.Session.SendCompData(comp);
 
                         break;
                     }

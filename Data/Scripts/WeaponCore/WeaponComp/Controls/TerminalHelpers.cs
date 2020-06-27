@@ -543,7 +543,7 @@ namespace WeaponCore.Control
                     w.Set.AmmoTypeId = next;
 
                     if (comp.Session.MpActive)
-                        comp.Session.SendCycleAmmoNetworkUpdate(w, next);
+                        comp.Session.SendCompData(comp);
 
                     change = true;
                     break;

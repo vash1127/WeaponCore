@@ -106,42 +106,6 @@ namespace WeaponCore
             ClientSideErrorPkt.ApplyChanges();
         }
 
-        private bool ClientCompStateUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            var statePacket = (StatePacket)packet;
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-            if (statePacket.Data == null) return Error(data,  Msg("Data"));
-
-            if (statePacket.MId > comp.Data.Repo.Revision) {
-
-                comp.MIds[(int)packet.PType] = statePacket.MId;
-                comp.Data.Repo.State.Sync(comp, statePacket.Data);
-                if (Wheel.WheelActive)
-                    Wheel.Dirty = true;
-
-                data.Report.PacketValid = true;
-            }
-            return true;
-        }
-
-        private bool ClientCompSettingsUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            var setPacket = (SettingPacket)packet;
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-            if (setPacket.Data == null) return Error(data, Msg("Data"));
-
-            if (comp.Data.Repo.Set.Sync(comp, setPacket.Data)) 
-                data.Report.PacketValid = true;
-
-            return true;
-        }
-
         private bool ClientWeaponSyncUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -309,20 +273,6 @@ namespace WeaponCore
 
         }
 
-        private bool ClientReticleUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var reticlePacket = (BoolUpdatePacket)packet;
-
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            comp.Data.Repo.State.OtherPlayerTrackingReticle = reticlePacket.Data;
-            data.Report.PacketValid = true;
-            return true;
-
-        }
         private bool ClientOverRidesUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -366,20 +316,6 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientPlayerControlUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var cPlayerPacket = (ControllingPlayerPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            if (comp.Data.Repo.State.PlayerControlSync(comp, cPlayerPacket))
-                data.Report.PacketValid = true;
-
-            return true;
-        }
-
         private bool ClientTargetExpireUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -390,9 +326,13 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             //saving on extra field with new packet type
-            comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick, Target.States.ServerReset);
+            if (comp.MIds[(int) PacketType.TargetExpireUpdate] < idPacket.MId) {
+                comp.MIds[(int) PacketType.TargetExpireUpdate] = idPacket.MId;
+                
+                comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick, Target.States.ServerReset);
+                data.Report.PacketValid = true;
+            }
 
-            data.Report.PacketValid = true;
 
             return true;
 
@@ -416,24 +356,6 @@ namespace WeaponCore
 
         }
 
-        private bool ClientCycleAmmo(PacketObj data)
-        {
-            var packet = data.Packet;
-            var cyclePacket = (CycleAmmoPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            comp.MIds[(int)packet.PType] = cyclePacket.MId;
-            var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
-            weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
-            if (IsCreative || !weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable)
-                weapon.ChangeActiveAmmo(weapon.System.AmmoTypes[cyclePacket.AmmoId]);
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
         private bool ClientGridOverRidesSync(PacketObj data)
         {
             var packet = data.Packet;
@@ -570,6 +492,20 @@ namespace WeaponCore
                 comp.Platform.Weapons[i].SingleShotCounter++;
 
             data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientCompData(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compDataPacket = (CompDataPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
+                data.Report.PacketValid = true;
 
             return true;
         }

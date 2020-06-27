@@ -7,54 +7,6 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private bool ServerCompStateUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var statePacket = (StatePacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-            if (statePacket.Data == null) return Error(data, Msg("Data"));
-
-            if (statePacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
-                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = statePacket.MId;
-                comp.Data.Repo.State.Sync(comp, statePacket.Data);
-                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = statePacket });
-
-                data.Report.PacketValid = true;
-            }
-            else {
-                return Error(data, Msg($"Mid is old({statePacket.MId}[{comp.Data.Repo.WepVal.MIds[(int)packet.PType]}]), likely multiple clients attempting update"));
-            }
-
-            return true;
-        }
-
-        private bool ServerCompSettingsUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var setPacket = (SettingPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-            if (setPacket.Data == null) return Error(data, Msg("Data"));
-
-            if (setPacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
-                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = setPacket.MId;
-                comp.Data.Repo.Set.Sync(comp, setPacket.Data);
-                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = setPacket });
-
-                data.Report.PacketValid = true;
-            }
-            else {
-                return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-            }
-
-            return true;
-        }
-
         private bool ServerClientMouseEvent(PacketObj data)
         {
             var packet = data.Packet;
@@ -275,14 +227,19 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (DedicatedServer)
-                comp.TrackReticle = reticlePacket.Data;
+            if (comp.MIds[(int) PacketType.ReticleUpdate] < reticlePacket.MId) {
+                comp.MIds[(int) PacketType.ReticleUpdate] = reticlePacket.MId;
 
-            comp.Data.Repo.State.OtherPlayerTrackingReticle = reticlePacket.Data;
+                if (DedicatedServer)
+                    comp.TrackReticle = reticlePacket.Data;
 
-            PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = reticlePacket });
+                comp.Data.Repo.State.OtherPlayerTrackingReticle = reticlePacket.Data;
 
-            data.Report.PacketValid = true;
+                SendCompData(comp);
+
+                data.Report.PacketValid = true;
+            }
+
             return true;
         }
 
@@ -349,27 +306,6 @@ namespace WeaponCore
                 else
                     return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
             }
-            return true;
-        }
-
-        private bool ServerPlayerControlUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var cPlayerPacket = (ControllingPlayerPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            if (comp.Data.Repo.State.PlayerControlSync(comp, cPlayerPacket)) {
-                
-                SendCompStateUpdate(comp);
-                data.Report.PacketValid = true;
-            }
-            else {
-                return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-            }
-
             return true;
         }
 
@@ -471,7 +407,7 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ServerCompToolbarShootState(PacketObj data)
+        private bool ServerRequestShootUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var shootStatePacket = (ShootStatePacket)packet;
@@ -489,38 +425,6 @@ namespace WeaponCore
             else {
                 return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
             }
-            return true;
-        }
-
-        private bool ServerCycleAmmo(PacketObj data)
-        {
-            var packet = data.Packet;
-            var cyclePacket = (CycleAmmoPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            if (cyclePacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
-
-                comp.Data.Repo.WepVal.MIds[(int)packet.PType] = cyclePacket.MId;
-
-                var weapon = comp.Platform.Weapons[cyclePacket.WeaponId];
-
-                weapon.Set.AmmoTypeId = cyclePacket.AmmoId;
-                weapon.ChangeAmmo(weapon.System.AmmoTypes[cyclePacket.AmmoId]);
-
-                PacketsToClient.Add(new PacketInfo {
-                    Entity = ent,
-                    Packet = cyclePacket,
-                });
-
-                data.Report.PacketValid = true;
-            }
-            else {
-                return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
-            }
-
             return true;
         }
 
@@ -567,20 +471,6 @@ namespace WeaponCore
             });
             //CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
 
-            data.Report.PacketValid = true;
-            return true;
-        }
-
-        private bool ServerCompSyncRequest(PacketObj data)
-        {
-            var packet = data.Packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            SendCompSettingUpdate(comp);
-            SendCompStateUpdate(comp);
             data.Report.PacketValid = true;
             return true;
         }

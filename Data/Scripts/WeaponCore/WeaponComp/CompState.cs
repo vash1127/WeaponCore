@@ -55,8 +55,7 @@ namespace WeaponCore.Support
                 bool singleShot;
                 ResetShootState(action, playerId, out singleShot);
                 if (Session.MpActive) {
-                    Session.SendCompStateUpdate(this);
-                    Session.SendCompSettingUpdate(this);
+                    Session.SendCompData(this);
                     if (singleShot)
                         Session.SendSingleShot(this);
                 }
