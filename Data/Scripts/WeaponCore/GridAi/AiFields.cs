@@ -172,6 +172,12 @@ namespace WeaponCore.Support
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private uint _pCacheTick;
 
+        public GridAi()
+        {
+            for (int i = 0; i < TargetState.Length; i++)
+                TargetState[i] = new TargetStatus();
+        }
+
         internal void Init(MyCubeGrid grid, Session session)
         {
             MyGrid = grid;

@@ -61,14 +61,7 @@ namespace WeaponCore.Support
         {
             if (Session.IsServer)
             {
-                Log.Line($"IsSerialized: {Ai == null}");
-                if (Ai == null)
-                    Session.GridTargetingAIs.TryGetValue(MyGrid, out Ai);
-                if (Ai != null)
-                {
-                    Log.Line("saving");
-                    Ai.Data.Save();
-                }
+                Ai?.Data.Save();
             }
             return false;
         }
