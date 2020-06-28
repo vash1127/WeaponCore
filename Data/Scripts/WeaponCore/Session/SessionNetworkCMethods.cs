@@ -182,6 +182,31 @@ namespace WeaponCore
 
         }
 
+        private bool ClientAiSyncUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+            var aiSyncPacket = (AiSyncPacket)packet;
+            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
+
+            GridAi ai;
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
+
+                if (ai.MIds[(int)packet.PType] < packet.MId) {
+                    ai.MIds[(int)packet.PType] = packet.MId;
+
+                    aiSyncPacket.Data.Sync(ai, aiSyncPacket.Data);
+
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ClientAiSyncUpdate MID failure");
+            }
+            else
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            return true;
+        }
+
         private bool ClientGridFocusListSync(PacketObj data)
         {
             var packet = data.Packet;

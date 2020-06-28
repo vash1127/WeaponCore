@@ -519,7 +519,7 @@ namespace WeaponCore
                 var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
                 var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal.EntityId == Comp.Ai.Construct.RootAi?.Data.Repo.ActiveTerminal.ActiveCubeId;
+                var sameTerminalBlock = Session.LastTerminal?.EntityId == Comp.Ai.Construct.RootAi?.Data.Repo.ActiveTerminal.ActiveCubeId;
 
                 return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
             }

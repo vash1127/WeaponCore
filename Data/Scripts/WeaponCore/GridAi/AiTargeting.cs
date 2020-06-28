@@ -188,6 +188,12 @@ namespace WeaponCore.Support
             var hasOffset = offset > 0;
             var numOfTargets = ai.SortedTargets.Count;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
+            if (w.Comp.Data.Repo.WepVal?.WeaponRandom[w.WeaponId] == null)
+            {
+                Log.Line($"fail");
+                targetType = TargetType.None;
+                return;
+            }
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId], Acquire);
             try
             {

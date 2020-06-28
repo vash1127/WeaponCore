@@ -23,6 +23,17 @@ namespace WeaponCore
 
             StorageInit();
             Load();
+
+            if (Ai.Session.IsServer)
+            {
+                Repo.Focus.Clean();
+                Repo.ControllingPlayers.Clear();
+                foreach (var bg in Repo.BlockGroups)
+                {
+                    bg.Value.CompIds.Clear();
+                    bg.Value.ChangeState = GroupInfo.ChangeStates.None;
+                }
+            }
         }
 
         public void Clean()

@@ -13,7 +13,7 @@ namespace WeaponCore
     public enum PacketType
     {
         Invalid,
-        //GridSyncRequestUpdate,
+        AiSyncUpdate,
         WeaponSyncUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
@@ -53,7 +53,7 @@ namespace WeaponCore
     [ProtoInclude(11, typeof(WeaponIdPacket))]
     [ProtoInclude(12, typeof(RequestTargetsPacket))]
     [ProtoInclude(13, typeof(MouseInputSyncPacket))]
-    //[ProtoInclude(14, typeof(GridOverRidesSyncPacket))]
+    [ProtoInclude(14, typeof(AiSyncPacket))]
     [ProtoInclude(15, typeof(GridFocusListPacket))]
     [ProtoInclude(16, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(17, typeof(ProblemReportPacket))]
@@ -255,20 +255,20 @@ namespace WeaponCore
             Data = new PlayerMouseData[0];
         }
     }
-    /*
+
     [ProtoContract]
-    public class GridOverRidesSyncPacket : Packet
+    public class AiSyncPacket : Packet
     {
-        [ProtoMember(1)] internal OverRidesData[] Data = new OverRidesData[0];
-        public GridOverRidesSyncPacket() { }
+        [ProtoMember(1)] internal AiDataValues Data;
+        public AiSyncPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = new OverRidesData[0];
+            Data = null;
         }
     }
-    */
+
     [ProtoContract]
     public class GridFocusListPacket : Packet
     {

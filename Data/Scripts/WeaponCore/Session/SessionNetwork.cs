@@ -100,12 +100,11 @@ namespace WeaponCore
                             ClientActiveControlFullUpdate(packetObj);
                             break;
                         }
-                    /*
-                    case PacketType.OverRidesUpdate: {
-                            ClientOverRidesUpdate(packetObj);
-                            break;
-                        }
-                        */
+                    case PacketType.AiSyncUpdate:
+                    {
+                        ClientAiSyncUpdate(packetObj);
+                        break;
+                    }
                     case PacketType.TargetExpireUpdate: {
                             ClientTargetExpireUpdate(packetObj);
                             break;
@@ -229,8 +228,8 @@ namespace WeaponCore
                     break;
                 }
                 /*
-                case PacketType.GridSyncRequestUpdate: {
-                    ServerGridSyncRequestUpdate(packetObj);
+                case PacketType.AiSyncUpdate: {
+                    ServerAiSyncUpdate(packetObj);
                     break;
                 }
                 */

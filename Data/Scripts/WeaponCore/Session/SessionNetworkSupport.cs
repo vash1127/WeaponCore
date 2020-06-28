@@ -375,6 +375,25 @@ namespace WeaponCore
             });
         }
 
+        internal void SendAiSync(GridAi ai)
+        {
+            if (IsServer)
+            {
+                ++ai.Data.Repo.Revision;
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = ai.MyGrid,
+                    Packet = new AiSyncPacket
+                    {
+                        MId = ++ai.MIds[(int)PacketType.AiSyncUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        PType = PacketType.AiSyncUpdate,
+                        Data = ai.Data.Repo,
+                    }
+                });
+            }
+        }
+
         internal void SendGroupUpdate(GridAi ai)
         {
             if (IsClient)

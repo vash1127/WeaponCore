@@ -2,6 +2,7 @@
 using ProtoBuf;
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
+using VRage.Sync;
 using VRage.Utils;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -18,14 +19,28 @@ namespace WeaponCore
         [ProtoMember(3)] public readonly Dictionary<long, long> ControllingPlayers = new Dictionary<long, long>();
         [ProtoMember(4)] public readonly Dictionary<string, GroupInfo> BlockGroups = new Dictionary<string, GroupInfo>();
         [ProtoMember(5)] public readonly Focus Focus = new Focus();
-        [ProtoMember(5)] public readonly ActiveTerminal ActiveTerminal = new ActiveTerminal();
+        [ProtoMember(6)] public readonly ActiveTerminal ActiveTerminal = new ActiveTerminal();
 
-        public bool Sync(GridAi ai, AiDataValues data)
+        public bool Sync(GridAi ai, AiDataValues sync)
         {
-            if (data.Revision > Revision)
+            if (sync.Revision > Revision)
             {
+                Focus.Sync(sync.Focus);
+                ActiveTerminal.Sync(sync.ActiveTerminal);
 
-                Revision = data.Revision;
+                ControllingPlayers.Clear();
+                foreach (var s in sync.ControllingPlayers)
+                    ControllingPlayers[s.Key] = s.Value;
+
+                BlockGroups.Clear();
+                foreach (var s in sync.BlockGroups)
+                    BlockGroups[s.Key] = s.Value;
+
+                foreach (var s in sync.ControllingPlayers)
+                    ControllingPlayers[s.Key] = s.Value;
+
+                Revision = sync.Revision;
+                Log.Line($"new revision: {Revision}");
                 return true;
             }
 
@@ -39,6 +54,13 @@ namespace WeaponCore
         [ProtoMember(1)] internal long MyGridId;
         [ProtoMember(2)] internal long ActiveCubeId;
         [ProtoMember(3)] internal bool Active;
+
+        internal void Sync(ActiveTerminal sync)
+        {
+            MyGridId = sync.MyGridId;
+            ActiveCubeId = sync.ActiveCubeId;
+            Active = sync.Active;
+        }
 
         internal void Clean()
         {
@@ -55,6 +77,16 @@ namespace WeaponCore
         [ProtoMember(2)] internal int ActiveId;
         [ProtoMember(3)] internal bool HasFocus;
         [ProtoMember(4)] internal double DistToNearestFocusSqr;
+
+
+        internal void Sync(Focus sync)
+        {
+            Target[0] = sync.Target[0];
+            Target[1] = sync.Target[1];
+            ActiveId = sync.ActiveId;
+            HasFocus = sync.HasFocus;
+            DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
+        }
 
         internal void AddFocus(MyEntity target, GridAi ai, bool alreadySynced = false)
         {
