@@ -138,7 +138,7 @@ namespace WeaponCore
                         {
                             var groupName = GroupNames[item.SubSlot];
 
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupName, out groupInfo)) break;
+                            if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(groupName, out groupInfo)) break;
                             Wheel.ActiveGroupName = groupName;
                             FormatGroupMessage(groupInfo);
                         }
@@ -146,7 +146,7 @@ namespace WeaponCore
                     case "GroupSettings":
                         if (Wheel.ActiveGroupName != null)
                         {
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                            if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
                             ReportGroupSettings(groupInfo, item);
                         }
                         break;
@@ -154,7 +154,7 @@ namespace WeaponCore
                         if (BlockGroups.Count > 0)
                         {
                             var groupMember = BlockGroups[Wheel.ActiveGroupId][item.SubSlot];
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
+                            if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             FormatCompMessage(groupMember, Color.Yellow);
                         }
                         break;
@@ -162,7 +162,7 @@ namespace WeaponCore
                         if (Wheel.BlockGroups.Count > 0)
                         {
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
+                            if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             FormatCompMessage(groupMember, Color.DarkOrange);
                             ReportMemberSettings(groupInfo, groupMember, item);
                         }
@@ -177,7 +177,7 @@ namespace WeaponCore
                 switch (Name)
                 {
                     case "GroupSettings":
-                        if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                        if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
                         SetGroupSettings(groupInfo);
                         break;
                 }
@@ -187,7 +187,7 @@ namespace WeaponCore
                         if (Wheel.BlockGroups.Count > 0)
                         {
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
+                            if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             SetMemberSettings(groupInfo, groupMember);
                         }
                         break;
@@ -201,7 +201,7 @@ namespace WeaponCore
                 switch (Name)
                 {
                     case "GroupSettings":
-                        if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                        if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
                         ReportGroupSettings(groupInfo, item);
                         break;
                 }
@@ -211,7 +211,7 @@ namespace WeaponCore
                         if (Wheel.BlockGroups.Count > 0)
                         {
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
+                            if (!Wheel.Ai.Data.Repo.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             ReportMemberSettings(groupInfo, groupMember, item);
                         }
                         break;

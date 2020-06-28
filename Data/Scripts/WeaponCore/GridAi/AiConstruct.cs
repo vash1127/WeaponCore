@@ -51,14 +51,16 @@ namespace WeaponCore.Support
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
                 GridAi removeAi;
-                if (!Session.GridTargetingAIs.ContainsKey(grid)) 
+                if (!Session.GridTargetingAIs.ContainsKey(grid))
                     Session.GridToMasterAi.TryRemove(grid, out removeAi);
             }
             RemSubGrids.Clear();
 
-            if (!clean) {
+            if (!clean)
+            {
                 Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
-                foreach (var grid in SubGrids) {
+                foreach (var grid in SubGrids)
+                {
                     if (Construct.RootAi != null)
                         Session.GridToMasterAi[grid] = Construct.RootAi;
                     else Log.Line($"Construct.RootAi is null");
@@ -155,7 +157,12 @@ namespace WeaponCore.Support
 
                 if (cAi.SubGrids.Count > 1) {
                     foreach (var sub in cAi.SubGrids) {
-                        if (sub == cAi.MyGrid) continue;
+                        if (sub == null || sub == cAi.MyGrid)
+                        {
+                            if (sub == null)
+                                Log.Line($"UpdateWeaponCounters: how was sub null?");
+                            continue;
+                        }
 
                         GridAi subAi;
                         if (cAi.Session.GridTargetingAIs.TryGetValue(sub, out subAi))

@@ -74,6 +74,7 @@ namespace WeaponCore.Support
                 if (!MyCube.MarkedForClose && Entity != null) 
                 {
                     Ai.FirstRun = true;
+
                     StorageSetup();
                     InventoryInit();
                     PowerInit();
@@ -178,7 +179,7 @@ namespace WeaponCore.Support
                     Ai.GridInit = true;
                     Ai.ScanBlockGroups = true;
                     var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
-                    
+
                     for (int i = 0; i < fatList.Count; i++) {
 
                         var cubeBlock = fatList[i];
@@ -187,13 +188,16 @@ namespace WeaponCore.Support
                     }
 
                     var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-                    for (int i = 0; i < subgrids.Count; i++) {
-                        var grid = (MyCubeGrid)subgrids[i];
-                        Ai.PrevSubGrids.Add(grid);
-                        Ai.SubGrids.Add(grid);
+                    lock (Ai.AiLock) {
+                        for (int i = 0; i < subgrids.Count; i++) {
+                            var grid = (MyCubeGrid)subgrids[i];
+                            Ai.PrevSubGrids.Add(grid);
+                            Ai.SubGrids.Add(grid);
+                        }
+
+                        Ai.SubGridDetect();
+                        Ai.SubGridChanges();
                     }
-                    Ai.SubGridDetect();
-                    Ai.SubGridChanges();
                 }
 
                 var maxTrajectory = 0d;
@@ -264,7 +268,6 @@ namespace WeaponCore.Support
             if (Session.IsServer && Platform.State == MyWeaponPlatform.PlatformState.Ready) {
 
                 if (MyCube?.Storage != null) {
-
                     Data.Save();
                 }
             }

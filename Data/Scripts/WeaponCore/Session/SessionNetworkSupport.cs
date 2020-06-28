@@ -163,8 +163,6 @@ namespace WeaponCore
 
         internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
-
-            
             PacketsToServer.Add(new OverRidesPacket
             {
                 MId = ++comp.MIds[(int)PacketType.OverRidesUpdate],
@@ -196,6 +194,7 @@ namespace WeaponCore
             }
         }
 
+        /*
         internal void SendOverRidesServerAi(GridAi ai, string groupName, GroupOverrides data)
         {
             PacketsToClient.Add(new PacketInfo
@@ -212,7 +211,8 @@ namespace WeaponCore
                 }
             });
         }
-
+        */
+        /*
         internal void SendOverRidesServerComp(WeaponComponent comp, string groupName, GroupOverrides data)
         {
             PacketsToClient.Add(new PacketInfo
@@ -229,7 +229,7 @@ namespace WeaponCore
                 }
             });
         }
-
+        */
         internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
         {
             comp.Session.PacketsToServer.Add(new ShootStatePacket
@@ -607,19 +607,19 @@ namespace WeaponCore
             {
 
                 if (applyToRoot && GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi) || GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi)) {
-                    trackingAi.ControllingPlayers[playerId] = cube;
+                    trackingAi.Data.Repo.ControllingPlayers[playerId] = cube.EntityId;
                     trackingAi.AiSleep = false;
                 }
             }
             else //remove
             {
                 if (applyToRoot && GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi) || GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi)) {
-                    trackingAi.ControllingPlayers.Remove(playerId);
+                    trackingAi.Data.Repo.ControllingPlayers.Remove(playerId);
                     trackingAi.AiSleep = false;
                 }
             }
         }
-
+        /*
         internal static bool SyncGridOverrides(GridAi ai, Packet packet, GroupOverrides o, string groupName)
         {
             if (ai.MIds[(int) packet.PType] < packet.MId) {
@@ -663,6 +663,7 @@ namespace WeaponCore
 
             return o;
         }
+        */
 
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {

@@ -21,26 +21,25 @@ namespace WeaponCore
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
             ActiveCockPit = ActiveControlBlock as MyCockpit;
-
+            long oldBlockId;
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             if (activeBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
-                MyCubeBlock oldBlock;
-                TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock);
+                TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
                 UpdateActiveControlDictionary(ActiveControlBlock, PlayerId, true, true);
-                if (HandlesInput && oldBlock != ActiveControlBlock)
+                if (HandlesInput && oldBlockId != ActiveControlBlock.EntityId)
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
             }
             else
             {
                 if (TrackingAi != null)
                 {
-                    TrackingAi.Focus.IsFocused(TrackingAi);
+                    TrackingAi.Data.Repo.Focus.IsFocused(TrackingAi);
 
                     MyCubeBlock oldBlock;
-                    if (TrackingAi.ControllingPlayers.TryGetValue(PlayerId, out oldBlock)) {
+                    if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
 
                         UpdateActiveControlDictionary(oldBlock, PlayerId, false, true);
                         
@@ -156,7 +155,7 @@ namespace WeaponCore
         internal void TargetSelection()
         {
             if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight) && InGridAiBlock)
-                TrackingAi.Focus.ReleaseActive(TrackingAi);
+                TrackingAi.Data.Repo.Focus.ReleaseActive(TrackingAi);
 
             if (InGridAiBlock)
             {
@@ -167,7 +166,7 @@ namespace WeaponCore
                     if (UiInput.CurrentWheel != UiInput.PreviousWheel)
                         TargetUi.SelectNext();
                     else if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift)
-                        TrackingAi.Focus.NextActive(UiInput.LongShift, TrackingAi);
+                        TrackingAi.Data.Repo.Focus.NextActive(UiInput.LongShift, TrackingAi);
                 }
             }
         }
@@ -213,7 +212,7 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (!ai.Focus.IsFocused(ai)) return false;
+            if (!ai.Data.Repo.Focus.IsFocused(ai)) return false;
 
             if (ai != TrackingAi)
             {
@@ -221,14 +220,14 @@ namespace WeaponCore
                 return false;
             }
 
-            return ai.Focus.HasFocus;
+            return ai.Data.Repo.Focus.HasFocus;
         }
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
             
             TrackingAi = ai;
-            TrackingAi.Focus.AddFocus(entity, ai);
+            TrackingAi.Data.Repo.Focus.AddFocus(entity, ai);
 
             GridAi gridAi;
             TargetArmed = false;

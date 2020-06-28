@@ -48,7 +48,6 @@ namespace WeaponCore.Support
                         maxTrajectory = (float)weapon.MaxTargetDistance;
 
                 }
-
                 if (Data.Repo.Set.Range < 0)
                     Data.Repo.Set.Range = maxTrajectory;
                 

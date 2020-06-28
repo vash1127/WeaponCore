@@ -67,7 +67,7 @@ namespace WeaponCore
                         comp.WasTrackReticle = comp.TrackReticle;
                         var isControllingPlayer = comp.Data.Repo.State.PlayerId == PlayerId;
 
-                        comp.TrackReticle = comp.Data.Repo.State.OtherPlayerTrackingReticle || (isControllingPlayer && (comp.Data.Repo.Set.Overrides.TargetPainter || comp.Data.Repo.Set.Overrides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.ControllingPlayers.ContainsKey(PlayerId));
+                        comp.TrackReticle = comp.Data.Repo.State.OtherPlayerTrackingReticle || (isControllingPlayer && (comp.Data.Repo.Set.Overrides.TargetPainter || comp.Data.Repo.Set.Overrides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
 
                         if (MpActive && isControllingPlayer && comp.TrackReticle != comp.WasTrackReticle)
                             comp.Session.SendTrackReticleUpdate(comp);
@@ -213,7 +213,7 @@ namespace WeaponCore
                         var manualShot = (compManualMode || w.Set.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
-                        w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Focus.HasFocus && ai.Focus.FocusInRange(w);
+                        w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Data.Repo.Focus.HasFocus && ai.Data.Repo.Focus.FocusInRange(w);
 
                         if (canShoot && (shoot || w.LockOnFireState)) {
 

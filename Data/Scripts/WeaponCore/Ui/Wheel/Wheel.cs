@@ -220,16 +220,20 @@ namespace WeaponCore
 
                 BlockGroups.Clear();
 
-                foreach (var group in Ai.BlockGroups)
+                foreach (var group in Ai.Data.Repo.BlockGroups)
                 {
                     var groupName = group.Key;
                     GroupNames.Add(groupName);
                     var membersList = MembersPool.Get();
 
-                    foreach (var comp in group.Value.Comps)
+                    foreach (var compId in group.Value.CompIds)
                     {
-                        var groupMember = new GroupMember { Comp = comp, Name = groupName };
-                        membersList.Add(groupMember);
+                        WeaponComponent comp;
+                        if (Ai.IdToCompMap.TryGetValue(compId, out comp))
+                        {
+                            var groupMember = new GroupMember { Comp = comp, Name = groupName };
+                            membersList.Add(groupMember);
+                        }
                     }
                     BlockGroups.Add(membersList);
                 }

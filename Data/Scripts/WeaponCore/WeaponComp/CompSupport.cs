@@ -40,10 +40,10 @@ namespace WeaponCore.Support
                             Session.WeaponCountPool.Return(wCount);
                         }
                     }
-                    else Log.Line($"didnt find counter");
+                    else Log.Line($"didnt find counter for: {MyCube.BlockDefinition.Id.SubtypeId} - {MyCube.BlockDefinition.Id.SubtypeId.String}");
 
-                    if (Ai.ActiveWeaponTerminal.ActiveCube == MyCube)
-                        Ai.ActiveWeaponTerminal.Clean();
+                    if (Ai.Data.Repo.ActiveTerminal.ActiveCubeId == MyCube.EntityId)
+                        Ai.Data.Repo.ActiveTerminal.Clean();
 
                     WeaponComponent comp;
                     if (Ai.WeaponBase.TryRemove(MyCube, out comp)) {

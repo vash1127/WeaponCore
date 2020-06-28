@@ -59,11 +59,15 @@ namespace WeaponCore.Support
                 else if (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler)
                 {
                     MyInventory inventory;
-                    if (cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
+                    if (cube.HasInventory && cube.TryGetInventory(out inventory))
                     {
-                        inventory.InventoryContentChanged += CheckAmmoInventory;
-                        Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
-                        Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
+                        if (inventory != null && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
+                        {
+                            inventory.InventoryContentChanged += CheckAmmoInventory;
+                            Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
+                            Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
+                        }
+                        else Log.Line($"FatBlockAdded invalid inventory");
                     }
 
                     foreach (var weapon in OutOfAmmoWeapons)
@@ -90,26 +94,28 @@ namespace WeaponCore.Support
                     MyInventory inventory;
                     if (isWeaponBase)
                         ScanBlockGroups = true;
-                    else if (cube != null && cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                    else if (cube != null && cube.HasInventory && cube.TryGetInventory(out inventory))
                     {
                         try {
+                            if (inventory != null && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                            {
+                                inventory.InventoryContentChanged -= CheckAmmoInventory;
+                                List<MyPhysicalInventoryItem> removedPhysical;
+                                List<BetterInventoryItem> removedBetter;
+                                if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
+                                    removedPhysical.Clear();
 
-                        inventory.InventoryContentChanged -= CheckAmmoInventory;
-                        List<MyPhysicalInventoryItem> removedPhysical;
-                        List<BetterInventoryItem> removedBetter;
-                        if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
-                            removedPhysical.Clear();
-
-                        if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
-                            removedBetter.Clear();
-                        
+                                if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
+                                    removedBetter.Clear();
+                            }
+                            else if (inventory == null) Log.Line($"FatBlockRemoved invalid inventory");
+                            
+                        } catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
                     }
-                    catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
-                }
-                else if (battery != null) {
-                    if (Batteries.Remove(battery)) SourceCount--;
-                    UpdatePowerSources = true;
-                }
+                    else if (battery != null) {
+                        if (Batteries.Remove(battery)) SourceCount--;
+                        UpdatePowerSources = true;
+                    }
                 }
                 catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
             }

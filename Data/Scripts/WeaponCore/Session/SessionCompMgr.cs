@@ -66,6 +66,7 @@ namespace WeaponCore
                 var blockDef = ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id) ? VanillaIds[cube.BlockDefinition.Id] : cube.BlockDefinition.Id.SubtypeId;
                 
                 var weaponComp = new WeaponComponent(this, cube, blockDef);
+
                 CompsToStart.Add(weaponComp);
                 if (thread) CompsToStart.ApplyAdditions();
             }

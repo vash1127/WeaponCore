@@ -70,7 +70,6 @@ namespace WeaponCore.Platform
                 State = PlatformState.Delay;
                 return State;
             }
-
             //Get or init Ai
             var newAi = false;
             if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.MyCube.CubeGrid, out Comp.Ai)) {
@@ -80,22 +79,27 @@ namespace WeaponCore.Platform
                 Comp.Session.GridTargetingAIs.TryAdd(Comp.MyCube.CubeGrid, Comp.Ai);
             }
 
-            var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId;
-            if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef))
+            var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId; 
+            if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef)) // Need to account for reinit case
                 Comp.Ai.WeaponCounter[blockDef] = Comp.Session.WeaponCountPool.Get();
 
             var wCounter = comp.Ai.WeaponCounter[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
             
             if (newAi) {
+
                 var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-                for (int i = 0; i < subgrids.Count; i++) {
-                    var grid = (MyCubeGrid)subgrids[i];
-                    Comp.Ai.PrevSubGrids.Add(grid);
-                    Comp.Ai.SubGrids.Add(grid);
+
+                lock (Comp.Ai.AiLock) {
+
+                    for (int i = 0; i < subgrids.Count; i++) {
+                        var grid = (MyCubeGrid)subgrids[i];
+                        Comp.Ai.PrevSubGrids.Add(grid);
+                        Comp.Ai.SubGrids.Add(grid);
+                    }
+                    Comp.Ai.SubGridDetect();
+                    Comp.Ai.SubGridChanges();
                 }
-                Comp.Ai.SubGridDetect();
-                Comp.Ai.SubGridChanges();
             }
 
             if (wCounter.Max == 0 || Comp.Ai.Construct.GetWeaponCount(blockDef) + 1 <= wCounter.Max) {

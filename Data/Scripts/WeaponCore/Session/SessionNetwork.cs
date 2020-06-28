@@ -100,10 +100,12 @@ namespace WeaponCore
                             ClientActiveControlFullUpdate(packetObj);
                             break;
                         }
+                    /*
                     case PacketType.OverRidesUpdate: {
                             ClientOverRidesUpdate(packetObj);
                             break;
                         }
+                        */
                     case PacketType.TargetExpireUpdate: {
                             ClientTargetExpireUpdate(packetObj);
                             break;
@@ -116,10 +118,12 @@ namespace WeaponCore
                             ClientSendSingleShot(packetObj);
                             break;
                         }
+                    /*
                     case PacketType.GridOverRidesSync: {
                             ClientGridOverRidesSync(packetObj);
                             break;
                         }
+                        */
                     case PacketType.RescanGroupRequest: {
                             ClientRescanGroupRequest(packetObj);
                             break;
@@ -224,10 +228,12 @@ namespace WeaponCore
                     ServerFakeTargetUpdate(packetObj);
                     break;
                 }
+                /*
                 case PacketType.GridSyncRequestUpdate: {
                     ServerGridSyncRequestUpdate(packetObj);
                     break;
                 }
+                */
                 case PacketType.ReticleUpdate: {
                     ServerReticleUpdate(packetObj);
                     break;

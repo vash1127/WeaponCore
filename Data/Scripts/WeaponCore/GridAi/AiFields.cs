@@ -25,17 +25,16 @@ namespace WeaponCore.Support
         internal volatile uint AiSpawnTick;
         internal volatile uint AiCloseTick;
         internal volatile uint AiMarkedTick;
-        internal readonly Focus Focus = new Focus(2);
+        internal volatile uint LastAiDataSave;
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
         internal readonly Constructs Construct = new Constructs();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
+        internal readonly Dictionary<long, WeaponComponent> IdToCompMap = new Dictionary<long, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryIndexer = new ConcurrentDictionary<MyInventory, int>();
         internal readonly MyConcurrentList<MyInventory> Inventories = new MyConcurrentList<MyInventory>();
-
-        internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
@@ -63,15 +62,14 @@ namespace WeaponCore.Support
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly List<MyEntity> NearByEntityCache = new List<MyEntity>();
-
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
-        internal readonly Dictionary<long, MyCubeBlock> ControllingPlayers = new Dictionary<long, MyCubeBlock>();
-        internal readonly ActiveTerminal ActiveWeaponTerminal;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly object AiLock = new object();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
+        internal readonly AiData Data = new AiData();
+        internal TargetStatus[] TargetState = new TargetStatus[2];
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
@@ -146,6 +144,7 @@ namespace WeaponCore.Support
         internal int NearByEntitiesTmp;
         internal int ProInMinCacheRange;
         internal int WeaponsTracking;
+        internal long OldFocusEntityId;
 
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
@@ -173,11 +172,6 @@ namespace WeaponCore.Support
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private uint _pCacheTick;
 
-        public GridAi()
-        {
-            ActiveWeaponTerminal = new ActiveTerminal(this);
-        }
-
         internal void Init(MyCubeGrid grid, Session session)
         {
             MyGrid = grid;
@@ -186,11 +180,9 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
-
-            if (Session.IsClient)
-                session.SendUpdateRequest(grid.EntityId, PacketType.GridSyncRequestUpdate);
-            
             AiSpawnTick = Session.Tick;
+            Data.Init(this);
+
         }
     }
 }

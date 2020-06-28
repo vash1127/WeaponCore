@@ -53,8 +53,12 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\AiSerializedValues .cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiComp\AiCompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiConstruct.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiTypes.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiData.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiComp\AiCompRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\Enforcements.cs" />
@@ -72,7 +76,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFocus.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudFields.cs" />
@@ -263,6 +266,7 @@
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

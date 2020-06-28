@@ -19,9 +19,9 @@ namespace WeaponCore
 
         public void StorageInit()
         {
-            if (Comp.MyCube.Storage == null)
+            if (Comp.MyCube.Storage == null) 
             {
-                Comp.MyCube.Storage = new MyModStorageComponent { [Comp.Session.LogicSettingsGuid] = "" };
+                Comp.MyCube.Storage = new MyModStorageComponent { [Comp.Session.CompDataGuid] = "" };
             }
         }
 
@@ -29,24 +29,28 @@ namespace WeaponCore
         {
             if (Comp.MyCube.Storage == null) return;
 
-            var binary = MyAPIGateway.Utilities.SerializeToBinary(Repo);
-            Comp.MyCube.Storage[Comp.Session.DataGuid] = Convert.ToBase64String(binary);
+            if (Repo != null)
+            {
+                var binary = MyAPIGateway.Utilities.SerializeToBinary(Repo);
+                Comp.MyCube.Storage[Comp.Session.CompDataGuid] = Convert.ToBase64String(binary);
+            }
+
         }
 
-        public bool Load()
+        public void Load()
         {
-            if (Comp.MyCube.Storage == null) return false;
+            if (Comp.MyCube.Storage == null) return;
 
-            CompDataValues loadedState = null;
+            CompDataValues load = null;
             string rawData;
-            bool loadedSomething = false;
-
-            if (Comp.MyCube.Storage.TryGetValue(Comp.Session.DataGuid, out rawData))
+            bool validData = false;
+            if (Comp.MyCube.Storage.TryGetValue(Comp.Session.CompDataGuid, out rawData))
             {
                 try
                 {
                     var base64 = Convert.FromBase64String(rawData);
-                    loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompDataValues>(base64);
+                    load = MyAPIGateway.Utilities.SerializeFromBinary<CompDataValues>(base64);
+                    validData = (load != null && load.Set != null && load.State != null && load.WepVal != null);
                 }
                 catch (Exception e)
                 {
@@ -54,10 +58,9 @@ namespace WeaponCore
                 }
             }
 
-            if (loadedState != null && loadedState.Version == VersionControl)
+            if (validData && load.Version == VersionControl)
             {
-                Repo = loadedState;
-                loadedSomething = true;
+                Repo = load;
             }
             else {
 
@@ -79,7 +82,7 @@ namespace WeaponCore
                 else WeaponValues.RefreshClient(Comp);
             }
 
-            return loadedSomething;
+            return;
         }
     }
 }

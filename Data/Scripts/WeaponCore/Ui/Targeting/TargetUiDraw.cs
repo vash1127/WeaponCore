@@ -3,6 +3,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -73,12 +74,12 @@ namespace WeaponCore
         private void DrawTarget()
         {
             var s = _session;
-            var focus = s.TrackingAi.Focus;
-            for (int i = 0; i < focus.TargetState.Length; i++)
+            var focus = s.TrackingAi.Data.Repo.Focus;
+            for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
-                if (focus.Target[i] == null || s.Wheel.WheelActive && i > 0) continue;
+                if (focus.Target[i] <= 0 || s.Wheel.WheelActive && i > 0) continue;
 
-                var targetState = focus.TargetState[i];
+                var targetState = s.TrackingAi.TargetState[i];
 
                 var displayCount = 0;
                 foreach (var icon in _targetIcons.Keys)
@@ -101,9 +102,11 @@ namespace WeaponCore
 
                     displayCount++;
                 }
-                if (i == focus.ActiveId)
+
+                MyEntity target;
+                if (i == focus.ActiveId && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
                 {
-                    var targetSphere = focus.Target[focus.ActiveId].PositionComp.WorldVolume;
+                    var targetSphere = target.PositionComp.WorldVolume;
                     var targetCenter = targetSphere.Center;
                     var screenPos = s.Camera.WorldToScreen(ref targetCenter);
                     var fov = MyAPIGateway.Session.Camera.FovWithZoom;
@@ -178,19 +181,19 @@ namespace WeaponCore
             _cachedTargetPos = true;
         }
 
-        
         internal bool GetTargetState(Session s)
         {
             var ai = s.TrackingAi;
             var validFocus = false;
-            for (int i = 0; i < ai.Focus.Target.Length; i++)
+            for (int i = 0; i < ai.Data.Repo.Focus.Target.Length; i++)
             {
-                var target = ai.Focus.Target[i];
+                var targetId = ai.Data.Repo.Focus.Target[i];
                 GridAi.TargetInfo info;
-                if (target == null || !ai.Targets.TryGetValue(target, out info)) continue;
+                MyEntity target;
+                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !ai.Targets.TryGetValue(target, out info)) continue;
                 validFocus = true;
-                if (!s.Tick20 && ai.Focus.PrevTargetId[i] == info.EntInfo.EntityId) continue;
-                ai.Focus.PrevTargetId[i] = info.EntInfo.EntityId;
+                if (!s.Tick20 && ai.OldFocusEntityId == info.EntInfo.EntityId) continue;
+                ai.OldFocusEntityId = info.EntInfo.EntityId;
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
                 if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
                 var targetDir = Vector3D.Normalize(targetVel);
@@ -199,19 +202,19 @@ namespace WeaponCore
                 var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
-                if (info.LargeGrid && info.PartCount > 24000) ai.Focus.TargetState[i].Size = 6;
-                else if (info.LargeGrid && info.PartCount > 12000) ai.Focus.TargetState[i].Size = 5;
-                else if (info.LargeGrid && info.PartCount > 6000) ai.Focus.TargetState[i].Size = 4;
-                else if (info.LargeGrid && info.PartCount > 3000) ai.Focus.TargetState[i].Size = 3;
-                else if (info.LargeGrid) ai.Focus.TargetState[i].Size = 2;
-                else if (info.PartCount > 2000) ai.Focus.TargetState[i].Size = 1;
-                else ai.Focus.TargetState[i].Size = 0;
+                if (info.LargeGrid && info.PartCount > 24000) ai.TargetState[i].Size = 6;
+                else if (info.LargeGrid && info.PartCount > 12000) ai.TargetState[i].Size = 5;
+                else if (info.LargeGrid && info.PartCount > 6000) ai.TargetState[i].Size = 4;
+                else if (info.LargeGrid && info.PartCount > 3000) ai.TargetState[i].Size = 3;
+                else if (info.LargeGrid) ai.TargetState[i].Size = 2;
+                else if (info.PartCount > 2000) ai.TargetState[i].Size = 1;
+                else ai.TargetState[i].Size = 0;
 
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, s.ApproachDegrees);
                 var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, s.ApproachDegrees);
-                if (intercept) ai.Focus.TargetState[i].Engagement = 0;
-                else if (retreat) ai.Focus.TargetState[i].Engagement = 1;
-                else ai.Focus.TargetState[i].Engagement = 2;
+                if (intercept) ai.TargetState[i].Engagement = 0;
+                else if (retreat) ai.TargetState[i].Engagement = 1;
+                else ai.TargetState[i].Engagement = 2;
 
                 var distanceFromCenters = Vector3D.Distance(ai.MyGrid.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
                 distanceFromCenters -= ai.MyGrid.PositionComp.LocalVolume.Radius;
@@ -219,34 +222,34 @@ namespace WeaponCore
                 distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
 
                 var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
-                if (distPercent > 95) ai.Focus.TargetState[i].Distance = 9;
-                else if (distPercent > 90) ai.Focus.TargetState[i].Distance = 8;
-                else if (distPercent > 80) ai.Focus.TargetState[i].Distance = 7;
-                else if (distPercent > 70) ai.Focus.TargetState[i].Distance = 6;
-                else if (distPercent > 60) ai.Focus.TargetState[i].Distance = 5;
-                else if (distPercent > 50) ai.Focus.TargetState[i].Distance = 4;
-                else if (distPercent > 40) ai.Focus.TargetState[i].Distance = 3;
-                else if (distPercent > 30) ai.Focus.TargetState[i].Distance = 2;
-                else if (distPercent > 20) ai.Focus.TargetState[i].Distance = 1;
-                else if (distPercent > 0) ai.Focus.TargetState[i].Distance = 0;
-                else ai.Focus.TargetState[i].Distance = -1;
+                if (distPercent > 95) ai.TargetState[i].Distance = 9;
+                else if (distPercent > 90) ai.TargetState[i].Distance = 8;
+                else if (distPercent > 80) ai.TargetState[i].Distance = 7;
+                else if (distPercent > 70) ai.TargetState[i].Distance = 6;
+                else if (distPercent > 60) ai.TargetState[i].Distance = 5;
+                else if (distPercent > 50) ai.TargetState[i].Distance = 4;
+                else if (distPercent > 40) ai.TargetState[i].Distance = 3;
+                else if (distPercent > 30) ai.TargetState[i].Distance = 2;
+                else if (distPercent > 20) ai.TargetState[i].Distance = 1;
+                else if (distPercent > 0) ai.TargetState[i].Distance = 0;
+                else ai.TargetState[i].Distance = -1;
 
                 var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
-                if (speed <= 0) ai.Focus.TargetState[i].Speed = -1;
+                if (speed <= 0) ai.TargetState[i].Speed = -1;
                 else
                 {
                     var speedPercent = (speed / s.MaxEntitySpeed) * 100;
-                    if (speedPercent > 95) ai.Focus.TargetState[i].Speed = 9;
-                    else if (speedPercent > 90) ai.Focus.TargetState[i].Speed = 8;
-                    else if (speedPercent > 80) ai.Focus.TargetState[i].Speed = 7;
-                    else if (speedPercent > 70) ai.Focus.TargetState[i].Speed = 6;
-                    else if (speedPercent > 60) ai.Focus.TargetState[i].Speed = 5;
-                    else if (speedPercent > 50) ai.Focus.TargetState[i].Speed = 4;
-                    else if (speedPercent > 40) ai.Focus.TargetState[i].Speed = 3;
-                    else if (speedPercent > 30) ai.Focus.TargetState[i].Speed = 2;
-                    else if (speedPercent > 20) ai.Focus.TargetState[i].Speed = 1;
-                    else if (speedPercent > 0) ai.Focus.TargetState[i].Speed = 0;
-                    else ai.Focus.TargetState[i].Speed = -1;
+                    if (speedPercent > 95) ai.TargetState[i].Speed = 9;
+                    else if (speedPercent > 90) ai.TargetState[i].Speed = 8;
+                    else if (speedPercent > 80) ai.TargetState[i].Speed = 7;
+                    else if (speedPercent > 70) ai.TargetState[i].Speed = 6;
+                    else if (speedPercent > 60) ai.TargetState[i].Speed = 5;
+                    else if (speedPercent > 50) ai.TargetState[i].Speed = 4;
+                    else if (speedPercent > 40) ai.TargetState[i].Speed = 3;
+                    else if (speedPercent > 30) ai.TargetState[i].Speed = 2;
+                    else if (speedPercent > 20) ai.TargetState[i].Speed = 1;
+                    else if (speedPercent > 0) ai.TargetState[i].Speed = 0;
+                    else ai.TargetState[i].Speed = -1;
                 }
 
                 MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
@@ -254,19 +257,19 @@ namespace WeaponCore
                 if (shieldInfo.Item1)
                 {
                     var shieldPercent = shieldInfo.Item5;
-                    if (shieldPercent > 95) ai.Focus.TargetState[i].ShieldHealth = 9;
-                    else if (shieldPercent > 90) ai.Focus.TargetState[i].ShieldHealth = 8;
-                    else if (shieldPercent > 80) ai.Focus.TargetState[i].ShieldHealth = 7;
-                    else if (shieldPercent > 70) ai.Focus.TargetState[i].ShieldHealth = 6;
-                    else if (shieldPercent > 60) ai.Focus.TargetState[i].ShieldHealth = 5;
-                    else if (shieldPercent > 50) ai.Focus.TargetState[i].ShieldHealth = 4;
-                    else if (shieldPercent > 40) ai.Focus.TargetState[i].ShieldHealth = 3;
-                    else if (shieldPercent > 30) ai.Focus.TargetState[i].ShieldHealth = 2;
-                    else if (shieldPercent > 20) ai.Focus.TargetState[i].ShieldHealth = 1;
-                    else if (shieldPercent > 0) ai.Focus.TargetState[i].ShieldHealth = 0;
-                    else ai.Focus.TargetState[i].ShieldHealth = -1;
+                    if (shieldPercent > 95) ai.TargetState[i].ShieldHealth = 9;
+                    else if (shieldPercent > 90) ai.TargetState[i].ShieldHealth = 8;
+                    else if (shieldPercent > 80) ai.TargetState[i].ShieldHealth = 7;
+                    else if (shieldPercent > 70) ai.TargetState[i].ShieldHealth = 6;
+                    else if (shieldPercent > 60) ai.TargetState[i].ShieldHealth = 5;
+                    else if (shieldPercent > 50) ai.TargetState[i].ShieldHealth = 4;
+                    else if (shieldPercent > 40) ai.TargetState[i].ShieldHealth = 3;
+                    else if (shieldPercent > 30) ai.TargetState[i].ShieldHealth = 2;
+                    else if (shieldPercent > 20) ai.TargetState[i].ShieldHealth = 1;
+                    else if (shieldPercent > 0) ai.TargetState[i].ShieldHealth = 0;
+                    else ai.TargetState[i].ShieldHealth = -1;
                 }
-                else ai.Focus.TargetState[i].ShieldHealth = -1;
+                else ai.TargetState[i].ShieldHealth = -1;
 
                 var grid = target as MyCubeGrid;
                 var friend = false;
@@ -276,7 +279,7 @@ namespace WeaponCore
                     if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
                 }
 
-                if (friend) ai.Focus.TargetState[i].ThreatLvl = -1;
+                if (friend) ai.TargetState[i].ThreatLvl = -1;
                 else
                 {
                     int shieldBonus = 0;
@@ -290,18 +293,18 @@ namespace WeaponCore
                     }
 
                     var offenseRating = info.OffenseRating;
-                    if (offenseRating > 5) ai.Focus.TargetState[i].ThreatLvl = shieldBonus < 0 ? 8 : 9;
-                    else if (offenseRating > 4) ai.Focus.TargetState[i].ThreatLvl = 8 + shieldBonus;
-                    else if (offenseRating > 3) ai.Focus.TargetState[i].ThreatLvl = 7 + shieldBonus;
-                    else if (offenseRating > 2) ai.Focus.TargetState[i].ThreatLvl = 6 + shieldBonus;
-                    else if (offenseRating > 1) ai.Focus.TargetState[i].ThreatLvl = 5 + shieldBonus;
-                    else if (offenseRating > 0.5) ai.Focus.TargetState[i].ThreatLvl = 4 + shieldBonus;
-                    else if (offenseRating > 0.25) ai.Focus.TargetState[i].ThreatLvl = 3 + shieldBonus;
+                    if (offenseRating > 5) ai.TargetState[i].ThreatLvl = shieldBonus < 0 ? 8 : 9;
+                    else if (offenseRating > 4) ai.TargetState[i].ThreatLvl = 8 + shieldBonus;
+                    else if (offenseRating > 3) ai.TargetState[i].ThreatLvl = 7 + shieldBonus;
+                    else if (offenseRating > 2) ai.TargetState[i].ThreatLvl = 6 + shieldBonus;
+                    else if (offenseRating > 1) ai.TargetState[i].ThreatLvl = 5 + shieldBonus;
+                    else if (offenseRating > 0.5) ai.TargetState[i].ThreatLvl = 4 + shieldBonus;
+                    else if (offenseRating > 0.25) ai.TargetState[i].ThreatLvl = 3 + shieldBonus;
 
-                    else if (offenseRating > 0.125) ai.Focus.TargetState[i].ThreatLvl = 2 + shieldBonus;
-                    else if (offenseRating > 0.0625) ai.Focus.TargetState[i].ThreatLvl = 1 + shieldBonus;
-                    else if (offenseRating > 0) ai.Focus.TargetState[i].ThreatLvl = shieldBonus > 0 ? 1 : 0;
-                    else ai.Focus.TargetState[i].ThreatLvl = -1;
+                    else if (offenseRating > 0.125) ai.TargetState[i].ThreatLvl = 2 + shieldBonus;
+                    else if (offenseRating > 0.0625) ai.TargetState[i].ThreatLvl = 1 + shieldBonus;
+                    else if (offenseRating > 0) ai.TargetState[i].ThreatLvl = shieldBonus > 0 ? 1 : 0;
+                    else ai.TargetState[i].ThreatLvl = -1;
                 }
             }
             return validFocus;

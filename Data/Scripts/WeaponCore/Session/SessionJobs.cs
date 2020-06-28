@@ -7,6 +7,7 @@ using Sandbox.Game;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.Entity;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi.Constructs;
@@ -79,8 +80,10 @@ namespace WeaponCore
                     if (ai.MyPlanetTmp != null)
                         ai.MyPlanetInfo();
 
-                    foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
-                    if (ai.SubGridsChanged) ai.SubGridChanges();
+                    lock (ai.AiLock) {
+                        foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
+                        if (ai.SubGridsChanged) ai.SubGridChanges();
+                    }
 
                     ai.CleanSortedTargets();
                     ai.Targets.Clear();
@@ -105,7 +108,7 @@ namespace WeaponCore
                         ai.SortedTargets.Add(targetInfo);
                         ai.Targets[ent] = targetInfo;
 
-                        var checkFocus = ai.Focus.HasFocus && targetInfo.Target == ai.Focus.Target[0] || targetInfo.Target == ai.Focus.Target[1];
+                        var checkFocus = ai.Data.Repo.Focus.HasFocus && targetInfo.Target?.EntityId == ai.Data.Repo.Focus.Target[0] || targetInfo.Target?.EntityId == ai.Data.Repo.Focus.Target[1];
 
                         if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
                             ai.RamProximity = true;
@@ -163,9 +166,10 @@ namespace WeaponCore
                     //if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
 
                     
-                    ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.ControllingPlayers.Count > 0 || ai.FirstRun;
+                    ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count > 0 || ai.FirstRun;
 
-                    ai.AiSleep = ai.Construct.RootAi.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube == null || !ai.SubGrids.Contains(ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube.CubeGrid));
+                    MyCubeBlock activeCube;
+                    ai.AiSleep = ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Construct.RootAi.Data.Repo.ActiveTerminal.ActiveCubeId <= 0 || MyEntities.TryGetEntityById(ai.Construct.RootAi.Data.Repo.ActiveTerminal.ActiveCubeId, out activeCube) && activeCube != null && !ai.SubGrids.Contains(activeCube.CubeGrid));
 
                     ai.DbUpdated = true;
                     ai.FirstRun = false;

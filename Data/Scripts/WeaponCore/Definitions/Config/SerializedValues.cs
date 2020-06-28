@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using ProtoBuf;
 using VRage;
@@ -6,17 +7,18 @@ using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
-
+using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore
 {
     [ProtoContract]
     public class CompDataValues
     {
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public CompSettingsValues Set;
-        [ProtoMember(3)] public CompStateValues State;
-        [ProtoMember(4)] public WeaponValues WepVal;
-        [ProtoMember(5)] public int Version = Session.VersionControl;
+        [ProtoMember(2)] public int Version = Session.VersionControl;
+        [ProtoMember(3)] public CompSettingsValues Set;
+        [ProtoMember(4)] public CompStateValues State;
+        [ProtoMember(5)] public WeaponValues WepVal;
 
         public bool Sync(WeaponComponent comp, CompDataValues data)
         {

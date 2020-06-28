@@ -28,6 +28,41 @@ namespace WeaponCore
         internal void PurgeAll()
         {
             FutureEvents.Purge((int)Tick);
+
+            foreach (var comp in CompsToStart)
+                if (comp?.Platform != null)
+                    CloseComps(comp.MyCube);
+
+            foreach (var readd in CompReAdds)
+            {
+                if (!readd.Ai.Closed) readd.Ai.GridForceClose();
+                if (readd.Comp?.Platform != null)
+                {
+                    CloseComps(readd.Comp.MyCube);
+                }
+            }
+
+            foreach (var comp in CompsDelayed)
+            {
+                if (comp?.Platform != null)
+                    CloseComps(comp.MyCube);
+            }
+
+            foreach (var gridAi in DelayedGridAiClean)
+            {
+                if (!gridAi.Closed)
+                    gridAi.GridForceClose();
+            }
+
+            PlatFormPool.Clean();
+            CompsToStart.ClearImmediate();
+            DelayedGridAiClean.ClearImmediate();
+
+            CompsDelayed.Clear();
+            CompReAdds.Clear();
+            GridAiPool.Clean();
+
+
             PurgeTerminalSystem();
             HudUi.Purge();
             TerminalMon.Purge();
@@ -162,35 +197,7 @@ namespace WeaponCore
             _slimsSet.Clear();
             _turretDefinitions.Clear();
 
-            foreach (var comp in CompsToStart)
-                if (comp?.Platform != null)
-                    CloseComps(comp.MyCube);
 
-            foreach (var readd in CompReAdds)
-            {
-                if (!readd.Ai.Closed) readd.Ai.GridForceClose();
-                if (readd.Comp?.Platform != null) {
-                    CloseComps(readd.Comp.MyCube);
-                }
-            }
-
-            foreach (var comp in CompsDelayed) {
-                if (comp?.Platform != null)
-                    CloseComps(comp.MyCube);
-            }
-
-            foreach (var gridAi in DelayedGridAiClean) {
-                if (!gridAi.Closed)
-                    gridAi.GridForceClose();
-            }
-
-            PlatFormPool.Clean();
-            CompsToStart.ClearImmediate();
-            DelayedGridAiClean.ClearImmediate();
-
-            CompsDelayed.Clear();
-            CompReAdds.Clear();
-            GridAiPool.Clean();
             
             Av.RipMap.Clear();
             foreach (var mess in Av.KeensBrokenParticles)

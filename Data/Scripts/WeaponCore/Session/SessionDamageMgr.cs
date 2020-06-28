@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Engine.Utils;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -234,7 +235,9 @@ namespace WeaponCore
                         continue;
                     }
                 }
-                var door = rootBlock.FatBlock as MyDoorBase;
+
+                var fatBlock = rootBlock.FatBlock as MyCubeBlock;
+                var door = fatBlock as MyDoorBase;
                 if (door != null && door.Open && !HitDoor(hitEnt, door))
                     continue;
 
@@ -345,7 +348,11 @@ namespace WeaponCore
                     }
 
                     if (canDamage)
+                    {
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                        //if (blockIsRoot && fatBlock == null) 
+                            //ApplyDeformationCubeGrid(hitEnt.Intersection, hitEnt.Intersection.To, grid, scaledDamage, hitMass);
+                    }
                     else
                     {
                         var hasBlock = _slimHealthClient.ContainsKey(block);
@@ -600,6 +607,21 @@ namespace WeaponCore
             if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic || entity.Physics.Mass / impulse > 500)
                 return;
             entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero);
+        }
+
+        internal static void ApplyDeformationCubeGrid(LineD intersect, Vector3D hitPosition, MyCubeGrid grid, float damage, float hitMass)
+        {
+            /*
+            var matrix = grid.PositionComp.WorldMatrixNormalizedInv;
+            var vector3D1 = Vector3D.Transform(hitPosition, matrix);
+            var vector3D2 = Vector3D.TransformNormal(intersect.Direction, matrix);
+            float deformationOffset = 0.00664f * hitMass;
+            float num1 = 0.011904f * damage;
+            float num2 = 0.008928f * damage;
+            float softAreaPlanar = MathHelper.Clamp(num1, grid.GridSize * 0.75f, grid.GridSize * 1.3f);
+            float softAreaVertical = MathHelper.Clamp(num2, grid.GridSize * 0.9f, grid.GridSize * 1.3f);
+            //grid.Physics.ApplyDeformation(deformationOffset, softAreaPlanar, softAreaVertical, vector3D1, vector3D2, MyDamageType.Bullet, 0.0f, 0.0f, 0L);
+            */
         }
 
         private bool HitDoor(HitEntity hitEnt, MyDoorBase door)

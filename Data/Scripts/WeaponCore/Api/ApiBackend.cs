@@ -180,7 +180,7 @@ namespace WeaponCore.Api
             {
                 GridAi ai;
                 if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
-                    return ai.Focus.Target[priority];
+                    return MyEntities.GetEntityById(ai.Data.Repo.Focus.Target[priority]);
             }
             return null;
         }
@@ -194,7 +194,7 @@ namespace WeaponCore.Api
                 GridAi ai;
                 if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
                 {
-                    ai.Focus.ReassignTarget((MyEntity)target, priority, ai);
+                    ai.Data.Repo.Focus.ReassignTarget((MyEntity)target, priority, ai);
                     return true;
                 }
             }

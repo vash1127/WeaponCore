@@ -34,6 +34,7 @@ namespace WeaponCore.Support
                     Session.ArmorCubes.Add(comp.MyCube, comp);
                 }
                 WeaponsIdx.Add(comp, Weapons.Count);
+                IdToCompMap.Add(comp.MyCube.EntityId, comp);
                 Weapons.Add(comp);
             }
             else {
@@ -57,10 +58,12 @@ namespace WeaponCore.Support
                 if (idx < Weapons.Count)
                     WeaponsIdx[Weapons[idx]] = idx;
 
+                IdToCompMap.Remove(comp.MyCube.EntityId);
                 WeaponsIdx.Remove(comp);
             }
         }
 
+        private readonly List<string> _tmpGroupKeys = new List<string>();
         internal void ReScanBlockGroups(bool networkSync = false)
         {
             if (TerminalSystem == null)
@@ -71,10 +74,10 @@ namespace WeaponCore.Support
                 TerminalSystem.GetBlockGroups(null, group =>
                 {
                     GroupInfo groupInfo = null;
-                    if (BlockGroups.TryGetValue(group.Name, out groupInfo)) {
+                    if (Data.Repo.BlockGroups.TryGetValue(group.Name, out groupInfo)) {
                         groupInfo.ChangeState = GroupInfo.ChangeStates.None;
                         groupInfo.Name = group.Name;
-                        groupInfo.Comps.Clear();
+                        groupInfo.CompIds.Clear();
                     }
 
                     group.GetBlocks(null, block =>
@@ -87,9 +90,9 @@ namespace WeaponCore.Support
                                 groupInfo = Session.GroupInfoPool.Get();
                                 groupInfo.Name = group.Name;
                                 groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
-                                BlockGroups.Add(group.Name, groupInfo);
+                                Data.Repo.BlockGroups.Add(group.Name, groupInfo);
                             }
-                            groupInfo.Comps.Add(comp);
+                            groupInfo.CompIds.Add(comp.MyCube.EntityId);
                             if (groupInfo.ChangeState == GroupInfo.ChangeStates.None)
                                 groupInfo.ChangeState = GroupInfo.ChangeStates.Modify;
                         }
@@ -99,16 +102,18 @@ namespace WeaponCore.Support
                     return false;
                 });
 
-                BlockGroups.ApplyAdditionsAndModifications();
-                foreach (var group in BlockGroups) {
+                foreach (var group in Data.Repo.BlockGroups) {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
                         Session.GroupInfoPool.Return(group.Value);
-                        BlockGroups.Remove(group.Key);
+                        _tmpGroupKeys.Add(group.Key);
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
                 }
-                BlockGroups.ApplyRemovals();
+
+                for (int i = 0; i < _tmpGroupKeys.Count; i++)
+                    Data.Repo.BlockGroups.Remove(_tmpGroupKeys[i]);
+                _tmpGroupKeys.Clear();
 
                 ScanBlockGroups = false;
 
@@ -427,14 +432,20 @@ namespace WeaponCore.Support
                 RemSubGrids.Add(grid);
             }
 
-            ActiveWeaponTerminal.Clean();
-            CleanSortedTargets();
-
-            InventoryIndexer.Clear();
-            Construct.Clean();
             AddSubGrids.Clear();
             SubGridChanges(true);
+
             SubGrids.Clear();
+
+            Data.Repo.Focus.Clean();
+            Data.Repo.BlockGroups.Clear();
+            Data.Repo.ControllingPlayers.Clear();
+            Data.Repo.ActiveTerminal.Clean();
+
+            CleanSortedTargets();
+            InventoryIndexer.Clear();
+            Construct.Clean();
+
             Obstructions.Clear();
             ObstructionsTmp.Clear();
             TargetAis.Clear();
@@ -442,14 +453,12 @@ namespace WeaponCore.Support
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
-            BlockGroups.Clear();
             Weapons.Clear();
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             Inventories.Clear();
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
-            ControllingPlayers.Clear();
             NearByShieldsTmp.Clear();
             NearByFriendlyShields.Clear();
             StaticsInRange.Clear();
@@ -475,7 +484,8 @@ namespace WeaponCore.Support
             RequestIncrease = false;
             DbReady = false;
             GridInit = false;
-            Focus.Clean();
+            Data.Clean();
+
             MyShield = null;
             MyPlanetTmp = null;
             MyPlanet = null;

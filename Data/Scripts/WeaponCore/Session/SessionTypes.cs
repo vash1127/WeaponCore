@@ -272,9 +272,9 @@ namespace WeaponCore
                     {"Version", () => GetAi()?.Version.ToString() ?? string.Empty },
                     {"RootAiId", () => GetAi()?.Construct.RootAi?.MyGrid.EntityId.ToString() ?? string.Empty },
                     {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
-                    {"BlockGroups", () => GetAi()?.BlockGroups.Reader.Count.ToString() ?? string.Empty },
+                    {"BlockGroups", () => GetAi()?.Data.Repo.BlockGroups.Count.ToString() ?? string.Empty },
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
-                    {"ControllingPlayers", () => GetAi()?.ControllingPlayers.Count.ToString() ?? string.Empty },
+                    {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
                     {"Inventories", () => GetAi()?.Inventories.Count.ToString() ?? string.Empty },
                     {"OutOfAmmoWeapons", () => GetAi()?.OutOfAmmoWeapons.Count.ToString() ?? string.Empty },
                     {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
@@ -491,7 +491,7 @@ namespace WeaponCore
 
         internal class TerminalMonitor
         {
-            internal readonly Dictionary<WeaponComponent, GridAi.ActiveTerminal> ServerTerminalMaps = new Dictionary<WeaponComponent, GridAi.ActiveTerminal>();
+            internal readonly Dictionary<WeaponComponent, ActiveTerminal> ServerTerminalMaps = new Dictionary<WeaponComponent, ActiveTerminal>();
             internal Session Session;
             internal WeaponComponent Comp;
             internal int OriginalAiVersion;
@@ -519,7 +519,7 @@ namespace WeaponCore
                 var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
                 var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal == Comp.Ai.Construct.RootAi?.ActiveWeaponTerminal.ActiveCube;
+                var sameTerminalBlock = Session.LastTerminal.EntityId == Comp.Ai.Construct.RootAi?.Data.Repo.ActiveTerminal.ActiveCubeId;
 
                 return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
             }
@@ -528,9 +528,9 @@ namespace WeaponCore
             {
                 Comp = comp;
 
-                var oldActiveWeaponTerminal = comp.Ai.Construct.RootAi.ActiveWeaponTerminal;
-                comp.Ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube = comp.MyCube;
-                var changed = oldActiveWeaponTerminal != comp.Ai.Construct.RootAi.ActiveWeaponTerminal || !Active;
+                var oldActiveWeaponTerminal = comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal;
+                comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal.ActiveCubeId = comp.MyCube.EntityId;
+                var changed = oldActiveWeaponTerminal != comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal || !Active;
 
                 Active = true;
                 OriginalAiVersion = comp.Ai.Version;
@@ -555,7 +555,7 @@ namespace WeaponCore
             internal void Clean(bool purge = false)
             {
                 if (Comp?.Ai != null && Comp.Ai.Version == OriginalAiVersion && !purge)
-                    Comp.Ai.Construct.RootAi.ActiveWeaponTerminal.ActiveCube = null;
+                    Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal.ActiveCubeId = 0;
 
                 if (Session.IsClient && Comp != null && !purge) {
                     //Log.Line($"sending terminal clean");
@@ -575,16 +575,16 @@ namespace WeaponCore
 
             internal void ServerUpdate(WeaponComponent comp)
             {
-                GridAi.ActiveTerminal aTerm;
+                ActiveTerminal aTerm;
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTerm)) {
-                    aTerm = comp.Ai.ActiveWeaponTerminal;
+                    aTerm = comp.Ai.Data.Repo.ActiveTerminal;
                     ServerTerminalMaps[comp] = aTerm;
                 }
-                else if (aTerm.Ai != comp.Ai)
+                else if (aTerm.MyGridId != comp.Ai.MyGrid.EntityId)
                     aTerm.Clean();
 
-                comp.Ai.ActiveWeaponTerminal.ActiveCube = comp.MyCube;
-                comp.Ai.ActiveWeaponTerminal.Active = true;
+                comp.Ai.Data.Repo.ActiveTerminal.ActiveCubeId = comp.MyCube.EntityId;
+                comp.Ai.Data.Repo.ActiveTerminal.Active = true;
 
                 if (comp.IsAsleep)
                     comp.WakeupComp();
@@ -592,7 +592,7 @@ namespace WeaponCore
 
             internal void ServerClean(WeaponComponent comp)
             {
-                GridAi.ActiveTerminal aTerm;
+                ActiveTerminal aTerm;
                 if (ServerTerminalMaps.TryGetValue(comp, out aTerm))
                     aTerm.Clean();
                 else

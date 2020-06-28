@@ -73,6 +73,7 @@ namespace WeaponCore
             return true;
         }
 
+        /*
         private bool ServerGridSyncRequestUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -217,6 +218,7 @@ namespace WeaponCore
 
             return true;
         }
+        */
 
         private bool ServerReticleUpdate(PacketObj data)
         {
@@ -265,7 +267,7 @@ namespace WeaponCore
                     comp.Ai.ReScanBlockGroups();
 
                     GroupInfo group;
-                    if (comp.Ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
+                    if (comp.Ai.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
                     {
                         Log.Line($"ServerOverRidesUpdate Comp2");
 
@@ -291,7 +293,7 @@ namespace WeaponCore
                         ai.ReScanBlockGroups();
 
                         GroupInfo groups;
-                        if (ai.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
+                        if (ai.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                         {
                             Log.Line($"ServerOverRidesUpdate myGrid3");
                             groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session);
@@ -491,17 +493,17 @@ namespace WeaponCore
                 switch (packet.PType) {
                     case PacketType.FocusUpdate:
                         if (targetGrid != null)
-                            ai.Focus.AddFocus(targetGrid, ai, true);
+                            ai.Data.Repo.Focus.AddFocus(targetGrid, ai, true);
                         break;
                     case PacketType.ReassignTargetUpdate:
                         if (targetGrid != null)
-                            ai.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
+                            ai.Data.Repo.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
                         break;
                     case PacketType.NextActiveUpdate:
-                        ai.Focus.NextActive(focusPacket.AddSecondary, ai, true);
+                        ai.Data.Repo.Focus.NextActive(focusPacket.AddSecondary, ai, true);
                         break;
                     case PacketType.ReleaseActiveUpdate:
-                        ai.Focus.ReleaseActive(ai, true);
+                        ai.Data.Repo.Focus.ReleaseActive(ai, true);
                         break;
                 }
 

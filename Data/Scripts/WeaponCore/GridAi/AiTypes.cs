@@ -54,7 +54,7 @@ namespace WeaponCore.Support
             internal FakeTarget() { }
         }
 
-        internal class AiTargetingInfo
+        public class AiTargetingInfo
         {
             internal bool ThreatInRange;
             internal double ThreatRangeSqr;
@@ -70,7 +70,7 @@ namespace WeaponCore.Support
                 var targetInrange = !comp.TargetNonThreats ? ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr : 
                     (OtherRangeSqr <= w.MaxTargetDistanceSqr && OtherRangeSqr >= w.MinTargetDistanceSqr || ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr);
 
-                return targetInrange || ai.Focus.HasFocus || ai.LiveProjectile.Count > 0;
+                return targetInrange || ai.Data.Repo.Focus.HasFocus || ai.LiveProjectile.Count > 0;
             }
 
             internal void Clean()
@@ -121,23 +121,6 @@ namespace WeaponCore.Support
                 Armed = armed;
                 IsGrid = isGrid;
                 LargeGrid = largeGrid;
-            }
-        }
-        internal class ActiveTerminal
-        {
-            internal ActiveTerminal(GridAi ai)
-            {
-                Ai = ai;
-            }
-
-            internal readonly GridAi Ai;
-            internal MyCubeBlock ActiveCube;
-            internal bool Active;
-
-            internal void Clean()
-            {
-                ActiveCube = null;
-                Active = false;
             }
         }
 
