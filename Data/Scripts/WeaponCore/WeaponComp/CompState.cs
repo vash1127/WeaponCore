@@ -55,7 +55,6 @@ namespace WeaponCore.Support
                 bool singleShot;
                 ResetShootState(action, playerId, out singleShot);
                 if (Session.MpActive) {
-                    Log.Line($"RequestShootUpdate server");
                     Session.SendCompData(this);
                     if (singleShot)
                         Session.SendSingleShot(this);
@@ -63,7 +62,6 @@ namespace WeaponCore.Support
             }
             else
             {
-                Log.Line($"RequestShootUpdate client");
                 Session.SendActionShootUpdate(this, action);
             }
         }

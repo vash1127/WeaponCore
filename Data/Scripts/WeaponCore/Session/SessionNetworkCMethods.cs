@@ -106,23 +106,6 @@ namespace WeaponCore
             ClientSideErrorPkt.ApplyChanges();
         }
 
-        private bool ClientCompData(PacketObj data)
-        {
-            Log.Line($"ClientCompData 1");
-
-            var packet = data.Packet;
-            var compDataPacket = (CompDataPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-            Log.Line($"ClientCompData 2");
-
-            if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
-                data.Report.PacketValid = true;
-
-            return true;
-        }
-
         private bool ClientFakeTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -184,6 +167,25 @@ namespace WeaponCore
             return true;
 
         }
+        private bool ClientCompData(PacketObj data)
+        {
+
+            var packet = data.Packet;
+            var compDataPacket = (CompDataPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int) packet.PType] < packet.MId) {
+                comp.MIds[(int) packet.PType] = packet.MId;
+
+                if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
+                    data.Report.PacketValid = true;
+            }
+
+            return true;
+        }
+
 
         private bool ClientAiSyncUpdate(PacketObj data)
         {
@@ -198,7 +200,7 @@ namespace WeaponCore
                 if (ai.MIds[(int)packet.PType] < packet.MId) {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
-                    aiSyncPacket.Data.Sync(ai, aiSyncPacket.Data);
+                    ai.Data.Repo.Sync(ai, aiSyncPacket.Data);
 
                     data.Report.PacketValid = true;
                 }
@@ -395,6 +397,7 @@ namespace WeaponCore
 
             long playerId;
             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
+            Log.Line($"ClientActiveControlUpdate: {playerId}");
 
             UpdateActiveControlDictionary(cube, playerId, dPacket.Data);
 

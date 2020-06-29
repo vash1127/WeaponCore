@@ -425,6 +425,9 @@ namespace WeaponCore.Support
         {
             AiCloseTick = Session.Tick;
 
+            if (Session.IsClient)
+                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiRemove);
+
             RegisterMyGridEvents(false);
 
             foreach (var grid in SubGrids) {

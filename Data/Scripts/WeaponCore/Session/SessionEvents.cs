@@ -237,8 +237,10 @@ namespace WeaponCore
                     long playerId;
 
                     SteamToPlayer.TryRemove(removedPlayer.SteamUserId, out playerId);
+                    PlayerEntityIdInRange.Remove(removedPlayer.SteamUserId);
                     PlayerMouseStates.Remove(playerId);
                     PlayerDummyTargets.Remove(playerId);
+                    PlayerMIds.Remove(removedPlayer.SteamUserId);
 
                     if (IsServer && MpActive)
                         SendPlayerConnectionUpdate(l, false);
@@ -259,7 +261,8 @@ namespace WeaponCore
                 SteamToPlayer[player.SteamUserId] = id;
                 PlayerMouseStates[id] = new InputStateData();
                 PlayerDummyTargets[id] = new FakeTarget();
-
+                PlayerEntityIdInRange[player.SteamUserId] = new HashSet<long>();
+                PlayerMIds[player.SteamUserId] = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
                 PlayerEventId++;
                 if (AuthorIds.Contains(player.SteamUserId)) 

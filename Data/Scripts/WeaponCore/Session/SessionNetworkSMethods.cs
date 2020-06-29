@@ -44,7 +44,7 @@ namespace WeaponCore
 
             long playerId;
             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
-
+            Log.Line($"ServerActiveControlUpdate: {playerId}");
             UpdateActiveControlDictionary(cube, playerId, dPacket.Data);
             PacketsToClient.Add(new PacketInfo { Entity = cube, Packet = dPacket });
             data.Report.PacketValid = true;
@@ -408,15 +408,26 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ServerClientEntityClosed(PacketObj data)
+        private bool ServerClientAiExists(PacketObj data)
         {
             var packet = data.Packet;
-            if (PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
-            else
-                return Error(data, Msg("SenderId not found"));
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId) {
+                mIds[(int)packet.PType] = packet.MId;
 
-            data.Report.PacketValid = true;
+                if (packet.PType == PacketType.ClientAiRemove && PlayerEntityIdInRange.ContainsKey(packet.SenderId))
+                    PlayerEntityIdInRange[packet.SenderId].Remove(packet.EntityId);
+                else if ((packet.PType == PacketType.ClientAiAdd))
+                {
+                    PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
+                }
+                else return Error(data, Msg("SenderId not found"));
+                
+                data.Report.PacketValid = true;
+            }
+            else Log.Line($"ServerClientAiExists: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+
+
             return true;
         }
 

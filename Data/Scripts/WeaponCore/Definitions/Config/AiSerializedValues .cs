@@ -25,22 +25,31 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
+                if (Focus.HasFocus != sync.Focus.HasFocus)
+                    Log.Line($"HasFocus mismatch: {Focus.HasFocus}({sync.Focus.HasFocus})");
+
                 Focus.Sync(sync.Focus);
+
+                if (ActiveTerminal.ActiveCubeId != sync.ActiveTerminal.ActiveCubeId)
+                    Log.Line($"ActiveCubeId mismatch: {ActiveTerminal.ActiveCubeId}({sync.ActiveTerminal.ActiveCubeId})");
+
                 ActiveTerminal.Sync(sync.ActiveTerminal);
+
+                if (ControllingPlayers.Count != sync.ControllingPlayers.Count)
+                    Log.Line($"ControllingPlayers mismatch");
 
                 ControllingPlayers.Clear();
                 foreach (var s in sync.ControllingPlayers)
                     ControllingPlayers[s.Key] = s.Value;
 
+                if (BlockGroups.Count != sync.BlockGroups.Count)
+                    Log.Line($"BlockGroups mismatch");
+
                 BlockGroups.Clear();
                 foreach (var s in sync.BlockGroups)
                     BlockGroups[s.Key] = s.Value;
 
-                foreach (var s in sync.ControllingPlayers)
-                    ControllingPlayers[s.Key] = s.Value;
-
                 Revision = sync.Revision;
-                Log.Line($"new revision: {Revision}");
                 return true;
             }
 

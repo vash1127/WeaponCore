@@ -856,7 +856,6 @@ namespace WeaponCore.Projectiles
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
-                Log.Line($"DOE:{Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd} - Fake:{Info.AvShot.FakeExplosion}");
                 if (!Info.AvShot.Active)
                     Info.System.Session.Av.AvShotPool.Return(Info.AvShot);
                 else Info.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };

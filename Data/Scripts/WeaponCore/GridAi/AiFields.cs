@@ -189,6 +189,8 @@ namespace WeaponCore.Support
             AiSpawnTick = Session.Tick;
             Data.Init(this);
 
+            if (Session.IsClient)
+                Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiAdd);
         }
     }
 }

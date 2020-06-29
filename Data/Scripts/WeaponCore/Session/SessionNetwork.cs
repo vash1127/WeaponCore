@@ -100,8 +100,7 @@ namespace WeaponCore
                             ClientActiveControlFullUpdate(packetObj);
                             break;
                         }
-                    case PacketType.AiSyncUpdate:
-                    {
+                    case PacketType.AiSyncUpdate: {
                         ClientAiSyncUpdate(packetObj);
                         break;
                     }
@@ -142,8 +141,7 @@ namespace WeaponCore
                         ClientSentReport(packetObj);
                         break;
                     }
-                    case PacketType.CompData:
-                    {
+                    case PacketType.CompData: {
                         ClientCompData(packetObj);
                         break;
                     }
@@ -253,8 +251,9 @@ namespace WeaponCore
                     ServerWeaponUpdateRequest(packetObj);
                     break;
                 }
-                case PacketType.ClientEntityClosed: {
-                    ServerClientEntityClosed(packetObj);
+                case PacketType.ClientAiAdd:
+                case PacketType.ClientAiRemove: {
+                    ServerClientAiExists(packetObj);
                     break;
                 }
                 case PacketType.RequestMouseStates: {
@@ -316,7 +315,6 @@ namespace WeaponCore
                 var packetInfo = PacketsToClient[i];
 
                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
-
                 if (packetInfo.SingleClient)
                     MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
                 else

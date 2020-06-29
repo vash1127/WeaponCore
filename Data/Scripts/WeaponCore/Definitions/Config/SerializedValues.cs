@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using ProtoBuf;
 using VRage;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
-using static WeaponCore.Support.WeaponComponent;
-using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore
 {
@@ -20,16 +17,33 @@ namespace WeaponCore
         [ProtoMember(4)] public CompStateValues State;
         [ProtoMember(5)] public WeaponValues WepVal;
 
-        public bool Sync(WeaponComponent comp, CompDataValues data)
+        public bool Sync(WeaponComponent comp, CompDataValues sync)
         {
-            if (data.Revision > Revision) {
+            if (sync.Revision > Revision) {
 
-                Log.Line($"CompDataValues sync");
-                Revision = data.Revision;
-                
-                Set.Sync(comp, data.Set);
-                State.Sync(comp, data.State);
-                WepVal.Sync(comp, data.WepVal);
+                if (Set.Weapons[0].Action != sync.Set.Weapons[0].Action)
+                    Log.Line($"Action mismatch: {Set.Weapons[0].Action}({sync.Set.Weapons[0].Action})");
+
+                if (Set.Weapons[0].AmmoTypeId != sync.Set.Weapons[0].AmmoTypeId)
+                    Log.Line($"AmmoTypeId mismatch: {Set.Weapons[0].AmmoTypeId}({sync.Set.Weapons[0].AmmoTypeId})");
+
+                if (Set.TerminalAction != sync.Set.TerminalAction)
+                    Log.Line($"TerminalAction mismatch");
+
+                Set.Sync(comp, sync.Set);
+
+
+                if (State.Control != sync.State.Control)
+                    Log.Line($"Control mismatch: {State.Control}({sync.State.Control})");
+                if (State.PlayerId != sync.State.PlayerId)
+                    Log.Line($"PlayerId mismatch: {State.PlayerId}({sync.State.PlayerId})");
+                if (State.Weapons[0].CurrentAmmo != sync.State.Weapons[0].CurrentAmmo)
+                    Log.Line($"CurrentAmmo mismatch: {State.Weapons[0].CurrentAmmo}({sync.State.Weapons[0].CurrentAmmo})");
+
+                State.Sync(comp, sync.State);
+                WepVal.Sync(comp, sync.WepVal);
+
+                Revision = sync.Revision;
                 return true;
             }
 

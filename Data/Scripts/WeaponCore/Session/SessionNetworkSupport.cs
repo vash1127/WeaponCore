@@ -205,6 +205,7 @@ namespace WeaponCore
                 Action = action,
                 PlayerId = PlayerId,
             });
+            Log.Line($"SendActionShootUpdate: {action}");
         }
 
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
@@ -237,27 +238,6 @@ namespace WeaponCore
             }
         }
 
-        internal void SendCompData(WeaponComponent comp)
-        {
-            if (IsServer)
-            {
-                ++comp.Data.Repo.Revision;
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new CompDataPacket
-                    {
-                        MId = ++comp.MIds[(int)PacketType.CompData],
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = 0,
-                        PType = PacketType.CompData,
-                        Data = comp.Data.Repo
-                    }
-                });
-            }
-            else Log.Line($"SendCompData should never be called on Client");
-        }
-
         internal void SendSingleShot(WeaponComponent comp)
         {
             if (IsClient)
@@ -279,21 +259,40 @@ namespace WeaponCore
                     }
                 });
             }
+            Log.Line($"SendSingleShot");
         }
 
         internal void SendUpdateRequest(long entityId, PacketType ptype)
         {
-            PacketsToServer.Add(new Packet
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
             {
-                EntityId = entityId,
-                SenderId = MultiplayerId,
-                PType = ptype
-            });
+                PacketsToServer.Add(new Packet
+                {
+                    MId = ++mIds[(int)ptype],
+                    EntityId = entityId,
+                    SenderId = MultiplayerId,
+                    PType = ptype
+                });
+            }
+            else Log.Line($"SendUpdateRequest no player MIds found");
         }
 
         internal void SendPlayerControlRequest(WeaponComponent comp, long playerId, CompStateValues.ControlMode mode)
         {
-            if (HandlesInput)
+            if (IsClient)
+            {
+                PacketsToServer.Add(new PlayerControlRequestPacket
+                {
+                    MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
+                    EntityId = comp.MyCube.EntityId,
+                    SenderId = 0,
+                    PType = PacketType.PlayerControlRequest,
+                    PlayerId = playerId,
+                    Mode = mode,
+                });
+            }
+            else if (HandlesInput)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -302,7 +301,7 @@ namespace WeaponCore
                     {
                         MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
                         EntityId = comp.MyCube.EntityId,
-                        SenderId = 0,
+                        SenderId = MultiplayerId,
                         PType = PacketType.PlayerControlRequest,
                         PlayerId = playerId,
                         Mode = mode,
@@ -385,7 +384,6 @@ namespace WeaponCore
 
         internal void SendAiSync(GridAi ai)
         {
-            Log.Line($"SendAiSync");
             if (IsServer)
             {
                 ++ai.Data.Repo.Revision;
@@ -395,12 +393,35 @@ namespace WeaponCore
                     Packet = new AiSyncPacket
                     {
                         MId = ++ai.MIds[(int)PacketType.AiSyncUpdate],
+                        SenderId = 0,
                         EntityId = ai.MyGrid.EntityId,
                         PType = PacketType.AiSyncUpdate,
                         Data = ai.Data.Repo,
                     }
                 });
             }
+        }
+
+        internal void SendCompData(WeaponComponent comp)
+        {
+            if (IsServer)
+            {
+                Log.Line($"SendCompData");
+                ++comp.Data.Repo.Revision;
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = new CompDataPacket
+                    {
+                        MId = ++comp.MIds[(int)PacketType.CompData],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.CompData,
+                        Data = comp.Data.Repo
+                    }
+                });
+            }
+            else Log.Line($"SendCompData should never be called on Client");
         }
 
         internal void SendGroupUpdate(GridAi ai)
