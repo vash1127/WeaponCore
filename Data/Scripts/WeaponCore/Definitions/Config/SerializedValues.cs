@@ -24,6 +24,7 @@ namespace WeaponCore
         {
             if (data.Revision > Revision) {
 
+                Log.Line($"CompDataValues sync");
                 Revision = data.Revision;
                 
                 Set.Sync(comp, data.Set);
@@ -68,7 +69,7 @@ namespace WeaponCore
                     var ws = Weapons[i];
                     var sws = sync.Weapons[i];
                     ws.WeaponMode(comp, sws.Action);
-                    w.UpdateWeaponRange();
+                    w.ChangeActiveAmmo(w.System.AmmoTypes[w.Set.AmmoTypeId]);
                 }
 
                 Overrides.Sync(sync.Overrides);
@@ -308,12 +309,13 @@ namespace WeaponCore
                 comp.Data.Repo.WepVal.Targets[w.WeaponId] = new TransferTarget();
                 comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
                 comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId].Init(w.UniqueId);
+
                 var rand = comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
                 rand.CurrentSeed = w.UniqueId;
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+
                 rand.TurretRandom = new Random(rand.CurrentSeed);
                 rand.AcquireRandom = new Random(rand.CurrentSeed);
-
                 comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
             }
         }
@@ -327,7 +329,6 @@ namespace WeaponCore
 
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-
                     var w = comp.Platform.Weapons[i];
                     var rand = comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
 

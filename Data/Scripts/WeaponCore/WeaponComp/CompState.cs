@@ -55,13 +55,17 @@ namespace WeaponCore.Support
                 bool singleShot;
                 ResetShootState(action, playerId, out singleShot);
                 if (Session.MpActive) {
+                    Log.Line($"RequestShootUpdate server");
                     Session.SendCompData(this);
                     if (singleShot)
                         Session.SendSingleShot(this);
                 }
             }
             else
+            {
+                Log.Line($"RequestShootUpdate client");
                 Session.SendActionShootUpdate(this, action);
+            }
         }
 
         internal void ResetShootState(ShootActions action, long playerId, out bool addShot)

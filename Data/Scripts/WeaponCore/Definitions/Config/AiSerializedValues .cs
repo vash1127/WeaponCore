@@ -420,6 +420,7 @@ namespace WeaponCore
 
             if (comp.Session.MpActive)
             {
+                Log.Line($"change group state and send compdata");
                 comp.Session.SendCompData(comp);
             }
         }

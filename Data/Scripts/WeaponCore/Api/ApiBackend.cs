@@ -470,7 +470,7 @@ namespace WeaponCore.Api
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         w.Set.AmmoTypeId = i;
-                        if (comp.Session.MpActive)
+                        if (comp.Session.MpActive && comp.Session.IsServer)
                             comp.Session.SendCompData(comp);
 
                         break;

@@ -76,12 +76,11 @@ namespace WeaponCore
                 }
 
                 Repo.Set.Range = -1;
-
-                if (Comp.Session.IsServer)
-                    WeaponValues.Init(Comp);
-                else WeaponValues.RefreshClient(Comp);
             }
 
+            if (Comp.Session.IsServer)
+                WeaponValues.Init(Comp);
+            else WeaponValues.RefreshClient(Comp);
             return;
         }
     }

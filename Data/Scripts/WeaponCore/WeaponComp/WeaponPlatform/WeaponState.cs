@@ -410,29 +410,30 @@ namespace WeaponCore.Platform
             CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
             ScheduleAmmoChange = false;
             SetWeaponDps();
+            UpdateWeaponRange();
+
+            if (System.Session.MpActive && System.Session.IsServer)
+                System.Session.SendCompData(Comp);
         }
 
-        internal void ChangeAmmo(WeaponAmmoTypes newAmmo)
+        internal void ChangeAmmo(int newAmmoId)
         {
-            if (ActiveAmmoDef.Equals(newAmmo))
-                return;
+            if (System.Session.IsServer) {
 
-            var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
-            var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                Set.AmmoTypeId = newAmmoId;
+                if (instantChange || canReload)
+                    ChangeActiveAmmo(System.AmmoTypes[Set.AmmoTypeId]);
+                else
+                    ScheduleAmmoChange = true;
 
-            if (instantChange || canReload)
-                ChangeActiveAmmo(newAmmo);
-            else
-                ScheduleAmmoChange = true;
-
-            if (System.Session.IsServer)
-            {
                 if (ActiveAmmoDef.AmmoDef.Const.Reloadable && canReload)
                     Session.ComputeStorage(this);
             }
             else if (System.Session.MpActive)
-                System.Session.SendCompData(Comp);
+                System.Session.SendAmmoCycleRequest(Comp, WeaponId, newAmmoId);
         }
 
         public void ChargeReload(bool syncCharge = false)

@@ -220,6 +220,47 @@ namespace WeaponCore
         }
         */
 
+        private bool ServerAmmoCycleRequest(PacketObj data)
+        {
+            var packet = data.Packet;
+            var cyclePacket = (AmmoCycleRequestPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)PacketType.AmmoCycleRequest] < packet.MId) {
+                comp.MIds[(int)PacketType.AmmoCycleRequest] = packet.MId;
+
+                comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
+                data.Report.PacketValid = true;
+            }
+
+            return true;
+        }
+
+        private bool ServerPlayerControlRequest(PacketObj data)
+        {
+            var packet = data.Packet;
+            var controlPacket = (PlayerControlRequestPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)PacketType.PlayerControlRequest] < packet.MId) {
+                comp.MIds[(int)PacketType.PlayerControlRequest] = packet.MId;
+
+                comp.Data.Repo.State.PlayerId = controlPacket.PlayerId;
+                comp.Data.Repo.State.Control = controlPacket.Mode;
+
+                SendCompData(comp);
+                data.Report.PacketValid = true;
+            }
+
+            return true;
+        }
+
         private bool ServerReticleUpdate(PacketObj data)
         {
             var packet = data.Packet;

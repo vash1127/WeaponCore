@@ -78,8 +78,11 @@ namespace WeaponCore
                         if (gridAi.WeaponBase.TryGetValue(cube, out comp))
                         {
                             GunnerBlackList = true;
-                            comp.Data.Repo.State.PlayerId = PlayerId;
-                            comp.Data.Repo.State.Control = ControlMode.Camera;
+                            if (IsServer)
+                            {
+                                comp.Data.Repo.State.PlayerId = PlayerId;
+                                comp.Data.Repo.State.Control = ControlMode.Camera;
+                            }
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, false);
@@ -89,7 +92,7 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, false);
 
                             if (HandlesInput && MpActive)
-                                SendCompData(comp);
+                                SendPlayerControlRequest(comp, PlayerId, ControlMode.Camera);
                         }
                     }
                 }
@@ -111,11 +114,14 @@ namespace WeaponCore
                             WeaponComponent comp;
                             if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
                             {
-                                comp.Data.Repo.State.PlayerId = -1;
-                                comp.Data.Repo.State.Control = ControlMode.None;
+                                if (IsServer)
+                                {
+                                    comp.Data.Repo.State.PlayerId = -1;
+                                    comp.Data.Repo.State.Control = ControlMode.None;
+                                }
 
                                 if (HandlesInput && MpActive)
-                                    SendCompData(comp);
+                                    SendPlayerControlRequest(comp, -1, ControlMode.None);
 
                                 ActiveControlBlock = null;
                             }

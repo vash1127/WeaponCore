@@ -540,11 +540,7 @@ namespace WeaponCore.Control
 
             while (!(currActive.Equals(currDef))) {
                 if (currDef.AmmoDef.Const.IsTurretSelectable) {
-                    w.Set.AmmoTypeId = next;
-
-                    if (comp.Session.MpActive)
-                        comp.Session.SendCompData(comp);
-
+                    //w.Set.AmmoTypeId = next;
                     change = true;
                     break;
                 }
@@ -553,8 +549,8 @@ namespace WeaponCore.Control
                 currDef = w.System.AmmoTypes[next];
             }
 
-            if (change)
-                w.ChangeAmmo(w.System.AmmoTypes[w.Set.AmmoTypeId]);
+            if (change && !w.ActiveAmmoDef.Equals(w.System.AmmoTypes[next]))
+                w.ChangeAmmo(next);
         }
 
         internal static void ShootStateWriter(IMyTerminalBlock blk, StringBuilder sb)

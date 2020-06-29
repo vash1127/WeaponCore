@@ -355,6 +355,7 @@ namespace WeaponCore.Platform
 
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
+            
         }
     }
 }

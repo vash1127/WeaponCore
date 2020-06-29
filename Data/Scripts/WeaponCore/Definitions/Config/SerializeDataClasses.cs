@@ -33,7 +33,8 @@ namespace WeaponCore
         ReassignTargetUpdate,
         NextActiveUpdate,
         ReleaseActiveUpdate,
-        //GridOverRidesSync,
+        AmmoCycleRequest,
+        PlayerControlRequest,
         RescanGroupRequest,
         GridFocusListSync,
         FixedWeaponHitEvent,
@@ -57,8 +58,10 @@ namespace WeaponCore
     [ProtoInclude(15, typeof(GridFocusListPacket))]
     [ProtoInclude(16, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(17, typeof(ProblemReportPacket))]
+    [ProtoInclude(18, typeof(AmmoCycleRequestPacket))]
     [ProtoInclude(19, typeof(ShootStatePacket))]
     [ProtoInclude(20, typeof(OverRidesPacket))]
+    [ProtoInclude(21, typeof(PlayerControlRequestPacket))]
     [ProtoInclude(24, typeof(TerminalMonitorPacket))]
     [ProtoInclude(25, typeof(CompDataPacket))]
 
@@ -94,6 +97,38 @@ namespace WeaponCore
         public override int GetHashCode()
         {
             return (EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode());
+        }
+    }
+
+    [ProtoContract]
+    public class AmmoCycleRequestPacket : Packet
+    {
+        [ProtoMember(1)] internal int WeaponId;
+        [ProtoMember(2)] internal int NewAmmoId;
+
+        public AmmoCycleRequestPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            WeaponId = 0;
+            NewAmmoId = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class PlayerControlRequestPacket : Packet
+    {
+        [ProtoMember(1)] internal long PlayerId;
+        [ProtoMember(2)] internal CompStateValues.ControlMode Mode;
+
+        public PlayerControlRequestPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Mode = CompStateValues.ControlMode.None;
+            PlayerId = -1;
         }
     }
 

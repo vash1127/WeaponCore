@@ -139,6 +139,7 @@ namespace WeaponCore.Projectiles
             WasTracking = false;
             Intersecting = false;
 
+
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -150,8 +151,7 @@ namespace WeaponCore.Projectiles
             FeelsGravity = Info.AmmoDef.Const.FeelsGravity;
 
             Info.MyPlanet = Info.Ai.MyPlanet;
-            if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache))
-            {
+            if (!Info.System.Session.VoxelCaches.TryGetValue(Info.UniqueMuzzleId, out Info.VoxelCache)) {
                 Log.Line($"ProjectileStart VoxelCache Failure with Id:{Info.UniqueMuzzleId} BlockMarked:{Info.Target.FiringCube?.MarkedForClose}, setting to default cache:");
                 Info.VoxelCache = Info.System.Session.VoxelCaches[ulong.MaxValue];
             }
@@ -163,15 +163,13 @@ namespace WeaponCore.Projectiles
             Info.AiVersion = Info.Ai.Version;
             Info.Ai.ProjectileTicker = Info.Ai.Session.Tick;
 
-            if (Guidance == GuidanceType.Smart && DynamicGuidance)
-            {
+            if (Guidance == GuidanceType.Smart && DynamicGuidance) {
                 SmartsOn = true;
                 MaxChaseTime = Info.AmmoDef.Const.MaxChaseTime;
                 SmartSlot = Info.WeaponRng.ClientProjectileRandom.Next(10);
                 Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
-            else
-            {
+            else {
                 MaxChaseTime = int.MaxValue;
                 SmartsOn = false;
                 SmartSlot = 0;
@@ -277,7 +275,7 @@ namespace WeaponCore.Projectiles
                 VelocityLengthSqr = MaxSpeed * MaxSpeed;
             }
             else Velocity = StartSpeed + AccelVelocity;
-            
+
             InitalStep = !Info.IsShrapnel && ConstantSpeed ? desiredSpeed * StepConst : Velocity * StepConst;
 
             TravelMagnitude = Velocity * StepConst;
@@ -858,7 +856,7 @@ namespace WeaponCore.Projectiles
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
-
+                Log.Line($"DOE:{Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd} - Fake:{Info.AvShot.FakeExplosion}");
                 if (!Info.AvShot.Active)
                     Info.System.Session.Av.AvShotPool.Return(Info.AvShot);
                 else Info.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };

@@ -273,7 +273,7 @@ namespace WeaponCore.Platform
             PlayParticleEvent(EventTriggers.TurnOff, true, Vector3D.DistanceSquared(Comp.Session.CameraPos, MyPivotPos), null);
         }
 
-        internal void SetWeaponDps(object o = null)
+        internal void SetWeaponDps(object o = null) // Need to test client sends MP request and receives response
         {
             if (System.DesignatorWeapon) return;
 

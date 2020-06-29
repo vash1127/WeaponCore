@@ -227,18 +227,21 @@ namespace WeaponCore
                     ServerFakeTargetUpdate(packetObj);
                     break;
                 }
-                /*
-                case PacketType.AiSyncUpdate: {
-                    ServerAiSyncUpdate(packetObj);
+                case PacketType.AmmoCycleRequest: {
+                    ServerAmmoCycleRequest(packetObj);
                     break;
                 }
-                */
                 case PacketType.ReticleUpdate: {
                     ServerReticleUpdate(packetObj);
                     break;
                 }
                 case PacketType.OverRidesUpdate: {
                     ServerOverRidesUpdate(packetObj);
+                    break;
+                }
+                case PacketType.PlayerControlRequest:
+                {
+                    ServerPlayerControlRequest(packetObj);
                     break;
                 }
                 case PacketType.SendSingleShot:

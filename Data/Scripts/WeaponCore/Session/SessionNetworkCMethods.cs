@@ -108,11 +108,14 @@ namespace WeaponCore
 
         private bool ClientCompData(PacketObj data)
         {
+            Log.Line($"ClientCompData 1");
+
             var packet = data.Packet;
             var compDataPacket = (CompDataPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+            Log.Line($"ClientCompData 2");
 
             if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
                 data.Report.PacketValid = true;

@@ -194,42 +194,6 @@ namespace WeaponCore
             }
         }
 
-        /*
-        internal void SendOverRidesServerAi(GridAi ai, string groupName, GroupOverrides data)
-        {
-            PacketsToClient.Add(new PacketInfo
-            {
-                Entity = ai.MyGrid,
-                Packet = new OverRidesPacket
-                {
-                    MId = ++ai.MIds[(int)PacketType.OverRidesUpdate],
-                    PType = PacketType.OverRidesUpdate,
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = 0,
-                    GroupName = groupName,
-                    Data = data,
-                }
-            });
-        }
-        */
-        /*
-        internal void SendOverRidesServerComp(WeaponComponent comp, string groupName, GroupOverrides data)
-        {
-            PacketsToClient.Add(new PacketInfo
-            {
-                Entity = comp.MyCube,
-                Packet = new OverRidesPacket
-                {
-                    MId = ++comp.Data.Repo.Revision,
-                    PType = PacketType.OverRidesUpdate,
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = 0,
-                    GroupName = groupName,
-                    Data = data,
-                }
-            });
-        }
-        */
         internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
         {
             comp.Session.PacketsToServer.Add(new ShootStatePacket
@@ -277,12 +241,13 @@ namespace WeaponCore
         {
             if (IsServer)
             {
+                ++comp.Data.Repo.Revision;
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = comp.MyCube,
                     Packet = new CompDataPacket
                     {
-                        MId = ++comp.Data.Repo.Revision,
+                        MId = ++comp.MIds[(int)PacketType.CompData],
                         EntityId = comp.MyCube.EntityId,
                         SenderId = 0,
                         PType = PacketType.CompData,
@@ -325,7 +290,50 @@ namespace WeaponCore
                 PType = ptype
             });
         }
-        
+
+        internal void SendPlayerControlRequest(WeaponComponent comp, long playerId, CompStateValues.ControlMode mode)
+        {
+            if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = new PlayerControlRequestPacket
+                    {
+                        MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.PlayerControlRequest,
+                        PlayerId = playerId,
+                        Mode = mode,
+                    }
+                });
+            }
+            else Log.Line($"SendAmmoCycleRequest should never be called on Server");
+        }
+
+
+        internal void SendAmmoCycleRequest(WeaponComponent comp, int weaponId, int newAmmoId)
+        {
+            if (IsServer)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = new AmmoCycleRequestPacket
+                    {
+                        MId = ++comp.MIds[(int)PacketType.AmmoCycleRequest],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.AmmoCycleRequest,
+                        WeaponId = weaponId,
+                        NewAmmoId = newAmmoId,
+                    }
+                });
+            }
+            else Log.Line($"SendAmmoCycleRequest should never be called on Client");
+        }
+
         internal void SendTrackReticleUpdate(WeaponComponent comp)
         {
             if (IsClient) {
@@ -377,6 +385,7 @@ namespace WeaponCore
 
         internal void SendAiSync(GridAi ai)
         {
+            Log.Line($"SendAiSync");
             if (IsServer)
             {
                 ++ai.Data.Repo.Revision;

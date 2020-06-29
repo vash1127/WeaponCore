@@ -931,7 +931,7 @@ namespace WeaponCore.Support
                 HitParticle = ParticleState.Dirty;
                 if (System.Session.Av.ExplosionReady) {
                     if (OnScreen != Screen.None)
-                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, AmmoDef);
+                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef);
                 }
             }
 

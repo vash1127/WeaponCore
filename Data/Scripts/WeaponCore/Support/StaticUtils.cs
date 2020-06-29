@@ -220,9 +220,9 @@ namespace WeaponCore.Support
             MyExplosionFlags eFlags;
             var drawParticles = !forceNoDraw && !eInfo.NoVisuals && session.Camera.IsInFrustum(ref cullSphere);
             if (drawParticles)
-                eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+                eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
             else
-                eFlags = MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+                eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
             var explosionInfo = new MyExplosionInfo
@@ -245,14 +245,18 @@ namespace WeaponCore.Support
                 CustomEffect = eInfo.CustomParticle,
                 CreateParticleEffect = drawParticles,
             };
+            if (hitEnt?.Physics != null)
+                explosionInfo.Velocity = hitEnt.Physics.LinearVelocity;
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, WeaponDefinition.AmmoDef ammoDef)
+        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef)
         {
             var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;
             if (radius > 10) radius = 10;
+            Log.Line($"fake explosion");
+            position += (-direction * 1);
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = radius * 5;
@@ -270,16 +274,19 @@ namespace WeaponCore.Support
                 ExplosionSphere = sphere,
                 LifespanMiliseconds = 0,
                 ParticleScale = eInfo.Scale,
-                Direction = Vector3.Down,
+                Direction = direction,
                 VoxelExplosionCenter = position,
                 ExplosionFlags = eFlags,
                 VoxelCutoutScale = 0f,
+                HitEntity = hitEnt,
                 PlaySound = !eInfo.NoSound,
                 ApplyForceAndDamage = false,
                 ObjectsRemoveDelayInMiliseconds = 0,
                 CustomEffect = eInfo.CustomParticle,
                 CreateParticleEffect = drawParticles,
             };
+            if (hitEnt?.Physics != null)
+                explosionInfo.Velocity = hitEnt.Physics.LinearVelocity;
             MyExplosions.AddExplosion(ref explosionInfo);
         }
     }

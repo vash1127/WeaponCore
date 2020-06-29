@@ -349,7 +349,7 @@ namespace WeaponCore
 
                     if (canDamage)
                     {
-                        block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                        block.DoDamage(0.01f, damageType, sync, null, attackerId);
                         //if (blockIsRoot && fatBlock == null) 
                             //ApplyDeformationCubeGrid(hitEnt.Intersection, hitEnt.Intersection.To, grid, scaledDamage, hitMass);
                     }
@@ -368,9 +368,10 @@ namespace WeaponCore
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * Math.Min(areaRadius * 0.5f, hitEnt.Intersection.Length > 1 ? hitEnt.Intersection.Length : 1));
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
-                            SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                         SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
