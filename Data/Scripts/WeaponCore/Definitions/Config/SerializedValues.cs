@@ -19,31 +19,14 @@ namespace WeaponCore
 
         public bool Sync(WeaponComponent comp, CompDataValues sync)
         {
-            if (sync.Revision > Revision) {
-
-                if (Set.Weapons[0].Action != sync.Set.Weapons[0].Action)
-                    Log.Line($"Action mismatch: {Set.Weapons[0].Action}({sync.Set.Weapons[0].Action})");
-
-                if (Set.Weapons[0].AmmoTypeId != sync.Set.Weapons[0].AmmoTypeId)
-                    Log.Line($"AmmoTypeId mismatch: {Set.Weapons[0].AmmoTypeId}({sync.Set.Weapons[0].AmmoTypeId})");
-
-                if (Set.TerminalAction != sync.Set.TerminalAction)
-                    Log.Line($"TerminalAction mismatch");
-
+            if (sync.Revision > Revision)
+            {
                 Set.Sync(comp, sync.Set);
-
-
-                if (State.Control != sync.State.Control)
-                    Log.Line($"Control mismatch: {State.Control}({sync.State.Control})");
-                if (State.PlayerId != sync.State.PlayerId)
-                    Log.Line($"PlayerId mismatch: {State.PlayerId}({sync.State.PlayerId})");
-                if (State.Weapons[0].CurrentAmmo != sync.State.Weapons[0].CurrentAmmo)
-                    Log.Line($"CurrentAmmo mismatch: {State.Weapons[0].CurrentAmmo}({sync.State.Weapons[0].CurrentAmmo})");
-
                 State.Sync(comp, sync.State);
                 WepVal.Sync(comp, sync.WepVal);
 
                 Revision = sync.Revision;
+
                 return true;
             }
 
@@ -54,15 +37,14 @@ namespace WeaponCore
     [ProtoContract]
     public class CompSettingsValues
     {
-        [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2), DefaultValue(true)] public bool Guidance = true;
-        [ProtoMember(3), DefaultValue(1)] public int Overload = 1;
-        [ProtoMember(4), DefaultValue(1)] public float DpsModifier = 1;
-        [ProtoMember(5), DefaultValue(1)] public float RofModifier = 1;
-        [ProtoMember(6)] public WeaponSettingsValues[] Weapons;
-        [ProtoMember(7), DefaultValue(100)] public float Range = 100;
-        [ProtoMember(8)] public GroupOverrides Overrides;
-        [ProtoMember(9)] public ShootActions TerminalAction;
+        [ProtoMember(1), DefaultValue(true)] public bool Guidance = true;
+        [ProtoMember(2), DefaultValue(1)] public int Overload = 1;
+        [ProtoMember(3), DefaultValue(1)] public float DpsModifier = 1;
+        [ProtoMember(4), DefaultValue(1)] public float RofModifier = 1;
+        [ProtoMember(5)] public WeaponSettingsValues[] Weapons;
+        [ProtoMember(6), DefaultValue(100)] public float Range = 100;
+        [ProtoMember(7)] public GroupOverrides Overrides;
+        [ProtoMember(8)] public ShootActions TerminalAction;
 
 
         public CompSettingsValues()
@@ -70,33 +52,27 @@ namespace WeaponCore
             Overrides = new GroupOverrides();
         }
 
-        public bool Sync(WeaponComponent comp, CompSettingsValues sync)
+        public void  Sync(WeaponComponent comp, CompSettingsValues sync)
         {
-            if (sync.Revision > Revision) {
-
-                Revision = sync.Revision;
-                Guidance = sync.Guidance;
-                Range = sync.Range;
-
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
-                    var w = comp.Platform.Weapons[i];
-                    var ws = Weapons[i];
-                    var sws = sync.Weapons[i];
-                    ws.WeaponMode(comp, sws.Action);
-                    w.ChangeActiveAmmo(w.System.AmmoTypes[w.Set.AmmoTypeId]);
-                }
-
-                Overrides.Sync(sync.Overrides);
-
-                if (Overload != sync.Overload || Math.Abs(RofModifier - sync.RofModifier) > 0.0001f || Math.Abs(DpsModifier - sync.DpsModifier) > 0.0001f) {
-                    Overload = sync.Overload;
-                    RofModifier = sync.RofModifier;
-                    WepUi.SetDps(comp, sync.DpsModifier, true);
-                }
-
-                return true;
+            Guidance = sync.Guidance;
+            Range = sync.Range;
+            var was = TerminalAction;
+            TerminalAction = sync.TerminalAction;
+            Log.Line($"action:{TerminalAction} -  was:{was}");
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                var w = comp.Platform.Weapons[i];
+                w.ChangeActiveAmmo(w.System.AmmoTypes[w.Set.AmmoTypeId]);
             }
-            return false;
+
+            Overrides.Sync(sync.Overrides);
+
+            if (Overload != sync.Overload || Math.Abs(RofModifier - sync.RofModifier) > 0.0001f || Math.Abs(DpsModifier - sync.DpsModifier) > 0.0001f) {
+                Overload = sync.Overload;
+                RofModifier = sync.RofModifier;
+                DpsModifier = sync.DpsModifier;
+                WepUi.SetDps(comp, sync.DpsModifier, true);
+            }
+
         }
 
         public void TerminalActionSetter(WeaponComponent comp, ShootActions action)
@@ -213,14 +189,12 @@ namespace WeaponCore
             Camera
         }
 
-        [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public WeaponStateValues[] Weapons;
-        [ProtoMember(3)] public bool OtherPlayerTrackingReticle; //don't save
-        [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
+        [ProtoMember(1)] public WeaponStateValues[] Weapons;
+        [ProtoMember(2)] public bool OtherPlayerTrackingReticle; //don't save
+        [ProtoMember(3), DefaultValue(-1)] public long PlayerId = -1;
+        [ProtoMember(4), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         public void Sync(WeaponComponent comp, CompStateValues syncFrom)
         {
-            Revision = syncFrom.Revision;
             OtherPlayerTrackingReticle = syncFrom.OtherPlayerTrackingReticle;
             PlayerId = syncFrom.PlayerId;
             Control = syncFrom.Control;

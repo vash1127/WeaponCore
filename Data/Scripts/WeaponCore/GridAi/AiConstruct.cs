@@ -133,6 +133,8 @@ namespace WeaponCore.Support
                         switch (type) {
                             case UpdateType.BlockScan: {
                                 ai.ReScanBlockGroups();
+                                if (ai.Session.MpActive && ai.Session.IsServer) 
+                                    ai.Session.SendAiSync(ai);
                                 break; 
                             }
                             /*

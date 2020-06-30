@@ -189,6 +189,7 @@ namespace WeaponCore
             var primeDamage = !radiantCascade || !hasAreaDmg;
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
+            var minAoeOffset = largeGrid ? 1.25 : 0.5f;
 
             var fallOff = t.AmmoDef.Const.FallOffScaling && t.DistanceTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
@@ -348,11 +349,7 @@ namespace WeaponCore
                     }
 
                     if (canDamage)
-                    {
                         block.DoDamage(0.01f, damageType, sync, null, attackerId);
-                        //if (blockIsRoot && fatBlock == null) 
-                            //ApplyDeformationCubeGrid(hitEnt.Intersection, hitEnt.Intersection.To, grid, scaledDamage, hitMass);
-                    }
                     else
                     {
                         var hasBlock = _slimHealthClient.ContainsKey(block);
@@ -368,7 +365,11 @@ namespace WeaponCore
 
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * Math.Min(areaRadius * 0.5f, hitEnt.Intersection.Length > 1 ? hitEnt.Intersection.Length : 1));
+                        var travelOffset = hitEnt.Intersection.Length > minAoeOffset ? hitEnt.Intersection.Length : minAoeOffset;
+                        var aoeOffset = Math.Min(areaRadius * 0.5f, travelOffset);
+                        var expOffsetClamp = MathHelperD.Clamp(aoeOffset, minAoeOffset, 2f);
+                        var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
+
                         if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
                          SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);

@@ -205,7 +205,18 @@ namespace WeaponCore
                 Action = action,
                 PlayerId = PlayerId,
             });
-            Log.Line($"SendActionShootUpdate: {action}");
+        }
+
+        internal void SendActiveTerminal(WeaponComponent comp)
+        {
+            PacketsToServer.Add(new TerminalMonitorPacket
+            {
+                SenderId = MultiplayerId,
+                PType = PacketType.TerminalMonitor,
+                EntityId = comp.MyCube.EntityId,
+                State = TerminalMonitorPacket.Change.Update,
+                MId = ++comp.MIds[(int)PacketType.TerminalMonitor],
+            });
         }
 
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
@@ -406,7 +417,6 @@ namespace WeaponCore
         {
             if (IsServer)
             {
-                Log.Line($"SendCompData");
                 ++comp.Data.Repo.Revision;
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -434,19 +444,6 @@ namespace WeaponCore
                     EntityId = ai.MyGrid.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.RescanGroupRequest,
-                });
-            }
-            else 
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = ai.MyGrid,
-                    Packet = new Packet
-                    {
-                        MId = ++ai.MIds[(int)PacketType.RescanGroupRequest],
-                        EntityId = ai.MyGrid.EntityId,
-                        PType = PacketType.RescanGroupRequest,
-                    }
                 });
             }
         }
@@ -667,6 +664,8 @@ namespace WeaponCore
                     trackingAi.AiSleep = false;
                 }
             }
+            if (MpActive && trackingAi != null)
+                SendAiSync(trackingAi);
         }
         /*
         internal static bool SyncGridOverrides(GridAi ai, Packet packet, GroupOverrides o, string groupName)

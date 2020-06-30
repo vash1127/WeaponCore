@@ -143,7 +143,7 @@ namespace WeaponCore
 
             return true;
         }
-
+        /*
         private bool ClientRescanGroupRequest(PacketObj data)
         {
             var packet = data.Packet;
@@ -167,6 +167,7 @@ namespace WeaponCore
             return true;
 
         }
+        */
         private bool ClientCompData(PacketObj data)
         {
 
@@ -180,7 +181,10 @@ namespace WeaponCore
                 comp.MIds[(int) packet.PType] = packet.MId;
 
                 if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
+                {
+                    Wheel.Dirty = true;
                     data.Report.PacketValid = true;
+                }
             }
 
             return true;
@@ -202,6 +206,7 @@ namespace WeaponCore
 
                     ai.Data.Repo.Sync(ai, aiSyncPacket.Data);
 
+                    Wheel.Dirty = true;
                     data.Report.PacketValid = true;
                 }
                 else Log.Line($"ClientAiSyncUpdate MID failure");
@@ -387,7 +392,7 @@ namespace WeaponCore
 
             return true;
         }
-
+        /*
         private bool ClientActiveControlUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -431,7 +436,7 @@ namespace WeaponCore
 
             return true;
         }
-
+        */
         private bool ClientTargetExpireUpdate(PacketObj data)
         {
             var packet = data.Packet;

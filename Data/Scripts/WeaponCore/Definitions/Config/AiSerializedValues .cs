@@ -30,8 +30,8 @@ namespace WeaponCore
 
                 Focus.Sync(sync.Focus);
 
-                if (ActiveTerminal.ActiveCubeId != sync.ActiveTerminal.ActiveCubeId)
-                    Log.Line($"ActiveCubeId mismatch: {ActiveTerminal.ActiveCubeId}({sync.ActiveTerminal.ActiveCubeId})");
+                //if (ActiveTerminal.ActiveCubeId != sync.ActiveTerminal.ActiveCubeId)
+                    //Log.Line($"ActiveCubeId mismatch: {ActiveTerminal.ActiveCubeId}({sync.ActiveTerminal.ActiveCubeId})");
 
                 ActiveTerminal.Sync(sync.ActiveTerminal);
 
@@ -273,6 +273,9 @@ namespace WeaponCore
                 Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
                 Settings[setting] = value;
                 ApplySettings(ai);
+
+                if (session.MpActive) 
+                    session.SendAiSync(ai);
             }
             else if (session.IsClient)
             {
@@ -371,10 +374,7 @@ namespace WeaponCore
                     Log.Line($"ApplySettings change detected");
                     ResetCompState(comp, true);
                     if (comp.Session.MpActive)
-                    {
                         comp.Session.SendCompData(comp);
-                        //comp.Session.SendOverRidesServerAi(comp.Ai, Name, o);
-                    }
                 }
             }
         }

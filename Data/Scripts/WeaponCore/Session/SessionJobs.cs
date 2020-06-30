@@ -162,7 +162,7 @@ namespace WeaponCore
 
                     ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
 
-                    if (ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
+                    if (IsServer && ai.ScanBlockGroups) ai.Construct.UpdateConstruct(UpdateType.BlockScan);
                     //if (ai.ScanBlockGroupSettings) ai.Construct.UpdateConstruct(UpdateType.Overrides);
 
                     

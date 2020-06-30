@@ -131,8 +131,9 @@ namespace WeaponCore.Support
         internal uint LastPowerUpdateTick;
         internal uint TurnOffManualTick;
         internal uint ProjectileTicker;
-
         internal uint LastDetectEvent;
+        internal uint LastGroupScanTick;
+
         internal int SleepingComps;
         internal int AwakeComps;
         internal int SourceCount;

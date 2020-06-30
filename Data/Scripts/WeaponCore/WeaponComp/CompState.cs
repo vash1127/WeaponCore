@@ -68,6 +68,7 @@ namespace WeaponCore.Support
 
         internal void ResetShootState(ShootActions action, long playerId, out bool addShot)
         {
+            var oldAction = Data.Repo.Set.TerminalAction;
             var cycleShootClick = Data.Repo.Set.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
             var cycleShootOn = Data.Repo.Set.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
@@ -97,6 +98,8 @@ namespace WeaponCore.Support
 
             playerId = playerId == -1 ? Session.PlayerId : playerId;
             Data.Repo.State.PlayerId = action == ShootActions.ShootOff ? -1 : playerId;
+
+            Log.Line($"TerminalAction: {Data.Repo.Set.TerminalAction} - was:{oldAction}");
         }
 
         internal void DetectStateChanges()

@@ -71,7 +71,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudTextMaps.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\SupportClasses.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiBlockGroups.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />

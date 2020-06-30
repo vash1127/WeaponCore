@@ -20,15 +20,15 @@ namespace WeaponCore
         {
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
-            ActiveCockPit = ActiveControlBlock as MyCockpit;
+            ActiveCockPit = ControlledEntity as MyCockpit;
             long oldBlockId;
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
-            if (activeBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
+            if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
                 InGridAiBlock = true;
                 TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
-                UpdateActiveControlDictionary(ActiveControlBlock, PlayerId, true, true);
+                //UpdateActiveControlDictionary(ActiveControlBlock, PlayerId, true, true);
                 if (HandlesInput && oldBlockId != ActiveControlBlock.EntityId)
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
             }
@@ -41,7 +41,7 @@ namespace WeaponCore
                     MyCubeBlock oldBlock;
                     if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
 
-                        UpdateActiveControlDictionary(oldBlock, PlayerId, false, true);
+                        //UpdateActiveControlDictionary(oldBlock, PlayerId, false, true);
                         
                         if (HandlesInput)
                             SendActiveControlUpdate(TrackingAi, oldBlock, false);

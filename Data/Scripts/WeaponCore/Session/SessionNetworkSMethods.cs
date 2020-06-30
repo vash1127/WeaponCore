@@ -46,7 +46,7 @@ namespace WeaponCore
             SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
             Log.Line($"ServerActiveControlUpdate: {playerId}");
             UpdateActiveControlDictionary(cube, playerId, dPacket.Data);
-            PacketsToClient.Add(new PacketInfo { Entity = cube, Packet = dPacket });
+            //PacketsToClient.Add(new PacketInfo { Entity = cube, Packet = dPacket });
             data.Report.PacketValid = true;
 
             return true;
@@ -285,7 +285,7 @@ namespace WeaponCore
 
             return true;
         }
-
+        /*
         private bool ServerOverRidesUpdate(PacketObj data)
         {
             Log.Line($"ServerOverRidesUpdate0");
@@ -351,6 +351,7 @@ namespace WeaponCore
             }
             return true;
         }
+        */
 
         private bool ServerWeaponUpdateRequest(PacketObj data)
         {
@@ -490,12 +491,18 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                ai.ReScanBlockGroups(true);
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
-            PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
+                if (ai.MIds[(int) packet.PType] < packet.MId) {
+                    ai.MIds[(int) packet.PType] = packet.MId;
+                    
+                    ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
+                    data.Report.PacketValid = true;
+                }
+            }
 
-            data.Report.PacketValid = true;
+            //PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
+
 
             return true;
         }
@@ -559,7 +566,7 @@ namespace WeaponCore
                         break;
                 }
 
-                PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
+                //PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
                 data.Report.PacketValid = true;
             }
             else
@@ -592,10 +599,10 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (terminalMonPacket.MId > comp.Data.Repo.WepVal.MIds[(int)packet.PType]) {
+            if (comp.MIds[(int)packet.PType] < packet.MId) {
+                comp.MIds[(int)packet.PType] = packet.MId;
 
                 if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
-                    comp.Data.Repo.WepVal.MIds[(int)packet.PType] = terminalMonPacket.MId;
                     TerminalMon.ServerUpdate(comp);
                     //Log.Line("Terminal Update");
                 }

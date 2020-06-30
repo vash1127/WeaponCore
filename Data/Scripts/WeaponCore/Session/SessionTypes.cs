@@ -528,28 +528,17 @@ namespace WeaponCore
             {
                 Comp = comp;
 
-                var oldActiveWeaponTerminal = comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal;
-                comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal.ActiveCubeId = comp.MyCube.EntityId;
-                var changed = oldActiveWeaponTerminal != comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal || !Active;
+                //comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal.ActiveCubeId = comp.MyCube.EntityId;
 
-                Active = true;
                 OriginalAiVersion = comp.Ai.Version;
 
                 if (comp.IsAsleep)
                     comp.WakeupComp();
 
-                if (Session.IsClient && changed) {
-                    comp.MIds[(int)PacketType.TerminalMonitor]++;
-                    var mId = comp.MIds[(int)PacketType.TerminalMonitor];
-                    //Log.Line($"sending terminal update");
-                    Session.PacketsToServer.Add(new TerminalMonitorPacket {
-                        SenderId = Session.MultiplayerId,
-                        PType = PacketType.TerminalMonitor,
-                        EntityId = Comp.MyCube.EntityId,
-                        State = TerminalMonitorPacket.Change.Update,
-                        MId = mId,
-                    });
-                }
+                if (Session.IsClient && !Active)
+                    Session.SendActiveTerminal(comp);
+
+                Active = true;
             }
 
             internal void Clean(bool purge = false)
@@ -588,6 +577,9 @@ namespace WeaponCore
 
                 if (comp.IsAsleep)
                     comp.WakeupComp();
+
+                if (Session.MpActive)
+                    Session.SendAiSync(comp.Ai);
             }
 
             internal void ServerClean(WeaponComponent comp)

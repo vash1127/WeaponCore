@@ -66,6 +66,9 @@ namespace WeaponCore.Support
         private readonly List<string> _tmpGroupKeys = new List<string>();
         internal void ReScanBlockGroups(bool networkSync = false)
         {
+            if (Session.Tick - LastGroupScanTick < 60)
+                return;
+            
             if (TerminalSystem == null)
                 TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
             
@@ -117,8 +120,9 @@ namespace WeaponCore.Support
 
                 ScanBlockGroups = false;
 
-                if (Session.MpActive && Session.HandlesInput && !networkSync)
-                    Session.SendGroupUpdate(this);
+                LastGroupScanTick = Session.Tick;
+                //if (Session.MpActive && Session.HandlesInput && !networkSync)
+                    //Session.SendGroupUpdate(this);
             }
         }
 

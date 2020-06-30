@@ -100,7 +100,10 @@ namespace WeaponCore
         internal void OpenWheel()
         {
             WheelActive = true;
-            Ai.ReScanBlockGroups(true);
+            //Ai.ReScanBlockGroups(true);
+            if (Session.MpActive)
+                Session.SendGroupUpdate(Ai);
+
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (string.IsNullOrEmpty(_currentMenu))
             {

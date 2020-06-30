@@ -92,6 +92,7 @@ namespace WeaponCore
                             ClientClientMouseEvent(packetObj);
                             break;
                         }
+                    /*
                     case PacketType.ActiveControlUpdate: {
                             ClientActiveControlUpdate(packetObj);
                             break;
@@ -100,6 +101,7 @@ namespace WeaponCore
                             ClientActiveControlFullUpdate(packetObj);
                             break;
                         }
+                        */
                     case PacketType.AiSyncUpdate: {
                         ClientAiSyncUpdate(packetObj);
                         break;
@@ -122,10 +124,12 @@ namespace WeaponCore
                             break;
                         }
                         */
+                    /*
                     case PacketType.RescanGroupRequest: {
                             ClientRescanGroupRequest(packetObj);
                             break;
                         }
+                        */
                     case PacketType.GridFocusListSync: {
                             ClientGridFocusListSync(packetObj);
                             break;
@@ -233,10 +237,12 @@ namespace WeaponCore
                     ServerReticleUpdate(packetObj);
                     break;
                 }
+                /*
                 case PacketType.OverRidesUpdate: {
                     ServerOverRidesUpdate(packetObj);
                     break;
                 }
+                */
                 case PacketType.PlayerControlRequest:
                 {
                     ServerPlayerControlRequest(packetObj);
@@ -313,7 +319,6 @@ namespace WeaponCore
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
-
                 var bytes = MyAPIGateway.Utilities.SerializeToBinary(packetInfo.Packet);
                 if (packetInfo.SingleClient)
                     MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, packetInfo.Packet.SenderId, true);
