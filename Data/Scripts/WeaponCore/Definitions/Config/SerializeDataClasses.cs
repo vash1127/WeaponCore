@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using System;
+using ProtoBuf;
 using Sandbox.Game.Entities;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,16 +14,16 @@ namespace WeaponCore
     public enum PacketType
     {
         Invalid,
-        AiSyncUpdate,
+        AiData,
+        CompData,
+        OverRidesUpdate,
         WeaponSyncUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
         PlayerIdUpdate,
-        ActiveControlFullUpdate,
         FocusUpdate,
         ReticleUpdate,
-        OverRidesUpdate,
         TargetExpireUpdate,
         WeaponUpdateRequest,
         ClientAiAdd,
@@ -30,7 +31,6 @@ namespace WeaponCore
         RequestMouseStates,
         FullMouseUpdate,
         RequestShootUpdate,
-        CompData,
         ReassignTargetUpdate,
         NextActiveUpdate,
         ReleaseActiveUpdate,
@@ -50,12 +50,11 @@ namespace WeaponCore
     [ProtoInclude(6, typeof(InputPacket))]
     [ProtoInclude(7, typeof(BoolUpdatePacket))]
     [ProtoInclude(8, typeof(FakeTargetPacket))]
-    [ProtoInclude(9, typeof(CurrentGridPlayersPacket))]
     [ProtoInclude(10, typeof(FocusPacket))]
     [ProtoInclude(11, typeof(WeaponIdPacket))]
     [ProtoInclude(12, typeof(RequestTargetsPacket))]
     [ProtoInclude(13, typeof(MouseInputSyncPacket))]
-    [ProtoInclude(14, typeof(AiSyncPacket))]
+    [ProtoInclude(14, typeof(AiDataPacket))]
     [ProtoInclude(15, typeof(GridFocusListPacket))]
     [ProtoInclude(16, typeof(FixedWeaponHitPacket))]
     [ProtoInclude(17, typeof(ProblemReportPacket))]
@@ -98,6 +97,26 @@ namespace WeaponCore
         public override int GetHashCode()
         {
             return (EntityId.GetHashCode() + PType.GetHashCode() + SenderId.GetHashCode());
+        }
+    }
+
+    [ProtoContract]
+    public class OverRidesPacket : Packet
+    {
+        [ProtoMember(1)] internal GroupOverrides Data;
+        [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
+        [ProtoMember(3), DefaultValue("")] internal string Setting = "";
+        [ProtoMember(4)] internal int Value;
+
+        public OverRidesPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+            GroupName = string.Empty;
+            Setting = string.Empty;
+            Value = 0;
         }
     }
 
@@ -221,18 +240,6 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class CurrentGridPlayersPacket : Packet
-    {
-        [ProtoMember(1)] internal ControllingPlayersSync Data;
-        public CurrentGridPlayersPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = new ControllingPlayersSync();
-        }
-    }
 
     [ProtoContract]
     public class FocusPacket : Packet
@@ -293,10 +300,10 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class AiSyncPacket : Packet
+    public class AiDataPacket : Packet
     {
         [ProtoMember(1)] internal AiDataValues Data;
-        public AiSyncPacket() { }
+        public AiDataPacket() { }
 
         public override void CleanUp()
         {
@@ -366,21 +373,6 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CycleAmmoPacket : Packet
-    {
-        [ProtoMember(1)] internal int AmmoId;
-        [ProtoMember(2)] internal int WeaponId;
-        public CycleAmmoPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            AmmoId = 0;
-            WeaponId = 0;
-        }
-    }
-
-    [ProtoContract]
     public class ShootStatePacket : Packet
     {
         [ProtoMember(1)] internal ShootActions Action = ShootActions.ShootOff;
@@ -396,32 +388,9 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class OverRidesPacket : Packet
-    {
-        [ProtoMember(1)] internal GroupOverrides Data;
-        [ProtoMember(2), DefaultValue("")] internal string GroupName = "";
-        [ProtoMember(3), DefaultValue("")] internal string Setting = "";
-        [ProtoMember(4)] internal int Value;
-
-        public OverRidesPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-            GroupName = string.Empty;
-            Setting = string.Empty;
-            Value = 0;
-        }
-    }
-
-
     #endregion
 
     #region packet Data
-
-
     [ProtoContract]
     internal class DataReport
     {
@@ -476,6 +445,46 @@ namespace WeaponCore
         [ProtoMember(2)] internal InputStateData MouseStateData;
     }
 
+
+    [ProtoContract]
+    public class WeaponRandomGenerator
+    {
+        [ProtoMember(1)] public int TurretCurrentCounter;
+        [ProtoMember(2)] public int ClientProjectileCurrentCounter;
+        [ProtoMember(3)] public int CurrentSeed;
+        public Random TurretRandom;
+        public Random ClientProjectileRandom;
+        public Random AcquireRandom;
+
+        public enum RandomType
+        {
+            Deviation,
+            ReAcquire,
+            Acquire,
+        }
+
+        public WeaponRandomGenerator() { }
+
+        public void Init(int uniqueId)
+        {
+            CurrentSeed = uniqueId;
+            TurretRandom = new Random(CurrentSeed);
+            ClientProjectileRandom = new Random(CurrentSeed);
+            AcquireRandom = new Random(CurrentSeed);
+        }
+
+        public void Sync(WeaponRandomGenerator syncFrom)
+        {
+            CurrentSeed = syncFrom.CurrentSeed;
+
+            TurretCurrentCounter = syncFrom.TurretCurrentCounter;
+            ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
+
+            TurretRandom = new Random(CurrentSeed);
+            ClientProjectileRandom = new Random(CurrentSeed);
+        }
+    }
+
     [ProtoContract]
     public class TransferTarget
     {
@@ -522,16 +531,8 @@ namespace WeaponCore
                 target.TargetChanged = false;
         }
 
-        public TransferTarget()
-        {
-        }
+        public TransferTarget() { }
     }
 
-    [ProtoContract]
-    public struct OverRidesData
-    {
-        [ProtoMember(1)] public string GroupName;
-        [ProtoMember(2)] public GroupOverrides Overrides;
-    }
     #endregion
 }

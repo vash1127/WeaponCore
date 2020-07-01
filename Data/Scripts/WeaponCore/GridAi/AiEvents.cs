@@ -38,7 +38,6 @@ namespace WeaponCore.Support
                 AiMarkedTick = Session.Tick;
                 if (Registered) {
 
-
                     Registered = false;
                     grid.OnFatBlockAdded -= FatBlockAdded;
                     grid.OnFatBlockRemoved -= FatBlockRemoved;
@@ -96,8 +95,14 @@ namespace WeaponCore.Support
                         ScanBlockGroups = true;
                     else if (cube != null && cube.HasInventory && cube.TryGetInventory(out inventory))
                     {
-                        try {
-                            if (inventory != null && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                        try
+                        {
+                            var sessionNull = Session == null;
+                            
+                            if (sessionNull)
+                                Log.Line($"FatBlockRemoved Session was null");
+
+                            if (inventory != null && !sessionNull && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
                             {
                                 inventory.InventoryContentChanged -= CheckAmmoInventory;
                                 List<MyPhysicalInventoryItem> removedPhysical;

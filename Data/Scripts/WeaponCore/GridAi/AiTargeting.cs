@@ -188,13 +188,8 @@ namespace WeaponCore.Support
             var hasOffset = offset > 0;
             var numOfTargets = ai.SortedTargets.Count;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            if (w.Comp.Data.Repo.WepVal?.WeaponRandom[w.WeaponId] == null)
-            {
-                Log.Line($"fail");
-                targetType = TargetType.None;
-                return;
-            }
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId], Acquire);
+
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.State.WeaponRandom, Acquire);
             try
             {
                 for (int x = 0; x < adjTargetCount; x++)
@@ -228,7 +223,7 @@ namespace WeaponCore.Support
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-                    
+
                     if (info.IsGrid) {
 
                         if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
@@ -250,7 +245,7 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId], Acquire, w, true)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.State.WeaponRandom, Acquire, w, true)) continue;
 
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
@@ -619,7 +614,7 @@ namespace WeaponCore.Support
             }
 
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId], Acquire);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.State.WeaponRandom, Acquire);
 
             for (int x = 0; x < numOfTargets; x++)
             {

@@ -15,7 +15,6 @@ namespace WeaponCore
         [ProtoMember(2)] public int Version = Session.VersionControl;
         [ProtoMember(3)] public CompSettingsValues Set;
         [ProtoMember(4)] public CompStateValues State;
-        [ProtoMember(5)] public WeaponValues WepVal;
 
         public bool Sync(WeaponComponent comp, CompDataValues sync)
         {
@@ -23,7 +22,6 @@ namespace WeaponCore
             {
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State);
-                WepVal.Sync(comp, sync.WepVal);
 
                 Revision = sync.Revision;
 
@@ -238,14 +236,15 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponStateValues
     {
-        [ProtoMember(1)] public uint Revision; //dont save
-        [ProtoMember(2)] public float Heat; // don't save
-        [ProtoMember(3)] public int CurrentAmmo; //save
-        [ProtoMember(4)] public float CurrentCharge; //save
-        [ProtoMember(5)] public bool Overheated; //don't save
-        [ProtoMember(6)] public int WeaponId; // save
-        [ProtoMember(7)] public MyFixedPoint CurrentMags; // save
-        [ProtoMember(8)] public bool HasInventory; // save
+        [ProtoMember(1)] public float Heat; // don't save
+        [ProtoMember(2)] public int CurrentAmmo; //save
+        [ProtoMember(3)] public float CurrentCharge; //save
+        [ProtoMember(4)] public bool Overheated; //don't save
+        [ProtoMember(5)] public int WeaponId; // save
+        [ProtoMember(6)] public MyFixedPoint CurrentMags; // save
+        [ProtoMember(7)] public bool HasInventory; // save
+        [ProtoMember(8)] public TransferTarget Target = new TransferTarget(); // save
+        [ProtoMember(9)] public WeaponRandomGenerator WeaponRandom = new WeaponRandomGenerator(); // save
 
         public void Sync(WeaponStateValues sync, Weapon weapon)
         {
@@ -254,51 +253,28 @@ namespace WeaponCore
                 sync.CurrentCharge = CurrentCharge;
                 weapon.LastAmmoUpdateTick = weapon.System.Session.Tick;
             }
-            
+
+            sync.Target = Target;
+            sync.WeaponRandom = WeaponRandom;
+
             sync.Heat = Heat;
             sync.CurrentMags = CurrentMags;
 
             sync.Overheated = Overheated;
             sync.HasInventory = HasInventory;
         }
-    }
 
-    [ProtoContract]
-    public class WeaponValues
-    {
-        [ProtoMember(1)] public TransferTarget[] Targets;
-        [ProtoMember(2)] public WeaponRandomGenerator[] WeaponRandom;
-        [ProtoMember(3)] public uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
-        public void Sync(WeaponComponent comp, WeaponValues sync)
+        public void WeaponInit(WeaponComponent comp)
         {
-            for (int i = 0; i < Targets.Length; i++)
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                Targets[i] = sync.Targets[i];
-                WeaponRandom[i] = sync.WeaponRandom[i];
-            }
-
-            for (int i = 0; i < MIds.Length; i++)
-                MIds[i] = sync.MIds[i];
-        }
-
-        public static void Init(WeaponComponent comp)
-        {
-            comp.Data.Repo.WepVal = new WeaponValues {
-                Targets = new TransferTarget[comp.Platform.Weapons.Length],
-                WeaponRandom = new WeaponRandomGenerator[comp.Platform.Weapons.Length],
-                MIds = new uint[Enum.GetValues(typeof(PacketType)).Length]
-            };
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
 
                 var w = comp.Platform.Weapons[i];
+                var wState = comp.Data.Repo.State.Weapons[i];
+                wState.WeaponRandom.Init(w.UniqueId);
 
-                comp.Data.Repo.WepVal.Targets[w.WeaponId] = new TransferTarget();
-                comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId] = new WeaponRandomGenerator();
-                comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId].Init(w.UniqueId);
-
-                var rand = comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
+                var rand = wState.WeaponRandom;
                 rand.CurrentSeed = w.UniqueId;
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
 
@@ -308,17 +284,14 @@ namespace WeaponCore
             }
         }
 
-        public static void RefreshClient(WeaponComponent comp)
+        public void WeaponRefreshClient(WeaponComponent comp)
         {
             try
             {
-                if (!comp.Session.IsClient || comp.Data.Repo.WepVal.MIds == null || comp.Data.Repo.WepVal.MIds?.Length != Enum.GetValues(typeof(PacketType)).Length)
-                    comp.Data.Repo.WepVal.MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
-
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-                    var rand = comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
+                    var rand = w.State.WeaponRandom;
 
                     rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                     rand.TurretRandom = new Random(rand.CurrentSeed);
@@ -335,62 +308,8 @@ namespace WeaponCore
             }
             catch (Exception e) { Log.Line($"Client Weapon Values Failed To load re-initing... how?"); }
 
-            Init(comp);
-        }
-
-        public WeaponValues() { }
-    }
-
-   
-    [ProtoContract]
-    public struct ControllingPlayersSync
-    {
-        [ProtoMember (1)] public PlayerToBlock[] PlayersToControlledBlock;
-    }
-
-    [ProtoContract]
-    public struct PlayerToBlock
-    {
-        [ProtoMember(1)] public long PlayerId;
-        [ProtoMember(2)] public long EntityId;
-    }
-
-    [ProtoContract]
-    public class WeaponRandomGenerator
-    {
-        [ProtoMember(1)] public int TurretCurrentCounter;
-        [ProtoMember(2)] public int ClientProjectileCurrentCounter;
-        [ProtoMember(3)] public int CurrentSeed;
-        public Random TurretRandom;
-        public Random ClientProjectileRandom;
-        public Random AcquireRandom;
-
-        public enum RandomType
-        {
-            Deviation,
-            ReAcquire,
-            Acquire,
-        }
-
-        public WeaponRandomGenerator() { }
-
-        public void Init(int uniqueId)
-        {
-            CurrentSeed = uniqueId;
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
-        }
-
-        public void Sync(WeaponRandomGenerator syncFrom)
-        {
-            CurrentSeed = syncFrom.CurrentSeed;
-
-            TurretCurrentCounter = syncFrom.TurretCurrentCounter;
-            ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
-
-            TurretRandom = new Random(CurrentSeed);
-            ClientProjectileRandom = new Random(CurrentSeed);
+            WeaponInit(comp);
         }
     }
+
 }

@@ -5,7 +5,6 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition;
-using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
@@ -157,39 +156,6 @@ namespace WeaponCore
                         PType = PacketType.ActiveControlUpdate,
                         Data = active
                     }
-                });
-            }
-        }
-
-        internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
-        {
-            PacketsToServer.Add(new OverRidesPacket
-            {
-                MId = ++comp.MIds[(int)PacketType.OverRidesUpdate],
-                PType = PacketType.OverRidesUpdate,
-                EntityId = comp.MyCube.EntityId,
-                SenderId = MultiplayerId,
-                GroupName = groupName,
-                Setting = settings,
-                Value = value,
-            });
-        }
-
-
-
-        internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
-        {
-            if (IsClient)
-            {
-                PacketsToServer.Add(new OverRidesPacket
-                {
-                    MId = ++ai.MIds[(int)PacketType.OverRidesUpdate],
-                    PType = PacketType.OverRidesUpdate,
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    GroupName = groupName,
-                    Setting = settings,
-                    Value = value,
                 });
             }
         }
@@ -392,8 +358,40 @@ namespace WeaponCore
                 }
             });
         }
+        internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
+        {
+            PacketsToServer.Add(new OverRidesPacket
+            {
+                MId = ++comp.MIds[(int)PacketType.OverRidesUpdate],
+                PType = PacketType.OverRidesUpdate,
+                EntityId = comp.MyCube.EntityId,
+                SenderId = MultiplayerId,
+                GroupName = groupName,
+                Setting = settings,
+                Value = value,
+            });
+        }
 
-        internal void SendAiSync(GridAi ai)
+
+
+        internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
+        {
+            if (IsClient)
+            {
+                PacketsToServer.Add(new OverRidesPacket
+                {
+                    MId = ++ai.MIds[(int)PacketType.OverRidesUpdate],
+                    PType = PacketType.OverRidesUpdate,
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = MultiplayerId,
+                    GroupName = groupName,
+                    Setting = settings,
+                    Value = value,
+                });
+            }
+        }
+
+        internal void SendAiData(GridAi ai)
         {
             if (IsServer)
             {
@@ -401,12 +399,12 @@ namespace WeaponCore
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = ai.MyGrid,
-                    Packet = new AiSyncPacket
+                    Packet = new AiDataPacket
                     {
-                        MId = ++ai.MIds[(int)PacketType.AiSyncUpdate],
+                        MId = ++ai.MIds[(int)PacketType.AiData],
                         SenderId = 0,
                         EntityId = ai.MyGrid.EntityId,
-                        PType = PacketType.AiSyncUpdate,
+                        PType = PacketType.AiData,
                         Data = ai.Data.Repo,
                     }
                 });
@@ -474,41 +472,6 @@ namespace WeaponCore
                 });
             }
         }
-
-        /*
-        internal void SendMidResync(PacketType type, uint mid, ulong playerId, MyEntity ent, WeaponComponent comp)
-        {
-            var hash = -1;
-            if (comp != null)
-                hash = comp.GetSyncHash();
-
-            PacketsToClient.Add(new PacketInfo
-            {
-                Entity = ent,
-                Packet = new ClientMIdUpdatePacket
-                {
-                    EntityId = ent.EntityId,
-                    SenderId = playerId,
-                    PType = PacketType.ClientMidUpdate,
-                    MidType = type,
-                    MId = mid,
-                    HashCheck = hash,
-                },
-                SingleClient = true,
-            });
-        }
-        */
-        /*
-        internal void RequestCompSync(WeaponComponent comp)
-        {
-            PacketsToServer.Add(new Packet
-            {
-                EntityId = comp.MyCube.EntityId,
-                SenderId = MultiplayerId,
-                PType = PacketType.CompSyncRequest,
-            });
-        }
-        */
 
         #endregion
         #region AIFocus packets
@@ -665,53 +628,8 @@ namespace WeaponCore
                 }
             }
             if (MpActive && trackingAi != null)
-                SendAiSync(trackingAi);
+                SendAiData(trackingAi);
         }
-        /*
-        internal static bool SyncGridOverrides(GridAi ai, Packet packet, GroupOverrides o, string groupName)
-        {
-            if (ai.MIds[(int) packet.PType] < packet.MId) {
-                ai.MIds[(int) packet.PType] = packet.MId;
-
-                ai.ReScanBlockGroups();
-
-                ai.BlockGroups[groupName].Settings["Active"] = o.Activate ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["Neutrals"] = o.Neutrals ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["Projectiles"] = o.Projectiles ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["Biologicals"] = o.Biologicals ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["Meteors"] = o.Meteors ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["Friendly"] = o.Friendly ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["Unowned"] = o.Unowned ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["TargetPainter"] = o.TargetPainter ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["ManualControl"] = o.ManualControl ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["FocusTargets"] = o.FocusTargets ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["FocusSubSystem"] = o.FocusSubSystem ? 1 : 0;
-                ai.BlockGroups[groupName].Settings["SubSystems"] = (int)o.SubSystem;
-                return true;
-            }
-
-            return false;
-        }
-
-        internal static GroupOverrides GetOverrides(GridAi ai, string groupName)
-        {
-            var o = new GroupOverrides();
-            o.Activate = ai.BlockGroups[groupName].Settings["Active"] == 1 ? true : false;
-            o.Neutrals = ai.BlockGroups[groupName].Settings["Neutrals"] == 1 ? true : false;
-            o.Projectiles = ai.BlockGroups[groupName].Settings["Projectiles"] == 1 ? true : false;
-            o.Biologicals = ai.BlockGroups[groupName].Settings["Biologicals"] == 1 ? true : false;
-            o.Meteors = ai.BlockGroups[groupName].Settings["Meteors"] == 1 ? true : false;
-            o.Friendly = ai.BlockGroups[groupName].Settings["Friendly"] == 1 ? true : false;
-            o.Unowned = ai.BlockGroups[groupName].Settings["Unowned"] == 1 ? true : false;
-            o.TargetPainter = ai.BlockGroups[groupName].Settings["TargetPainter"] == 1 ? true : false;
-            o.ManualControl = ai.BlockGroups[groupName].Settings["ManualControl"] == 1 ? true : false;
-            o.FocusTargets = ai.BlockGroups[groupName].Settings["FocusTargets"] == 1 ? true : false;
-            o.FocusSubSystem = ai.BlockGroups[groupName].Settings["FocusSubSystem"] == 1 ? true : false;
-            o.SubSystem = (BlockTypes)ai.BlockGroups[groupName].Settings["SubSystems"];
-
-            return o;
-        }
-        */
 
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {

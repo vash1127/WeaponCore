@@ -50,7 +50,7 @@ namespace WeaponCore
                 {
                     var base64 = Convert.FromBase64String(rawData);
                     load = MyAPIGateway.Utilities.SerializeFromBinary<CompDataValues>(base64);
-                    validData = (load != null && load.Set != null && load.State != null && load.WepVal != null);
+                    validData = (load != null && load.Set != null && load.State != null);
                 }
                 catch (Exception e)
                 {
@@ -66,22 +66,20 @@ namespace WeaponCore
 
                 Repo = new CompDataValues {
                     State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length]},
-                    WepVal = new WeaponValues(),
                     Set = new CompSettingsValues {Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length]}
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
                     Repo.State.Weapons[i] = new WeaponStateValues();
                     Repo.Set.Weapons[i] = new WeaponSettingsValues();
+
+                    if (Comp.Session.IsServer)
+                        Repo.State.Weapons[i].WeaponInit(Comp);
+                    else Repo.State.Weapons[i].WeaponRefreshClient(Comp);
                 }
 
                 Repo.Set.Range = -1;
             }
-
-            if (Comp.Session.IsServer)
-                WeaponValues.Init(Comp);
-            else WeaponValues.RefreshClient(Comp);
-            return;
         }
     }
 }

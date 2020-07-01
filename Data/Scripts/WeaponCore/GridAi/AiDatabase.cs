@@ -71,7 +71,7 @@ namespace WeaponCore.Support
                         var allFat = fatMap.MyCubeBocks;
                         var fatCount = allFat.Count;
 
-                        if (fatCount <= 0 || !grid.IsPowered)
+                        if (fatCount <= 0)
                             continue;
 
                         if (fatCount <= 20)  { // possible debris

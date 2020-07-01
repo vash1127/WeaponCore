@@ -2,6 +2,7 @@
 using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -96,7 +97,7 @@ namespace WeaponCore.Support
 
                         if (Session.IsClient)
                         {
-                            var target = Data.Repo.WepVal.Targets[weapon.WeaponId];
+                            var target = weapon.State.Target;
                             if (target.State != TransferTarget.TargetInfo.Expired)
                                 target.SyncTarget(weapon.Target, false);
                             if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)

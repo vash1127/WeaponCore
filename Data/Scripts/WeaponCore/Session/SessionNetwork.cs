@@ -92,18 +92,8 @@ namespace WeaponCore
                             ClientClientMouseEvent(packetObj);
                             break;
                         }
-                    /*
-                    case PacketType.ActiveControlUpdate: {
-                            ClientActiveControlUpdate(packetObj);
-                            break;
-                        }
-                    case PacketType.ActiveControlFullUpdate: {
-                            ClientActiveControlFullUpdate(packetObj);
-                            break;
-                        }
-                        */
-                    case PacketType.AiSyncUpdate: {
-                        ClientAiSyncUpdate(packetObj);
+                    case PacketType.AiData: {
+                        ClientAiDataUpdate(packetObj);
                         break;
                     }
                     case PacketType.TargetExpireUpdate: {
@@ -118,18 +108,6 @@ namespace WeaponCore
                             ClientSendSingleShot(packetObj);
                             break;
                         }
-                    /*
-                    case PacketType.GridOverRidesSync: {
-                            ClientGridOverRidesSync(packetObj);
-                            break;
-                        }
-                        */
-                    /*
-                    case PacketType.RescanGroupRequest: {
-                            ClientRescanGroupRequest(packetObj);
-                            break;
-                        }
-                        */
                     case PacketType.GridFocusListSync: {
                             ClientGridFocusListSync(packetObj);
                             break;
@@ -237,12 +215,6 @@ namespace WeaponCore
                     ServerReticleUpdate(packetObj);
                     break;
                 }
-                /*
-                case PacketType.OverRidesUpdate: {
-                    ServerOverRidesUpdate(packetObj);
-                    break;
-                }
-                */
                 case PacketType.PlayerControlRequest:
                 {
                     ServerPlayerControlRequest(packetObj);
@@ -260,6 +232,10 @@ namespace WeaponCore
                 case PacketType.ClientAiAdd:
                 case PacketType.ClientAiRemove: {
                     ServerClientAiExists(packetObj);
+                    break;
+                }
+                case PacketType.OverRidesUpdate: {
+                    ServerOverRidesUpdate(packetObj);
                     break;
                 }
                 case PacketType.RequestMouseStates: {
@@ -433,16 +409,16 @@ namespace WeaponCore
                     WeaponRng = null,
                 };
 
-                if (w.SendTarget && w.Comp.Data.Repo.WepVal.Targets != null)
-                    weaponSync.TargetData = w.Comp.Data.Repo.WepVal.Targets[w.WeaponId];
+                if (w.SendTarget)
+                    weaponSync.TargetData = w.State.Target;
                 else if (w.SendTarget)
                     continue;
 
-                if (w.SendSync && w.State != null && w.Comp.Data.Repo.WepVal.WeaponRandom != null)
+                if (w.SendSync && w.State != null)
                 {
                     weaponSync.SyncData = w.State;
 
-                    var rand = w.Comp.Data.Repo.WepVal.WeaponRandom[w.WeaponId];
+                    var rand = w.State.WeaponRandom;
                     rand.TurretCurrentCounter = 0;
                     rand.ClientProjectileCurrentCounter = 0;
                     rand.CurrentSeed = w.UniqueId;

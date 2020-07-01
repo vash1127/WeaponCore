@@ -74,7 +74,6 @@ namespace WeaponCore.Platform
                 if (ShootTick > tick)
                     return;
 
-
                 MyEntity focusTarget;
                 if (LockOnFireState && (Target.Entity?.EntityId != Comp.Ai.Data.Repo.Focus.Target[0] || Target.Entity?.EntityId != Comp.Ai.Data.Repo.Focus.Target[1]) && Comp.Ai.Data.Repo.Focus.GetPriorityTarget(out focusTarget))
                     Target.LockTarget(this, focusTarget);
@@ -104,7 +103,7 @@ namespace WeaponCore.Platform
                 #endregion
 
                 #region Projectile Creation
-                var rnd = Comp.Data.Repo.WepVal.WeaponRandom[WeaponId];
+                var rnd = Comp.Data.Repo.State.Weapons[WeaponId].WeaponRandom;
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;

@@ -275,7 +275,7 @@ namespace WeaponCore
                 ApplySettings(ai);
 
                 if (session.MpActive) 
-                    session.SendAiSync(ai);
+                    session.SendAiData(ai);
             }
             else if (session.IsClient)
             {

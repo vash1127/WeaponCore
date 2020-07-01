@@ -79,12 +79,13 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridToMasterAi = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyInventory, List<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, List<BetterInventoryItem>>();
+        
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
+        
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
-
         internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
         
@@ -105,9 +106,8 @@ namespace WeaponCore
         internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyInventory, MyFixedPoint> InventoryVolume = new Dictionary<MyInventory, MyFixedPoint>();
         internal readonly Dictionary<ulong, uint[]> PlayerMIds = new Dictionary<ulong, uint[]>();
-
+        
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
-
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -133,7 +133,6 @@ namespace WeaponCore
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
         internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
-
         internal readonly CachingHashSet<ErrorPacket> ClientSideErrorPkt = new CachingHashSet<ErrorPacket>();
 
         /// <summary>

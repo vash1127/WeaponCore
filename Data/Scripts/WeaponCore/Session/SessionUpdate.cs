@@ -170,7 +170,7 @@ namespace WeaponCore
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
-                        else if (w.Target.HasTarget && MyEntities.EntityExists(comp.Data.Repo.WepVal.Targets[w.WeaponId].EntityId)) {
+                        else if (w.Target.HasTarget && MyEntities.EntityExists(w.State.Target.EntityId)) {
                             w.Target.HasTarget = false;
                             ClientGridResyncRequests.Add(comp);
                         }
@@ -285,20 +285,19 @@ namespace WeaponCore
                 if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     continue;
 
-                var wState = w.Comp.Data.Repo.State.Weapons[w.WeaponId];
 
                 if (Tick60 && w.DrawingPower)
                 {
-                    if ((wState.CurrentCharge + w.UseablePower) < w.MaxCharge)
+                    if ((w.State.CurrentCharge + w.UseablePower) < w.MaxCharge)
                     {
-                        wState.CurrentCharge += w.UseablePower;
+                        w.State.CurrentCharge += w.UseablePower;
                         comp.CurrentCharge += w.UseablePower;
 
                     }
                     else
                     {
-                        comp.CurrentCharge -= (wState.CurrentCharge - w.MaxCharge);
-                        wState.CurrentCharge = w.MaxCharge;
+                        comp.CurrentCharge -= (w.State.CurrentCharge - w.MaxCharge);
+                        w.State.CurrentCharge = w.MaxCharge;
                     }
                 }
 
@@ -345,7 +344,7 @@ namespace WeaponCore
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - wState.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.State.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
                     if (!w.Comp.UnlimitedPower)
                     {
@@ -402,7 +401,7 @@ namespace WeaponCore
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         if (w.Target.HasTarget && MpActive) {
-                            w.Target.SyncTarget(comp.Data.Repo.WepVal.Targets[w.WeaponId], w);
+                            w.Target.SyncTarget(w.State.Target, w);
                         }
                     }
                 }

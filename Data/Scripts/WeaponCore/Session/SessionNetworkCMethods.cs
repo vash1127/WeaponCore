@@ -143,31 +143,7 @@ namespace WeaponCore
 
             return true;
         }
-        /*
-        private bool ClientRescanGroupRequest(PacketObj data)
-        {
-            var packet = data.Packet;
-            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            if (myGrid == null) return Error(data, Msg($"GridId: {packet.EntityId}"));
 
-            GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-
-                if (ai.MIds[(int) packet.PType] < packet.MId) {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    ai.ReScanBlockGroups(true);
-                }
-                else Log.Line($"ClientRescanGroupRequest MID failure");
-            }
-            else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-
-            data.Report.PacketValid = true;
-            return true;
-
-        }
-        */
         private bool ClientCompData(PacketObj data)
         {
 
@@ -191,11 +167,11 @@ namespace WeaponCore
         }
 
 
-        private bool ClientAiSyncUpdate(PacketObj data)
+        private bool ClientAiDataUpdate(PacketObj data)
         {
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            var aiSyncPacket = (AiSyncPacket)packet;
+            var aiSyncPacket = (AiDataPacket)packet;
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
@@ -209,7 +185,7 @@ namespace WeaponCore
                     Wheel.Dirty = true;
                     data.Report.PacketValid = true;
                 }
-                else Log.Line($"ClientAiSyncUpdate MID failure");
+                else Log.Line($"ClientAiDataUpdate MID failure");
             }
             else
                 return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
@@ -319,7 +295,7 @@ namespace WeaponCore
                     weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
                     SyncWeapon(weapon, ref weaponData.SyncData);
 
-                    weapon.Comp.Data.Repo.WepVal.WeaponRandom[weapon.WeaponId].Sync(weaponData.WeaponRng);
+                    weapon.Comp.Data.Repo.State.Weapons[weapon.WeaponId].WeaponRandom.Sync(weaponData.WeaponRng);
                 }
 
                 if (validTargetData)
@@ -392,51 +368,7 @@ namespace WeaponCore
 
             return true;
         }
-        /*
-        private bool ClientActiveControlUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var dPacket = (BoolUpdatePacket)packet;
-            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-            if (cube == null) return Error(data, Msg($"CubeId: {packet.EntityId}"));
 
-            long playerId;
-            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
-            Log.Line($"ClientActiveControlUpdate: {playerId}");
-
-            UpdateActiveControlDictionary(cube, playerId, dPacket.Data);
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
-
-        private bool ClientActiveControlFullUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var csPacket = (CurrentGridPlayersPacket)packet;
-            if (csPacket.Data.PlayersToControlledBlock == null) return Error(data, Msg($"playerControlBlock: {packet.EntityId}"));
-
-            //null = 0 players in grid on stream/load
-            if (csPacket.Data.PlayersToControlledBlock.Length > 0)
-            {
-                for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
-                {
-
-                    var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
-                    var cube = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
-                    if (cube?.CubeGrid == null) return Error(data, Msg($"CubeId:{playerBlock.EntityId} - pId:{playerBlock.PlayerId}", cube != null), Msg("Grid"));
-
-                    UpdateActiveControlDictionary(cube, playerBlock.PlayerId, true);
-                }
-            }
-            else Log.Line($"ClientActiveControlFullUpdate had no players");
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
-        */
         private bool ClientTargetExpireUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -508,7 +440,79 @@ namespace WeaponCore
             return true;
         }
         // retire
+        /*
+        private bool ClientRescanGroupRequest(PacketObj data)
+        {
+            var packet = data.Packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+            if (myGrid == null) return Error(data, Msg($"GridId: {packet.EntityId}"));
 
+            GridAi ai;
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
+
+                if (ai.MIds[(int) packet.PType] < packet.MId) {
+                    ai.MIds[(int)packet.PType] = packet.MId;
+
+                    ai.ReScanBlockGroups(true);
+                }
+                else Log.Line($"ClientRescanGroupRequest MID failure");
+            }
+            else
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            data.Report.PacketValid = true;
+            return true;
+
+        }
+        */
+
+
+
+        /*
+        private bool ClientActiveControlUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var dPacket = (BoolUpdatePacket)packet;
+            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+            if (cube == null) return Error(data, Msg($"CubeId: {packet.EntityId}"));
+
+            long playerId;
+            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
+            Log.Line($"ClientActiveControlUpdate: {playerId}");
+
+            UpdateActiveControlDictionary(cube, playerId, dPacket.Data);
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientActiveControlFullUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var csPacket = (CurrentGridPlayersPacket)packet;
+            if (csPacket.Data.PlayersToControlledBlock == null) return Error(data, Msg($"playerControlBlock: {packet.EntityId}"));
+
+            //null = 0 players in grid on stream/load
+            if (csPacket.Data.PlayersToControlledBlock.Length > 0)
+            {
+                for (int i = 0; i < csPacket.Data.PlayersToControlledBlock.Length; i++)
+                {
+
+                    var playerBlock = csPacket.Data.PlayersToControlledBlock[i];
+                    var cube = MyEntities.GetEntityByIdOrDefault(playerBlock.EntityId) as MyCubeBlock;
+                    if (cube?.CubeGrid == null) return Error(data, Msg($"CubeId:{playerBlock.EntityId} - pId:{playerBlock.PlayerId}", cube != null), Msg("Grid"));
+
+                    UpdateActiveControlDictionary(cube, playerBlock.PlayerId, true);
+                }
+            }
+            else Log.Line($"ClientActiveControlFullUpdate had no players");
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+        */
 
         /*
         private bool ClientGridOverRidesSync(PacketObj data)

@@ -35,8 +35,8 @@ namespace WeaponCore.Platform
             {
                 if (!Acquire.Enabled)
                     System.Session.AcqManager.AddAwake(Acquire);
-
-                Comp.Data.Repo.WepVal.Targets[WeaponId].State = TransferTarget.TargetInfo.Expired;
+                        
+                State.Target.State = TransferTarget.TargetInfo.Expired;
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.TrackReticle)
                     Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
