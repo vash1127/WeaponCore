@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using System.Collections.Generic;
 using System.ComponentModel;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent;
@@ -16,8 +17,10 @@ namespace WeaponCore
         Invalid,
         AiData,
         CompData,
+        CompState,
+        StateReload,
+        StateTargetChange,
         OverRidesUpdate,
-        WeaponSyncUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
         ActiveControlUpdate,
@@ -25,7 +28,6 @@ namespace WeaponCore
         FocusUpdate,
         ReticleUpdate,
         TargetExpireUpdate,
-        WeaponUpdateRequest,
         ClientAiAdd,
         ClientAiRemove,
         RequestMouseStates,
@@ -62,8 +64,9 @@ namespace WeaponCore
     [ProtoInclude(19, typeof(ShootStatePacket))]
     [ProtoInclude(20, typeof(OverRidesPacket))]
     [ProtoInclude(21, typeof(PlayerControlRequestPacket))]
-    [ProtoInclude(24, typeof(TerminalMonitorPacket))]
-    [ProtoInclude(25, typeof(CompDataPacket))]
+    [ProtoInclude(22, typeof(TerminalMonitorPacket))]
+    [ProtoInclude(23, typeof(CompDataPacket))]
+    [ProtoInclude(24, typeof(CompStatePacket))]
 
     public class Packet
     {
@@ -153,6 +156,19 @@ namespace WeaponCore
     }
 
     [ProtoContract]
+    public class CompStatePacket : Packet
+    {
+        [ProtoMember(1)] internal CompStateValues Data;
+        public CompStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
     public class CompDataPacket : Packet
     {
         [ProtoMember(1)] internal CompDataValues Data;
@@ -191,7 +207,7 @@ namespace WeaponCore
     [ProtoContract]
     public class GridWeaponPacket : Packet
     {
-        [ProtoMember(1)] internal List<WeaponData> Data;
+        [ProtoMember(1)] internal List<WeaponStateValues> Data;
         public GridWeaponPacket() { }
 
         public override void CleanUp()
@@ -504,9 +520,13 @@ namespace WeaponCore
             Expired
         }
 
-        internal void SyncTarget(Target target, bool allowChange = true)
+        internal void SyncTarget(Weapon w, bool allowChange = true)
         {
+            if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
+                w.Reload();
+
             var entity = MyEntities.GetEntityByIdOrDefault(EntityId);
+            var target = w.Target;
             target.Entity = entity;
             target.TargetPos = TargetPos;
             target.HitShortDist = HitShortDist;
@@ -529,6 +549,27 @@ namespace WeaponCore
 
             if (!allowChange)
                 target.TargetChanged = false;
+
+            if (w.Target.HasTarget && allowChange) {
+
+                if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null) {
+                    var oldChange = w.Target.TargetChanged;
+                    w.Target.StateChange(true, States.Invalid);
+                    w.Target.TargetChanged = !w.FirstSync && oldChange;
+                    w.FirstSync = false;
+                }
+                else if (w.Target.IsProjectile) {
+
+                    GridAi.TargetType targetType;
+                    GridAi.AcquireProjectile(w, out targetType);
+
+                    if (targetType == GridAi.TargetType.None) {
+                        if (w.NewTarget.CurrentState != States.NoTargetsSeen)
+                            w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
+                        if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.TrackReticle);
+                    }
+                }
+            }
         }
 
         public TransferTarget() { }

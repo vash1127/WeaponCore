@@ -68,9 +68,9 @@ namespace WeaponCore.Support
 
         internal void ResetShootState(ShootActions action, long playerId, out bool addShot)
         {
-            var oldAction = Data.Repo.Set.TerminalAction;
-            var cycleShootClick = Data.Repo.Set.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
-            var cycleShootOn = Data.Repo.Set.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
+            var oldAction = Data.Repo.State.TerminalAction;
+            var cycleShootClick = Data.Repo.State.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
+            var cycleShootOn = Data.Repo.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
 
             addShot = !cycleShootClick && action == ShootActions.ShootClick;
@@ -99,7 +99,7 @@ namespace WeaponCore.Support
             playerId = playerId == -1 ? Session.PlayerId : playerId;
             Data.Repo.State.PlayerId = action == ShootActions.ShootOff ? -1 : playerId;
 
-            Log.Line($"TerminalAction: {Data.Repo.Set.TerminalAction} - was:{oldAction}");
+            Log.Line($"TerminalAction: {Data.Repo.State.TerminalAction} - was:{oldAction}");
         }
 
         internal void DetectStateChanges()
@@ -137,7 +137,7 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Set.TerminalAction == ShootActions.ShootOff) {
+            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.State.TerminalAction == ShootActions.ShootOff) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;

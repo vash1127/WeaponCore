@@ -391,6 +391,26 @@ namespace WeaponCore
             }
         }
 
+        internal void SendCompState(WeaponComponent comp, PacketType type)
+        {
+            if (IsServer)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = new CompStatePacket
+                    {
+                        MId = ++comp.MIds[(int)PacketType.CompState],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = type,
+                        Data = comp.Data.Repo.State
+                    }
+                });
+            }
+            else Log.Line($"SendCompState should never be called on Client");
+        }
+
         internal void SendAiData(GridAi ai)
         {
             if (IsServer)
@@ -598,17 +618,6 @@ namespace WeaponCore
 
 
         #region Misc Network Methods
-        internal void SyncWeapon(Weapon weapon, ref WeaponStateValues weaponData, bool setState = true)
-        {
-            if (weapon.System.DesignatorWeapon) return;
-
-            if (setState)
-                weaponData.Sync(weapon.State, weapon);
-
-            if (weapon.ActiveAmmoDef.AmmoDef.Const.Reloadable && !weapon.Reloading)
-                weapon.Reload();
-        }
-
         public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd, bool applyToRoot = false)
         {
             GridAi trackingAi;

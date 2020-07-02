@@ -255,7 +255,6 @@ namespace WeaponCore.Support
             var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;
             if (radius > 10) radius = 10;
-            Log.Line($"fake explosion");
             position += (-direction * 1);
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;

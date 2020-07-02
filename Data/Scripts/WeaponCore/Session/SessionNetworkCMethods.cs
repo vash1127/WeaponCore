@@ -19,22 +19,8 @@ namespace WeaponCore
                 if (errorPacket.MaxAttempts == 0)
                 {
                     //set packet retry variables, based on type
-                    //erroredPacket.MaxAttempts = 3;
-                    //erroredPacket.RetryAttempt = 0;                    
-
-                    switch (errorPacket.PType)
-                    {
-                        case PacketType.WeaponSyncUpdate:
-                            errorPacket.MaxAttempts = 7;
-                            errorPacket.RetryDelayTicks = 15;
-                            break;
-
-                        default:
-                            errorPacket.MaxAttempts = 7;
-                            errorPacket.RetryDelayTicks = 15;
-                            break;
-                    }
-
+                    errorPacket.MaxAttempts = 7;
+                    errorPacket.RetryDelayTicks = 15;
                     errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
                 }
 
@@ -43,52 +29,14 @@ namespace WeaponCore
                 if (errorPacket.RetryTick > Tick) continue;
                 errorPacket.RetryAttempt++;
 
-                var success = false;
+                var report = Reporter.ReportPool.Get();
+                report.Receiver = NetworkReporter.Report.Received.Client;
+                report.PacketSize = 0;
+                Reporter.ReportData[errorPacket.Packet.PType].Add(report);
+                var packetObj = PacketObjPool.Get();
+                packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
 
-                switch (errorPacket.PType)
-                {
-                    case PacketType.WeaponSyncUpdate:
-                        var ent = MyEntities.GetEntityByIdOrDefault(errorPacket.Packet.EntityId);
-                        if (ent == null) break;
-
-                        var packet = errorPacket.Packet as GridWeaponPacket;
-                        if (packet?.Data == null) {
-                            Log.Line($"GridWeaponPacket errorPacket is null");
-                            errorPacket.MaxAttempts = 0;
-                            break;
-                        }
-
-                        var compsToCheck = new HashSet<long>();
-                        for (int j = 0; j < packet.Data.Count; j++) {
-                            var weaponData = packet.Data[j];
-                            if (weaponData != null)
-                                compsToCheck.Add(weaponData.CompEntityId);
-                        }
-
-                        if (compsToCheck.Count > 0)
-                        {
-                            PacketsToServer.Add(new RequestTargetsPacket
-                            {
-                                EntityId = errorPacket.Packet.EntityId,
-                                SenderId = MultiplayerId,
-                                PType = PacketType.WeaponUpdateRequest,
-                                Comps = new List<long>(compsToCheck),
-                            });
-                            success = true;
-                        }
-                        break;
-
-                    default:
-                        var report = Reporter.ReportPool.Get();
-                        report.Receiver = NetworkReporter.Report.Received.Client;
-                        report.PacketSize = 0;
-                        Reporter.ReportData[errorPacket.Packet.PType].Add(report);
-                        var packetObj = PacketObjPool.Get();
-                        packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
-
-                        success = ProccessClientPacket(packetObj, false);
-                        break;
-                }
+                var success = ProccessClientPacket(packetObj, false);
 
                 if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)
                 {
@@ -144,9 +92,47 @@ namespace WeaponCore
             return true;
         }
 
+        private bool ClientStateUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compStatePacket = (CompStatePacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)PacketType.CompState] < packet.MId) {
+                comp.MIds[(int)PacketType.CompState] = packet.MId;
+                
+                compStatePacket.Data.Sync(comp, compStatePacket.Data);
+            }
+
+            switch (packet.PType)
+            {
+                case PacketType.CompState:
+                    break;
+                case PacketType.StateTargetChange:
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    {
+                        var w = comp.Platform.Weapons[i];
+                        w.State.Target.SyncTarget(w);
+                    }
+                    break;
+                case PacketType.StateReload:
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    {
+                        var w = comp.Platform.Weapons[i];
+                        if (!w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
+                            w.Reload();
+                    }
+                    break;
+            }
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
         private bool ClientCompData(PacketObj data)
         {
-
             var packet = data.Packet;
             var compDataPacket = (CompDataPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
@@ -266,75 +252,8 @@ namespace WeaponCore
             return true;
 
         }
+
         // no storge sync
-
-        private bool ClientWeaponSyncUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var targetPacket = (GridWeaponPacket)packet;
-            if (targetPacket.Data == null) return Error(data, Msg("Data"));
-
-            for (int j = 0; j < targetPacket.Data.Count; j++)
-            {
-
-                var weaponData = targetPacket.Data[j];
-                var block = MyEntities.GetEntityByIdOrDefault(weaponData.CompEntityId) as MyCubeBlock;
-                var comp = block?.Components.Get<WeaponComponent>();
-
-                if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-                var validData = weaponData.SyncData != null && weaponData.WeaponRng != null;
-                var validTargetData = weaponData.TargetData != null;
-
-                if (!validTargetData && !validData)
-                    Error(data, Msg($"No valid weapon Data or Timings for {comp.MyCube.BlockDefinition.Id.SubtypeName} - aiAge:{Tick - comp.Ai.AiSpawnTick}"));
-
-                Weapon weapon;
-                if (validData)
-                {
-                    weapon = comp.Platform.Weapons[weaponData.SyncData.WeaponId];
-                    SyncWeapon(weapon, ref weaponData.SyncData);
-
-                    weapon.Comp.Data.Repo.State.Weapons[weapon.WeaponId].WeaponRandom.Sync(weaponData.WeaponRng);
-                }
-
-                if (validTargetData)
-                {
-
-                    weapon = comp.Platform.Weapons[weaponData.TargetData.WeaponId];
-                    weaponData.TargetData.SyncTarget(weapon.Target);
-
-                    if (weapon.Target.HasTarget)
-                    {
-
-                        if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
-                        {
-                            var oldChange = weapon.Target.TargetChanged;
-                            weapon.Target.StateChange(true, Target.States.Invalid);
-                            weapon.Target.TargetChanged = !weapon.FirstSync && oldChange;
-                            weapon.FirstSync = false;
-                        }
-                        else if (weapon.Target.IsProjectile)
-                        {
-
-                            TargetType targetType;
-                            AcquireProjectile(weapon, out targetType);
-
-                            if (targetType == TargetType.None)
-                            {
-                                if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
-                                    weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                                if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
-                            }
-                        }
-                    }
-                }
-
-                data.Report.PacketValid = true;
-            }
-
-            return true;
-        }
 
         private bool ClientPlayerIdUpdate(PacketObj data)
         {

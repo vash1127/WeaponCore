@@ -234,7 +234,7 @@ namespace WeaponCore.Api
                 {
                     if (!allWeapons && i != weaponId) continue;
 
-                    comp.Platform.Weapons[i].Set.WeaponMode(comp, ShootOnce);
+                    comp.Platform.Weapons[i].State.WeaponMode(comp, ShootOnce);
                 }
             }
         }
@@ -250,15 +250,15 @@ namespace WeaponCore.Api
 
                     var w = comp.Platform.Weapons[i];
 
-                    if (!on && w.Set.Action == ShootOn)
+                    if (!on && w.State.Action == ShootOn)
                     {
-                        w.Set.WeaponMode(comp, ShootOff);
+                        w.State.WeaponMode(comp, ShootOff);
                         w.StopShooting();
                     }
-                    else if (on && w.Set.Action != ShootOff)
-                        w.Set.WeaponMode(comp, ShootOn);
+                    else if (on && w.State.Action != ShootOff)
+                        w.State.WeaponMode(comp, ShootOn);
                     else if (on)
-                        w.Set.WeaponMode(comp, ShootOn);
+                        w.State.WeaponMode(comp, ShootOn);
                 }
             }
         }
@@ -469,7 +469,7 @@ namespace WeaponCore.Api
                     var ammoType = w.System.AmmoTypes[i];
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
-                        w.Set.AmmoTypeId = i;
+                        w.State.AmmoTypeId = i;
                         if (comp.Session.MpActive && comp.Session.IsServer)
                             comp.Session.SendCompData(comp);
 

@@ -134,7 +134,7 @@ namespace WeaponCore.Support
                             case UpdateType.BlockScan: {
                                 ai.ReScanBlockGroups();
                                 if (ai.Session.MpActive && ai.Session.IsServer) 
-                                    ai.Session.SendAiSync(ai);
+                                    ai.Session.SendAiData(ai);
                                 break; 
                             }
                             /*

@@ -66,12 +66,10 @@ namespace WeaponCore
 
                 Repo = new CompDataValues {
                     State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length]},
-                    Set = new CompSettingsValues {Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length]}
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
                     Repo.State.Weapons[i] = new WeaponStateValues();
-                    Repo.Set.Weapons[i] = new WeaponSettingsValues();
 
                     if (Comp.Session.IsServer)
                         Repo.State.Weapons[i].WeaponInit(Comp);

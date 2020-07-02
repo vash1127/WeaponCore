@@ -138,7 +138,6 @@ namespace WeaponCore.Support
         internal int AwakeComps;
         internal int SourceCount;
         internal int BlockCount;
-        internal int NumSyncWeapons;
         internal int Version;
         internal int MyProjectiles;
         internal int NearByEntities;

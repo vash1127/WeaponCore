@@ -47,8 +47,6 @@ namespace WeaponCore.Platform
         internal bool FinishBurst;
         internal bool FirstSync = true;
         internal bool LockOnFireState;
-        internal bool SendTarget;
-        internal bool SendSync;
         internal bool ReloadSubscribed;
         internal bool CanHoldMultMags;
         internal bool PullingAmmo;
@@ -101,7 +99,6 @@ namespace WeaponCore.Platform
         internal MySoundPair PreFiringSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
-        internal WeaponSettingsValues Set;
         internal WeaponStateValues State;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;

@@ -79,7 +79,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Set.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.State.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -111,7 +111,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Set.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.State.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -142,7 +142,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.Set.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.State.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -307,8 +307,6 @@ namespace WeaponCore.Control
                         w.AnimationDelayTick - comp.Session.Tick
                     );
                 }
-
-                w.Set.Enable = @on;
             }
         }
         #endregion
@@ -471,7 +469,7 @@ namespace WeaponCore.Control
 
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            var on = blk.Components.Get<WeaponComponent>()?.Data.Repo?.Set.TerminalAction == ShootClick;
+            var on = blk.Components.Get<WeaponComponent>()?.Data.Repo?.State.TerminalAction == ShootClick;
 
             if (on)
                 sb.Append("On");
@@ -532,8 +530,8 @@ namespace WeaponCore.Control
             var w = comp.Platform.Weapons[weaponId];
 
             var availAmmo = w.System.AmmoTypes.Length;
-            var currActive = w.System.AmmoTypes[w.Set.AmmoTypeId];
-            var next = (w.Set.AmmoTypeId + 1) % availAmmo;
+            var currActive = w.System.AmmoTypes[w.State.AmmoTypeId];
+            var next = (w.State.AmmoTypeId + 1) % availAmmo;
             var currDef = w.System.AmmoTypes[next];
 
             var change = false;
@@ -557,7 +555,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Set.TerminalAction == ShootOn)
+            if (comp.Data.Repo.State.TerminalAction == ShootOn)
                 sb.Append("On");
             else
                 sb.Append("Off");

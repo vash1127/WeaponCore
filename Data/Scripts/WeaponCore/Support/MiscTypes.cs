@@ -82,11 +82,11 @@ namespace WeaponCore.Support
             if (reset) Reset(expireTick, States.Transfered);
         }
 
-        internal void SyncTarget(TransferTarget target, Weapon weapon)
+        internal void SyncTarget(Weapon weapon)
         {
             if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
                 return;
-
+            var target = weapon.State.Target;
             target.EntityId = Entity?.EntityId ?? -1;
             target.TargetPos = TargetPos;
             target.HitShortDist = (float)HitShortDist;
@@ -104,21 +104,7 @@ namespace WeaponCore.Support
             if (!HasTarget)
                 target.State = TransferTarget.TargetInfo.Expired;
 
-            if (!weapon.System.Session.IsClient && weapon.System.Session.MpActive)
-            {
-                if (weapon.Comp.Session.WeaponsSyncCheck.Add(weapon))
-                {
-
-                    weapon.Comp.Session.WeaponsToSync.Add(weapon);
-                    weapon.Comp.Ai.NumSyncWeapons++;
-                    weapon.SendTarget = true;
-
-                    if (weapon.Comp.Session.Tick - weapon.LastSyncTick > 20)
-                        weapon.SendSync = true;
-
-                    weapon.LastSyncTick = weapon.Comp.Session.Tick;
-                }
-            }
+            weapon.SendTarget();
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
@@ -145,7 +131,7 @@ namespace WeaponCore.Support
 
             Set(ent, targetPos, shortDist, origDist, topEntId);
             if (w.System.Session.MpActive && !w.System.Session.IsClient)
-                SyncTarget(w.State.Target, w);
+                SyncTarget(w);
         }
 
         internal void SetFake(uint expiredTick, Vector3D pos)

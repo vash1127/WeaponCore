@@ -48,7 +48,7 @@ namespace WeaponCore.Platform
             {
                 if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                if (Set.Action != ShootActions.ShootOff || Comp.UserControlled || Target.HasTarget)
+                if (State.Action != ShootActions.ShootOff || Comp.UserControlled || Target.HasTarget)
                 {
                     ReturingHome = false;
                     return;

@@ -111,7 +111,6 @@ namespace WeaponCore
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        internal readonly HashSet<Weapon> WeaponsSyncCheck = new HashSet<Weapon>();
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<MyCubeGrid> DeformProtection = new HashSet<MyCubeGrid>();
 
@@ -126,9 +125,7 @@ namespace WeaponCore
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
         internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
-        internal readonly List<Weapon> WeaponsToSync = new List<Weapon>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
-        internal readonly List<WeaponComponent> ClientGridResyncRequests = new List<WeaponComponent>(128);
         internal readonly List<Weapon> CheckStorage = new List<Weapon>();
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
         internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
@@ -207,7 +204,6 @@ namespace WeaponCore
         internal TargetUi TargetUi;
         internal Hud HudUi;
         internal Enforcements Enforced;
-        internal NetworkProccessor Proccessor;
         internal TerminalMonitor TerminalMon;
         internal ProblemReport ProblemRep;
 
@@ -349,7 +345,6 @@ namespace WeaponCore
             Api = new ApiBackend(this);
             ApiServer = new ApiServer(this);
             Projectiles = new Projectiles.Projectiles(this);
-            Proccessor = new NetworkProccessor(this);
             AcqManager = new AcquireManager(this);
             TerminalMon = new TerminalMonitor(this);
 

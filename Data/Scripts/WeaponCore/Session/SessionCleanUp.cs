@@ -257,7 +257,6 @@ namespace WeaponCore
             Enforced = null;
             StallReporter = null;
             TerminalMon = null;
-            Proccessor = null;
             Physics = null;
             Camera = null;
             Projectiles = null;

@@ -33,10 +33,9 @@ namespace WeaponCore.Support
                 for (int i = 0; i < Platform.Weapons.Length; i++) {
 
                     var weapon = Platform.Weapons[i];
-                    weapon.Set = Data.Repo.Set.Weapons[i];
                     weapon.State = Data.Repo.State.Weapons[i];
 
-                    weapon.ChangeActiveAmmo(weapon.System.AmmoTypes.Length > 0 ? weapon.System.AmmoTypes[weapon.Set.AmmoTypeId] : new WeaponSystem.WeaponAmmoTypes());
+                    weapon.ChangeActiveAmmo(weapon.System.AmmoTypes.Length > 0 ? weapon.System.AmmoTypes[weapon.State.AmmoTypeId] : new WeaponSystem.WeaponAmmoTypes());
                     if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable) {
                         Log.Line($"[{weapon.System.WeaponName}] Your first ammoType is broken, I am crashing now Dave.");
                         return;

@@ -99,7 +99,7 @@ namespace WeaponCore.Support
                         {
                             var target = weapon.State.Target;
                             if (target.State != TransferTarget.TargetInfo.Expired)
-                                target.SyncTarget(weapon.Target, false);
+                                target.SyncTarget(weapon, false);
                             if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                             {
                                 weapon.Target.StateChange(true, Target.States.Invalid);
@@ -220,7 +220,7 @@ namespace WeaponCore.Support
                     if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                         Session.FutureEvents.Schedule(Session.DelayedComputeStorage, weapon, 240);
 
-                    var notValid = !weapon.Set.Enable || !IsWorking || !Data.Repo.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
+                    var notValid = !IsWorking || !Data.Repo.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
                     if (!notValid)
                         Session.AcqManager.AddAwake(weapon.Acquire);
                 }

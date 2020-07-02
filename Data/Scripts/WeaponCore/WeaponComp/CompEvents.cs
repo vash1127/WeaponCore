@@ -245,7 +245,7 @@ namespace WeaponCore.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
-                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {weapon.Set.Enable && IsWorking && weapon.Comp.Data.Repo.Set.Overrides.Activate}");
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {IsWorking && weapon.Comp.Data.Repo.Set.Overrides.Activate}");
                         stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");

@@ -203,62 +203,6 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ServerWeaponUpdateRequest(PacketObj data)
-        {
-            var packet = data.Packet;
-            var targetRequestPacket = (RequestTargetsPacket)packet;
-            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-            if (myGrid == null) return Error(data, Msg("Grid"));
-
-            GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-
-                var gridPacket = new GridWeaponPacket {
-                    EntityId = packet.EntityId,
-                    SenderId = packet.SenderId,
-                    PType = PacketType.WeaponSyncUpdate,
-                    Data = new List<WeaponData>()
-                };
-
-                for (int i = 0; i < targetRequestPacket.Comps.Count; i++) {
-
-                    var compId = targetRequestPacket.Comps[i];
-                    var compCube = MyEntities.GetEntityByIdOrDefault(compId) as MyCubeBlock;
-                    if (compCube == null) return Error(data, Msg("compCube"));
-
-                    WeaponComponent comp;
-                    if (!ai.WeaponBase.TryGetValue(compCube, out comp) || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                        continue;
-
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
-
-                        var w = comp.Platform.Weapons[j];
-                        var weaponData = new WeaponData {
-                            CompEntityId = compId,
-                            SyncData = w.State,
-                            TargetData = comp.Data.Repo.State.Weapons[j].Target,
-                            WeaponRng = comp.Data.Repo.State.Weapons[j].WeaponRandom
-                        };
-                        gridPacket.Data.Add(weaponData);
-                    }
-                }
-
-                if (gridPacket.Data.Count > 0)
-                    PacketsToClient.Add(new PacketInfo {
-                        Entity = myGrid,
-                        Packet = gridPacket,
-                        SingleClient = true,
-                    });
-
-                data.Report.PacketValid = true;
-            }
-            else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-
-            return true;
-        }
-
         private bool ServerClientAiExists(PacketObj data)
         {
             var packet = data.Packet;
@@ -351,9 +295,6 @@ namespace WeaponCore
                 }
             }
 
-            //PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = packet });
-
-
             return true;
         }
 
@@ -416,7 +357,6 @@ namespace WeaponCore
                         break;
                 }
 
-                //PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = focusPacket });
                 data.Report.PacketValid = true;
             }
             else
@@ -452,18 +392,14 @@ namespace WeaponCore
             if (comp.MIds[(int)packet.PType] < packet.MId) {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
-                if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) {
+                if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update) 
                     TerminalMon.ServerUpdate(comp);
-                    //Log.Line("Terminal Update");
-                }
-                else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean) {
+                else if (terminalMonPacket.State == TerminalMonitorPacket.Change.Clean) 
                     TerminalMon.ServerClean(comp);
-                    //Log.Line("Terminal Clean");
-                }
 
+                data.Report.PacketValid = true;
             }
 
-            data.Report.PacketValid = true;
 
             return true;
         }

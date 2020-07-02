@@ -30,8 +30,8 @@ namespace WeaponCore
 
                 Focus.Sync(sync.Focus);
 
-                //if (ActiveTerminal.ActiveCubeId != sync.ActiveTerminal.ActiveCubeId)
-                    //Log.Line($"ActiveCubeId mismatch: {ActiveTerminal.ActiveCubeId}({sync.ActiveTerminal.ActiveCubeId})");
+                if (ActiveTerminal.ActiveCubeId != sync.ActiveTerminal.ActiveCubeId)
+                    Log.Line($"ActiveCubeId mismatch: {ActiveTerminal.ActiveCubeId}({sync.ActiveTerminal.ActiveCubeId})");
 
                 ActiveTerminal.Sync(sync.ActiveTerminal);
 
@@ -50,6 +50,7 @@ namespace WeaponCore
                     BlockGroups[s.Key] = s.Value;
 
                 Revision = sync.Revision;
+                Log.Line($"AiDataValues");
                 return true;
             }
 
@@ -501,7 +502,7 @@ namespace WeaponCore
                     o.ManualControl = false;
                     if (apply) Settings["ManualControl"] = 0;
                 }
-                comp.Data.Repo.Set.TerminalActionSetter(comp, ShootActions.ShootOff);
+                comp.Data.Repo.State.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
             else
             {

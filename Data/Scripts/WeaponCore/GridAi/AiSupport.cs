@@ -64,7 +64,7 @@ namespace WeaponCore.Support
         }
 
         private readonly List<string> _tmpGroupKeys = new List<string>();
-        internal void ReScanBlockGroups(bool networkSync = false)
+        internal void ReScanBlockGroups()
         {
             if (Session.Tick - LastGroupScanTick < 60)
                 return;
@@ -121,34 +121,9 @@ namespace WeaponCore.Support
                 ScanBlockGroups = false;
 
                 LastGroupScanTick = Session.Tick;
-                //if (Session.MpActive && Session.HandlesInput && !networkSync)
-                    //Session.SendGroupUpdate(this);
             }
         }
 
-        /*
-        internal void UpdateGroupOverRides()
-        {
-            var resetOverRides = new GroupOverrides {Activate = true };
-
-            foreach (var group in GroupsToCheck) {
-
-                var groupOverrides = GetOverrides(this, group.Name);
-
-                foreach(var comp in group.Comps) {
-                    if (comp.State.Value.CurrentBlockGroup != group.Name) continue;
-
-                    var o = comp.Set.Value.Overrides;
-                    if (groupOverrides.Equals(o))
-                        return;
-                }
-
-                SyncGridOverrides(this, group.Name, resetOverRides);
-            }
-            GroupsToCheck.Clear();
-            ScanBlockGroupSettings = false;
-        }
-        */
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
         {
             var count = cardsToSort - firstCard;

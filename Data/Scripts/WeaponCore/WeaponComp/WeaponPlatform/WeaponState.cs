@@ -423,9 +423,9 @@ namespace WeaponCore.Platform
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
 
-                Set.AmmoTypeId = newAmmoId;
+                State.AmmoTypeId = newAmmoId;
                 if (instantChange || canReload)
-                    ChangeActiveAmmo(System.AmmoTypes[Set.AmmoTypeId]);
+                    ChangeActiveAmmo(System.AmmoTypes[State.AmmoTypeId]);
                 else
                     ScheduleAmmoChange = true;
 
@@ -535,6 +535,18 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
+        internal void SendTarget()
+        {
+            var rand = State.WeaponRandom;
+            rand.TurretCurrentCounter = 0;
+            rand.ClientProjectileCurrentCounter = 0;
+            rand.CurrentSeed = UniqueId;
+            rand.TurretRandom = new Random(rand.CurrentSeed);
+            rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+            rand.AcquireRandom = new Random(rand.CurrentSeed);
+            System.Session.SendCompState(Comp, PacketType.CompState);
+        }
+
         internal bool HasAmmo()
         {
             if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon) {
@@ -558,8 +570,8 @@ namespace WeaponCore.Platform
 
                 Comp.Ai.OutOfAmmoWeapons.Remove(this);
 
-                if (System.Session.MpActive && System.Session.IsServer)
-                    ForceSync(true, true);
+                if (System.Session.MpActive && System.Session.IsServer) 
+                    State.HasInventory = true;
 
                 NoMagsToLoad = false;
             }
@@ -569,8 +581,8 @@ namespace WeaponCore.Platform
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.OutOfAmmoWeapons.Add(this);
 
-                if (System.Session.MpActive && System.Session.IsServer)
-                    ForceSync(true, false);
+                if (System.Session.MpActive && System.Session.IsServer) 
+                    State.HasInventory = false;
 
                 NoMagsToLoad = true;
 
@@ -592,7 +604,10 @@ namespace WeaponCore.Platform
             if (State.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
                 return false;
 
+            var hadNoMags = NoMagsToLoad;
             var hasAmmo = HasAmmo();
+            var magStateChange = hadNoMags != NoMagsToLoad;
+
             if (ScheduleAmmoChange)
             {
                 if (hasAmmo && !RemovingAmmo)
@@ -602,7 +617,7 @@ namespace WeaponCore.Platform
                 }
                 else if (!RemovingAmmo)
                 {
-                    var newAmmo = System.AmmoTypes[Set.AmmoTypeId];
+                    var newAmmo = System.AmmoTypes[State.AmmoTypeId];
                     if (!ActiveAmmoDef.Equals(newAmmo))
                         ChangeActiveAmmo(newAmmo);
                 }
@@ -610,8 +625,14 @@ namespace WeaponCore.Platform
                 return false;
             }
 
-            if(!hasAmmo)
+            if (!hasAmmo) {
+
+                if (magStateChange && System.Session.IsServer && System.Session.MpActive)
+                    System.Session.SendCompState(Comp, PacketType.CompState);
+
                 return false;
+            }
+
 
             FinishBurst = false;
             if (IsShooting)
@@ -643,22 +664,13 @@ namespace WeaponCore.Platform
                 else Reloaded();
             }
 
+            if (magStateChange && System.ReloadTime > 0 && System.Session.IsServer && System.Session.MpActive)
+                System.Session.SendCompState(Comp, PacketType.CompState);
+
             if (ReloadEmitter == null || ReloadSound == null || ReloadEmitter.IsPlaying) return true;
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
 
             return true;
-        }
-
-        internal void ForceSync(bool modifyInventory = false, bool hasInventory = true)
-        {
-            if (modifyInventory) State.HasInventory = hasInventory;
-            if (Comp.Session.WeaponsSyncCheck.Add(this)) {
-                Comp.Session.WeaponsToSync.Add(this);
-                Comp.Ai.NumSyncWeapons++;
-                SendTarget = false;
-                SendSync = true;
-                LastSyncTick = Comp.Session.Tick;
-            }
         }
 
         internal void Reloaded(object o = null)
@@ -701,7 +713,7 @@ namespace WeaponCore.Platform
                 }
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)
-                    ForceSync(true, State.HasInventory);
+                    System.Session.SendCompState(Comp, PacketType.StateReload);
                 
                 Reloading = false;
             }

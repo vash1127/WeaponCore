@@ -287,9 +287,9 @@ namespace WeaponCore.Platform
                 }
 
 
-                if (Set.Action == ShootActions.ShootOnce && --SingleShotCounter <= 0)
+                if (State.Action == ShootActions.ShootOnce && --SingleShotCounter <= 0)
                 {
-                    Set.WeaponMode(Comp, ShootActions.ShootOff);
+                    State.WeaponMode(Comp, ShootActions.ShootOff);
                 }
 
                 _muzzlesToFire.Clear();
