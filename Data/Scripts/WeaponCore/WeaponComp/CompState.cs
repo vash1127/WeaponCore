@@ -80,7 +80,7 @@ namespace WeaponCore.Support
                 Data.Repo.Set.Overrides.TargetPainter = false;
             }
 
-            Data.Repo.Set.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
+            Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
