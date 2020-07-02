@@ -241,7 +241,7 @@ namespace WeaponCore.Control
             return comp != null && comp.CanOverload && comp.HasRofSlider && comp.HasDamageSlider && comp.HasGuidanceToggle;
         }
 
-        private static void OnOffAnimations(WeaponComponent comp, bool @on)
+        private static void OnOffAnimations(WeaponComponent comp, bool on)
         {   
             if(comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
@@ -252,7 +252,7 @@ namespace WeaponCore.Control
                 var w = comp.Platform.Weapons[i];
                 if (w == null) continue;
 
-                if (!@on)
+                if (!on)
                 {
                     if (w.TurretMode)
                     {
@@ -293,15 +293,15 @@ namespace WeaponCore.Control
 
                 if (w.AnimationDelayTick < comp.Session.Tick || w.LastEvent == TurnOn || w.LastEvent == TurnOff)
                 {
-                    w.EventTriggerStateChanged(TurnOn, @on);
-                    w.EventTriggerStateChanged(TurnOff, !@on);
+                    w.EventTriggerStateChanged(TurnOn, on);
+                    w.EventTriggerStateChanged(TurnOff, !on);
                 }
                 else
                 {
                     comp.Session.FutureEvents.Schedule(o => 
                         {
-                            w.EventTriggerStateChanged(TurnOn, @on);
-                            w.EventTriggerStateChanged(TurnOff, !@on);
+                            w.EventTriggerStateChanged(TurnOn, on);
+                            w.EventTriggerStateChanged(TurnOff, !on);
                         }, 
                         null, 
                         w.AnimationDelayTick - comp.Session.Tick

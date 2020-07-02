@@ -66,6 +66,7 @@ namespace WeaponCore
 
                 Repo = new CompDataValues {
                     State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length]},
+                    Set = new CompSettingsValues(),
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {

@@ -570,7 +570,7 @@ namespace WeaponCore.Platform
 
                 Comp.Ai.OutOfAmmoWeapons.Remove(this);
 
-                if (System.Session.MpActive && System.Session.IsServer) 
+                if (System.Session.IsServer) 
                     State.HasInventory = true;
 
                 NoMagsToLoad = false;
@@ -581,7 +581,7 @@ namespace WeaponCore.Platform
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.OutOfAmmoWeapons.Add(this);
 
-                if (System.Session.MpActive && System.Session.IsServer) 
+                if (System.Session.IsServer) 
                     State.HasInventory = false;
 
                 NoMagsToLoad = true;
