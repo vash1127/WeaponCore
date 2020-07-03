@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using ProtoBuf;
 using VRage;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
@@ -155,37 +156,42 @@ namespace WeaponCore
             Camera
         }
 
-        [ProtoMember(1)] public WeaponStateValues[] Weapons;
-        [ProtoMember(2)] public bool OtherPlayerTrackingReticle; //don't save
-        [ProtoMember(3), DefaultValue(-1)] public long PlayerId = -1;
-        [ProtoMember(4), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
-        [ProtoMember(5)] public ShootActions TerminalAction;
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2)] public WeaponStateValues[] Weapons;
+        [ProtoMember(3)] public bool OtherPlayerTrackingReticle; //don't save
+        [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
+        [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
+        [ProtoMember(6)] public ShootActions TerminalAction;
 
         public void Sync(WeaponComponent comp, CompStateValues sync)
         {
-            OtherPlayerTrackingReticle = sync.OtherPlayerTrackingReticle;
-            Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
-            PlayerId = sync.PlayerId;
-            Control = sync.Control;
-            for (int i = 0; i < sync.Weapons.Length; i++)
+            if (sync.Revision > Revision)
             {
-                var ws = Weapons[i];
-                var sws = sync.Weapons[i];
-                var w = comp.Platform.Weapons[i];
-                Log.Line($"Ammo:{sws.CurrentAmmo} -  was:{ws.CurrentAmmo} - Inventory:{sws.HasInventory} - was:{ws.HasInventory}");
+                OtherPlayerTrackingReticle = sync.OtherPlayerTrackingReticle;
+                Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
+                PlayerId = sync.PlayerId;
+                Control = sync.Control;
+                for (int i = 0; i < sync.Weapons.Length; i++)
+                {
+                    var ws = Weapons[i];
+                    var sws = sync.Weapons[i];
+                    var w = comp.Platform.Weapons[i];
+                    Log.Line($"Ammo:{sws.CurrentAmmo} -  was:{ws.CurrentAmmo} - Inventory:{sws.HasInventory} - was:{ws.HasInventory}");
 
-                if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge) { // check order on these
-                    ws.CurrentAmmo = sws.CurrentAmmo;
-                    ws.CurrentCharge = sws.CurrentCharge;
-                    w.LastAmmoUpdateTick = comp.Session.Tick;
+                    if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge)
+                    { // check order on these
+                        ws.CurrentAmmo = sws.CurrentAmmo;
+                        ws.CurrentCharge = sws.CurrentCharge;
+                        w.LastAmmoUpdateTick = comp.Session.Tick;
+                    }
+                    ws.CurrentMags = sws.CurrentMags;
+                    ws.Heat = sws.Heat;
+                    ws.Overheated = sws.Overheated;
+                    ws.HasInventory = sws.HasInventory;
+                    ws.AmmoTypeId = sws.AmmoTypeId;
+                    ws.Action = sws.Action;
+                    w.ChangeActiveAmmo(w.System.AmmoTypes[w.State.AmmoTypeId]);
                 }
-                ws.CurrentMags = sws.CurrentMags;
-                ws.Heat = sws.Heat;
-                ws.Overheated = sws.Overheated;
-                ws.HasInventory = sws.HasInventory;
-                ws.AmmoTypeId = sws.AmmoTypeId;
-                ws.Action = sws.Action;
-                w.ChangeActiveAmmo(w.System.AmmoTypes[w.State.AmmoTypeId]);
             }
         }
 
@@ -219,58 +225,47 @@ namespace WeaponCore
         [ProtoMember(2)] public int CurrentAmmo; //save
         [ProtoMember(3)] public float CurrentCharge; //save
         [ProtoMember(4)] public bool Overheated; //don't save
-        [ProtoMember(5)] public int WeaponId; // save
-        [ProtoMember(6)] public MyFixedPoint CurrentMags; // save
-        [ProtoMember(7)] public bool HasInventory; // save
-        [ProtoMember(8)] public TransferTarget Target = new TransferTarget(); // save
-        [ProtoMember(9)] public WeaponRandomGenerator WeaponRandom = new WeaponRandomGenerator(); // save
-        [ProtoMember(10)] public int AmmoTypeId;
-        [ProtoMember(11), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+        [ProtoMember(5)] public MyFixedPoint CurrentMags; // save
+        [ProtoMember(6)] public bool HasInventory; // save
+        [ProtoMember(7)] public TransferTarget Target = new TransferTarget(); // save
+        [ProtoMember(8)] public WeaponRandomGenerator WeaponRandom = new WeaponRandomGenerator(); // save
+        [ProtoMember(9)] public int AmmoTypeId;
+        [ProtoMember(10), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
 
-        public void WeaponInit(WeaponComponent comp)
+        public void WeaponInit(Weapon w)
         {
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
+            w.State.WeaponRandom.Init(w.UniqueId);
 
-                var w = comp.Platform.Weapons[i];
-                var wState = comp.Data.Repo.State.Weapons[i];
-                wState.WeaponRandom.Init(w.UniqueId);
+            var rand = w.State.WeaponRandom;
+            rand.CurrentSeed = w.UniqueId;
+            rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
 
-                var rand = wState.WeaponRandom;
-                rand.CurrentSeed = w.UniqueId;
-                rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-
-                rand.TurretRandom = new Random(rand.CurrentSeed);
-                rand.AcquireRandom = new Random(rand.CurrentSeed);
-                //comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
-            }
+            rand.TurretRandom = new Random(rand.CurrentSeed);
+            rand.AcquireRandom = new Random(rand.CurrentSeed);
+            //comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
         }
 
-        public void WeaponRefreshClient(WeaponComponent comp)
+        public void WeaponRefreshClient(Weapon w)
         {
             try
             {
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var w = comp.Platform.Weapons[i];
-                    var rand = w.State.WeaponRandom;
+                var rand = w.State.WeaponRandom;
 
-                    rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-                    rand.TurretRandom = new Random(rand.CurrentSeed);
+                rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
+                rand.TurretRandom = new Random(rand.CurrentSeed);
 
-                    for (int j = 0; j < rand.TurretCurrentCounter; j++)
-                        rand.TurretRandom.Next();
+                for (int j = 0; j < rand.TurretCurrentCounter; j++)
+                    rand.TurretRandom.Next();
 
-                    for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
-                        rand.ClientProjectileRandom.Next();
+                for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
+                    rand.ClientProjectileRandom.Next();
 
-                    //comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
-                }
+                //comp.Session.FutureEvents.Schedule(o => { comp.Session.SyncWeapon(w, ref w.State, false); }, null, 1);
                 return;
             }
             catch (Exception e) { Log.Line($"Client Weapon Values Failed To load re-initing... how?"); }
 
-            WeaponInit(comp);
+            WeaponInit(w);
         }
 
         public void WeaponMode(WeaponComponent comp, ShootActions action, bool calledByTerminal = false)

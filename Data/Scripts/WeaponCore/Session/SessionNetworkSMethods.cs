@@ -42,12 +42,15 @@ namespace WeaponCore
 
             if (cube == null) return Error(data, Msg("Cube"));
 
-            long playerId;
-            SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
-            Log.Line($"ServerActiveControlUpdate: {playerId}");
-            UpdateActiveControlDictionary(cube, playerId, dPacket.Data);
-            //PacketsToClient.Add(new PacketInfo { Entity = cube, Packet = dPacket });
-            data.Report.PacketValid = true;
+            GridAi ai;
+            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai))
+            {
+                long playerId;
+                SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
+                Log.Line($"ServerActiveControlUpdate: {playerId}");
+                ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
+                data.Report.PacketValid = true;
+            }
 
             return true;
         }

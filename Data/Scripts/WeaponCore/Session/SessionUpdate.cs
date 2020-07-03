@@ -69,7 +69,6 @@ namespace WeaponCore
                         var isControllingPlayer = comp.Data.Repo.State.PlayerId == PlayerId;
 
                         comp.TrackReticle = comp.Data.Repo.State.OtherPlayerTrackingReticle || (isControllingPlayer && (comp.Data.Repo.Set.Overrides.TargetPainter || comp.Data.Repo.Set.Overrides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
-
                         if (MpActive && isControllingPlayer && comp.TrackReticle != comp.WasTrackReticle)
                             comp.Session.SendTrackReticleUpdate(comp);
                     }
@@ -79,7 +78,6 @@ namespace WeaponCore
 
                     if (!PlayerMouseStates.TryGetValue(comp.Data.Repo.State.PlayerId, out comp.InputState)) 
                         comp.InputState = DefaultInputStateData;
-
                     var compManualMode = comp.Data.Repo.State.Control == ControlMode.Camera || (comp.Data.Repo.Set.Overrides.ManualControl && comp.TrackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
                     ///

@@ -28,7 +28,7 @@ namespace WeaponCore
                 InGridAiBlock = true;
                 TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId);
 
-                //UpdateActiveControlDictionary(ActiveControlBlock, PlayerId, true, true);
+                if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, true);
                 if (HandlesInput && oldBlockId != ActiveControlBlock.EntityId)
                     SendActiveControlUpdate(TrackingAi, activeBlock, true);
             }
@@ -41,8 +41,7 @@ namespace WeaponCore
                     MyCubeBlock oldBlock;
                     if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
 
-                        //UpdateActiveControlDictionary(oldBlock, PlayerId, false, true);
-                        
+                        if (IsServer) TrackingAi.Construct.UpdateConstructsPlayers(ActiveControlBlock, PlayerId, false);
                         if (HandlesInput)
                             SendActiveControlUpdate(TrackingAi, oldBlock, false);
                     }

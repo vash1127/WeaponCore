@@ -61,6 +61,15 @@ namespace WeaponCore
             if (validData && load.Version == VersionControl)
             {
                 Repo = load;
+
+                if (Comp.Session.IsServer) {
+                    for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
+                        var w = Comp.Platform.Weapons[i];
+                        w.State = Repo.State.Weapons[i];
+                        w.State.WeaponInit(w);
+                    }
+                }
+
             }
             else {
 
@@ -70,11 +79,13 @@ namespace WeaponCore
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
-                    Repo.State.Weapons[i] = new WeaponStateValues();
+                    var state = Repo.State.Weapons[i] = new WeaponStateValues();
+                    var w = Comp.Platform.Weapons[i];
+                    w.State = state;
 
                     if (Comp.Session.IsServer)
-                        Repo.State.Weapons[i].WeaponInit(Comp);
-                    else Repo.State.Weapons[i].WeaponRefreshClient(Comp);
+                        state.WeaponInit(w);
+                    else state.WeaponRefreshClient(w);
                 }
 
                 Repo.Set.Range = -1;

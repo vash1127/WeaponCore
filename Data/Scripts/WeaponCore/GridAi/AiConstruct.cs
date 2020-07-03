@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Havok;
+using Sandbox.Game.Entities;
 using VRage.ModAPI;
 using VRage.Utils;
 namespace WeaponCore.Support
@@ -137,19 +139,37 @@ namespace WeaponCore.Support
                                     ai.Session.SendAiData(ai);
                                 break; 
                             }
-                            /*
-                            case UpdateType.Overrides: {
-                                ai.UpdateGroupOverRides();
-                                break;
-                            }
-                            case UpdateType.ManualShootingOff: {
-                                ai.TurnManualShootOff();
-                                break;
-                            }
-                            */
                         }
                     }
                 }
+            }
+
+            internal void UpdateConstructsPlayers(MyCubeBlock cube, long playerId, bool updateAdd)
+            {
+                foreach (var sub in RootAi.SubGrids)
+                {
+                    GridAi ai;
+                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                    {
+                        UpdateActiveControlDictionary(ai, cube, playerId, updateAdd);
+                    }
+                }
+            }
+
+            public void UpdateActiveControlDictionary(GridAi ai, MyCubeBlock cube, long playerId, bool updateAdd)
+            {
+                if (updateAdd) //update/add
+                {
+                    ai.Data.Repo.ControllingPlayers[playerId] = cube.EntityId;
+                    ai.AiSleep = false;
+                }
+                else //remove
+                {
+                    ai.Data.Repo.ControllingPlayers.Remove(playerId);
+                    ai.AiSleep = false;
+                }
+                if (ai.Session.MpActive)
+                    ai.Session.SendAiData(ai);
             }
 
             internal static void UpdateWeaponCounters(GridAi cAi)

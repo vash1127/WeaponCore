@@ -395,6 +395,7 @@ namespace WeaponCore
         {
             if (IsServer)
             {
+                ++comp.Data.Repo.State.Revision;
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = comp.MyCube,
@@ -436,6 +437,7 @@ namespace WeaponCore
             if (IsServer)
             {
                 ++comp.Data.Repo.Revision;
+                ++comp.Data.Repo.State.Revision;
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = comp.MyCube,
@@ -618,27 +620,6 @@ namespace WeaponCore
 
 
         #region Misc Network Methods
-        public void UpdateActiveControlDictionary(MyCubeBlock cube, long playerId, bool updateAdd, bool applyToRoot = false)
-        {
-            GridAi trackingAi;
-            if (updateAdd) //update/add
-            {
-
-                if (applyToRoot && GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi) || GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi)) {
-                    trackingAi.Data.Repo.ControllingPlayers[playerId] = cube.EntityId;
-                    trackingAi.AiSleep = false;
-                }
-            }
-            else //remove
-            {
-                if (applyToRoot && GridToMasterAi.TryGetValue(cube.CubeGrid, out trackingAi) || GridTargetingAIs.TryGetValue(cube.CubeGrid, out trackingAi)) {
-                    trackingAi.Data.Repo.ControllingPlayers.Remove(playerId);
-                    trackingAi.AiSleep = false;
-                }
-            }
-            if (MpActive && trackingAi != null)
-                SendAiData(trackingAi);
-        }
 
         internal static void CreateFixedWeaponProjectile(Weapon weapon, MyEntity targetEntity, Vector3 origin, Vector3 direction, Vector3 velocity, Vector3 originUp, int muzzleId, AmmoDef ammoDef, float maxTrajectory)
         {
