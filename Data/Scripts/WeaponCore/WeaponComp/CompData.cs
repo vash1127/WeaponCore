@@ -62,12 +62,12 @@ namespace WeaponCore
             {
                 Repo = load;
 
-                if (Comp.Session.IsServer) {
-                    for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
-                        var w = Comp.Platform.Weapons[i];
-                        w.State = Repo.State.Weapons[i];
-                        w.State.WeaponInit(w);
-                    }
+                for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
+                    var w = Comp.Platform.Weapons[i];
+                    w.State = Repo.State.Weapons[i];
+
+                    if (Comp.Session.IsServer) w.State.WeaponInit(w);
+                    else w.State.WeaponRefreshClient(w);
                 }
 
             }
