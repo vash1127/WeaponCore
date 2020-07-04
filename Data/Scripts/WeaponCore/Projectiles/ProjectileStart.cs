@@ -34,10 +34,10 @@ namespace WeaponCore.Projectiles
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.TrackReticle;
+                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.State.TrackingReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
-                p.Info.DummyTarget = w.Comp.TrackReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.State.PlayerId] : null;
+                p.Info.DummyTarget = w.Comp.Data.Repo.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.State.PlayerId] : null;
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;

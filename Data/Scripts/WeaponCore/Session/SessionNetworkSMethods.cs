@@ -130,9 +130,9 @@ namespace WeaponCore
                 comp.MIds[(int) PacketType.ReticleUpdate] = reticlePacket.MId;
 
                 if (DedicatedServer)
-                    comp.TrackReticle = reticlePacket.Data;
+                    comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
 
-                comp.Data.Repo.State.OtherPlayerTrackingReticle = reticlePacket.Data;
+                comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
 
                 SendCompData(comp);
 
@@ -167,7 +167,7 @@ namespace WeaponCore
                     {
                         Log.Line($"ServerOverRidesUpdate Comp2");
 
-                        group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value);
+                        group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
                         data.Report.PacketValid = true;
                     }
                     else Log.Line($"ServerOverRidesUpdate couldn't find group: {overRidesPacket.GroupName}");
@@ -181,8 +181,7 @@ namespace WeaponCore
                 if (GridTargetingAIs.TryGetValue(myGrid, out ai))
                 {
 
-                    if (ai.MIds[(int)packet.PType] < packet.MId)
-                    {
+                    if (ai.MIds[(int)packet.PType] < packet.MId) {
                         ai.MIds[(int)packet.PType] = packet.MId;
 
                         ai.ReScanBlockGroups();
@@ -191,7 +190,7 @@ namespace WeaponCore
                         if (ai.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                         {
                             Log.Line($"ServerOverRidesUpdate myGrid3");
-                            groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session);
+                            groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session, SteamToPlayer[overRidesPacket.SenderId]);
                             data.Report.PacketValid = true;
                         }
                         else

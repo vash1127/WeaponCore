@@ -32,7 +32,7 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
 
-            if (!w.Comp.TrackReticle)
+            if (!w.Comp.Data.Repo.State.TrackingReticle)
             {
                 w.AimCone.ConeDir = w.MyPivotDir;
                 w.AimCone.ConeTip = w.MyPivotPos;
@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                     w.System.Session.AcqManager.Remove(w.Acquire);
 
                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.TrackReticle);
+                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
              
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
             }

@@ -38,7 +38,7 @@ namespace WeaponCore.Platform
                         
                 State.Target.State = TransferTarget.TargetInfo.Expired;
 
-                if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.TrackReticle)
+                if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.Data.Repo.State.TrackingReticle)
                     Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
             }
 

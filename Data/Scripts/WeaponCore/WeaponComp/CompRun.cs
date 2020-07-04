@@ -114,7 +114,7 @@ namespace WeaponCore.Support
                                 {
                                     if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
                                         weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                                    if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.TrackReticle);
+                                    if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.Data.Repo.State.TrackingReticle);
                                 }
                             }
                         }

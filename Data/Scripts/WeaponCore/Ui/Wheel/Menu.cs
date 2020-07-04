@@ -238,7 +238,7 @@ namespace WeaponCore
                 var map = Wheel.SettingCycleStrMap[currentSettingName];
                 var nextValueStr = map[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
-                groupInfo.RequestApplySettings(Wheel.Ai, currentSettingName, nextValue, s);
+                groupInfo.RequestApplySettings(Wheel.Ai, currentSettingName, nextValue, s, Wheel.Session.PlayerId);
                 if (Wheel.Session.IsServer) Wheel.Dirty = true;
             }
 
@@ -249,7 +249,7 @@ namespace WeaponCore
                 var currentValue = groupInfo.GetCompSetting(settingName, groupMember.Comp);
                 var nextValueToStr = settingMap[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[settingName][nextValueToStr];
-                groupInfo.RequestSetValue(groupMember.Comp, settingName, nextValue);
+                groupInfo.RequestSetValue(groupMember.Comp, settingName, nextValue, Wheel.Session.PlayerId);
                 if (Wheel.Session.IsServer) Wheel.Dirty = true;
             }
 

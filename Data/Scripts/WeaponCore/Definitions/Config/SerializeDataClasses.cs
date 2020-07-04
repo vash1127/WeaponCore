@@ -566,7 +566,7 @@ namespace WeaponCore
                     if (targetType == GridAi.TargetType.None) {
                         if (w.NewTarget.CurrentState != States.NoTargetsSeen)
                             w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                        if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.TrackReticle);
+                        if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
                     }
                 }
             }

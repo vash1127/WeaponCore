@@ -267,13 +267,13 @@ namespace WeaponCore
             Modify
         }
 
-        internal void RequestApplySettings(GridAi ai, string setting, int value, Session session)
+        internal void RequestApplySettings(GridAi ai, string setting, int value, Session session, long playerId)
         {
             if (session.IsServer)
             {
                 Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
                 Settings[setting] = value;
-                ApplySettings(ai);
+                ApplySettings(ai, playerId);
 
                 if (session.MpActive) 
                     session.SendAiData(ai);
@@ -285,12 +285,12 @@ namespace WeaponCore
             }
         }
 
-        internal void RequestSetValue(WeaponComponent comp, string setting, int value)
+        internal void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
         {
             if (comp.Session.IsServer)
             {
                 Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
-                SetValue(comp, setting, value);
+                SetValue(comp, setting, value, playerId);
             }
             else if (comp.Session.IsClient)
             {
@@ -299,7 +299,7 @@ namespace WeaponCore
             }
         }
 
-        internal void ApplySettings(GridAi ai)
+        internal void ApplySettings(GridAi ai, long playerId)
         {
             for (int i = 0; i < CompIds.Count; i++)
             {
@@ -373,14 +373,14 @@ namespace WeaponCore
                 if (change)
                 {
                     Log.Line($"ApplySettings change detected");
-                    ResetCompState(comp, true);
+                    ResetCompState(comp, true, playerId);
                     if (comp.Session.MpActive)
                         comp.Session.SendCompData(comp);
                 }
             }
         }
 
-        internal void SetValue(WeaponComponent comp, string setting, int v)
+        internal void SetValue(WeaponComponent comp, string setting, int v, long playerId)
         {
             var o = comp.Data.Repo.Set.Overrides;
             var enabled = v > 0;
@@ -426,7 +426,7 @@ namespace WeaponCore
                     break;
             }
 
-            ResetCompState(comp, false);
+            ResetCompState(comp, false, playerId);
 
             if (comp.Session.MpActive)
             {
@@ -482,14 +482,14 @@ namespace WeaponCore
             return value;
         }
 
-        internal void ResetCompState(WeaponComponent comp, bool apply)
+        internal void ResetCompState(WeaponComponent comp, bool apply, long playerId)
         {
             var o = comp.Data.Repo.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
 
             if (userControl)
             {
-                comp.Data.Repo.State.PlayerId = comp.Session.PlayerId;
+                comp.Data.Repo.State.PlayerId = playerId;
                 comp.Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
 
                 if (o.ManualControl)

@@ -77,8 +77,6 @@ namespace WeaponCore.Support
         internal bool HasTurret;
         internal bool HasChargeWeapon;
         internal bool WasControlled;
-        internal bool TrackReticle;
-        internal bool WasTrackReticle;
         internal bool UpdatedState;
         internal bool UserControlled;
         internal bool Debug;

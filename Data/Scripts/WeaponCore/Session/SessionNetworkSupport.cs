@@ -310,7 +310,7 @@ namespace WeaponCore
             else Log.Line($"SendAmmoCycleRequest should never be called on Client");
         }
 
-        internal void SendTrackReticleUpdate(WeaponComponent comp)
+        internal void SendTrackReticleUpdate(WeaponComponent comp, bool track)
         {
             if (IsClient) {
 
@@ -319,11 +319,11 @@ namespace WeaponCore
                     EntityId = comp.MyCube.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.ReticleUpdate,
-                    Data = comp.TrackReticle
+                    Data = track
                 });
             }
             else {
-                comp.Data.Repo.State.OtherPlayerTrackingReticle = comp.TrackReticle;
+                comp.Data.Repo.State.TrackingReticle = track;
                 SendCompData(comp);
             }
         }

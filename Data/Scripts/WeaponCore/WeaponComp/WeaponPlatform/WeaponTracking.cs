@@ -42,7 +42,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            return (inRange && canTrack) || weapon.Comp.TrackReticle;
+            return (inRange && canTrack) || weapon.Comp.Data.Repo.State.TrackingReticle;
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
@@ -110,7 +110,7 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             Vector3D targetCenter;
 
-            if (weapon.Comp.TrackReticle)
+            if (weapon.Comp.Data.Repo.State.TrackingReticle)
                 targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
@@ -123,7 +123,7 @@ namespace WeaponCore.Platform
             if (weapon.System.Prediction != Prediction.Off && (!weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0))
             {
 
-                if (weapon.Comp.TrackReticle)
+                if (weapon.Comp.Data.Repo.State.TrackingReticle)
                 {
                     targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].LinearVelocity;
                     targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Acceleration;
@@ -157,7 +157,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
-            var isAligned = validEstimate && (inRange || weapon.Comp.TrackReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = validEstimate && (inRange || weapon.Comp.Data.Repo.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -174,7 +174,7 @@ namespace WeaponCore.Platform
             var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
-            if (weapon.Comp.TrackReticle)
+            if (weapon.Comp.Data.Repo.State.TrackingReticle)
                 targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Position;
             else if (target.IsProjectile)
                 targetCenter = target.Projectile?.Position ?? Vector3D.Zero;
@@ -186,7 +186,7 @@ namespace WeaponCore.Platform
             var validEstimate = true;
             if (weapon.System.Prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0) {
 
-                if (weapon.Comp.TrackReticle) {
+                if (weapon.Comp.Data.Repo.State.TrackingReticle) {
                     targetLinVel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].LinearVelocity;
                     targetAccel = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.State.PlayerId].Acceleration;
                 }
@@ -216,7 +216,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
 
             var targetDir = targetPos - weapon.MyPivotPos;
-            var readyToTrack = validEstimate && !weapon.Comp.ResettingSubparts && (weapon.Comp.TrackReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
+            var readyToTrack = validEstimate && !weapon.Comp.ResettingSubparts && (weapon.Comp.Data.Repo.State.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
             
             var locked = true;
             weapon.Target.IsTracking = false;
@@ -624,8 +624,8 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.TrackReticle);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.TrackReticle);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.Data.Repo.State.TrackingReticle);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.Data.Repo.State.TrackingReticle);
                     return false;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
@@ -638,7 +638,7 @@ namespace WeaponCore.Platform
                 Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return true;
             }
-            if (Comp.TrackReticle) return true;
+            if (Comp.Data.Repo.State.TrackingReticle) return true;
 
 
             if (Target.IsProjectile)

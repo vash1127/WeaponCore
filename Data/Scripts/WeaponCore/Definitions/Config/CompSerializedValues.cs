@@ -158,7 +158,7 @@ namespace WeaponCore
 
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public WeaponStateValues[] Weapons;
-        [ProtoMember(3)] public bool OtherPlayerTrackingReticle; //don't save
+        [ProtoMember(3)] public bool TrackingReticle; //don't save
         [ProtoMember(4), DefaultValue(-1)] public long PlayerId = -1;
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public ShootActions TerminalAction;
@@ -167,7 +167,7 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
-                OtherPlayerTrackingReticle = sync.OtherPlayerTrackingReticle;
+                TrackingReticle = sync.TrackingReticle;
                 Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
                 PlayerId = sync.PlayerId;
                 Control = sync.Control;
@@ -199,7 +199,7 @@ namespace WeaponCore
         {
             Control = ControlMode.None;
             PlayerId = -1;
-            OtherPlayerTrackingReticle = false;
+            TrackingReticle = false;
 
             foreach (var w in Weapons)
             {

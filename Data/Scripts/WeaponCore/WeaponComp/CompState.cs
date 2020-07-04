@@ -96,8 +96,8 @@ namespace WeaponCore.Support
             else
                 Data.Repo.State.Control = CompStateValues.ControlMode.None;
 
-            playerId = playerId == -1 ? Session.PlayerId : playerId;
-            Data.Repo.State.PlayerId = action == ShootActions.ShootOff ? -1 : playerId;
+            playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
+            Data.Repo.State.PlayerId = action == ShootActions.ShootOff && !Data.Repo.State.TrackingReticle ? -1 : playerId;
 
             Log.Line($"TerminalAction: {Data.Repo.State.TerminalAction} - was:{oldAction}");
         }
