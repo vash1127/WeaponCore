@@ -76,12 +76,12 @@ namespace WeaponCore
                         if (Tick180)
                             Log.Line($"tracking: PlayerId:{comp.Data.Repo.State.PlayerId} - controlling:{isControllingPlayer} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId)} - Draw:{TargetUi.DrawReticle} - !InMenu:{!InMenu}");
                         
-                        if (MpActive && isControllingPlayer && track != wasTrack)
+                        if (MpActive && track != wasTrack)
                             comp.Session.SendTrackReticleUpdate(comp, track);
                     }
                     else if (Tick180)
                     {
-                        Log.Line($"tracking: playerId:{comp.Data.Repo.State.PlayerId} - controlling:{comp.Data.Repo.State.TrackingReticle} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId)} - Draw:{TargetUi.DrawReticle} - !InMenu:{!InMenu}");
+                        Log.Line($"tracking: playerId:{comp.Data.Repo.State.PlayerId} - controlling:{comp.Data.Repo.State.TrackingReticle} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId)} - Draw:{TargetUi.DrawReticle} - !InMenu:{!InMenu}");
                     }
 
                     var trackReticle = comp.Data.Repo.State.TrackingReticle;
