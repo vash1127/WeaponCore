@@ -187,9 +187,6 @@ namespace WeaponCore
 
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
         {
-            if (Tick180)
-                Log.Line($"SendFakeTargetUpdate: {hitPos}");
-
             if (IsClient)
             {
                 PacketsToServer.Add(new FakeTargetPacket

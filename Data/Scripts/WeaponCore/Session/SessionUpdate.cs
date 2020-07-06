@@ -78,11 +78,6 @@ namespace WeaponCore
                             comp.Session.SendTrackReticleUpdate(comp, track);
                     }
 
-                    if (Tick600)
-                    {
-                        Log.Line($"tracking: playerId:{comp.Data.Repo.State.PlayerId} - terminalAction:{comp.Data.Repo.State.TerminalAction} - controlling:{comp.Data.Repo.State.TrackingReticle} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId)}");
-                    }
-
                     var trackReticle = comp.Data.Repo.State.TrackingReticle;
                     comp.WasControlled = comp.UserControlled;
                     comp.UserControlled = comp.Data.Repo.State.Control != ControlMode.None;
@@ -91,6 +86,9 @@ namespace WeaponCore
                         comp.InputState = DefaultInputStateData;
                     var compManualMode = comp.Data.Repo.State.Control == ControlMode.Camera || (comp.Data.Repo.Set.Overrides.ManualControl && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
+                    if (Tick60 && trackReticle)
+                        Log.Line($"trackReticle: manualMode:{compManualMode} - FakeTarget:{comp.Platform.Weapons[0].Target.IsFakeTarget}");
+
                     ///
                     /// Weapon update section
                     ///

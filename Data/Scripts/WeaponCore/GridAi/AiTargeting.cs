@@ -52,8 +52,6 @@ namespace WeaponCore.Support
                 if (w.Comp.Session.PlayerDummyTargets.TryGetValue(w.Comp.Data.Repo.State.PlayerId, out dummyTarget) &&  Weapon.CanShootTarget(w, ref dummyTarget.Position, dummyTarget.LinearVelocity, dummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(w.Comp.Session.Tick, predictedPos);
-                    if (w.System.Session.Tick20)
-                        Log.Line($"set fakeTarget");
                     if (w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
