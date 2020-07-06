@@ -35,19 +35,17 @@ namespace WeaponCore.Support
             [ProtoMember(2)] public Vector3 LinearVelocity;
             [ProtoMember(3)] public Vector3 Acceleration;
             [ProtoMember(4)] public bool ClearTarget;
+            public uint LastUpdateTick;
 
-            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, bool networkUpdate = false)
+            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null)
             {
                 Position = hitPos;
-                if (ent != null)
-                {
+                if (ent != null)  {
                     LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
 
-                if (ai.Session.MpActive && !networkUpdate)
-                    ai.Session.SendFakeTargetUpdate(ai, hitPos);
-
+                LastUpdateTick = ai.Session.Tick;
                 ClearTarget = false;
             }
 

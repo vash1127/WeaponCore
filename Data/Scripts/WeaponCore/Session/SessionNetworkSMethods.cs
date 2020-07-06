@@ -63,12 +63,20 @@ namespace WeaponCore
 
             if (myGrid == null) return Error(data, Msg("Grid"));
 
+
             GridAi ai;
             long playerId;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                PlayerDummyTargets[playerId].Update(targetPacket.Data, ai, null, true);
-                data.Report.PacketValid = true;
+                if (ai.MIds[(int) PacketType.FakeTargetUpdate] < packet.MId)  {
+                    ai.MIds[(int) PacketType.FakeTargetUpdate] = packet.MId;
+
+                    PlayerDummyTargets[playerId].Update(targetPacket.Data, ai);
+                    PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
+
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ServerFakeTargetUpdate invalid MId");
             }
             else
                 return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));

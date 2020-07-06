@@ -35,6 +35,8 @@ namespace WeaponCore
         internal bool PlayerCamera;
         internal bool FirstPersonView;
         internal bool Debug = true;
+        internal bool MouseShootWasOn;
+        internal bool MouseShootOn;
         internal LineD AimRay;
         private readonly Session _session;
         internal readonly InputStateData ClientInputState;
@@ -78,7 +80,20 @@ namespace WeaponCore
                     ClientInputState.MouseButtonRight = false;
                 }
 
-                InputChanged = MouseButtonLeftWasPressed != ClientInputState.MouseButtonLeft || MouseButtonMiddleWasPressed != ClientInputState.MouseButtonMiddle || MouseButtonRightWasPressed != ClientInputState.MouseButtonRight || WasInMenu != ClientInputState.InMenu;
+                _session.PlayerMouseStates[_session.PlayerId] = ClientInputState;
+
+                if (_session.MpActive)  {
+                    var shootButtonActive = ClientInputState.MouseButtonLeft || ClientInputState.MouseButtonRight;
+
+                    MouseShootWasOn = MouseShootOn;
+                    if (_session.ManualShot && shootButtonActive && !MouseShootOn)
+                        MouseShootOn = true;
+                    else if (MouseShootOn && !shootButtonActive)
+                        MouseShootOn = false;
+
+                    InputChanged = MouseShootOn != MouseShootWasOn || WasInMenu != ClientInputState.InMenu;
+                    _session.ManualShot = false;
+                }
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);

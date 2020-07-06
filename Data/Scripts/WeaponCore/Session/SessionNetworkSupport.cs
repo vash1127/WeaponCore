@@ -187,6 +187,9 @@ namespace WeaponCore
 
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
         {
+            if (Tick180)
+                Log.Line($"SendFakeTargetUpdate: {hitPos}");
+
             if (IsClient)
             {
                 PacketsToServer.Add(new FakeTargetPacket
@@ -285,13 +288,25 @@ namespace WeaponCore
                     }
                 });
             }
-            else Log.Line($"SendAmmoCycleRequest should never be called on Server");
+            else Log.Line($"SendPlayerControlRequest should never be called on Server");
         }
 
 
         internal void SendAmmoCycleRequest(WeaponComponent comp, int weaponId, int newAmmoId)
         {
-            if (IsServer)
+            if (IsClient)
+            {
+                PacketsToServer.Add(new AmmoCycleRequestPacket
+                {
+                    MId = ++comp.MIds[(int)PacketType.AmmoCycleRequest],
+                    EntityId = comp.MyCube.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.AmmoCycleRequest,
+                    WeaponId = weaponId,
+                    NewAmmoId = newAmmoId,
+                });
+            }
+            else if (HandlesInput)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -307,7 +322,7 @@ namespace WeaponCore
                     }
                 });
             }
-            else Log.Line($"SendAmmoCycleRequest should never be called on Client");
+            else Log.Line($"SendAmmoCycleRequest should never be called on Non-HandlesInput");
         }
 
         internal void SendTrackReticleUpdate(WeaponComponent comp, bool track)
@@ -472,6 +487,7 @@ namespace WeaponCore
         {
             if (firingCube == null) return;
 
+            Log.Line($"Send fixed shoot event");
             var comp = firingCube.Components.Get<WeaponComponent>();
 
             int weaponId;

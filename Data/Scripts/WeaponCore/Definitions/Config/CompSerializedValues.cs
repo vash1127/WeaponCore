@@ -167,10 +167,12 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
-                TrackingReticle = sync.TrackingReticle;
                 Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
+                Revision = sync.Revision;
+                TrackingReticle = sync.TrackingReticle;
                 PlayerId = sync.PlayerId;
                 Control = sync.Control;
+                TerminalAction = sync.TerminalAction;
                 for (int i = 0; i < sync.Weapons.Length; i++)
                 {
                     var ws = Weapons[i];

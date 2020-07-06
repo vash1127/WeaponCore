@@ -65,8 +65,7 @@ namespace WeaponCore
             //TODO client uses try get in case packets are out of order, no need to reprocess as fake targets are sent very often
             if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId)
-                {
+                if (ai.MIds[(int)packet.PType] < packet.MId) {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     long playerId;
@@ -75,7 +74,7 @@ namespace WeaponCore
                         FakeTarget dummyTarget;
                         if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
                         {
-                            dummyTarget.Update(targetPacket.Data, ai, null, true);
+                            dummyTarget.Update(targetPacket.Data, ai);
                             data.Report.PacketValid = true;
                         }
                         else

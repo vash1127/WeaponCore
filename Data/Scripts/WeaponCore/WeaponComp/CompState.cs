@@ -79,7 +79,6 @@ namespace WeaponCore.Support
                 Data.Repo.Set.Overrides.ManualControl = false;
                 Data.Repo.Set.Overrides.TargetPainter = false;
             }
-
             Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
             for (int i = 0; i < Platform.Weapons.Length; i++) {
@@ -99,7 +98,7 @@ namespace WeaponCore.Support
             playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
             Data.Repo.State.PlayerId = action == ShootActions.ShootOff && !Data.Repo.State.TrackingReticle ? -1 : playerId;
 
-            Log.Line($"TerminalAction: {Data.Repo.State.TerminalAction} - was:{oldAction}");
+            Log.Line($"[ResetShootState] terminalAction: {Data.Repo.State.TerminalAction}({oldAction}) - playerId:{playerId} - action:{action} - cycle:{cycleSomething} - addShot:{addShot}");
         }
 
         internal void DetectStateChanges()

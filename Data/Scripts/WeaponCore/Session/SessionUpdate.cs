@@ -73,15 +73,14 @@ namespace WeaponCore
                         if (IsServer)
                             comp.Data.Repo.State.TrackingReticle = track;
                         
-                        if (Tick180)
-                            Log.Line($"tracking: PlayerId:{comp.Data.Repo.State.PlayerId} - controlling:{isControllingPlayer} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId)} - Draw:{TargetUi.DrawReticle} - !InMenu:{!InMenu}");
                         
                         if (MpActive && track != wasTrack)
                             comp.Session.SendTrackReticleUpdate(comp, track);
                     }
-                    else if (Tick180)
+
+                    if (Tick600)
                     {
-                        Log.Line($"tracking: playerId:{comp.Data.Repo.State.PlayerId} - controlling:{comp.Data.Repo.State.TrackingReticle} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId)} - Draw:{TargetUi.DrawReticle} - !InMenu:{!InMenu}");
+                        Log.Line($"tracking: playerId:{comp.Data.Repo.State.PlayerId} - terminalAction:{comp.Data.Repo.State.TerminalAction} - controlling:{comp.Data.Repo.State.TrackingReticle} - manual:{comp.Data.Repo.Set.Overrides.ManualControl} - RootAiContains:{comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId)}");
                     }
 
                     var trackReticle = comp.Data.Repo.State.TrackingReticle;
@@ -224,6 +223,9 @@ namespace WeaponCore
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Data.Repo.Focus.HasFocus && ai.Data.Repo.Focus.FocusInRange(w);
 
                         if (canShoot && (shoot || w.LockOnFireState)) {
+
+                            if (MpActive && HandlesInput && !ManualShot)
+                                ManualShot = !validShootStates && !w.FinishBurst && !delayedFire;
 
                             if (w.System.DelayCeaseFire && (validShootStates || manualShot || w.FinishBurst))
                                 w.CeaseFireDelayTick = Tick;

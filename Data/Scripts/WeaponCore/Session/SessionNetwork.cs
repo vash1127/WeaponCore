@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using WeaponCore.Support;
 using static WeaponCore.Session;
@@ -304,7 +305,25 @@ namespace WeaponCore
 
                     foreach (var p in Players.Values)
                     {
-                        if (p.SteamUserId != packetInfo.Packet.SenderId && (packetInfo.Entity == null || (PlayerEntityIdInRange.ContainsKey(p.SteamUserId) && PlayerEntityIdInRange[p.SteamUserId].Contains(entityId))))
+                        var notSender = p.SteamUserId != packetInfo.Packet.SenderId;
+                        var sendPacket = notSender && packetInfo.Entity == null;
+                        if (!sendPacket && notSender)
+                        {
+                            if (PlayerEntityIdInRange.ContainsKey(p.SteamUserId))
+                            {
+                                if (PlayerEntityIdInRange[p.SteamUserId].Contains(entityId)) {
+                                    sendPacket = true;
+                                }
+                                else  {
+                                    GridAi rootAi;
+                                    var grid = packetInfo.Entity?.GetTopMostParent() as MyCubeGrid;
+                                    if (grid != null && GridToMasterAi.TryGetValue(grid, out rootAi) && PlayerEntityIdInRange[p.SteamUserId].Contains(rootAi.MyGrid.EntityId))
+                                        sendPacket = true;
+                                }
+                            }
+                        }
+
+                        if (sendPacket)
                             MyModAPIHelper.MyMultiplayer.Static.SendMessageTo(ClientPacketId, bytes, p.SteamUserId, true);
                     }
                 }

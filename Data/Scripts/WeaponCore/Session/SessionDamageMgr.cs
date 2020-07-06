@@ -48,7 +48,6 @@ namespace WeaponCore
                     SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Info.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
                     p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                 }
-
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
                     var hitEnt = info.HitList[i];
@@ -349,7 +348,7 @@ namespace WeaponCore
                     }
 
                     if (canDamage)
-                        block.DoDamage(0.01f, damageType, sync, null, attackerId);
+                        block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
                     else
                     {
                         var hasBlock = _slimHealthClient.ContainsKey(block);

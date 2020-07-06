@@ -284,6 +284,7 @@ namespace WeaponCore
         internal bool SupressLoad;
         internal bool PbApiInited;
         internal bool PbActivate;
+        internal bool ManualShot;
 
         internal enum AnimationType
         {

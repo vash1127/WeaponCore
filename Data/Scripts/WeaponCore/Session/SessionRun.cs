@@ -238,7 +238,15 @@ namespace WeaponCore
         public override void HandleInput()
         {
             if (HandlesInput && !SupressLoad)
+            {
                 UiInput.UpdateInputState();
+                if (MpActive && TrackingAi != null)
+                {
+                    var dummyTarget = PlayerDummyTargets[PlayerId];
+                    if (dummyTarget.LastUpdateTick == Tick)
+                        SendFakeTargetUpdate(TrackingAi, dummyTarget.Position);
+                }
+            }
         }
 
         public override void LoadData()
