@@ -185,6 +185,23 @@ namespace WeaponCore
             });
         }
 
+        internal void SendTargetChange(WeaponComponent comp, int weaponId)
+        {
+            var w = comp.Platform.Weapons[weaponId];
+            PacketsToClient.Add(new PacketInfo
+            {
+                Entity = comp.MyCube,
+                Packet = new TargetPacket
+                {
+                    MId = ++w.MIds[(int)PacketType.TargetChange],
+                    EntityId = comp.MyCube.EntityId,
+                    SenderId = MultiplayerId,
+                    PType = PacketType.TargetChange,
+                    Target = comp.Data.Repo.Targets[weaponId],
+                }
+            });
+        }
+
         internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
         {
             if (IsClient)

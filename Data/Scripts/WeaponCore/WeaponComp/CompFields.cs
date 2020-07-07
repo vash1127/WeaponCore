@@ -28,6 +28,7 @@ namespace WeaponCore.Support
         internal readonly IMyFunctionalBlock FunctionalBlock;
         internal readonly IMyLargeTurretBase TurretBase;
         internal readonly CompData Data;
+        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
@@ -36,7 +37,6 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
-        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal uint LastRayCastTick;
         internal uint IsWorkingChangedTick;
 

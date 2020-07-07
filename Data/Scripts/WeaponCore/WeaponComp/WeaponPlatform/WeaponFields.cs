@@ -35,6 +35,7 @@ namespace WeaponCore.Platform
         internal readonly PartInfo ElevationPart;
         internal readonly bool AzimuthOnBase;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
+        internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
 
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;

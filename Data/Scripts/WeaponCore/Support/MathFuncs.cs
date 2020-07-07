@@ -179,11 +179,11 @@ namespace WeaponCore.Support
             return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
         }
 
-        internal static bool WeaponLookAt(Weapon weapon, ref Vector3D targetDir, double targetDistSqr, bool setWeapon, bool canSeeOnly)
+        internal static bool WeaponLookAt(Weapon weapon, ref Vector3D targetDir, double targetDistSqr, bool setWeapon, bool canSeeOnly, out bool isTracking)
         {
             var system = weapon.System;
             var target = weapon.Target;
-
+            isTracking = false;
             //Get weapon direction and orientation
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
@@ -307,7 +307,7 @@ namespace WeaponCore.Support
 
             if (setWeapon)
             {
-                weapon.Target.IsTracking = tracking;
+                isTracking = tracking;
 
                 if (!azLocked) {
                     weapon.Azimuth = az;

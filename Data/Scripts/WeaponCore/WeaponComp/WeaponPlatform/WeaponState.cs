@@ -36,7 +36,7 @@ namespace WeaponCore.Platform
                 if (!Acquire.Enabled)
                     System.Session.AcqManager.AddAwake(Acquire);
                         
-                State.Target.State = TransferTarget.TargetInfo.Expired;
+                //State.Target.State = TransferTarget.TargetInfo.Expired;
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.Data.Repo.State.TrackingReticle)
                     Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
@@ -535,7 +535,7 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
-        internal void SendTarget()
+        internal void SendTarget(int weaponId)
         {
             var rand = State.WeaponRandom;
             rand.TurretCurrentCounter = 0;
@@ -544,7 +544,9 @@ namespace WeaponCore.Platform
             rand.TurretRandom = new Random(rand.CurrentSeed);
             rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
             rand.AcquireRandom = new Random(rand.CurrentSeed);
-            System.Session.SendCompState(Comp, PacketType.CompState);
+            System.Session.SendTargetChange(Comp, weaponId);
+            //System.Session.SendCompState(Comp, PacketType.CompState);
+
         }
 
         internal bool HasAmmo()

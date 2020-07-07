@@ -144,7 +144,7 @@ namespace WeaponCore
                         ///
                         /// Check target for expire states
                         /// 
-
+                        bool targetLock = false;
                         if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
@@ -156,7 +156,7 @@ namespace WeaponCore
                                 w.Target.Reset(Tick, States.Expired);
                             else if (w.AiEnabled) {
 
-                                if (!Weapon.TrackingTarget(w, w.Target) && !IsClient)
+                                if (!Weapon.TrackingTarget(w, w.Target, out targetLock) && !IsClient)
                                     w.Target.Reset(Tick, States.Expired, !trackReticle && (w.Target.CurrentState != States.RayCheckFailed && !w.Target.HasTarget));
                             }
                             else {
@@ -176,7 +176,7 @@ namespace WeaponCore
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
-                        else if (w.Target.HasTarget && MyEntities.EntityExists(w.State.Target.EntityId)) {
+                        else if (w.Target.HasTarget && MyEntities.EntityExists(comp.Data.Repo.Targets[w.WeaponId].EntityId)) {
                             w.Target.HasTarget = false;
                             Log.Line($"wtf is this");
                         }
@@ -210,7 +210,7 @@ namespace WeaponCore
                         /// Determine if its time to shoot
                         ///
                         ///
-                        w.AiShooting = w.Target.TargetLock && !comp.UserControlled;
+                        w.AiShooting = targetLock && !comp.UserControlled;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.CurrentAmmo <= 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Data.Repo.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;

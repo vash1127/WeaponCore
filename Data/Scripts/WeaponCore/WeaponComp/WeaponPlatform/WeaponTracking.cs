@@ -36,9 +36,10 @@ namespace WeaponCore.Platform
             var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
             bool canTrack;
+            bool isTracking;
 
             if (weapon == trackingWeapon)
-                canTrack = validEstimate && MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false, true);
+                canTrack = validEstimate && MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false, true, out isTracking);
             else
                 canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
@@ -164,12 +165,13 @@ namespace WeaponCore.Platform
             return isAligned;
         }
 
-        internal static bool TrackingTarget(Weapon weapon, Target target)
+        internal static bool TrackingTarget(Weapon weapon, Target target, out bool targetLock)
         {
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
             Vector3D targetCenter;
+            targetLock = false;
 
             var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             if (rayCheckTest && !weapon.RayCheckTest())
@@ -219,10 +221,11 @@ namespace WeaponCore.Platform
             var readyToTrack = validEstimate && !weapon.Comp.ResettingSubparts && (weapon.Comp.Data.Repo.State.TrackingReticle || rangeToTargetSqr <= weapon.MaxTargetDistanceSqr && rangeToTargetSqr >= weapon.MinTargetDistanceSqr);
             
             var locked = true;
-            weapon.Target.IsTracking = false;
+            //weapon.Target.IsTracking = false;
+            var isTracking = false;
             if (readyToTrack && weapon.Comp.Data.Repo.State.Control != CompStateValues.ControlMode.Camera) {
 
-                if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false)) {
+                if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
 
                     locked = false;
                     weapon.AimBarrel();
@@ -230,11 +233,11 @@ namespace WeaponCore.Platform
             }
 
             if (weapon.Comp.Data.Repo.State.Control == CompStateValues.ControlMode.Camera)
-                return weapon.Target.IsTracking;
+                return isTracking;
 
             var isAligned = false;
 
-            if (weapon.Target.IsTracking)
+            if (isTracking)
                 isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             var wasAligned = weapon.Target.IsAligned;
@@ -255,8 +258,8 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.System.DelayCeaseFire)
                 weapon.StopShooting();
 
-            weapon.Target.TargetLock = weapon.Target.IsTracking && weapon.Target.IsAligned;
-            return weapon.Target.IsTracking;
+            targetLock = isTracking && weapon.Target.IsAligned;
+            return isTracking;
         }
 
         public bool SmartLos()

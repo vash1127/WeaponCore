@@ -18,11 +18,11 @@ namespace WeaponCore.Support
         internal States PreviousState = States.Expired;
         internal States CurrentState = States.Expired;
         internal bool HasTarget;
-        internal bool IsTracking;
+        //internal bool IsTracking;
         internal bool IsAligned;
         internal bool IsProjectile;
         internal bool IsFakeTarget;
-        internal bool TargetLock;
+        //internal bool TargetLock;
         internal bool TargetChanged;
         internal bool ParentIsWeapon;
         internal bool IsTargetStorage;
@@ -86,25 +86,31 @@ namespace WeaponCore.Support
         {
             if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
                 return;
-            var target = weapon.State.Target;
-            target.EntityId = Entity?.EntityId ?? -1;
+            
+            var target = weapon.Comp.Data.Repo.Targets[weapon.WeaponId];
+            
             target.TargetPos = TargetPos;
-            target.HitShortDist = (float)HitShortDist;
-            target.OrigDistance = (float)OrigDistance;
-            target.TopEntityId = TopEntityId;
             target.WeaponId = weapon.WeaponId;
 
             if (IsProjectile)
-                target.State = TransferTarget.TargetInfo.IsProjectile;
+                target.EntityId = -1;
             else if (IsFakeTarget)
-                target.State = TransferTarget.TargetInfo.IsFakeTarget;
-            else if (HasTarget)
-                target.State = TransferTarget.TargetInfo.IsEntity;
+                target.EntityId = -2;
+            else if (Entity != null)
+                target.EntityId = Entity.EntityId;
+            else target.EntityId = 0;
 
-            if (!HasTarget)
-                target.State = TransferTarget.TargetInfo.Expired;
+            weapon.SendTarget(weapon.WeaponId);
 
-            weapon.SendTarget();
+            //target.HitShortDist = (float)HitShortDist;
+            //target.OrigDistance = (float)OrigDistance;
+            //target.TopEntityId = TopEntityId;
+            //else if (HasTarget)
+            //target.State = TransferTarget.TargetInfo.IsEntity;
+
+            //if (!HasTarget)
+            //target.State = TransferTarget.TargetInfo.Expired;
+
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
@@ -147,7 +153,7 @@ namespace WeaponCore.Support
             Entity = null;
             IsProjectile = false;
             IsFakeTarget = false;
-            IsTracking = false;
+            //IsTracking = false;
             IsAligned = false;
             Projectile = null;
             TargetPos = Vector3D.Zero;
@@ -159,7 +165,7 @@ namespace WeaponCore.Support
                 StateChange(false, reason);
                 ExpiredTick = expiredTick;
             }
-            TargetLock = false;
+            //TargetLock = false;
         }
 
         internal void StateChange(bool hasTarget, States reason)

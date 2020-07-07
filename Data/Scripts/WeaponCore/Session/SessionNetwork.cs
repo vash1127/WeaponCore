@@ -96,9 +96,13 @@ namespace WeaponCore
                     }
                     case PacketType.CompState:
                     case PacketType.StateReload:
-                    case PacketType.StateTargetChange:
                     {
                         ClientStateUpdate(packetObj);
+                        break;
+                    }
+                    case PacketType.TargetChange:
+                    {
+                        ClientTargetUpdate(packetObj);
                         break;
                     }
                     case PacketType.TargetExpireUpdate: {

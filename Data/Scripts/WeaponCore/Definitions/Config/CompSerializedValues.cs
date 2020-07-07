@@ -1,11 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
 using ProtoBuf;
+using Sandbox.Game.Entities;
 using VRage;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
+using static WeaponCore.WeaponStateValues;
+
 namespace WeaponCore
 {
     [ProtoContract]
@@ -15,6 +19,8 @@ namespace WeaponCore
         [ProtoMember(2)] public int Version = Session.VersionControl;
         [ProtoMember(3)] public CompSettingsValues Set;
         [ProtoMember(4)] public CompStateValues State;
+        [ProtoMember(5)] public TransferTarget[] Targets; // synced separately
+
 
         public bool Sync(WeaponComponent comp, CompDataValues sync)
         {
@@ -167,7 +173,7 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
-                Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
+                //Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
                 PlayerId = sync.PlayerId;
@@ -178,7 +184,7 @@ namespace WeaponCore
                     var ws = Weapons[i];
                     var sws = sync.Weapons[i];
                     var w = comp.Platform.Weapons[i];
-                    Log.Line($"Ammo:{sws.CurrentAmmo} -  was:{ws.CurrentAmmo} - Inventory:{sws.HasInventory} - was:{ws.HasInventory}");
+                    //Log.Line($"Ammo:{sws.CurrentAmmo} -  was:{ws.CurrentAmmo} - Inventory:{sws.HasInventory} - was:{ws.HasInventory}");
 
                     if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge)
                     { // check order on these
@@ -202,12 +208,13 @@ namespace WeaponCore
             Control = ControlMode.None;
             PlayerId = -1;
             TrackingReticle = false;
-
+            TerminalAction = ShootActions.ShootOff;
             foreach (var w in Weapons)
             {
                 w.Heat = 0;
                 w.Overheated = false;
                 w.HasInventory = w.CurrentMags > 0;
+                w.Action = ShootActions.ShootOff;
             }
         }
 
@@ -229,10 +236,9 @@ namespace WeaponCore
         [ProtoMember(4)] public bool Overheated; //don't save
         [ProtoMember(5)] public MyFixedPoint CurrentMags; // save
         [ProtoMember(6)] public bool HasInventory; // save
-        [ProtoMember(7)] public TransferTarget Target = new TransferTarget(); // save
-        [ProtoMember(8)] public WeaponRandomGenerator WeaponRandom = new WeaponRandomGenerator(); // save
-        [ProtoMember(9)] public int AmmoTypeId;
-        [ProtoMember(10), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+        [ProtoMember(7)] public WeaponRandomGenerator WeaponRandom = new WeaponRandomGenerator(); // save
+        [ProtoMember(8)] public int AmmoTypeId;
+        [ProtoMember(9), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
 
         public void WeaponInit(Weapon w)
         {
@@ -278,5 +284,84 @@ namespace WeaponCore
             Action = action;
         }
 
+
+        [ProtoContract]
+        public class TransferTarget
+        {
+            [ProtoMember(1)] public long EntityId;
+            [ProtoMember(2)] public Vector3 TargetPos;
+            [ProtoMember(3)] public int WeaponId;
+            //[ProtoMember(3)] public float HitShortDist;
+            //[ProtoMember(4)] public float OrigDistance;
+            //[ProtoMember(5)] public long TopEntityId;
+            //[ProtoMember(6)] public TargetInfo State = TargetInfo.Expired;
+            //[ProtoMember(7)] public int WeaponId;
+            /*
+            public enum TargetInfo
+            {
+                IsEntity,
+                IsProjectile,
+                IsFakeTarget,
+                Expired
+            }
+            */
+
+            internal void SyncTarget(Weapon w, bool allowChange = true)
+            {
+                if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
+                    w.Reload();
+
+                var target = w.Target;
+                target.IsProjectile = EntityId == -1;
+                target.IsFakeTarget = EntityId == -2;
+                target.TargetPos = TargetPos;
+                target.Entity = EntityId > 0 ? MyEntities.GetEntityByIdOrDefault(EntityId) : null;
+
+                var state = EntityId != 0 ? Support.Target.States.Acquired : Support.Target.States.Expired;
+                target.StateChange(EntityId != 0, state);
+
+                /*
+                target.HitShortDist = HitShortDist;
+                target.OrigDistance = OrigDistance;
+                target.TopEntityId = TopEntityId;
+
+                if (State == TargetInfo.IsProjectile)
+                    target.IsProjectile = true;
+
+                else if (State == TargetInfo.IsFakeTarget)
+                    target.IsFakeTarget = true;
+                */
+
+                if (!allowChange)
+                    target.TargetChanged = false;
+
+                if (w.Target.HasTarget && allowChange)
+                {
+
+                    if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)
+                    {
+                        var oldChange = w.Target.TargetChanged;
+                        w.Target.StateChange(true, Support.Target.States.Invalid);
+                        w.Target.TargetChanged = !w.FirstSync && oldChange;
+                        w.FirstSync = false;
+                    }
+                    else if (w.Target.IsProjectile)
+                    {
+
+                        GridAi.TargetType targetType;
+                        GridAi.AcquireProjectile(w, out targetType);
+
+                        if (targetType == GridAi.TargetType.None)
+                        {
+                            if (w.NewTarget.CurrentState != Support.Target.States.NoTargetsSeen)
+                                w.NewTarget.Reset(w.Comp.Session.Tick, Support.Target.States.NoTargetsSeen);
+                            if (w.Target.CurrentState != Support.Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Support.Target.States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
+                        }
+                    }
+                }
+            }
+
+            public TransferTarget() { }
+        }
     }
 }

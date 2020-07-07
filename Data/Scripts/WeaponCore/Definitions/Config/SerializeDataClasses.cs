@@ -8,6 +8,7 @@ using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent;
+using static WeaponCore.WeaponStateValues;
 
 namespace WeaponCore
 {
@@ -19,7 +20,7 @@ namespace WeaponCore
         CompData,
         CompState,
         StateReload,
-        StateTargetChange,
+        TargetChange,
         OverRidesUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
@@ -67,6 +68,8 @@ namespace WeaponCore
     [ProtoInclude(22, typeof(TerminalMonitorPacket))]
     [ProtoInclude(23, typeof(CompDataPacket))]
     [ProtoInclude(24, typeof(CompStatePacket))]
+    [ProtoInclude(25, typeof(TargetPacket))]
+
 
     public class Packet
     {
@@ -120,6 +123,20 @@ namespace WeaponCore
             GroupName = string.Empty;
             Setting = string.Empty;
             Value = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class TargetPacket : Packet
+    {
+        [ProtoMember(1)] internal TransferTarget Target;
+
+        public TargetPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Target = null;
         }
     }
 
@@ -501,79 +518,6 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class TransferTarget
-    {
-        [ProtoMember(1)] public long EntityId;
-        [ProtoMember(2)] public Vector3 TargetPos;
-        [ProtoMember(3)] public float HitShortDist;
-        [ProtoMember(4)] public float OrigDistance;
-        [ProtoMember(5)] public long TopEntityId;
-        [ProtoMember(6)] public TargetInfo State = TargetInfo.Expired;
-        [ProtoMember(7)] public int WeaponId;
-
-        public enum TargetInfo
-        {
-            IsEntity,
-            IsProjectile,
-            IsFakeTarget,
-            Expired
-        }
-
-        internal void SyncTarget(Weapon w, bool allowChange = true)
-        {
-            if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
-                w.Reload();
-
-            var entity = MyEntities.GetEntityByIdOrDefault(EntityId);
-            var target = w.Target;
-            target.Entity = entity;
-            target.TargetPos = TargetPos;
-            target.HitShortDist = HitShortDist;
-            target.OrigDistance = OrigDistance;
-            target.TopEntityId = TopEntityId;
-
-            target.IsProjectile = false;
-            target.IsFakeTarget = false;
-
-            if (State == TargetInfo.IsProjectile)
-                target.IsProjectile = true;
-
-            else if (State == TargetInfo.IsFakeTarget)
-                target.IsFakeTarget = true;
-
-            var state = State != TargetInfo.Expired ? States.Acquired : States.Expired;
-
-            
-            target.StateChange(State != TargetInfo.Expired, state);
-
-            if (!allowChange)
-                target.TargetChanged = false;
-
-            if (w.Target.HasTarget && allowChange) {
-
-                if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null) {
-                    var oldChange = w.Target.TargetChanged;
-                    w.Target.StateChange(true, States.Invalid);
-                    w.Target.TargetChanged = !w.FirstSync && oldChange;
-                    w.FirstSync = false;
-                }
-                else if (w.Target.IsProjectile) {
-
-                    GridAi.TargetType targetType;
-                    GridAi.AcquireProjectile(w, out targetType);
-
-                    if (targetType == GridAi.TargetType.None) {
-                        if (w.NewTarget.CurrentState != States.NoTargetsSeen)
-                            w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                        if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
-                    }
-                }
-            }
-        }
-
-        public TransferTarget() { }
-    }
 
     #endregion
 }

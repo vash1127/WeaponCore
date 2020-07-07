@@ -97,8 +97,8 @@ namespace WeaponCore.Support
 
                         if (Session.IsClient)
                         {
-                            var target = weapon.State.Target;
-                            if (target.State != TransferTarget.TargetInfo.Expired)
+                            var target = Data.Repo.Targets[i];
+                            if (target.EntityId != 0)
                                 target.SyncTarget(weapon, false);
                             if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                             {

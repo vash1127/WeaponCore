@@ -109,13 +109,6 @@ namespace WeaponCore
             {
                 case PacketType.CompState:
                     break;
-                case PacketType.StateTargetChange:
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    {
-                        var w = comp.Platform.Weapons[i];
-                        w.State.Target.SyncTarget(w);
-                    }
-                    break;
                 case PacketType.StateReload:
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
@@ -126,6 +119,26 @@ namespace WeaponCore
                     break;
             }
             data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientTargetUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var targetPacket = (TargetPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            var w = comp.Platform.Weapons[targetPacket.Target.WeaponId];
+            if (w.MIds[(int)PacketType.TargetChange] < packet.MId)  {
+                w.MIds[(int)PacketType.TargetChange] = packet.MId;
+
+                targetPacket.Target.SyncTarget(w);
+             
+                data.Report.PacketValid = true;
+            }
 
             return true;
         }
