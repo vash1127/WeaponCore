@@ -19,14 +19,20 @@ namespace WeaponCore
             long playerId;
             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                if (PlayerMouseStates.ContainsKey(playerId))
-                    PlayerMouseStates[playerId].Sync(inputPacket.Data);
-                else
-                    PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
+                    mIds[(int)packet.PType] = packet.MId;
 
-                PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
+                    if (PlayerMouseStates.ContainsKey(playerId))
+                        PlayerMouseStates[playerId].Sync(inputPacket.Data);
+                    else
+                        PlayerMouseStates[playerId] = new InputStateData(inputPacket.Data);
 
-                data.Report.PacketValid = true;
+                    PacketsToClient.Add(new PacketInfo { Entity = ent, Packet = inputPacket });
+
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ServerClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
             }
             else
                 return Error(data, Msg("Player Not Found"));
@@ -43,14 +49,18 @@ namespace WeaponCore
             if (cube == null) return Error(data, Msg("Cube"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai))
+            long playerId = 0;
+            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                long playerId;
-                SteamToPlayer.TryGetValue(packet.SenderId, out playerId);
-                Log.Line($"ServerActiveControlUpdate: {playerId}");
-                ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
-                data.Report.PacketValid = true;
+                if (ai.MIds[(int)packet.PType] < packet.MId)  {
+                    ai.MIds[(int)packet.PType] = packet.MId;
+                    Log.Line($"ServerActiveControlUpdate: {playerId}");
+                    ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ServerActiveControlUpdate invalid MId");
             }
+            else Log.Line($"ServerActiveControlUpdate: ai:{ai == null} - playerId:{playerId}");
 
             return true;
         }
@@ -68,8 +78,8 @@ namespace WeaponCore
             long playerId;
             if (GridTargetingAIs.TryGetValue(myGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                if (ai.MIds[(int) PacketType.FakeTargetUpdate] < packet.MId)  {
-                    ai.MIds[(int) PacketType.FakeTargetUpdate] = packet.MId;
+                if (ai.MIds[(int)packet.PType] < packet.MId)  {
+                    ai.MIds[(int)packet.PType] = packet.MId;
 
                     PlayerDummyTargets[playerId].Update(targetPacket.Data, ai);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
@@ -93,8 +103,8 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)PacketType.AmmoCycleRequest] < packet.MId) {
-                comp.MIds[(int)PacketType.AmmoCycleRequest] = packet.MId;
+            if (comp.MIds[(int)packet.PType] < packet.MId) {
+                comp.MIds[(int)packet.PType] = packet.MId;
 
                 comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
                 data.Report.PacketValid = true;
@@ -112,8 +122,8 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)PacketType.PlayerControlRequest] < packet.MId) {
-                comp.MIds[(int)PacketType.PlayerControlRequest] = packet.MId;
+            if (comp.MIds[(int)packet.PType] < packet.MId) {
+                comp.MIds[(int)packet.PType] = packet.MId;
 
                 comp.Data.Repo.State.PlayerId = controlPacket.PlayerId;
                 comp.Data.Repo.State.Control = controlPacket.Mode;
@@ -134,14 +144,10 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int) PacketType.ReticleUpdate] < reticlePacket.MId) {
-                comp.MIds[(int) PacketType.ReticleUpdate] = reticlePacket.MId;
-
-                if (DedicatedServer)
-                    comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
+            if (comp.MIds[(int)packet.PType] < packet.MId) {
+                comp.MIds[(int)packet.PType] = packet.MId;
 
                 comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
-
                 SendCompData(comp);
 
                 data.Report.PacketValid = true;
@@ -162,10 +168,9 @@ namespace WeaponCore
 
             if (comp?.Ai != null)
             {
-
-                if (comp.MIds[(int)packet.PType] < packet.MId)
-                {
+                if (comp.MIds[(int)packet.PType] < packet.MId)  {
                     comp.MIds[(int)packet.PType] = packet.MId;
+
                     Log.Line($"ServerOverRidesUpdate Comp1");
 
                     comp.Ai.ReScanBlockGroups();
@@ -186,8 +191,7 @@ namespace WeaponCore
             else if (myGrid != null)
             {
                 GridAi ai;
-                if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-                {
+                if (GridTargetingAIs.TryGetValue(myGrid, out ai))  {
 
                     if (ai.MIds[(int)packet.PType] < packet.MId) {
                         ai.MIds[(int)packet.PType] = packet.MId;

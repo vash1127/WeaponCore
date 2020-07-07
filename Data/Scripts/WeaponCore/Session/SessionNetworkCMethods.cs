@@ -132,8 +132,8 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[targetPacket.Target.WeaponId];
-            if (w.MIds[(int)PacketType.TargetChange] < packet.MId)  {
-                w.MIds[(int)PacketType.TargetChange] = packet.MId;
+            if (w.MIds[(int)packet.PType] < packet.MId)  {
+                w.MIds[(int)packet.PType] = packet.MId;
 
                 targetPacket.Target.SyncTarget(w);
              
@@ -290,12 +290,17 @@ namespace WeaponCore
             long playerId;
             if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
+                    mIds[(int)packet.PType] = packet.MId;
 
-                PlayerMouseStates[playerId] = mousePacket.Data;
-                data.Report.PacketValid = true;
+                    PlayerMouseStates[playerId] = mousePacket.Data;
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ClientClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
             }
             else
-                return Error(data, Msg("No Player Mouse State Found"));
+                return Error(data, Msg("No PlayerId Found"));
 
             return true;
         }
@@ -329,16 +334,22 @@ namespace WeaponCore
 
             if (mouseUpdatePacket.Data == null) return Error(data, Msg("Data"));
 
-            for (int i = 0; i < mouseUpdatePacket.Data.Length; i++)
-            {
-                var playerMousePackets = mouseUpdatePacket.Data[i];
-                if (playerMousePackets.PlayerId != PlayerId)
-                    PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
+                mIds[(int)packet.PType] = packet.MId;
+
+                for (int i = 0; i < mouseUpdatePacket.Data.Length; i++)  {
+                    var playerMousePackets = mouseUpdatePacket.Data[i];
+                    if (playerMousePackets.PlayerId != PlayerId)
+                        PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
+                }
+
+                data.Report.PacketValid = true;
             }
+            else Log.Line($"ClientClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
 
             data.Report.PacketValid = true;
             return true;
-
         }
 
         // Unmanaged state changes below this point

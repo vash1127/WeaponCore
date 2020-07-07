@@ -501,7 +501,6 @@ namespace WeaponCore
         {
             if (firingCube == null) return;
 
-            Log.Line($"Send fixed shoot event");
             var comp = firingCube.Components.Get<WeaponComponent>();
 
             int weaponId;
