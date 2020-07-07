@@ -91,11 +91,8 @@ namespace WeaponCore
                     var w = Comp.Platform.Weapons[i];
                     w.State = state;
 
-                    if (Comp.Session.IsServer)  {
-                        state.WeaponInit(w);
-                        Repo.Targets[i] = new WeaponStateValues.TransferTarget();
-                    }
-                    else state.WeaponRefreshClient(w);
+                    Repo.Targets[i] = new WeaponStateValues.TransferTarget();
+                    state.WeaponInit(w);
                 }
 
                 Repo.Set.Range = -1;
