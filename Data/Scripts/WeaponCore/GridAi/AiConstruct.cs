@@ -70,10 +70,11 @@ namespace WeaponCore.Support
             }
         }
 
-        internal class Constructs
+        public class Constructs
         {
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
+            internal readonly ConstructData Data = new ConstructData();
             internal float OptimalDps;
             internal int BlockCount;
             internal GridAi RootAi;
@@ -116,6 +117,7 @@ namespace WeaponCore.Support
                     }
 
                     UpdateWeaponCounters(ai);
+                    RootAi.ScanBlockGroups = true;
                     return;
                 }
                 Log.Line($"ConstructRefresh Failed main Ai no FatMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
@@ -127,19 +129,15 @@ namespace WeaponCore.Support
 
             internal void UpdateConstruct(UpdateType type)
             {
-                foreach (var sub in RootAi.SubGrids) {
-
-                    GridAi ai;
-                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai)) {
-
-                        switch (type) {
-                            case UpdateType.BlockScan: {
-                                ai.ReScanBlockGroups();
-                                if (ai.Session.MpActive && ai.Session.IsServer) 
-                                    ai.Session.SendAiData(ai);
-                                break; 
-                            }
-                        }
+                switch (type)
+                {
+                    case UpdateType.BlockScan:
+                    {
+                        RootAi.ReScanBlockGroups();
+                        UpdateLeafGroups();
+                        if (RootAi.Session.MpActive && RootAi.Session.IsServer)
+                            RootAi.Session.SendConstructGroups(RootAi);
+                        break;
                     }
                 }
             }
@@ -217,8 +215,28 @@ namespace WeaponCore.Support
                 return Counter.TryGetValue(weaponHash, out value) ? value : 0;
             }
 
+            internal void UpdateLeafGroups()
+            {
+                foreach (var sub in RootAi.SubGrids)
+                {
+                    if (RootAi.MyGrid == sub)
+                        continue;
+
+                    GridAi ai;
+                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                        ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo);
+                }
+            }
+
+            internal void Init(GridAi ai)
+            {
+                RootAi = ai;
+                Data.Init(this);
+            }
+
             internal void Clean()
             {
+                Data.Clean();
                 OptimalDps = 0;
                 BlockCount = 0;
                 RootAi = null;

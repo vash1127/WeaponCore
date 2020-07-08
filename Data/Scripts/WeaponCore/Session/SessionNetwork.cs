@@ -113,6 +113,11 @@ namespace WeaponCore
                             ClientFullMouseUpdate(packetObj);
                             break;
                         }
+                    case PacketType.ConstructGroups:
+                    {
+                        ClientConstructGroups(packetObj);
+                        break;
+                    }
                     case PacketType.SendSingleShot: {
                             ClientSendSingleShot(packetObj);
                             break;

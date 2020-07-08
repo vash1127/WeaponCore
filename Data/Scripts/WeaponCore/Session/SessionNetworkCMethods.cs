@@ -41,7 +41,7 @@ namespace WeaponCore
                 if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)
                 {
                     if (!success)
-                        Log.LineShortDate($"        [BadReprocess] Entity:{errorPacket.Packet?.EntityId} Cause:{errorPacket.Error ?? string.Empty}", "net");
+                        Log.LineShortDate($"        [BadReprocess] Entity:{errorPacket.Packet?.EntityId} Cause:{errorPacket.Error ?? string.Empty} Type:{errorPacket.PType}", "net");
 
                     ClientSideErrorPkt.Remove(errorPacket);
                 }
@@ -135,7 +135,7 @@ namespace WeaponCore
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
-                targetPacket.Target.SyncTarget(w);
+                targetPacket.Target.SyncTarget(w, comp.Data.Repo.Targets[w.WeaponId]);
              
                 data.Report.PacketValid = true;
             }
@@ -164,7 +164,6 @@ namespace WeaponCore
             return true;
         }
 
-
         private bool ClientAiDataUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -179,6 +178,37 @@ namespace WeaponCore
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     ai.Data.Repo.Sync(ai, aiSyncPacket.Data);
+
+                    Wheel.Dirty = true;
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ClientAiDataUpdate MID failure");
+            }
+            else
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            return true;
+        }
+
+        private bool ClientConstructGroups(PacketObj data)
+        {
+            var packet = data.Packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+            var aiSyncPacket = (ConstructGroupsPacket)packet;
+            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
+
+            GridAi ai;
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+            {
+                if (ai.MIds[(int)packet.PType] < packet.MId)  {
+                    ai.MIds[(int)packet.PType] = packet.MId;
+
+                    Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi}");
+                    var rootConstruct = ai.Construct.RootAi.Construct;
+
+                    rootConstruct.RootAi.ReScanBlockGroups();
+                    rootConstruct.Data.Repo.Sync(rootConstruct, aiSyncPacket.Data);
+                    rootConstruct.UpdateLeafGroups();
 
                     Wheel.Dirty = true;
                     data.Report.PacketValid = true;

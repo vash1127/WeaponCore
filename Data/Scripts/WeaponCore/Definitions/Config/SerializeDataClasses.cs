@@ -19,6 +19,7 @@ namespace WeaponCore
         AiData,
         CompData,
         CompState,
+        ConstructGroups,
         StateReload,
         TargetChange,
         OverRidesUpdate,
@@ -69,6 +70,7 @@ namespace WeaponCore
     [ProtoInclude(23, typeof(CompDataPacket))]
     [ProtoInclude(24, typeof(CompStatePacket))]
     [ProtoInclude(25, typeof(TargetPacket))]
+    [ProtoInclude(26, typeof(ConstructGroupsPacket))]
 
 
     public class Packet
@@ -137,6 +139,20 @@ namespace WeaponCore
         {
             base.CleanUp();
             Target = null;
+        }
+    }
+
+    [ProtoContract]
+    public class ConstructGroupsPacket : Packet
+    {
+        [ProtoMember(1)] internal ConstructDataValues Data;
+
+        public ConstructGroupsPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
         }
     }
 

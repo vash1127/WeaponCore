@@ -223,7 +223,7 @@ namespace WeaponCore
 
                 BlockGroups.Clear();
 
-                foreach (var group in Ai.Data.Repo.BlockGroups)
+                foreach (var group in Ai.Construct.Data.Repo.BlockGroups)
                 {
                     var groupName = group.Key;
                     GroupNames.Add(groupName);

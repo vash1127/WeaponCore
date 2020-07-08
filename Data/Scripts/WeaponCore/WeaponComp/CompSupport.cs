@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
@@ -11,11 +10,13 @@ namespace WeaponCore.Support
             if (Platform.State != MyWeaponPlatform.PlatformState.Ready || Status != Start.Started)
                 return;
 
-            if (Ai?.LastTerminal == MyCube)
+            if (Ai?.LastTerminal == MyCube)  {
+
                 TerminalBlock.RefreshCustomInfo();
 
-            if (update && InControlPanel)
-                MyCube.UpdateTerminal();
+                if (update && InControlPanel)
+                    MyCube.UpdateTerminal();
+            }
         }
 
         internal void RemoveComp()
@@ -42,8 +43,8 @@ namespace WeaponCore.Support
                     }
                     else Log.Line($"didnt find counter for: {MyCube.BlockDefinition.Id.SubtypeId} - {MyCube.BlockDefinition.Id.SubtypeId.String}");
 
-                    if (Ai.Data.Repo.ActiveTerminal.ActiveCubeId == MyCube.EntityId)
-                        Ai.Data.Repo.ActiveTerminal.Clean();
+                    if (Ai.Data.Repo.ActiveTerminal == MyCube.EntityId)
+                        Ai.Data.Repo.ActiveTerminal = 0;
 
                     WeaponComponent comp;
                     if (Ai.WeaponBase.TryRemove(MyCube, out comp)) {

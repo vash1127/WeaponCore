@@ -28,11 +28,6 @@ namespace WeaponCore
             {
                 Repo.Focus.Clean();
                 Repo.ControllingPlayers.Clear();
-                foreach (var bg in Repo.BlockGroups)
-                {
-                    bg.Value.CompIds.Clear();
-                    bg.Value.ChangeState = GroupInfo.ChangeStates.None;
-                }
             }
         }
 
@@ -81,17 +76,9 @@ namespace WeaponCore
             }
 
             if (validData && load.Version == VersionControl)
-            {
                 Repo = load;
-            }
-            else {
-
+            else 
                 Repo = new AiDataValues();
-                Repo.ActiveTerminal.MyGridId = Ai.MyGrid.EntityId;
-
-            }
-
-            return;
         }
     }
 }

@@ -188,6 +188,7 @@ namespace WeaponCore
         internal void SendTargetChange(WeaponComponent comp, int weaponId)
         {
             var w = comp.Platform.Weapons[weaponId];
+            ++comp.Data.Repo.Targets[w.WeaponId].Revision;
             PacketsToClient.Add(new PacketInfo
             {
                 Entity = comp.MyCube,
@@ -387,6 +388,7 @@ namespace WeaponCore
                 }
             });
         }
+
         internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
             PacketsToServer.Add(new OverRidesPacket
@@ -400,7 +402,6 @@ namespace WeaponCore
                 Value = value,
             });
         }
-
 
 
         internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
@@ -418,6 +419,23 @@ namespace WeaponCore
                     Value = value,
                 });
             }
+        }
+
+
+        internal void SendConstructGroups(GridAi ai)
+        {
+            PacketsToClient.Add(new PacketInfo
+            {
+                Entity = ai.MyGrid,
+                Packet = new ConstructGroupsPacket
+                {
+                    MId = ++ai.MIds[(int)PacketType.ConstructGroups],
+                    EntityId = ai.MyGrid.EntityId,
+                    SenderId = 0,
+                    PType = PacketType.ConstructGroups,
+                    Data = ai.Construct.Data.Repo,
+                }
+            });
         }
 
         internal void SendCompState(WeaponComponent comp, PacketType type)
@@ -467,6 +485,9 @@ namespace WeaponCore
             {
                 ++comp.Data.Repo.Revision;
                 ++comp.Data.Repo.State.Revision;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    ++comp.Data.Repo.Targets[i].Revision;
+
                 PacketsToClient.Add(new PacketInfo
                 {
                     Entity = comp.MyCube,

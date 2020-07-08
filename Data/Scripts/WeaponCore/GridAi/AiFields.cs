@@ -118,7 +118,7 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
         internal bool FirstRun = true;
-        internal bool ScanBlockGroups = true;
+        internal bool ScanBlockGroups;
         internal bool ScanBlockGroupSettings;
         internal bool Registered;
         internal bool MarkedForClose;
@@ -188,6 +188,7 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(true, grid);
             AiSpawnTick = Session.Tick;
             Data.Init(this);
+            Construct.Init(this);
 
             if (Session.IsClient)
                 Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiAdd);

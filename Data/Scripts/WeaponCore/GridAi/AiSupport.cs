@@ -77,7 +77,7 @@ namespace WeaponCore.Support
                 TerminalSystem.GetBlockGroups(null, group =>
                 {
                     GroupInfo groupInfo = null;
-                    if (Data.Repo.BlockGroups.TryGetValue(group.Name, out groupInfo)) {
+                    if (Construct.Data.Repo.BlockGroups.TryGetValue(group.Name, out groupInfo)) {
                         groupInfo.ChangeState = GroupInfo.ChangeStates.None;
                         groupInfo.Name = group.Name;
                         groupInfo.CompIds.Clear();
@@ -93,7 +93,7 @@ namespace WeaponCore.Support
                                 groupInfo = Session.GroupInfoPool.Get();
                                 groupInfo.Name = group.Name;
                                 groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
-                                Data.Repo.BlockGroups.Add(group.Name, groupInfo);
+                                Construct.Data.Repo.BlockGroups.Add(group.Name, groupInfo);
                             }
                             groupInfo.CompIds.Add(comp.MyCube.EntityId);
                             if (groupInfo.ChangeState == GroupInfo.ChangeStates.None)
@@ -105,7 +105,7 @@ namespace WeaponCore.Support
                     return false;
                 });
 
-                foreach (var group in Data.Repo.BlockGroups) {
+                foreach (var group in Construct.Data.Repo.BlockGroups) {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
                         Session.GroupInfoPool.Return(group.Value);
@@ -115,7 +115,7 @@ namespace WeaponCore.Support
                 }
 
                 for (int i = 0; i < _tmpGroupKeys.Count; i++)
-                    Data.Repo.BlockGroups.Remove(_tmpGroupKeys[i]);
+                    Construct.Data.Repo.BlockGroups.Remove(_tmpGroupKeys[i]);
                 _tmpGroupKeys.Clear();
 
                 ScanBlockGroups = false;
@@ -420,9 +420,8 @@ namespace WeaponCore.Support
             SubGrids.Clear();
 
             Data.Repo.Focus.Clean();
-            Data.Repo.BlockGroups.Clear();
             Data.Repo.ControllingPlayers.Clear();
-            Data.Repo.ActiveTerminal.Clean();
+            Data.Repo.ActiveTerminal = 0;
 
             CleanSortedTargets();
             InventoryIndexer.Clear();

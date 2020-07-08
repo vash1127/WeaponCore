@@ -99,7 +99,7 @@ namespace WeaponCore.Support
                         {
                             var target = Data.Repo.Targets[i];
                             if (target.EntityId != 0)
-                                target.SyncTarget(weapon, false);
+                                target.SyncTarget(weapon, target, false); // need to look into... is this right?
                             if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                             {
                                 weapon.Target.StateChange(true, Target.States.Invalid);
@@ -178,7 +178,6 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit) {
 
                     Ai.GridInit = true;
-                    Ai.ScanBlockGroups = true;
                     var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
 
                     for (int i = 0; i < fatList.Count; i++) {
@@ -199,6 +198,7 @@ namespace WeaponCore.Support
                         Ai.SubGridDetect();
                         Ai.SubGridChanges();
                     }
+                    Ai.ScanBlockGroups = Ai.Construct.RootAi == Ai;
                 }
 
                 var maxTrajectory = 0d;

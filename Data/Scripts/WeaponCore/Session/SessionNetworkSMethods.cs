@@ -58,7 +58,7 @@ namespace WeaponCore
                     ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
                     data.Report.PacketValid = true;
                 }
-                else Log.Line($"ServerActiveControlUpdate invalid MId");
+                else Log.Line($"ServerActiveControlUpdate invalid MId - {playerId} - existing:{ai.MIds[(int)packet.PType]} >= new:{packet.MId}");
             }
             else Log.Line($"ServerActiveControlUpdate: ai:{ai == null} - playerId:{playerId}");
 
@@ -172,11 +172,11 @@ namespace WeaponCore
                     comp.MIds[(int)packet.PType] = packet.MId;
 
                     Log.Line($"ServerOverRidesUpdate Comp1");
-
-                    comp.Ai.ReScanBlockGroups();
+                    var rootConstruct = comp.Ai.Construct.RootAi.Construct;
+                    rootConstruct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
 
                     GroupInfo group;
-                    if (comp.Ai.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
+                    if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
                     {
                         Log.Line($"ServerOverRidesUpdate Comp2");
 
@@ -186,7 +186,7 @@ namespace WeaponCore
                     else Log.Line($"ServerOverRidesUpdate couldn't find group: {overRidesPacket.GroupName}");
                 }
                 else
-                    return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
+                    return Error(data, Msg($"Mid is old, likely multiple clients attempting update - old:{comp.MIds[(int)packet.PType]} - new:{packet.MId}"));
             }
             else if (myGrid != null)
             {
@@ -196,10 +196,12 @@ namespace WeaponCore
                     if (ai.MIds[(int)packet.PType] < packet.MId) {
                         ai.MIds[(int)packet.PType] = packet.MId;
 
-                        ai.ReScanBlockGroups();
+                        var rootConstruct = ai.Construct.RootAi.Construct;
+
+                        rootConstruct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
 
                         GroupInfo groups;
-                        if (ai.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
+                        if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                         {
                             Log.Line($"ServerOverRidesUpdate myGrid3");
                             groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session, SteamToPlayer[overRidesPacket.SenderId]);
@@ -209,7 +211,7 @@ namespace WeaponCore
                             return Error(data, Msg("Block group not found"));
                     }
                     else
-                        return Error(data, Msg("Mid is old, likely multiple clients attempting update"));
+                        return Error(data, Msg($"Mid is old, likely multiple clients attempting update  - old:{ai.MIds[(int)packet.PType]} - new:{packet.MId}"));
                 }
                 else
                     return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
@@ -304,7 +306,7 @@ namespace WeaponCore
                 if (ai.MIds[(int) packet.PType] < packet.MId) {
                     ai.MIds[(int) packet.PType] = packet.MId;
                     
-                    ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
+                    ai.Construct.RootAi.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
                     data.Report.PacketValid = true;
                 }
             }

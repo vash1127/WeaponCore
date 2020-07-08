@@ -19,7 +19,7 @@ namespace WeaponCore
         [ProtoMember(2)] public int Version = Session.VersionControl;
         [ProtoMember(3)] public CompSettingsValues Set;
         [ProtoMember(4)] public CompStateValues State;
-        [ProtoMember(5)] public TransferTarget[] Targets; // synced separately
+        [ProtoMember(5)] public TransferTarget[] Targets;
 
 
         public bool Sync(WeaponComponent comp, CompDataValues sync)
@@ -28,7 +28,12 @@ namespace WeaponCore
             {
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State);
-
+                for (int i = 0; i < Targets.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    var syncT = sync.Targets[i];
+                    syncT.SyncTarget(w, Targets[i]);
+                }
                 Revision = sync.Revision;
                 Log.Line($"CompDataValues");
                 return true;
@@ -284,13 +289,13 @@ namespace WeaponCore
             Action = action;
         }
 
-
         [ProtoContract]
         public class TransferTarget
         {
-            [ProtoMember(1)] public long EntityId;
-            [ProtoMember(2)] public Vector3 TargetPos;
-            [ProtoMember(3)] public int WeaponId;
+            [ProtoMember(1)] public uint Revision;
+            [ProtoMember(2)] public long EntityId;
+            [ProtoMember(3)] public Vector3 TargetPos;
+            [ProtoMember(4)] public int WeaponId;
             //[ProtoMember(3)] public float HitShortDist;
             //[ProtoMember(4)] public float OrigDistance;
             //[ProtoMember(5)] public long TopEntityId;
@@ -306,56 +311,56 @@ namespace WeaponCore
             }
             */
 
-            internal void SyncTarget(Weapon w, bool allowChange = true)
+            internal void SyncTarget(Weapon w, TransferTarget myTransfer, bool allowChange = true)
             {
-                if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
-                    w.Reload();
+                if (Revision > myTransfer.Revision || allowChange)  {
 
-                var target = w.Target;
-                target.IsProjectile = EntityId == -1;
-                target.IsFakeTarget = EntityId == -2;
-                target.TargetPos = TargetPos;
-                target.Entity = EntityId > 0 ? MyEntities.GetEntityByIdOrDefault(EntityId) : null;
+                    myTransfer.Revision = Revision;
+                    if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
+                        w.Reload();
 
-                var state = EntityId != 0 ? Support.Target.States.Acquired : Support.Target.States.Expired;
-                target.StateChange(EntityId != 0, state);
+                    var target = w.Target;
+                    target.IsProjectile = EntityId == -1;
+                    target.IsFakeTarget = EntityId == -2;
+                    target.TargetPos = TargetPos;
+                    target.Entity = EntityId > 0 ? MyEntities.GetEntityByIdOrDefault(EntityId) : null;
 
-                /*
-                target.HitShortDist = HitShortDist;
-                target.OrigDistance = OrigDistance;
-                target.TopEntityId = TopEntityId;
+                    var state = EntityId != 0 ? Target.States.Acquired : Target.States.Expired;
+                    target.StateChange(EntityId != 0, state);
 
-                if (State == TargetInfo.IsProjectile)
-                    target.IsProjectile = true;
+                    /*
+                    target.HitShortDist = HitShortDist;
+                    target.OrigDistance = OrigDistance;
+                    target.TopEntityId = TopEntityId;
 
-                else if (State == TargetInfo.IsFakeTarget)
-                    target.IsFakeTarget = true;
-                */
+                    if (State == TargetInfo.IsProjectile)
+                        target.IsProjectile = true;
 
-                if (!allowChange)
-                    target.TargetChanged = false;
+                    else if (State == TargetInfo.IsFakeTarget)
+                        target.IsFakeTarget = true;
+                    */
 
-                if (w.Target.HasTarget && allowChange)
-                {
+                    if (!allowChange)
+                        target.TargetChanged = false;
 
-                    if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)
-                    {
-                        var oldChange = w.Target.TargetChanged;
-                        w.Target.StateChange(true, Support.Target.States.Invalid);
-                        w.Target.TargetChanged = !w.FirstSync && oldChange;
-                        w.FirstSync = false;
-                    }
-                    else if (w.Target.IsProjectile)
-                    {
+                    if (w.Target.HasTarget && allowChange)  {
 
-                        GridAi.TargetType targetType;
-                        GridAi.AcquireProjectile(w, out targetType);
+                        if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)  {
+                            var oldChange = w.Target.TargetChanged;
+                            w.Target.StateChange(true, Support.Target.States.Invalid);
+                            w.Target.TargetChanged = !w.FirstSync && oldChange;
+                            w.FirstSync = false;
+                        }
+                        else if (w.Target.IsProjectile)  {
 
-                        if (targetType == GridAi.TargetType.None)
-                        {
-                            if (w.NewTarget.CurrentState != Support.Target.States.NoTargetsSeen)
-                                w.NewTarget.Reset(w.Comp.Session.Tick, Support.Target.States.NoTargetsSeen);
-                            if (w.Target.CurrentState != Support.Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Support.Target.States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
+                            GridAi.TargetType targetType;
+                            GridAi.AcquireProjectile(w, out targetType);
+
+                            if (targetType == GridAi.TargetType.None)  {
+                                if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen)
+                                    w.NewTarget.Reset(w.Comp.Session.Tick, Support.Target.States.NoTargetsSeen);
+                                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
+                            }
                         }
                     }
                 }

@@ -54,7 +54,7 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId));
 
-                if (isWeaponBase) ScanBlockGroups = true;
+                if (isWeaponBase && Construct.RootAi == this) ScanBlockGroups = true;
                 else if (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler)
                 {
                     MyInventory inventory;
@@ -91,7 +91,7 @@ namespace WeaponCore.Support
 
                 try {
                     MyInventory inventory;
-                    if (isWeaponBase)
+                    if (isWeaponBase && Construct.RootAi == this)
                         ScanBlockGroups = true;
                     else if (cube != null && cube.HasInventory && cube.TryGetInventory(out inventory))
                     {

@@ -86,8 +86,6 @@ namespace WeaponCore
                         comp.InputState = DefaultInputStateData;
                     var compManualMode = comp.Data.Repo.State.Control == ControlMode.Camera || (comp.Data.Repo.Set.Overrides.ManualControl && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
-                    if (Tick60 && trackReticle)
-                        Log.Line($"trackReticle: manualMode:{compManualMode} - FakeTarget:{comp.Platform.Weapons[0].Target.IsFakeTarget}");
 
                     ///
                     /// Weapon update section
