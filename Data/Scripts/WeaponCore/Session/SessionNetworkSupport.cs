@@ -104,14 +104,19 @@ namespace WeaponCore
 
             if (IsClient)
             {
-                PacketsToServer.Add(new InputPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.ClientMouseEvent],
-                    EntityId = entity.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.ClientMouseEvent,
-                    Data = UiInput.ClientInputState
-                });
+                    PacketsToServer.Add(new InputPacket
+                    {
+                        MId = ++mIds[(int)PacketType.ClientMouseEvent],
+                        EntityId = entity.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ClientMouseEvent,
+                        Data = UiInput.ClientInputState
+                    });
+                }
+                else Log.Line($"SendMouseUpdate no player MIds found");
             }
             else
             {
@@ -134,16 +139,21 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new BoolUpdatePacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.ActiveControlUpdate],
-                    EntityId = controlBlock.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.ActiveControlUpdate,
-                    Data = active
-                });
+                    PacketsToServer.Add(new BoolUpdatePacket
+                    {
+                        MId = ++mIds[(int)PacketType.ActiveControlUpdate],
+                        EntityId = controlBlock.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ActiveControlUpdate,
+                        Data = active
+                    });
+                }
+                else Log.Line($"SendActiveControlUpdate no player MIds found");
             }
-            else
+            else if (HandlesInput)
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -162,27 +172,37 @@ namespace WeaponCore
 
         internal void SendActionShootUpdate(WeaponComponent comp, ShootActions action)
         {
-            comp.Session.PacketsToServer.Add(new ShootStatePacket
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
             {
-                MId = ++comp.MIds[(int)PacketType.RequestShootUpdate],
-                EntityId = comp.MyCube.EntityId,
-                SenderId = comp.Session.MultiplayerId,
-                PType = PacketType.RequestShootUpdate,
-                Action = action,
-                PlayerId = PlayerId,
-            });
+                comp.Session.PacketsToServer.Add(new ShootStatePacket
+                {
+                    MId = ++mIds[(int)PacketType.RequestShootUpdate],
+                    EntityId = comp.MyCube.EntityId,
+                    SenderId = comp.Session.MultiplayerId,
+                    PType = PacketType.RequestShootUpdate,
+                    Action = action,
+                    PlayerId = PlayerId,
+                });
+            }
+            else Log.Line($"SendActionShootUpdate no player MIds found");
         }
 
         internal void SendActiveTerminal(WeaponComponent comp)
         {
-            PacketsToServer.Add(new TerminalMonitorPacket
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
             {
-                SenderId = MultiplayerId,
-                PType = PacketType.TerminalMonitor,
-                EntityId = comp.MyCube.EntityId,
-                State = TerminalMonitorPacket.Change.Update,
-                MId = ++comp.MIds[(int)PacketType.TerminalMonitor],
-            });
+                PacketsToServer.Add(new TerminalMonitorPacket
+                {
+                    SenderId = MultiplayerId,
+                    PType = PacketType.TerminalMonitor,
+                    EntityId = comp.MyCube.EntityId,
+                    State = TerminalMonitorPacket.Change.Update,
+                    MId = ++mIds[(int)PacketType.TerminalMonitor],
+                });
+            }
+            else Log.Line($"SendActiveTerminal no player MIds found");
         }
 
         internal void SendTargetChange(WeaponComponent comp, int weaponId)
@@ -207,14 +227,18 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FakeTargetPacket
-                {
-                    MId = ++ai.MIds[(int)PacketType.FakeTargetUpdate],
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = ai.Session.MultiplayerId,
-                    PType = PacketType.FakeTargetUpdate,
-                    Data = hitPos,
-                });
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))  {
+                    PacketsToServer.Add(new FakeTargetPacket
+                    {
+                        MId = ++mIds[(int)PacketType.FakeTargetUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = ai.Session.MultiplayerId,
+                        PType = PacketType.FakeTargetUpdate,
+                        Data = hitPos,
+                    });
+                }
+                else Log.Line($"SendFakeTargetUpdate no player MIds found");
             }
             else if (HandlesInput)
             {
@@ -277,15 +301,20 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new PlayerControlRequestPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++comp.MIds[(int)PacketType.PlayerControlRequest],
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = 0,
-                    PType = PacketType.PlayerControlRequest,
-                    PlayerId = playerId,
-                    Mode = mode,
-                });
+                    PacketsToServer.Add(new PlayerControlRequestPacket
+                    {
+                        MId = ++mIds[(int)PacketType.PlayerControlRequest],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = PacketType.PlayerControlRequest,
+                        PlayerId = playerId,
+                        Mode = mode,
+                    });
+                }
+                else Log.Line($"SendPlayerControlRequest no player MIds found");
             }
             else if (HandlesInput)
             {
@@ -311,15 +340,20 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new AmmoCycleRequestPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++comp.MIds[(int)PacketType.AmmoCycleRequest],
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.AmmoCycleRequest,
-                    WeaponId = weaponId,
-                    NewAmmoId = newAmmoId,
-                });
+                    PacketsToServer.Add(new AmmoCycleRequestPacket
+                    {
+                        MId = ++mIds[(int)PacketType.AmmoCycleRequest],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.AmmoCycleRequest,
+                        WeaponId = weaponId,
+                        NewAmmoId = newAmmoId,
+                    });
+                }
+                else Log.Line($"SendAmmoCycleRequest no player MIds found");
             }
             else if (HandlesInput)
             {
@@ -344,13 +378,19 @@ namespace WeaponCore
         {
             if (IsClient) {
 
-                PacketsToServer.Add(new BoolUpdatePacket {
-                    MId = ++comp.MIds[(int)PacketType.ReticleUpdate],
-                    EntityId = comp.MyCube.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.ReticleUpdate,
-                    Data = track
-                });
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new BoolUpdatePacket
+                    {
+                        MId = ++mIds[(int)PacketType.ReticleUpdate],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ReticleUpdate,
+                        Data = track
+                    });
+                }
+                else Log.Line($"SendTrackReticleUpdate no player MIds found");
             }
             else {
                 comp.Data.Repo.State.TrackingReticle = track;
@@ -391,16 +431,24 @@ namespace WeaponCore
 
         internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
         {
-            PacketsToServer.Add(new OverRidesPacket
+            if (IsClient)
             {
-                MId = ++comp.MIds[(int)PacketType.OverRidesUpdate],
-                PType = PacketType.OverRidesUpdate,
-                EntityId = comp.MyCube.EntityId,
-                SenderId = MultiplayerId,
-                GroupName = groupName,
-                Setting = settings,
-                Value = value,
-            });
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new OverRidesPacket
+                    {
+                        MId = ++mIds[(int)PacketType.OverRidesUpdate],
+                        PType = PacketType.OverRidesUpdate,
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        GroupName = groupName,
+                        Setting = settings,
+                        Value = value,
+                    });
+                }
+                else Log.Line($"SendOverRidesClientComp no player MIds found");
+            }
         }
 
 
@@ -408,16 +456,21 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new OverRidesPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.OverRidesUpdate],
-                    PType = PacketType.OverRidesUpdate,
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    GroupName = groupName,
-                    Setting = settings,
-                    Value = value,
-                });
+                    PacketsToServer.Add(new OverRidesPacket
+                    {
+                        MId = ++mIds[(int)PacketType.OverRidesUpdate],
+                        PType = PacketType.OverRidesUpdate,
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        GroupName = groupName,
+                        Setting = settings,
+                        Value = value,
+                    });
+                }
+                else Log.Line($"SendOverRidesClientAi no player MIds found");
             }
         }
 
@@ -508,13 +561,18 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new Packet
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.RescanGroupRequest],
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.RescanGroupRequest,
-                });
+                    PacketsToServer.Add(new Packet
+                    {
+                        MId = ++mIds[(int)PacketType.RescanGroupRequest],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.RescanGroupRequest,
+                    });
+                }
+                else Log.Line($"SendGroupUpdate no player MIds found");
             }
         }
 
@@ -529,7 +587,6 @@ namespace WeaponCore
             {
                 PacketsToServer.Add(new FixedWeaponHitPacket
                 {
-                    MId = ++comp.MIds[(int)PacketType.FixedWeaponHitEvent],
                     EntityId = firingCube.EntityId,
                     SenderId = MultiplayerId,
                     PType = PacketType.FixedWeaponHitEvent,
@@ -551,14 +608,20 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FocusPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.FocusUpdate],
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.FocusUpdate,
-                    TargetId = targetId
-                });
+                    PacketsToServer.Add(new FocusPacket
+                    {
+                        MId = ++mIds[(int)PacketType.FocusUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.FocusUpdate,
+                        TargetId = targetId
+                    });
+                }
+                else Log.Line($"SendFocusTargetUpdate no player MIds found");
+
             }
             else if (HandlesInput)
             {
@@ -581,15 +644,22 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FocusPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.ReassignTargetUpdate],
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.ReassignTargetUpdate,
-                    TargetId = targetId,
-                    FocusId = focusId
-                });
+                    PacketsToServer.Add(new FocusPacket
+                    {
+                        MId = ++mIds[(int)PacketType.ReassignTargetUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ReassignTargetUpdate,
+                        TargetId = targetId,
+                        FocusId = focusId
+                    });
+                }
+                else Log.Line($"SendReassignTargetUpdate no player MIds found");
+
+
             }
             else if (HandlesInput)
             {
@@ -613,14 +683,20 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FocusPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.NextActiveUpdate],
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.NextActiveUpdate,
-                    AddSecondary = addSecondary
-                });
+                    PacketsToServer.Add(new FocusPacket
+                    {
+                        MId = ++mIds[(int)PacketType.NextActiveUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.NextActiveUpdate,
+                        AddSecondary = addSecondary
+                    });
+                }
+                else Log.Line($"SendNextActiveUpdate no player MIds found");
+
             }
             else if (HandlesInput)
             {
@@ -643,13 +719,18 @@ namespace WeaponCore
         {
             if (IsClient)
             {
-                PacketsToServer.Add(new FocusPacket
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
                 {
-                    MId = ++ai.MIds[(int)PacketType.ReleaseActiveUpdate],
-                    EntityId = ai.MyGrid.EntityId,
-                    SenderId = MultiplayerId,
-                    PType = PacketType.ReleaseActiveUpdate
-                });
+                    PacketsToServer.Add(new FocusPacket
+                    {
+                        MId = ++mIds[(int)PacketType.ReleaseActiveUpdate],
+                        EntityId = ai.MyGrid.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.ReleaseActiveUpdate
+                    });
+                }
+                else Log.Line($"SendReleaseActiveUpdate no player MIds found");
             }
             else if (HandlesInput)
             {

@@ -35,7 +35,6 @@ namespace WeaponCore
                     syncT.SyncTarget(w, Targets[i]);
                 }
                 Revision = sync.Revision;
-                Log.Line($"CompDataValues");
                 return true;
             }
 

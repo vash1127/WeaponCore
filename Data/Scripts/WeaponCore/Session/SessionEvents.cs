@@ -184,6 +184,10 @@ namespace WeaponCore
             try
             {
                 InMenu = true;
+
+                GridAi ai;
+                if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))
+                    ai.ScanBlockGroups = true;
             }
             catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}"); }
         }

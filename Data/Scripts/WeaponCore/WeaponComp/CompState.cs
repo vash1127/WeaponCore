@@ -101,6 +101,18 @@ namespace WeaponCore.Support
             Log.Line($"[ResetShootState] terminalAction: {Data.Repo.State.TerminalAction}({oldAction}) - playerId:{playerId} - action:{action} - cycle:{cycleSomething} - addShot:{addShot}");
         }
 
+        internal void ResetPlayerControl()
+        {
+            Log.Line($"ResetPlayerControl");
+            Data.Repo.State.PlayerId = -1;
+            Data.Repo.State.TerminalAction = ShootActions.ShootOff;
+            Data.Repo.State.Control = CompStateValues.ControlMode.None;
+            for (int i = 0; i < Platform.Weapons.Length; i++)
+                Data.Repo.State.Weapons[i].Action = ShootActions.ShootOff;
+
+            Session.SendCompState(this, PacketType.CompState);
+        }
+
         internal void DetectStateChanges()
         {
             if (Platform.State != MyWeaponPlatform.PlatformState.Ready)

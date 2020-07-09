@@ -198,7 +198,7 @@ namespace WeaponCore.Support
                         Ai.SubGridDetect();
                         Ai.SubGridChanges();
                     }
-                    Ai.ScanBlockGroups = Ai.Construct.RootAi == Ai;
+                    Ai.Construct.RootAi.ScanBlockGroups = true;
                 }
 
                 var maxTrajectory = 0d;

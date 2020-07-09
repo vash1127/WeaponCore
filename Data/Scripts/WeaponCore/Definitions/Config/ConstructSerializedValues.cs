@@ -13,13 +13,9 @@ namespace WeaponCore
 
         public bool Sync(Constructs construct, ConstructDataValues sync)
         {
-            if (BlockGroups.Count != sync.BlockGroups.Count)
-                Log.Line($"BlockGroups mismatch");
-
             BlockGroups.Clear();
             foreach (var s in sync.BlockGroups)
                 BlockGroups[s.Key] = s.Value;
-            Log.Line($"AiGroupValues");
             return true;
         }
     }

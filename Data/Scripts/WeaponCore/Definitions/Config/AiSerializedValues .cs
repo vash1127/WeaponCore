@@ -23,7 +23,6 @@ namespace WeaponCore
             BlockGroups.Clear();
             foreach (var s in sync.BlockGroups)
                 BlockGroups[s.Key] = s.Value;
-            Log.Line($"AiGroupValues");
             return true;
         }
     }
@@ -56,7 +55,6 @@ namespace WeaponCore
                     ControllingPlayers[s.Key] = s.Value;
 
                 Revision = sync.Revision;
-                Log.Line($"AiDataValues");
                 return true;
             }
 

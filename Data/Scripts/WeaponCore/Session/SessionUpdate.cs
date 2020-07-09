@@ -47,6 +47,9 @@ namespace WeaponCore
                 if (!ai.HasPower || false && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
+                if (ai.ScanBlockGroups)
+                    ai.Construct.GroupRefresh(ai);
+
                 ///
                 /// Comp update section
                 ///
@@ -64,6 +67,9 @@ namespace WeaponCore
                         continue;
                     }
 
+                    if (IsServer && comp.Data.Repo.State.PlayerId > -1 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId))
+                        comp.ResetPlayerControl();
+
                     if (HandlesInput) {
                         var wasTrack = comp.Data.Repo.State.TrackingReticle;
 
@@ -72,7 +78,6 @@ namespace WeaponCore
                         
                         if (IsServer)
                             comp.Data.Repo.State.TrackingReticle = track;
-                        
                         
                         if (MpActive && track != wasTrack)
                             comp.Session.SendTrackReticleUpdate(comp, track);
@@ -86,6 +91,11 @@ namespace WeaponCore
                         comp.InputState = DefaultInputStateData;
                     var compManualMode = comp.Data.Repo.State.Control == ControlMode.Camera || (comp.Data.Repo.Set.Overrides.ManualControl && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
+
+                    if (Tick600)
+                    {
+                        Log.Line($"[Report] aiControllingPlayers:{ai.Data.Repo.ControllingPlayers.Count} - BlockGroups:{ai.Construct.Data.Repo.BlockGroups.Count} - CompPlayer:{comp.Data.Repo.State.PlayerId} - CompMode:{comp.Data.Repo.State.Control} - grid:{ai.MyGrid.EntityId}");
+                    }
 
                     ///
                     /// Weapon update section

@@ -102,6 +102,7 @@ namespace WeaponCore
             if (comp.MIds[(int)PacketType.CompState] < packet.MId) {
                 comp.MIds[(int)PacketType.CompState] = packet.MId;
                 
+                Log.Line($"ClientStateUpdate");
                 compStatePacket.Data.Sync(comp, compStatePacket.Data);
             }
 
@@ -156,6 +157,7 @@ namespace WeaponCore
 
                 if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
                 {
+                    Log.Line($"ClientCompData");
                     Wheel.Dirty = true;
                     data.Report.PacketValid = true;
                 }
@@ -178,7 +180,7 @@ namespace WeaponCore
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     ai.Data.Repo.Sync(ai, aiSyncPacket.Data);
-
+                    Log.Line($"ClientAiDataUpdate");
                     Wheel.Dirty = true;
                     data.Report.PacketValid = true;
                 }

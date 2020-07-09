@@ -162,10 +162,6 @@ namespace WeaponCore
 
                     ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
 
-                    if (IsServer && ai.ScanBlockGroups && ai.Construct.RootAi == ai) 
-                        ai.Construct.UpdateConstruct(UpdateType.BlockScan);
-
-                    
                     ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count > 0 || ai.FirstRun;
 
                     MyCubeBlock activeCube;

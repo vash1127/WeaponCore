@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Havok;
 using Sandbox.Game.Entities;
 using VRage.ModAPI;
 using VRage.Utils;
@@ -154,7 +153,7 @@ namespace WeaponCore.Support
                 }
             }
 
-            public void UpdateActiveControlDictionary(GridAi ai, MyCubeBlock cube, long playerId, bool updateAdd)
+            public static void UpdateActiveControlDictionary(GridAi ai, MyCubeBlock cube, long playerId, bool updateAdd)
             {
                 if (updateAdd) //update/add
                 {
@@ -226,6 +225,27 @@ namespace WeaponCore.Support
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
                         ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo);
                 }
+            }
+
+            internal void GroupRefresh(GridAi ai)
+            {
+                var s = ai.Session;
+                if (ai != RootAi)  {
+
+                    ai.ScanBlockGroups = false;
+                    RootAi.ScanBlockGroups = true;
+                }
+                else {
+
+                    if (s.IsServer)
+                        UpdateConstruct(UpdateType.BlockScan);
+                    else  {
+                        ai.ScanBlockGroups = false;
+                        if (s.MpActive)
+                            s.SendGroupUpdate(RootAi);
+                    }
+                }
+
             }
 
             internal void Init(GridAi ai)
