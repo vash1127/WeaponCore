@@ -79,25 +79,22 @@ namespace WeaponCore.Support
                 Data.Repo.Set.Overrides.ManualControl = false;
                 Data.Repo.Set.Overrides.TargetPainter = false;
             }
-            Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
+            Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action, "ResetShootState");
 
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
                 w.SingleShotCounter = addShot ? w.SingleShotCounter++ : 0;
             }
-
-            if (action == ShootActions.ShootClick && HasTurret) {
+            if (action == ShootActions.ShootClick && HasTurret) 
                 Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
-            }
-            else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce || action == ShootActions.ShootOn) {
+            else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce ||  action == ShootActions.ShootOn)
                 Data.Repo.State.Control = CompStateValues.ControlMode.Toolbar;
-            }
             else
                 Data.Repo.State.Control = CompStateValues.ControlMode.None;
 
             playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-            Data.Repo.State.PlayerId = action == ShootActions.ShootOff && !Data.Repo.State.TrackingReticle ? -1 : playerId;
-
+            var newId = action == ShootActions.ShootOff && !Data.Repo.State.TrackingReticle ? -1 : playerId;
+            Data.Repo.State.PlayerId = newId;
             Log.Line($"[ResetShootState] terminalAction: {Data.Repo.State.TerminalAction}({oldAction}) - playerId:{playerId} - action:{action} - cycle:{cycleSomething} - addShot:{addShot}");
         }
 
@@ -105,10 +102,8 @@ namespace WeaponCore.Support
         {
             Log.Line($"ResetPlayerControl");
             Data.Repo.State.PlayerId = -1;
-            Data.Repo.State.TerminalAction = ShootActions.ShootOff;
             Data.Repo.State.Control = CompStateValues.ControlMode.None;
-            for (int i = 0; i < Platform.Weapons.Length; i++)
-                Data.Repo.State.Weapons[i].Action = ShootActions.ShootOff;
+            Data.Repo.State.TerminalActionSetter(this, ShootActions.ShootOff);
 
             Session.SendCompState(this, PacketType.CompState);
         }

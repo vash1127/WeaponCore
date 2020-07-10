@@ -40,7 +40,27 @@ namespace WeaponCore
 
             return false;
         }
+
+        public void ResetToFreshLoadState()
+        {
+            Revision = 0;
+            Set.Overrides.TargetPainter = false;
+            Set.Overrides.ManualControl = false;
+            State.Revision = 0;
+            State.Control = CompStateValues.ControlMode.None;
+            State.PlayerId = -1;
+            State.TrackingReticle = false;
+            State.TerminalAction = ShootActions.ShootOff;
+            foreach (var w in State.Weapons)
+            {
+                w.Heat = 0;
+                w.Overheated = false;
+                w.HasInventory = w.CurrentMags > 0;
+                w.Action = ShootActions.ShootOff;
+            }
+        }
     }
+
 
     [ProtoContract]
     public class CompSettingsValues
@@ -177,7 +197,6 @@ namespace WeaponCore
         {
             if (sync.Revision > Revision)
             {
-                //Log.Line($"Control:{sync.Control} - was:{Control} - PlayerId:{sync.PlayerId} - was:{PlayerId}");
                 Revision = sync.Revision;
                 TrackingReticle = sync.TrackingReticle;
                 PlayerId = sync.PlayerId;
@@ -188,7 +207,6 @@ namespace WeaponCore
                     var ws = Weapons[i];
                     var sws = sync.Weapons[i];
                     var w = comp.Platform.Weapons[i];
-                    //Log.Line($"Ammo:{sws.CurrentAmmo} -  was:{ws.CurrentAmmo} - Inventory:{sws.HasInventory} - was:{ws.HasInventory}");
 
                     if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge)
                     { // check order on these
@@ -207,26 +225,14 @@ namespace WeaponCore
             }
         }
 
-        public void ResetToFreshLoadState()
-        {
-            Control = ControlMode.None;
-            PlayerId = -1;
-            TrackingReticle = false;
-            TerminalAction = ShootActions.ShootOff;
-            foreach (var w in Weapons)
-            {
-                w.Heat = 0;
-                w.Overheated = false;
-                w.HasInventory = w.CurrentMags > 0;
-                w.Action = ShootActions.ShootOff;
-            }
-        }
-
-        public void TerminalActionSetter(WeaponComponent comp, ShootActions action)
+        public void TerminalActionSetter(WeaponComponent comp, ShootActions action, string caller = null)
         {
             TerminalAction = action;
             for (int i = 0; i < Weapons.Length; i++)
                 Weapons[i].WeaponMode(comp, action, true);
+
+            if (caller != null)
+                Log.Line(caller);
         }
 
     }

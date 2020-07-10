@@ -46,10 +46,6 @@ namespace WeaponCore
                     Log.Line($"HasFocus mismatch: {Focus.HasFocus}({sync.Focus.HasFocus})");
 
                 Focus.Sync(sync.Focus);
-
-                if (ControllingPlayers.Count != sync.ControllingPlayers.Count)
-                    Log.Line($"ControllingPlayers mismatch: is:{sync.ControllingPlayers.Count} - was:{ControllingPlayers.Count}");
-
                 ControllingPlayers.Clear();
                 foreach (var s in sync.ControllingPlayers)
                     ControllingPlayers[s.Key] = s.Value;

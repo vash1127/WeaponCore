@@ -275,7 +275,6 @@ namespace WeaponCore
             {
                 comp.Data.Repo.State.PlayerId = playerId;
                 comp.Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
-
                 if (o.ManualControl)
                 {
                     o.TargetPainter = false;

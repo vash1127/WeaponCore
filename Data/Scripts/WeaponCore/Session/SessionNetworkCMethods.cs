@@ -103,7 +103,7 @@ namespace WeaponCore
                 comp.MIds[(int)PacketType.CompState] = packet.MId;
                 
                 Log.Line($"ClientStateUpdate");
-                compStatePacket.Data.Sync(comp, compStatePacket.Data);
+                comp.Data.Repo.State.Sync(comp, compStatePacket.Data);
             }
 
             switch (packet.PType)
@@ -157,11 +157,13 @@ namespace WeaponCore
 
                 if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
                 {
-                    Log.Line($"ClientCompData");
+                    Log.Line($"ClientCompData: {packet.PType}");
                     Wheel.Dirty = true;
                     data.Report.PacketValid = true;
                 }
+                else Log.Line($"compDataSync failed: {packet.PType}");
             }
+            else Log.Line($"compDataSync mId failed: {packet.PType}");
 
             return true;
         }

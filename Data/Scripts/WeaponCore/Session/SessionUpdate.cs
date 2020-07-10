@@ -92,11 +92,6 @@ namespace WeaponCore
                     var compManualMode = comp.Data.Repo.State.Control == ControlMode.Camera || (comp.Data.Repo.Set.Overrides.ManualControl && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
 
-                    if (Tick600)
-                    {
-                        Log.Line($"[Report] aiControllingPlayers:{ai.Data.Repo.ControllingPlayers.Count} - BlockGroups:{ai.Construct.Data.Repo.BlockGroups.Count} - CompPlayer:{comp.Data.Repo.State.PlayerId} - CompMode:{comp.Data.Repo.State.Control} - grid:{ai.MyGrid.EntityId}");
-                    }
-
                     ///
                     /// Weapon update section
                     ///

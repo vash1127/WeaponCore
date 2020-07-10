@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                             Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
                             Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
                         }
-                        else Log.Line($"FatBlockAdded invalid inventory");
+                        else Log.Line($"FatBlockAdded invalid inventory - null:{inventory == null} - has:{cube.HasInventory}");
                     }
 
                     foreach (var weapon in OutOfAmmoWeapons)
@@ -113,7 +113,7 @@ namespace WeaponCore.Support
                                 if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
                                     removedBetter.Clear();
                             }
-                            else if (inventory == null) Log.Line($"FatBlockRemoved invalid inventory");
+                            else if (inventory == null) Log.Line($"FatBlockRemoved invalid inventory - hasInventory:{cube.HasInventory}");
                             
                         } catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
                     }

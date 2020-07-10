@@ -117,6 +117,7 @@ namespace WeaponCore
                                 {
                                     comp.Data.Repo.State.PlayerId = -1;
                                     comp.Data.Repo.State.Control = ControlMode.None;
+
                                 }
 
                                 if (HandlesInput && MpActive)

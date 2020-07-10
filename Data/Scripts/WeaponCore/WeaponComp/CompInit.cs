@@ -23,11 +23,8 @@ namespace WeaponCore.Support
 
                 Data.Load();
 
-                if (Session.IsServer) {
-                    Data.Repo.Set.Overrides.TargetPainter = false;
-                    Data.Repo.Set.Overrides.ManualControl = false;
-                    Data.Repo.State.ResetToFreshLoadState();
-                }
+                if (Session.IsServer)  
+                    Data.Repo.ResetToFreshLoadState();
 
                 var maxTrajectory = 0f;
                 for (int i = 0; i < Platform.Weapons.Length; i++) {

@@ -56,7 +56,6 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    Log.Line($"ServerActiveControlUpdate: {playerId}");
                     ai.Construct.UpdateConstructsPlayers(cube, playerId, dPacket.Data);
                     data.Report.PacketValid = true;
                 }
