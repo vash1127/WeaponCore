@@ -25,7 +25,7 @@ namespace WeaponCore
 
             if (Construct.RootAi.Session.IsServer)
             {
-                Repo.Focus.Clean();
+                Repo.FocusData = new FocusData { Target = new long[2] };
                 foreach (var bg in Repo.BlockGroups)
                 {
                     bg.Value.CompIds.Clear();
@@ -36,7 +36,7 @@ namespace WeaponCore
 
         public void Clean()
         {
-            Repo.Focus.Clean();
+            Repo.FocusData = null;
             Repo = null;
             Construct = null;
         }
@@ -80,6 +80,8 @@ namespace WeaponCore
             }
 
             Repo = validData ? load : new ConstructDataValues();
+            if (Repo.FocusData == null)
+                Repo.FocusData = new FocusData {Target = new long[2]};
         }
     }
 }

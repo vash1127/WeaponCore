@@ -108,7 +108,7 @@ namespace WeaponCore
                         ai.SortedTargets.Add(targetInfo);
                         ai.Targets[ent] = targetInfo;
 
-                        var checkFocus = ai.Construct.Data.Repo.Focus.HasFocus && targetInfo.Target?.EntityId == ai.Construct.Data.Repo.Focus.Target[0] || targetInfo.Target?.EntityId == ai.Construct.Data.Repo.Focus.Target[1];
+                        var checkFocus = ai.Construct.Data.Repo.FocusData.HasFocus && targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[0] || targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[1];
 
                         if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
                             ai.RamProximity = true;

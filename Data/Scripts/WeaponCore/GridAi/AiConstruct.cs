@@ -1,7 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRage.Utils;
+using WeaponCore.Platform;
+
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -73,6 +77,7 @@ namespace WeaponCore.Support
         {
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
+            internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
             internal float OptimalDps;
             internal int BlockCount;
@@ -125,7 +130,7 @@ namespace WeaponCore.Support
             }
 
 
-            internal void UpdateConstruct(UpdateType type)
+            internal void UpdateConstruct(UpdateType type, bool sync = true)
             {
                 switch (type)
                 {
@@ -133,14 +138,14 @@ namespace WeaponCore.Support
                     {
                         RootAi.ReScanBlockGroups();
                         UpdateLeafGroups();
-                        if (RootAi.Session.MpActive && RootAi.Session.IsServer)
+                        if (RootAi.Session.MpActive && RootAi.Session.IsServer && sync)
                             RootAi.Session.SendConstructGroups(RootAi);
                         break;
                     }
                     case UpdateType.Focus:
                     {
                         UpdateLeafFoci();
-                        if (RootAi.Session.MpActive && RootAi.Session.IsServer)
+                        if (RootAi.Session.MpActive && RootAi.Session.IsServer && sync)
                             RootAi.Session.SendConstructFoci(RootAi);
                         break;
                     }
@@ -229,7 +234,7 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
-                        ai.Construct.Data.Repo.Sync(RootAi.Construct.Data.Repo);
+                        ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo);
                 }
             }
 
@@ -242,7 +247,7 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
-                        ai.Construct.Data.Repo.Focus.Sync(RootAi.Construct.Data.Repo.Focus);
+                        ai.Construct.Focus.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
                 }
             }
 
@@ -282,6 +287,256 @@ namespace WeaponCore.Support
                 Counter.Clear();
                 RefreshedAis.Clear();
             }
+        }
+    }
+
+    public class Focus
+    {
+        public readonly long[] OldTarget = new long[2];
+        public int OldActiveId;
+        public bool OldHasFocus;
+        public float OldDistToNearestFocusSqr;
+        
+        public bool ChangeDetected(GridAi ai)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+            if (fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0)  {
+
+                OldTarget[0] = fd.Target[0];
+                OldTarget[1] = fd.Target[1];
+                OldActiveId = fd.ActiveId;
+                OldHasFocus = fd.HasFocus;
+                OldDistToNearestFocusSqr = fd.DistToNearestFocusSqr;
+
+                //RefreshData(ai);
+                Log.Line($"Focus Change Detected");
+                return true;
+            }
+
+            return false;
+        }
+
+        /*
+        internal void RefreshData(GridAi ai)
+        {
+            var f = ai.Construct.Data.Repo.FocusData;
+            ++f.Revision;
+            f.ActiveId = ActiveId;
+            f.HasFocus = HasFocus;
+            f.DistToNearestFocusSqr = DistToNearestFocusSqr;
+            for (int i = 0; i < f.Target.Length; i++)
+                f.Target[i] = Target[i];
+        }
+        */
+
+        internal void Sync(GridAi ai, FocusData sync)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+            for (int i = 0; i < fd.Target.Length; i++)
+                fd.Target[i] = sync.Target[i];
+
+            fd.ActiveId = sync.ActiveId;
+            fd.HasFocus = sync.HasFocus;
+            fd.DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
+            ai.Construct.Data.Repo.FocusData.Sync(sync);
+
+            Log.Line($"Rev:Target0:{fd.Target[0]}({sync.Target[0]})[{ai.Construct.Data.Repo.FocusData.Target[0]}] - Target1:{fd.Target[1]} - ActId:{fd.ActiveId} - Focus:{fd.HasFocus} - Dist:{fd.DistToNearestFocusSqr}");
+        }
+
+        internal void ServerAddFocus(MyEntity target, GridAi ai)
+        {
+            var session = ai.Session;
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            fd.Target[fd.ActiveId] = target.EntityId;
+            ai.TargetResetTick = session.Tick + 1;
+            ServerIsFocused(ai);
+
+            ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));
+        }
+
+        internal void RequestAddFocus(MyEntity target, GridAi ai)
+        {
+            if (ai.Session.IsServer)
+                ServerAddFocus(target, ai);
+            else
+                ai.Session.SendFocusTargetUpdate(ai, target.EntityId);
+        }
+
+        internal void ServerNextActive(bool addSecondary, GridAi ai)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            var prevId = fd.ActiveId;
+            var newActiveId = prevId;
+            if (newActiveId + 1 > fd.Target.Length - 1) newActiveId -= 1;
+            else newActiveId += 1;
+
+            if (addSecondary && fd.Target[newActiveId] <= 0)
+            {
+                fd.Target[newActiveId] = fd.Target[prevId];
+                fd.ActiveId = newActiveId;
+            }
+            else if (!addSecondary && fd.Target[newActiveId] > 0)
+                fd.ActiveId = newActiveId;
+
+            ServerIsFocused(ai);
+
+            ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));
+
+        }
+
+        internal void RequestNextActive(bool addSecondary, GridAi ai)
+        {
+            if (ai.Session.IsServer)
+
+                ServerNextActive(addSecondary, ai);
+            else
+                ai.Session.SendNextActiveUpdate(ai, addSecondary);
+        }
+
+        internal void ServerReleaseActive(GridAi ai)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            fd.Target[fd.ActiveId] = -1;
+
+            ServerIsFocused(ai);
+
+            ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));
+        }
+
+        internal void RequestReleaseActive(GridAi ai)
+        {
+            if (ai.Session.IsServer)
+                ServerReleaseActive(ai);
+            else
+                ai.Session.SendReleaseActiveUpdate(ai);
+
+        }
+
+        internal bool ServerIsFocused(GridAi ai)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            fd.HasFocus = false;
+            for (int i = 0; i < fd.Target.Length; i++)
+            {
+
+                if (fd.Target[i] > 0)
+                {
+
+                    if (MyEntities.GetEntityById(fd.Target[fd.ActiveId]) != null)
+                        fd.HasFocus = true;
+                    else
+                        fd.Target[i] = -1;
+                }
+
+                if (fd.Target[0] <= 0 && fd.HasFocus)
+                {
+
+                    fd.Target[0] = fd.Target[i];
+                    fd.Target[i] = -1;
+                    fd.ActiveId = 0;
+                }
+            }
+
+            //UpdateSubGrids(ai);
+
+            return fd.HasFocus;
+        }
+
+        /*
+        internal void UpdateSubGrids(GridAi ai, bool resetTick = false)
+        {
+            foreach (var sub in ai.SubGrids)
+            {
+
+                if (ai.MyGrid == sub) continue;
+
+                GridAi gridAi;
+                if (ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                {
+
+                    if (resetTick) gridAi.TargetResetTick = gridAi.Session.Tick + 1;
+                    for (int i = 0; i < gridAi.Construct.Data.Repo.Focus.Target.Length; i++)
+                    {
+                        gridAi.Construct.Data.Repo.Focus.Target[i] = Target[i];
+                        gridAi.Construct.Data.Repo.Focus.HasFocus = HasFocus;
+                        gridAi.Construct.Data.Repo.Focus.ActiveId = ActiveId;
+                    }
+                }
+            }
+        }
+        */
+
+        internal bool ClientIsFocused(GridAi ai)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            if (ai.Session.IsServer)
+                return ServerIsFocused(ai);
+
+            bool focus = false;
+            for (int i = 0; i < fd.Target.Length; i++)
+            {
+
+                if (fd.Target[i] > 0)
+                    if (MyEntities.GetEntityById(fd.Target[fd.ActiveId]) != null)
+                        focus = true;
+            }
+
+            return focus;
+        }
+
+        internal bool GetPriorityTarget(GridAi ai, out MyEntity target)
+        {
+
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            if (fd.Target[fd.ActiveId] > 0 && MyEntities.TryGetEntityById(fd.Target[fd.ActiveId], out target, true))
+                return true;
+
+            for (int i = 0; i < fd.Target.Length; i++)
+                if (MyEntities.TryGetEntityById(fd.Target[i], out target, true)) return true;
+
+            target = null;
+            return false;
+        }
+
+        internal void ReassignTarget(MyEntity target, int focusId, GridAi ai)
+        {
+            var fd = ai.Construct.Data.Repo.FocusData;
+
+            if (focusId >= fd.Target.Length || target == null || target.MarkedForClose) return;
+            fd.Target[focusId] = target.EntityId;
+            ServerIsFocused(ai);
+
+            ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));
+        }
+
+        internal bool FocusInRange(Weapon w)
+        {
+            var fd = w.Comp.Ai.Construct.Data.Repo.FocusData;
+
+            fd.DistToNearestFocusSqr = float.MaxValue;
+            for (int i = 0; i < fd.Target.Length; i++)
+            {
+                if (fd.Target[i] <= 0)
+                    continue;
+
+                MyEntity target;
+                if (MyEntities.TryGetEntityById(fd.Target[i], out target))
+                {
+                    var sphere = target.PositionComp.WorldVolume;
+                    var distSqr = (float)MyUtils.GetSmallestDistanceToSphere(ref w.MyPivotPos, ref sphere);
+                    distSqr *= distSqr;
+                    if (distSqr < fd.DistToNearestFocusSqr)
+                        fd.DistToNearestFocusSqr = distSqr;
+                }
+
+            }
+            return fd.DistToNearestFocusSqr <= w.MaxTargetDistanceSqr;
         }
     }
 }

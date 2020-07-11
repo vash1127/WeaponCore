@@ -1,12 +1,8 @@
 ﻿using System;
 using ProtoBuf;
-using Sandbox.Game.Entities;
 using System.Collections.Generic;
 using System.ComponentModel;
 using VRageMath;
-using WeaponCore.Platform;
-using WeaponCore.Support;
-using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent;
 using static WeaponCore.WeaponStateValues;
 
@@ -41,7 +37,6 @@ namespace WeaponCore
         AmmoCycleRequest,
         PlayerControlRequest,
         RescanGroupRequest,
-        GridFocusListSync,
         FixedWeaponHitEvent,
         ProblemReport,
         TerminalMonitor,
@@ -50,28 +45,25 @@ namespace WeaponCore
 
     #region packets
     [ProtoContract]
-    [ProtoInclude(5, typeof(GridWeaponPacket))]
-    [ProtoInclude(6, typeof(InputPacket))]
-    [ProtoInclude(7, typeof(BoolUpdatePacket))]
-    [ProtoInclude(8, typeof(FakeTargetPacket))]
-    [ProtoInclude(10, typeof(FocusPacket))]
-    [ProtoInclude(11, typeof(WeaponIdPacket))]
-    [ProtoInclude(12, typeof(RequestTargetsPacket))]
-    [ProtoInclude(13, typeof(MouseInputSyncPacket))]
-    [ProtoInclude(14, typeof(AiDataPacket))]
-    [ProtoInclude(15, typeof(GridFocusListPacket))]
-    [ProtoInclude(16, typeof(FixedWeaponHitPacket))]
-    [ProtoInclude(17, typeof(ProblemReportPacket))]
-    [ProtoInclude(18, typeof(AmmoCycleRequestPacket))]
-    [ProtoInclude(19, typeof(ShootStatePacket))]
-    [ProtoInclude(20, typeof(OverRidesPacket))]
-    [ProtoInclude(21, typeof(PlayerControlRequestPacket))]
-    [ProtoInclude(22, typeof(TerminalMonitorPacket))]
-    [ProtoInclude(23, typeof(CompDataPacket))]
-    [ProtoInclude(24, typeof(CompStatePacket))]
-    [ProtoInclude(25, typeof(TargetPacket))]
-    [ProtoInclude(26, typeof(ConstructGroupsPacket))]
-    [ProtoInclude(27, typeof(ConstructFociPacket))]
+    [ProtoInclude(5, typeof(InputPacket))]
+    [ProtoInclude(6, typeof(BoolUpdatePacket))]
+    [ProtoInclude(7, typeof(FakeTargetPacket))]
+    [ProtoInclude(8, typeof(FocusPacket))]
+    [ProtoInclude(9, typeof(WeaponIdPacket))]
+    [ProtoInclude(10, typeof(MouseInputSyncPacket))]
+    [ProtoInclude(11, typeof(AiDataPacket))]
+    [ProtoInclude(12, typeof(FixedWeaponHitPacket))]
+    [ProtoInclude(13, typeof(ProblemReportPacket))]
+    [ProtoInclude(14, typeof(AmmoCycleRequestPacket))]
+    [ProtoInclude(15, typeof(ShootStatePacket))]
+    [ProtoInclude(16, typeof(OverRidesPacket))]
+    [ProtoInclude(17, typeof(PlayerControlRequestPacket))]
+    [ProtoInclude(18, typeof(TerminalMonitorPacket))]
+    [ProtoInclude(19, typeof(CompDataPacket))]
+    [ProtoInclude(20, typeof(CompStatePacket))]
+    [ProtoInclude(21, typeof(TargetPacket))]
+    [ProtoInclude(22, typeof(ConstructGroupsPacket))]
+    [ProtoInclude(23, typeof(ConstructFociPacket))]
 
 
     public class Packet
@@ -160,7 +152,7 @@ namespace WeaponCore
     [ProtoContract]
     public class ConstructFociPacket : Packet
     {
-        [ProtoMember(1)] internal Focus Data;
+        [ProtoMember(1)] internal FocusData Data;
 
         public ConstructFociPacket() { }
 
@@ -253,19 +245,6 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class GridWeaponPacket : Packet
-    {
-        [ProtoMember(1)] internal List<WeaponStateValues> Data;
-        public GridWeaponPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Data = null;
-        }
-    }
-
-    [ProtoContract]
     public class InputPacket : Packet
     {
         [ProtoMember(1)] internal InputStateData Data;
@@ -336,19 +315,6 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class RequestTargetsPacket : Packet
-    {
-        [ProtoMember(1)] internal List<long> Comps;
-
-        public RequestTargetsPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            Comps.Clear();
-        }
-    }
 
     [ProtoContract]
     public class MouseInputSyncPacket : Packet
@@ -376,18 +342,6 @@ namespace WeaponCore
         }
     }
 
-    [ProtoContract]
-    public class GridFocusListPacket : Packet
-    {
-        [ProtoMember(1)] internal long[] EntityIds;
-        public GridFocusListPacket() { }
-
-        public override void CleanUp()
-        {
-            base.CleanUp();
-            EntityIds = null;
-        }
-    }
 
     [ProtoContract]
     public class FixedWeaponHitPacket : Packet
@@ -465,17 +419,6 @@ namespace WeaponCore
         [ProtoMember(5)] internal Dictionary<string, string> Weapon = new Dictionary<string, string>();
 
         public DataReport() { }
-    }
-
-    [ProtoContract]
-    public class WeaponData
-    {
-        [ProtoMember(1)] internal TransferTarget TargetData;
-        [ProtoMember(2)] internal long CompEntityId;
-        [ProtoMember(3)] internal WeaponStateValues SyncData;
-        [ProtoMember(4)] internal WeaponRandomGenerator WeaponRng;
-
-        public WeaponData() { }
     }
 
     [ProtoContract]

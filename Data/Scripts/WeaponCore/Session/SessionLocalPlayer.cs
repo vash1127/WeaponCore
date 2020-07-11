@@ -36,7 +36,7 @@ namespace WeaponCore
             {
                 if (TrackingAi != null)
                 {
-                    TrackingAi.Construct.Data.Repo.Focus.ClientIsFocused(TrackingAi);
+                    TrackingAi.Construct.Focus.ClientIsFocused(TrackingAi);
 
                     MyCubeBlock oldBlock;
                     if (TrackingAi.Data.Repo.ControllingPlayers.TryGetValue(PlayerId, out oldBlockId) && MyEntities.TryGetEntityById(oldBlockId, out oldBlock, true)) {
@@ -161,7 +161,7 @@ namespace WeaponCore
         internal void TargetSelection()
         {
             if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.ClientInputState.MouseButtonRight) && InGridAiBlock)
-                TrackingAi.Construct.Data.Repo.Focus.RequestReleaseActive(TrackingAi);
+                TrackingAi.Construct.Focus.RequestReleaseActive(TrackingAi);
 
             if (InGridAiBlock)
             {
@@ -172,7 +172,7 @@ namespace WeaponCore
                     if (UiInput.CurrentWheel != UiInput.PreviousWheel)
                         TargetUi.SelectNext();
                     else if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift)
-                        TrackingAi.Construct.Data.Repo.Focus.RequestNextActive(UiInput.LongShift, TrackingAi);
+                        TrackingAi.Construct.Focus.RequestNextActive(UiInput.LongShift, TrackingAi);
                 }
             }
         }
@@ -218,7 +218,7 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (!ai.Construct.Data.Repo.Focus.ClientIsFocused(ai)) return false;
+            if (!ai.Construct.Focus.ClientIsFocused(ai)) return false;
 
             if (ai != TrackingAi)
             {
@@ -226,14 +226,14 @@ namespace WeaponCore
                 return false;
             }
 
-            return ai.Construct.Data.Repo.Focus.HasFocus;
+            return ai.Construct.Data.Repo.FocusData.HasFocus;
         }
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
             
             TrackingAi = ai;
-            ai.Construct.Data.Repo.Focus.RequestAddFocus(entity, ai);
+            ai.Construct.Focus.RequestAddFocus(entity, ai);
 
             GridAi gridAi;
             TargetArmed = false;

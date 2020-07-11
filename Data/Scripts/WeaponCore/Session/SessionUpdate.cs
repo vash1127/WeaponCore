@@ -221,7 +221,7 @@ namespace WeaponCore
                         var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
-                        w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.Focus.HasFocus && ai.Construct.Data.Repo.Focus.FocusInRange(w);
+                        w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
 
                         if (canShoot && (shoot || w.LockOnFireState)) {
 

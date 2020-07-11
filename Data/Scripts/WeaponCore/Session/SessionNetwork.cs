@@ -56,7 +56,11 @@ namespace WeaponCore
             try
             {
                 var packet = MyAPIGateway.Utilities.SerializeFromBinary<Packet>(rawData);
-                if (packet == null) return;
+                if (packet == null)
+                {
+                    Log.Line($"ClientReceivedPacket null packet");
+                    return;
+                }
 
                 var packetSize = rawData.Length;
                 var report = Reporter.ReportPool.Get();
@@ -158,6 +162,7 @@ namespace WeaponCore
                         ClientSideErrorPkt.Add(packetObj.ErrorPacket);
                     else {
                         //this only works because hashcode override in ErrorPacket
+                        Log.Line($"readding bad packet: {packetObj.ErrorPacket.RetryAttempt}");
                         ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
                         ClientSideErrorPkt.Add(packetObj.ErrorPacket);
                     }

@@ -87,10 +87,10 @@ namespace WeaponCore.Support
             int offset = 0;
 
             MyEntity fTarget;
-            if (ai.Construct.Data.Repo.Focus.Target[0] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.Focus.Target[0], out fTarget) && ai.Targets.TryGetValue(fTarget, out alphaInfo))
+            if (ai.Construct.Data.Repo.FocusData.Target[0] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.FocusData.Target[0], out fTarget) && ai.Targets.TryGetValue(fTarget, out alphaInfo))
                 offset++;
 
-            if (ai.Construct.Data.Repo.Focus.Target[1] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.Focus.Target[1], out fTarget) && ai.Targets.TryGetValue(fTarget, out betaInfo))
+            if (ai.Construct.Data.Repo.FocusData.Target[1] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.FocusData.Target[1], out fTarget) && ai.Targets.TryGetValue(fTarget, out betaInfo))
                 offset++;
 
             var numOfTargets = ai.SortedTargets.Count;
@@ -173,10 +173,10 @@ namespace WeaponCore.Support
             int offset = 0;
 
             MyEntity fTarget;
-            if (ai.Construct.Data.Repo.Focus.Target[0] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.Focus.Target[0], out fTarget) && ai.Targets.TryGetValue(fTarget, out alphaInfo))
+            if (ai.Construct.Data.Repo.FocusData.Target[0] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.FocusData.Target[0], out fTarget) && ai.Targets.TryGetValue(fTarget, out alphaInfo))
                 offset++;
 
-            if (ai.Construct.Data.Repo.Focus.Target[1] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.Focus.Target[1], out fTarget) && ai.Targets.TryGetValue(fTarget, out betaInfo))
+            if (ai.Construct.Data.Repo.FocusData.Target[1] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.FocusData.Target[1], out fTarget) && ai.Targets.TryGetValue(fTarget, out betaInfo))
                 offset++;
 
             TargetInfo gridInfo = null;
@@ -348,12 +348,12 @@ namespace WeaponCore.Support
             {
                 TargetInfo priorityInfo;
                 MyEntity fTarget;
-                if (ai.Construct.Data.Repo.Focus.Target[0] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.Focus.Target[0], out fTarget) && ai.Targets.TryGetValue(fTarget, out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)
+                if (ai.Construct.Data.Repo.FocusData.Target[0] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.FocusData.Target[0], out fTarget) && ai.Targets.TryGetValue(fTarget, out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)
                 {
                     isPriroity = true;
                     lastBlocks = totalBlocks < 250 ? totalBlocks : 250;
                 }
-                else if (ai.Construct.Data.Repo.Focus.Target[1] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.Focus.Target[1], out fTarget) && ai.Targets.TryGetValue(fTarget, out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)                
+                else if (ai.Construct.Data.Repo.FocusData.Target[1] > 0 && MyEntities.TryGetEntityById(ai.Construct.Data.Repo.FocusData.Target[1], out fTarget) && ai.Targets.TryGetValue(fTarget, out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)                
                 {
                     isPriroity = true;
                     lastBlocks = totalBlocks < 250 ? totalBlocks : 250;
