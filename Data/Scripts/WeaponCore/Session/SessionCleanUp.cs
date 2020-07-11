@@ -81,13 +81,6 @@ namespace WeaponCore
             PacketsToClient.Clear();
             PacketsToServer.Clear();
 
-            foreach (var suit in (PacketType[]) Enum.GetValues(typeof(PacketType)))
-            {
-                foreach (var pool in PacketPools.Values)
-                    pool.Clean();
-                PacketPools.Clear();
-            }
-
             AcqManager.Clean();
 
             foreach (var e in Emitters)

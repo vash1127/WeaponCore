@@ -362,24 +362,20 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
+            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
 
                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
                 switch (packet.PType) {
                     case PacketType.FocusUpdate:
                         if (targetGrid != null)
-                            ai.Data.Repo.Focus.AddFocus(targetGrid, ai, true);
-                        break;
-                    case PacketType.ReassignTargetUpdate:
-                        if (targetGrid != null)
-                            ai.Data.Repo.Focus.ReassignTarget(targetGrid, focusPacket.FocusId, ai, true);
+                            ai.Construct.Data.Repo.Focus.ServerAddFocus(targetGrid, ai);
                         break;
                     case PacketType.NextActiveUpdate:
-                        ai.Data.Repo.Focus.NextActive(focusPacket.AddSecondary, ai, true);
+                        ai.Construct.Data.Repo.Focus.ServerNextActive(focusPacket.AddSecondary, ai);
                         break;
                     case PacketType.ReleaseActiveUpdate:
-                        ai.Data.Repo.Focus.ReleaseActive(ai, true);
+                        ai.Construct.Data.Repo.Focus.RequestReleaseActive(ai);
                         break;
                 }
 

@@ -419,7 +419,6 @@ namespace WeaponCore.Support
 
             SubGrids.Clear();
 
-            Data.Repo.Focus.Clean();
             Data.Repo.ControllingPlayers.Clear();
             Data.Repo.ActiveTerminal = 0;
 

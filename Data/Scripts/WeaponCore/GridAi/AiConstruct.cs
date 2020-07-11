@@ -87,8 +87,7 @@ namespace WeaponCore.Support
             internal enum UpdateType
             {
                 BlockScan,
-                Overrides,
-                //ManualShootingOff,
+                Focus,
                 None,
             }
 
@@ -136,6 +135,13 @@ namespace WeaponCore.Support
                         UpdateLeafGroups();
                         if (RootAi.Session.MpActive && RootAi.Session.IsServer)
                             RootAi.Session.SendConstructGroups(RootAi);
+                        break;
+                    }
+                    case UpdateType.Focus:
+                    {
+                        UpdateLeafFoci();
+                        if (RootAi.Session.MpActive && RootAi.Session.IsServer)
+                            RootAi.Session.SendConstructFoci(RootAi);
                         break;
                     }
                 }
@@ -223,7 +229,20 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
-                        ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo);
+                        ai.Construct.Data.Repo.Sync(RootAi.Construct.Data.Repo);
+                }
+            }
+
+            internal void UpdateLeafFoci()
+            {
+                foreach (var sub in RootAi.SubGrids)
+                {
+                    if (RootAi.MyGrid == sub)
+                        continue;
+
+                    GridAi ai;
+                    if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                        ai.Construct.Data.Repo.Focus.Sync(RootAi.Construct.Data.Repo.Focus);
                 }
             }
 

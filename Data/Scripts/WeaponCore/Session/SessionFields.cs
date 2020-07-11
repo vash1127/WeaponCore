@@ -62,6 +62,12 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
+        internal readonly MyConcurrentPool<ConstructGroupsPacket> PacketConstructPool = new MyConcurrentPool<ConstructGroupsPacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<ConstructFociPacket> PacketConstructFociPool = new MyConcurrentPool<ConstructFociPacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<AiDataPacket> PacketAiPool = new MyConcurrentPool<AiDataPacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<CompDataPacket> PacketCompDataPool = new MyConcurrentPool<CompDataPacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(128, packet => packet.CleanUp());
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<MySoundPair> SoundPairs = new Stack<MySoundPair>(256);
@@ -89,7 +95,6 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
         
-        internal readonly Dictionary<PacketType, MyConcurrentPool<Packet>> PacketPools = new Dictionary<PacketType, MyConcurrentPool<Packet>>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
@@ -106,7 +111,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyCubeBlock, WeaponComponent> ArmorCubes = new Dictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyInventory, MyFixedPoint> InventoryVolume = new Dictionary<MyInventory, MyFixedPoint>();
         internal readonly Dictionary<ulong, uint[]> PlayerMIds = new Dictionary<ulong, uint[]>();
-        
+        internal readonly Dictionary<object, PacketInfo> PrunedPacketsToClient = new Dictionary<object, PacketInfo>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -357,11 +362,6 @@ namespace WeaponCore
 
             HeatEmissives = CreateHeatEmissive();
             LoadVanillaData();
-            var arrayOfPacketTypes = Enum.GetValues(typeof(PacketType));
-            foreach (var suit in (PacketType[]) arrayOfPacketTypes)
-            {
-                PacketPools.Add(suit, new MyConcurrentPool<Packet>(128, packet => packet.CleanUp()));
-            }
 
             for (int i = 0; i < AuthorSettings.Length; i++)
                 AuthorSettings[i] = -1;

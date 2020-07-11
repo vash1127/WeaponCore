@@ -75,7 +75,7 @@ namespace WeaponCore.Platform
                     return;
 
                 MyEntity focusTarget;
-                if (LockOnFireState && (Target.Entity?.EntityId != Comp.Ai.Data.Repo.Focus.Target[0] || Target.Entity?.EntityId != Comp.Ai.Data.Repo.Focus.Target[1]) && Comp.Ai.Data.Repo.Focus.GetPriorityTarget(out focusTarget))
+                if (LockOnFireState && (Target.Entity?.EntityId != Comp.Ai.Construct.Data.Repo.Focus.Target[0] || Target.Entity?.EntityId != Comp.Ai.Construct.Data.Repo.Focus.Target[1]) && Comp.Ai.Construct.Data.Repo.Focus.GetPriorityTarget(out focusTarget))
                     Target.LockTarget(this, focusTarget);
 
                 ShootTick = tick + TicksPerShot;

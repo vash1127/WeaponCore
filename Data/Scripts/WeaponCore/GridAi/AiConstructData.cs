@@ -25,6 +25,7 @@ namespace WeaponCore
 
             if (Construct.RootAi.Session.IsServer)
             {
+                Repo.Focus.Clean();
                 foreach (var bg in Repo.BlockGroups)
                 {
                     bg.Value.CompIds.Clear();
@@ -35,6 +36,7 @@ namespace WeaponCore
 
         public void Clean()
         {
+            Repo.Focus.Clean();
             Repo = null;
             Construct = null;
         }

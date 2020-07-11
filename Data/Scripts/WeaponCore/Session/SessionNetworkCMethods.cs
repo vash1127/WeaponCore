@@ -34,7 +34,7 @@ namespace WeaponCore
                 report.PacketSize = 0;
                 Reporter.ReportData[errorPacket.Packet.PType].Add(report);
                 var packetObj = PacketObjPool.Get();
-                packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+                packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report;
 
                 var success = ProccessClientPacket(packetObj, false);
 
@@ -54,39 +54,115 @@ namespace WeaponCore
             ClientSideErrorPkt.ApplyChanges();
         }
 
-        private bool ClientFakeTargetUpdate(PacketObj data)
+        private bool ClientConstructGroups(PacketObj data)
         {
             var packet = data.Packet;
-            data.ErrorPacket.NoReprocess = true;
-            var targetPacket = (FakeTargetPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+            var aiSyncPacket = (ConstructGroupsPacket)packet;
+            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
-            //TODO client uses try get in case packets are out of order, no need to reprocess as fake targets are sent very often
-            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
             {
-                if (ai.MIds[(int)packet.PType] < packet.MId) {
+                if (ai.MIds[(int)packet.PType] < packet.MId)
+                {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
-                    long playerId;
-                    if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
-                    {
-                        FakeTarget dummyTarget;
-                        if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
-                        {
-                            dummyTarget.Update(targetPacket.Data, ai);
-                            data.Report.PacketValid = true;
-                        }
-                        else
-                            return Error(data, Msg("Player dummy target not found"));
-                    }
-                    else
-                        return Error(data, Msg("SteamToPlayer missing Player"));
+                    Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi}");
+                    var rootConstruct = ai.Construct.RootAi.Construct;
+
+                    rootConstruct.RootAi.ReScanBlockGroups();
+                    rootConstruct.Data.Repo.Sync(aiSyncPacket.Data);
+                    rootConstruct.UpdateLeafGroups();
+
+                    Wheel.Dirty = true;
+                    data.Report.PacketValid = true;
                 }
-                else Log.Line($"ClientFakeTargetUpdate comp MID failure");
+                else Log.Line($"ClientAiDataUpdate MID failure");
             }
             else
-                return Error(data, Msg($"GridId: {packet.EntityId}", myGrid != null), Msg("Ai"));
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            return true;
+        }
+
+        private bool ClientConstructFoci(PacketObj data)
+        {
+            var packet = data.Packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+            var fociPacket = (ConstructFociPacket)packet;
+            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
+
+            GridAi ai;
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+            {
+                if (ai.MIds[(int)packet.PType] < packet.MId)  {
+                    ai.MIds[(int)packet.PType] = packet.MId;
+
+                    Log.Line($"ClientConstructFoci: isRoot:{ai == ai.Construct.RootAi}");
+                    var rootConstruct = ai.Construct.RootAi.Construct;
+
+                    rootConstruct.Data.Repo.Focus.Sync(fociPacket.Data);
+                    rootConstruct.UpdateLeafFoci();
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ClientAiDataUpdate MID failure");
+            }
+            else
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            return true;
+        }
+
+        private bool ClientAiDataUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
+            var aiSyncPacket = (AiDataPacket)packet;
+            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
+
+            GridAi ai;
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+            {
+
+                if (ai.MIds[(int)packet.PType] < packet.MId)
+                {
+                    ai.MIds[(int)packet.PType] = packet.MId;
+
+                    ai.Data.Repo.Sync(aiSyncPacket.Data);
+                    Log.Line($"ClientAiDataUpdate");
+                    Wheel.Dirty = true;
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"ClientAiDataUpdate MID failure");
+            }
+            else
+                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+
+            return true;
+        }
+
+        private bool ClientCompData(PacketObj data)
+        {
+            var packet = data.Packet;
+            var compDataPacket = (CompDataPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
+                {
+                    Log.Line($"ClientCompData: {packet.PType}");
+                    Wheel.Dirty = true;
+                    data.Report.PacketValid = true;
+                }
+                else Log.Line($"compDataSync failed: {packet.PType}");
+            }
+            else Log.Line($"compDataSync mId failed: {packet.PType}");
 
             return true;
         }
@@ -99,9 +175,10 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)PacketType.CompState] < packet.MId) {
+            if (comp.MIds[(int)PacketType.CompState] < packet.MId)
+            {
                 comp.MIds[(int)PacketType.CompState] = packet.MId;
-                
+
                 Log.Line($"ClientStateUpdate");
                 comp.Data.Repo.State.Sync(comp, compStatePacket.Data);
             }
@@ -133,97 +210,55 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[targetPacket.Target.WeaponId];
-            if (w.MIds[(int)packet.PType] < packet.MId)  {
+            if (w.MIds[(int)packet.PType] < packet.MId)
+            {
                 w.MIds[(int)packet.PType] = packet.MId;
 
                 targetPacket.Target.SyncTarget(w, comp.Data.Repo.Targets[w.WeaponId]);
-             
+
                 data.Report.PacketValid = true;
             }
 
             return true;
         }
 
-        private bool ClientCompData(PacketObj data)
+
+        private bool ClientFakeTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;
-            var compDataPacket = (CompDataPacket)packet;
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            if (comp.MIds[(int) packet.PType] < packet.MId) {
-                comp.MIds[(int) packet.PType] = packet.MId;
-
-                if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
-                {
-                    Log.Line($"ClientCompData: {packet.PType}");
-                    Wheel.Dirty = true;
-                    data.Report.PacketValid = true;
-                }
-                else Log.Line($"compDataSync failed: {packet.PType}");
-            }
-            else Log.Line($"compDataSync mId failed: {packet.PType}");
-
-            return true;
-        }
-
-        private bool ClientAiDataUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
+            data.ErrorPacket.NoReprocess = true;
+            var targetPacket = (FakeTargetPacket)packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            var aiSyncPacket = (AiDataPacket)packet;
-            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-
+            if (myGrid != null && GridTargetingAIs.TryGetValue(myGrid, out ai))
+            {
                 if (ai.MIds[(int)packet.PType] < packet.MId) {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
-                    ai.Data.Repo.Sync(ai, aiSyncPacket.Data);
-                    Log.Line($"ClientAiDataUpdate");
-                    Wheel.Dirty = true;
-                    data.Report.PacketValid = true;
+                    long playerId;
+                    if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+                    {
+                        FakeTarget dummyTarget;
+                        if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
+                        {
+                            dummyTarget.Update(targetPacket.Data, ai);
+                            data.Report.PacketValid = true;
+                        }
+                        else
+                            return Error(data, Msg("Player dummy target not found"));
+                    }
+                    else
+                        return Error(data, Msg("SteamToPlayer missing Player"));
                 }
-                else Log.Line($"ClientAiDataUpdate MID failure");
+                else Log.Line($"ClientFakeTargetUpdate comp MID failure");
             }
             else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
+                return Error(data, Msg($"GridId: {packet.EntityId}", myGrid != null), Msg("Ai"));
 
             return true;
         }
-
-        private bool ClientConstructGroups(PacketObj data)
-        {
-            var packet = data.Packet;
-            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            var aiSyncPacket = (ConstructGroupsPacket)packet;
-            if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
-
-            GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-            {
-                if (ai.MIds[(int)packet.PType] < packet.MId)  {
-                    ai.MIds[(int)packet.PType] = packet.MId;
-
-                    Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi}");
-                    var rootConstruct = ai.Construct.RootAi.Construct;
-
-                    rootConstruct.RootAi.ReScanBlockGroups();
-                    rootConstruct.Data.Repo.Sync(rootConstruct, aiSyncPacket.Data);
-                    rootConstruct.UpdateLeafGroups();
-
-                    Wheel.Dirty = true;
-                    data.Report.PacketValid = true;
-                }
-                else Log.Line($"ClientAiDataUpdate MID failure");
-            }
-            else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-
-            return true;
-        }
+        /*
 
         private bool ClientGridFocusListSync(PacketObj data)
         {
@@ -255,7 +290,6 @@ namespace WeaponCore
 
             return true;
         }
-
         private bool ClientFocusStates(PacketObj data)
         {
             var packet = data.Packet;
@@ -285,7 +319,7 @@ namespace WeaponCore
                             ai.Data.Repo.Focus.NextActive(focusPacket.AddSecondary, ai, true);
                             break;
                         case PacketType.ReleaseActiveUpdate:
-                            ai.Data.Repo.Focus.ReleaseActive(ai, true);
+                            ai.Data.Repo.Focus.RequestReleaseActive(ai);
                             break;
                     }
                     data.Report.PacketValid = true;
@@ -298,7 +332,7 @@ namespace WeaponCore
             return true;
 
         }
-
+        */
         // no storge sync
 
         private bool ClientPlayerIdUpdate(PacketObj data)

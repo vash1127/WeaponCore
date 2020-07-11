@@ -179,8 +179,8 @@ namespace WeaponCore.Api
             if (shootingGrid != null)
             {
                 GridAi ai;
-                if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
-                    return MyEntities.GetEntityById(ai.Data.Repo.Focus.Target[priority]);
+                if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
+                    return MyEntities.GetEntityById(ai.Construct.Data.Repo.Focus.Target[priority]);
             }
             return null;
         }
@@ -192,9 +192,9 @@ namespace WeaponCore.Api
             if (shootingGrid != null)
             {
                 GridAi ai;
-                if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
+                if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
                 {
-                    ai.Data.Repo.Focus.ReassignTarget((MyEntity)target, priority, ai);
+                    ai.Construct.Data.Repo.Focus.ReassignTarget((MyEntity)target, priority, ai);
                     return true;
                 }
             }

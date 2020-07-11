@@ -50,6 +50,10 @@ namespace WeaponCore
                 
                 Timings();
 
+                if (IsClient)  {
+                    if (ClientSideErrorPkt.Count > 0)
+                        ReproccessClientErrorPackets();
+                }
                 /*
                 for (int i = DebugLines.Count - 1; i >= 0; i--)
                     if (!DebugLines[i].Draw(Tick))
@@ -173,14 +177,13 @@ namespace WeaponCore
                 if (!DedicatedServer) Av.End();
                 DsUtil.Complete("av", true);
 
-                if (MpActive)
-                {
+                if (MpActive)  {
+                    
                     DsUtil.Start("network1");
-                    if (UiInput.InputChanged && ActiveControlBlock != null) SendMouseUpdate(TrackingAi, ActiveControlBlock);
-
-                    if (PacketsToClient.Count > 0) ProccessServerPacketsForClients();
-                    if (PacketsToServer.Count > 0) ProccessClientPacketsForServer();
-                    if (ClientSideErrorPkt.Count > 0) ReproccessClientErrorPackets();
+                    if (PacketsToClient.Count > 0 || PrunedPacketsToClient.Count > 0) 
+                        ProccessServerPacketsForClients();
+                    if (PacketsToServer.Count > 0) 
+                        ProccessClientPacketsForServer();
 
                     DsUtil.Complete("network1", true);
                 }
@@ -223,7 +226,6 @@ namespace WeaponCore
 
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
-
                     if (Wheel.WheelActive) Wheel.DrawWheel();
                     TargetUi.DrawTargetUi();
                 }
@@ -237,14 +239,22 @@ namespace WeaponCore
 
         public override void HandleInput()
         {
-            if (HandlesInput && !SupressLoad)
-            {
+            if (HandlesInput && !SupressLoad) {
+
                 UiInput.UpdateInputState();
-                if (MpActive && TrackingAi != null)
-                {
-                    var dummyTarget = PlayerDummyTargets[PlayerId];
-                    if (dummyTarget.LastUpdateTick == Tick)
-                        SendFakeTargetUpdate(TrackingAi, dummyTarget.Position);
+                if (MpActive)  {
+
+                    if (UiInput.InputChanged && ActiveControlBlock != null) 
+                        SendMouseUpdate(TrackingAi, ActiveControlBlock);
+                    
+                    if (TrackingAi != null)  {
+                        var dummyTarget = PlayerDummyTargets[PlayerId];
+                        if (dummyTarget.LastUpdateTick == Tick)
+                            SendFakeTargetUpdate(TrackingAi, dummyTarget.Position);
+                    }
+
+                    if (PacketsToServer.Count > 0)
+                        ProccessClientPacketsForServer();
                 }
             }
         }

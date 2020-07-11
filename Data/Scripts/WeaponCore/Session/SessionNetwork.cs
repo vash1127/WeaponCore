@@ -63,9 +63,10 @@ namespace WeaponCore
                 report.Receiver = NetworkReporter.Report.Received.Client;
                 report.PacketSize = packetSize;
                 Reporter.ReportData[packet.PType].Add(report);
-                var errorPacket = new ErrorPacket {RecievedTick = Tick, Packet = packet};
                 var packetObj = PacketObjPool.Get();
-                packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+                packetObj.ErrorPacket.RecievedTick = Tick;
+                packetObj.ErrorPacket.Packet = packet;
+                packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report;
 
                 ProccessClientPacket(packetObj);
             }
@@ -78,19 +79,33 @@ namespace WeaponCore
                 var invalidType = false;
                 switch (packetObj.Packet.PType) {
 
-                    case PacketType.FakeTargetUpdate: {
+                    case PacketType.FakeTargetUpdate: 
+                    {
                             ClientFakeTargetUpdate(packetObj);
                             break;
-                        }
-                    case PacketType.PlayerIdUpdate: {
+                    }
+                    case PacketType.PlayerIdUpdate: 
+                    {
                             ClientPlayerIdUpdate(packetObj); 
                             break;
-                        }
-                    case PacketType.ClientMouseEvent: {
+                    }
+                    case PacketType.ClientMouseEvent: 
+                    {
                             ClientClientMouseEvent(packetObj);
                             break;
-                        }
-                    case PacketType.AiData: {
+                    }
+                    case PacketType.ConstructGroups:
+                    {
+                        ClientConstructGroups(packetObj);
+                        break;
+                    }
+                    case PacketType.ConstructFoci:
+                    {
+                        ClientConstructFoci(packetObj);
+                        break;
+                    }
+                    case PacketType.AiData: 
+                    {
                         ClientAiDataUpdate(packetObj);
                         break;
                     }
@@ -100,45 +115,34 @@ namespace WeaponCore
                         ClientStateUpdate(packetObj);
                         break;
                     }
+                    case PacketType.CompData:
+                    {
+                        ClientCompData(packetObj);
+                        break;
+                    }
                     case PacketType.TargetChange:
                     {
                         ClientTargetUpdate(packetObj);
                         break;
                     }
-                    case PacketType.TargetExpireUpdate: {
+                    case PacketType.TargetExpireUpdate: 
+                    {
                             ClientTargetExpireUpdate(packetObj);
                             break;
-                        }
-                    case PacketType.FullMouseUpdate: {
+                    }
+                    case PacketType.FullMouseUpdate: 
+                    {
                             ClientFullMouseUpdate(packetObj);
                             break;
-                        }
-                    case PacketType.ConstructGroups:
-                    {
-                        ClientConstructGroups(packetObj);
-                        break;
                     }
-                    case PacketType.SendSingleShot: {
+                    case PacketType.SendSingleShot: 
+                    {
                             ClientSendSingleShot(packetObj);
                             break;
-                        }
-                    case PacketType.GridFocusListSync: {
-                            ClientGridFocusListSync(packetObj);
-                            break;
-                        }
-                    case PacketType.FocusUpdate:
-                    case PacketType.ReassignTargetUpdate:
-                    case PacketType.NextActiveUpdate:
-                    case PacketType.ReleaseActiveUpdate: {
-                            ClientFocusStates(packetObj);
-                            break;
-                        }
-                    case PacketType.ProblemReport: {
-                        ClientSentReport(packetObj);
-                        break;
                     }
-                    case PacketType.CompData: {
-                        ClientCompData(packetObj);
+                    case PacketType.ProblemReport: 
+                    {
+                        ClientSentReport(packetObj);
                         break;
                     }
                     default:
@@ -202,10 +206,13 @@ namespace WeaponCore
             report.Receiver = NetworkReporter.Report.Received.Server;
             report.PacketSize = packetSize;
             Reporter.ReportData[packet.PType].Add(report);
-            var errorPacket = new ErrorPacket { RecievedTick = Tick, Packet = packet, PType = packet.PType };
 
             var packetObj = PacketObjPool.Get();
-            packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report; packetObj.ErrorPacket = errorPacket;
+            packetObj.ErrorPacket.RecievedTick = Tick;
+            packetObj.ErrorPacket.Packet = packet;
+            packetObj.ErrorPacket.PType = packet.PType;
+
+            packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report;
 
             switch (packetObj.Packet.PType) {
 
@@ -265,7 +272,6 @@ namespace WeaponCore
                     break;
                 }
                 case PacketType.FocusUpdate:
-                case PacketType.ReassignTargetUpdate:
                 case PacketType.NextActiveUpdate:
                 case PacketType.ReleaseActiveUpdate: {
                     ServerFocusUpdate(packetObj);
@@ -302,6 +308,7 @@ namespace WeaponCore
                 return;
             }
 
+            PacketsToClient.AddRange(PrunedPacketsToClient.Values);
             for (int i = 0; i < PacketsToClient.Count; i++)
             {
                 var packetInfo = PacketsToClient[i];
@@ -325,7 +332,7 @@ namespace WeaponCore
                                 }
                                 else  {
                                     GridAi rootAi;
-                                    var grid = packetInfo.Entity?.GetTopMostParent() as MyCubeGrid;
+                                    var grid = packetInfo.Entity.GetTopMostParent() as MyCubeGrid;
                                     if (grid != null && GridToMasterAi.TryGetValue(grid, out rootAi) && PlayerEntityIdInRange[p.SteamUserId].Contains(rootAi.MyGrid.EntityId))
                                         sendPacket = true;
                                 }
@@ -337,7 +344,57 @@ namespace WeaponCore
                     }
                 }
             }
+
+            ServerPacketsForClientsClean();
+        }
+
+        private void ServerPacketsForClientsClean()
+        {
             PacketsToClient.Clear();
+            foreach (var pInfo in PrunedPacketsToClient.Values)
+            {
+                switch (pInfo.Packet.PType)
+                {
+                    case PacketType.AiData:
+                    {
+                        var iPacket = (AiDataPacket)pInfo.Packet;
+                        PacketAiPool.Return(iPacket);
+                        break;
+                    }
+                    case PacketType.CompData:
+                    {
+                        var iPacket = (CompDataPacket)pInfo.Packet;
+                        PacketCompDataPool.Return(iPacket);
+                        break;
+                    }
+                    case PacketType.CompState:
+                    case PacketType.StateReload:
+                    {
+                        var iPacket = (CompStatePacket)pInfo.Packet;
+                        PacketStatePool.Return(iPacket);
+                        break;
+                    }
+                    case PacketType.TargetChange:
+                    {
+                        var iPacket = (TargetPacket)pInfo.Packet;
+                        PacketTargetPool.Return(iPacket);
+                        break;
+                    }
+                    case PacketType.ConstructGroups:
+                    {
+                        var iPacket = (ConstructGroupsPacket)pInfo.Packet;
+                        PacketConstructPool.Return(iPacket);
+                        break;
+                    }
+                    case PacketType.ConstructFoci:
+                    {
+                        var iPacket = (ConstructFociPacket)pInfo.Packet;
+                        PacketConstructFociPool.Return(iPacket);
+                        break;
+                    }
+                }
+            }
+            PrunedPacketsToClient.Clear();
         }
 
         #endregion

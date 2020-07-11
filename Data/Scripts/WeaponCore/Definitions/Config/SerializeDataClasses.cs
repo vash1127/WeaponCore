@@ -20,6 +20,7 @@ namespace WeaponCore
         CompData,
         CompState,
         ConstructGroups,
+        ConstructFoci,
         StateReload,
         TargetChange,
         OverRidesUpdate,
@@ -35,7 +36,6 @@ namespace WeaponCore
         RequestMouseStates,
         FullMouseUpdate,
         RequestShootUpdate,
-        ReassignTargetUpdate,
         NextActiveUpdate,
         ReleaseActiveUpdate,
         AmmoCycleRequest,
@@ -71,6 +71,7 @@ namespace WeaponCore
     [ProtoInclude(24, typeof(CompStatePacket))]
     [ProtoInclude(25, typeof(TargetPacket))]
     [ProtoInclude(26, typeof(ConstructGroupsPacket))]
+    [ProtoInclude(27, typeof(ConstructFociPacket))]
 
 
     public class Packet
@@ -148,6 +149,20 @@ namespace WeaponCore
         [ProtoMember(1)] internal ConstructDataValues Data;
 
         public ConstructGroupsPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class ConstructFociPacket : Packet
+    {
+        [ProtoMember(1)] internal Focus Data;
+
+        public ConstructFociPacket() { }
 
         public override void CleanUp()
         {

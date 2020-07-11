@@ -74,7 +74,7 @@ namespace WeaponCore
         private void DrawTarget()
         {
             var s = _session;
-            var focus = s.TrackingAi.Data.Repo.Focus;
+            var focus = s.TrackingAi.Construct.Data.Repo.Focus;
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
                 if (focus.Target[i] <= 0 || s.Wheel.WheelActive && i > 0) continue;
@@ -96,7 +96,7 @@ namespace WeaponCore
 
                     if (focus.ActiveId == i && displayCount == 0)
                     {
-                        var focusTexture = focus.ActiveId == 0 && displayCount == 0 ? _focus : _focusSecondary;
+                        var focusTexture = focus.ActiveId == 0 ? _focus : _focusSecondary;
                         MyTransparentGeometry.AddBillboardOriented(focusTexture, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
                     }
 
@@ -185,9 +185,9 @@ namespace WeaponCore
         {
             var ai = s.TrackingAi;
             var validFocus = false;
-            for (int i = 0; i < ai.Data.Repo.Focus.Target.Length; i++)
+            for (int i = 0; i < ai.Construct.Data.Repo.Focus.Target.Length; i++)
             {
-                var targetId = ai.Data.Repo.Focus.Target[i];
+                var targetId = ai.Construct.Data.Repo.Focus.Target[i];
                 GridAi.TargetInfo info;
                 MyEntity target;
                 if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !ai.Targets.TryGetValue(target, out info)) continue;

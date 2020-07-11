@@ -26,7 +26,6 @@ namespace WeaponCore
 
             if (Ai.Session.IsServer)
             {
-                Repo.Focus.Clean();
                 Repo.ControllingPlayers.Clear();
             }
         }
