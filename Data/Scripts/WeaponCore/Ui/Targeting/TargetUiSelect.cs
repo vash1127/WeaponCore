@@ -168,7 +168,7 @@ namespace WeaponCore
         private bool UpdateCache()
         {
             var ai = _session.TrackingAi;
-            var focus = ai.Construct.Data.Repo.Focus;
+            var focus = ai.Construct.Data.Repo.FocusData;
             _targetCache.Clear();
             _currentIdx = 0;
             for (int i = 0; i < ai.SortedTargets.Count; i++)

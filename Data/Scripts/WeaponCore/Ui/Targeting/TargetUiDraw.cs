@@ -74,7 +74,7 @@ namespace WeaponCore
         private void DrawTarget()
         {
             var s = _session;
-            var focus = s.TrackingAi.Construct.Data.Repo.Focus;
+            var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
                 if (focus.Target[i] <= 0 || s.Wheel.WheelActive && i > 0) continue;
@@ -185,9 +185,9 @@ namespace WeaponCore
         {
             var ai = s.TrackingAi;
             var validFocus = false;
-            for (int i = 0; i < ai.Construct.Data.Repo.Focus.Target.Length; i++)
+            for (int i = 0; i < ai.Construct.Data.Repo.FocusData.Target.Length; i++)
             {
-                var targetId = ai.Construct.Data.Repo.Focus.Target[i];
+                var targetId = ai.Construct.Data.Repo.FocusData.Target[i];
                 GridAi.TargetInfo info;
                 MyEntity target;
                 if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !ai.Targets.TryGetValue(target, out info)) continue;

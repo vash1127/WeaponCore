@@ -68,7 +68,7 @@ namespace WeaponCore.Support
                 var targetInrange = !comp.TargetNonThreats ? ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr : 
                     (OtherRangeSqr <= w.MaxTargetDistanceSqr && OtherRangeSqr >= w.MinTargetDistanceSqr || ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr);
 
-                return targetInrange || ai.Construct.Data.Repo.Focus.HasFocus || ai.LiveProjectile.Count > 0;
+                return targetInrange || ai.Construct.Data.Repo.FocusData.HasFocus || ai.LiveProjectile.Count > 0;
             }
 
             internal void Clean()

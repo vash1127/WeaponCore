@@ -59,9 +59,10 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            if (Session.IsServer)
+            if (Session.IsServer && Ai != null)
             {
-                Ai?.Data.Save();
+                Ai.Data.Save();
+                Ai.Construct.Data.Save();
             }
             return false;
         }

@@ -124,8 +124,6 @@ namespace WeaponCore
                     iPacket.Data = ai.Construct.Data.Repo;
                 }
                 else  {
-                    ++ai.Construct.Data.Repo.Focus.Revision;
-
                     iPacket = PacketConstructPool.Get();
                     iPacket.MId = ++ai.MIds[(int)PacketType.ConstructGroups];
                     iPacket.EntityId = ai.MyGrid.EntityId;
@@ -148,23 +146,20 @@ namespace WeaponCore
 
                 PacketInfo oldInfo;
                 ConstructFociPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo.Focus, out oldInfo))  {
+                if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo.FocusData, out oldInfo))  {
                     iPacket = (ConstructFociPacket)oldInfo.Packet;
                     iPacket.EntityId = ai.MyGrid.EntityId;
-                    iPacket.Data = ai.Construct.Data.Repo.Focus;
+                    iPacket.Data = ai.Construct.Data.Repo.FocusData;
                 }
                 else  {
-                    ++ai.Construct.Data.Repo.Focus.Revision;
-
                     iPacket = PacketConstructFociPool.Get();
                     iPacket.MId = ++ai.MIds[(int)PacketType.ConstructFoci];
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.SenderId = 0;
                     iPacket.PType = PacketType.ConstructFoci;
-                    iPacket.Data = ai.Construct.Data.Repo.Focus;
+                    iPacket.Data = ai.Construct.Data.Repo.FocusData;
                 }
-
-                PrunedPacketsToClient[ai.Construct.Data.Repo.Focus] = new PacketInfo  {
+                PrunedPacketsToClient[ai.Construct.Data.Repo.FocusData] = new PacketInfo  {
                     Entity = ai.MyGrid,
                     Packet = iPacket,
                 };

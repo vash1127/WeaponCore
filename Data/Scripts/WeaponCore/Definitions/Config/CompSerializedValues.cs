@@ -301,20 +301,6 @@ namespace WeaponCore
             [ProtoMember(2)] public long EntityId;
             [ProtoMember(3)] public Vector3 TargetPos;
             [ProtoMember(4)] public int WeaponId;
-            //[ProtoMember(3)] public float HitShortDist;
-            //[ProtoMember(4)] public float OrigDistance;
-            //[ProtoMember(5)] public long TopEntityId;
-            //[ProtoMember(6)] public TargetInfo State = TargetInfo.Expired;
-            //[ProtoMember(7)] public int WeaponId;
-            /*
-            public enum TargetInfo
-            {
-                IsEntity,
-                IsProjectile,
-                IsFakeTarget,
-                Expired
-            }
-            */
 
             internal void SyncTarget(Weapon w, TransferTarget myTransfer, bool allowChange = true)
             {
@@ -332,18 +318,6 @@ namespace WeaponCore
 
                     var state = EntityId != 0 ? Target.States.Acquired : Target.States.Expired;
                     target.StateChange(EntityId != 0, state);
-
-                    /*
-                    target.HitShortDist = HitShortDist;
-                    target.OrigDistance = OrigDistance;
-                    target.TopEntityId = TopEntityId;
-
-                    if (State == TargetInfo.IsProjectile)
-                        target.IsProjectile = true;
-
-                    else if (State == TargetInfo.IsFakeTarget)
-                        target.IsFakeTarget = true;
-                    */
 
                     if (!allowChange)
                         target.TargetChanged = false;

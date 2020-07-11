@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -369,13 +368,13 @@ namespace WeaponCore
                 switch (packet.PType) {
                     case PacketType.FocusUpdate:
                         if (targetGrid != null)
-                            ai.Construct.Data.Repo.Focus.ServerAddFocus(targetGrid, ai);
+                            ai.Construct.Focus.ServerAddFocus(targetGrid, ai);
                         break;
                     case PacketType.NextActiveUpdate:
-                        ai.Construct.Data.Repo.Focus.ServerNextActive(focusPacket.AddSecondary, ai);
+                        ai.Construct.Focus.ServerNextActive(focusPacket.AddSecondary, ai);
                         break;
                     case PacketType.ReleaseActiveUpdate:
-                        ai.Construct.Data.Repo.Focus.RequestReleaseActive(ai);
+                        ai.Construct.Focus.RequestReleaseActive(ai);
                         break;
                 }
 
@@ -441,153 +440,5 @@ namespace WeaponCore
             data.Report.PacketValid = true;
             return true;
         }
-
-        /*
-        private bool ServerGridSyncRequestUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-            if (myGrid == null) return Error(data, Msg("Grid"));
-
-            GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
-
-                if (ai.ControllingPlayers.Keys.Count > 0)
-                {
-                    var i = 0;
-                    var playerToBlocks = new PlayerToBlock[ai.ControllingPlayers.Keys.Count];
-
-                    foreach (var playerBlockPair in ai.ControllingPlayers)
-                    {
-                        playerToBlocks[i] = new PlayerToBlock
-                        {
-                            PlayerId = playerBlockPair.Key,
-                            EntityId = playerBlockPair.Value.EntityId
-                        };
-                        i++;
-                    }
-
-                    PacketsToClient.Add(new PacketInfo
-                    {
-
-                        Entity = myGrid,
-                        Packet = new CurrentGridPlayersPacket
-                        {
-                            EntityId = packet.EntityId,
-                            SenderId = packet.SenderId,
-                            PType = PacketType.ActiveControlFullUpdate,
-                            Data = new ControllingPlayersSync
-                            {
-                                PlayersToControlledBlock = playerToBlocks
-                            }
-                        },
-                        SingleClient = true,
-                    });
-                }
-
-                var gridPacket = new GridWeaponPacket {
-                    EntityId = packet.EntityId,
-                    SenderId = packet.SenderId,
-                    PType = PacketType.WeaponSyncUpdate,
-                    Data = new List<WeaponData>()
-                };
-
-                foreach (var cubeComp in ai.WeaponBase) {
-
-                    var comp = cubeComp.Value;
-                    if (comp.MyCube == null || comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
-
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
-
-                        var w = comp.Platform.Weapons[j];
-                        if (comp.Data.Repo.WepVal.Targets == null || comp.Data.Repo.WepVal.Targets[j].State == TransferTarget.TargetInfo.Expired)
-                            continue;
-
-                        var weaponData = new WeaponData {
-                            CompEntityId = comp.MyCube.EntityId,
-                            SyncData = w.State,
-                            TargetData = comp.Data.Repo.WepVal.Targets[j],
-                            WeaponRng = comp.Data.Repo.WepVal.WeaponRandom[j]
-                        };
-                        gridPacket.Data.Add(weaponData);
-                    }
-                }
-
-                if (gridPacket.Data.Count > 0)
-                    PacketsToClient.Add(new PacketInfo {
-                        Entity = myGrid,
-                        Packet = gridPacket,
-                        SingleClient = true,
-                    });
-
-                var overrides = new OverRidesData[ai.BlockGroups.Values.Count];
-
-                var c = 0;
-                foreach (var group in ai.BlockGroups) {
-                    overrides[c].Overrides = GetOverrides(ai, group.Key);
-                    overrides[c].GroupName = group.Key;
-                    c++;
-                }
-
-                if (overrides.Length > 0)
-                {
-
-                    PacketsToClient.Add(new PacketInfo
-                    {
-
-                        Entity = myGrid,
-                        Packet = new GridOverRidesSyncPacket
-                        {
-                            EntityId = myGrid.EntityId,
-                            SenderId = packet.SenderId,
-                            PType = PacketType.GridOverRidesSync,
-                            Data = overrides,
-                        },
-                        SingleClient = true,
-                    });
-                }
-
-                long[] ids = new long[ai.Focus.Target.Length];
-                var validFocus = false;
-                for (int i = 0; i < ai.Focus.Target.Length; i++)
-                {
-                    ids[i] = ai.Focus.Target[i]?.EntityId ?? -1;
-                    if (ids[i] != -1)
-                        validFocus = true;
-                }
-
-                if (validFocus)
-                {
-                    var focusPacket = new GridFocusListPacket
-                    {
-                        EntityId = myGrid.EntityId,
-                        SenderId = packet.SenderId,
-                        PType = PacketType.GridFocusListSync,
-                        EntityIds = ids,
-                    };
-
-                    PacketsToClient.Add(new PacketInfo
-                    {
-                        Entity = myGrid,
-                        Packet = focusPacket,
-                        SingleClient = true,
-                    });
-                }
-
-                if (!PlayerEntityIdInRange.ContainsKey(packet.SenderId))
-                    PlayerEntityIdInRange[packet.SenderId] = new HashSet<long>();
-
-                PlayerEntityIdInRange[packet.SenderId].Add(packet.EntityId);
-
-                data.Report.PacketValid = true;
-            }
-            else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-
-            return true;
-        }
-        */
-
     }
 }
