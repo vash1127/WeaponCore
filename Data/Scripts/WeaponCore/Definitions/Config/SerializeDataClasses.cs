@@ -273,13 +273,16 @@ namespace WeaponCore
     [ProtoContract]
     public class FakeTargetPacket : Packet
     {
-        [ProtoMember(1)] internal Vector3 Data;
+        [ProtoMember(1)] internal Vector3 Pos;
+        [ProtoMember(2)] internal long TargetId;
+
         public FakeTargetPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = new Vector3();
+            Pos = new Vector3();
+            TargetId = 0;
         }
     }
 

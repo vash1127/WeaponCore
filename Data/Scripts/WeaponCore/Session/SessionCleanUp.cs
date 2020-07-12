@@ -173,7 +173,7 @@ namespace WeaponCore
             SoundPairs.Clear();
             GridToMasterAi.Clear();
             Players.Clear();
-
+            IdToCompMap.Clear();
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();

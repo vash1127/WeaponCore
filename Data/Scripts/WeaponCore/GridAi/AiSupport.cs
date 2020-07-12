@@ -34,7 +34,7 @@ namespace WeaponCore.Support
                     Session.ArmorCubes.Add(comp.MyCube, comp);
                 }
                 WeaponsIdx.Add(comp, Weapons.Count);
-                IdToCompMap.Add(comp.MyCube.EntityId, comp);
+                Session.IdToCompMap.Add(comp.MyCube.EntityId, comp);
                 Weapons.Add(comp);
             }
             else {
@@ -58,7 +58,7 @@ namespace WeaponCore.Support
                 if (idx < Weapons.Count)
                     WeaponsIdx[Weapons[idx]] = idx;
 
-                IdToCompMap.Remove(comp.MyCube.EntityId);
+                Session.IdToCompMap.Remove(comp.MyCube.EntityId);
                 WeaponsIdx.Remove(comp);
             }
         }

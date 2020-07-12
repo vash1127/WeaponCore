@@ -249,7 +249,7 @@ namespace WeaponCore
                     if (TrackingAi != null)  {
                         var dummyTarget = PlayerDummyTargets[PlayerId];
                         if (dummyTarget.LastUpdateTick == Tick)
-                            SendFakeTargetUpdate(TrackingAi, dummyTarget.Position);
+                            SendFakeTargetUpdate(TrackingAi, dummyTarget);
                     }
 
                     if (PacketsToServer.Count > 0)

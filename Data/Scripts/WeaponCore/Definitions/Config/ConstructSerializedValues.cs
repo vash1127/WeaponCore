@@ -101,7 +101,7 @@ namespace WeaponCore
             for (int i = 0; i < CompIds.Count; i++)
             {
                 WeaponComponent comp;
-                if (!ai.IdToCompMap.TryGetValue(CompIds[i], out comp))
+                if (!ai.Session.IdToCompMap.TryGetValue(CompIds[i], out comp))
                     continue;
 
                 var o = comp.Data.Repo.Set.Overrides;
@@ -354,7 +354,6 @@ namespace WeaponCore
 
                 return true;
             }
-            else Log.Line($"FocusData skipped");
 
             return false;
         }

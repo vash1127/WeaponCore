@@ -16,9 +16,8 @@ namespace WeaponCore
 
         private string _currentMenu;
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
-        internal readonly List<string> GroupNames = new List<string>();
-        internal readonly List<List<GroupMember>> BlockGroups = new List<List<GroupMember>>();
-        internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
+        //internal readonly List<string> GroupNames = new List<string>();
+        //internal readonly List<List<GroupMember>> BlockGroups = new List<List<GroupMember>>();
 
         internal readonly Session Session;
         internal GridAi Ai;

@@ -70,10 +70,13 @@ namespace WeaponCore
 
                     var rootConstruct = ai.Construct.RootAi.Construct;
 
-                    Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi} - newGroups:{cgPacket.Data.BlockGroups.Count} - oldGroups:{rootConstruct.Data.Repo.BlockGroups.Count} - Rev:{cgPacket.Data.FocusData.Revision} > {rootConstruct.Data.Repo.FocusData.Revision}");
+                    //Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi} - newGroups:{cgPacket.Data.BlockGroups.Count} - oldGroups:{rootConstruct.Data.Repo.BlockGroups.Count} - Rev:{cgPacket.Data.FocusData.Revision} > {rootConstruct.Data.Repo.FocusData.Revision}");
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
+                    rootConstruct.BuildMenuGroups();
 
                     Wheel.Dirty = true;
+                    if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
+                        Wheel.ForceUpdate();
 
                 }
                 else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
@@ -99,13 +102,9 @@ namespace WeaponCore
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
-                    Log.Line($"ClientConstructFoci: isRoot:{ai == ai.Construct.RootAi}");
                     var rootConstruct = ai.Construct.RootAi.Construct;
-                    if (rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data))
-                    {
-                        Log.Line($"Focus sync success: HasFocus:{rootConstruct.Data.Repo.FocusData.HasFocus}");
-                    }
-                    else Log.Line($"ClientConstructFoci old Revision: {fociPacket.Data.Revision} > {rootConstruct.Data.Repo.FocusData.Revision} - target:{fociPacket.Data.Target[0]}({rootConstruct.Data.Repo.FocusData.Target[0]})");
+                    if (!rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data))
+                        Log.Line($"ClientConstructFoci old Revision: {fociPacket.Data.Revision} > {rootConstruct.Data.Repo.FocusData.Revision} - target:{fociPacket.Data.Target[0]}({rootConstruct.Data.Repo.FocusData.Target[0]})");
                 }
                 else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
 
@@ -132,8 +131,9 @@ namespace WeaponCore
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     ai.Data.Repo.Sync(aiSyncPacket.Data);
-                    Log.Line($"ClientAiDataUpdate");
                     Wheel.Dirty = true;
+                    if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
+                        Wheel.ForceUpdate();
                 }
                 else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
 
@@ -160,6 +160,8 @@ namespace WeaponCore
                 {
                     Log.Line($"ClientCompData: {packet.PType}");
                     Wheel.Dirty = true;
+                    if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
+                        Wheel.ForceUpdate();
                 }
                 else Log.Line($"compDataSync failed: {packet.PType}");
             }
@@ -244,7 +246,7 @@ namespace WeaponCore
                         FakeTarget dummyTarget;
                         if (PlayerDummyTargets.TryGetValue(playerId, out dummyTarget))
                         {
-                            dummyTarget.Update(targetPacket.Data, ai);
+                            dummyTarget.Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
                         }
                         else
                             return Error(data, Msg("Player dummy target not found"));

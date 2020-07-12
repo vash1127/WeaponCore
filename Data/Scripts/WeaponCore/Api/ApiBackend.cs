@@ -194,6 +194,9 @@ namespace WeaponCore.Api
                 GridAi ai;
                 if (_session.GridToMasterAi.TryGetValue(shootingGrid, out ai))
                 {
+                    if (!ai.Session.IsServer)
+                        return false;
+
                     ai.Construct.Focus.ReassignTarget((MyEntity)target, priority, ai);
                     return true;
                 }

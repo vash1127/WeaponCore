@@ -32,7 +32,6 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
-        internal readonly Dictionary<long, WeaponComponent> IdToCompMap = new Dictionary<long, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryIndexer = new ConcurrentDictionary<MyInventory, int>();
         internal readonly MyConcurrentList<MyInventory> Inventories = new MyConcurrentList<MyInventory>();
 

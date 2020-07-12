@@ -402,7 +402,7 @@ namespace WeaponCore
             else Log.Line($"SendActiveTerminal no player MIds found");
         }
 
-        internal void SendFakeTargetUpdate(GridAi ai, Vector3 hitPos)
+        internal void SendFakeTargetUpdate(GridAi ai, GridAi.FakeTarget fake)
         {
             if (IsClient)
             {
@@ -414,7 +414,8 @@ namespace WeaponCore
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.FakeTargetUpdate,
-                        Data = hitPos,
+                        Pos = fake.Position,
+                        TargetId = fake.EntityId,
                     });
                 }
                 else Log.Line($"SendFakeTargetUpdate no player MIds found");
@@ -430,7 +431,8 @@ namespace WeaponCore
                         EntityId = ai.MyGrid.EntityId,
                         SenderId = ai.Session.MultiplayerId,
                         PType = PacketType.FakeTargetUpdate,
-                        Data = hitPos,
+                        Pos = fake.Position,
+                        TargetId = fake.EntityId,
                     }
                 });
             }

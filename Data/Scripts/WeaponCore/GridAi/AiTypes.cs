@@ -28,28 +28,31 @@ namespace WeaponCore.Support
             internal int Max;
         }
 
-        [ProtoContract]
         public class FakeTarget
         {
-            [ProtoMember(1)] public Vector3D Position;
-            [ProtoMember(2)] public Vector3 LinearVelocity;
-            [ProtoMember(3)] public Vector3 Acceleration;
-            [ProtoMember(4)] public bool ClearTarget;
+            public Vector3D Position;
+            public Vector3 LinearVelocity;
+            public Vector3 Acceleration;
+            public long EntityId;
             public uint LastUpdateTick;
 
-            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null)
+            internal void Update(Vector3D hitPos, GridAi ai, MyEntity ent = null, long entId = 0)
             {
                 Position = hitPos;
-                if (ent != null)  {
+                if (ai.Session.HandlesInput && ent != null) {
+                    EntityId = ent.EntityId;
                     LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
                     Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
                 }
+                else if (entId != 0 && MyEntities.TryGetEntityById(entId, out ent))
+                {
+                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
+                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
+                    EntityId = entId;
+                }
 
                 LastUpdateTick = ai.Session.Tick;
-                ClearTarget = false;
             }
-
-            internal FakeTarget() { }
         }
 
         public class AiTargetingInfo

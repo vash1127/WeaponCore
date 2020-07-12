@@ -82,7 +82,7 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                     mIds[(int) packet.PType] = packet.MId;
 
-                    PlayerDummyTargets[playerId].Update(targetPacket.Data, ai);
+                    PlayerDummyTargets[playerId].Update(targetPacket.Pos, ai, null, targetPacket.TargetId);
                     PacketsToClient.Add(new PacketInfo { Entity = myGrid, Packet = targetPacket });
 
                     data.Report.PacketValid = true;

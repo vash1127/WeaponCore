@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using Sandbox.Game;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
@@ -206,43 +204,13 @@ namespace WeaponCore
             }
         }
 
-        internal bool UpdateState(Menu oldMenu, Item item, Update update, bool reset = true)
+        internal void UpdateState(Menu oldMenu, Item item, Update update, bool reset = true)
         {
             Dirty = false;
             if (reset)
-            {
                 oldMenu.CleanUp();
-                GroupNames.Clear();
 
-                foreach (var group in BlockGroups)
-                {
-                    group.Clear();
-                    MembersPool.Return(group);
-                }
-
-                BlockGroups.Clear();
-
-                foreach (var group in Ai.Construct.Data.Repo.BlockGroups)
-                {
-                    var groupName = group.Key;
-                    GroupNames.Add(groupName);
-                    var membersList = MembersPool.Get();
-
-                    foreach (var compId in group.Value.CompIds)
-                    {
-                        WeaponComponent comp;
-                        if (Ai.IdToCompMap.TryGetValue(compId, out comp))
-                        {
-                            var groupMember = new GroupMember { Comp = comp, Name = groupName };
-                            membersList.Add(groupMember);
-                        }
-                    }
-                    BlockGroups.Add(membersList);
-                }
-            }
-
-            var groupReady = BlockGroups.Count > 0;
-            if (groupReady)
+            if (Ai.Construct.MenuBlockGroups.Count > 0)
             {
                 switch (update)
                 {
@@ -256,10 +224,17 @@ namespace WeaponCore
                         break;
                 }
                 var menu = Menus[_currentMenu];
-                if (menu.ItemCount <= 1) menu.LoadInfo(reset);
+                if (menu.ItemCount <= 1) 
+                    menu.LoadInfo(reset);
             }
+        }
 
-            return groupReady;
+        internal void ForceUpdate()
+        {
+            if (_currentMenu == "CompGroups")
+            {
+                UpdateState(GetCurrentMenu(), GetCurrentMenuItem(), Update.None);
+            }
         }
     }
 }

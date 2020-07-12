@@ -47,7 +47,7 @@ namespace WeaponCore
                 if (!ai.HasPower || false && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
-                if (ai.ScanBlockGroups)
+                if (IsServer && ai.ScanBlockGroups)
                     ai.Construct.GroupRefresh(ai);
 
                 ///
@@ -106,10 +106,6 @@ namespace WeaponCore
                             continue;
                         }
 
-                        if (w.Target.IsFakeTarget && Tick300)
-                        {
-                            Log.Line($"HasFakeTarget: {w.Comp.MyCube.EntityId} - id:{w.TargetData.EntityId} - pos:{w.TargetData.TargetPos}");
-                        }
                         if (w.AvCapable && Tick20) {
                             var avWasEnabled = w.PlayTurretAv;
                             double distSqr;
@@ -155,7 +151,7 @@ namespace WeaponCore
                         if (w.Target.HasTarget && !(IsClient && w.Target.Entity == null && w.TargetData.EntityId > 0)) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
-                            if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || PlayerDummyTargets[comp.Data.Repo.State.PlayerId].ClearTarget))
+                            if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.State.PlayerId].LastUpdateTick > 120))
                                 w.Target.Reset(Tick, States.Expired, !trackReticle);
                             else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);

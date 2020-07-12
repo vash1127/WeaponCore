@@ -111,6 +111,8 @@ namespace WeaponCore
         internal readonly Dictionary<MyInventory, MyFixedPoint> InventoryVolume = new Dictionary<MyInventory, MyFixedPoint>();
         internal readonly Dictionary<ulong, uint[]> PlayerMIds = new Dictionary<ulong, uint[]>();
         internal readonly Dictionary<object, PacketInfo> PrunedPacketsToClient = new Dictionary<object, PacketInfo>();
+        internal readonly Dictionary<long, WeaponComponent> IdToCompMap = new Dictionary<long, WeaponComponent>();
+
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();

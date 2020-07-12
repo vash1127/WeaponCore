@@ -188,8 +188,11 @@ namespace WeaponCore
                     Wheel.CloseWheel();
 
                 GridAi ai;
-                if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))
-                    ai.ScanBlockGroups = true;
+                if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
+                    if (IsServer)
+                        ai.ScanBlockGroups = true;
+                    else SendGroupUpdate(ai);
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}"); }
         }
@@ -201,8 +204,11 @@ namespace WeaponCore
                 InMenu = false;
                 HudUi.NeedsUpdate = true;
                 GridAi ai;
-                if(ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))
-                    ai.ScanBlockGroups = true;
+                if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
+                    if (IsServer)
+                        ai.ScanBlockGroups = true;
+                    else SendGroupUpdate(ai);
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}"); }
         }
