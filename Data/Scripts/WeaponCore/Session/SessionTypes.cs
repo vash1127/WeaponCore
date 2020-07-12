@@ -362,6 +362,10 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.CurrentState}"); }
                     },
+                    {"TargetEntityId", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.TargetData.EntityId}"); }
+                    },
                     {"IsShooting", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.IsShooting}"); }

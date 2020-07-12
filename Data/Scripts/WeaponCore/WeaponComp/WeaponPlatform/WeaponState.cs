@@ -35,11 +35,14 @@ namespace WeaponCore.Platform
             {
                 if (!Acquire.Enabled)
                     System.Session.AcqManager.AddAwake(Acquire);
-                        
-                //State.Target.State = TransferTarget.TargetInfo.Expired;
 
-                if (Comp.Session.MpActive && Comp.Session.IsServer && !Comp.Data.Repo.State.TrackingReticle)
-                    Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
+                //State.Target.State = TransferTarget.TargetInfo.Expired;
+                if (Comp.Session.MpActive && Comp.Session.IsServer)  {
+                    TargetData.ClearTarget();
+                    Log.Line($"Comp.Data.Repo.State.TrackingReticle: {Comp.Data.Repo.State.TrackingReticle}");
+                    if (!Comp.Data.Repo.State.TrackingReticle)
+                        Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
+                } 
             }
 
             Target.TargetChanged = false;

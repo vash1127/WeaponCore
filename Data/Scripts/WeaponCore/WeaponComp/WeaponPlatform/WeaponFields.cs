@@ -101,6 +101,7 @@ namespace WeaponCore.Platform
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
         internal WeaponStateValues State;
+        internal WeaponStateValues.TransferTarget TargetData;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 

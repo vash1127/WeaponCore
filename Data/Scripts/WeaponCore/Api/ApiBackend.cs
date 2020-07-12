@@ -500,7 +500,7 @@ namespace WeaponCore.Api
         {
             var grid = entity.GetTopMostParent() as MyCubeGrid;
             GridAi gridAi;
-            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out gridAi))
+            if (grid != null && _session.GridToMasterAi.TryGetValue(grid, out gridAi))
                 return gridAi.EffectiveDps;
 
             return 0;

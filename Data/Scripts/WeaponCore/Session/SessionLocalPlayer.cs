@@ -45,7 +45,8 @@ namespace WeaponCore
                         if (HandlesInput)
                             SendActiveControlUpdate(TrackingAi, oldBlock, false);
                     }
-
+                    if (Wheel.WheelActive)
+                        Wheel.CloseWheel();
                 }
 
                 TrackingAi = null;

@@ -196,7 +196,6 @@ namespace WeaponCore
 
             internal void ReportInfo(Item item)
             {
-                Log.Line("report info");
                 GroupInfo groupInfo;
                 switch (Name)
                 {

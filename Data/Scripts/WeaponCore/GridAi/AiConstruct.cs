@@ -247,7 +247,7 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
-                        ai.Construct.Focus.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
+                        ai.Construct.Data.Repo.FocusData.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
                 }
             }
 
@@ -327,7 +327,6 @@ namespace WeaponCore.Support
             for (int i = 0; i < f.Target.Length; i++)
                 f.Target[i] = Target[i];
         }
-        */
 
         internal void Sync(GridAi ai, FocusData sync)
         {
@@ -340,8 +339,8 @@ namespace WeaponCore.Support
             fd.DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
             ai.Construct.Data.Repo.FocusData.Sync(sync);
 
-            Log.Line($"Rev:Target0:{fd.Target[0]}({sync.Target[0]})[{ai.Construct.Data.Repo.FocusData.Target[0]}] - Target1:{fd.Target[1]} - ActId:{fd.ActiveId} - Focus:{fd.HasFocus} - Dist:{fd.DistToNearestFocusSqr}");
         }
+        */
 
         internal void ServerAddFocus(MyEntity target, GridAi ai)
         {
@@ -440,8 +439,6 @@ namespace WeaponCore.Support
                     fd.ActiveId = 0;
                 }
             }
-
-            //UpdateSubGrids(ai);
 
             return fd.HasFocus;
         }

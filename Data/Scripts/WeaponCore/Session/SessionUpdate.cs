@@ -106,6 +106,10 @@ namespace WeaponCore
                             continue;
                         }
 
+                        if (w.Target.IsFakeTarget && Tick300)
+                        {
+                            Log.Line($"HasFakeTarget: {w.Comp.MyCube.EntityId} - id:{w.TargetData.EntityId} - pos:{w.TargetData.TargetPos}");
+                        }
                         if (w.AvCapable && Tick20) {
                             var avWasEnabled = w.PlayTurretAv;
                             double distSqr;
@@ -148,7 +152,7 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
                         bool targetLock = false;
-                        if (w.Target.HasTarget && !(IsClient && w.Target.CurrentState == States.Invalid)) {
+                        if (w.Target.HasTarget && !(IsClient && w.Target.Entity == null && w.TargetData.EntityId > 0)) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
                             if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || PlayerDummyTargets[comp.Data.Repo.State.PlayerId].ClearTarget))
@@ -179,9 +183,10 @@ namespace WeaponCore
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
-                        else if (w.Target.HasTarget && MyEntities.EntityExists(comp.Data.Repo.Targets[w.WeaponId].EntityId)) {
-                            w.Target.HasTarget = false;
-                            Log.Line($"wtf is this");
+                        else if (w.Target.HasTarget && IsClient)
+                        {
+                            w.Target.Entity = MyEntities.GetEntityById(w.TargetData.EntityId);
+                            Log.Line($"client getting Retry to get Entity: {w.TargetData.EntityId}");
                         }
 
                         w.ProjectilesNear = enemyProjectiles && w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );

@@ -152,6 +152,8 @@ namespace WeaponCore
                     iPacket.Data = ai.Construct.Data.Repo.FocusData;
                 }
                 else  {
+                    ++ai.Construct.Data.Repo.FocusData.Revision;
+                    
                     iPacket = PacketConstructFociPool.Get();
                     iPacket.MId = ++ai.MIds[(int)PacketType.ConstructFoci];
                     iPacket.EntityId = ai.MyGrid.EntityId;
@@ -241,7 +243,7 @@ namespace WeaponCore
                 else  {
                     ++comp.Data.Repo.Revision;
                     ++comp.Data.Repo.State.Revision;
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    for (int i = 0; i < comp.Data.Repo.Targets.Length; i++)
                         ++comp.Data.Repo.Targets[i].Revision;
 
                     iPacket = PacketCompDataPool.Get();
@@ -265,24 +267,23 @@ namespace WeaponCore
             if (IsServer)  {
 
                 var w = comp.Platform.Weapons[weaponId];
-                var targetTransfer = comp.Data.Repo.Targets[weaponId];
 
                 PacketInfo oldInfo;
                 TargetPacket iPacket;
-                if (PrunedPacketsToClient.TryGetValue(targetTransfer, out oldInfo))  {
+                if (PrunedPacketsToClient.TryGetValue(w.TargetData, out oldInfo))  {
                     iPacket = (TargetPacket)oldInfo.Packet;
                     iPacket.EntityId = comp.MyCube.EntityId;
-                    iPacket.Target = targetTransfer;
+                    iPacket.Target = w.TargetData;
                 }
                 else  {
-                    ++comp.Data.Repo.Targets[w.WeaponId].Revision;
+                    ++w.TargetData.Revision;
 
                     iPacket = PacketTargetPool.Get();
                     iPacket.MId = ++comp.MIds[(int)PacketType.TargetChange];
                     iPacket.EntityId = comp.MyCube.EntityId;
                     iPacket.SenderId = 0;
                     iPacket.PType = PacketType.TargetChange;
-                    iPacket.Target = targetTransfer;
+                    iPacket.Target = w.TargetData;
                 }
 
                 PrunedPacketsToClient[comp.Data.Repo] = new PacketInfo  {
@@ -593,6 +594,7 @@ namespace WeaponCore
         
         internal void SendTargetExpiredUpdate(WeaponComponent comp, int weaponId)
         {
+            Log.Line($"sending target expired");
             PacketsToClient.Add(new PacketInfo
             {
                 Entity = comp.MyCube,

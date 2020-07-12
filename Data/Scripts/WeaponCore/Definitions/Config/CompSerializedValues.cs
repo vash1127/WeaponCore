@@ -32,7 +32,8 @@ namespace WeaponCore
                 {
                     var w = comp.Platform.Weapons[i];
                     var syncT = sync.Targets[i];
-                    syncT.SyncTarget(w, Targets[i]);
+                    syncT.SyncTarget(w);
+                    w.TargetData = syncT;
                 }
                 Revision = sync.Revision;
                 return true;
@@ -271,7 +272,7 @@ namespace WeaponCore
 
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
-
+                w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
                 for (int j = 0; j < rand.TurretCurrentCounter; j++)
                     rand.TurretRandom.Next();
 
@@ -302,11 +303,11 @@ namespace WeaponCore
             [ProtoMember(3)] public Vector3 TargetPos;
             [ProtoMember(4)] public int WeaponId;
 
-            internal void SyncTarget(Weapon w, TransferTarget myTransfer, bool allowChange = true)
+            internal void SyncTarget(Weapon w, bool allowChange = true)
             {
-                if (Revision > myTransfer.Revision || allowChange)  {
+                if (Revision > w.TargetData.Revision || allowChange)  {
 
-                    myTransfer.Revision = Revision;
+                    w.TargetData.Revision = Revision;
                     if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
                         w.Reload();
 
@@ -326,7 +327,7 @@ namespace WeaponCore
 
                         if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)  {
                             var oldChange = w.Target.TargetChanged;
-                            w.Target.StateChange(true, Support.Target.States.Invalid);
+                            w.Target.StateChange(true, Target.States.Invalid);
                             w.Target.TargetChanged = !w.FirstSync && oldChange;
                             w.FirstSync = false;
                         }
@@ -337,12 +338,19 @@ namespace WeaponCore
 
                             if (targetType == GridAi.TargetType.None)  {
                                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen)
-                                    w.NewTarget.Reset(w.Comp.Session.Tick, Support.Target.States.NoTargetsSeen);
+                                    w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
                                 if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
                             }
                         }
                     }
                 }
+            }
+
+            internal void ClearTarget()
+            {
+                ++Revision;
+                EntityId = 0;
+                TargetPos = Vector3.Zero;
             }
 
             public TransferTarget() { }

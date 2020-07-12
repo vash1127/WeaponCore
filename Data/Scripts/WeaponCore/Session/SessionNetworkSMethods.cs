@@ -152,8 +152,12 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
+                var wasTrack = comp.Data.Repo.State.TrackingReticle;
                 comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
-                SendCompData(comp);
+                if (wasTrack && !comp.Data.Repo.State.TrackingReticle)
+                    comp.ResetPlayerControl();
+                else
+                    SendCompData(comp);
 
                 data.Report.PacketValid = true;
             }
@@ -307,7 +311,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
+            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
 
                 uint[] mIds;
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {

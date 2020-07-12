@@ -31,7 +31,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 15;
+        internal const int VersionControl = 16;
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
@@ -52,7 +52,7 @@ namespace WeaponCore
 
         internal readonly MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>(64);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());
-        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>(128, info => info.CompIds.Clear());
+        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>(128, info => info.Clean());
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128, invMove => invMove.Clean());
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100, cList => cList.ClearImmediate());
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128, fatMap => fatMap.Clean());

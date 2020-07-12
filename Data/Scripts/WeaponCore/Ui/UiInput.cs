@@ -54,7 +54,7 @@ namespace WeaponCore
             WheelBackward = false;
             AimRay = new LineD();
 
-            if (!s.InGridAiBlock) s.UpdateLocalAiAndCockpit();
+            if (!s.InGridAiBlock || s.Wheel.WheelActive) s.UpdateLocalAiAndCockpit();
 
             if (s.InGridAiBlock && !s.InMenu)
             {
@@ -131,6 +131,18 @@ namespace WeaponCore
                 if (CtrlPressed && ActionKeyPressed && GetAimRay(s, out AimRay) && Debug)
                 {
                     DsDebugDraw.DrawLine(AimRay, Color.Red, 0.1f);
+                }
+            }
+
+            if (_session.MpActive && !s.InGridAiBlock)
+            {
+                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight ||  ClientInputState.MouseButtonMiddle || ClientInputState.MouseButtonRight)
+                {
+                    ClientInputState.InMenu = false;
+                    ClientInputState.MouseButtonLeft = false;
+                    ClientInputState.MouseButtonMiddle = false;
+                    ClientInputState.MouseButtonRight = false;
+                    InputChanged = true;
                 }
             }
 

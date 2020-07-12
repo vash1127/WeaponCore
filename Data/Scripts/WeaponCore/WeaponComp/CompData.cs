@@ -71,12 +71,10 @@ namespace WeaponCore
                     if (Comp.Session.IsServer)  {
                         w.State.WeaponInit(w);
                         Repo.Targets[i] = new WeaponStateValues.TransferTarget();
+                        w.TargetData = Repo.Targets[i];
                     }
                     else w.State.WeaponRefreshClient(w);
                 }
-
-
-
             }
             else {
 
@@ -92,6 +90,7 @@ namespace WeaponCore
                     w.State = state;
 
                     Repo.Targets[i] = new WeaponStateValues.TransferTarget();
+                    w.TargetData = Repo.Targets[i];
                     state.WeaponInit(w);
                 }
 

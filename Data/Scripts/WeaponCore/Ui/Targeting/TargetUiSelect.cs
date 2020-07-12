@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
-using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
-using WeaponCore.Support;
-using static WeaponCore.Session;
 
 namespace WeaponCore
 {

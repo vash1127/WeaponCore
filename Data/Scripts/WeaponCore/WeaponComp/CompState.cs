@@ -100,12 +100,14 @@ namespace WeaponCore.Support
 
         internal void ResetPlayerControl()
         {
-            Log.Line($"ResetPlayerControl");
             Data.Repo.State.PlayerId = -1;
             Data.Repo.State.Control = CompStateValues.ControlMode.None;
             Data.Repo.State.TerminalActionSetter(this, ShootActions.ShootOff);
 
-            Session.SendCompState(this, PacketType.CompState);
+            Data.Repo.Set.Overrides.ManualControl = false;
+            Data.Repo.Set.Overrides.TargetPainter = false;
+
+            Session.SendCompData(this);
         }
 
         internal void DetectStateChanges()

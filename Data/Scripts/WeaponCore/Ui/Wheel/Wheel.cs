@@ -24,8 +24,7 @@ namespace WeaponCore
                 else if (s.UiInput.ClientInputState.MouseButtonMiddle && ChangeState == State.Close) 
                     CloseWheel();
             }
-            else if (WheelActive && Session.ActiveControlBlock == null) CloseWheel();
-            
+
             if (!WheelActive && _currentMenu != string.Empty)
                 _currentMenu = string.Empty;
 

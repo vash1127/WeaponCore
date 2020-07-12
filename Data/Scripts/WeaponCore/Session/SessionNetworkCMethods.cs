@@ -63,19 +63,18 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+            if (GridToMasterAi.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
-                    Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi}");
                     var rootConstruct = ai.Construct.RootAi.Construct;
 
-                    rootConstruct.RootAi.ReScanBlockGroups();
-                    rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data, cgPacket.Data.FocusData.Revision > rootConstruct.Data.Repo.FocusData.Revision);
-                    rootConstruct.UpdateLeafGroups();
+                    Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi} - newGroups:{cgPacket.Data.BlockGroups.Count} - oldGroups:{rootConstruct.Data.Repo.BlockGroups.Count} - Rev:{cgPacket.Data.FocusData.Revision} > {rootConstruct.Data.Repo.FocusData.Revision}");
+                    rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
 
                     Wheel.Dirty = true;
+
                 }
                 else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
             
@@ -95,19 +94,18 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
+            if (GridToMasterAi.TryGetValue(myGrid, out ai))
             {
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     Log.Line($"ClientConstructFoci: isRoot:{ai == ai.Construct.RootAi}");
                     var rootConstruct = ai.Construct.RootAi.Construct;
-                    if (fociPacket.Data.Revision > rootConstruct.Data.Repo.FocusData.Revision)
+                    if (rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data))
                     {
-                        rootConstruct.Focus.Sync(ai, fociPacket.Data);
-                        rootConstruct.UpdateLeafFoci();
+                        Log.Line($"Focus sync success: HasFocus:{rootConstruct.Data.Repo.FocusData.HasFocus}");
                     }
-                    else Log.Line($"ClientConstructFoci old Revision");
+                    else Log.Line($"ClientConstructFoci old Revision: {fociPacket.Data.Revision} > {rootConstruct.Data.Repo.FocusData.Revision} - target:{fociPacket.Data.Target[0]}({rootConstruct.Data.Repo.FocusData.Target[0]})");
                 }
                 else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
 
@@ -218,7 +216,7 @@ namespace WeaponCore
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
-                targetPacket.Target.SyncTarget(w, comp.Data.Repo.Targets[w.WeaponId]);
+                targetPacket.Target.SyncTarget(w);
             }
 
             data.Report.PacketValid = true;
@@ -319,6 +317,7 @@ namespace WeaponCore
 
                 comp.Platform.Weapons[idPacket.WeaponId].Target.Reset(Tick, Target.States.ServerReset);
             }
+            else Log.Line($"ClientTargetExpireUpdate mid failure");
             
             data.Report.PacketValid = true;
 

@@ -97,9 +97,8 @@ namespace WeaponCore.Support
 
                         if (Session.IsClient)
                         {
-                            var target = Data.Repo.Targets[i];
-                            if (target.EntityId != 0)
-                                target.SyncTarget(weapon, target, false); // need to look into... is this right?
+                            if (weapon.TargetData.EntityId != 0)
+                                weapon.TargetData.SyncTarget(weapon, false); // need to look into... is this right?
                             if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
                             {
                                 weapon.Target.StateChange(true, Target.States.Invalid);

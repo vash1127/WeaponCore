@@ -229,7 +229,6 @@ namespace WeaponCore
                     if (Wheel.WheelActive) Wheel.DrawWheel();
                     TargetUi.DrawTargetUi();
                 }
-
                 Av.Run();
                 DsUtil.Complete("draw", true);
             }

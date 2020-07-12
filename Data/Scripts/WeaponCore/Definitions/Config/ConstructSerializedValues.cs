@@ -18,9 +18,9 @@ namespace WeaponCore
         [ProtoMember(1)] public readonly Dictionary<string, GroupInfo> BlockGroups = new Dictionary<string, GroupInfo>();
         [ProtoMember(2)] public FocusData FocusData;
 
-        public bool Sync(Constructs construct, ConstructDataValues sync, bool updateFoci = true)
+        public bool Sync(Constructs construct, ConstructDataValues sync)
         {
-            if (updateFoci) construct.Focus.Sync(construct.RootAi, sync.FocusData);
+            FocusData.Sync(construct.RootAi, sync.FocusData);
             BlockGroups.Clear();
             foreach (var s in sync.BlockGroups)
                 BlockGroups[s.Key] = s.Value;
@@ -51,6 +51,11 @@ namespace WeaponCore
 
         [ProtoMember(3)] internal string Name;
         [ProtoMember(4)] internal ChangeStates ChangeState;
+
+        public readonly Dictionary<string, int> DefaultSettings = new Dictionary<string, int>()
+        {
+            {"Active", 1},  {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"TargetPainter", 0},  {"ManualControl", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
+        };
 
         internal enum ChangeStates
         {
@@ -312,6 +317,15 @@ namespace WeaponCore
                     comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.Expired);
             }
         }
+
+        internal void Clean()
+        {
+            Name = null;
+            ChangeState = ChangeStates.None;
+            CompIds.Clear();
+            foreach (var s in DefaultSettings)
+                Settings[s.Key] = s.Value;
+        }
     }
 
     [ProtoContract]
@@ -323,15 +337,26 @@ namespace WeaponCore
         [ProtoMember(4)] public bool HasFocus;
         [ProtoMember(5)] public float DistToNearestFocusSqr;
 
-        public void Sync(FocusData sync)
+        public bool Sync(GridAi ai, FocusData sync)
         {
-            Revision = sync.Revision;
-            ActiveId = sync.ActiveId;
-            HasFocus = sync.HasFocus;
-            DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
-         
-            for (int i = 0; i < Target.Length; i++)
-                Target[i] = sync.Target[i];
+            if (sync.Revision > Revision)
+            {
+                Revision = sync.Revision;
+                ActiveId = sync.ActiveId;
+                HasFocus = sync.HasFocus;
+                DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
+
+                for (int i = 0; i < Target.Length; i++)
+                    Target[i] = sync.Target[i];
+
+                if (ai == ai.Construct.RootAi)
+                    ai.Construct.UpdateLeafFoci();
+
+                return true;
+            }
+            else Log.Line($"FocusData skipped");
+
+            return false;
         }
     }
 }
