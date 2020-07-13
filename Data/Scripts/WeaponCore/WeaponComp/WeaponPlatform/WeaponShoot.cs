@@ -148,8 +148,10 @@ namespace WeaponCore.Platform
 
                         if (System.Values.HardPoint.DeviateShotAngle > 0) {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var randomFloat1 = (float)(rnd.TurretRandom.NextDouble() * (System.Values.HardPoint.DeviateShotAngle + System.Values.HardPoint.DeviateShotAngle) - System.Values.HardPoint.DeviateShotAngle);
-                            var randomFloat2 = (float)(rnd.TurretRandom.NextDouble() * MathHelper.TwoPi);
+                            var rnd1 = rnd.TurretRandom.NextDouble();
+                            var rnd2 = rnd.TurretRandom.NextDouble();
+                            var randomFloat1 = (float)(rnd1 * (System.Values.HardPoint.DeviateShotAngle + System.Values.HardPoint.DeviateShotAngle) - System.Values.HardPoint.DeviateShotAngle);
+                            var randomFloat2 = (float)(rnd2 * MathHelper.TwoPi);
                             rnd.TurretCurrentCounter += 2;
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2), MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2), MyMath.FastCos(randomFloat1)), dirMatrix);
                         }

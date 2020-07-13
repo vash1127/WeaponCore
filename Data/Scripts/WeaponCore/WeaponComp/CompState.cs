@@ -81,10 +81,10 @@ namespace WeaponCore.Support
             }
             Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action, "ResetShootState");
 
-            for (int i = 0; i < Platform.Weapons.Length; i++) {
-                var w = Platform.Weapons[i];
-                w.SingleShotCounter = addShot ? w.SingleShotCounter++ : 0;
-            }
+            if (addShot)
+                for (int i = 0; i < Platform.Weapons.Length; i++)
+                    ++Platform.Weapons[i].SingleShotCounter;
+
             if (action == ShootActions.ShootClick && HasTurret) 
                 Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
             else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce ||  action == ShootActions.ShootOn)

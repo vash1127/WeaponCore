@@ -34,7 +34,7 @@ namespace WeaponCore.Support
                 if (!Supress && checkInTime && Messages > threshold || !Supress && Messages > threshold * 3)
                     return Pause();
 
-                if (Supress && StartTick - Session.Tick > 0)
+                if (Supress && StartTick >= Session.Tick)
                     return true;
 
                 ++Messages;

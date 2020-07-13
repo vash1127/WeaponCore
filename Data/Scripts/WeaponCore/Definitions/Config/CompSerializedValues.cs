@@ -215,6 +215,7 @@ namespace WeaponCore
                         ws.CurrentCharge = sws.CurrentCharge;
                         w.LastAmmoUpdateTick = comp.Session.Tick;
                     }
+                    ws.WeaponRandom.Sync(sws.WeaponRandom);
                     ws.CurrentMags = sws.CurrentMags;
                     ws.Heat = sws.Heat;
                     ws.Overheated = sws.Overheated;

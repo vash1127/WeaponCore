@@ -493,6 +493,15 @@ namespace WeaponCore
             TurretRandom = new Random(CurrentSeed);
             ClientProjectileRandom = new Random(CurrentSeed);
         }
+
+        internal void ResetRandom()
+        {
+            TurretCurrentCounter = 0;
+            ClientProjectileCurrentCounter = 0;
+            TurretRandom = new Random(CurrentSeed);
+            ClientProjectileRandom = new Random(CurrentSeed);
+            AcquireRandom = new Random(CurrentSeed);
+        }
     }
 
 

@@ -434,6 +434,8 @@ namespace WeaponCore
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                ++comp.Platform.Weapons[i].SingleShotCounter;
             PacketsToClient.Add(new PacketInfo { Packet = packet });
 
             data.Report.PacketValid = true;

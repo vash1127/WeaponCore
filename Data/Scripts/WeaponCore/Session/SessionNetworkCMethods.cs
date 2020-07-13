@@ -10,9 +10,9 @@ namespace WeaponCore
         {
             foreach (var errorPacket in ClientSideErrorPkt)
             {
-                Log.Line($"error packet");
                 if (errorPacket?.Packet == null) {
                     Log.Line($"ClientSideErrorPktList [{errorPacket?.PType}] is null, errorPacketItselfIsNull:{errorPacket == null}");
+                    if (errorPacket != null) ClientSideErrorPkt.Remove(errorPacket);
                     continue;
                 }
 
@@ -180,8 +180,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)PacketType.CompState] < packet.MId)
-            {
+            if (comp.MIds[(int)PacketType.CompState] < packet.MId)  {
                 comp.MIds[(int)PacketType.CompState] = packet.MId;
 
                 comp.Data.Repo.State.Sync(comp, compStatePacket.Data);
@@ -217,6 +216,7 @@ namespace WeaponCore
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
+                w.State.WeaponRandom.ResetRandom();
                 targetPacket.Target.SyncTarget(w);
             }
 

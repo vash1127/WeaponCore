@@ -538,13 +538,7 @@ namespace WeaponCore.Platform
 
         internal void SendTarget(int weaponId)
         {
-            var rand = State.WeaponRandom;
-            rand.TurretCurrentCounter = 0;
-            rand.ClientProjectileCurrentCounter = 0;
-            rand.CurrentSeed = UniqueId;
-            rand.TurretRandom = new Random(rand.CurrentSeed);
-            rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
-            rand.AcquireRandom = new Random(rand.CurrentSeed);
+            State.WeaponRandom.ResetRandom();
             System.Session.SendTargetChange(Comp, weaponId);
             //System.Session.SendCompState(Comp, PacketType.CompState);
 
