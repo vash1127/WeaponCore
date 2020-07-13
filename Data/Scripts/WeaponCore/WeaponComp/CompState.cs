@@ -100,6 +100,7 @@ namespace WeaponCore.Support
 
         internal void ResetPlayerControl()
         {
+            Log.Line($"ResetPlayerControl");
             Data.Repo.State.PlayerId = -1;
             Data.Repo.State.Control = CompStateValues.ControlMode.None;
             Data.Repo.State.TerminalActionSetter(this, ShootActions.ShootOff);

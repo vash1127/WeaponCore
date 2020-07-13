@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Havok;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -519,7 +520,7 @@ namespace WeaponCore
                 var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
                 var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal?.EntityId == Comp.Ai.Construct.RootAi?.Data.Repo.ActiveTerminal;
+                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal || Session.IsClient && Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal == 0);
 
                 return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
             }
@@ -533,7 +534,7 @@ namespace WeaponCore
                 if (comp.IsAsleep)
                     comp.WakeupComp();
 
-                if (Session.IsClient && !Active)
+                if (Session.IsClient && !Active)  
                     Session.SendActiveTerminal(comp);
 
                 Active = true;
@@ -545,13 +546,18 @@ namespace WeaponCore
                     Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal = 0;
 
                 if (Session.IsClient && Comp != null && !purge) {
-                    //Log.Line($"sending terminal clean");
-                    Session.PacketsToServer.Add(new TerminalMonitorPacket {
-                        SenderId = Session.MultiplayerId,
-                        PType = PacketType.TerminalMonitor,
-                        EntityId = Comp.MyCube.EntityId,
-                        State = TerminalMonitorPacket.Change.Clean,
-                    });
+                    uint[] mIds;
+                    if (Session.PlayerMIds.TryGetValue(Session.MultiplayerId, out mIds))
+                    {
+                        Session.PacketsToServer.Add(new TerminalMonitorPacket
+                        {
+                            SenderId = Session.MultiplayerId,
+                            PType = PacketType.TerminalMonitor,
+                            EntityId = Comp.MyCube.EntityId,
+                            State = TerminalMonitorPacket.Change.Clean,
+                            MId = ++mIds[(int)PacketType.TerminalMonitor],
+                        });
+                    }
                 }
 
                 Comp = null;
@@ -566,12 +572,16 @@ namespace WeaponCore
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
                     aTermId = comp.Ai.Data.Repo.ActiveTerminal;
                     ServerTerminalMaps[comp] = aTermId;
+                    Log.Line($"ServerUpdate added Id");
                 }
                 else {
 
                     var cube = MyEntities.GetEntityByIdOrDefault(aTermId) as MyCubeBlock;
                     if (cube != null && cube.CubeGrid.EntityId != comp.Ai.MyGrid.EntityId)
+                    {
                         ServerTerminalMaps[comp] = 0;
+                        Log.Line($"ServerUpdate reset Id");
+                    }
                 }
 
                 comp.Ai.Data.Repo.ActiveTerminal = comp.MyCube.EntityId;
@@ -586,7 +596,13 @@ namespace WeaponCore
             internal void ServerClean(WeaponComponent comp)
             {
                 if (ServerTerminalMaps.ContainsKey(comp))
+                {
                     ServerTerminalMaps[comp] = 0;
+                    comp.Ai.Data.Repo.ActiveTerminal = 0;
+
+                    if (Session.MpActive)
+                        Session.SendAiData(comp.Ai);
+                }
                 else
                     Log.Line($"ServerClean failed ");
             }

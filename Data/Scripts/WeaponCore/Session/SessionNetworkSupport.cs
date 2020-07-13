@@ -489,7 +489,7 @@ namespace WeaponCore
                     {
                         MId = ++mIds[(int)PacketType.PlayerControlRequest],
                         EntityId = comp.MyCube.EntityId,
-                        SenderId = 0,
+                        SenderId = MultiplayerId,
                         PType = PacketType.PlayerControlRequest,
                         PlayerId = playerId,
                         Mode = mode,

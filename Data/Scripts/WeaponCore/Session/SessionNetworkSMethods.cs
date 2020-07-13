@@ -152,12 +152,8 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                var wasTrack = comp.Data.Repo.State.TrackingReticle;
                 comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
-                if (wasTrack && !comp.Data.Repo.State.TrackingReticle)
-                    comp.ResetPlayerControl();
-                else
-                    SendCompData(comp);
+                SendCompState(comp, PacketType.CompState);
 
                 data.Report.PacketValid = true;
             }
@@ -415,8 +411,7 @@ namespace WeaponCore
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)
-            {
+            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
                 mIds[(int)packet.PType] = packet.MId;
 
                 if (terminalMonPacket.State == TerminalMonitorPacket.Change.Update)

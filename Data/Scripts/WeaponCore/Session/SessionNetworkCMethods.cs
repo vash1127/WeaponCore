@@ -184,7 +184,6 @@ namespace WeaponCore
             {
                 comp.MIds[(int)PacketType.CompState] = packet.MId;
 
-                Log.Line($"ClientStateUpdate");
                 comp.Data.Repo.State.Sync(comp, compStatePacket.Data);
             }
 
