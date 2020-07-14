@@ -16,7 +16,8 @@ namespace WeaponCore.Platform
     {
         internal int NextMuzzle;
         internal volatile bool Casting;
-        
+        internal volatile bool PullingAmmo;
+        internal volatile bool RemovingAmmo;
         private readonly int _numOfBarrels;
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
@@ -50,8 +51,6 @@ namespace WeaponCore.Platform
         internal bool LockOnFireState;
         internal bool ReloadSubscribed;
         internal bool CanHoldMultMags;
-        internal bool PullingAmmo;
-        internal bool RemovingAmmo;
         internal bool ScheduleAmmoChange;
         internal uint GravityTick;
         internal uint ShootTick;
@@ -137,6 +136,7 @@ namespace WeaponCore.Platform
         internal uint AnimationDelayTick;
         internal uint LastHeatUpdateTick;
         internal uint LastAmmoUpdateTick;
+        internal int ProposedAmmoId = -1;
         internal int FireCounter;
         internal int UniqueId;
         internal int RateOfFire;

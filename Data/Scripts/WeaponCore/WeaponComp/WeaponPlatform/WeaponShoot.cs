@@ -257,7 +257,7 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (!Reload() && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
+                if (State.CurrentAmmo == 0 && !Reload() && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
 
                     if (ShotsFired == System.ShotsPerBurst) {
                         uint delay = 0;

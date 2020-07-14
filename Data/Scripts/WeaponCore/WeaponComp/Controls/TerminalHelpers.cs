@@ -538,7 +538,6 @@ namespace WeaponCore.Control
 
             while (!(currActive.Equals(currDef))) {
                 if (currDef.AmmoDef.Const.IsTurretSelectable) {
-                    //w.Set.AmmoTypeId = next;
                     change = true;
                     break;
                 }
@@ -546,8 +545,9 @@ namespace WeaponCore.Control
                 next = (next + 1) % availAmmo;
                 currDef = w.System.AmmoTypes[next];
             }
+            Log.Line($"[TerminalActionCycleAmmo] change:{change} - next:{next}");
 
-            if (change && !w.ActiveAmmoDef.Equals(w.System.AmmoTypes[next]))
+            if (change)
                 w.ChangeAmmo(next);
         }
 

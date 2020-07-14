@@ -222,7 +222,7 @@ namespace WeaponCore
                     ws.HasInventory = sws.HasInventory;
                     ws.AmmoTypeId = sws.AmmoTypeId;
                     ws.Action = sws.Action;
-                    w.ChangeActiveAmmo(w.System.AmmoTypes[w.State.AmmoTypeId]);
+                    w.ChangeActiveAmmo();
                 }
             }
         }

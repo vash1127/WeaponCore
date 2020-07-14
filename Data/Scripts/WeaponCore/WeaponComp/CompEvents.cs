@@ -117,6 +117,7 @@ namespace WeaponCore.Support
 
                 if (!Session.IsCreative && !w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDefinitionId == item.Content.GetId())
                 {
+                    Log.Line($"OnContentsChanged reload");
                     if (amount < 0)
                         ComputeStorage(w);
                     else

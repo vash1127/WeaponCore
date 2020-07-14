@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game.Entities.Inventory;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.ObjectBuilders;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
@@ -405,37 +408,6 @@ namespace WeaponCore.Platform
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
         }
-        internal void ChangeActiveAmmo(WeaponAmmoTypes ammoDef)
-        {
-            ActiveAmmoDef = ammoDef;
-            CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ActiveAmmoDef.AmmoDef.Const.MagVolume * 2);
-            ScheduleAmmoChange = false;
-            SetWeaponDps();
-            UpdateWeaponRange();
-
-            if (System.Session.MpActive && System.Session.IsServer)
-                System.Session.SendCompData(Comp);
-        }
-
-        internal void ChangeAmmo(int newAmmoId)
-        {
-            if (System.Session.IsServer) {
-
-                var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
-                var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
-
-                State.AmmoTypeId = newAmmoId;
-                if (instantChange || canReload)
-                    ChangeActiveAmmo(System.AmmoTypes[State.AmmoTypeId]);
-                else
-                    ScheduleAmmoChange = true;
-
-                if (ActiveAmmoDef.AmmoDef.Const.Reloadable && canReload)
-                    Session.ComputeStorage(this);
-            }
-            else if (System.Session.MpActive)
-                System.Session.SendAmmoCycleRequest(Comp, WeaponId, newAmmoId);
-        }
 
         public void ChargeReload(bool syncCharge = false)
         {
@@ -543,6 +515,67 @@ namespace WeaponCore.Platform
             //System.Session.SendCompState(Comp, PacketType.CompState);
 
         }
+        internal void ChangeActiveAmmo()
+        {
+            var proposed = ProposedAmmoId != -1;
+            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[State.AmmoTypeId];
+            CanHoldMultMags = ((float)Comp.BlockInventory.MaxVolume * .75) > (ammoType.AmmoDef.Const.MagVolume * 2);
+            ScheduleAmmoChange = false;
+
+            if (ActiveAmmoDef == ammoType)
+            {
+                Log.Line($"ChangeActiveAmmo already set");
+                return;
+            }
+
+            if (proposed)
+            {
+                State.AmmoTypeId = ProposedAmmoId;
+                ProposedAmmoId = -1;
+            }
+
+            ActiveAmmoDef = System.AmmoTypes[State.AmmoTypeId];
+            SetWeaponDps();
+            UpdateWeaponRange();
+
+            if (System.Session.MpActive && System.Session.IsServer)
+                System.Session.SendCompData(Comp);
+        }
+
+        internal void ChangeAmmo(int newAmmoId)
+        {
+            if (System.Session.IsServer)
+            {
+                ProposedAmmoId = newAmmoId;
+
+                var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+
+                //State.AmmoTypeId = newAmmoId;
+                var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
+                var unloadMag = !canReload && !instantChange && !Reloading && State.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize && Comp.BlockInventory.CanItemsBeAdded(1, proposedAmmo.AmmoDefinitionId);
+
+                if (unloadMag)
+                {
+                    if (Comp.BlockInventory.AddItems(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content))
+                    {
+                        State.CurrentAmmo = 0;
+                        canReload = proposedAmmo.AmmoDef.Const.Reloadable;
+                        Log.Line($"[unLoadedMag] canReload:{canReload}");
+                    }
+                }
+                else Log.Line($"currentAmmo:{State.CurrentAmmo} - currentAmmo:{State.CurrentAmmo}[{ActiveAmmoDef.AmmoDef.Const.MagazineSize}]({proposedAmmo.AmmoDef.Const.MagazineSize}) - ammo:{proposedAmmo.AmmoName}");
+                if (instantChange)
+                    ChangeActiveAmmo();
+                else if (canReload)
+                    ScheduleAmmoChange = true;
+
+                if (proposedAmmo.AmmoDef.Const.Reloadable && canReload)
+                    Session.ComputeStorage(this);
+            }
+            else if (System.Session.MpActive)
+                System.Session.SendAmmoCycleRequest(Comp, WeaponId, newAmmoId);
+        }
 
         internal bool HasAmmo()
         {
@@ -592,41 +625,35 @@ namespace WeaponCore.Platform
 
         internal bool Reload()
         {
-
             var invalidState = State == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
-
-            if (invalidState || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading) 
+            if (invalidState || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon  || Reloading || RemovingAmmo || PullingAmmo) 
                 return false;
 
             if (State.CurrentAmmo > 0 || AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
                 return false;
 
             var hadNoMags = NoMagsToLoad;
+            var scheduledChange = ScheduleAmmoChange;
+            
+            if (scheduledChange) 
+                ChangeActiveAmmo();
+
             var hasAmmo = HasAmmo();
             var magStateChange = hadNoMags != NoMagsToLoad;
 
-            if (ScheduleAmmoChange)
-            {
-                if (hasAmmo && !RemovingAmmo)
-                {
+            if (!hasAmmo || scheduledChange) {
+
+                if (hasAmmo)  {
+
+                    Log.Line($"Reload remove");
                     Comp.Session.UniqueListAdd(this, Comp.Session.WeaponsToRemoveAmmoIndexer, Comp.Session.WeaponsToRemoveAmmo);
                     RemovingAmmo = true;
                 }
-                else if (!RemovingAmmo)
-                {
-                    var newAmmo = System.AmmoTypes[State.AmmoTypeId];
-                    if (!ActiveAmmoDef.Equals(newAmmo))
-                        ChangeActiveAmmo(newAmmo);
-                }
-
-                return false;
-            }
-
-            if (!hasAmmo) {
 
                 if (magStateChange && System.Session.IsServer && System.Session.MpActive)
                     System.Session.SendCompState(Comp, PacketType.CompState);
 
+                Log.Line($"Reload return false");
                 return false;
             }
 
