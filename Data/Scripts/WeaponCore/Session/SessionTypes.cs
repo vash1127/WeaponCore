@@ -852,20 +852,8 @@ namespace WeaponCore
 
             public int Amount
             {
-                get
-                {
-                    lock (this)
-                    {
-                        return _amount;
-                    }
-                }
-                set
-                {
-                    lock (this)
-                    {
-                        _amount = value;
-                    }
-                }
+                get { return _amount; }
+                set { Interlocked.Exchange(ref _amount, value);  }
             }
         }
     }

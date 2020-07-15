@@ -543,9 +543,13 @@ namespace WeaponCore.Platform
 
         internal void AmmoChange(object o)
         {
-            var ammoChange = (AmmoLoad)o;
-            if (ammoChange.Change == AmmoLoad.ChangeType.Add) 
-                Comp.BlockInventory.AddItems(ammoChange.Amount, ammoChange.Item);
+            try
+            {
+                var ammoChange = (AmmoLoad)o;
+                if (ammoChange.Change == AmmoLoad.ChangeType.Add)
+                    Comp.BlockInventory.AddItems(ammoChange.Amount, ammoChange.Item);
+            }
+            catch (Exception ex) { Log.Line($"Exception in AmmoChange: {ex} - {((AmmoLoad)o).Amount} - {((AmmoLoad)o).Item.SubtypeName}"); }
         }
 
         internal void ChangeAmmo(int newAmmoId)
