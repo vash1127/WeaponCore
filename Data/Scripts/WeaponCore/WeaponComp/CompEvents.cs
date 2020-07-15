@@ -43,7 +43,7 @@ namespace WeaponCore.Support
                     var items = BlockInventory.GetItems();
                     for (int i = 0; i < items.Count; i++)
                     {
-                        var bItem = Session.BetterInventoryItems.Count > 0 ? Session.BetterInventoryItems.Pop() : new BetterInventoryItem();
+                        var bItem = Session.BetterInventoryItems.Get();
                         bItem.Amount = (int)items[i].Amount;
                         bItem.ItemId = items[i].ItemId;
                         bItem.Content = items[i].Content;
@@ -76,7 +76,7 @@ namespace WeaponCore.Support
                         if (Session.BlockInventoryItems.TryRemove(BlockInventory, out removedItems))
                         {
                             foreach (var inventoryItems in removedItems)
-                                Session.BetterInventoryItems.Push(inventoryItems.Value);
+                                Session.BetterInventoryItems.Return(inventoryItems.Value);
 
                             removedItems.Clear();
                         }
@@ -91,12 +91,11 @@ namespace WeaponCore.Support
         private void OnContentsChanged(MyInventoryBase inv, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
             if (!Registered) return;
-
             BetterInventoryItem cachedItem;
 
             if (!Session.BlockInventoryItems[BlockInventory].TryGetValue(item.ItemId, out cachedItem))
             {
-                cachedItem = Session.BetterInventoryItems.Count > 0 ? Session.BetterInventoryItems.Pop() : new BetterInventoryItem();
+                cachedItem = Session.BetterInventoryItems.Get();
                 cachedItem.Amount = (int)amount;
                 cachedItem.Content = item.Content;
                 cachedItem.ItemId = item.ItemId;
@@ -108,7 +107,7 @@ namespace WeaponCore.Support
             {
                 BetterInventoryItem removedItem;
                 if (Session.BlockInventoryItems[BlockInventory].TryRemove(item.ItemId, out removedItem))
-                    Session.BetterInventoryItems.Push(removedItem);
+                    Session.BetterInventoryItems.Return(removedItem);
             }
 
             for (int i = 0; i < Platform.Weapons.Length; i++)
@@ -117,7 +116,6 @@ namespace WeaponCore.Support
 
                 if (!Session.IsCreative && !w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDefinitionId == item.Content.GetId())
                 {
-                    Log.Line($"OnContentsChanged reload");
                     if (amount < 0)
                         ComputeStorage(w);
                     else

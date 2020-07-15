@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading;
 using Havok;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -844,17 +845,27 @@ namespace WeaponCore
 
         public class BetterInventoryItem
         {
-            public int Amount;
+            private int _amount;
             public MyObjectBuilder_PhysicalObject Content;
             public uint ItemId;
             public MyDefinitionId DefId;
 
-            public void Transfer(BetterInventoryItem item)
+            public int Amount
             {
-                Amount = item.Amount;
-                Content = item.Content;
-                ItemId = item.ItemId;
-                DefId = item.DefId;
+                get
+                {
+                    lock (this)
+                    {
+                        return _amount;
+                    }
+                }
+                set
+                {
+                    lock (this)
+                    {
+                        _amount = value;
+                    }
+                }
             }
         }
     }

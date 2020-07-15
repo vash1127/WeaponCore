@@ -207,6 +207,19 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal struct AmmoLoad
+        {
+            internal enum ChangeType
+            {
+                Add,
+                Remove
+            }
+
+            internal MyObjectBuilder_PhysicalObject Item;
+            internal int Amount;
+            internal ChangeType Change;
+        }
+
         internal Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, RecursiveSubparts parts, MyEntity elevationPart, MyEntity azimuthPart, string azimuthPartName, string elevationPartName)
         {
 

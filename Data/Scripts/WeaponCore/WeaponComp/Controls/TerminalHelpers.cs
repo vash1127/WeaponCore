@@ -545,7 +545,6 @@ namespace WeaponCore.Control
                 next = (next + 1) % availAmmo;
                 currDef = w.System.AmmoTypes[next];
             }
-            Log.Line($"[TerminalActionCycleAmmo] change:{change} - next:{next}");
 
             if (change)
                 w.ChangeAmmo(next);

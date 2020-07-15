@@ -21,7 +21,7 @@ namespace WeaponCore
 
             if (!s.IsClient) {
 
-                if (!comp.MyCube.HasInventory || weapon.PullingAmmo || weapon.RemovingAmmo) return;
+                if (!comp.MyCube.HasInventory || weapon.PullingAmmo) return;
                 var ammo = weapon.ActiveAmmoDef;
 
                 if (!ammo.AmmoDef.Const.EnergyAmmo)
@@ -30,12 +30,10 @@ namespace WeaponCore
 
                         weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
                         weapon.CurrentAmmoVolume = (float) weapon.State.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
-                        Log.Line($"CurrentMags:{weapon.State.CurrentMags} - CurrentAmmoVol:{weapon.CurrentAmmoVolume} - pulling:{weapon.PullingAmmo} - removingAmmo:{weapon.RemovingAmmo}");
                         weapon.Reload();
 
                         var freeSpace = weapon.System.MaxAmmoVolume - (float) comp.BlockInventory.CurrentVolume;
                         if (!weapon.PullingAmmo && weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && freeSpace > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume) {
-                            Log.Line($"Pulling");
                             weapon.PullingAmmo = true;
                             s.UniqueListAdd(weapon, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo);
                             s.UniqueListAdd(comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
@@ -97,9 +95,8 @@ namespace WeaponCore
                                     {
                                         ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsNeeded });
                                         magsAdded += magsNeeded;
-                                        Log.Line($"AmmoPull: magsAvailable >= magsNeeded - added:{magsAdded} - needed:{magsNeeded} - amount:{item.Amount - magsAdded}");
-                                        magsNeeded = 0;
                                         item.Amount -= magsAdded;
+                                        magsNeeded = 0;
                                     }
                                     else
                                     {
@@ -107,13 +104,14 @@ namespace WeaponCore
 
                                         magsNeeded -= magsAvailable;
                                         magsAdded += magsAvailable;
-                                        Log.Line($"AmmoPull: else - added:{magsAdded} - needed:{magsNeeded}[{magsAvailable}] - amount:{item.Amount - magsAdded}");
                                         item.Amount -= magsAdded;
+
                                         items.RemoveAtFast(l);
-                                        BetterInventoryItems.Push(item);
+                                        BetterInventoryItems.Return(item);
                                     }
                                     weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
                                 }
+                                else Log.Line($"AmmoPull cannot transfer");
 
                                 if (magsNeeded <= 0)
                                     break;
@@ -150,7 +148,6 @@ namespace WeaponCore
                 var inventoriesToPull = weaponAmmoToPull.Inventories;
                 if (!weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     InventoryMoveRequestPool.Return(weaponAmmoToPull);
-                    Log.Line($"MoveAmmo1 not ready");
                     continue;
                 }
 
@@ -161,7 +158,6 @@ namespace WeaponCore
                 }
 
                 weapon.State.CurrentMags = weapon.Comp.BlockInventory.GetItemAmount(weapon.ActiveAmmoDef.AmmoDefinitionId);
-                Log.Line($"MoveAmmo2: Mags:{weapon.State.CurrentMags}");
                 weapon.PullingAmmo = false;
 
                 InventoryMoveRequestPool.Return(weaponAmmoToPull);
@@ -205,12 +201,14 @@ namespace WeaponCore
                                 if (canMove >= item.Amount)
                                 {
                                     items.RemoveAtFast(i);
-                                    BetterInventoryItems.Push(item);
+                                    BetterInventoryItems.Return(item);
                                     break;
                                 }
                                 item.Amount -= canMove;
                             }
+                            else Log.Line($"Ammoremove cannot transfer");
                         }
+                        else Log.Line($"Ammoremove cannot move: {canMove}");
                     }
                 }
 
@@ -234,10 +232,8 @@ namespace WeaponCore
                     if (!weapon.Comp.InventoryInited){
                         request.Inventories.Clear();
                         request.Weapon = null;
-                        Log.Line($"RemoveAmmo1 not initted");
                         continue;
                     }
-                    Log.Line($"RemoveAmmo2");
 
                     var inventoriesToAddTo = request.Inventories;
                     var magItem = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoItem;
