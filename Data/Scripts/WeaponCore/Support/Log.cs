@@ -25,7 +25,7 @@ namespace WeaponCore.Support
 
             internal bool Paused()
             {
-                if (Session.Tick < 240)
+                if (Session.Tick < 3600)
                     return false;
 
                 var checkInTime = Session.Tick - CheckTick > 119;

@@ -596,7 +596,6 @@ namespace WeaponCore
         
         internal void SendTargetExpiredUpdate(WeaponComponent comp, int weaponId)
         {
-            Log.Line($"sending target expired");
             PacketsToClient.Add(new PacketInfo
             {
                 Entity = comp.MyCube,

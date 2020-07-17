@@ -149,6 +149,11 @@ namespace WeaponCore
                         ClientSentReport(packetObj);
                         break;
                     }
+                    case PacketType.Invalid:
+                    {
+                        Log.Line($"invalid packet: {packetObj.PacketSize} - {packetObj.Packet.PType}");
+                        break;
+                    }
                     default:
                         if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
                         Log.LineShortDate($"        [BadClientPacket] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}", "net");
@@ -177,7 +182,7 @@ namespace WeaponCore
                     PacketObjPool.Return(packetObj);
                     return true;
                 }
-                PacketObjPool.Return(packetObj);
+                if (!ClientSideErrorPkt.Contains(packetObj.ErrorPacket)) PacketObjPool.Return(packetObj);
             }
             catch (Exception ex) { Log.Line($"Exception in ProccessClientPacket: {ex} - packetSize:{packetObj?.PacketSize} - pObjNull:{packetObj == null} - packetNull:{packetObj?.Packet == null} - error:{packetObj?.ErrorPacket == null} - report:{packetObj?.Report == null}"); }
             return false;

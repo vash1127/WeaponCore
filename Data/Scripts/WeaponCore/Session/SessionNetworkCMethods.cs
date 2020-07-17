@@ -42,7 +42,10 @@ namespace WeaponCore
                 if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)
                 {
                     if (!success)
+                    {
                         Log.LineShortDate($"        [BadReprocess] Entity:{errorPacket.Packet?.EntityId} Cause:{errorPacket.Error ?? string.Empty} Type:{errorPacket.PType}", "net");
+                        PacketObjPool.Return(packetObj);
+                    }
 
                     ClientSideErrorPkt.Remove(errorPacket);
                 }
@@ -50,7 +53,10 @@ namespace WeaponCore
                     errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
 
                 if (errorPacket.MaxAttempts == 0)
+                {
                     ClientSideErrorPkt.Remove(errorPacket);
+                    PacketObjPool.Return(packetObj);
+                }
             }
             ClientSideErrorPkt.ApplyChanges();
         }
@@ -158,7 +164,6 @@ namespace WeaponCore
 
                 if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
                 {
-                    Log.Line($"ClientCompData: {packet.PType}");
                     Wheel.Dirty = true;
                     if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
                         Wheel.ForceUpdate();

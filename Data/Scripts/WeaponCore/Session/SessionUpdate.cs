@@ -180,10 +180,7 @@ namespace WeaponCore
                             }
                         }
                         else if (w.Target.HasTarget && IsClient)
-                        {
                             w.Target.Entity = MyEntities.GetEntityById(w.TargetData.EntityId);
-                            Log.Line($"client getting Retry to get Entity: {w.TargetData.EntityId}");
-                        }
 
                         w.ProjectilesNear = enemyProjectiles && w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
 
