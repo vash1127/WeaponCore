@@ -189,6 +189,7 @@ namespace WeaponCore
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var minAoeOffset = largeGrid ? 1.25 : 0.5f;
+            var gridMatrix = grid.PositionComp.WorldMatrixRef;
 
             var fallOff = t.AmmoDef.Const.FallOffScaling && t.DistanceTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
@@ -409,7 +410,9 @@ namespace WeaponCore
                     Vector3 halfExt;
                     rootBlock.ComputeScaledHalfExtents(out halfExt);
                     var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                    obb = new MyOrientedBoundingBoxD(grid.GridIntegerToWorld(rootBlock.Position), blockBox.HalfExtents, Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef));
+                    gridMatrix.Translation = grid.GridIntegerToWorld(grid.GridIntegerToWorld(rootBlock.Position));
+                    obb = new MyOrientedBoundingBoxD(blockBox, gridMatrix);
+                    //obb = new MyOrientedBoundingBoxD(grid.GridIntegerToWorld(rootBlock.Position), blockBox.HalfExtents, Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef));
                 }
 
                 var dist = obb.Intersects(ref hitEnt.Intersection);
@@ -635,8 +638,10 @@ namespace WeaponCore
                 IHitInfo hitInfo;
                 if (MyAPIGateway.Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15))
                 {
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(door.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(door.PositionComp.WorldAABB.Center, door.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    //var rotMatrix = Quaternion.CreateFromRotationMatrix(door.WorldMatrix);
+                    //var obb = new MyOrientedBoundingBoxD(door.PositionComp.WorldAABB.Center, door.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    var obb = new MyOrientedBoundingBoxD(door.PositionComp.LocalAABB, door.PositionComp.WorldMatrixRef);
+
                     var sphere = new BoundingSphereD(hitInfo.Position + (hitEnt.Intersection.Direction * 0.15f), 0.01f);
                     if (obb.Intersects(ref sphere))
                         return true;

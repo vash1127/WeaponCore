@@ -34,7 +34,6 @@ namespace WeaponCore.Support
 
             foreach (var grid in PrevSubGrids)
                 RemSubGrids.Add(grid);
-
             PrevSubGrids.Clear();
             for (int i = 0; i < NearByEntitiesTmp; i++) {
 

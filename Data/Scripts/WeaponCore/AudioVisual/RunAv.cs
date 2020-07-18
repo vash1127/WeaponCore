@@ -472,59 +472,70 @@ namespace WeaponCore.Support
                 var avBarrel = AvBarrels2[i];
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
-                var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
+                try
+                {
+                    var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
 
-                var somethingEnded = !muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null ||  weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+                    var somethingEnded = !muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
-                if (somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Set.Overrides.Activate) {
+                    if (somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Set.Overrides.Activate)
+                    {
 
-                    if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
+                        if (weapon.BarrelEffects2[muzzle.MuzzleId] != null)
+                        {
 
-                        weapon.BarrelEffects2[muzzle.MuzzleId].Stop();
-                        weapon.BarrelEffects2[muzzle.MuzzleId] = null;
+                            weapon.BarrelEffects2[muzzle.MuzzleId].Stop();
+                            weapon.BarrelEffects2[muzzle.MuzzleId] = null;
+                        }
+                        muzzle.Av2Looping = false;
+                        weapon.StopBarrelAv = false;
+                        AvBarrels2.RemoveAtFast(i);
+                        continue;
                     }
-                    muzzle.Av2Looping = false;
-                    weapon.StopBarrelAv = false;
-                    AvBarrels2.RemoveAtFast(i);
-                    continue;
-                }
 
-                if (weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick) {
+                    if (weapon.Comp.Ai.VelocityUpdateTick != weapon.Comp.Session.Tick)
+                    {
 
-                    weapon.Comp.Ai.GridVel = weapon.Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
-                    weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
-                }
+                        weapon.Comp.Ai.GridVel = weapon.Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                        weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
+                        weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
+                    }
 
-                var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
-                var  matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
-                var particles = weapon.System.Values.HardPoint.Graphics;
-                
-                matrix.Translation += Vector3D.Rotate(particles.Barrel2.Offset, matrix);
-                if (weapon.BarrelEffects2[muzzle.MuzzleId] == null && ticksAgo <= 0) {
-                    
-                    if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId])) {
+                    var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
+                    var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
+                    var particles = weapon.System.Values.HardPoint.Graphics;
 
-                        weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
-                        weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
+                    matrix.Translation += Vector3D.Rotate(particles.Barrel2.Offset, matrix);
+                    if (weapon.BarrelEffects2[muzzle.MuzzleId] == null && ticksAgo <= 0)
+                    {
+
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId]))
+                        {
+
+                            weapon.BarrelEffects2[muzzle.MuzzleId].UserColorMultiplier = particles.Barrel2.Color;
+                            weapon.BarrelEffects2[muzzle.MuzzleId].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
+                            weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
+                            //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                            weapon.BarrelEffects2[muzzle.MuzzleId].Play();
+                        }
+                    }
+                    else if (particles.Barrel2.Extras.Restart && weapon.BarrelEffects2[muzzle.MuzzleId] != null && weapon.BarrelEffects2[muzzle.MuzzleId].IsEmittingStopped)
+                    {
+
                         weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
                         //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                        weapon.BarrelEffects1[muzzle.MuzzleId].SetTranslation(ref pos);
                         weapon.BarrelEffects2[muzzle.MuzzleId].Play();
                     }
-                }
-                else if (particles.Barrel2.Extras.Restart && weapon.BarrelEffects2[muzzle.MuzzleId] != null && weapon.BarrelEffects2[muzzle.MuzzleId].IsEmittingStopped) {
+                    else if (weapon.BarrelEffects2[muzzle.MuzzleId] != null)
+                    {
 
-                    weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
-                    //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
-                    weapon.BarrelEffects1[muzzle.MuzzleId].SetTranslation(ref pos);
-                    weapon.BarrelEffects2[muzzle.MuzzleId].Play();
+                        weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
+                        //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                        weapon.BarrelEffects1[muzzle.MuzzleId].SetTranslation(ref pos);
+                    }
                 }
-                else if (weapon.BarrelEffects2[muzzle.MuzzleId] != null) {
-
-                    weapon.BarrelEffects2[muzzle.MuzzleId].WorldMatrix = matrix;
-                    //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
-                    weapon.BarrelEffects1[muzzle.MuzzleId].SetTranslation(ref pos);
-                }
+                catch (Exception ex) { Log.Line($"Exception in RunAvBarrels2: {ex} weapon:{weapon.System.WeaponName} - particleName:{weapon.System.Values.HardPoint.Graphics.Barrel2.Name} - aiNull:{weapon.Comp.Ai == null}"); }
             }
         }
     }

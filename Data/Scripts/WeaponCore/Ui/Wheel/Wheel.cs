@@ -5,7 +5,6 @@ using VRage.Game;
 using VRage.Input;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Wheel.Menu;
 namespace WeaponCore
@@ -97,7 +96,6 @@ namespace WeaponCore
         internal void OpenWheel()
         {
             WheelActive = true;
-            //Ai.ReScanBlockGroups(true);
             if (Session.MpActive)
                 Session.SendGroupUpdate(Ai);
 
@@ -207,8 +205,6 @@ namespace WeaponCore
         internal void UpdateState(Menu oldMenu, Item item, Update update, bool reset = true)
         {
             Dirty = false;
-            if (reset)
-                oldMenu.CleanUp();
 
             if (Ai.Construct.MenuBlockGroups.Count > 0)
             {

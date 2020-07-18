@@ -52,8 +52,10 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
-            var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrixRef);
-            var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+            //var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrixRef);
+            //var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+            var box = entity.PositionComp.LocalAABB;
+            var obb = new MyOrientedBoundingBoxD(box, entity.PositionComp.WorldMatrixRef);
 
             var validEstimate = true;
             if (prediction != Prediction.Off && !weapon.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon && weapon.ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed > 0)

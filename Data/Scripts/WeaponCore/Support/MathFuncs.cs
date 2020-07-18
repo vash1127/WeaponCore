@@ -154,6 +154,52 @@ namespace WeaponCore.Support
             return Math.Abs(dot) * dot > num;
         }
 
+        /*
+        This sausage of a method was made by combining my MissileGuidance class into a single call
+        because... because Keen won't let us have nice things.
+
+        This is derived using a lateral acceleration (latax) that is normal to the line of sight vector.
+        This is a much more stable solution than using a latax that is normal to the velocity vector
+        because I don't need to screw with the dozen or so edge cases you get with that geometry.
+
+        - Whiplash141 the Salty
+        */
+        internal static Vector3D ProNavGuidanceButAllInOneMethod(
+            double NavConstant, // Nominally: 3-5
+            double NavAccelConstant, // Nominally: NavConstant / 2
+            ref Vector3D targetPosition,
+            ref Vector3D targetVelocity,
+            ref Vector3D targetAcceleration,
+            ref Vector3D missilePosition,
+            ref Vector3D missileVelocity,
+            ref Vector3D gravity, // Plug in Vector3D.Zero if you don't give a shit about gravity
+            double missileAccelerationMagnitude, // m/s^2
+            double updateIntervalInSeconds)
+        {
+            Vector3D missileToTarget = targetPosition - missilePosition;
+            Vector3D missileToTargetNorm = Vector3D.Normalize(missileToTarget);
+            Vector3D relativeVelocity = targetVelocity - missileVelocity;
+            Vector3D lateralTargetAcceleration = (targetAcceleration - Vector3D.Dot(targetAcceleration, missileToTargetNorm) * missileToTargetNorm);
+            Vector3D gravityCompensationTerm = 1.1 * -(gravity - Vector3D.Dot(gravity, missileToTargetNorm) * missileToTargetNorm);
+            /*
+            This is where the magic happens. Here we are using the angular rate of change as the "error" 
+            that we are going to slap into an augmented PROPORTIONAL controller. That is where the name
+            comes from.
+            */
+            Vector3D omega = Vector3D.Cross(missileToTarget, relativeVelocity) / Math.Max(missileToTarget.LengthSquared(), 1); // To combat instability at close range
+            Vector3D lateralAcceleration = NavConstant * relativeVelocity.Length() * Vector3D.Cross(omega, missileToTargetNorm)
+                                           + NavAccelConstant * lateralTargetAcceleration
+                                           + gravityCompensationTerm; // Normal to LOS
+
+            if (Vector3D.IsZero(lateralAcceleration))
+                return missileToTarget;
+
+            double diff = missileAccelerationMagnitude * missileAccelerationMagnitude - lateralAcceleration.LengthSquared();
+            if (diff < 0)
+                return lateralAcceleration; // Fly parallel to the target if we run out of acceleration budget
+            return lateralAcceleration + Math.Sqrt(diff) * missileToTargetNorm;
+        }
+
         //Relative velocity proportional navigation
         //aka: Whip-Nav
         internal static Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1, double maxLateralThrustProportion = 0.5)

@@ -26,19 +26,23 @@ namespace WeaponCore.Support
             var gMaxX = grid.Max.X;
             var gMaxY = grid.Max.Y;
             var gMaxZ = grid.Max.Z;
-
             if (ai != null)
             {
                 var dir = (worldEnd - worldStart);
                 var ray = new RayD(ref worldStart, ref dir);
+                var gridMatrix = ai.MyGrid.PositionComp.WorldMatrixRef;
+
                 foreach (var sub in ai.SubGrids)
                 {
                     if (sub == grid) continue;
                     var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
                     if (subDist.HasValue)
                     {
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        //var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                        //var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        var box = ai.MyGrid.PositionComp.LocalAABB;
+                        var obb = new MyOrientedBoundingBoxD(box, gridMatrix);
+
                         Vector3D? ignoreHit;
                         if (obb.Intersects(ref ray) != null && BresenhamGridIntersection(sub, ref worldStart, ref worldEnd, out ignoreHit, weapon))
                             return true;

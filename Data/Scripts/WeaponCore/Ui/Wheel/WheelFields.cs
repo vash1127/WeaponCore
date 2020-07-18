@@ -16,9 +16,6 @@ namespace WeaponCore
 
         private string _currentMenu;
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
-        //internal readonly List<string> GroupNames = new List<string>();
-        //internal readonly List<List<GroupMember>> BlockGroups = new List<List<GroupMember>>();
-
         internal readonly Session Session;
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
@@ -26,7 +23,6 @@ namespace WeaponCore
         internal string ActiveGroupName;
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
-        internal int CurrentTextureId;
         internal bool Dirty;
 
         internal enum Update

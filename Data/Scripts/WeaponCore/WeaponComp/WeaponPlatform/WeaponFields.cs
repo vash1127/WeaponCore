@@ -85,7 +85,6 @@ namespace WeaponCore.Platform
 
         internal uint[] BeamSlot;
 
-
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
 

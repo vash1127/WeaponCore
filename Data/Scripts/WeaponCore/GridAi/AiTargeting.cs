@@ -637,8 +637,11 @@ namespace WeaponCore.Support
 
                         if (beam.Intersects(obsSphere) != null)
                         {
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            //var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                            //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            var transform = ent.PositionComp.WorldMatrixRef;
+                            var box = ent.PositionComp.LocalAABB;
+                            var obb = new MyOrientedBoundingBoxD(box, transform);
                             if (obb.Intersects(ref beam) != null)
                             {
                                 needsCast = true;
@@ -719,8 +722,11 @@ namespace WeaponCore.Support
                 {
                     if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
                     {
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        //var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                        //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        var transform = ent.PositionComp.WorldMatrixRef;
+                        var box = ent.PositionComp.LocalAABB;
+                        var obb = new MyOrientedBoundingBoxD(box, transform);
                         var lineTest = new LineD(p.Position, targetPos);
                         if (obb.Intersects(ref lineTest) != null)
                         {
@@ -740,8 +746,11 @@ namespace WeaponCore.Support
                     var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
                     if (subDist.HasValue)
                     {
-                        var q = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, q);
+                        //var q = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                        //var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, q);
+                        var transform = ai.MyGrid.PositionComp.WorldMatrixRef;
+                        var box = ai.MyGrid.PositionComp.LocalAABB;
+                        var obb = new MyOrientedBoundingBoxD(box, transform);
                         if (obb.Intersects(ref ray) != null)
                             obstruction = sub.RayCastBlocks(p.Position, targetPos) != null;
                     }

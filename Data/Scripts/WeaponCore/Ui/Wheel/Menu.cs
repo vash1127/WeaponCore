@@ -309,7 +309,6 @@ namespace WeaponCore
                     switch (Name)
                     {
                         case "CompGroups":
-                            //GroupNames = Wheel.GroupNames;
                             item.SubSlotCount = Wheel.Ai.Construct.MenuBlockGroups.Count;
                             Loaded = true;
                             break;
@@ -320,7 +319,6 @@ namespace WeaponCore
                         case "Comps":
                             if (!string.IsNullOrEmpty(Wheel.ActiveGroupName))
                             {
-                                //BlockGroups = Wheel.BlockGroups;
                                 item.SubSlotCount = Wheel.Ai.Construct.MenuBlockGroupMap[Wheel.ActiveGroupName].Count;
                                 Loaded = true;
                             }
@@ -340,12 +338,6 @@ namespace WeaponCore
                 if (Loaded) PickMessage(item);
 
                 return Loaded;
-            }
-
-            internal void CleanUp()
-            {
-                //GroupNames?.Clear();
-                //BlockGroups?.Clear();
             }
         }
     }

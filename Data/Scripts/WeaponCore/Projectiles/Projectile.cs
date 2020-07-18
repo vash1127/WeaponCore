@@ -336,9 +336,11 @@ namespace WeaponCore.Projectiles
                     if (voxel == null && grid == null || grid != null && (grid.Physics == null || grid.Physics.IsPhantom || grid.IsPreview))
                         continue;
 
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-
+                    // var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
+                    //var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    var transform = staticEnt.PositionComp.WorldMatrixRef;
+                    var box = staticEnt.PositionComp.LocalAABB;
+                    var obb = new MyOrientedBoundingBoxD(box, transform);
 
                     if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
                     {

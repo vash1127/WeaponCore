@@ -66,7 +66,11 @@ namespace WeaponCore.Projectiles
                     }
                     if (grid != null || character != null) {
                         var extBeam = new LineD(p.Beam.From - p.Beam.Direction * (entSphere.Radius * 2), p.Beam.To);
-                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.WorldMatrix));
+                        var transform = ent.PositionComp.WorldMatrixRef;
+                        var box = ent.PositionComp.LocalAABB;
+                        var obb = new MyOrientedBoundingBoxD(box, transform);
+
+                        //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.WorldMatrix));
                         if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
                     }
                     var safeZone = ent as MySafeZone;
@@ -502,6 +506,7 @@ namespace WeaponCore.Projectiles
                             for (int j = 0; j < hitEnt.Vector3ICache.Count; j++) {
 
                                 var firstBlock = grid.GetCubeBlock(hitEnt.Vector3ICache[j]) as IMySlimBlock;
+                                MatrixD transform = grid.WorldMatrix;
                                 if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.Info.Target.FiringCube.SlimBlock) {
 
                                     hitEnt.Blocks.Add(firstBlock);
@@ -514,7 +519,8 @@ namespace WeaponCore.Projectiles
                                         Vector3 halfExt;
                                         firstBlock.ComputeScaledHalfExtents(out halfExt);
                                         var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                                        obb = new MyOrientedBoundingBoxD(grid.GridIntegerToWorld(firstBlock.Position), blockBox.HalfExtents, Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef));
+                                        transform.Translation = grid.GridIntegerToWorld(firstBlock.Position);
+                                        obb = new MyOrientedBoundingBoxD(blockBox, transform);
                                     }
 
                                     var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, obb.Center);
@@ -563,9 +569,13 @@ namespace WeaponCore.Projectiles
                             var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Intersection.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
                             hitEnt.HitPos = hitPos;
                         }
-                        else {
+                        else
+                        {
 
-                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrixRef));
+                            var transform = ent.PositionComp.WorldMatrixRef;
+                            var box = ent.PositionComp.LocalAABB;
+                            var obb = new MyOrientedBoundingBoxD(box, transform);
+                            //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrixRef));
                             dist = obb.Intersects(ref beam) ?? double.MaxValue;
                             if (dist < double.MaxValue) {
                                 hitEnt.Hit = true;
