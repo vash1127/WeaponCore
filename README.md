@@ -46,15 +46,15 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1998506274
 
 # Documentation
 
-Modder documentation will soon be available in the wiki tab, this mod has a lot of content, so it may take some time.
+Modder documentation is currently in progress, and viewable on the [Wiki](https://github.com/sstixrud/WeaponCore/wiki) - Do be warned that it is incomplete and may not be accurate at this time, due to WeaponCore going through frequent changes.
 
 # Thanks and Credits
 
-Special thanks to CriegWarfare for his amazing work on the heat/power subsystem, weapon turret control and animations, cockpit controls, and multiplayer support!
+Special thanks to CriegWarfare (Blitz2190) for his amazing work on the heat/power subsystem, weapon turret control and animations, cockpit controls, and multiplayer support!
 
 Thanks to [NukeGuard](https://github.com/nukeguard) for the awesome GUI textures. 
 
-Last but not least special thanks to the math wizard himself, [WhipLash141](https://github.com/Whiplash141) for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems is this mod.
+And last but not least, a special thanks to the math wizard himself, [WhipLash141](https://github.com/Whiplash141) for all of his help with the mind bending math required to pull off the advanced target tracking and smart projectile guidance systems in this mod.
 
 # Patreon
 
