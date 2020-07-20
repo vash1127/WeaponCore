@@ -115,6 +115,7 @@ namespace WeaponCore
                     }
                     case PacketType.CompState:
                     case PacketType.StateReload:
+                    case PacketType.StateNoAmmo:
                     {
                         ClientStateUpdate(packetObj);
                         break;
@@ -379,6 +380,7 @@ namespace WeaponCore
                     }
                     case PacketType.CompState:
                     case PacketType.StateReload:
+                    case PacketType.StateNoAmmo:
                     {
                         var iPacket = (CompStatePacket)pInfo.Packet;
                         PacketStatePool.Return(iPacket);

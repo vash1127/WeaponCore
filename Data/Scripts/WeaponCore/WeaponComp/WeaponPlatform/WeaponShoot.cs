@@ -111,6 +111,17 @@ namespace WeaponCore.Platform
                 var selfDamage = 0f;
                 for (int i = 0; i < bps; i++) {
 
+                    if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
+                        if (State.CurrentAmmo == 0) {
+                            if (System.Session.IsClient)
+                                SingleShotCounter = 0;
+                            else if (System.Session.MpActive)
+                                System.Session.SendCompState(Comp, PacketType.StateNoAmmo);
+                            break;
+                        }
+                        State.CurrentAmmo--;
+                    }
+
                     var current = NextMuzzle;
                     var muzzle = Muzzles[current];
                     if (muzzle.LastUpdateTick != tick) {
@@ -119,11 +130,6 @@ namespace WeaponCore.Platform
                         muzzle.Direction = newInfo.Direction;
                         muzzle.Position = newInfo.Position;
                         muzzle.LastUpdateTick = tick;
-                    }
-
-                    if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        if (State.CurrentAmmo == 0) break;
-                        State.CurrentAmmo--;
                     }
 
                     if (ActiveAmmoDef.AmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic)
@@ -287,10 +293,12 @@ namespace WeaponCore.Platform
                         FinishBurst = true;
                 }
 
+                if (SingleShotCounter > 0)  {
 
-                if (State.Action == ShootActions.ShootOnce && --SingleShotCounter <= 0)
-                {
-                    State.WeaponMode(Comp, ShootActions.ShootOff);
+                    var reset = --SingleShotCounter == 0;
+
+                    if (System.Session.IsServer && reset) 
+                        State.WeaponMode(Comp, ShootActions.ShootOff);
                 }
 
                 _muzzlesToFire.Clear();

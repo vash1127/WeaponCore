@@ -237,7 +237,9 @@ namespace WeaponCore.Api
                 {
                     if (!allWeapons && i != weaponId) continue;
 
-                    comp.Platform.Weapons[i].State.WeaponMode(comp, ShootOnce);
+                    var w = comp.Platform.Weapons[i];
+                    ++w.SingleShotCounter;
+                    w.State.WeaponMode(comp, ShootOnce);
                 }
             }
         }
@@ -249,7 +251,7 @@ namespace WeaponCore.Api
             {
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (!allWeapons && i != weaponId) continue;
+                    if (!allWeapons && i != weaponId || !comp.Session.IsServer) continue;
 
                     var w = comp.Platform.Weapons[i];
 
@@ -464,7 +466,7 @@ namespace WeaponCore.Api
         private static void SetActiveAmmo(IMyTerminalBlock weaponBlock, int weaponId, string ammoTypeStr)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
+            if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
             {
                 var w = comp.Platform.Weapons[weaponId];
                 for (int i = 0; i < w.System.AmmoTypes.Length; i++)

@@ -43,11 +43,11 @@ namespace WeaponCore
                 var fixedFire = p.Info.System.TurretMovement == Fixed && p.Guidance == None && !p.Info.AmmoDef.Const.IsBeamWeapon;
                 var canDamage = !MpActive || !IsClient && (!fixedFire || (p.Info.IsFiringPlayer || p.Info.ClientSent));
 
-                if (IsClient && p.Info.IsFiringPlayer && fixedFire)
-                {
+                if (IsClient && p.Info.IsFiringPlayer && fixedFire)  {
                     SendFixedGunHitEvent(p.Info.Target.FiringCube, p.Info.Hit.Entity, info.HitList[0].Intersection.From, p.Velocity, p.Info.OriginUp, p.Info.MuzzleId, info.System.WeaponIdHash, p.Info.AmmoDef.Const.AmmoIdxPos, (float)(p.Info.MaxTrajectory - p.Info.DistanceTraveled));
                     p.Info.IsFiringPlayer = false; //to prevent hits on another grid from triggering again
                 }
+
                 for (int i = 0; i < info.HitList.Count; i++)
                 {
                     var hitEnt = info.HitList[i];

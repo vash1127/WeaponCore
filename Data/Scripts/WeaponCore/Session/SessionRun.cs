@@ -111,8 +111,9 @@ namespace WeaponCore
 
                 if (Tick180) 
                     ProfilePerformance();
-                FutureEvents.Tick(Tick);
 
+                FutureEvents.Tick(Tick);
+                
                 if (!DedicatedServer && ActiveControlBlock != null && !InMenu) Wheel.UpdatePosition();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -203,8 +204,8 @@ namespace WeaponCore
 
                 if(AnimationsToProcess.Count > 0 || ThreadedAnimations.Count > 0) ProcessAnimations();
 
-                    if (GridTask.IsComplete)
-                        CheckDirtyGrids();
+                if (GridTask.IsComplete)
+                    CheckDirtyGrids();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

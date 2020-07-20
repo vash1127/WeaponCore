@@ -10,11 +10,7 @@ using WeaponCore.Control;
 using WeaponCore.Platform;
 using Sandbox.Definitions;
 using VRage.Game;
-using Sandbox.Common.ObjectBuilders.Definitions;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.ModAPI.Interfaces;
 using Sandbox.Common.ObjectBuilders;
-using VRage.ObjectBuilders;
 
 namespace WeaponCore
 {

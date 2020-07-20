@@ -56,32 +56,45 @@ namespace WeaponCore.Support
                 ResetShootState(action, playerId, out singleShot);
                 if (Session.MpActive) {
                     Session.SendCompData(this);
-                    if (singleShot)
+                    if (Session.HandlesInput && singleShot)
                         Session.SendSingleShot(this);
                 }
             }
-            else
-            {
+            else  {
+
                 Session.SendActionShootUpdate(this, action);
+                if (action == ShootActions.ShootOnce) {
+
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                    {
+                        var w = Platform.Weapons[i];
+                        ++w.SingleShotCounter;
+                        if (w.System.TurretMovement == WeaponSystem.TurretType.Fixed && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.None && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
+                            w.ClientStaticShot = true;
+                    }
+
+                    Session.SendSingleShot(this);
+                    
+                }
             }
         }
 
         internal void ResetShootState(ShootActions action, long playerId, out bool addShot)
         {
-            var oldAction = Data.Repo.State.TerminalAction;
+            //var oldAction = Data.Repo.State.TerminalAction;
             var cycleShootClick = Data.Repo.State.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
             var cycleShootOn = Data.Repo.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
 
-            addShot = !cycleShootClick && action == ShootActions.ShootClick;
+            addShot = !cycleShootClick && action == ShootActions.ShootOnce;
 
             if (Data.Repo.Set.Overrides.ManualControl || Data.Repo.Set.Overrides.TargetPainter) {
                 Data.Repo.Set.Overrides.ManualControl = false;
                 Data.Repo.Set.Overrides.TargetPainter = false;
             }
-            Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action, "ResetShootState");
+            Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
-            if (addShot)
+            if (addShot && Session.HandlesInput)
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                     ++Platform.Weapons[i].SingleShotCounter;
 
@@ -95,12 +108,12 @@ namespace WeaponCore.Support
             playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
             var newId = action == ShootActions.ShootOff && !Data.Repo.State.TrackingReticle ? -1 : playerId;
             Data.Repo.State.PlayerId = newId;
-            Log.Line($"[ResetShootState] terminalAction: {Data.Repo.State.TerminalAction}({oldAction}) - playerId:{playerId} - action:{action} - cycle:{cycleSomething} - addShot:{addShot}");
+            //Log.Line($"[ResetShootState] terminalAction: {Data.Repo.State.TerminalAction}({oldAction}) - playerId:{playerId} - action:{action} - cycle:{cycleSomething} - addShot:{addShot}");
         }
 
         internal void ResetPlayerControl()
         {
-            Log.Line($"ResetPlayerControl");
+            //Log.Line($"ResetPlayerControl");
             Data.Repo.State.PlayerId = -1;
             Data.Repo.State.Control = CompStateValues.ControlMode.None;
             Data.Repo.State.TerminalActionSetter(this, ShootActions.ShootOff);

@@ -182,7 +182,7 @@ namespace WeaponCore
                 }
                 else  {
                     ++comp.Data.Repo.State.Revision;
-                    
+
                     iPacket = PacketStatePool.Get();
                     iPacket.MId = ++comp.MIds[(int) PacketType.CompState];
                     iPacket.EntityId = comp.MyCube.EntityId;
@@ -446,9 +446,11 @@ namespace WeaponCore
                 {
                     EntityId = comp.MyCube.EntityId,
                     PType = PacketType.SendSingleShot,
+                    SenderId = MultiplayerId,
+
                 });
             }
-            else if (HandlesInput)
+            else
             {
                 PacketsToClient.Add(new PacketInfo
                 {
@@ -456,10 +458,10 @@ namespace WeaponCore
                     {
                         EntityId = comp.MyCube.EntityId,
                         PType = PacketType.SendSingleShot,
+                        SenderId = 0,
                     }
                 });
             }
-            Log.Line($"SendSingleShot");
         }
 
         internal void SendUpdateRequest(long entityId, PacketType ptype)

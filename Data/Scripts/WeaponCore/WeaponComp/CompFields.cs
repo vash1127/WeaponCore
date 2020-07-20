@@ -32,7 +32,6 @@ namespace WeaponCore.Support
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
 
-        internal MatrixD CubeMatrix;
         internal InputStateData InputState;
         internal GridAi Ai;
         internal Weapon TrackingWeapon;

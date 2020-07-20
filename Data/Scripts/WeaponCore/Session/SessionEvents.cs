@@ -140,7 +140,7 @@ namespace WeaponCore
                 GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
                 DirtyGrids.Add(myCubeBlock.CubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
 
         private void FromFatMap(MyCubeBlock myCubeBlock)
@@ -150,7 +150,7 @@ namespace WeaponCore
                 GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
                 DirtyGrids.Add(myCubeBlock.CubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in FromFatMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
 
         internal void BeforeDamageHandler(object o, ref MyDamageInformation info)

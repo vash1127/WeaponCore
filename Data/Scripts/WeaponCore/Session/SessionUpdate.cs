@@ -116,9 +116,13 @@ namespace WeaponCore
                         }
 
                         if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.Action != ShootOff) {
-                            w.State.WeaponMode(comp, ShootOff);
+
+                            if (IsServer) {
+                                w.State.WeaponMode(comp, ShootOff);
+                                w.State.CurrentAmmo = 0;
+                            }
+
                             w.Reloading = false;
-                            w.State.CurrentAmmo = 0;
                             w.FinishBurst = false;
 
                             if (w.IsShooting)
@@ -215,7 +219,7 @@ namespace WeaponCore
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.CurrentAmmo <= 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Data.Repo.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
-                        var validShootStates = fakeTarget || w.State.Action == ShootOn || w.State.Action == ShootOnce || w.AiShooting && w.State.Action == ShootOff;
+                        var validShootStates = fakeTarget || w.State.Action == ShootOn || w.SingleShotCounter > 0 || w.AiShooting && w.State.Action == ShootOff;
                         var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);

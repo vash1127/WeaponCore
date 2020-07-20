@@ -18,6 +18,7 @@ namespace WeaponCore
         ConstructGroups,
         ConstructFoci,
         StateReload,
+        StateNoAmmo,
         TargetChange,
         OverRidesUpdate,
         FakeTargetUpdate,

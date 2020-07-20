@@ -188,12 +188,13 @@ namespace WeaponCore
             if (comp.MIds[(int)PacketType.CompState] < packet.MId)  {
                 comp.MIds[(int)PacketType.CompState] = packet.MId;
 
-                comp.Data.Repo.State.Sync(comp, compStatePacket.Data);
+                comp.Data.Repo.State.Sync(comp, compStatePacket.Data, packet.PType == PacketType.StateNoAmmo);
             }
 
             switch (packet.PType)
             {
                 case PacketType.CompState:
+                case PacketType.StateNoAmmo:
                     break;
                 case PacketType.StateReload:
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
@@ -375,6 +376,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
+            Log.Line($"ClientSendSingleShot");
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 comp.Platform.Weapons[i].SingleShotCounter++;
 

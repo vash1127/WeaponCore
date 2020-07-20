@@ -194,7 +194,7 @@ namespace WeaponCore
         [ProtoMember(5), DefaultValue(ControlMode.None)] public ControlMode Control = ControlMode.None;
         [ProtoMember(6)] public ShootActions TerminalAction;
 
-        public void Sync(WeaponComponent comp, CompStateValues sync)
+        public void Sync(WeaponComponent comp, CompStateValues sync, bool ammoMinMax = false)
         {
             if (sync.Revision > Revision)
             {
@@ -209,11 +209,10 @@ namespace WeaponCore
                     var sws = sync.Weapons[i];
                     var w = comp.Platform.Weapons[i];
 
-                    if (comp.Session.Tick - w.LastAmmoUpdateTick > 3600 || ws.CurrentAmmo < sws.CurrentAmmo || ws.CurrentCharge < sws.CurrentCharge)
+                    if (ammoMinMax || ws.CurrentAmmo > sws.CurrentAmmo || ws.CurrentCharge > sws.CurrentCharge)
                     { // check order on these
                         ws.CurrentAmmo = sws.CurrentAmmo;
                         ws.CurrentCharge = sws.CurrentCharge;
-                        w.LastAmmoUpdateTick = comp.Session.Tick;
                     }
                     ws.WeaponRandom.Sync(sws.WeaponRandom);
                     ws.CurrentMags = sws.CurrentMags;
@@ -227,14 +226,11 @@ namespace WeaponCore
             }
         }
 
-        public void TerminalActionSetter(WeaponComponent comp, ShootActions action, string caller = null)
+        public void TerminalActionSetter(WeaponComponent comp, ShootActions action)
         {
             TerminalAction = action;
             for (int i = 0; i < Weapons.Length; i++)
                 Weapons[i].WeaponMode(comp, action, true);
-
-            if (caller != null)
-                Log.Line(caller);
         }
 
     }
@@ -294,6 +290,8 @@ namespace WeaponCore
                 comp.Data.Repo.State.TerminalAction = ShootActions.ShootOff;
 
             Action = action;
+            if (comp.Session.MpActive && comp.Session.IsServer)
+                comp.Session.SendCompState(comp, PacketType.CompState);
         }
 
         [ProtoContract]

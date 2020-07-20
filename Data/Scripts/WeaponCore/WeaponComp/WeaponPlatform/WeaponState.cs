@@ -523,10 +523,7 @@ namespace WeaponCore.Platform
             ScheduleAmmoChange = false;
 
             if (ActiveAmmoDef == ammoType)
-            {
-                Log.Line($"ChangeActiveAmmo already set");
                 return;
-            }
 
             if (proposed)  {
                 State.AmmoTypeId = ProposedAmmoId;
@@ -737,7 +734,8 @@ namespace WeaponCore.Platform
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)
                     System.Session.SendCompState(Comp, PacketType.StateReload);
-                
+
+                SingleShotCounter = 0;
                 Reloading = false;
             }
         }

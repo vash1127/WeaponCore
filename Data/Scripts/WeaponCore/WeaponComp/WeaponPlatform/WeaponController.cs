@@ -110,9 +110,6 @@ namespace WeaponCore.Platform
             if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             PosChangedTick = Comp.Session.Tick;
 
-            if (AzimuthOnBase)
-                Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrixRef;
-
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
@@ -130,7 +127,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                var forward = AzimuthOnBase ? Comp.CubeMatrix.Forward : AzimuthPart.Parent.PositionComp.WorldMatrixRef.Forward;
+                var forward = AzimuthOnBase ? Comp.MyCube.PositionComp.WorldMatrixRef.Forward : AzimuthPart.Parent.PositionComp.WorldMatrixRef.Forward;
                 Vector3D left;
                 Vector3D.Cross(ref MyPivotUp, ref forward, out left);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };

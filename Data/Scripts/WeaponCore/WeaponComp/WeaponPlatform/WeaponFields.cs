@@ -134,7 +134,6 @@ namespace WeaponCore.Platform
         internal uint ChargeDelayTicks;
         internal uint AnimationDelayTick;
         internal uint LastHeatUpdateTick;
-        internal uint LastAmmoUpdateTick;
         internal int ProposedAmmoId = -1;
         internal int FireCounter;
         internal int UniqueId;
@@ -194,6 +193,7 @@ namespace WeaponCore.Platform
         internal bool LastEventCanDelay;
         internal bool Reloading;
         internal bool Charging;
+        internal bool ClientStaticShot;
 
         internal bool ShotReady
         {
