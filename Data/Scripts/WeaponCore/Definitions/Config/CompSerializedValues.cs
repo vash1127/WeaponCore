@@ -27,7 +27,7 @@ namespace WeaponCore
             if (sync.Revision > Revision)
             {
                 Set.Sync(comp, sync.Set);
-                State.Sync(comp, sync.State);
+                State.Sync(comp, sync.State, true);
                 for (int i = 0; i < Targets.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];

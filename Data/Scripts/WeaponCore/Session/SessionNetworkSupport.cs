@@ -199,6 +199,40 @@ namespace WeaponCore
             else Log.Line($"SendCompState should never be called on Client");
         }
 
+        internal void SendWeaponState(Weapon w)
+        {
+            if (IsServer)
+            {
+
+                PacketInfo oldInfo;
+                CompStatePacket iPacket;
+                if (PrunedPacketsToClient.TryGetValue(w.State, out oldInfo))
+                {
+                    iPacket = (CompStatePacket)oldInfo.Packet;
+                    iPacket.EntityId = w.Comp.MyCube.EntityId;
+                    iPacket.Data = comp.Data.Repo.State;
+                }
+                else
+                {
+                    ++w.State.Revision;
+
+                    iPacket = PacketStatePool.Get();
+                    iPacket.MId = ++comp.MIds[(int)PacketType.CompState];
+                    iPacket.EntityId = comp.MyCube.EntityId;
+                    iPacket.SenderId = 0;
+                    iPacket.PType = type;
+                    iPacket.Data = comp.Data.Repo.State;
+                }
+
+                PrunedPacketsToClient[comp.Data.Repo.State] = new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = iPacket,
+                };
+            }
+            else Log.Line($"SendCompState should never be called on Client");
+        }
+
         internal void SendAiData(GridAi ai)
         {
             if (IsServer)  {

@@ -22,7 +22,7 @@ namespace WeaponCore.Api
         private Action<VRage.Game.ModAPI.Ingame.IMyEntity, ICollection<MyTuple<VRage.Game.ModAPI.Ingame.IMyEntity, float>>> _getSortedThreats;
         private Func<VRage.Game.ModAPI.Ingame.IMyEntity, int, VRage.Game.ModAPI.Ingame.IMyEntity> _getAiFocus;
         private Func<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool> _setAiFocus;
-        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<bool, bool, bool, VRage.Game.ModAPI.Ingame.IMyEntity>> _getWeaponTarget;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, VRage.Game.ModAPI.Ingame.IMyEntity> _getWeaponTarget;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int> _setWeaponTarget;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, int> _fireWeaponOnce;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, bool, int> _toggleWeaponFire;
@@ -131,8 +131,8 @@ namespace WeaponCore.Api
         public bool SetAiFocus(VRage.Game.ModAPI.Ingame.IMyEntity shooter, VRage.Game.ModAPI.Ingame.IMyEntity target, int priority = 0) =>
             _setAiFocus?.Invoke(shooter, target, priority) ?? false;
 
-        public MyTuple<bool, bool, bool, VRage.Game.ModAPI.Ingame.IMyEntity> GetWeaponTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId = 0) =>
-            _getWeaponTarget?.Invoke(weapon, weaponId) ?? new MyTuple<bool, bool, bool, VRage.Game.ModAPI.Ingame.IMyEntity>();
+        public VRage.Game.ModAPI.Ingame.IMyEntity GetWeaponTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId = 0) =>
+            _getWeaponTarget?.Invoke(weapon, weaponId) ?? null;
 
         public void SetWeaponTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, VRage.Game.ModAPI.Ingame.IMyEntity target, int weaponId = 0) =>
             _setWeaponTarget?.Invoke(weapon, target, weaponId);

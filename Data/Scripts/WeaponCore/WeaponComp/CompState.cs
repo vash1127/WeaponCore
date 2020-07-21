@@ -50,32 +50,42 @@ namespace WeaponCore.Support
         internal void RequestShootUpdate(ShootActions action, long playerId = -1)
         {
             Session.TerminalMon.ClientUpdate(this);
-            if (Session.IsServer) {
+            if (Session.IsServer)
+            {
 
                 bool singleShot;
                 ResetShootState(action, playerId, out singleShot);
-                if (Session.MpActive) {
+                if (Session.MpActive)
+                {
                     Session.SendCompData(this);
                     if (Session.HandlesInput && singleShot)
                         Session.SendSingleShot(this);
                 }
             }
-            else  {
+            else if (action == ShootActions.ShootOnce)
+                ShootOnceClientCheck(action);
+            else Session.SendActionShootUpdate(this, action);
+        }
 
-                Session.SendActionShootUpdate(this, action);
-                if (action == ShootActions.ShootOnce) {
+        internal void ShootOnceClientCheck(ShootActions action)
+        {
+            var numOfWeapons = Platform.Weapons.Length;
+            var loadedWeapons = 0;
+            for (int i = 0; i < numOfWeapons; i++)
+                if (Platform.Weapons[i].State.CurrentAmmo > 0)
+                    ++loadedWeapons;
 
-                    for (int i = 0; i < Platform.Weapons.Length; i++)
-                    {
-                        var w = Platform.Weapons[i];
-                        ++w.SingleShotCounter;
-                        if (w.System.TurretMovement == WeaponSystem.TurretType.Fixed && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.None && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-                            w.ClientStaticShot = true;
-                    }
+            if (numOfWeapons == loadedWeapons) {
 
-                    Session.SendSingleShot(this);
-                    
+                for (int i = 0; i < Platform.Weapons.Length; i++)  {
+
+                    var w = Platform.Weapons[i];
+                    if (action == ShootActions.ShootOnce) ++w.SingleShotCounter;
+                    if (w.System.TurretMovement == WeaponSystem.TurretType.Fixed && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.None && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
+                        w.ClientStaticShot = true;
                 }
+                Session.SendSingleShot(this);
+                Session.SendActionShootUpdate(this, action);
             }
         }
 

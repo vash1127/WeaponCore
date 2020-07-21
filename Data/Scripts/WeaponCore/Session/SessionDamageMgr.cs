@@ -151,7 +151,7 @@ namespace WeaponCore
                 if (info.AmmoDef.Mass <= 0) return;
 
                 var speed = info.AmmoDef.Trajectory.DesiredSpeed > 0 ? info.AmmoDef.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.AmmoDef.Mass * speed);
+                if (Session.IsServer) ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.AmmoDef.Mass * speed);
             }
         }
 
@@ -379,7 +379,7 @@ namespace WeaponCore
                         if (hitMass > 0 && blockIsRoot)
                         {
                             var speed = t.AmmoDef.Trajectory.DesiredSpeed > 0 ? t.AmmoDef.Trajectory.DesiredSpeed : 1;
-                            ApplyProjectileForce(grid, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, (hitMass * speed));
+                            if (Session.IsServer) ApplyProjectileForce(grid, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, (hitMass * speed));
                         }
 
                         if (radiantBomb && theEnd)
@@ -474,7 +474,7 @@ namespace WeaponCore
             if (info.AmmoDef.Mass > 0)
             {
                 var speed = info.AmmoDef.Trajectory.DesiredSpeed > 0 ? info.AmmoDef.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, hitEnt.Intersection.Direction, (info.AmmoDef.Mass * speed));
+                if (Session.IsServer) ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, hitEnt.Intersection.Direction, (info.AmmoDef.Mass * speed));
             }
         }
 

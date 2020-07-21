@@ -52,7 +52,7 @@ namespace WeaponCore
                 CheckAdminRights();
                 if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
                 
-                if (PbActivate) Api.PbInit();
+                if (IsServer && PbActivate) Api.PbInit();
             }
             LCount++;
             if (LCount == 129)
