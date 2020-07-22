@@ -111,7 +111,6 @@ namespace WeaponCore
                                     }
                                     weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
                                 }
-                                else Log.Line($"AmmoPull cannot transfer");
 
                                 if (magsNeeded <= 0)
                                     break;

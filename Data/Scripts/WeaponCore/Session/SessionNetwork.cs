@@ -164,14 +164,20 @@ namespace WeaponCore
                 }
                 if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
                 {
-                    if (!ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
-                        ClientSideErrorPkt.Add(packetObj.ErrorPacket);
-                    else {
-                        //this only works because hashcode override in ErrorPacket
-                        Log.Line($"readding bad packet: {packetObj.ErrorPacket.RetryAttempt}");
-                        ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
-                        ClientSideErrorPkt.Add(packetObj.ErrorPacket);
+                    if (packetObj.ErrorPacket.PType != PacketType.Invalid)
+                    {
+                        if (!ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
+                            ClientSideErrorPkt.Add(packetObj.ErrorPacket);
+                        else
+                        {
+                            //this only works because hashcode override in ErrorPacket
+                            Log.Line($"readding bad packet: {packetObj.ErrorPacket.RetryAttempt}");
+                            ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
+                            ClientSideErrorPkt.Add(packetObj.ErrorPacket);
+                        }
                     }
+
+                    Log.Line($"ErrorPacket has invalid type: packetObjIsNull: {packetObj.Packet == null}");
                 }
                 else if (packetObj.Report.PacketValid && ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
                     ClientSideErrorPkt.Remove(packetObj.ErrorPacket);

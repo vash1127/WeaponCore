@@ -245,7 +245,6 @@ namespace WeaponCore.Control
         {   
             if(comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.Session.TerminalMon.ClientUpdate(comp);
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
 

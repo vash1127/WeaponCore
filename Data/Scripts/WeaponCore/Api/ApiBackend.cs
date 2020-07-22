@@ -97,8 +97,7 @@ namespace WeaponCore.Api
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
                 ["GetConstructEffectiveDps"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, float>(PbGetConstructEffectiveDps),
             };
-
-            var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, Sandbox.ModAPI.Ingame.IMyTerminalBlock>("WcPbAPI");
+            var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WcPbAPI");
             pb.Getter = (b) => PbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
             _session.PbApiInited = true;

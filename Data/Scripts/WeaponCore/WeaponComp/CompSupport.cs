@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.ModAPI;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
@@ -15,7 +16,9 @@ namespace WeaponCore.Support
                 TerminalBlock.RefreshCustomInfo();
 
                 if (update && InControlPanel)
+                {
                     MyCube.UpdateTerminal();
+                }
             }
         }
 
@@ -41,7 +44,7 @@ namespace WeaponCore.Support
                             Session.WeaponCountPool.Return(wCount);
                         }
                     }
-                    else Log.Line($"didnt find counter for: {MyCube.BlockDefinition.Id.SubtypeId} - {MyCube.BlockDefinition.Id.SubtypeId.String}");
+                    else if (!Session.DedicatedServer) Log.Line($"didnt find counter for: {MyCube.BlockDefinition.Id.SubtypeId} - {MyCube.BlockDefinition.Id.SubtypeId.String}");
 
                     if (Ai.Data.Repo.ActiveTerminal == MyCube.EntityId)
                         Ai.Data.Repo.ActiveTerminal = 0;

@@ -521,13 +521,18 @@ namespace WeaponCore
                 var sameGrid = Comp.MyCube.CubeGrid == Comp.Ai.MyGrid;
                 var inTerminalWindow = Session.InMenu && MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
                 var compReady = Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal || Session.IsClient && Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal == 0);
-
-                return (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
+                var sameTerminalBlock = Session.LastTerminal != null && (Session.LastTerminal.EntityId == Comp.Ai.Data.Repo.ActiveTerminal || Session.IsClient && (Comp.Ai.Data.Repo.ActiveTerminal == 0 || Comp.Ai.Data.Repo.ActiveTerminal ==  Comp.MyCube.EntityId));
+                var isActive = (sameVersion && nothingMarked && sameGrid && compReady && inTerminalWindow && sameTerminalBlock);
+                return isActive;
             }
 
-            internal void ClientUpdate(WeaponComponent comp)
+            internal void HandleInputUpdate(WeaponComponent comp)
             {
+                if (Active && (Comp != comp || OriginalAiVersion !=  comp.Ai.Version))
+                    Clean();
+
+                Session.LastTerminal = (IMyTerminalBlock)comp.MyCube;
+
                 Comp = comp;
 
                 OriginalAiVersion = comp.Ai.Version;
@@ -537,16 +542,15 @@ namespace WeaponCore
 
                 if (Session.IsClient && !Active)  
                     Session.SendActiveTerminal(comp);
+                else if (Session.IsServer)
+                    ServerUpdate(Comp);
 
                 Active = true;
             }
 
             internal void Clean(bool purge = false)
             {
-                if (Comp?.Ai != null && Comp.Ai.Version == OriginalAiVersion && !purge)
-                    Comp.Ai.Construct.RootAi.Data.Repo.ActiveTerminal = 0;
-
-                if (Session.IsClient && Comp != null && !purge) {
+                if (Session.MpActive && Session.HandlesInput && Comp != null && !purge) {
                     uint[] mIds;
                     if (Session.PlayerMIds.TryGetValue(Session.MultiplayerId, out mIds))
                     {
@@ -561,6 +565,9 @@ namespace WeaponCore
                     }
                 }
 
+                if (!purge && Session.IsServer)
+                    ServerClean(Comp);
+
                 Comp = null;
                 OriginalAiVersion = -1;
                 Active = false;
@@ -571,8 +578,7 @@ namespace WeaponCore
             {
                 long aTermId;
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
-                    aTermId = comp.Ai.Data.Repo.ActiveTerminal;
-                    ServerTerminalMaps[comp] = aTermId;
+                    ServerTerminalMaps[comp] = comp.MyCube.EntityId;
                     Log.Line($"ServerUpdate added Id");
                 }
                 else {

@@ -305,7 +305,7 @@ namespace WeaponCore.Support
                     }
                     else
                     {
-                        Log.Line($"[BuildMenuGroups] skipping group:{groupName} - cnt:{RootAi.Construct.Data.Repo.BlockGroups[groupName].CompIds.Count}");
+                        if (!RootAi.Session.DedicatedServer) Log.Line($"[BuildMenuGroups] skipping group:{groupName} - cnt:{RootAi.Construct.Data.Repo.BlockGroups[groupName].CompIds.Count}");
                         MembersPool.Return(membersList);
                     }
                 }

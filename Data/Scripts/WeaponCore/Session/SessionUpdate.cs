@@ -67,7 +67,7 @@ namespace WeaponCore
                         continue;
                     }
 
-                    if (IsServer && comp.Data.Repo.State.PlayerId > -1 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId))
+                    if (IsServer && comp.Data.Repo.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId))
                         comp.ResetPlayerControl();
 
                     if (HandlesInput) {

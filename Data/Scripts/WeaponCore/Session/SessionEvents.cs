@@ -21,10 +21,10 @@ namespace WeaponCore
                 if (!Inited) lock (InitObj) Init();
                 var grid = myEntity as MyCubeGrid;
                 if (grid != null) grid.AddedToScene += GridAddedToScene;
+                if (!PbApiInited && myEntity is IMyProgrammableBlock) PbActivate = true;
 
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
-                if (!PbApiInited) PbActivate = true;
 
                 var cube = myEntity as MyCubeBlock;
                 var sorter = cube as MyConveyorSorter;

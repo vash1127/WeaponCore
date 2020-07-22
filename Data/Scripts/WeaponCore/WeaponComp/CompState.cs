@@ -47,18 +47,19 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void RequestShootUpdate(ShootActions action, long playerId = -1)
+        internal void RequestShootUpdate(ShootActions action, long playerId = 0)
         {
-            Session.TerminalMon.ClientUpdate(this);
+            if (Session.HandlesInput)
+                Session.TerminalMon.HandleInputUpdate(this);
+            
             if (Session.IsServer)
             {
-
                 bool singleShot;
                 ResetShootState(action, playerId, out singleShot);
                 if (Session.MpActive)
                 {
                     Session.SendCompData(this);
-                    if (Session.HandlesInput && singleShot)
+                    if ((Session.HandlesInput || playerId == 0) && singleShot)
                         Session.SendSingleShot(this);
                 }
             }
@@ -95,7 +96,6 @@ namespace WeaponCore.Support
             var cycleShootClick = Data.Repo.State.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
             var cycleShootOn = Data.Repo.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
-
             addShot = !cycleShootClick && action == ShootActions.ShootOnce;
 
             if (Data.Repo.Set.Overrides.ManualControl || Data.Repo.Set.Overrides.TargetPainter) {
@@ -104,7 +104,7 @@ namespace WeaponCore.Support
             }
             Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
-            if (addShot && Session.HandlesInput)
+            if (addShot && (Session.HandlesInput || playerId == 0))
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                     ++Platform.Weapons[i].SingleShotCounter;
 

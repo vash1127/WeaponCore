@@ -376,7 +376,6 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            Log.Line($"ClientSendSingleShot");
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 comp.Platform.Weapons[i].SingleShotCounter++;
 
