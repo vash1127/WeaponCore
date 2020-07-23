@@ -136,7 +136,6 @@ namespace WeaponCore.Platform
                         Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.AmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     if (PlayTurretAv) {
-
                         if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping) {
                             muzzle.LastAv1Tick = tick;
                             muzzle.Av1Looping = System.Values.HardPoint.Graphics.Barrel1.Extras.Loop;

@@ -221,7 +221,7 @@ namespace WeaponCore
 
                 WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp))
-                    comp.RequestShootUpdate(WeaponComponent.ShootActions.ShootOff);
+                    comp.RequestShootUpdate(WeaponComponent.ShootActions.ShootOff, comp.Session.DedicatedServer ? 0 : -1);
             }
         }
 

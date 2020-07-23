@@ -50,7 +50,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOnce);
+                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -67,7 +67,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        comp.RequestShootUpdate(ShootOn);
+                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -99,7 +99,7 @@ namespace WeaponCore.Control
                             return;
                         }
 
-                        comp.RequestShootUpdate(ShootOn);
+                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -130,7 +130,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOff);
+                        comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -481,7 +481,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootClick);
+            comp.RequestShootUpdate(ShootClick, comp.Session.DedicatedServer ? 0 : -1);
         }
 
         internal static void TerminActionToggleShoot(IMyTerminalBlock blk)
@@ -490,7 +490,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOn);
+            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
         }
 
         internal static void TerminalActionShootOn(IMyTerminalBlock blk)
@@ -499,7 +499,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOn);
+            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
         }
 
         internal static void TerminalActionShootOff(IMyTerminalBlock blk)
@@ -508,7 +508,7 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            comp.RequestShootUpdate(ShootOff);
+            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
         }
 
         internal static void TerminalActionShootOnce(IMyTerminalBlock blk)
@@ -516,7 +516,7 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            comp.RequestShootUpdate(ShootOnce);
+            comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
         }
 
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)

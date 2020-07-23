@@ -47,7 +47,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void RequestShootUpdate(ShootActions action, long playerId = 0)
+        internal void RequestShootUpdate(ShootActions action, long playerId)
         {
             if (Session.HandlesInput)
                 Session.TerminalMon.HandleInputUpdate(this);

@@ -109,7 +109,6 @@ namespace WeaponCore.Platform
         {
             if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             PosChangedTick = Comp.Session.Tick;
-
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
@@ -160,7 +159,6 @@ namespace WeaponCore.Platform
 
                 MyPivotPos += offSet;
             }
-
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
