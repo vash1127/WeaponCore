@@ -412,7 +412,7 @@ namespace WeaponCore.Support
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
 
-                var somethingEnded = !muzzle.Av2Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+                var somethingEnded = !muzzle.Av1Looping && ticksAgo >= weapon.System.Barrel2AvTicks || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
                 var effect = weapon.BarrelEffects1[muzzle.MuzzleId];
                 var effectExists = effect != null;
