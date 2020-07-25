@@ -68,6 +68,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
+        //internal readonly MyConcurrentPool<InventoryUpdate> InventoryUpdatePool = new MyConcurrentPool<InventoryUpdate>(64, inventory => inventory.Clean());
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<MySoundPair> SoundPairs = new Stack<MySoundPair>(256);
@@ -112,6 +113,7 @@ namespace WeaponCore
         internal readonly Dictionary<ulong, uint[]> PlayerMIds = new Dictionary<ulong, uint[]>();
         internal readonly Dictionary<object, PacketInfo> PrunedPacketsToClient = new Dictionary<object, PacketInfo>();
         internal readonly Dictionary<long, WeaponComponent> IdToCompMap = new Dictionary<long, WeaponComponent>();
+        internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>(); 
 
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();

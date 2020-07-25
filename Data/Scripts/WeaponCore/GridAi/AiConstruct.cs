@@ -78,7 +78,6 @@ namespace WeaponCore.Support
         {
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly List<string> MenuBlockGroups = new List<string>();
-            internal readonly List<string> GroupsToClean = new List<string>();
             internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
             internal readonly Dictionary<string, List<GroupMember>> MenuBlockGroupMap = new Dictionary<string, List<GroupMember>>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);

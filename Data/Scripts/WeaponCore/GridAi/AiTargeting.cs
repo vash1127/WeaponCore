@@ -6,6 +6,7 @@ using Sandbox.ModAPI;
 using SpaceEngineers.Game.AI;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -698,11 +699,11 @@ namespace WeaponCore.Support
 
                 var voxel = ent as MyVoxelBase;
                 var dir = (targetPos - p.Position);
+                var entWorldVolume = ent.PositionComp.WorldVolume;
                 if (voxel != null)
                 {
-                    var voxelVolume = ent.PositionComp.WorldVolume;
 
-                    if (!ai.PlanetSurfaceInRange && (voxelVolume.Contains(p.Position) != ContainmentType.Disjoint || new RayD(ref p.Position, ref dir).Intersects(voxelVolume) != null))
+                    if (!ai.PlanetSurfaceInRange && (entWorldVolume.Contains(p.Position) != ContainmentType.Disjoint || new RayD(ref p.Position, ref dir).Intersects(entWorldVolume) != null))
                     {
                         var dirNorm = Vector3D.Normalize(dir);
                         var targetDist = Vector3D.Distance(p.Position, targetPos);
@@ -720,7 +721,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
+                    if (new RayD(ref p.Position, ref dir).Intersects(entWorldVolume) != null)
                     {
                         //var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                         //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
@@ -730,7 +731,12 @@ namespace WeaponCore.Support
                         var lineTest = new LineD(p.Position, targetPos);
                         if (obb.Intersects(ref lineTest) != null)
                         {
-                            obstruction = true;
+                            var grid = ent as MyCubeGrid;
+                            MyCubeGrid.MyCubeGridHitInfo gridInfo = null;
+                            if (grid != null && grid.PositionComp.LocalVolume.Radius > 50)
+                                obstruction = grid.GetIntersectionWithLine(ref lineTest, ref gridInfo);
+                            else 
+                                obstruction = true;
                             break;
                         }
                     }
