@@ -468,8 +468,9 @@ namespace WeaponCore.Support
 
                 var grid = cube.CubeGrid;
                 if (grid == null || grid.MarkedForClose) continue;
-                if (!(cube is IMyTerminalBlock) || cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3 || checkPower && !cube.IsWorking) continue;
-                
+                if (!(cube is IMyTerminalBlock) || cube.MarkedForClose || cube == newEntity || cube == newEntity0 ||  cube == newEntity1 || cube == newEntity2 || cube == newEntity3 || checkPower && !cube.IsWorking)
+                    continue;
+
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
@@ -578,9 +579,8 @@ namespace WeaponCore.Support
             if (newEntity2 != null) top5.Add(newEntity2);   
             if (newEntity3 != null) top5.Add(newEntity3);
 
-            return hitInfo != null;
+            return top5.Count > 0;
         }
-
 
         internal static void AcquireProjectile(Weapon w, out TargetType targetType)
         {

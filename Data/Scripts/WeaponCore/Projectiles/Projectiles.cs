@@ -45,21 +45,21 @@ namespace WeaponCore.Projectiles
 
         internal void SpawnAndMove() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start("GenProjectiles", 17);
+            Session.StallReporter.Start("GenProjectiles", 11);
             if (NewProjectiles.Count > 0) GenProjectiles();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start("AddTargets", 17);
+            Session.StallReporter.Start("AddTargets", 11);
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start($"UpdateState: {ActiveProjetiles.Count}", 17);
+            Session.StallReporter.Start($"UpdateState: {ActiveProjetiles.Count}", 11);
             if (ActiveProjetiles.Count > 0) 
                 UpdateState();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start($"Spawn: {ShrapnelToSpawn.Count}", 17);
+            Session.StallReporter.Start($"Spawn: {ShrapnelToSpawn.Count}", 11);
             if (ShrapnelToSpawn.Count > 0)
                 SpawnFragments();
             Session.StallReporter.End();
@@ -67,12 +67,12 @@ namespace WeaponCore.Projectiles
 
         internal void Intersect() // Methods highly inlined due to keen's mod profiler
         {
-            Session.StallReporter.Start($"CheckHits: {ActiveProjetiles.Count}", 17);
+            Session.StallReporter.Start($"CheckHits: {ActiveProjetiles.Count}", 11);
             if (ActiveProjetiles.Count > 0)
                 CheckHits();
             Session.StallReporter.End();
 
-            Session.StallReporter.Start($"ConfirmHit: {ValidateHits.Count}", 17);
+            Session.StallReporter.Start($"ConfirmHit: {ValidateHits.Count}", 11);
             ConfirmHits();
             Session.StallReporter.End();
         }

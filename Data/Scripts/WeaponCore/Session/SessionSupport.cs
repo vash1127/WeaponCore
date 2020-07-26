@@ -371,7 +371,8 @@ namespace WeaponCore
 
         internal bool UniqueListAdd<T>(T item, IDictionary<T, int> indexer, IList<T> list)
         {
-            if (indexer.ContainsKey(item)) return false;
+            if (indexer.ContainsKey(item))
+                return false;
 
             list.Add(item);
             indexer.Add(item, list.Count - 1);

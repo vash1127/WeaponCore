@@ -188,12 +188,26 @@ namespace WeaponCore
             for (int i = 0; i < ai.Construct.Data.Repo.FocusData.Target.Length; i++)
             {
                 var targetId = ai.Construct.Data.Repo.FocusData.Target[i];
-                GridAi.TargetInfo info;
+                float offenseRating;
                 MyEntity target;
-                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !_masterTargets.TryGetValue(target, out info)) continue;
+                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !_masterTargets.TryGetValue(target, out offenseRating)) continue;
                 validFocus = true;
-                if (!s.Tick20 && ai.OldFocusEntityId == info.EntInfo.EntityId) continue;
-                ai.OldFocusEntityId = info.EntInfo.EntityId;
+                if (!s.Tick20) continue;
+                var grid = target as MyCubeGrid;
+                var partCount = 1;
+                var largeGrid = false;
+
+                if (grid != null)  {
+
+                    largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+                    GridAi targetAi;
+                    FatMap fatMap;
+                    if (s.GridTargetingAIs.TryGetValue(grid, out targetAi))
+                        partCount = targetAi.Construct.BlockCount;
+                    else if (s.GridToFatMap.TryGetValue(grid, out fatMap))
+                        partCount = fatMap.MostBlocks;
+                }
+
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
                 if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
                 var targetDir = Vector3D.Normalize(targetVel);
@@ -202,12 +216,12 @@ namespace WeaponCore
                 var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
-                if (info.LargeGrid && info.PartCount > 24000) ai.TargetState[i].Size = 6;
-                else if (info.LargeGrid && info.PartCount > 12000) ai.TargetState[i].Size = 5;
-                else if (info.LargeGrid && info.PartCount > 6000) ai.TargetState[i].Size = 4;
-                else if (info.LargeGrid && info.PartCount > 3000) ai.TargetState[i].Size = 3;
-                else if (info.LargeGrid) ai.TargetState[i].Size = 2;
-                else if (info.PartCount > 2000) ai.TargetState[i].Size = 1;
+                if (largeGrid && partCount > 24000) ai.TargetState[i].Size = 6;
+                else if (largeGrid && partCount > 12000) ai.TargetState[i].Size = 5;
+                else if (largeGrid && partCount > 6000) ai.TargetState[i].Size = 4;
+                else if (largeGrid && partCount > 3000) ai.TargetState[i].Size = 3;
+                else if (largeGrid) ai.TargetState[i].Size = 2;
+                else if (partCount > 2000) ai.TargetState[i].Size = 1;
                 else ai.TargetState[i].Size = 0;
 
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, s.ApproachDegrees);
@@ -271,7 +285,6 @@ namespace WeaponCore
                 }
                 else ai.TargetState[i].ShieldHealth = -1;
 
-                var grid = target as MyCubeGrid;
                 var friend = false;
                 if (grid != null && grid.BigOwners.Count != 0)
                 {
@@ -292,7 +305,6 @@ namespace WeaponCore
                         else if (myShieldInfo.Item1) shieldBonus = -1;
                     }
 
-                    var offenseRating = info.OffenseRating;
                     if (offenseRating > 5) ai.TargetState[i].ThreatLvl = shieldBonus < 0 ? 8 : 9;
                     else if (offenseRating > 4) ai.TargetState[i].ThreatLvl = 8 + shieldBonus;
                     else if (offenseRating > 3) ai.TargetState[i].ThreatLvl = 7 + shieldBonus;

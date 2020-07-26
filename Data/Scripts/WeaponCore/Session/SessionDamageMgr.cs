@@ -369,7 +369,6 @@ namespace WeaponCore
                         var aoeOffset = Math.Min(areaRadius * 0.5f, travelOffset);
                         var expOffsetClamp = MathHelperD.Clamp(aoeOffset, minAoeOffset, 2f);
                         var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
-
                         if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
                          SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);

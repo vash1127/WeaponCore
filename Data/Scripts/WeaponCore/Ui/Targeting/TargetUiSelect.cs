@@ -150,15 +150,14 @@ namespace WeaponCore
                     _currentIdx -= 1;
                 else _currentIdx = _endIdx;
 
-            var ent = _sortedMasterList[_currentIdx].Target;
-            if (!updateTick && ent.MarkedForClose)
+            var ent = _sortedMasterList[_currentIdx];
+            if (ent == null || ent.MarkedForClose)
             {
                 _endIdx = -1;
                 return;
             } 
 
-            if (ent != null)
-                s.SetTarget(ent, ai, _masterTargets);
+            s.SetTarget(ent, ai, _masterTargets);
         }
 
         private bool UpdateCache()
@@ -169,7 +168,7 @@ namespace WeaponCore
             BuildMasterCollections(ai);
 
             for (int i = 0; i < _sortedMasterList.Count; i++)
-                if (focus.Target[focus.ActiveId] == _sortedMasterList[i].Target.EntityId) _currentIdx = i;
+                if (focus.Target[focus.ActiveId] == _sortedMasterList[i].EntityId) _currentIdx = i;
             _endIdx = _sortedMasterList.Count - 1;
             return _endIdx >= 0;
         }
@@ -183,13 +182,21 @@ namespace WeaponCore
                 for (int j = 0; j < subTargets.Count; j++) {
                     var tInfo = subTargets[j];
                     if (tInfo.Target.MarkedForClose) continue;
-                    _masterTargets[tInfo.Target] = tInfo;
+                    _masterTargets[tInfo.Target] = tInfo.OffenseRating;
+                    _toPruneMasterDict[tInfo.Target] = tInfo;
                 }
             }
 
             _sortedMasterList.Clear();
-            _sortedMasterList.AddRange(_masterTargets.Values);
-            _sortedMasterList.Sort(_session.TargetCompare);
+            _toSortMasterList.AddRange(_toPruneMasterDict.Values);
+            _toPruneMasterDict.Clear();
+
+            _toSortMasterList.Sort(_session.TargetCompare);
+
+            for (int i = 0; i < _toSortMasterList.Count; i++)
+                _sortedMasterList.Add(_toSortMasterList[i].Target);
+
+            _toSortMasterList.Clear();
         }
 
         private bool RayCheckTargets(Vector3D origin, Vector3D dir, out MyEntity closestEnt, out Vector3D hitPos, out bool foundOther, bool checkOthers = false)

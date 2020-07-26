@@ -163,6 +163,7 @@ namespace WeaponCore
                 var grid = (MyCubeGrid)slim.CubeGrid;
 
                 if (info.IsDeformation && info.AttackerId > 0 && DeformProtection.Contains(grid)) {
+                    Log.Line($"BeforeDamageHandler1");
                     info.Amount = 0f;
                     return;
                 }
@@ -170,6 +171,7 @@ namespace WeaponCore
                 WeaponComponent comp;
                 if (cube != null && ArmorCubes.TryGetValue(cube, out comp)) {
 
+                    Log.Line($"BeforeDamageHandler2");
                     info.Amount = 0f;
                     if (info.IsDeformation && info.AttackerId > 0) {
                         DeformProtection.Add(cube.CubeGrid);

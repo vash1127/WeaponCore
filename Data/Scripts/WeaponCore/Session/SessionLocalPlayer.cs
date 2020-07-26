@@ -231,7 +231,7 @@ namespace WeaponCore
             return ai.Construct.Data.Repo.FocusData.HasFocus;
         }
 
-        internal void SetTarget(MyEntity entity, GridAi ai, Dictionary<MyEntity, GridAi.TargetInfo> masterTargets)
+        internal void SetTarget(MyEntity entity, GridAi ai, Dictionary<MyEntity, float> masterTargets)
         {
             
             TrackingAi = ai;
@@ -246,11 +246,12 @@ namespace WeaponCore
             }
             else {
 
-                TargetInfo info;
-                if (!masterTargets.TryGetValue(entity, out info)) return;
+                float offenseRating;
+                if (!masterTargets.TryGetValue(entity, out offenseRating)) return;
                 ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
-                
-                if (info.IsGrid && GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {
+
+                var tGrid = entity as MyCubeGrid;
+                if (tGrid != null && GridToBlockTypeMap.TryGetValue(tGrid, out typeDict)) {
 
                     ConcurrentCachingList<MyCubeBlock> fatList;
                     if (typeDict.TryGetValue(Offense, out fatList))
