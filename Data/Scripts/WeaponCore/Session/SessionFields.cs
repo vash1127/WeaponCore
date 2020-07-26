@@ -207,6 +207,7 @@ namespace WeaponCore
         internal DSUtils DsUtil;
         internal DSUtils DsUtil2;
         internal StallReporter StallReporter;
+        internal StallReporter InnerStallReporter;
         internal UiInput UiInput;
         internal Wheel Wheel;
         internal TargetUi TargetUi;
@@ -349,7 +350,8 @@ namespace WeaponCore
             HudUi = new Hud(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
-            StallReporter = new StallReporter(this);
+            StallReporter = new StallReporter();
+            InnerStallReporter = new StallReporter();
             Av = new RunAv(this);
             Api = new ApiBackend(this);
             ApiServer = new ApiServer(this);

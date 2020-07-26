@@ -69,6 +69,7 @@ namespace WeaponCore.Support
 
         internal static bool ReacquireTarget(Projectile p)
         {
+            p.Info.System.Session.InnerStallReporter.Start("ReacquireTarget", 5);
             p.ChaseAge = p.Info.Age;
             var s = p.Info.System;
             var ai = p.Info.Ai;
@@ -79,6 +80,7 @@ namespace WeaponCore.Support
             var attackFriends = overActive && overRides.Friendly;
             var attackNoOwner = overActive && overRides.Unowned;
             var forceFoci = overActive && overRides.FocusTargets;
+            var acquired = false;
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -131,7 +133,8 @@ namespace WeaponCore.Support
                     if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
                     if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, null, !focusTarget)) continue;
-                    return true;
+                    acquired = true;
+                    break;
                 }
 
                 if (Obstruction(ref info, ref targetPos, p))
@@ -143,10 +146,12 @@ namespace WeaponCore.Support
                 var origDist = rayDist;
                 var topEntId = info.Target.GetTopMostParent().EntityId;
                 p.Info.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
-                return true;
+                acquired = true;
+                break;
             }
-            p.Info.Target.Reset(ai.Session.Tick, Target.States.NoTargetsSeen);
-            return false;
+            if (!acquired) p.Info.Target.Reset(ai.Session.Tick, Target.States.NoTargetsSeen);
+            p.Info.System.Session.InnerStallReporter.End();
+            return acquired;
         }
 
         private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)

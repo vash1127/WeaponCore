@@ -572,11 +572,7 @@ namespace WeaponCore.Support
 
     internal class StallReporter
     {
-        internal StallReporter(Session session)
-        {
-        }
-
-        private readonly Stopwatch Watch = new Stopwatch();
+        private readonly Stopwatch _watch = new Stopwatch();
         internal string Name;
         internal double MaxMs;
 
@@ -584,13 +580,13 @@ namespace WeaponCore.Support
         {
             Name = name;
             MaxMs = maxMs;
-            Watch.Restart();
+            _watch.Restart();
         }
 
         public void End()
         {
-            Watch.Stop();
-            var ticks = Watch.ElapsedTicks;
+            _watch.Stop();
+            var ticks = _watch.ElapsedTicks;
             var ns = 1000000000.0 * ticks / Stopwatch.Frequency;
             var ms = ns / 1000000.0;
             if (ms > MaxMs)
