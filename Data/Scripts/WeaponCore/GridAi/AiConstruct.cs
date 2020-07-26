@@ -347,39 +347,11 @@ namespace WeaponCore.Support
                 OldHasFocus = fd.HasFocus;
                 OldDistToNearestFocusSqr = fd.DistToNearestFocusSqr;
 
-                //RefreshData(ai);
-                Log.Line($"Focus Change Detected");
                 return true;
             }
 
             return false;
         }
-
-        /*
-        internal void RefreshData(GridAi ai)
-        {
-            var f = ai.Construct.Data.Repo.FocusData;
-            ++f.Revision;
-            f.ActiveId = ActiveId;
-            f.HasFocus = HasFocus;
-            f.DistToNearestFocusSqr = DistToNearestFocusSqr;
-            for (int i = 0; i < f.Target.Length; i++)
-                f.Target[i] = Target[i];
-        }
-
-        internal void Sync(GridAi ai, FocusData sync)
-        {
-            var fd = ai.Construct.Data.Repo.FocusData;
-            for (int i = 0; i < fd.Target.Length; i++)
-                fd.Target[i] = sync.Target[i];
-
-            fd.ActiveId = sync.ActiveId;
-            fd.HasFocus = sync.HasFocus;
-            fd.DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
-            ai.Construct.Data.Repo.FocusData.Sync(sync);
-
-        }
-        */
 
         internal void ServerAddFocus(MyEntity target, GridAi ai)
         {
@@ -481,30 +453,6 @@ namespace WeaponCore.Support
 
             return fd.HasFocus;
         }
-
-        /*
-        internal void UpdateSubGrids(GridAi ai, bool resetTick = false)
-        {
-            foreach (var sub in ai.SubGrids)
-            {
-
-                if (ai.MyGrid == sub) continue;
-
-                GridAi gridAi;
-                if (ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
-                {
-
-                    if (resetTick) gridAi.TargetResetTick = gridAi.Session.Tick + 1;
-                    for (int i = 0; i < gridAi.Construct.Data.Repo.Focus.Target.Length; i++)
-                    {
-                        gridAi.Construct.Data.Repo.Focus.Target[i] = Target[i];
-                        gridAi.Construct.Data.Repo.Focus.HasFocus = HasFocus;
-                        gridAi.Construct.Data.Repo.Focus.ActiveId = ActiveId;
-                    }
-                }
-            }
-        }
-        */
 
         internal bool ClientIsFocused(GridAi ai)
         {

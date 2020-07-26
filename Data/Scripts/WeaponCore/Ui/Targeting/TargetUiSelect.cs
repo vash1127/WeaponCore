@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Input;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -86,10 +88,10 @@ namespace WeaponCore
                 if (rayOnlyHitSelf) rayOnlyHitSelf = false;
 
                 if (manualSelect) {
-                    if (hitGrid == null || !ai.Targets.ContainsKey(hitGrid))
+                    if (hitGrid == null || !_masterTargets.ContainsKey(hitGrid))
                         continue;
 
-                    s.SetTarget(hitGrid, ai);
+                    s.SetTarget(hitGrid, ai, _masterTargets);
                     return true;
                 }
 
@@ -110,14 +112,14 @@ namespace WeaponCore
             if (!foundTarget && RayCheckTargets(AimPosition, AimDirection, out closestEnt, out hitPos, out foundOther, !manualSelect)) {
                 foundTarget = true;
                 if (manualSelect) {
-                    s.SetTarget(closestEnt, ai);
+                    s.SetTarget(closestEnt, ai, _masterTargets);
                     return true;
                 }
                 ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(hitPos, ai, closestEnt);
             }
 
             if (!manualSelect) {
-                var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
+                var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
                 if (!foundTarget) {
                     ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
@@ -148,7 +150,7 @@ namespace WeaponCore
                     _currentIdx -= 1;
                 else _currentIdx = _endIdx;
 
-            var ent = _targetCache[_currentIdx];
+            var ent = _sortedMasterList[_currentIdx].Target;
             if (!updateTick && ent.MarkedForClose)
             {
                 _endIdx = -1;
@@ -156,25 +158,38 @@ namespace WeaponCore
             } 
 
             if (ent != null)
-                s.SetTarget(ent, ai);
+                s.SetTarget(ent, ai, _masterTargets);
         }
 
         private bool UpdateCache()
         {
             var ai = _session.TrackingAi;
             var focus = ai.Construct.Data.Repo.FocusData;
-            _targetCache.Clear();
             _currentIdx = 0;
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
-            {
-                var target = ai.SortedTargets[i].Target;
-                if (target.MarkedForClose) continue;
+            BuildMasterCollections(ai);
 
-                _targetCache.Add(target);
-                if (focus.Target[focus.ActiveId] == target.EntityId) _currentIdx = i;
-            }
-            _endIdx = _targetCache.Count - 1;
+            for (int i = 0; i < _sortedMasterList.Count; i++)
+                if (focus.Target[focus.ActiveId] == _sortedMasterList[i].Target.EntityId) _currentIdx = i;
+            _endIdx = _sortedMasterList.Count - 1;
             return _endIdx >= 0;
+        }
+
+        private void BuildMasterCollections(GridAi ai)
+        {
+            _masterTargets.Clear();
+            for (int i = 0; i < ai.Construct.RefreshedAis.Count; i++)  {
+
+                var subTargets = ai.Construct.RefreshedAis[i].SortedTargets;
+                for (int j = 0; j < subTargets.Count; j++) {
+                    var tInfo = subTargets[j];
+                    if (tInfo.Target.MarkedForClose) continue;
+                    _masterTargets[tInfo.Target] = tInfo;
+                }
+            }
+
+            _sortedMasterList.Clear();
+            _sortedMasterList.AddRange(_masterTargets.Values);
+            _sortedMasterList.Sort(_session.TargetCompare);
         }
 
         private bool RayCheckTargets(Vector3D origin, Vector3D dir, out MyEntity closestEnt, out Vector3D hitPos, out bool foundOther, bool checkOthers = false)
@@ -182,7 +197,7 @@ namespace WeaponCore
             var ai = _session.TrackingAi;
             var closestDist = double.MaxValue;
             closestEnt = null;
-            foreach (var info in ai.Targets.Keys)
+            foreach (var info in _masterTargets.Keys)
             {
                 var hit = info as MyCubeGrid;
                 if (hit == null) continue;

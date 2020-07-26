@@ -27,8 +27,9 @@ namespace WeaponCore
         private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
+        private readonly List<GridAi.TargetInfo> _sortedMasterList = new List<GridAi.TargetInfo>(64);
+        private readonly Dictionary<MyEntity, GridAi.TargetInfo> _masterTargets = new Dictionary<MyEntity, GridAi.TargetInfo>(64);
         private readonly Session _session;
-        private readonly List<MyEntity> _targetCache = new List<MyEntity>();
         private Vector2 _pointerPosition = new Vector2(0, 0.0f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;

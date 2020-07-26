@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -230,7 +231,7 @@ namespace WeaponCore
             return ai.Construct.Data.Repo.FocusData.HasFocus;
         }
 
-        internal void SetTarget(MyEntity entity, GridAi ai)
+        internal void SetTarget(MyEntity entity, GridAi ai, Dictionary<MyEntity, GridAi.TargetInfo> masterTargets)
         {
             
             TrackingAi = ai;
@@ -246,7 +247,7 @@ namespace WeaponCore
             else {
 
                 TargetInfo info;
-                if (!ai.Targets.TryGetValue(entity, out info)) return;
+                if (!masterTargets.TryGetValue(entity, out info)) return;
                 ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
                 
                 if (info.IsGrid && GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {

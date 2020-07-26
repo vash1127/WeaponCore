@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.AI;
 using VRage.Collections;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -638,8 +635,6 @@ namespace WeaponCore.Support
 
                         if (beam.Intersects(obsSphere) != null)
                         {
-                            //var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                            //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                             var transform = ent.PositionComp.WorldMatrixRef;
                             var box = ent.PositionComp.LocalAABB;
                             var obb = new MyOrientedBoundingBoxD(box, transform);
@@ -723,20 +718,13 @@ namespace WeaponCore.Support
                 {
                     if (new RayD(ref p.Position, ref dir).Intersects(entWorldVolume) != null)
                     {
-                        //var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                        //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                         var transform = ent.PositionComp.WorldMatrixRef;
                         var box = ent.PositionComp.LocalAABB;
                         var obb = new MyOrientedBoundingBoxD(box, transform);
                         var lineTest = new LineD(p.Position, targetPos);
                         if (obb.Intersects(ref lineTest) != null)
                         {
-                            var grid = ent as MyCubeGrid;
-                            MyCubeGrid.MyCubeGridHitInfo gridInfo = null;
-                            if (grid != null && grid.PositionComp.LocalVolume.Radius > 50)
-                                obstruction = grid.GetIntersectionWithLine(ref lineTest, ref gridInfo);
-                            else 
-                                obstruction = true;
+                            obstruction = true;
                             break;
                         }
                     }
@@ -752,8 +740,6 @@ namespace WeaponCore.Support
                     var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
                     if (subDist.HasValue)
                     {
-                        //var q = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                        //var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, q);
                         var transform = ai.MyGrid.PositionComp.WorldMatrixRef;
                         var box = ai.MyGrid.PositionComp.LocalAABB;
                         var obb = new MyOrientedBoundingBoxD(box, transform);

@@ -190,7 +190,7 @@ namespace WeaponCore
                 var targetId = ai.Construct.Data.Repo.FocusData.Target[i];
                 GridAi.TargetInfo info;
                 MyEntity target;
-                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !ai.Targets.TryGetValue(target, out info)) continue;
+                if (targetId <= 0 || !MyEntities.TryGetEntityById(targetId, out target) || !_masterTargets.TryGetValue(target, out info)) continue;
                 validFocus = true;
                 if (!s.Tick20 && ai.OldFocusEntityId == info.EntInfo.EntityId) continue;
                 ai.OldFocusEntityId = info.EntInfo.EntityId;

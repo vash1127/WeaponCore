@@ -188,64 +188,6 @@ namespace WeaponCore.Support
             }
         }
 
-        /*
-        internal void TurnManualShootOff()
-        {
-            if (TurnOffManualTick == Session.Tick) return;
-
-            TurnOffManualTick = Session.Tick;
-
-            foreach (var cubeComp in Weapons) {
-
-                var comp = cubeComp;
-                if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) continue;
-                var currPlayer = comp.State.Value.CurrentPlayerControl;
-
-                if (currPlayer.PlayerId != Session.PlayerId) continue;
-
-                var cState = comp.State.Value;
-                var overRides = comp.Set.Value.Overrides;
-
-                currPlayer.ControlType = ControlType.None;
-                currPlayer.PlayerId = -1;
-
-                if (comp.Session.MpActive)
-                    comp.Session.SendControlingPlayer(comp);
-
-                if (cState.ClickShoot) {
-
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
-                        var wState = cState.Weapons[comp.Platform.Weapons[i].WeaponId];
-
-                        if (cState.ClickShoot)
-                            wState.ManualShoot = ShootActions.ShootOff;
-                    }
-
-                    cState.ClickShoot = false;
-
-                    //if (comp.Session.MpActive)
-                        //comp.Session.SendActionShootUpdate(comp, ShootActions.ShootOff);
-                }
-                else if (overRides.TargetPainter || overRides.ManualControl) {
-
-                    overRides.TargetPainter = false;
-                    overRides.ManualControl = false;
-                    if (comp.Session.MpActive) {
-                        //comp.Session.SendOverRidesUpdate(comp, overRides);
-                        comp.TrackReticle = false;
-                        comp.Session.SendTrackReticleUpdate(comp);
-                    }
-
-                    GroupInfo group;
-                    if (!string.IsNullOrEmpty(comp.State.Value.CurrentBlockGroup) && BlockGroups.TryGetValue(comp.State.Value.CurrentBlockGroup, out group)) {
-                        GroupsToCheck.Add(group);
-                        ScanBlockGroupSettings = true;
-                    }
-                }
-            }
-        }
-        */
-
         internal void CheckReload(MyDefinitionId magId)
         {
             foreach (var w in OutOfAmmoWeapons) {

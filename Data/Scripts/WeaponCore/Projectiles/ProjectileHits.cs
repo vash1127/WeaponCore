@@ -69,8 +69,6 @@ namespace WeaponCore.Projectiles
                         var transform = ent.PositionComp.WorldMatrixRef;
                         var box = ent.PositionComp.LocalAABB;
                         var obb = new MyOrientedBoundingBoxD(box, transform);
-
-                        //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.WorldMatrix));
                         if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
                     }
                     var safeZone = ent as MySafeZone;
@@ -575,7 +573,6 @@ namespace WeaponCore.Projectiles
                             var transform = ent.PositionComp.WorldMatrixRef;
                             var box = ent.PositionComp.LocalAABB;
                             var obb = new MyOrientedBoundingBoxD(box, transform);
-                            //var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrixRef));
                             dist = obb.Intersects(ref beam) ?? double.MaxValue;
                             if (dist < double.MaxValue) {
                                 hitEnt.Hit = true;
