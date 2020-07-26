@@ -184,7 +184,7 @@ namespace WeaponCore
                     GroupInfo group;
                     if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
                     {
-                        Log.Line($"ServerOverRidesUpdate Comp2");
+                        //Log.Line($"ServerOverRidesUpdate Comp2");
 
                         group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
                         data.Report.PacketValid = true;

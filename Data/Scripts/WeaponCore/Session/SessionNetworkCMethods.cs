@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
@@ -159,7 +160,8 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)  {
+            if (comp.MIds[(int)packet.PType] < packet.MId)
+            {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
                 if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
@@ -171,8 +173,56 @@ namespace WeaponCore
                 else Log.Line($"compDataSync failed: {packet.PType}");
             }
             else Log.Line($"compDataSync mId failed: {packet.PType} - mId:{packet.MId}");
-            
+
             data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientUpdateSetting(PacketObj data)
+        {
+            var packet = data.Packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp.MIds[(int)packet.PType] < packet.MId)  {
+                comp.MIds[(int)packet.PType] = packet.MId;
+
+                Log.Line($"ClientUpdateSetting");
+                switch (packet.PType)
+                {
+                    case PacketType.RequestSetRof:
+                    {
+                        WepUi.RequestSetRof(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                        break;
+                    }
+                    case PacketType.RequestSetRange:
+                    {
+                        WepUi.RequestSetRange(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            break;
+                    }
+                    case PacketType.RequestSetDps:
+                    {
+                        WepUi.RequestSetDps(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            break;
+                    }
+                    case PacketType.RequestSetGuidance:
+                    {
+                        WepUi.RequestSetGuidance(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                        break;
+                    }
+                    case PacketType.RequestSetOverload:
+                    {
+                        WepUi.RequestSetOverload(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                        break;
+                    }
+                }
+                
+                data.Report.PacketValid = true;
+            }
+            else Log.Line($"ClientUpdateSetting mId failed: {packet.PType} - mId:{packet.MId}");
+            
 
             return true;
         }

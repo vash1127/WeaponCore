@@ -83,6 +83,7 @@ namespace WeaponCore
         {
             Guidance = sync.Guidance;
             Range = sync.Range;
+            SetRange(comp);
 
             Overrides.Sync(sync.Overrides);
 
@@ -90,9 +91,8 @@ namespace WeaponCore
                 Overload = sync.Overload;
                 RofModifier = sync.RofModifier;
                 DpsModifier = sync.DpsModifier;
-                WepUi.SetDps(comp, sync.DpsModifier, true);
+                SetRof(comp);
             }
-
         }
 
     }

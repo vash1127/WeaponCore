@@ -68,7 +68,7 @@ namespace WeaponCore
         {
             if (session.IsServer)
             {
-                Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
+                //Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
                 Settings[setting] = value;
                 ApplySettings(ai, playerId);
 
@@ -77,7 +77,7 @@ namespace WeaponCore
             }
             else if (session.IsClient)
             {
-                Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
+                //Log.Line($"RequestApplySettings: Group:{Name} - setting:{setting} - value:{value}");
                 session.SendOverRidesClientAi(ai, Name, setting, value);
             }
         }
@@ -86,12 +86,12 @@ namespace WeaponCore
         {
             if (comp.Session.IsServer)
             {
-                Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
+                //Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
                 SetValue(comp, setting, value, playerId);
             }
             else if (comp.Session.IsClient)
             {
-                Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
+                //Log.Line($"RequestSetValue: Group:{Name} - setting:{setting} - value:{value}");
                 comp.Session.SendOverRidesClientComp(comp, Name, setting, value);
             }
         }

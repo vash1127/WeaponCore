@@ -557,6 +557,78 @@ namespace WeaponCore
             else Log.Line($"SendAmmoCycleRequest should never be called on Non-HandlesInput");
         }
 
+        internal void SendSetCompFloatRequest(WeaponComponent comp, float newDps, PacketType type)
+        {
+            if (IsClient)
+            {
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new FloatUpdatePacket
+                    {
+                        MId = ++mIds[(int)type],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = type,
+                        Data = newDps,
+                    });
+                }
+                else Log.Line($"SendSetFloatRequest no player MIds found");
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = new FloatUpdatePacket
+                    {
+                        MId = ++comp.MIds[(int)type],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = type,
+                        Data = newDps,
+                    }
+                });
+            }
+            else Log.Line($"SendSetFloatRequest should never be called on Non-HandlesInput");
+        }
+
+        internal void SendSetCompBoolRequest(WeaponComponent comp, bool newBool, PacketType type)
+        {
+            if (IsClient)
+            {
+                uint[] mIds;
+                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
+                {
+                    PacketsToServer.Add(new BoolUpdatePacket
+                    {
+                        MId = ++mIds[(int)type],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = type,
+                        Data = newBool,
+                    });
+                }
+                else Log.Line($"SendSetCompBoolRequest no player MIds found");
+            }
+            else if (HandlesInput)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = comp.MyCube,
+                    Packet = new BoolUpdatePacket
+                    {
+                        MId = ++comp.MIds[(int)type],
+                        EntityId = comp.MyCube.EntityId,
+                        SenderId = 0,
+                        PType = type,
+                        Data = newBool,
+                    }
+                });
+            }
+            else Log.Line($"SendSetCompBoolRequest should never be called on Non-HandlesInput");
+        }
+
         internal void SendTrackReticleUpdate(WeaponComponent comp, bool track)
         {
             if (IsClient) {

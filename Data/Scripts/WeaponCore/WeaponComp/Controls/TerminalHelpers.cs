@@ -206,28 +206,28 @@ namespace WeaponCore.Control
         {
             Separator<T>(0, "WC_sep1", HasExtraUi);
 
-            AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance,
+            AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.RequestSetGuidance,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.HasGuidanceToggle;
                 });
 
-            AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.SetDpsFromTerminal,
+            AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.RequestSetDps,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.HasDamageSlider;
                 });
 
-            AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.SetRof,
+            AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.RequestSetRof,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.HasRofSlider;
                 });
 
-            AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, true,
+            AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.RequestSetOverload, true,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
@@ -308,154 +308,6 @@ namespace WeaponCore.Control
                 }
             }
         }
-        #endregion
-
-        #region Shoot Actions
-        /*
-
-        internal static void WcShootToggleAction(WeaponComponent comp, bool alreadySynced = false)
-        {
-            if (comp.State.Value.ShootOn)
-                comp.RequestShootUpdate(ShootOff);
-            else
-                comp.RequestShootUpdate(ShootOn);
-        }
-
-        internal static void WcShootOnAction(WeaponComponent comp, bool alreadySynced = false)
-        {
-            comp.Session.TerminalMon.ClientUpdate(comp);
-            var cState = comp.State.Value;
-
-            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-            {
-                comp.Platform.Weapons[j].State.ManualShoot = ShootOn;
-                comp.Platform.Weapons[j].State.SingleShotCounter = 0;
-            }
-            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
-            comp.Set.Value.Overrides.ManualControl = false;
-            comp.Set.Value.Overrides.TargetPainter = false;
-
-
-            if (!alreadySynced)
-            {
-                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
-            }
-
-            cState.ShootOn = true;
-            cState.ClickShoot = false;
-
-            if (comp.Session.MpActive && !alreadySynced)
-            {
-                comp.Session.SendControlingPlayer(comp);
-                comp.Session.SendActionShootUpdate(comp, ShootOn);
-                if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
-            }
-        }
-
-        internal static void WcShootOffAction(WeaponComponent comp, bool alreadySynced = false)
-        {
-            comp.Session.TerminalMon.ClientUpdate(comp);
-            var cState = comp.State.Value;
-
-            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-            {
-                comp.Platform.Weapons[j].State.ManualShoot = ShootOff;
-                comp.Platform.Weapons[j].State.SingleShotCounter = 0;
-            }
-                
-            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
-            comp.Set.Value.Overrides.ManualControl = false;
-            comp.Set.Value.Overrides.TargetPainter = false;
-            comp.State.Value.CurrentPlayerControl.PlayerId = -1;
-            comp.State.Value.CurrentPlayerControl.ControlType = ControlType.None;
-
-            cState.ShootOn = false;
-            cState.ClickShoot = false;
-
-            if (comp.Session.MpActive && !alreadySynced)
-            {
-                comp.Session.SendControlingPlayer(comp);
-                comp.Session.SendActionShootUpdate(comp, ShootOff);
-                if (update)
-                    comp.Session.SendOverRidesUpdate(comp, comp.Set.Value.Overrides);
-            }
-        }
-
-        internal static void WcShootOnceAction(WeaponComponent comp, bool alreadySynced = false)
-        {
-            comp.Session.TerminalMon.ClientUpdate(comp);
-            var cState = comp.State.Value;
-
-            for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-            {
-                cState.Weapons[comp.Platform.Weapons[j].WeaponId].SingleShotCounter++;
-                cState.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-            }
-
-            var update = comp.Set.Value.Overrides.ManualControl || comp.Set.Value.Overrides.TargetPainter;
-            comp.Set.Value.Overrides.ManualControl = false;
-            comp.Set.Value.Overrides.TargetPainter = false;
-            if (!alreadySynced)
-            {
-                comp.State.Value.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                comp.State.Value.CurrentPlayerControl.ControlType = ControlType.Toolbar;
-            }
-            cState.ShootOn = false;
-            cState.ClickShoot = false;
-
-            if (comp.Session.MpActive && !alreadySynced)
-            {
-                comp.Session.SendControlingPlayer(comp);
-                comp.Session.SendActionShootUpdate(comp, ShootOnce);
-                if (update)
-                    comp.Session.`(comp, comp.Set.Value.Overrides);
-            }
-        }
-
-        internal static void WcShootClickAction(WeaponComponent comp, bool on, bool isTurret, bool alreadySynced = false)
-        {
-            comp.Session.TerminalMon.ClientUpdate(comp);
-            var cState = comp.State.Value;
-
-            if (!alreadySynced)
-            {
-                if (on)
-                {
-                    cState.CurrentPlayerControl.PlayerId = comp.Session.PlayerId;
-                    cState.CurrentPlayerControl.ControlType = isTurret ? ControlType.Ui : ControlType.Toolbar;
-                }
-                else
-                {
-                    cState.CurrentPlayerControl.PlayerId = -1;
-                    cState.CurrentPlayerControl.ControlType = ControlType.None;
-                }
-            }
-
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
-                var w = comp.Platform.Weapons[i];
-                w.State.SingleShotCounter = 0;
-
-                if (on)
-                    w.State.ManualShoot = ShootClick;
-                else
-                    w.State.ManualShoot = ShootOff;
-                
-            }
-
-            if (comp.Session.MpActive && !alreadySynced)
-            {
-                comp.Session.SendControlingPlayer(comp);
-                comp.Session.SendActionShootUpdate(comp, (on ? ShootClick : ShootOff));
-            }
-
-            cState.ClickShoot = on;
-            cState.ShootOn = !on && cState.ShootOn;
-        }
-        */
         #endregion
 
         #region Support methods
@@ -562,7 +414,7 @@ namespace WeaponCore.Control
 
         #region terminal control methods
 
-        internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, int, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock
+        internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>($"WC_{id}_Enable");
 
@@ -573,7 +425,7 @@ namespace WeaponCore.Control
             c.Enabled = b => true;
             c.Visible = b => visibleGetter(b, id);
             c.Getter = b => getter(b, id);
-            c.Setter = (b, enabled) => setter(b, id, enabled);
+            c.Setter = setter;
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
             CreateOnOffActionSet<T>(c, name, id, visibleGetter, false);
@@ -718,39 +570,6 @@ namespace WeaponCore.Control
             action1.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
-        }
-        #endregion
-
-        #region Saved Code
-
-        internal static IMyTerminalControlCombobox AddCombobox<T>(T block, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, long> getter, Action<IMyTerminalBlock, long> setter, Action<List<MyTerminalControlComboBoxItem>> fillAction, Func<IMyTerminalBlock, int, int, bool> visibleGetter = null, Func<IMyTerminalBlock, int, int, bool> enabledGetter = null) where T : IMyTerminalBlock
-        {
-            var cmb = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCombobox, T>(name);
-
-            cmb.Title = MyStringId.GetOrCompute(title);
-            cmb.Tooltip = MyStringId.GetOrCompute(tooltip);
-            cmb.Enabled = x => true;
-            cmb.Visible = x => true;
-            cmb.ComboBoxContent = fillAction;
-            cmb.Getter = getter;
-            cmb.Setter = setter;
-            MyAPIGateway.TerminalControls.AddControl<T>(cmb);
-            return cmb;
-        }
-
-        internal static IMyTerminalControlColor AddColorEditor<T>(T block, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, Color> getter, Action<IMyTerminalBlock, Color> setter, Func<IMyTerminalBlock, int, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, int, bool> visibleGetter = null) where T : IMyTerminalBlock
-        {
-            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlColor, T>(name);
-
-            c.Title = MyStringId.GetOrCompute(title);
-            c.Tooltip = MyStringId.GetOrCompute(tooltip);
-            c.Enabled = x => true;
-            c.Visible = x => true;
-            c.Getter = getter;
-            c.Setter = setter;
-            MyAPIGateway.TerminalControls.AddControl<T>(c);
-
-            return c;
         }
         #endregion
     }

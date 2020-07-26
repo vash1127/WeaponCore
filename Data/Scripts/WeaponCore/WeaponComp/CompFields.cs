@@ -64,8 +64,6 @@ namespace WeaponCore.Support
         internal float CurrentCharge;
         internal bool TargetNonThreats;
         internal bool IsAsleep;
-        internal bool SettingsUpdated;
-        internal bool ClientUiUpdate;
         internal bool IsFunctional;
         internal bool IsWorking;
         internal bool HasEnergyWeapon;

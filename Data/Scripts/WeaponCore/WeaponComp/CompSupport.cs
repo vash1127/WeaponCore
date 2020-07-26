@@ -78,6 +78,40 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }
 
+        internal static void SetRange(WeaponComponent comp)
+        {
+            foreach (var w in comp.Platform.Weapons)
+                w.UpdateWeaponRange();
+        }
+
+        internal static void SetRof(WeaponComponent comp)
+        {
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)  {
+                var w = comp.Platform.Weapons[i];
+
+                if (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
+
+                var newRate = (int)(w.System.RateOfFire * comp.Data.Repo.Set.RofModifier);
+                if (newRate < 1)
+                    newRate = 1;
+
+                w.RateOfFire = newRate;
+            }
+
+            SetDps(comp);
+        }
+
+        internal static void SetDps(WeaponComponent comp, bool ammoChange = false)
+        {
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                var w = comp.Platform.Weapons[i];
+                if (!ammoChange && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
+                comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
+            }
+        }
+
         public void StopAllSounds()
         {
             foreach (var w in Platform.Weapons)

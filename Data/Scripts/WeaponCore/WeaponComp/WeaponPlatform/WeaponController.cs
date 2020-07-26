@@ -348,7 +348,7 @@ namespace WeaponCore.Platform
 
             Comp.HeatPerSecond -= heatDif;
             Comp.MaxRequiredPower -= ActiveAmmoDef.AmmoDef.Const.MustCharge ? chargeDif : powerDif;
-
+            Comp.Ai.UpdatePowerSources = true;
         }
 
         internal void SpinBarrel(bool spinDown = false)

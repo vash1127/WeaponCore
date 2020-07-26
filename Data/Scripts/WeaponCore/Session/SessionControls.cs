@@ -108,7 +108,7 @@ namespace WeaponCore
                     CreateShootClick<T>();
                 }
 
-                TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.SetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
+                TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
 
                 if (obs.Count == 0) return;
 

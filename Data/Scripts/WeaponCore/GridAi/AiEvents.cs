@@ -85,11 +85,12 @@ namespace WeaponCore.Support
         {
             try
             {
-                var battery = cube as MyBatteryBlock;
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
-                var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId));
+                var cubeDef = cube?.BlockDefinition;
+                var isWeaponBase = weaponType && cubeDef != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.WeaponPlatforms.ContainsKey(cubeDef.Id.SubtypeId));
 
                 try {
+                    var battery = cube as MyBatteryBlock;
                     MyInventory inventory;
                     if (isWeaponBase && Session.IsServer)
                         Construct.RootAi.ScanBlockGroups = true;
@@ -124,7 +125,7 @@ namespace WeaponCore.Support
                 }
                 catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
             }
-            catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex}"); }
         }
 
         internal void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)

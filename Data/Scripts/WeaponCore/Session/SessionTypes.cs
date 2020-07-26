@@ -579,7 +579,7 @@ namespace WeaponCore
                 long aTermId;
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
                     ServerTerminalMaps[comp] = comp.MyCube.EntityId;
-                    Log.Line($"ServerUpdate added Id");
+                    if (!Session.LocalVersion) Log.Line($"ServerUpdate added Id");
                 }
                 else {
 
@@ -587,7 +587,7 @@ namespace WeaponCore
                     if (cube != null && cube.CubeGrid.EntityId != comp.Ai.MyGrid.EntityId)
                     {
                         ServerTerminalMaps[comp] = 0;
-                        Log.Line($"ServerUpdate reset Id");
+                        if (!Session.LocalVersion) Log.Line($"ServerUpdate reset Id");
                     }
                 }
 

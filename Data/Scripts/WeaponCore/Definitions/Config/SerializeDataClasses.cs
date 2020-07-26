@@ -20,6 +20,11 @@ namespace WeaponCore
         StateReload,
         StateNoAmmo,
         TargetChange,
+        RequestSetDps,
+        RequestSetGuidance,
+        RequestSetRof,
+        RequestSetOverload,
+        RequestSetRange,
         OverRidesUpdate,
         FakeTargetUpdate,
         ClientMouseEvent,
@@ -65,7 +70,7 @@ namespace WeaponCore
     [ProtoInclude(21, typeof(TargetPacket))]
     [ProtoInclude(22, typeof(ConstructGroupsPacket))]
     [ProtoInclude(23, typeof(ConstructFociPacket))]
-
+    [ProtoInclude(24, typeof(FloatUpdatePacket))]
 
     public class Packet
     {
@@ -268,6 +273,19 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = false;
+        }
+    }
+
+    [ProtoContract]
+    public class FloatUpdatePacket : Packet
+    {
+        [ProtoMember(1)] internal float Data;
+        public FloatUpdatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = 0;
         }
     }
 
