@@ -58,6 +58,7 @@ namespace WeaponCore.Api
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
                 ["GetConstructEffectiveDps"] = new Func<IMyEntity, float>(GetConstructEffectiveDps),
+                ["GetPlayerController"] = new Func<IMyTerminalBlock, long>(GetPlayerController),
             };
         }
 
@@ -96,6 +97,7 @@ namespace WeaponCore.Api
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
                 ["GetConstructEffectiveDps"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, float>(PbGetConstructEffectiveDps),
+                ["GetPlayerController"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long>(PbGetPlayerController),
             };
             var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WcPbAPI");
             pb.Getter = (b) => PbApiMethods;
@@ -229,6 +231,11 @@ namespace WeaponCore.Api
             return GetBlockWeaponMap((IMyTerminalBlock) arg1, (IDictionary<string, int>)arg2);
         }
 
+        private long PbGetPlayerController(object arg1)
+        {
+            return GetPlayerController((IMyTerminalBlock)arg1);
+        }
+
         // Non-PB Methods
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
@@ -252,6 +259,15 @@ namespace WeaponCore.Api
         {
             foreach (var def in _session.WeaponCoreTurretBlockDefs)
                 collection.Add(def);
+        }
+
+        internal long GetPlayerController(IMyTerminalBlock weaponBlock)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+                return comp.Data.Repo.State.PlayerId;
+
+            return -1;
         }
 
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
