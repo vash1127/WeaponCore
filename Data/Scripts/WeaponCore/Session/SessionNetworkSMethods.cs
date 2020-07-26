@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -65,6 +66,53 @@ namespace WeaponCore
             return true;
         }
 
+        private bool ServerUpdateSetting(PacketObj data)
+        {
+            var packet = data.Packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
+                mIds[(int)packet.PType] = packet.MId;
+
+                switch (packet.PType)
+                {
+                    case PacketType.RequestSetRof:
+                        {
+                            WepUi.RequestSetRof(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            break;
+                        }
+                    case PacketType.RequestSetRange:
+                        {
+                            WepUi.RequestSetRange(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            break;
+                        }
+                    case PacketType.RequestSetDps:
+                        {
+                            WepUi.RequestSetDps(comp.MyCube as IMyTerminalBlock, ((FloatUpdatePacket)packet).Data);
+                            break;
+                        }
+                    case PacketType.RequestSetGuidance:
+                        {
+                            WepUi.RequestSetGuidance(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                            break;
+                        }
+                    case PacketType.RequestSetOverload:
+                        {
+                            WepUi.RequestSetOverload(comp.MyCube as IMyTerminalBlock, ((BoolUpdatePacket)packet).Data);
+                            break;
+                        }
+                }
+
+                data.Report.PacketValid = true;
+            }
+            else Log.Line($"ServerUpdateSetting: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+
+
+            return true;
+        }
         private bool ServerFakeTargetUpdate(PacketObj data)
         {
             var packet = data.Packet;

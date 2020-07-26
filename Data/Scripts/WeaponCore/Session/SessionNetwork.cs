@@ -125,15 +125,6 @@ namespace WeaponCore
                         ClientCompData(packetObj);
                         break;
                     }
-                    case PacketType.RequestSetRof:
-                    case PacketType.RequestSetGuidance:
-                    case PacketType.RequestSetOverload:
-                    case PacketType.RequestSetRange:
-                    case PacketType.RequestSetDps:
-                    {
-                        ClientUpdateSetting(packetObj);
-                        break;
-                    }
                     case PacketType.TargetChange:
                     {
                         ClientTargetUpdate(packetObj);
@@ -295,6 +286,15 @@ namespace WeaponCore
                 }
                 case PacketType.FixedWeaponHitEvent: {
                     ServerFixedWeaponHitEvent(packetObj);
+                    break;
+                }
+                case PacketType.RequestSetRof:
+                case PacketType.RequestSetGuidance:
+                case PacketType.RequestSetOverload:
+                case PacketType.RequestSetRange:
+                case PacketType.RequestSetDps:
+                {
+                    ServerUpdateSetting(packetObj);
                     break;
                 }
                 case PacketType.FocusUpdate:

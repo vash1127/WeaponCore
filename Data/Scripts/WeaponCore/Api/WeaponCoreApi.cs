@@ -49,7 +49,7 @@ namespace WeaponCore.Api
         private Action<Action<Vector3, float>> _registerProjectileAdded;
         private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
         private Func<IMyEntity, float> _getConstructEffectiveDps;
-        private Func<IMyTerminalBlock, float> _getPlayerController;
+        private Func<IMyTerminalBlock, long> _getPlayerController;
 
         private const long Channel = 67549756549;
         private bool _getWeaponDefinitions;
@@ -262,7 +262,7 @@ namespace WeaponCore.Api
 
         public float GetConstructEffectiveDps(IMyEntity entity) => _getConstructEffectiveDps?.Invoke(entity) ?? 0f;
         
-        public float GetPlayerController(IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? 0f;
+        public long GetPlayerController(IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? -1;
 
     }
 

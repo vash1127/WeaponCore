@@ -45,7 +45,7 @@ namespace WeaponCore.Api
         private Action<Action<Vector3, float>> _registerProjectileAdded;
         private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
         private Func<VRage.Game.ModAPI.Ingame.IMyEntity, float> _getConstructEffectiveDps;
-        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _getPlayerController;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long> _getPlayerController;
 
         private bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
         {
@@ -191,7 +191,7 @@ namespace WeaponCore.Api
 
         public float GetConstructEffectiveDps(VRage.Game.ModAPI.Ingame.IMyEntity entity) => _getConstructEffectiveDps?.Invoke(entity) ?? 0f;
 
-        public float GetPlayerController(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? 0f;
+        public long GetPlayerController(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? -1;
 
     }
 }
