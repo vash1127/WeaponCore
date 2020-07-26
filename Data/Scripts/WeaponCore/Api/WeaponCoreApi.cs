@@ -50,6 +50,8 @@ namespace WeaponCore.Api
         private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
         private Func<IMyEntity, float> _getConstructEffectiveDps;
         private Func<IMyTerminalBlock, long> _getPlayerController;
+        private Func<IMyTerminalBlock, int, Matrix> _getWeaponAzimuthMatrix;
+        private Func<IMyTerminalBlock, int, Matrix> _getWeaponElevationMatrix;
 
         private const long Channel = 67549756549;
         private bool _getWeaponDefinitions;
@@ -150,6 +152,8 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "UnRegisterProjectileAdded", ref _unRegisterProjectileAdded);
             AssignMethod(delegates, "GetConstructEffectiveDps", ref _getConstructEffectiveDps);
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
+            AssignMethod(delegates, "GetWeaponAzimuthMatrix", ref _getWeaponAzimuthMatrix);
+            AssignMethod(delegates, "GetWeaponElevationMatrix", ref _getWeaponElevationMatrix);
 
             if (getWeaponDefinitions)
             {
@@ -264,6 +268,11 @@ namespace WeaponCore.Api
         
         public long GetPlayerController(IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? -1;
 
+        public Matrix GetWeaponAzimuthMatrix(IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponAzimuthMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
+
+        public Matrix GetWeaponElevationMatrix(IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponElevationMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
     }
 
     public static class WcApiDef

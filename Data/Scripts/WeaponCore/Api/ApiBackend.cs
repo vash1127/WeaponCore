@@ -59,6 +59,8 @@ namespace WeaponCore.Api
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
                 ["GetConstructEffectiveDps"] = new Func<IMyEntity, float>(GetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<IMyTerminalBlock, long>(GetPlayerController),
+                ["GetWeaponAzimuthMatrix"] = new Func<IMyTerminalBlock, int, Matrix>(GetWeaponAzimuthMatrix),
+                ["GetWeaponElevationMatrix"] = new Func<IMyTerminalBlock, int, Matrix>(GetWeaponElevationMatrix),
             };
         }
 
@@ -98,6 +100,8 @@ namespace WeaponCore.Api
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
                 ["GetConstructEffectiveDps"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, float>(PbGetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long>(PbGetPlayerController),
+                ["GetWeaponAzimuthMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponAzimuthMatrix),
+                ["GetWeaponElevationMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponElevationMatrix),
             };
             var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WcPbAPI");
             pb.Getter = (b) => PbApiMethods;
@@ -236,6 +240,16 @@ namespace WeaponCore.Api
             return GetPlayerController((IMyTerminalBlock)arg1);
         }
 
+        private Matrix PbGetWeaponAzimuthMatrix(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, int arg2)
+        {
+            return GetWeaponAzimuthMatrix((IMyTerminalBlock)arg1, arg2);
+        }
+
+        private Matrix PbGetWeaponElevationMatrix(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, int arg2)
+        {
+            return GetWeaponElevationMatrix((IMyTerminalBlock)arg1, arg2);
+        }
+
         // Non-PB Methods
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
@@ -268,6 +282,32 @@ namespace WeaponCore.Api
                 return comp.Data.Repo.State.PlayerId;
 
             return -1;
+        }
+
+        internal Matrix GetWeaponAzimuthMatrix(IMyTerminalBlock weaponBlock, int weaponId = 0)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+            {
+                var weapon = comp.Platform.Weapons[weaponId];
+                var matrix = weapon.AzimuthPart?.Entity?.PositionComp.LocalMatrixRef ?? Matrix.Zero;
+                return matrix;
+            }
+
+            return Matrix.Zero;
+        }
+
+        internal Matrix GetWeaponElevationMatrix(IMyTerminalBlock weaponBlock, int weaponId = 0)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
+            {
+                var weapon = comp.Platform.Weapons[weaponId];
+                var matrix = weapon.ElevationPart?.Entity?.PositionComp.LocalMatrixRef ?? Matrix.Zero;
+                return matrix;
+            }
+
+            return Matrix.Zero;
         }
 
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)

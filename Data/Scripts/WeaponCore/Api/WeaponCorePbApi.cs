@@ -46,7 +46,8 @@ namespace WeaponCore.Api
         private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
         private Func<VRage.Game.ModAPI.Ingame.IMyEntity, float> _getConstructEffectiveDps;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long> _getPlayerController;
-
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix> _getWeaponAzimuthMatrix;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix> _getWeaponElevationMatrix;
         private bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
         {
             var dict = pbBlock.GetProperty("WcPbAPI")?.As<Dictionary<string, Delegate>>().GetValue(pbBlock);
@@ -91,7 +92,8 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "UnRegisterProjectileAdded", ref _unRegisterProjectileAdded);
             AssignMethod(delegates, "GetConstructEffectiveDps", ref _getConstructEffectiveDps);
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
-
+            AssignMethod(delegates, "GetWeaponAzimuthMatrix", ref _getWeaponAzimuthMatrix);
+            AssignMethod(delegates, "GetWeaponElevationMatrix", ref _getWeaponElevationMatrix);
             return true;
         }
 
@@ -193,5 +195,10 @@ namespace WeaponCore.Api
 
         public long GetPlayerController(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? -1;
 
+        public Matrix GetWeaponAzimuthMatrix(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponAzimuthMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
+
+        public Matrix GetWeaponElevationMatrix(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponElevationMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
     }
 }
