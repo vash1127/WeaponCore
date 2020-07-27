@@ -730,7 +730,6 @@ namespace WeaponCore.Support
             var a = ammoDef.AmmoDef;
             var hasShrapnel = ShrapnelId > -1;
             var l = wDef.HardPoint.Loading;
-
             var mexLogLevel = 0; //dirty log levels :P
 
 
@@ -763,9 +762,6 @@ namespace WeaponCore.Support
             var coverageElevateScore = speedEl / (180d / 5d);
             var speedAz = (wDef.HardPoint.HardWare.RotateRate * (180 / Math.PI)) * 60;
             var coverageRotateScore = speedAz / (180d / 5d);
-
-
-
 
             var trackingScore = (coverageScore + ((coverageRotateScore + coverageElevateScore) * 0.5d)) * 0.5d;
             //if a sorter weapon use several barrels with only elevation or rotation the score should be uneffected since its designer to work
@@ -822,9 +818,6 @@ namespace WeaponCore.Support
 
                 shotsPerSec = (float) (((3600d / timePerMag) * MagazineSize) / 60 * l.TrajectilesPerBarrel);
             }
-
-
-
             else if (EnergyAmmo && a.EnergyMagazineSize > 0)
             {
                 var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(a.EnergyMagazineSize / l.ShotsInBurst)) : 0;

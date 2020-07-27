@@ -47,6 +47,7 @@ namespace WeaponCore
         ProblemReport,
         TerminalMonitor,
         SendSingleShot,
+        ClientNotify,
     }
 
     #region packets
@@ -71,6 +72,7 @@ namespace WeaponCore
     [ProtoInclude(22, typeof(ConstructGroupsPacket))]
     [ProtoInclude(23, typeof(ConstructFociPacket))]
     [ProtoInclude(24, typeof(FloatUpdatePacket))]
+    [ProtoInclude(25, typeof(ClientNotifyPacket))]
 
     public class Packet
     {
@@ -174,6 +176,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] internal int WeaponId;
         [ProtoMember(2)] internal int NewAmmoId;
+        [ProtoMember(3), DefaultValue(-1)] internal long PlayerId;
+
 
         public AmmoCycleRequestPacket() { }
 
@@ -182,6 +186,7 @@ namespace WeaponCore
             base.CleanUp();
             WeaponId = 0;
             NewAmmoId = 0;
+            PlayerId = -1;
         }
     }
 
@@ -286,6 +291,24 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class ClientNotifyPacket : Packet
+    {
+        [ProtoMember(1)] internal string Message;
+        [ProtoMember(2)] internal string Color;
+        [ProtoMember(3)] internal int Duration;
+
+        public ClientNotifyPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Message = string.Empty;
+            Color = string.Empty;
+            Duration = 0;
         }
     }
 

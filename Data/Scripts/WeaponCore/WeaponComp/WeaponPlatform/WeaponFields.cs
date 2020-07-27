@@ -214,8 +214,9 @@ namespace WeaponCore.Platform
                 Remove
             }
 
-            internal MyObjectBuilder_PhysicalObject Item;
+            internal MyPhysicalInventoryItem Item;
             internal int Amount;
+            internal int OldId;
             internal ChangeType Change;
         }
 

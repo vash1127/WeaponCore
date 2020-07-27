@@ -69,9 +69,7 @@ namespace WeaponCore
                 Reporter.ReportData[packet.PType].Add(report);
                 var packetObj = PacketObjPool.Get();
                 packetObj.ErrorPacket.RecievedTick = Tick;
-                packetObj.ErrorPacket.Packet = packet;
                 packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report;
-
                 ProccessClientPacket(packetObj);
             }
             catch (Exception ex) { Log.Line($"Exception in ClientReceivedPacket: {ex}"); }
@@ -150,46 +148,42 @@ namespace WeaponCore
                         ClientSentReport(packetObj);
                         break;
                     }
+                    case PacketType.ClientNotify:
+                    {
+                        ClientNotify(packetObj);
+                        break;
+                    }
                     case PacketType.Invalid:
                     {
                         Log.Line($"invalid packet: {packetObj.PacketSize} - {packetObj.Packet.PType}");
+                        invalidType = true;
+                        packetObj.Report.PacketValid = false;
                         break;
                     }
                     default:
-                        if (!packetObj.ErrorPacket.Retry) Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
                         Log.LineShortDate($"        [BadClientPacket] Type:{packetObj.Packet.PType} - Size:{packetObj.PacketSize}", "net");
+                        Reporter.ReportData[PacketType.Invalid].Add(packetObj.Report);
                         invalidType = true;
                         packetObj.Report.PacketValid = false;
                         break;
                 }
-                if (!packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
+                if (firstRun && !packetObj.Report.PacketValid && !invalidType && !packetObj.ErrorPacket.Retry && !packetObj.ErrorPacket.NoReprocess)
                 {
-                    if (packetObj.ErrorPacket.PType != PacketType.Invalid)
-                    {
-                        if (!ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
-                            ClientSideErrorPkt.Add(packetObj.ErrorPacket);
-                        else
-                        {
-                            //this only works because hashcode override in ErrorPacket
-                            Log.Line($"readding bad packet: {packetObj.ErrorPacket.RetryAttempt}");
-                            ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
-                            ClientSideErrorPkt.Add(packetObj.ErrorPacket);
-                        }
-                    }
-
-                    Log.Line($"ErrorPacket has invalid type: packetObjIsNull: {packetObj.Packet == null}");
+                    if (!ClientSideErrorPkt.Contains(packetObj))
+                        ClientSideErrorPkt.Add(packetObj);
+                    else
+                        Log.Line($"ClientSideErrorPkt: this should be impossible: {packetObj.Packet.PType}");
                 }
-                else if (packetObj.Report.PacketValid && ClientSideErrorPkt.Contains(packetObj.ErrorPacket))
-                    ClientSideErrorPkt.Remove(packetObj.ErrorPacket);
 
-                if (firstRun) 
+                if (firstRun)  {
+
                     ClientSideErrorPkt.ApplyChanges();
-
-                if (packetObj.Report.PacketValid) {
-                    PacketObjPool.Return(packetObj);
-                    return true;
+                    
+                    if (!ClientSideErrorPkt.Contains(packetObj))  {
+                        ClientPacketsToClean.Add(packetObj);
+                        return true;
+                    }
                 }
-                if (!ClientSideErrorPkt.Contains(packetObj.ErrorPacket)) PacketObjPool.Return(packetObj);
             }
             catch (Exception ex) { Log.Line($"Exception in ProccessClientPacket: {ex} - packetSize:{packetObj?.PacketSize} - pObjNull:{packetObj == null} - packetNull:{packetObj?.Packet == null} - error:{packetObj?.ErrorPacket == null} - report:{packetObj?.Report == null}"); }
             return false;
@@ -226,9 +220,6 @@ namespace WeaponCore
 
             var packetObj = PacketObjPool.Get();
             packetObj.ErrorPacket.RecievedTick = Tick;
-            packetObj.ErrorPacket.Packet = packet;
-            packetObj.ErrorPacket.PType = packet.PType;
-
             packetObj.Packet = packet; packetObj.PacketSize = packetSize; packetObj.Report = report;
 
             switch (packetObj.Packet.PType) {

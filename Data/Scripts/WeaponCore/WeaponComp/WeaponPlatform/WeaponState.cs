@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Game.Entities.Inventory;
+using Sandbox.Game;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRage.ObjectBuilders;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
-using static WeaponCore.Support.WeaponSystem;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -544,29 +543,44 @@ namespace WeaponCore.Platform
             {
                 var ammoChange = (AmmoLoad)o;
                 if (ammoChange.Change == AmmoLoad.ChangeType.Add)
-                    Comp.BlockInventory.AddItems(ammoChange.Amount, ammoChange.Item);
+                {
+                    var oldType = System.AmmoTypes[ammoChange.OldId];
+                    if (Comp.BlockInventory.CanItemsBeAdded(ammoChange.Amount, oldType.AmmoDefinitionId))
+                        Comp.BlockInventory.AddItems(ammoChange.Amount, ammoChange.Item.Content);
+                    else 
+                    {
+                        if (!Comp.Session.MpActive)
+                            MyAPIGateway.Utilities.ShowNotification($"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine", 3000, "Red");
+                        else if (Comp.Data.Repo.State.PlayerId > 0)
+                        {
+                            var message = $"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine";
+                            Comp.Session.SendClientNotify(Comp.Data.Repo.State.PlayerId, message, true, "Red", 3000);
+                        }
+                        MyFloatingObjects.Spawn(ammoChange.Item, Muzzles[0].Position, MyPivotDir, MyPivotUp);
+                    }
+                }
             }
-            catch (Exception ex) { Log.Line($"Exception in AmmoChange: {ex} - {((AmmoLoad)o).Amount} - {((AmmoLoad)o).Item.SubtypeName}"); }
+            catch (Exception ex) { Log.Line($"Exception in AmmoChange: {ex} - {((AmmoLoad)o).Amount} - {((AmmoLoad)o).Item.Content.SubtypeName}"); }
         }
 
         internal void ChangeAmmo(int newAmmoId)
         {
+
             if (System.Session.IsServer)
             {
                 ProposedAmmoId = newAmmoId;
 
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var canReload = State.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
-
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
-                var unloadMag = !canReload && !instantChange && !Reloading && State.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize && Comp.BlockInventory.CanItemsBeAdded(1, proposedAmmo.AmmoDefinitionId);
+
+                var unloadMag = !canReload && !instantChange && !Reloading && State.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                 if (unloadMag && proposedAmmo.AmmoDef.Const.Reloadable)
                 {
-                    Log.Line($"Unload ammo into Mag due to cycle request");
                     State.CurrentAmmo = 0;
                     canReload = true;
-                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad {Amount = 1, Change = AmmoLoad.ChangeType.Add, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem.Content }, 1);
+                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad {Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = State.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
                 }
 
                 if (instantChange)

@@ -53,7 +53,11 @@ namespace WeaponCore
                 if (IsClient)  {
                     if (ClientSideErrorPkt.Count > 0)
                         ReproccessClientErrorPackets();
+
+                    if (ClientPacketsToClean.Count > 0)
+                        CleanClientPackets();
                 }
+
                 /*
                 for (int i = DebugLines.Count - 1; i >= 0; i--)
                     if (!DebugLines[i].Draw(Tick))

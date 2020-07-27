@@ -7,57 +7,44 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        public void CleanClientPackets()
+        {
+            foreach (var packet in ClientPacketsToClean)
+                PacketObjPool.Return(packet);
+
+            ClientPacketsToClean.Clear();
+        }
+
         public void ReproccessClientErrorPackets()
         {
-            foreach (var errorPacket in ClientSideErrorPkt)
+            foreach (var packetObj in ClientSideErrorPkt)
             {
-                if (errorPacket?.Packet == null) {
-                    Log.Line($"ClientSideErrorPktList [{errorPacket?.PType}] is null, errorPacketItselfIsNull:{errorPacket == null}");
-                    if (errorPacket != null) ClientSideErrorPkt.Remove(errorPacket);
-                    continue;
-                }
+                var errorPacket = packetObj.ErrorPacket;
+                var packet = packetObj.Packet;
 
-                if (errorPacket.MaxAttempts == 0)
-                {
-                    Log.Line($"MaxAttempts was 0");
+                if (errorPacket.MaxAttempts == 0)  {
+                    Log.LineShortDate($"        [ClientReprocessing] Entity:{packet.EntityId} - Type:{packet.PType}", "net");
                     //set packet retry variables, based on type
                     errorPacket.MaxAttempts = 7;
                     errorPacket.RetryDelayTicks = 15;
                     errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
                 }
 
-                //proccess packet logic
-
                 if (errorPacket.RetryTick > Tick) continue;
                 errorPacket.RetryAttempt++;
+                var success = ProccessClientPacket(packetObj, false) || packetObj.Report.PacketValid;
 
-                var report = Reporter.ReportPool.Get();
-                report.Receiver = NetworkReporter.Report.Received.Client;
-                report.PacketSize = 0;
-                Reporter.ReportData[errorPacket.Packet.PType].Add(report);
-                var packetObj = PacketObjPool.Get();
-                packetObj.Packet = errorPacket.Packet; packetObj.PacketSize = 0; packetObj.Report = report;
+                if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)  {
 
-                var success = ProccessClientPacket(packetObj, false);
+                    if (!success)  
+                        Log.LineShortDate($"        [BadReprocess] Entity:{packet.EntityId} Cause:{errorPacket.Error ?? string.Empty} Type:{packet.PType}", "net");
+                    else Log.LineShortDate($"        [ReprocessSuccess] Entity:{packet.EntityId} - Type:{packet.PType} - Retries:{errorPacket.RetryAttempt}", "net");
 
-                if (success || errorPacket.RetryAttempt > errorPacket.MaxAttempts)
-                {
-                    if (!success)
-                    {
-                        Log.LineShortDate($"        [BadReprocess] Entity:{errorPacket.Packet?.EntityId} Cause:{errorPacket.Error ?? string.Empty} Type:{errorPacket.PType}", "net");
-                        PacketObjPool.Return(packetObj);
-                    }
-
-                    ClientSideErrorPkt.Remove(errorPacket);
+                    ClientSideErrorPkt.Remove(packetObj);
+                    ClientPacketsToClean.Add(packetObj);
                 }
                 else
                     errorPacket.RetryTick = Tick + errorPacket.RetryDelayTicks;
-
-                if (errorPacket.MaxAttempts == 0)
-                {
-                    ClientSideErrorPkt.Remove(errorPacket);
-                    PacketObjPool.Return(packetObj);
-                }
             }
             ClientSideErrorPkt.ApplyChanges();
         }
@@ -160,8 +147,7 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp.MIds[(int)packet.PType] < packet.MId)
-            {
+            if (comp.MIds[(int)packet.PType] < packet.MId) {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
                 if (comp.Data.Repo.Sync(comp, compDataPacket.Data))
@@ -353,6 +339,25 @@ namespace WeaponCore
             else Log.Line($"ClientClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
 
             data.Report.PacketValid = true;
+            return true;
+        }
+
+        private bool ClientNotify(PacketObj data)
+        {
+            var packet = data.Packet;
+            var clientNotifyPacket = (ClientNotifyPacket)packet;
+
+            if (clientNotifyPacket.Message == string.Empty || clientNotifyPacket.Color == string.Empty) return Error(data, Msg("Data"));
+
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
+                mIds[(int)packet.PType] = packet.MId;
+
+                ShowClientNotify(clientNotifyPacket);
+            }
+            else Log.Line($"ClientNotify: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            data.Report.PacketValid = true;
+
             return true;
         }
 

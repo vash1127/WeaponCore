@@ -138,7 +138,8 @@ namespace WeaponCore
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
         internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
-        internal readonly CachingHashSet<ErrorPacket> ClientSideErrorPkt = new CachingHashSet<ErrorPacket>();
+        internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
+        internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
 
         /// <summary>
         /// DsUniqueListFastRemove without the class for less method calls

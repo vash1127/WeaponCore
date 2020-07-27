@@ -1,6 +1,7 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -71,31 +72,6 @@ namespace WeaponCore
             internal bool NoReprocess;
             internal bool Retry;
             internal string Error;
-            internal PacketType PType;
-            internal Packet Packet;
-
-            public virtual bool Equals(ErrorPacket other)
-            {
-                if (Packet == null) return false;
-
-                return Packet.Equals(other.Packet);
-            }
-
-            public override bool Equals(object obj)
-            {
-                if (Packet == null) return false;
-                if (ReferenceEquals(null, obj)) return false;
-                if (ReferenceEquals(this, obj)) return true;
-                if (obj.GetType() != GetType()) return false;
-                return Equals((ErrorPacket)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                if (Packet == null) return 0;
-
-                return Packet.GetHashCode();
-            }
 
             public void CleanUp()
             {
@@ -107,8 +83,6 @@ namespace WeaponCore
                 NoReprocess = false;
                 Retry = false;
                 Error = string.Empty;
-                PType = PacketType.Invalid;
-                Packet = null;
             }
         }
 
@@ -534,6 +508,7 @@ namespace WeaponCore
                         PType = PacketType.AmmoCycleRequest,
                         WeaponId = weaponId,
                         NewAmmoId = newAmmoId,
+                        PlayerId = PlayerId,
                     });
                 }
                 else Log.Line($"SendAmmoCycleRequest no player MIds found");
@@ -551,6 +526,7 @@ namespace WeaponCore
                         PType = PacketType.AmmoCycleRequest,
                         WeaponId = weaponId,
                         NewAmmoId = newAmmoId,
+                        PlayerId = PlayerId,
                     }
                 });
             }
@@ -653,6 +629,34 @@ namespace WeaponCore
             }
         }
 
+        internal void SendClientNotify(long id, string message, bool singleClient = false, string color = null, int duration = 0)
+        {
+            ulong senderId = 0;
+            IMyPlayer player = null;
+            if (singleClient && Players.TryGetValue(id, out player))
+                senderId = player.SteamUserId;
+
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(senderId, out mIds))
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = null,
+                    SingleClient = singleClient,
+                    Packet = new ClientNotifyPacket
+                    {
+                        MId = ++mIds[(int)PacketType.ClientNotify],
+                        EntityId = id,
+                        SenderId = senderId,
+                        PType = PacketType.ClientNotify,
+                        Message = message,
+                        Color = color,
+                        Duration = duration,
+                    }
+                });
+            }
+        }
+
         internal void SendPlayerConnectionUpdate(long id, bool connected)
         {
             PacketsToClient.Add(new PacketInfo
@@ -667,7 +671,7 @@ namespace WeaponCore
                 }
             });
         }
-        
+
         internal void SendTargetExpiredUpdate(WeaponComponent comp, int weaponId)
         {
             PacketsToClient.Add(new PacketInfo

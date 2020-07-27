@@ -154,7 +154,7 @@ namespace WeaponCore
 
                                         var c = 0;
                                         for(int i = 0; i < ws.Value.AmmoTypes.Length; i++) {
-                                            if (ws.Value.AmmoTypes[i].AmmoDef.HardPointUsable)
+                                            if (ws.Value.AmmoTypes[i].AmmoDef.Const.IsTurretSelectable)
                                                 c++;
                                         }
 

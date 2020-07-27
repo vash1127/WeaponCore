@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -131,6 +132,11 @@ namespace WeaponCore
                     }
                 }
             }
+        }
+
+        private void ShowClientNotify(ClientNotifyPacket notify)
+        {
+            MyAPIGateway.Utilities.ShowNotification(notify.Message, notify.Duration > 0 ? notify.Duration : 1000, notify.Color == string.Empty ? "White" : notify.Color);
         }
 
         private void UpdatePlacer()
