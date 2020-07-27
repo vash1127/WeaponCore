@@ -272,6 +272,16 @@ namespace WeaponCore
             return true;
         }
 
+        private bool ClientServerVersion(PacketObj data)
+        {
+            var packet = data.Packet;
+            var updatePacket = (ServerVersionPacket)packet;
+
+            ServerVersion = updatePacket.Data;
+            data.Report.PacketValid = true;
+            return true;
+        }
+
         private bool ClientClientMouseEvent(PacketObj data)
         {
             var packet = data.Packet;

@@ -48,6 +48,7 @@ namespace WeaponCore
         TerminalMonitor,
         SendSingleShot,
         ClientNotify,
+        ServerVersion,
     }
 
     #region packets
@@ -73,6 +74,7 @@ namespace WeaponCore
     [ProtoInclude(23, typeof(ConstructFociPacket))]
     [ProtoInclude(24, typeof(FloatUpdatePacket))]
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
+    [ProtoInclude(26, typeof(ServerVersionPacket))]
 
     public class Packet
     {
@@ -309,6 +311,20 @@ namespace WeaponCore
             Message = string.Empty;
             Color = string.Empty;
             Duration = 0;
+        }
+    }
+
+    [ProtoContract]
+    public class ServerVersionPacket : Packet
+    {
+        [ProtoMember(1)] internal string Data;
+
+        public ServerVersionPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = string.Empty;
         }
     }
 

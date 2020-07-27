@@ -672,6 +672,22 @@ namespace WeaponCore
             });
         }
 
+        internal void SendServerVersion(ulong id)
+        {
+            PacketsToClient.Add(new PacketInfo
+            {
+                Entity = null,
+                SingleClient = true,
+                Packet = new ServerVersionPacket
+                {
+                    EntityId = 0,
+                    SenderId = id,
+                    PType = PacketType.ServerVersion,
+                    Data = ModContext.ModName,
+                }
+            });
+        }
+
         internal void SendTargetExpiredUpdate(WeaponComponent comp, int weaponId)
         {
             PacketsToClient.Add(new PacketInfo

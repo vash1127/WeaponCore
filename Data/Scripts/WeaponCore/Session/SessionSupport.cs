@@ -53,6 +53,15 @@ namespace WeaponCore
                 if (IsServer && MpActive && (AuthLogging || ConnectedAuthors.Count > 0)) AuthorDebug();
                 
                 if (IsServer && PbActivate && !PbApiInited) Api.PbInit();
+
+                if (IsClient && !ClientCheck && Tick > 1200)  {
+
+                    ClientCheck = true;
+                    if (ServerVersion != ModContext.ModName) {
+                        var message = $"::WeaponCore Version Mismatch::    Server:{ServerVersion} - Client:{ModContext.ModName} -   Unexpected behavior may occur.";
+                        MyAPIGateway.Utilities.ShowNotification(message, 10000, "Red");
+                    }
+                }
             }
             LCount++;
             if (LCount == 129)

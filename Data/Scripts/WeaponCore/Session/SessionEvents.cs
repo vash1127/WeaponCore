@@ -233,9 +233,6 @@ namespace WeaponCore
             {
                 if (Players.ContainsKey(id)) return;
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
-
-                if (IsServer && MpActive)
-                    SendPlayerConnectionUpdate(id, true);
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
         }
@@ -281,6 +278,11 @@ namespace WeaponCore
                 PlayerEventId++;
                 if (AuthorIds.Contains(player.SteamUserId)) 
                     ConnectedAuthors.Add(id, player.SteamUserId);
+
+                if (IsServer && MpActive)  {
+                    SendPlayerConnectionUpdate(id, true);
+                    SendServerVersion(player.SteamUserId);
+                }
             }
             return false;
         }

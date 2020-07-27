@@ -230,6 +230,7 @@ namespace WeaponCore
         internal Task ITask = new Task();
         internal Task CTask = new Task();
         internal string TriggerEntityModel;
+        internal string ServerVersion;
         internal object InitObj = new object();
 
         internal int WeaponIdCounter;
@@ -295,7 +296,7 @@ namespace WeaponCore
         internal bool PbApiInited;
         internal bool PbActivate;
         internal bool ManualShot;
-
+        internal bool ClientCheck;
         internal enum AnimationType
         {
             Movement,
