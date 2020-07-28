@@ -79,9 +79,9 @@ namespace WeaponCore.Support
             }
         }
 
-        public void UnRegisterSubGrid(MyCubeGrid grid)
+        public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
         {
-            SubGrids.Remove(grid);
+            if (!clean) SubGrids.Remove(grid);
             grid.OnFatBlockAdded -= FatBlockAdded;
             grid.OnFatBlockRemoved -= FatBlockRemoved;
             GridAi removeAi;
@@ -94,7 +94,7 @@ namespace WeaponCore.Support
             foreach (var grid in SubGrids)
             {
                 if (grid == MyGrid) continue;
-                UnRegisterSubGrid(grid);
+                UnRegisterSubGrid(grid, true);
             }
 
             SubGrids.Clear();
