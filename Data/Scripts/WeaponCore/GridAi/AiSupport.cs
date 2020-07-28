@@ -306,10 +306,11 @@ namespace WeaponCore.Support
                 Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
                 return;
             }
+            if (!ScanInProgress && Session.Tick - ProjectileTicker > 600 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 600) {
 
-            if (!ScanInProgress && Session.DbTask.IsComplete && Session.Tick - ProjectileTicker > 59 && Session.Tick - AiMarkedTick > 59) {
-
-                using (DbLock.AcquireExclusiveUsing())
+                Log.Line($"ProjectileTicker:{ProjectileTicker} - AiMarkedTick:{AiMarkedTick}");
+                lock (DbLock)
+                //using (DbLock.AcquireExclusiveUsing())
                 {
                     if (ScanInProgress)
                         return;
@@ -325,6 +326,7 @@ namespace WeaponCore.Support
                 return;
             }
 
+            RegisterMyGridEvents(false);
             Session.GridAiPool.Return(this);
         }
 
@@ -344,22 +346,11 @@ namespace WeaponCore.Support
 
         internal void CleanUp()
         {
+            Log.Line($"Grid Cleanup: AiClosed:{Closed} - gridMarked:{MyGrid.MarkedForClose} - gridClosed:{MyGrid.Closed}");
             AiCloseTick = Session.Tick;
 
             if (Session.IsClient)
                 Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiRemove);
-
-            RegisterMyGridEvents(false);
-
-            foreach (var grid in SubGrids) {
-                if (grid == MyGrid) continue;
-                RemSubGrids.Add(grid);
-            }
-
-            AddSubGrids.Clear();
-            SubGridChanges(true);
-
-            SubGrids.Clear();
 
             Data.Repo.ControllingPlayers.Clear();
             Data.Repo.ActiveTerminal = 0;
@@ -367,7 +358,6 @@ namespace WeaponCore.Support
             CleanSortedTargets();
             InventoryIndexer.Clear();
             Construct.Clean();
-
             Obstructions.Clear();
             ObstructionsTmp.Clear();
             TargetAis.Clear();

@@ -20,29 +20,26 @@ namespace WeaponCore.Support
 
             if (register) {
 
+                Log.Line($"Register");
                 if (Registered)
                     Log.Line($"Ai RegisterMyGridEvents error");
 
                 Registered = true;
-                MarkedForClose = false;
-                AiMarkedTick = Session.Tick;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
-                grid.OnClose += GridClose;
+                grid.OnMarkForClose += GridClose;
             }
             else {
 
-                if (!Registered)
-                    Log.Line($"Ai UnRegisterMyGridEvents error");
-                MarkedForClose = true;
-                AiMarkedTick = Session.Tick;
                 if (Registered) {
 
+                    Log.Line($"Unregister: Aimarked:{MarkedForClose} - aiClosed:{Closed} - Ticks:{Session?.Tick - AiCloseTick} - NullSession:{Session == null} - gridMarked:{grid.MarkedForClose}");
                     Registered = false;
                     grid.OnFatBlockAdded -= FatBlockAdded;
                     grid.OnFatBlockRemoved -= FatBlockRemoved;
-                    grid.OnClose -= GridClose;
+                    grid.OnMarkForClose -= GridClose;
                 }
+                else Log.Line($"NotRegistered: Aimarked:{MarkedForClose} - aiClosed:{Closed} - Ticks:{Session?.Tick - AiCloseTick} - NullSession:{Session == null} - gridMarked:{grid.MarkedForClose}");
             }
         }
 
@@ -84,23 +81,23 @@ namespace WeaponCore.Support
         {
             try
             {
+                var sessionNull = Session == null;
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
-                var cubeDef = cube?.BlockDefinition;
-                var isWeaponBase = weaponType && cubeDef != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.WeaponPlatforms.ContainsKey(cubeDef.Id.SubtypeId));
+                var cubeDef = cube.BlockDefinition;
+                var isWeaponBase = weaponType && cubeDef != null && !sessionNull && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.WeaponPlatforms.ContainsKey(cubeDef.Id.SubtypeId));
+                if (sessionNull)
+                    Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose}");
 
                 try {
                     var battery = cube as MyBatteryBlock;
                     MyInventory inventory;
                     if (isWeaponBase && Session.IsServer)
                         Construct.RootAi.ScanBlockGroups = true;
-                    else if (cube != null && cube.HasInventory && cube.TryGetInventory(out inventory))
+                    else if (cube.HasInventory && cube.TryGetInventory(out inventory))
                     {
                         try
                         {
-                            var sessionNull = Session == null;
-                            
-                            if (sessionNull)
-                                Log.Line($"FatBlockRemoved Session was null");
+
 
                             if (inventory != null && !sessionNull && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
                             {
@@ -123,7 +120,7 @@ namespace WeaponCore.Support
                 }
                 catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
             }
-            catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex} - Marked: {MarkedForClose} - Closed:{Closed}"); }
         }
 
         internal void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
@@ -146,7 +143,25 @@ namespace WeaponCore.Support
                 return;
             }
 
-            ProjectileTicker = Session.Tick;
+            MarkedForClose = true;
+            AiMarkedTick = Session.Tick;
+
+            RegisterMyGridEvents(false);
+
+            CleanSubGrids();
+
+            /*
+            foreach (var grid in SubGrids)  {
+                if (grid == MyGrid) continue;
+                RemSubGrids.Add(grid);
+            }
+
+            AddSubGrids.Clear();
+            SubGridChanges(true);
+
+            SubGrids.Clear();
+            */
+
             Session.DelayedGridAiClean.Add(this);
             Session.DelayedGridAiClean.ApplyAdditions();
         }

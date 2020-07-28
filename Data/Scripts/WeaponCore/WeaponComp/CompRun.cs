@@ -187,7 +187,9 @@ namespace WeaponCore.Support
                     }
 
                     var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-                    lock (Ai.AiLock) {
+                    lock (Ai.DbLock)
+                    //using (Ai.DbLock.AcquireExclusiveUsing())
+                    {
                         for (int i = 0; i < subgrids.Count; i++) {
                             var grid = (MyCubeGrid)subgrids[i];
                             Ai.PrevSubGrids.Add(grid);

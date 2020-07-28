@@ -27,7 +27,7 @@ namespace WeaponCore
                 ai.AccelChecked = false;
                 ai.Concealed = ((uint)ai.MyGrid.Flags & 4) > 0;
 
-                if (!ai.GridInit || ai.MyGrid.MarkedForClose || ai.Concealed)
+                if (ai.MarkedForClose || ai.Concealed || !ai.GridInit || ai.MyGrid.MarkedForClose)
                     continue;
 
                 if (!ai.ScanInProgress && Tick - ai.TargetsUpdatedTick > 100 && DbTask.IsComplete)

@@ -28,37 +28,28 @@ namespace WeaponCore.Support
             TmpSubGrids.Clear();
 
             SubGridsChanged = AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
+            if (SubGridsChanged)
+                Log.Line($"subgridchanged");
         }
 
         public void SubGridChanges(bool clean = false)
         {
+            if (MarkedForClose)
+                Log.Line($"SubGridChanges and Marked");
+
             foreach (var grid in AddSubGrids)
             {
                 grid.Flags |= (EntityFlags)(1 << 31);
                 if (grid == MyGrid) continue;
+                RegisterSubGrid(grid);
 
-                grid.OnFatBlockAdded += FatBlockAdded;
-                grid.OnFatBlockRemoved += FatBlockRemoved;
-
-                FatMap fatMap;
-                if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
-                {
-                    var blocks = fatMap.MyCubeBocks;
-                    for (int i = 0; i < blocks.Count; i++)
-                        FatBlockAdded(blocks[i]);
-                }
             }
             AddSubGrids.Clear();
 
             foreach (var grid in RemSubGrids)
             {
                 if (grid == MyGrid) continue;
-                SubGrids.Remove(grid);
-                grid.OnFatBlockAdded -= FatBlockAdded;
-                grid.OnFatBlockRemoved -= FatBlockRemoved;
-                GridAi removeAi;
-                if (!Session.GridTargetingAIs.ContainsKey(grid))
-                    Session.GridToMasterAi.TryRemove(grid, out removeAi);
+                UnRegisterSubGrid(grid);
             }
             RemSubGrids.Clear();
 
@@ -73,6 +64,45 @@ namespace WeaponCore.Support
                 }
             }
         }
+
+        public void RegisterSubGrid(MyCubeGrid grid)
+        {
+            grid.OnFatBlockAdded += FatBlockAdded;
+            grid.OnFatBlockRemoved += FatBlockRemoved;
+
+            FatMap fatMap;
+            if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
+            {
+                var blocks = fatMap.MyCubeBocks;
+                for (int i = 0; i < blocks.Count; i++)
+                    FatBlockAdded(blocks[i]);
+            }
+        }
+
+        public void UnRegisterSubGrid(MyCubeGrid grid)
+        {
+            SubGrids.Remove(grid);
+            grid.OnFatBlockAdded -= FatBlockAdded;
+            grid.OnFatBlockRemoved -= FatBlockRemoved;
+            GridAi removeAi;
+            if (!Session.GridTargetingAIs.ContainsKey(grid))
+                Session.GridToMasterAi.TryRemove(grid, out removeAi);
+        }
+
+        public void CleanSubGrids()
+        {
+            foreach (var grid in SubGrids)
+            {
+                if (grid == MyGrid) continue;
+                UnRegisterSubGrid(grid);
+            }
+
+            SubGrids.Clear();
+            RemSubGrids.Clear();
+            AddSubGrids.Clear();
+            TmpSubGrids.Clear();
+            SubGridsChanged = false;
+        } 
 
         public class Constructs
         {
@@ -305,7 +335,7 @@ namespace WeaponCore.Support
                     }
                     else
                     {
-                        if (!RootAi.Session.DedicatedServer) Log.Line($"[BuildMenuGroups] skipping group:{groupName} - cnt:{RootAi.Construct.Data.Repo.BlockGroups[groupName].CompIds.Count}");
+                        //if (!RootAi.Session.DedicatedServer) Log.Line($"[BuildMenuGroups] skipping group:{groupName} - cnt:{RootAi.Construct.Data.Repo.BlockGroups[groupName].CompIds.Count}");
                         MembersPool.Return(membersList);
                     }
                 }
@@ -325,6 +355,9 @@ namespace WeaponCore.Support
                 RootAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
+                MenuBlockGroupMap.Clear();
+                MenuBlockGroups.Clear();
+                MembersPool.Clean();
             }
         }
     }

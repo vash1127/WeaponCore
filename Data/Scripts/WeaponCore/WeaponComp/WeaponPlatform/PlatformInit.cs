@@ -5,6 +5,7 @@ using VRageMath;
 using WeaponCore.Support;
 using System.Collections.Generic;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game.ModAPI;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.BlockType;
@@ -90,7 +91,9 @@ namespace WeaponCore.Platform
 
                 var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
 
-                lock (Comp.Ai.AiLock) {
+                lock (comp.Ai.DbLock)
+                //using (Comp.Ai.DbLock.AcquireExclusiveUsing()) 
+                {
 
                     for (int i = 0; i < subgrids.Count; i++) {
                         var grid = (MyCubeGrid)subgrids[i];

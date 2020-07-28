@@ -29,7 +29,8 @@ namespace WeaponCore.Support
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
         internal readonly Constructs Construct = new Constructs();
-        internal readonly FastResourceLock DbLock = new FastResourceLock();
+        //internal readonly FastResourceLock DbLock = new FastResourceLock();
+        internal readonly object DbLock = new object();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -183,8 +184,12 @@ namespace WeaponCore.Support
             MyGrid = grid;
             MyGrid.Flags |= (EntityFlags)(1 << 31);
             Closed = false;
+            MarkedForClose = false;
+
             Session = session;
+            
             CreatedTick = session.Tick;
+            AiMarkedTick = uint.MaxValue;
             RegisterMyGridEvents(true, grid);
             AiSpawnTick = Session.Tick;
             Data.Init(this);

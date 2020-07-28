@@ -16,11 +16,11 @@ namespace WeaponCore.Support
                 if (MyGrid == null || MyGrid.MarkedForClose || !MyGrid.InScene)
                     return;
 
-                ScanInProgress = true;
-
                 var bigOwners = MyGrid.BigOwners;
                 MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
             }
+
+            ScanInProgress = true;
 
             GridVolume = MyGrid.PositionComp.WorldVolume;
             ScanVolume = GridVolume;

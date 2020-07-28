@@ -53,7 +53,8 @@ namespace WeaponCore
             for (int i = 0; i < DbsToUpdate.Count; i++) {
 
                 var db = DbsToUpdate[i];
-                using (db.Ai.DbLock.AcquireExclusiveUsing())  {
+                lock (db.Ai.DbLock) {
+                    //using (db.Ai.DbLock.AcquireExclusiveUsing())  {
 
                     var ai = db.Ai;
                     if (!ai.MarkedForClose && !ai.Closed && ai.Version == db.Version)
@@ -70,7 +71,8 @@ namespace WeaponCore
                 for (int d = 0; d < DbsToUpdate.Count; d++)
                 {
                     var db = DbsToUpdate[d];
-                    using (db.Ai.DbLock.AcquireExclusiveUsing())
+                    lock (db.Ai.DbLock)
+                    //using (db.Ai.DbLock.AcquireExclusiveUsing())
                     {
                         var ai = db.Ai;
                         if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version)
