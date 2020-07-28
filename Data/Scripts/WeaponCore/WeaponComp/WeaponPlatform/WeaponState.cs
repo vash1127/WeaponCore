@@ -661,7 +661,6 @@ namespace WeaponCore.Platform
 
             if (IsShooting)
                 StopShooting();
-
             FinishBurst = false;
             SingleShotCounter = 0;
 

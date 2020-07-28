@@ -5,6 +5,7 @@ using VRageMath;
 using WeaponCore.Support;
 using System;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -120,6 +121,13 @@ namespace WeaponCore.Platform
                             break;
                         }
                         State.CurrentAmmo--;
+
+                        if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectItem)  {
+                            if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)  {
+                                var eInfo = Ejector.Info;
+                                MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
+                            }
+                        }
                     }
 
                     var current = NextMuzzle;
@@ -310,6 +318,22 @@ namespace WeaponCore.Platform
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
             }
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
+        }
+
+        private void EjectionSpawnCallback(MyEntity entity)
+        {
+            var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
+            if (ejectDef.Speed > 0)
+                entity.Physics.SetSpeeds(Ejector.CachedDir * ejectDef.Speed, Vector3.Zero);
+
+            if (ejectDef.LifeTime > 0)
+                System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + ejectDef.LifeTime));
+        }
+
+        private static void RemoveEjection(object o)
+        {
+            var entity = (MyEntity) o;
+            entity.Close();
         }
     }
 }

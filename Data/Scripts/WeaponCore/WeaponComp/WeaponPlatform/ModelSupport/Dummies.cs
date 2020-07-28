@@ -14,6 +14,8 @@ namespace WeaponCore.Support
         private IMyModel _cachedSubpartModel;
         private MyEntity _cachedSubpart;
         private MatrixD? _cachedDummyMatrix;
+        internal Vector3D CachedPos;
+        internal Vector3D CachedDir;
         private readonly string[] _path;
         private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
         private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
@@ -67,9 +69,9 @@ namespace WeaponCore.Support
                     return new DummyInfo();
 
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
-                var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
-                var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
-                return new DummyInfo { Position = subPartPos, Direction = subPartDir, DummyMatrix = _cachedSubpart.WorldMatrix };
+                CachedPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
+                CachedDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
+                return new DummyInfo { Position = CachedPos, Direction = CachedDir, DummyMatrix = _cachedSubpart.WorldMatrix };
             }
         }
 

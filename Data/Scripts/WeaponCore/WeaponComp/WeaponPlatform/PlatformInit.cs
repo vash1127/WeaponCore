@@ -434,6 +434,10 @@ namespace WeaponCore.Platform
                         weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                     }
 
+                    MyEntity ejectorPart;
+                    if (weapon.System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(weapon.System.Values.Assignments.Ejector, out ejectorPart))
+                        weapon.Ejector.Entity = ejectorPart;
+
                     if (m.Value.DesignatorWeapon)
                         muzzlePart = weapon.ElevationPart.Entity;
 

@@ -28,7 +28,8 @@ namespace WeaponCore.Support
         internal class WeaponAmmoTypes
         {
             public MyDefinitionId AmmoDefinitionId;
-            public WeaponDefinition.AmmoDef AmmoDef;
+            public MyDefinitionId EjectionDefinitionId;
+            public AmmoDef AmmoDef;
             public string AmmoName;
             public bool IsShrapnel;
         }
@@ -73,6 +74,7 @@ namespace WeaponCore.Support
         public readonly int BarrelSpinRate;
         public readonly int ShotsPerBurst;
 
+        public readonly bool HasEjector;
         public readonly bool HasBarrelRotation;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
@@ -156,7 +158,7 @@ namespace WeaponCore.Support
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
             Armor = Values.HardPoint.HardWare.Armor;
-
+            HasEjector = !string.IsNullOrEmpty(Values.Assignments.Ejector);
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);
@@ -403,6 +405,7 @@ namespace WeaponCore.Support
         public readonly MyStringId[] TrailTextures;
         public readonly MyStringId[] SegmentTextures;
         public readonly MyPhysicalInventoryItem AmmoItem;
+        public readonly MyPhysicalInventoryItem EjectItem;
         public readonly AreaEffectType AreaEffect;
         public readonly Texture TracerMode;
         public readonly Texture TrailMode;
@@ -422,6 +425,7 @@ namespace WeaponCore.Support
         public readonly int MagazineSize;
         public readonly int PatternIndexCnt;
         public readonly int AmmoIdxPos;
+        public readonly bool HasEjectItem;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -518,7 +522,13 @@ namespace WeaponCore.Support
             ComputeTextures(ammo, out TracerTextures, out SegmentTextures, out TrailTextures, out TracerMode, out TrailMode);
 
             if (ammo.AmmoDefinitionId.SubtypeId.String != "Energy" || ammo.AmmoDefinitionId.SubtypeId.String == string.Empty) AmmoItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.AmmoDefinitionId.SubtypeName) };
-            
+
+            if (!string.IsNullOrEmpty(ammo.EjectionDefinitionId.SubtypeId.String))
+            {
+                EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.EjectionDefinitionId.SubtypeId.String) };
+                HasEjectItem = EjectItem.Content != null;
+            }
+
             if (AmmoItem.Content != null && !session.AmmoItems.ContainsKey(AmmoItem.ItemId)) 
                 session.AmmoItems[AmmoItem.ItemId] = AmmoItem;
 
@@ -1141,13 +1151,21 @@ namespace WeaponCore.Support
                 {
                     var ammo = weaponDef.Ammos[i];
                     var ammoDefId = new MyDefinitionId();
+                    var ejectionDefId = new MyDefinitionId();
+
                     var ammoEnergy = ammo.AmmoMagazine == string.Empty || ammo.AmmoMagazine == "Energy";
                     foreach (var def in Session.AllDefinitions)
+                    {
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine)
                             ammoDefId = def.Id;
 
+                        if (!string.IsNullOrEmpty(ammo.Ejection.ItemDefinition) && def.Id.SubtypeId.String == ammo.Ejection.ItemDefinition)
+                            ejectionDefId = def.Id;
+                    }
+
+
                     Session.AmmoDefIds.Add(ammoDefId);
-                    weaponAmmo[i] = new WeaponSystem.WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
+                    weaponAmmo[i] = new WeaponSystem.WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 
                 var weaponIdHash = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();

@@ -31,6 +31,7 @@ namespace WeaponCore.Platform
         internal readonly Target NewTarget;
         internal readonly PartInfo MuzzlePart;
         internal readonly Dummy[] Dummies;
+        internal readonly Dummy Ejector;
         internal readonly Muzzle[] Muzzles;
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
@@ -367,7 +368,10 @@ namespace WeaponCore.Platform
 
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
-            
+
+            MyEntity ejectorPart;
+            if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
+                Ejector = new Dummy(ejectorPart, System.Values.Assignments.Ejector);
         }
     }
 }
