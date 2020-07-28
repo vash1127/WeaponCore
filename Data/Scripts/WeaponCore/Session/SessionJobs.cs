@@ -53,8 +53,8 @@ namespace WeaponCore
             for (int i = 0; i < DbsToUpdate.Count; i++) {
 
                 var db = DbsToUpdate[i];
-                lock (db.Ai.DbLock) {
-                    //using (db.Ai.DbLock.AcquireExclusiveUsing())  {
+                //lock (db.Ai.DbLock) {
+                using (db.Ai.DbLock.AcquireExclusiveUsing())  {
 
                     var ai = db.Ai;
                     if (!ai.MarkedForClose && !ai.Closed && ai.Version == db.Version)
@@ -71,8 +71,8 @@ namespace WeaponCore
                 for (int d = 0; d < DbsToUpdate.Count; d++)
                 {
                     var db = DbsToUpdate[d];
-                    lock (db.Ai.DbLock)
-                    //using (db.Ai.DbLock.AcquireExclusiveUsing())
+                    //lock (db.Ai.DbLock)
+                    using (db.Ai.DbLock.AcquireExclusiveUsing())
                     {
                         var ai = db.Ai;
                         if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version)
@@ -88,7 +88,7 @@ namespace WeaponCore
                             ai.MyPlanetInfo();
 
                         foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
-                        if (ai.SubGridsChanged) ai.SubGridChanges();
+                        if (ai.SubGridsChanged) ai.SubGridChanges(false, true);
 
                         ai.CleanSortedTargets();
                         ai.Targets.Clear();

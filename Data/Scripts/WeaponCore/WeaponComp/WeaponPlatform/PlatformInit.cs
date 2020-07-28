@@ -87,23 +87,8 @@ namespace WeaponCore.Platform
             var wCounter = comp.Ai.WeaponCounter[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
             
-            if (newAi) {
-
-                var subgrids = MyAPIGateway.GridGroups.GetGroup(Comp.MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-
-                lock (comp.Ai.DbLock)
-                //using (Comp.Ai.DbLock.AcquireExclusiveUsing()) 
-                {
-
-                    for (int i = 0; i < subgrids.Count; i++) {
-                        var grid = (MyCubeGrid)subgrids[i];
-                        Comp.Ai.PrevSubGrids.Add(grid);
-                        Comp.Ai.SubGrids.Add(grid);
-                    }
-                    Comp.Ai.SubGridDetect();
-                    Comp.Ai.SubGridChanges();
-                }
-            }
+            if (newAi)
+                Comp.SubGridInit();
 
             if (wCounter.Max == 0 || Comp.Ai.Construct.GetWeaponCount(blockDef) + 1 <= wCounter.Max) {
                 wCounter.Current++;

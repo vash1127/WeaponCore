@@ -1,6 +1,9 @@
 ﻿using System;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
+using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 namespace WeaponCore.Support
 {
@@ -80,6 +83,30 @@ namespace WeaponCore.Support
 
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
+        }
+
+        internal void SubGridInit()
+        {
+            if (Ai.SubGridInitTick != Session.Tick)
+            {
+                Ai.SubGridInitTick = Session.Tick;
+                var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
+
+                //lock (Ai.DbLock)
+                using (Ai.DbLock.AcquireExclusiveUsing()) 
+                {
+                    Ai.PrevSubGrids.Clear();
+                    Ai.SubGrids.Clear();
+                    for (int i = 0; i < subgrids.Count; i++)
+                    {
+                        var grid = (MyCubeGrid)subgrids[i];
+                        Ai.PrevSubGrids.Add(grid);
+                        Ai.SubGrids.Add(grid);
+                    }
+                    Ai.SubGridDetect();
+                    Ai.SubGridChanges(false, true);
+                }
+            }
         }
 
         private void InventoryInit()

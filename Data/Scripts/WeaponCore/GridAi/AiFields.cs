@@ -29,8 +29,8 @@ namespace WeaponCore.Support
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
         internal readonly Constructs Construct = new Constructs();
-        //internal readonly FastResourceLock DbLock = new FastResourceLock();
-        internal readonly object DbLock = new object();
+        internal readonly FastResourceLock DbLock = new FastResourceLock();
+        //internal readonly object DbLock = new object();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -46,7 +46,7 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
-
+        internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
@@ -135,7 +135,7 @@ namespace WeaponCore.Support
         internal uint ProjectileTicker;
         internal uint LastDetectEvent;
         internal uint LastGroupScanTick;
-
+        internal uint SubGridInitTick;
         internal int SleepingComps;
         internal int AwakeComps;
         internal int SourceCount;

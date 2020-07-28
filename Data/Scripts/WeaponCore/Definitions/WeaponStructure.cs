@@ -525,7 +525,7 @@ namespace WeaponCore.Support
 
             if (!string.IsNullOrEmpty(ammo.EjectionDefinitionId.SubtypeId.String))
             {
-                EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(ammo.EjectionDefinitionId.SubtypeId.String) };
+                EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Component>(ammo.EjectionDefinitionId.SubtypeId.String) };
                 HasEjectItem = EjectItem.Content != null;
             }
 

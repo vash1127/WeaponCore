@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -306,11 +307,10 @@ namespace WeaponCore.Support
                 Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
                 return;
             }
-            if (!ScanInProgress && Session.Tick - ProjectileTicker > 600 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 600) {
+            if (!ScanInProgress && Session.Tick - ProjectileTicker > 59 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 119) {
 
-                Log.Line($"ProjectileTicker:{ProjectileTicker} - AiMarkedTick:{AiMarkedTick}");
-                lock (DbLock)
-                //using (DbLock.AcquireExclusiveUsing())
+                //lock (DbLock)
+                using (DbLock.AcquireExclusiveUsing())
                 {
                     if (ScanInProgress)
                         return;
@@ -326,7 +326,7 @@ namespace WeaponCore.Support
                 return;
             }
 
-            RegisterMyGridEvents(false);
+            RegisterMyGridEvents(false, MyGrid, true);
             Session.GridAiPool.Return(this);
         }
 
@@ -346,7 +346,6 @@ namespace WeaponCore.Support
 
         internal void CleanUp()
         {
-            Log.Line($"Grid Cleanup: AiClosed:{Closed} - gridMarked:{MyGrid.MarkedForClose} - gridClosed:{MyGrid.Closed}");
             AiCloseTick = Session.Tick;
 
             if (Session.IsClient)
@@ -377,6 +376,7 @@ namespace WeaponCore.Support
             StaticsInRangeTmp.Clear();
             TestShields.Clear();
             NewEntities.Clear();
+            SubGridsRegistered.Clear();
             SourceCount = 0;
             BlockCount = 0;
             MyOwner = 0;

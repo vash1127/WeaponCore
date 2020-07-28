@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
@@ -28,20 +30,17 @@ namespace WeaponCore.Support
             TmpSubGrids.Clear();
 
             SubGridsChanged = AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
-            if (SubGridsChanged)
-                Log.Line($"subgridchanged");
         }
 
-        public void SubGridChanges(bool clean = false)
+        public void SubGridChanges(bool clean = false, bool dupCheck = false)
         {
             if (MarkedForClose)
                 Log.Line($"SubGridChanges and Marked");
 
             foreach (var grid in AddSubGrids)
             {
-                grid.Flags |= (EntityFlags)(1 << 31);
                 if (grid == MyGrid) continue;
-                RegisterSubGrid(grid);
+                RegisterSubGrid(grid, dupCheck);
 
             }
             AddSubGrids.Clear();
@@ -54,21 +53,33 @@ namespace WeaponCore.Support
             RemSubGrids.Clear();
 
             if (!clean)
+                UpdateRoot();
+        }
+
+        public void UpdateRoot()
+        {
+            Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
+            foreach (var grid in SubGrids)
             {
-                Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
-                foreach (var grid in SubGrids)
-                {
-                    if (Construct.RootAi != null)
-                        Session.GridToMasterAi[grid] = Construct.RootAi;
-                    else Log.Line($"Construct.RootAi is null");
-                }
+                if (Construct.RootAi != null)
+                    Session.GridToMasterAi[grid] = Construct.RootAi;
+                else Log.Line($"Construct.RootAi is null");
             }
         }
 
-        public void RegisterSubGrid(MyCubeGrid grid)
+        public void RegisterSubGrid(MyCubeGrid grid, bool dupCheck = false)
         {
+            if (dupCheck && SubGridsRegistered.Contains(grid))
+            {
+                Log.Line($"sub Grid Already Registered: [Main]:{grid == MyGrid}");
+            }
+
+            grid.Flags |= (EntityFlags)(1 << 31);
             grid.OnFatBlockAdded += FatBlockAdded;
             grid.OnFatBlockRemoved += FatBlockRemoved;
+
+
+            SubGridsRegistered.Add(grid);
 
             FatMap fatMap;
             if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
@@ -81,7 +92,14 @@ namespace WeaponCore.Support
 
         public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
         {
+            if (!SubGridsRegistered.Contains(grid))
+            {
+                Log.Line($"sub Grid Already UnRegistered: [Main]:{grid == MyGrid}");
+            }
+
             if (!clean) SubGrids.Remove(grid);
+
+            SubGridsRegistered.Remove(grid);
             grid.OnFatBlockAdded -= FatBlockAdded;
             grid.OnFatBlockRemoved -= FatBlockRemoved;
             GridAi removeAi;

@@ -65,9 +65,9 @@ namespace WeaponCore.Support
                                 _subparts.Add(res);
                                 NameToEntity[name] = res;
                                 EntityToName[res] = name;
-                                //Log.Line($"name: {name}");
                             }
                         }
+                        else NameToEntity[kv.Key] = Entity;
                     }
                     NameToEntity["None"] = Entity;
                     EntityToName[Entity] = "None";

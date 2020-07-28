@@ -186,19 +186,7 @@ namespace WeaponCore.Support
                             Ai.FatBlockAdded(cubeBlock);
                     }
 
-                    var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
-                    lock (Ai.DbLock)
-                    //using (Ai.DbLock.AcquireExclusiveUsing())
-                    {
-                        for (int i = 0; i < subgrids.Count; i++) {
-                            var grid = (MyCubeGrid)subgrids[i];
-                            Ai.PrevSubGrids.Add(grid);
-                            Ai.SubGrids.Add(grid);
-                        }
-
-                        Ai.SubGridDetect();
-                        Ai.SubGridChanges();
-                    }
+                    SubGridInit();
                     if (Ai.Session.IsServer) Ai.Construct.RootAi.ScanBlockGroups = true;
                 }
 

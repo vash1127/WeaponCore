@@ -14,13 +14,12 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
+        internal void RegisterMyGridEvents(bool register, MyCubeGrid grid, bool force = false)
         {
             if (grid == null) grid = MyGrid;
 
             if (register) {
 
-                Log.Line($"Register");
                 if (Registered)
                     Log.Line($"Ai RegisterMyGridEvents error");
 
@@ -28,18 +27,25 @@ namespace WeaponCore.Support
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnMarkForClose += GridClose;
+                if (SubGridsRegistered.Contains(grid))
+                    Log.Line($"Main Grid Already Registered");
+
+                SubGridsRegistered.Add(grid);
             }
             else {
 
                 if (Registered) {
 
-                    Log.Line($"Unregister: Aimarked:{MarkedForClose} - aiClosed:{Closed} - Ticks:{Session?.Tick - AiCloseTick} - NullSession:{Session == null} - gridMarked:{grid.MarkedForClose}");
                     Registered = false;
                     grid.OnFatBlockAdded -= FatBlockAdded;
                     grid.OnFatBlockRemoved -= FatBlockRemoved;
                     grid.OnMarkForClose -= GridClose;
+
+                    if (!SubGridsRegistered.Contains(grid))
+                        Log.Line($"Main Grid Already UnRegistered");
+                    SubGridsRegistered.Remove(grid);
                 }
-                else Log.Line($"NotRegistered: Aimarked:{MarkedForClose} - aiClosed:{Closed} - Ticks:{Session?.Tick - AiCloseTick} - NullSession:{Session == null} - gridMarked:{grid.MarkedForClose}");
+                else if (!force) Log.Line($"NotRegistered: gridReg:{SubGridsRegistered.Contains(grid)}- Aimarked:{MarkedForClose} - aiClosed:{Closed} - Ticks:{Session?.Tick - AiCloseTick} - NullSession:{Session == null} - gridMarked:{grid.MarkedForClose}");
             }
         }
 
@@ -86,7 +92,7 @@ namespace WeaponCore.Support
                 var cubeDef = cube.BlockDefinition;
                 var isWeaponBase = weaponType && cubeDef != null && !sessionNull && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.WeaponPlatforms.ContainsKey(cubeDef.Id.SubtypeId));
                 if (sessionNull)
-                    Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose}");
+                    Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose} - isRegistered:{SubGridsRegistered.Contains(cube.CubeGrid)} - regCnt:{SubGridsRegistered.Count}");
 
                 try {
                     var battery = cube as MyBatteryBlock;
@@ -146,21 +152,9 @@ namespace WeaponCore.Support
             MarkedForClose = true;
             AiMarkedTick = Session.Tick;
 
-            RegisterMyGridEvents(false);
+            RegisterMyGridEvents(false, MyGrid);
 
             CleanSubGrids();
-
-            /*
-            foreach (var grid in SubGrids)  {
-                if (grid == MyGrid) continue;
-                RemSubGrids.Add(grid);
-            }
-
-            AddSubGrids.Clear();
-            SubGridChanges(true);
-
-            SubGrids.Clear();
-            */
 
             Session.DelayedGridAiClean.Add(this);
             Session.DelayedGridAiClean.ApplyAdditions();
