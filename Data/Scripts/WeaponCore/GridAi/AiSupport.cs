@@ -309,8 +309,8 @@ namespace WeaponCore.Support
 
             if (!ScanInProgress && Session.DbTask.IsComplete && Session.Tick - ProjectileTicker > 59 && Session.Tick - AiMarkedTick > 59) {
 
-                lock (AiLock) {
-                
+                using (DbLock.AcquireExclusiveUsing())
+                {
                     if (ScanInProgress)
                         return;
                     Session.GridAiPool.Return(this);

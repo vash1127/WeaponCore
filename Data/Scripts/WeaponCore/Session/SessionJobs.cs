@@ -3,6 +3,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using Sandbox.Game;
 using VRage;
 using VRage.Collections;
@@ -39,6 +40,8 @@ namespace WeaponCore
 
         public void UpdateDbsInQueue()
         {
+            DbUpdating = true;
+
             if (DbTask.IsComplete && DbTask.valid && DbTask.Exceptions != null)
                 TaskHasErrors(ref DbTask, "DbTask");
 
@@ -50,11 +53,10 @@ namespace WeaponCore
             for (int i = 0; i < DbsToUpdate.Count; i++) {
 
                 var db = DbsToUpdate[i];
-                var ai = db.Ai;
-                ai.ScanInProgress = true;
+                using (db.Ai.DbLock.AcquireExclusiveUsing())  {
 
-                lock (ai.AiLock) {
-                    if (!ai.MarkedForClose && !ai.Closed && ai.Version == db.Version) 
+                    var ai = db.Ai;
+                    if (!ai.MarkedForClose && !ai.Closed && ai.Version == db.Version)
                         ai.Scan();
                 }
             }
@@ -67,112 +69,117 @@ namespace WeaponCore
                 DsUtil.Start("db");
                 for (int d = 0; d < DbsToUpdate.Count; d++)
                 {
-                    var ds = DbsToUpdate[d];
-                    var ai = ds.Ai;
-                    if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || ds.Version != ai.Version) {
-                        ai.ScanInProgress = false;
-                        Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose} - versionMismatch: {ds.Version != ai.Version}");
-                        continue;
-                    }
+                    var db = DbsToUpdate[d];
+                    using (db.Ai.DbLock.AcquireExclusiveUsing())
+                    {
+                        var ai = db.Ai;
+                        if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version)
+                        {
+                            ai.ScanInProgress = false;
+                            Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose} - versionMismatch: {db.Version != ai.Version}");
+                            continue;
+                        }
 
-                    ai.TargetingInfo.Clean();
+                        ai.TargetingInfo.Clean();
 
-                    if (ai.MyPlanetTmp != null)
-                        ai.MyPlanetInfo();
+                        if (ai.MyPlanetTmp != null)
+                            ai.MyPlanetInfo();
 
-                    lock (ai.AiLock) {
                         foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
                         if (ai.SubGridsChanged) ai.SubGridChanges();
-                    }
 
-                    ai.CleanSortedTargets();
-                    ai.Targets.Clear();
+                        ai.CleanSortedTargets();
+                        ai.Targets.Clear();
 
-                    var newEntCnt = ai.NewEntities.Count;
-                    ai.SortedTargets.Capacity = newEntCnt;
-                    for (int i = 0; i < newEntCnt; i++)
-                    {
-                        var detectInfo = ai.NewEntities[i];
-                        var ent = detectInfo.Parent;
-                        if (ent.Physics == null) continue;
-
-                        var grid = ent as MyCubeGrid;
-                        GridAi targetAi = null;
-
-                        if (grid != null)
-                            GridTargetingAIs.TryGetValue(grid, out targetAi);
-
-                        var targetInfo = TargetInfoPool.Get();
-                        targetInfo.Init(ref detectInfo, ai.MyGrid, ai, targetAi);
-
-                        ai.SortedTargets.Add(targetInfo);
-                        ai.Targets[ent] = targetInfo;
-
-                        var checkFocus = ai.Construct.Data.Repo.FocusData.HasFocus && targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[0] || targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[1];
-
-                        if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
-                            ai.RamProximity = true;
-
-                        if (targetInfo.DistSqr < ai.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
+                        var newEntCnt = ai.NewEntities.Count;
+                        ai.SortedTargets.Capacity = newEntCnt;
+                        for (int i = 0; i < newEntCnt; i++)
                         {
-                            if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies) {
-                                ai.TargetingInfo.ThreatInRange = true;
-                                ai.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
-                            }
+                            var detectInfo = ai.NewEntities[i];
+                            var ent = detectInfo.Parent;
+                            if (ent.Physics == null) continue;
 
-                            if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.OtherRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies) {
-                                ai.TargetingInfo.OtherInRange = true;
-                                ai.TargetingInfo.OtherRangeSqr = targetInfo.DistSqr;
+                            var grid = ent as MyCubeGrid;
+                            GridAi targetAi = null;
+
+                            if (grid != null)
+                                GridTargetingAIs.TryGetValue(grid, out targetAi);
+
+                            var targetInfo = TargetInfoPool.Get();
+                            targetInfo.Init(ref detectInfo, ai.MyGrid, ai, targetAi);
+
+                            ai.SortedTargets.Add(targetInfo);
+                            ai.Targets[ent] = targetInfo;
+
+                            var checkFocus = ai.Construct.Data.Repo.FocusData.HasFocus && targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[0] || targetInfo.Target?.EntityId == ai.Construct.Data.Repo.FocusData.Target[1];
+
+                            if (ai.RamProtection && targetInfo.DistSqr < 136900 && targetInfo.IsGrid)
+                                ai.RamProximity = true;
+
+                            if (targetInfo.DistSqr < ai.MaxTargetingRangeSqr && (checkFocus || targetInfo.OffenseRating > 0))
+                            {
+                                if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.ThreatRangeSqr && targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies)
+                                {
+                                    ai.TargetingInfo.ThreatInRange = true;
+                                    ai.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
+                                }
+
+                                if (checkFocus || targetInfo.DistSqr < ai.TargetingInfo.OtherRangeSqr && targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Enemies)
+                                {
+                                    ai.TargetingInfo.OtherInRange = true;
+                                    ai.TargetingInfo.OtherRangeSqr = targetInfo.DistSqr;
+                                }
                             }
                         }
+
+                        ai.NewEntities.Clear();
+                        ai.SortedTargets.Sort(TargetCompare);
+                        ai.TargetAis.Clear();
+                        ai.TargetAis.AddRange(ai.TargetAisTmp);
+                        ai.TargetAisTmp.Clear();
+
+                        ai.Obstructions.Clear();
+                        ai.Obstructions.AddRange(ai.ObstructionsTmp);
+                        ai.ObstructionsTmp.Clear();
+
+                        ai.MyShield = null;
+                        ai.ShieldNear = false;
+                        ai.FriendlyShieldNear = false;
+                        if (ai.NearByShieldsTmp.Count > 0)
+                            ai.NearByShield();
+
+                        if (ai.PlanetSurfaceInRange) ai.StaticsInRangeTmp.Add(ai.MyPlanet);
+                        ai.StaticsInRange.Clear();
+                        ai.StaticsInRange.AddRange(ai.StaticsInRangeTmp);
+                        ai.StaticsInRangeTmp.Clear();
+                        ai.StaticEntitiesInRange = ai.StaticsInRange.Count > 0;
+                        ai.MyStaticInfo();
+
+                        ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
+                        ai.BlockCount = ai.MyGrid.BlocksCount;
+                        ai.NearByEntities = ai.NearByEntitiesTmp;
+
+                        if (!ai.TargetingInfo.ThreatInRange && ai.LiveProjectile.Count > 0)
+                        {
+                            ai.TargetingInfo.ThreatInRange = true;
+                            ai.TargetingInfo.ThreatRangeSqr = 0;
+                        }
+
+                        ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
+
+                        ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count > 0 || ai.FirstRun;
+
+                        MyCubeBlock activeCube;
+                        ai.AiSleep = ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Data.Repo.ActiveTerminal <= 0 || MyEntities.TryGetEntityById(ai.Data.Repo.ActiveTerminal, out activeCube) && activeCube != null && !ai.SubGrids.Contains(activeCube.CubeGrid));
+
+                        ai.DbUpdated = true;
+                        ai.FirstRun = false;
+                        ai.ScanInProgress = false;
                     }
-
-                    ai.NewEntities.Clear();
-                    ai.SortedTargets.Sort(TargetCompare);
-                    ai.TargetAis.Clear();
-                    ai.TargetAis.AddRange(ai.TargetAisTmp);
-                    ai.TargetAisTmp.Clear();
-
-                    ai.Obstructions.Clear();
-                    ai.Obstructions.AddRange(ai.ObstructionsTmp);
-                    ai.ObstructionsTmp.Clear();
-
-                    ai.MyShield = null;
-                    ai.ShieldNear = false;
-                    ai.FriendlyShieldNear = false;
-                    if (ai.NearByShieldsTmp.Count > 0)
-                        ai.NearByShield();
-
-                    if (ai.PlanetSurfaceInRange) ai.StaticsInRangeTmp.Add(ai.MyPlanet);
-                    ai.StaticsInRange.Clear();
-                    ai.StaticsInRange.AddRange(ai.StaticsInRangeTmp);
-                    ai.StaticsInRangeTmp.Clear();
-                    ai.StaticEntitiesInRange = ai.StaticsInRange.Count > 0;
-                    ai.MyStaticInfo();
-
-                    ai.NaturalGravity = ai.FakeShipController.GetNaturalGravity();
-                    ai.BlockCount = ai.MyGrid.BlocksCount;
-                    ai.NearByEntities = ai.NearByEntitiesTmp;
-
-                    if (!ai.TargetingInfo.ThreatInRange && ai.LiveProjectile.Count > 0)
-                    {
-                        ai.TargetingInfo.ThreatInRange = true;
-                        ai.TargetingInfo.ThreatRangeSqr = 0;
-                    }
-
-                    ai.TargetingInfo.SomethingInRange = ai.TargetingInfo.ThreatInRange || ai.TargetingInfo.OtherInRange;
-
-                    ai.DbReady = ai.SortedTargets.Count > 0 || ai.TargetAis.Count > 0 || Tick - ai.LiveProjectileTick < 3600 || ai.LiveProjectile.Count > 0 || ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count > 0 || ai.FirstRun;
-
-                    MyCubeBlock activeCube;
-                    ai.AiSleep = ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && (!ai.TargetingInfo.ThreatInRange && !ai.TargetingInfo.OtherInRange || !ai.TargetNonThreats && ai.TargetingInfo.OtherInRange) && (ai.Data.Repo.ActiveTerminal <= 0 || MyEntities.TryGetEntityById(ai.Data.Repo.ActiveTerminal, out activeCube) && activeCube != null && !ai.SubGrids.Contains(activeCube.CubeGrid));
-
-                    ai.DbUpdated = true;
-                    ai.FirstRun = false;
-                    ai.ScanInProgress = false;
                 }
                 DbsToUpdate.Clear();
                 DsUtil.Complete("db", true);
+                DbUpdating = false;
             }
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
         }

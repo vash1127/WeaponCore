@@ -297,6 +297,8 @@ namespace WeaponCore
         internal bool PbActivate;
         internal bool ManualShot;
         internal bool ClientCheck;
+        internal bool DbUpdating;
+
         internal enum AnimationType
         {
             Movement,

@@ -5,6 +5,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -18,7 +19,6 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal volatile bool ScanInProgress;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
         internal volatile bool PowerDirty = true;
@@ -29,6 +29,7 @@ namespace WeaponCore.Support
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
         internal readonly Constructs Construct = new Constructs();
+        internal readonly FastResourceLock DbLock = new FastResourceLock();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -65,7 +66,6 @@ namespace WeaponCore.Support
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
         internal readonly Dictionary<MyCubeBlock, Weapon> Armor = new Dictionary<MyCubeBlock, Weapon>(32);
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
-        internal readonly object AiLock = new object();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal readonly AiData Data = new AiData();
         internal TargetStatus[] TargetState = new TargetStatus[2];
@@ -122,6 +122,8 @@ namespace WeaponCore.Support
         internal bool Registered;
         internal bool MarkedForClose;
         internal bool Closed;
+        internal bool ScanInProgress;
+
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;

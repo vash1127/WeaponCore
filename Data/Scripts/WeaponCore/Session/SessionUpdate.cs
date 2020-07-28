@@ -30,7 +30,7 @@ namespace WeaponCore
                 if (!ai.GridInit || ai.MyGrid.MarkedForClose || ai.Concealed)
                     continue;
 
-                if (DbTask.IsComplete && Tick - ai.TargetsUpdatedTick > 100 && !ai.ScanInProgress)
+                if (!ai.ScanInProgress && Tick - ai.TargetsUpdatedTick > 100 && DbTask.IsComplete)
                     ai.RequestDbUpdate();
 
                 if (ai.DeadProjectiles.Count > 0) {
@@ -269,7 +269,7 @@ namespace WeaponCore
                 ai.DbUpdated = false;
             }
 
-            if (DbTask.IsComplete && DbsToUpdate.Count > 0)
+            if (DbTask.IsComplete && DbsToUpdate.Count > 0 && !DbUpdating)
                 UpdateDbsInQueue();
         }
 
