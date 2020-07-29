@@ -17,6 +17,8 @@ namespace WeaponCore
         {
             public WeaponComponent Comp;
             public GridAi Ai;
+            public int AiVersion;
+            public uint AddTick;
         }
 
         private void StartComps()
@@ -78,11 +80,19 @@ namespace WeaponCore
             for (int i = CompReAdds.Count - 1; i >= 0; i--)
             {
                 var reAdd = CompReAdds[i];
+                if (reAdd.Ai.Version != reAdd.AiVersion || Tick - reAdd.AddTick > 1200)
+                {
+                    CompReAdds.RemoveAtFast(i);
+                    Log.Line($"ChangeReAdds reject: Age:{Tick - reAdd.AddTick} - Version:{reAdd.Ai.Version}({reAdd.AiVersion}) - Marked/Closed:{reAdd.Ai.MarkedForClose}({reAdd.Ai.Closed})");
+                    continue;
+                }
+
                 if (!GridToFatMap.ContainsKey(reAdd.Comp.MyCube.CubeGrid))
                     continue;
 
                 if (reAdd.Comp.Ai != null && reAdd.Comp.Entity != null) 
                     reAdd.Comp.OnAddedToSceneTasks();
+                else Log.Line($"ChangeReAdds nullSkip: Version:{reAdd.Ai.Version}({reAdd.AiVersion}) - Marked/Closed:{reAdd.Ai.MarkedForClose}({reAdd.Ai.Closed})");
                 CompReAdds.RemoveAtFast(i);
             }
         }

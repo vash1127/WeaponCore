@@ -85,7 +85,7 @@ namespace WeaponCore.Support
 
                     Entity.NeedsWorldMatrix = true;
 
-                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                     else OnAddedToSceneTasks();
 
                     Platform.State = MyWeaponPlatform.PlatformState.Ready;
@@ -137,7 +137,7 @@ namespace WeaponCore.Support
 
                         var newAi = Session.GridAiPool.Get();
                         newAi.Init(MyCube.CubeGrid, Session);
-                        Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
+                        Session.GridTargetingAIs[MyCube.CubeGrid] = newAi;
                         Ai = newAi;
                     }
                     else {
@@ -154,7 +154,7 @@ namespace WeaponCore.Support
                         Entity.NeedsWorldMatrix = true;
 
                         if (!Ai.GridInit || !Ai.Session.GridToFatMap.ContainsKey(Ai.MyGrid)) 
-                            Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                            Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                         else 
                             OnAddedToSceneTasks();
                     }
@@ -171,7 +171,8 @@ namespace WeaponCore.Support
         internal void OnAddedToSceneTasks()
         {
             try {
-
+                if (Ai.MarkedForClose)
+                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - CubeMarked:{MyCube.MarkedForClose} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} - AiContainsMe:{Ai.WeaponBase.ContainsKey(MyCube)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(MyCube.CubeGrid)}[{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}]");
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
                 if (!Ai.GridInit) {

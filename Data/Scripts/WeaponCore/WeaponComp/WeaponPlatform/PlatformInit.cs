@@ -86,9 +86,13 @@ namespace WeaponCore.Platform
 
             var wCounter = comp.Ai.WeaponCounter[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
-            
+
             if (newAi)
+            {
                 Comp.SubGridInit();
+                if (Comp.Ai.MarkedForClose)
+                    Log.Line($"PlatFormInit and AI MarkedForClose: CubeMarked:{Comp.MyCube.MarkedForClose}");
+            }
 
             if (wCounter.Max == 0 || Comp.Ai.Construct.GetWeaponCount(blockDef) + 1 <= wCounter.Max) {
                 wCounter.Current++;

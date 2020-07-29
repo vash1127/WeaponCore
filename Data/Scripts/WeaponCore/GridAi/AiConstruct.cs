@@ -35,7 +35,7 @@ namespace WeaponCore.Support
         public void SubGridChanges(bool clean = false, bool dupCheck = false)
         {
             if (MarkedForClose)
-                Log.Line($"SubGridChanges and Marked");
+                Log.Line($"SubGridChanges and Marked: Closed:{Closed} - dupCheck:{dupCheck}");
 
             foreach (var grid in AddSubGrids)
             {
