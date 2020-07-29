@@ -418,6 +418,7 @@ namespace WeaponCore.Support
                 {
                     [ProtoMember(1)] internal ParticleDef Ammo;
                     [ProtoMember(2)] internal ParticleDef Hit;
+                    [ProtoMember(3)] internal ParticleDef Eject;
                 }
 
                 [ProtoContract]
@@ -532,10 +533,22 @@ namespace WeaponCore.Support
             [ProtoContract]
             public struct AmmoEjectionDef
             {
-                [ProtoMember(1)] internal string ItemDefinition;
-                [ProtoMember(2)] internal float Speed;
-                [ProtoMember(3)] internal int LifeTime;
-                [ProtoMember(4)] internal float SpawnChance;
+                public enum SpawnType
+                {
+                    Item,
+                    Particle,
+                }
+                [ProtoMember(1)] internal float Speed;
+                [ProtoMember(2)] internal float SpawnChance;
+                [ProtoMember(3)] internal SpawnType Type;
+                [ProtoMember(4)] internal ComponentDef CompDef;
+
+                [ProtoContract]
+                public struct ComponentDef
+                {
+                    [ProtoMember(1)] internal string ItemName;
+                    [ProtoMember(2)] internal int ItemLifeTime;
+                }
             }
 
             [ProtoContract]

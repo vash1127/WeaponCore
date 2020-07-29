@@ -425,7 +425,7 @@ namespace WeaponCore.Support
         public readonly int MagazineSize;
         public readonly int PatternIndexCnt;
         public readonly int AmmoIdxPos;
-        public readonly bool HasEjectItem;
+        public readonly bool HasEjectEffect;
         public readonly bool Pulse;
         public readonly bool PrimeModel;
         public readonly bool TriggerModel;
@@ -525,9 +525,13 @@ namespace WeaponCore.Support
 
             if (!string.IsNullOrEmpty(ammo.EjectionDefinitionId.SubtypeId.String))
             {
-                EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Component>(ammo.EjectionDefinitionId.SubtypeId.String) };
-                HasEjectItem = EjectItem.Content != null;
+                var itemEffect = ammo.AmmoDef.Ejection.Type == AmmoDef.AmmoEjectionDef.SpawnType.Item;
+                if (itemEffect) 
+                    EjectItem = new MyPhysicalInventoryItem { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_Component>(ammo.EjectionDefinitionId.SubtypeId.String) };
+                HasEjectEffect = itemEffect && EjectItem.Content != null;
             }
+            else if (ammo.AmmoDef.Ejection.Type == AmmoDef.AmmoEjectionDef.SpawnType.Particle && !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Eject.Name))
+                HasEjectEffect = true;
 
             if (AmmoItem.Content != null && !session.AmmoItems.ContainsKey(AmmoItem.ItemId)) 
                 session.AmmoItems[AmmoItem.ItemId] = AmmoItem;
@@ -1159,7 +1163,7 @@ namespace WeaponCore.Support
                         if (ammoEnergy && def.Id.SubtypeId.String == "Energy" || def.Id.SubtypeId.String == ammo.AmmoMagazine)
                             ammoDefId = def.Id;
 
-                        if (!string.IsNullOrEmpty(ammo.Ejection.ItemDefinition) && def.Id.SubtypeId.String == ammo.Ejection.ItemDefinition)
+                        if (ammo.Ejection.Type == AmmoDef.AmmoEjectionDef.SpawnType.Item && !string.IsNullOrEmpty(ammo.Ejection.CompDef.ItemName) && def.Id.SubtypeId.String == ammo.Ejection.CompDef.ItemName)
                             ejectionDefId = def.Id;
                     }
 

@@ -122,11 +122,9 @@ namespace WeaponCore.Platform
                         }
                         State.CurrentAmmo--;
 
-                        if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectItem)  {
-                            if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)  {
-                                var eInfo = Ejector.Info;
-                                MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
-                            }
+                        if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
+                            if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
+                                SpawnEjection();
                         }
                     }
 
@@ -320,20 +318,49 @@ namespace WeaponCore.Platform
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
         }
 
+        private void SpawnEjection()
+        {
+            var eInfo = Ejector.Info;
+
+            if (ActiveAmmoDef.AmmoDef.Ejection.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item)
+                MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
+            else if (System.Session.HandlesInput)
+            {
+                var particle = ActiveAmmoDef.AmmoDef.AmmoGraphics.Particles.Eject;
+                MyParticleEffect ejectEffect;
+                var matrix = MatrixD.CreateTranslation(eInfo.Position);
+                if (MyParticlesManager.TryCreateParticleEffect(particle.Name, ref matrix, ref eInfo.Position, uint.MaxValue, out ejectEffect))
+                {
+                    ejectEffect.UserColorMultiplier = particle.Color;
+                    var scaler = 1;
+                    ejectEffect.UserRadiusMultiplier = particle.Extras.Scale * scaler;
+                    var scale = particle.ShrinkByDistance ? MathHelper.Clamp(MathHelper.Lerp(1, 0, Vector3D.Distance(System.Session.CameraPos, eInfo.Position) / particle.Extras.MaxDistance), 0.05f, 1) : 1;
+                    ejectEffect.UserScale = (float)scale * scaler;
+                    ejectEffect.Velocity = eInfo.Direction * ActiveAmmoDef.AmmoDef.Ejection.Speed;
+                }
+            }
+        }
+
         private void EjectionSpawnCallback(MyEntity entity)
         {
             var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
             if (ejectDef.Speed > 0)
                 entity.Physics.SetSpeeds(Ejector.CachedDir * ejectDef.Speed, Vector3.Zero);
 
-            if (ejectDef.LifeTime > 0)
-                System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + ejectDef.LifeTime));
+            if (ejectDef.CompDef.ItemLifeTime > 0)
+                System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + ejectDef.CompDef.ItemLifeTime));
         }
 
         private static void RemoveEjection(object o)
         {
             var entity = (MyEntity) o;
-            entity.Close();
+            
+            if (entity != null) {
+                using (entity.Pin())  {
+                    if (!entity.MarkedForClose && !entity.Closed)
+                        entity.Close();
+                }
+            }
         }
     }
 }
