@@ -150,21 +150,39 @@ namespace WeaponCore.Support
 
             internal void Refresh(GridAi ai, RefreshCaller caller)
             {
+                OptimalDps = 0;
+                BlockCount = 0;
                 FatMap fatMap;
                 if (ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap)) {
-                    GridAi tmpAi = null;
+                    GridAi leadingAi = null;
                     foreach (var grid in ai.SubGrids) {
 
-                        GridAi checkAi;
-                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out checkAi) && (tmpAi == null || tmpAi.MyGrid.EntityId > grid.EntityId)) tmpAi = checkAi;
+                        GridAi thisAi;
+                        if (ai.Session.GridTargetingAIs.TryGetValue(grid, out thisAi)) {
+                            
+                            if (leadingAi == null)
+                                leadingAi = thisAi;
+                            else  {
 
+                                if (leadingAi.MyGrid.EntityId > grid.EntityId)
+                                    leadingAi = thisAi;
+                                /*
+                                var thisRadius = thisAi.MyGrid.PositionComp.LocalVolume.Radius;
+                                var leaderRadius = leadingAi.MyGrid.PositionComp.LocalVolume.Radius;
+                                
+                                if (thisRadius > leaderRadius)
+                                    leadingAi = thisAi;
+                                else if (MyUtils.IsEqual(thisRadius, leaderRadius) && leadingAi.MyGrid.EntityId > grid.EntityId)
+                                */
+                            }
+                        } 
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
                             BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
-                            if (checkAi != null) OptimalDps += checkAi.OptimalDps;
+                            if (thisAi != null) OptimalDps += thisAi.OptimalDps;
                         }
                         else Log.Line($"ConstructRefresh Failed sub no fatmap, sub is caller:{grid == ai.MyGrid}");
                     }
-                    RootAi = tmpAi;
+                    RootAi = leadingAi;
 
                     if (RootAi == null) {
                         Log.Line($"[rootAi is null in Update] subCnt:{ai.SubGrids.Count}(includeMe:{ai.SubGrids.Contains(ai.MyGrid)}) - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} -  myGridMarked:{ai.MyGrid.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiSpawnTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
@@ -176,8 +194,6 @@ namespace WeaponCore.Support
                     return;
                 }
                 Log.Line($"ConstructRefresh Failed main Ai no FatMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
-                OptimalDps = 0;
-                BlockCount = 0;
                 RootAi = null;
             }
 

@@ -344,11 +344,24 @@ namespace WeaponCore.Platform
         private void EjectionSpawnCallback(MyEntity entity)
         {
             var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-            if (ejectDef.Speed > 0)
-                entity.Physics.SetSpeeds(Ejector.CachedDir * ejectDef.Speed, Vector3.Zero);
+            
+            if (ejectDef.Speed > 0) {
+                var delay = ejectDef.CompDef.Delay;
+                if (delay <=0)
+                    SetSpeed(entity);
+                else
+                    System.Session.FutureEvents.Schedule(SetSpeed, entity, (uint)(System.Session.Tick + delay));
+            }
 
             if (ejectDef.CompDef.ItemLifeTime > 0)
                 System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + ejectDef.CompDef.ItemLifeTime));
+        }
+
+        private void SetSpeed(object o)
+        {
+            var entity = (MyEntity)o;
+            var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
+            entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS), Vector3.Zero);
         }
 
         private static void RemoveEjection(object o)

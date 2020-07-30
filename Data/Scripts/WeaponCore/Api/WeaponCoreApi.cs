@@ -821,6 +821,7 @@ namespace WeaponCore.Api
                     {
                         [ProtoMember(1)] internal string ItemName;
                         [ProtoMember(2)] internal int ItemLifeTime;
+                        [ProtoMember(3)] internal int Delay;
                     }
                 }
 

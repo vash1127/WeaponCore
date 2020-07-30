@@ -307,6 +307,7 @@ namespace WeaponCore.Support
                 Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
                 return;
             }
+
             if (!ScanInProgress && Session.Tick - ProjectileTicker > 59 && AiMarkedTick != uint.MaxValue && Session.Tick - AiMarkedTick > 119) {
 
                 //lock (DbLock)

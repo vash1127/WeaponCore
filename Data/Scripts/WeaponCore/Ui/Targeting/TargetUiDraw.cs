@@ -209,7 +209,7 @@ namespace WeaponCore
                 }
 
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
-                if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
+                if (MyUtils.IsZero(targetVel, 1E-01F)) targetVel = Vector3.Zero;
                 var targetDir = Vector3D.Normalize(targetVel);
                 var targetRevDir = -targetDir;
                 var targetPos = target.PositionComp.WorldAABB.Center;
@@ -262,7 +262,7 @@ namespace WeaponCore
                     else if (speedPercent > 40) ai.TargetState[i].Speed = 3;
                     else if (speedPercent > 30) ai.TargetState[i].Speed = 2;
                     else if (speedPercent > 20) ai.TargetState[i].Speed = 1;
-                    else if (speedPercent > 0) ai.TargetState[i].Speed = 0;
+                    else if (speedPercent > 0.3) ai.TargetState[i].Speed = 0;
                     else ai.TargetState[i].Speed = -1;
                 }
 
