@@ -15,8 +15,9 @@ namespace WeaponCore
     [ProtoContract]
     public class ConstructDataValues
     {
-        [ProtoMember(1)] public readonly Dictionary<string, GroupInfo> BlockGroups = new Dictionary<string, GroupInfo>();
-        [ProtoMember(2)] public FocusData FocusData;
+        [ProtoMember(1)] public int Version = Session.VersionControl;
+        [ProtoMember(2)] public readonly Dictionary<string, GroupInfo> BlockGroups = new Dictionary<string, GroupInfo>();
+        [ProtoMember(3)] public FocusData FocusData;
 
         public bool Sync(Constructs construct, ConstructDataValues sync)
         {
@@ -331,11 +332,20 @@ namespace WeaponCore
     [ProtoContract]
     public class FocusData
     {
+        public enum LockModes
+        {
+            None,
+            Locked,
+            ExclusiveLock,
+        }
+
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public long[] Target;
         [ProtoMember(3)] public int ActiveId;
         [ProtoMember(4)] public bool HasFocus;
         [ProtoMember(5)] public float DistToNearestFocusSqr;
+        [ProtoMember(6)] public LockModes[] Locked;
+
 
         public bool Sync(GridAi ai, FocusData sync)
         {
@@ -347,7 +357,10 @@ namespace WeaponCore
                 DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
 
                 for (int i = 0; i < Target.Length; i++)
+                {
                     Target[i] = sync.Target[i];
+                    Locked[i] = sync.Locked[i];
+                }
 
                 if (ai == ai.Construct.RootAi)
                     ai.Construct.UpdateLeafFoci();

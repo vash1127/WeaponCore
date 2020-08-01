@@ -10,22 +10,20 @@ namespace WeaponCore
 
     public class ConstructData
     {
-        internal Constructs Construct;
+        internal GridAi Ai;
         public ConstructDataValues Repo;
 
 
-        internal void Init(Constructs construct)
+        internal void Init(GridAi ai)
         {
-            Construct = construct;
-            if (!Construct.RootAi.MyGrid.Components.Has<AiComponent>())
-                Construct.RootAi.MyGrid.Components.Add(new AiComponent(Construct.RootAi.Session, Construct.RootAi.MyGrid));
+            Ai = ai;
 
             StorageInit();
             Load();
 
-            if (Construct.RootAi.Session.IsServer)
+            if (Ai.Session.IsServer)
             {
-                Repo.FocusData = new FocusData { Target = new long[2] };
+                Repo.FocusData = new FocusData { Target = new long[2], Locked = new FocusData.LockModes[2]};
                 foreach (var bg in Repo.BlockGroups)
                 {
                     bg.Value.CompIds.Clear();
@@ -38,34 +36,33 @@ namespace WeaponCore
         {
             Repo.FocusData = null;
             Repo = null;
-            Construct = null;
+            Ai = null;
         }
 
         public void StorageInit()
         {
-            if (Construct.RootAi.MyGrid.Storage == null)
-            {
-                Construct.RootAi.MyGrid.Storage = new MyModStorageComponent { [Construct.RootAi.Session.ConstructDataGuid] = "" };
-            }
+            if (Ai.MyGrid.Storage == null)
+                Ai.MyGrid.Storage = new MyModStorageComponent { [Ai.Session.ConstructDataGuid] = "" };
+            else if (!Ai.MyGrid.Storage.ContainsKey(Ai.Session.ConstructDataGuid))
+                Ai.MyGrid.Storage[Ai.Session.ConstructDataGuid] = "";
         }
 
         public void Save()
         {
-            if (Construct.RootAi.MyGrid.Storage == null) return;
-            Construct.RootAi.LastAiDataSave = Construct.RootAi.Session.Tick;
+            if (Ai.MyGrid.Storage == null)  return;
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Repo);
-            Construct.RootAi.MyGrid.Storage[Construct.RootAi.Session.ConstructDataGuid] = Convert.ToBase64String(binary);
+            Ai.MyGrid.Storage[Ai.Session.ConstructDataGuid] = Convert.ToBase64String(binary);
         }
 
         public void Load()
         {
-            if (Construct.RootAi.MyGrid.Storage == null) return;
+            if (Ai.MyGrid.Storage == null) return;
 
             ConstructDataValues load = null;
             string rawData;
             bool validData = false;
 
-            if (Construct.RootAi.MyGrid.Storage.TryGetValue(Construct.RootAi.Session.ConstructDataGuid, out rawData))
+            if (Ai.MyGrid.Storage.TryGetValue(Ai.Session.ConstructDataGuid, out rawData))
             {
                 try
                 {
@@ -78,10 +75,14 @@ namespace WeaponCore
                     //Log.Line("Invalid State Loaded, Re-init");
                 }
             }
+            else Log.Line($"Storage didn't contain ConstructDataGuid");
 
-            Repo = validData ? load : new ConstructDataValues();
+            if (validData && load.Version == Session.VersionControl)
+                Repo = load;
+            else Repo = new ConstructDataValues();
+
             if (Repo.FocusData == null)
-                Repo.FocusData = new FocusData {Target = new long[2]};
+                Repo.FocusData = new FocusData {Target = new long[2], Locked = new FocusData.LockModes[2] };
         }
     }
 }

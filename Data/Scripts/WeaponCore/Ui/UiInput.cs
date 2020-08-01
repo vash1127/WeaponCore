@@ -27,6 +27,7 @@ namespace WeaponCore
         internal bool LongShift;
         internal bool AltPressed;
         internal bool ActionKeyPressed;
+        internal bool ActionKeyReleased;
         internal bool CtrlPressed;
         internal bool AnyKeyPressed;
         internal bool KeyPrevPressed;
@@ -97,6 +98,8 @@ namespace WeaponCore
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
+                ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.R);
+
                 if (ShiftPressed)
                 {
                     ShiftTime++;
@@ -117,6 +120,7 @@ namespace WeaponCore
                 UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
+
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();

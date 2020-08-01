@@ -507,13 +507,6 @@ namespace WeaponCore.Platform
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
 
-        internal void SendTarget(int weaponId)
-        {
-            State.WeaponRandom.ResetRandom();
-            System.Session.SendTargetChange(Comp, weaponId);
-            //System.Session.SendCompState(Comp, PacketType.CompState);
-
-        }
         internal void ChangeActiveAmmo()
         {
             var proposed = ProposedAmmoId != -1;

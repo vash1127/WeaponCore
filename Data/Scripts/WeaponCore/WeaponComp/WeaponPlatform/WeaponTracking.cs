@@ -245,7 +245,7 @@ namespace WeaponCore.Platform
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned)
             {
-                if (weapon.System.DesignatorWeapon)
+                if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer)
                 {
                     for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
                     {

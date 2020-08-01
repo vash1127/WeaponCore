@@ -18,8 +18,6 @@ namespace WeaponCore
         public void Init(GridAi ai)
         {
             Ai = ai;
-            if (!Ai.MyGrid.Components.Has<AiComponent>())
-                Ai.MyGrid.Components.Add(new AiComponent(Ai.Session, Ai.MyGrid));
 
             StorageInit();
             Load();
@@ -39,9 +37,9 @@ namespace WeaponCore
         public void StorageInit()
         {
             if (Ai.MyGrid.Storage == null)
-            {
                 Ai.MyGrid.Storage = new MyModStorageComponent { [Ai.Session.AiDataGuid] = "" };
-            }
+            else if (!Ai.MyGrid.Storage.ContainsKey(Ai.Session.AiDataGuid))
+                Ai.MyGrid.Storage[Ai.Session.AiDataGuid] = "";
         }
 
         public void Save()

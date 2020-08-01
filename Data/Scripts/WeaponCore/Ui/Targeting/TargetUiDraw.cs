@@ -78,9 +78,9 @@ namespace WeaponCore
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
                 if (focus.Target[i] <= 0 || s.Wheel.WheelActive && i > 0) continue;
+                var lockMode = focus.Locked[i];
 
                 var targetState = s.TrackingAi.TargetState[i];
-
                 var displayCount = 0;
                 foreach (var icon in _targetIcons.Keys)
                 {
@@ -91,13 +91,27 @@ namespace WeaponCore
                     float scale;
                     MyStringId textureName;
                     _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, s.Wheel.WheelActive, s, out textureName, out scale, out offset);
+
                     var color = Color.White;
+                    switch (lockMode)
+                    {
+                        case FocusData.LockModes.None:
+                            color = Color.White;
+                            break;
+                        case FocusData.LockModes.Locked:
+                            color = s.Count < 60 ? Color.White : new Color(255, 255, 255, 64);
+                            break;
+                        case FocusData.LockModes.ExclusiveLock:
+                            color = s.SCount < 30 ? Color.White : new Color(255, 255, 255, 64);
+                            break;
+                            
+                    }
                     MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
 
                     if (focus.ActiveId == i && displayCount == 0)
                     {
                         var focusTexture = focus.ActiveId == 0 ? _focus : _focusSecondary;
-                        MyTransparentGeometry.AddBillboardOriented(focusTexture, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                        MyTransparentGeometry.AddBillboardOriented(focusTexture, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
                     }
 
                     displayCount++;

@@ -179,7 +179,6 @@ namespace WeaponCore
 
                 comp.Data.Repo.State.PlayerId = controlPacket.PlayerId;
                 comp.Data.Repo.State.Control = controlPacket.Mode;
-
                 SendCompData(comp);
                 data.Report.PacketValid = true;
             }
@@ -296,36 +295,6 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ServerRequestMouseStates(PacketObj data)
-        {
-            var packet = data.Packet;
-            var mouseUpdatePacket = new MouseInputSyncPacket {
-                EntityId = -1,
-                SenderId = packet.SenderId,
-                PType = PacketType.FullMouseUpdate,
-                Data = new PlayerMouseData[PlayerMouseStates.Count],
-            };
-
-            var c = 0;
-            foreach (var playerMouse in PlayerMouseStates) {
-                mouseUpdatePacket.Data[c] = new PlayerMouseData {
-                    PlayerId = playerMouse.Key,
-                    MouseStateData = playerMouse.Value
-                };
-            }
-
-            if (PlayerMouseStates.Count > 0)
-                PacketsToClient.Add(new PacketInfo {
-                    Entity = null,
-                    Packet = mouseUpdatePacket,
-                    SingleClient = true,
-                });
-
-            data.Report.PacketValid = true;
-
-            return true;
-        }
-
         private bool ServerRequestShootUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -372,34 +341,6 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ServerFixedWeaponHitEvent(PacketObj data)
-        {
-            var packet = data.Packet;
-            var hitPacket = (FixedWeaponHitPacket)packet;
-
-            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
-            var comp = ent?.Components.Get<WeaponComponent>();
-
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
-            var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
-            var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
-
-            if (targetEnt == null) return Error(data, Msg("TargetEnt"));
-
-            var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
-            var direction = hitPacket.Velocity;
-            direction.Normalize();
-
-            Projectiles.NewProjectiles.Add(new NewProjectile
-            {
-                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, Muzzle = weapon.Muzzles[hitPacket.MuzzleId], Weapon = weapon, TargetEnt = targetEnt, Origin = origin, OriginUp = hitPacket.Up, Direction = direction, Velocity = hitPacket.Velocity, MaxTrajectory = hitPacket.MaxTrajectory, Type = NewProjectile.Kind.Client
-            });
-            //CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
-
-            data.Report.PacketValid = true;
-            return true;
-        }
 
         private bool ServerFocusUpdate(PacketObj data)
         {
@@ -410,7 +351,9 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg("Grid"));
 
             GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
+            uint[] mIds;
+            if (GridToMasterAi.TryGetValue(myGrid, out ai) && PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId) {
+                mIds[(int)packet.PType] = packet.MId;
 
                 var targetGrid = MyEntities.GetEntityByIdOrDefault(focusPacket.TargetId) as MyCubeGrid;
 
@@ -425,27 +368,15 @@ namespace WeaponCore
                     case PacketType.ReleaseActiveUpdate:
                         ai.Construct.Focus.RequestReleaseActive(ai);
                         break;
+                    case PacketType.FocusLockUpdate:
+                        ai.Construct.Focus.ServerCycleLock(ai);
+                        break;
                 }
 
                 data.Report.PacketValid = true;
             }
             else
-                return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-
-            return true;
-        }
-        private bool ServerRequestReport(PacketObj data)
-        {
-            var packet = data.Packet;
-            
-            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
-            if (cube == null) return Error(data, Msg("Cube"));
-            
-            var reportData = ProblemRep.PullData(cube);
-            if (reportData == null) return Error(data, Msg("RequestReport"));
-            
-            ProblemRep.NetworkTransfer(false, packet.SenderId, reportData);
-            data.Report.PacketValid = true;
+                return Error(data, Msg($"GridAi not found or mid failure: ai:{ai != null}, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
 
             return true;
         }
@@ -471,6 +402,94 @@ namespace WeaponCore
                 data.Report.PacketValid = true;
             }
             else Log.Line($"ServerTerminalMonitor: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+
+            return true;
+        }
+        
+        private bool ServerFixedWeaponHitEvent(PacketObj data)
+        {
+            var packet = data.Packet;
+            var hitPacket = (FixedWeaponHitPacket)packet;
+
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            var weapon = comp.Platform.Weapons[hitPacket.WeaponId];
+            var targetEnt = MyEntities.GetEntityByIdOrDefault(hitPacket.HitEnt);
+
+            if (targetEnt == null) return Error(data, Msg("TargetEnt"));
+
+            var origin = targetEnt.PositionComp.WorldMatrixRef.Translation - hitPacket.HitOffset;
+            var direction = hitPacket.Velocity;
+            direction.Normalize();
+
+            Projectiles.NewProjectiles.Add(new NewProjectile
+            {
+                AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef,
+                Muzzle = weapon.Muzzles[hitPacket.MuzzleId],
+                Weapon = weapon,
+                TargetEnt = targetEnt,
+                Origin = origin,
+                OriginUp = hitPacket.Up,
+                Direction = direction,
+                Velocity = hitPacket.Velocity,
+                MaxTrajectory = hitPacket.MaxTrajectory,
+                Type = NewProjectile.Kind.Client
+            });
+            //CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
+
+            data.Report.PacketValid = true;
+            return true;
+        }
+
+        private bool ServerRequestMouseStates(PacketObj data)
+        {
+            var packet = data.Packet;
+            var mouseUpdatePacket = new MouseInputSyncPacket
+            {
+                EntityId = -1,
+                SenderId = packet.SenderId,
+                PType = PacketType.FullMouseUpdate,
+                Data = new PlayerMouseData[PlayerMouseStates.Count],
+            };
+
+            var c = 0;
+            foreach (var playerMouse in PlayerMouseStates)
+            {
+                mouseUpdatePacket.Data[c] = new PlayerMouseData
+                {
+                    PlayerId = playerMouse.Key,
+                    MouseStateData = playerMouse.Value
+                };
+            }
+
+            if (PlayerMouseStates.Count > 0)
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = null,
+                    Packet = mouseUpdatePacket,
+                    SingleClient = true,
+                });
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ServerRequestReport(PacketObj data)
+        {
+            var packet = data.Packet;
+
+            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+            if (cube == null) return Error(data, Msg("Cube"));
+
+            var reportData = ProblemRep.PullData(cube);
+            if (reportData == null) return Error(data, Msg("RequestReport"));
+
+            ProblemRep.NetworkTransfer(false, packet.SenderId, reportData);
+            data.Report.PacketValid = true;
 
             return true;
         }

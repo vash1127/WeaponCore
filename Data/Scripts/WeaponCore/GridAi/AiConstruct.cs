@@ -9,6 +9,7 @@ using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
 using static WeaponCore.Wheel;
+using static WeaponCore.FocusData;
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -306,7 +307,11 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                    {
                         ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo);
+                        if (RootAi.Session.HandlesInput)
+                            ai.Construct.BuildMenuGroups();
+                    }
                 }
             }
 
@@ -319,7 +324,9 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
+                    {
                         ai.Construct.Data.Repo.FocusData.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
+                    }
                 }
             }
 
@@ -331,7 +338,6 @@ namespace WeaponCore.Support
                     ai.ScanBlockGroups = false;
                     RootAi.ScanBlockGroups = true;
                 }
-
             }
 
             internal void BuildMenuGroups()
@@ -378,7 +384,7 @@ namespace WeaponCore.Support
             internal void Init(GridAi ai)
             {
                 RootAi = ai;
-                Data.Init(this);
+                Data.Init(ai);
             }
 
             internal void Clean()
@@ -399,6 +405,8 @@ namespace WeaponCore.Support
     public class Focus
     {
         public readonly long[] OldTarget = new long[2];
+        public readonly LockModes[] OldLocked = new LockModes[2];
+
         public int OldActiveId;
         public bool OldHasFocus;
         public float OldDistToNearestFocusSqr;
@@ -406,10 +414,12 @@ namespace WeaponCore.Support
         public bool ChangeDetected(GridAi ai)
         {
             var fd = ai.Construct.Data.Repo.FocusData;
-            if (fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0)  {
+            if (fd.Target[0] != OldTarget[0] || fd.Target[1] != OldTarget[1] || fd.Locked[0] != OldLocked[0] || fd.Locked[1] != OldLocked[1] || fd.ActiveId != OldActiveId || fd.HasFocus != OldHasFocus || Math.Abs(fd.DistToNearestFocusSqr - OldDistToNearestFocusSqr) > 0)  {
 
                 OldTarget[0] = fd.Target[0];
                 OldTarget[1] = fd.Target[1];
+                OldLocked[0] = fd.Locked[0];
+                OldLocked[1] = fd.Locked[1];
                 OldActiveId = fd.ActiveId;
                 OldHasFocus = fd.HasFocus;
                 OldDistToNearestFocusSqr = fd.DistToNearestFocusSqr;
@@ -438,6 +448,29 @@ namespace WeaponCore.Support
                 ServerAddFocus(target, ai);
             else
                 ai.Session.SendFocusTargetUpdate(ai, target.EntityId);
+        }
+
+        internal void ServerCycleLock(GridAi ai)
+        {
+            var session = ai.Session;
+            var fd = ai.Construct.Data.Repo.FocusData;
+            var currentMode = fd.Locked[fd.ActiveId];
+            var modeCount = Enum.GetNames(typeof(LockModes)).Length;
+
+            var nextMode = (int)currentMode + 1 < modeCount ? currentMode + 1 : (LockModes)0;
+            fd.Locked[fd.ActiveId] = nextMode;
+            ai.TargetResetTick = session.Tick + 1;
+            ServerIsFocused(ai);
+
+            ai.Construct.UpdateConstruct(GridAi.Constructs.UpdateType.Focus, ChangeDetected(ai));
+        }
+
+        internal void RequestAddLock(GridAi ai)
+        {
+            if (ai.Session.IsServer)
+                ServerCycleLock(ai);
+            else
+                ai.Session.SendFocusLockUpdate(ai);
         }
 
         internal void ServerNextActive(bool addSecondary, GridAi ai)
@@ -477,6 +510,7 @@ namespace WeaponCore.Support
             var fd = ai.Construct.Data.Repo.FocusData;
 
             fd.Target[fd.ActiveId] = -1;
+            fd.Locked[fd.ActiveId] = LockModes.None;
 
             ServerIsFocused(ai);
 
@@ -506,14 +540,19 @@ namespace WeaponCore.Support
                     if (MyEntities.GetEntityById(fd.Target[fd.ActiveId]) != null)
                         fd.HasFocus = true;
                     else
+                    {
                         fd.Target[i] = -1;
+                        fd.Locked[i] = LockModes.None;
+                    }
                 }
 
                 if (fd.Target[0] <= 0 && fd.HasFocus)
                 {
 
                     fd.Target[0] = fd.Target[i];
+                    fd.Locked[0] = fd.Locked[i];
                     fd.Target[i] = -1;
+                    fd.Locked[i] = LockModes.None;
                     fd.ActiveId = 0;
                 }
             }

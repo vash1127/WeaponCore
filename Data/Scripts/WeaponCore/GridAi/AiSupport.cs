@@ -349,6 +349,8 @@ namespace WeaponCore.Support
         {
             AiCloseTick = Session.Tick;
 
+            MyGrid.Components.Remove<AiComponent>();
+
             if (Session.IsClient)
                 Session.SendUpdateRequest(MyGrid.EntityId, PacketType.ClientAiRemove);
 

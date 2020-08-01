@@ -147,11 +147,14 @@ namespace WeaponCore
                         if (w.System.Armor != ArmorState.IsWeapon)
                             continue;
 
+                        if (w.Target.ClientDirty)
+                            w.Target.ClientUpdate(w, w.TargetData);
+
                         ///
                         /// Check target for expire states
                         /// 
                         bool targetLock = false;
-                        if (w.Target.HasTarget && !(IsClient && w.Target.Entity == null && w.TargetData.EntityId > 0)) {
+                        if (w.Target.HasTarget) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
                             if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.State.PlayerId].LastUpdateTick > 120))
@@ -182,8 +185,6 @@ namespace WeaponCore
                                     w.Target.Reset(Tick, States.Expired);
                             }
                         }
-                        else if (w.Target.HasTarget && IsClient)
-                            w.Target.Entity = MyEntities.GetEntityById(w.TargetData.EntityId);
 
                         w.ProjectilesNear = enemyProjectiles && w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
 
@@ -414,7 +415,7 @@ namespace WeaponCore
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
                         if (w.Target.HasTarget && MpActive) {
-                            w.Target.SyncTarget(w);
+                            w.Target.PushTargetToClient(w);
                         }
                     }
                 }

@@ -96,27 +96,7 @@ namespace WeaponCore.Support
                         weapon.UpdatePivotPos();
 
                         if (Session.IsClient)
-                        {
-                            if (weapon.TargetData.EntityId != 0)
-                                weapon.TargetData.SyncTarget(weapon, false); // need to look into... is this right?
-                            if (!weapon.Target.IsProjectile && !weapon.Target.IsFakeTarget && weapon.Target.Entity == null)
-                            {
-                                weapon.Target.StateChange(true, Target.States.Invalid);
-                                weapon.Target.TargetChanged = false;
-                            }
-                            else if (weapon.Target.IsProjectile)
-                            {
-                                TargetType targetType;
-                                AcquireProjectile(weapon, out targetType);
-
-                                if (targetType == TargetType.None)
-                                {
-                                    if (weapon.NewTarget.CurrentState != Target.States.NoTargetsSeen)
-                                        weapon.NewTarget.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                                    if (weapon.Target.CurrentState != Target.States.NoTargetsSeen) weapon.Target.Reset(weapon.Comp.Session.Tick, Target.States.NoTargetsSeen, !weapon.Comp.Data.Repo.State.TrackingReticle);
-                                }
-                            }
-                        }
+                            weapon.Target.ClientDirty = true;
 
                         if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading)
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);

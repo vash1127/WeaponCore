@@ -73,7 +73,11 @@ namespace WeaponCore
                         Repo.Targets[i] = new WeaponStateValues.TransferTarget();
                         w.TargetData = Repo.Targets[i];
                     }
-                    else w.State.WeaponRefreshClient(w);
+                    else
+                    {
+                        w.State.WeaponRefreshClient(w);
+                        w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
+                    }
                 }
             }
             else {

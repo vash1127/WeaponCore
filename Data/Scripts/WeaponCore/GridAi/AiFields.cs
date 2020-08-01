@@ -70,12 +70,12 @@ namespace WeaponCore.Support
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal readonly AiData Data = new AiData();
         internal TargetStatus[] TargetState = new TargetStatus[2];
+        internal readonly AiComponent AiComp;
 
         internal Session Session;
         internal MyCubeGrid MyGrid;
         internal MyCubeBlock PowerBlock;
         internal MyResourceDistributorComponent PowerDistributor;
-
         internal uint CreatedTick;
         internal Vector3 GridVel;
         internal IMyGridTerminalSystem TerminalSystem;
@@ -177,6 +177,8 @@ namespace WeaponCore.Support
         {
             for (int i = 0; i < TargetState.Length; i++)
                 TargetState[i] = new TargetStatus();
+
+            AiComp = new AiComponent(this);
         }
 
         internal void Init(MyCubeGrid grid, Session session)
@@ -192,6 +194,10 @@ namespace WeaponCore.Support
             AiMarkedTick = uint.MaxValue;
             RegisterMyGridEvents(true, grid);
             AiSpawnTick = Session.Tick;
+
+            grid.Components.Add(AiComp);
+
+
             Data.Init(this);
             Construct.Init(this);
 

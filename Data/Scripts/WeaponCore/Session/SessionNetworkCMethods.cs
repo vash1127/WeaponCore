@@ -64,16 +64,16 @@ namespace WeaponCore
 
                     var rootConstruct = ai.Construct.RootAi.Construct;
 
-                    //Log.Line($"ConstructGroupUpdate: isRoot:{ai == ai.Construct.RootAi} - newGroups:{cgPacket.Data.BlockGroups.Count} - oldGroups:{rootConstruct.Data.Repo.BlockGroups.Count} - Rev:{cgPacket.Data.FocusData.Revision} > {rootConstruct.Data.Repo.FocusData.Revision}");
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
                     rootConstruct.BuildMenuGroups();
+                    rootConstruct.UpdateLeafGroups();
 
                     Wheel.Dirty = true;
                     if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
                         Wheel.ForceUpdate();
 
                 }
-                else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
+                else Log.Line($"ClientConstructGroups MID failure - mId:{packet.MId}");
             
                 data.Report.PacketValid = true;
             }
@@ -100,7 +100,7 @@ namespace WeaponCore
                     if (!rootConstruct.Data.Repo.FocusData.Sync(ai, fociPacket.Data))
                         Log.Line($"ClientConstructFoci old Revision: {fociPacket.Data.Revision} > {rootConstruct.Data.Repo.FocusData.Revision} - target:{fociPacket.Data.Target[0]}({rootConstruct.Data.Repo.FocusData.Target[0]})");
                 }
-                else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
+                else Log.Line($"ClientConstructFoci MID failure - mId:{packet.MId}");
 
                 data.Report.PacketValid = true;
             }
@@ -118,8 +118,7 @@ namespace WeaponCore
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
-            if (GridTargetingAIs.TryGetValue(myGrid, out ai))
-            {
+            if (GridTargetingAIs.TryGetValue(myGrid, out ai)) {
 
                 if (ai.MIds[(int)packet.PType] < packet.MId)  {
                     ai.MIds[(int)packet.PType] = packet.MId;
@@ -204,13 +203,13 @@ namespace WeaponCore
             var targetPacket = (TargetPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
-            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready ) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
             var w = comp.Platform.Weapons[targetPacket.Target.WeaponId];
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
-                w.State.WeaponRandom.ResetRandom();
                 targetPacket.Target.SyncTarget(w);
             }
 
@@ -258,46 +257,25 @@ namespace WeaponCore
         }
 
         // no storge sync
-        private bool ClientPlayerIdUpdate(PacketObj data)
-        {
-            var packet = data.Packet;
-            var updatePacket = (BoolUpdatePacket)packet;
-
-            if (updatePacket.Data)
-                PlayerConnected(updatePacket.EntityId);
-            else //remove
-                PlayerDisconnected(updatePacket.EntityId);
-
-            data.Report.PacketValid = true;
-            return true;
-        }
-
-        private bool ClientServerVersion(PacketObj data)
-        {
-            var packet = data.Packet;
-            var updatePacket = (ServerVersionPacket)packet;
-
-            ServerVersion = updatePacket.Data;
-            data.Report.PacketValid = true;
-            return true;
-        }
 
         private bool ClientClientMouseEvent(PacketObj data)
         {
             var packet = data.Packet;
             var mousePacket = (InputPacket)packet;
             if (mousePacket.Data == null) return Error(data, Msg("Data"));
+            var cube = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeBlock;
+            if (cube == null) return Error(data, Msg($"CubeId: {packet.EntityId}"));
 
+            GridAi ai;
             long playerId;
-            if (SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
+            if (GridToMasterAi.TryGetValue(cube.CubeGrid, out ai) && SteamToPlayer.TryGetValue(packet.SenderId, out playerId))
             {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                    mIds[(int)packet.PType] = packet.MId;
+                if (ai.MIds[(int)packet.PType] < packet.MId)  {
+                    ai.MIds[(int)packet.PType] = packet.MId;
 
                     PlayerMouseStates[playerId] = mousePacket.Data;
                 }
-                else Log.Line($"ClientClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+                else Log.Line($"ClientClientMouseEvent: mid fail - senderId:{packet.SenderId}");
 
                 data.Report.PacketValid = true;
             }
@@ -329,6 +307,30 @@ namespace WeaponCore
             return true;
         }
 
+        private bool ClientPlayerIdUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var updatePacket = (BoolUpdatePacket)packet;
+
+            if (updatePacket.Data)
+                PlayerConnected(updatePacket.EntityId);
+            else //remove
+                PlayerDisconnected(updatePacket.EntityId);
+
+            data.Report.PacketValid = true;
+            return true;
+        }
+
+        private bool ClientServerVersion(PacketObj data)
+        {
+            var packet = data.Packet;
+            var updatePacket = (ServerVersionPacket)packet;
+
+            ServerVersion = updatePacket.Data;
+            data.Report.PacketValid = true;
+            return true;
+        }
+
         private bool ClientFullMouseUpdate(PacketObj data)
         {
             var packet = data.Packet;
@@ -336,17 +338,11 @@ namespace WeaponCore
 
             if (mouseUpdatePacket.Data == null) return Error(data, Msg("Data"));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                mIds[(int)packet.PType] = packet.MId;
-
-                for (int i = 0; i < mouseUpdatePacket.Data.Length; i++)  {
-                    var playerMousePackets = mouseUpdatePacket.Data[i];
-                    if (playerMousePackets.PlayerId != PlayerId)
-                        PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
-                }
+            for (int i = 0; i < mouseUpdatePacket.Data.Length; i++)  {
+                var playerMousePackets = mouseUpdatePacket.Data[i];
+                if (playerMousePackets.PlayerId != PlayerId)
+                    PlayerMouseStates[playerMousePackets.PlayerId] = playerMousePackets.MouseStateData;
             }
-            else Log.Line($"ClientClientMouseEvent: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
 
             data.Report.PacketValid = true;
             return true;
@@ -359,13 +355,7 @@ namespace WeaponCore
 
             if (clientNotifyPacket.Message == string.Empty || clientNotifyPacket.Color == string.Empty) return Error(data, Msg("Data"));
 
-            uint[] mIds;
-            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                mIds[(int)packet.PType] = packet.MId;
-
-                ShowClientNotify(clientNotifyPacket);
-            }
-            else Log.Line($"ClientNotify: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            ShowClientNotify(clientNotifyPacket);
             data.Report.PacketValid = true;
 
             return true;

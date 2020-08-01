@@ -294,6 +294,7 @@ namespace WeaponCore
                     break;
                 }
                 case PacketType.FocusUpdate:
+                case PacketType.FocusLockUpdate:
                 case PacketType.NextActiveUpdate:
                 case PacketType.ReleaseActiveUpdate: {
                     ServerFocusUpdate(packetObj);

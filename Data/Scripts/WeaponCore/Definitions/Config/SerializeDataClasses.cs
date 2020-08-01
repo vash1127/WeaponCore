@@ -31,6 +31,7 @@ namespace WeaponCore
         ActiveControlUpdate,
         PlayerIdUpdate,
         FocusUpdate,
+        FocusLockUpdate,
         ReticleUpdate,
         TargetExpireUpdate,
         ClientAiAdd,
@@ -349,7 +350,7 @@ namespace WeaponCore
     public class FocusPacket : Packet
     {
         [ProtoMember(1)] internal long TargetId;
-        [ProtoMember(2)] internal int FocusId;
+        [ProtoMember(2), DefaultValue(-1)] internal int FocusId;
         [ProtoMember(3)] internal bool AddSecondary;
         public FocusPacket() { }
 
@@ -357,7 +358,7 @@ namespace WeaponCore
         {
             base.CleanUp();
             TargetId = 0;
-            FocusId = 0;
+            FocusId = -1;
             AddSecondary = false;
         }
     }

@@ -24,6 +24,7 @@ namespace WeaponCore.Support
         internal bool TargetChanged;
         internal bool ParentIsWeapon;
         internal bool IsTargetStorage;
+        internal bool ClientDirty;
         internal Weapon Weapon;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
@@ -38,6 +39,7 @@ namespace WeaponCore.Support
         internal Vector3D TargetPos;
         internal double HitShortDist;
         internal double OrigDistance;
+        internal long TargetId;
         internal long TopEntityId;
         internal readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
 
@@ -66,7 +68,53 @@ namespace WeaponCore.Support
             IsTargetStorage = main;
         }
 
-        internal void TransferTo(Target target, uint expireTick, bool reset = true)
+        internal void PushTargetToClient(Weapon weapon)
+        {
+            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
+                return;
+
+            weapon.TargetData.TargetPos = TargetPos;
+            weapon.TargetData.WeaponId = weapon.WeaponId;
+            weapon.TargetData.EntityId = weapon.Target.TargetId;
+            
+            weapon.State.WeaponRandom.ResetRandom();
+            weapon.System.Session.SendTargetChange(weapon.Comp, weapon.WeaponId);
+            //Log.Line($"PushTargetToClient: {weapon.Comp.MyCube.EntityId}");
+        }
+
+        internal void ClientUpdate(Weapon w, WeaponStateValues.TransferTarget tData)
+        {
+            MyEntity targetEntity = null;
+            if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
+            {
+                States state;
+                if (tData.EntityId != 0)
+                    state = tData.EntityId == -2 ? States.Fake : States.Acquired;
+                else state = States.Expired;
+                Entity = targetEntity;
+
+                StateChange(state != States.Expired, state);
+
+                if (w.Target.IsProjectile)
+                {
+                    GridAi.TargetType targetType;
+                    GridAi.AcquireProjectile(w, out targetType);
+
+                    if (targetType == GridAi.TargetType.None)
+                    {
+                        if (w.NewTarget.CurrentState != States.NoTargetsSeen)
+                            w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
+                        if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
+                    }
+                }
+
+                ClientDirty = false;
+
+                //Log.Line($"UpdateTarget: id:{tData.EntityId}({TargetId}) - entity:{Entity != null}({targetEntity != null}) - state:{CurrentState}({PreviousState}) - hasTarget:{tData.EntityId != 0}({HasTarget})");
+            }
+        }
+
+        internal void TransferTo(Target target, uint expireTick)
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
@@ -77,29 +125,9 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.StateChange(HasTarget, CurrentState);
-            if (reset) Reset(expireTick, States.Transfered);
+            Reset(expireTick, States.Transfered);
         }
 
-        internal void SyncTarget(Weapon weapon)
-        {
-            if (!weapon.System.Session.MpActive || weapon.System.Session.IsClient)
-                return;
-            
-            
-            weapon.TargetData.TargetPos = TargetPos;
-            weapon.TargetData.WeaponId = weapon.WeaponId;
-
-            if (IsProjectile)
-                weapon.TargetData.EntityId = -1;
-            else if (IsFakeTarget)
-                weapon.TargetData.EntityId = -2;
-            else if (Entity != null)
-                weapon.TargetData.EntityId = Entity.EntityId;
-            else weapon.TargetData.EntityId = 0;
-
-            weapon.SendTarget(weapon.WeaponId);
-
-        }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
         {
@@ -125,7 +153,7 @@ namespace WeaponCore.Support
 
             Set(ent, targetPos, shortDist, origDist, topEntId);
             if (w.System.Session.MpActive && !w.System.Session.IsClient)
-                SyncTarget(w);
+                PushTargetToClient(w);
         }
 
         internal void SetFake(uint expiredTick, Vector3D pos)
@@ -147,6 +175,7 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
+            TargetId = 0;
             if (expire)
             {
                 StateChange(false, reason);
@@ -154,13 +183,14 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void StateChange(bool hasTarget, States reason)
+        internal void StateChange(bool setTarget, States reason)
         {
-            TargetChanged = !HasTarget && hasTarget || HasTarget && !hasTarget;
+            SetTargetId(setTarget, reason);
+            TargetChanged = !HasTarget && setTarget || HasTarget && !setTarget;
 
             if (TargetChanged && ParentIsWeapon && IsTargetStorage) {
 
-                if (hasTarget) {
+                if (setTarget) {
                     Weapon.Comp.Ai.WeaponsTracking++;
                     Weapon.Comp.WeaponsTracking++;
                 }
@@ -169,10 +199,20 @@ namespace WeaponCore.Support
                     Weapon.Comp.WeaponsTracking--;
                 }
             }
-
-            HasTarget = hasTarget;
+            HasTarget = setTarget;
             PreviousState = CurrentState;
             CurrentState = reason;
+        }
+
+        internal void SetTargetId(bool setTarget, States reason)
+        {
+            if (IsProjectile)
+                TargetId = -1;
+            else if (IsFakeTarget)
+                TargetId = -2;
+            else if (Entity != null)
+                TargetId = Entity.EntityId;
+            else TargetId = 0;
         }
     }
 

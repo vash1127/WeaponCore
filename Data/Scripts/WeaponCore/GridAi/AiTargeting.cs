@@ -249,10 +249,8 @@ namespace WeaponCore.Support
                         }
 
                         if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.State.WeaponRandom, Acquire, w, true)) continue;
-
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
-
                         return;
                     }
                     var meteor = info.Target as MyMeteor;
@@ -321,9 +319,10 @@ namespace WeaponCore.Support
                                 target.Top5.Clear();
 
                             target.LastBlockType = bt;
-                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, w, checkPower)) return true;
+                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, w, checkPower))
+                                return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type, checkPower)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type,  checkPower)) return true;
                     }
 
                     if (focusSubSystem) break;
@@ -495,12 +494,9 @@ namespace WeaponCore.Support
 
                                 ai.Session.ClosestRayCasts++;
                                 if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer)) {
-
                                     var hitGrid = hit.HitEntity as MyCubeGrid;
-                                    if (hitGrid != null) {
-                                        if (grid == hitGrid)
-                                            bestTest = true;
-                                    }
+                                    if (hitGrid != null && grid == hitGrid || hit.HitEntity is MyFloatingObject || hit.HitEntity is IMyCharacter || w.Comp.Ai.Targets.ContainsKey(hitGrid)) 
+                                        bestTest = true;
                                 }
                             }
                         }

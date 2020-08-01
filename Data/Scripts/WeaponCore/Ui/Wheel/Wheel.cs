@@ -96,7 +96,7 @@ namespace WeaponCore
         internal void OpenWheel()
         {
             WheelActive = true;
-            if (Session.MpActive)
+            if (Session.IsClient)
                 Session.SendGroupUpdate(Ai);
 
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");

@@ -174,7 +174,6 @@ namespace WeaponCore
 
             internal void NetworkTransfer(bool toServer, ulong clientId = 0, DataReport data = null)
             {
-                Log.Line($"network transfer: toServer: {toServer} - dataNull:{data == null} - clientId:{clientId}");
                 if (toServer) {
                     Session.PacketsToServer.Add(new ProblemReportPacket
                     {
@@ -284,7 +283,7 @@ namespace WeaponCore
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
                     {"WeaponBase", () => GetAi()?.WeaponBase.Count.ToString() ?? string.Empty },
-                    {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
+                    {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString(CultureInfo.InvariantCulture).Substring(0, 6) ?? string.Empty },
                     {"MyOwner", () => GetAi()?.MyOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
                     {"BlockCount", () => GetAi()?.BlockCount.ToString() ?? string.Empty },
@@ -352,9 +351,21 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ActiveAmmoDef.AmmoName}"); }
                     },
-                    {"AcquiringTarget", () => {
+                    {"RateOfFire", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AcquiringTarget}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.RateOfFire}"); }
+                    },
+                    {"Dps", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Dps}"); }
+                    },
+                    {"ShotReady", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShotReady}"); }
+                    },
+                    {"LastHeat", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.LastHeat}"); }
                     },
                     {"HasTarget", () => {
                             var message = string.Empty;
@@ -363,6 +374,10 @@ namespace WeaponCore
                     {"TargetCurrentState", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.CurrentState}"); }
+                    },
+                    {"TargetIsEntity", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Target.Entity != null}"); }
                     },
                     {"TargetEntityId", () => {
                             var message = string.Empty;
@@ -579,7 +594,7 @@ namespace WeaponCore
                 long aTermId;
                 if (!ServerTerminalMaps.TryGetValue(comp, out aTermId)) {
                     ServerTerminalMaps[comp] = comp.MyCube.EntityId;
-                    if (!Session.LocalVersion) Log.Line($"ServerUpdate added Id");
+                    //if (!Session.LocalVersion) Log.Line($"ServerUpdate added Id");
                 }
                 else {
 
@@ -587,7 +602,7 @@ namespace WeaponCore
                     if (cube != null && cube.CubeGrid.EntityId != comp.Ai.MyGrid.EntityId)
                     {
                         ServerTerminalMaps[comp] = 0;
-                        if (!Session.LocalVersion) Log.Line($"ServerUpdate reset Id");
+                        //if (!Session.LocalVersion) Log.Line($"ServerUpdate reset Id");
                     }
                 }
 

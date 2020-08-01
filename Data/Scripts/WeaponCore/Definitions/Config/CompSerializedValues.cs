@@ -3,6 +3,7 @@ using System.ComponentModel;
 using ProtoBuf;
 using Sandbox.Game.Entities;
 using VRage;
+using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -33,7 +34,6 @@ namespace WeaponCore
                     var w = comp.Platform.Weapons[i];
                     var syncT = sync.Targets[i];
                     syncT.SyncTarget(w);
-                    w.TargetData = syncT;
                 }
                 Revision = sync.Revision;
                 return true;
@@ -269,7 +269,6 @@ namespace WeaponCore
 
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
-                w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
                 for (int j = 0; j < rand.TurretCurrentCounter; j++)
                     rand.TurretRandom.Next();
 
@@ -302,46 +301,20 @@ namespace WeaponCore
             [ProtoMember(3)] public Vector3 TargetPos;
             [ProtoMember(4)] public int WeaponId;
 
-            internal void SyncTarget(Weapon w, bool allowChange = true)
+            internal void SyncTarget(Weapon w)
             {
-                if (Revision > w.TargetData.Revision || allowChange)  {
+                if (Revision > w.TargetData.Revision)  {
 
                     w.TargetData.Revision = Revision;
-                    if (allowChange && !w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
+                    w.State.WeaponRandom.ResetRandom();
+                    if (!w.Reloading && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon)
                         w.Reload();
 
                     var target = w.Target;
                     target.IsProjectile = EntityId == -1;
                     target.IsFakeTarget = EntityId == -2;
                     target.TargetPos = TargetPos;
-                    target.Entity = EntityId > 0 ? MyEntities.GetEntityByIdOrDefault(EntityId) : null;
-
-                    var state = EntityId != 0 ? Target.States.Acquired : Target.States.Expired;
-                    target.StateChange(EntityId != 0, state);
-
-                    if (!allowChange)
-                        target.TargetChanged = false;
-
-                    if (w.Target.HasTarget && allowChange)  {
-
-                        if (!w.Target.IsProjectile && !w.Target.IsFakeTarget && w.Target.Entity == null)  {
-                            var oldChange = w.Target.TargetChanged;
-                            w.Target.StateChange(true, Target.States.Invalid);
-                            w.Target.TargetChanged = !w.FirstSync && oldChange;
-                            w.FirstSync = false;
-                        }
-                        else if (w.Target.IsProjectile)  {
-
-                            GridAi.TargetType targetType;
-                            GridAi.AcquireProjectile(w, out targetType);
-
-                            if (targetType == GridAi.TargetType.None)  {
-                                if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen)
-                                    w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
-                                if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
-                            }
-                        }
-                    }
+                    target.ClientDirty = true;
                 }
             }
 
