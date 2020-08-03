@@ -184,11 +184,8 @@ namespace WeaponCore.Support
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
 
-                    if (weapon.State.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                        weapon.State.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
-
-                    if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                        Session.FutureEvents.Schedule(Session.DelayedComputeStorage, weapon, 240);
+                    //if (weapon.State.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                        //weapon.State.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                     var notValid = !IsWorking || !Data.Repo.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
                     if (!notValid)

@@ -255,9 +255,13 @@ namespace WeaponCore.Platform
                     }
                 }
             }
+            /*
             else if (alignedChange && !weapon.System.DelayCeaseFire)
+            {
+                Log.Line($"StopShooting9");
                 weapon.StopShooting();
-
+            }
+            */
             targetLock = isTracking && weapon.Target.IsAligned;
             return isTracking;
         }

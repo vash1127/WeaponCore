@@ -277,7 +277,7 @@ namespace WeaponCore
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
                     {"Inventories", () => GetAi()?.Inventories.Count.ToString() ?? string.Empty },
-                    {"OutOfAmmoWeapons", () => GetAi()?.OutOfAmmoWeapons.Count.ToString() ?? string.Empty },
+                    {"OutOfAmmoWeapons", () => GetAi()?.Construct.RootAi.Construct.OutOfAmmoWeapons.Count.ToString() ?? string.Empty },
                     {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
                     {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
@@ -415,9 +415,9 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShotsFired}"); }
                     },
-                    {"SingleShotCounter", () => {
+                    {"ShootOnce", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.SingleShotCounter}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShootOnce}"); }
                     },
                     {"Overheated", () => {
                             var message = string.Empty;
@@ -439,10 +439,19 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentMags}"); }
                     },
-                    {"HasInventory", () => {
+                    {"LastEventCanDelay", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.HasInventory}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.LastEventCanDelay}"); }
                     },
+                    {"AnimationDelay", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.AnimationDelayTick <= w.Comp.Session.Tick}"); }
+                    },
+                    {"ShootDelay", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ShootTick <= w.Comp.Session.Tick}"); }
+                    },
+
                 };
 
                 return weaponFields;

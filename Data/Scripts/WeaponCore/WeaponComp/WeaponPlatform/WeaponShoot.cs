@@ -109,7 +109,7 @@ namespace WeaponCore.Platform
                 #endregion
 
                 #region Projectile Creation
-                var rnd = Comp.Data.Repo.State.Weapons[WeaponId].WeaponRandom;
+                var rnd = Comp.Data.Repo.Targets[WeaponId].WeaponRandom;
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;
@@ -118,14 +118,14 @@ namespace WeaponCore.Platform
                 for (int i = 0; i < bps; i++) {
 
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        if (State.CurrentAmmo == 0) {
-                            if (System.Session.IsClient)
-                                SingleShotCounter = 0;
-                            else if (System.Session.MpActive)
-                                System.Session.SendCompState(Comp, PacketType.StateNoAmmo);
+                        if (State.CurrentAmmo == 0 && !ShootOnce) {
+                            if (System.Session.MpActive && System.Session.IsServer)
+                                System.Session.SendCompState(Comp);
+
+                            Log.Line($"Shoot break");
                             break;
                         }
-                        State.CurrentAmmo--;
+                        if (State.CurrentAmmo > 0) --State.CurrentAmmo;
 
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
                             if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
@@ -238,8 +238,15 @@ namespace WeaponCore.Platform
                                 System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern,  Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
                         }
                     }
-
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
+
+                    if (ShootOnce) {
+                        Log.Line($"WeaponShoot ShootOnce - State:{State.Action}");
+                        if (System.Session.IsServer && ShootOnce)
+                            State.WeaponMode(Comp, ShootActions.ShootOff);
+
+                        ShootOnce = false;
+                    }
 
                     if (HeatPShot > 0) {
 
@@ -258,7 +265,6 @@ namespace WeaponCore.Platform
                             }
                             EventTriggerStateChanged(EventTriggers.Overheated, true);
                             State.Overheated = true;
-                            StopShooting();
                             break;
                         }
                     }
@@ -273,7 +279,7 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (State.CurrentAmmo == 0 && !Reload() && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
+                if ((System.Session.IsServer && State.CurrentAmmo == 0 && !Session.ComputeServerStorage(this) || System.Session.IsClient && State.CurrentAmmo == 0 && State.CurrentMags == 0) && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
 
                     if (ShotsFired == System.ShotsPerBurst) {
                         uint delay = 0;
@@ -285,6 +291,7 @@ namespace WeaponCore.Platform
                                 EventTriggerStateChanged(EventTriggers.BurstReload, true);
                                 ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                                 StopShooting();
+                                Log.Line($"StopShooting ShotsPerBurst delayed");
 
                             }, null, delay);
                         }
@@ -294,6 +301,7 @@ namespace WeaponCore.Platform
                         if (IsShooting) {
                             ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
                             StopShooting();
+                            Log.Line($"StopShooting ShotsPerBurst immediate");
                         }
 
                         if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
@@ -303,21 +311,12 @@ namespace WeaponCore.Platform
                         FinishBurst = true;
                 }
 
-                if (SingleShotCounter > 0)  {
-
-                    var reset = --SingleShotCounter == 0;
-
-                    if (System.Session.IsServer && reset) 
-                        State.WeaponMode(Comp, ShootActions.ShootOff);
-                }
-
                 _muzzlesToFire.Clear();
 
                 if (System.Session.IsServer && selfDamage > 0)
                     ((IMyDestroyableObject)Comp.MyCube.SlimBlock).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.MyCube.EntityId);
 
                 #endregion
-
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
             }
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }

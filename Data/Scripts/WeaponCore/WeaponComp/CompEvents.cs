@@ -109,19 +109,6 @@ namespace WeaponCore.Support
                 if (Session.BlockInventoryItems[BlockInventory].TryRemove(item.ItemId, out removedItem))
                     Session.BetterInventoryItems.Return(removedItem);
             }
-
-            for (int i = 0; i < Platform.Weapons.Length; i++)
-            {
-                var w = Platform.Weapons[i];
-
-                if (!Session.IsCreative && !w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && w.ActiveAmmoDef.AmmoDefinitionId == item.Content.GetId())
-                {
-                    if (amount < 0)
-                        ComputeStorage(w);
-                    else
-                        w.Reload();
-                }
-            }
         }
 
         private void OnMarkForClose(MyEntity myEntity)
@@ -174,6 +161,8 @@ namespace WeaponCore.Support
                             w.Target.Reset(Session.Tick, Target.States.Offline);
                     }
                 }
+                if (Session.MpActive && Session.IsServer)
+                    Session.SendCompData(this);
             }
             catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
         }

@@ -50,7 +50,7 @@ namespace WeaponCore
                 {
                     var base64 = Convert.FromBase64String(rawData);
                     load = MyAPIGateway.Utilities.SerializeFromBinary<CompDataValues>(base64);
-                    validData = (load != null && load.Set != null && load.State != null);
+                    validData = (load?.Set != null && load.State != null);
                 }
                 catch (Exception e)
                 {
@@ -62,21 +62,22 @@ namespace WeaponCore
             {
                 Repo = load;
                 if (Comp.Session.IsServer)
-                    Repo.Targets = new WeaponStateValues.TransferTarget[Comp.Platform.Weapons.Length];
+                    Repo.Targets = new TransferTarget[Comp.Platform.Weapons.Length];
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
                     var w = Comp.Platform.Weapons[i];
                     w.State = Repo.State.Weapons[i];
 
                     if (Comp.Session.IsServer)  {
-                        w.State.WeaponInit(w);
-                        Repo.Targets[i] = new WeaponStateValues.TransferTarget();
+                        Repo.Targets[i] = new TransferTarget();
                         w.TargetData = Repo.Targets[i];
+                        w.TargetData.WeaponRandom = new WeaponRandomGenerator();
+                        w.TargetData.WeaponInit(w);
                     }
                     else
                     {
-                        w.State.WeaponRefreshClient(w);
                         w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
+                        w.TargetData.WeaponRefreshClient(w);
                     }
                 }
             }
@@ -85,7 +86,7 @@ namespace WeaponCore
                 Repo = new CompDataValues {
                     State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length]},
                     Set = new CompSettingsValues(),
-                    Targets = new WeaponStateValues.TransferTarget[Comp.Platform.Weapons.Length],
+                    Targets = new TransferTarget[Comp.Platform.Weapons.Length],
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
@@ -93,9 +94,10 @@ namespace WeaponCore
                     var w = Comp.Platform.Weapons[i];
                     w.State = state;
 
-                    Repo.Targets[i] = new WeaponStateValues.TransferTarget();
+                    Repo.Targets[i] = new TransferTarget();
                     w.TargetData = Repo.Targets[i];
-                    state.WeaponInit(w);
+                    w.TargetData.WeaponRandom = new WeaponRandomGenerator();
+                    w.TargetData.WeaponInit(w);
                 }
 
                 Repo.Set.Range = -1;

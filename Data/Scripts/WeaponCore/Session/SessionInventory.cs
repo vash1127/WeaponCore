@@ -13,40 +13,34 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal static void ComputeStorage(Weapon weapon)
+        internal static bool ComputeServerStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
             var s = comp.Session;
-            if (weapon.System.DesignatorWeapon) return;
+            if (weapon.System.DesignatorWeapon) return false;
+            
+            if (!comp.MyCube.HasInventory || weapon.PullingAmmo) return false;
 
-            if (!s.IsClient) {
+            var ammo = weapon.ActiveAmmoDef;
+            if (!ammo.AmmoDef.Const.EnergyAmmo)
+            {
+                if (!s.IsCreative) {
 
-                if (!comp.MyCube.HasInventory || weapon.PullingAmmo) return;
-                var ammo = weapon.ActiveAmmoDef;
-
-                if (!ammo.AmmoDef.Const.EnergyAmmo)
-                {
-                    if (!s.IsCreative) {
-
-                        weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
-                        weapon.CurrentAmmoVolume = (float) weapon.State.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
-                        weapon.Reload();
-
-                        var freeSpace = weapon.System.MaxAmmoVolume - (float) comp.BlockInventory.CurrentVolume;
-                        if (!weapon.PullingAmmo && weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && freeSpace > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume) {
-                            weapon.PullingAmmo = true;
-                            s.UniqueListAdd(weapon, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo);
-                            s.UniqueListAdd(comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
-                        }
+                    weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
+                    weapon.CurrentAmmoVolume = (float)weapon.State.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                    var freeSpace = weapon.System.MaxAmmoVolume - (float) comp.BlockInventory.CurrentVolume;
+                    if (!weapon.PullingAmmo && weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && freeSpace > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume && (s.Tick - weapon.LastInventoryTick > 600 || weapon.CheckInventorySystem ))
+                    {
+                        weapon.CheckInventorySystem = false;
+                        weapon.LastInventoryTick = s.Tick;
+                        weapon.PullingAmmo = true;
+                        s.UniqueListAdd(weapon, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo);
+                        s.UniqueListAdd(comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
                     }
-                    else weapon.Reload();
                 }
-                else weapon.Reload();
             }
-            else if (!weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-                //Log.Line($"ComputeStorage: mags: {weapon.State.Sync.CurrentMags} - ammo: {weapon.State.Sync.CurrentAmmo} - hasInventory: {weapon.State.Sync.HasInventory} - noMagsToload:{weapon.NoMagsToLoad}");
-                weapon.Reload();
-            }
+            
+            return !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && weapon.ServerReload();
         }
 
         internal void AmmoPull()  // In Thread

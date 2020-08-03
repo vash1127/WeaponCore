@@ -76,35 +76,33 @@ namespace WeaponCore.Support
             weapon.TargetData.TargetPos = TargetPos;
             weapon.TargetData.WeaponId = weapon.WeaponId;
             weapon.TargetData.EntityId = weapon.Target.TargetId;
-            
-            weapon.State.WeaponRandom.ResetRandom();
             weapon.System.Session.SendTargetChange(weapon.Comp, weapon.WeaponId);
-            //Log.Line($"PushTargetToClient: {weapon.Comp.MyCube.EntityId}");
+            
+            //Log.Line($"PushTargetToClient: target:{weapon.TargetData.EntityId} - status:{weapon.Target.CurrentState} - {weapon.System.Session.PrunedPacketsToClient.ContainsKey(weapon.Comp.Data.Repo)}");
         }
 
-        internal void ClientUpdate(Weapon w, WeaponStateValues.TransferTarget tData)
+        internal void ClientUpdate(Weapon w, TransferTarget tData)
         {
             MyEntity targetEntity = null;
             if (tData.EntityId <= 0 || MyEntities.TryGetEntityById(tData.EntityId, out targetEntity, true))
             {
-                States state;
-                if (tData.EntityId != 0)
-                    state = tData.EntityId == -2 ? States.Fake : States.Acquired;
-                else state = States.Expired;
                 Entity = targetEntity;
+                
+                if (tData.EntityId == 0)
+                    w.Target.Reset(w.System.Session.Tick, States.ServerReset);
+                else  {
+                    StateChange(true, tData.EntityId == -2 ? States.Fake : States.Acquired);
+                    
+                    if (w.Target.IsProjectile) {
 
-                StateChange(state != States.Expired, state);
+                        GridAi.TargetType targetType;
+                        GridAi.AcquireProjectile(w, out targetType);
 
-                if (w.Target.IsProjectile)
-                {
-                    GridAi.TargetType targetType;
-                    GridAi.AcquireProjectile(w, out targetType);
-
-                    if (targetType == GridAi.TargetType.None)
-                    {
-                        if (w.NewTarget.CurrentState != States.NoTargetsSeen)
-                            w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
-                        if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
+                        if (targetType == GridAi.TargetType.None) {
+                            if (w.NewTarget.CurrentState != States.NoTargetsSeen)
+                                w.NewTarget.Reset(w.Comp.Session.Tick, States.NoTargetsSeen);
+                            if (w.Target.CurrentState != States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, States.NoTargetsSeen, !w.Comp.Data.Repo.State.TrackingReticle);
+                        }
                     }
                 }
 

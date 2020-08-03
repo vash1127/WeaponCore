@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer = w.Comp.Data.Repo.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer =  w.Comp.Data.Repo.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -45,7 +45,7 @@ namespace WeaponCore.Projectiles
                 p.Info.BaseDamagePool = w.BaseDamage;
                 p.Info.EnableGuidance = w.Comp.Data.Repo.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
-                p.Info.WeaponRng = w.State.WeaponRandom;
+                p.Info.WeaponRng = w.TargetData.WeaponRandom;
                 p.Info.LockOnFireState = w.LockOnFireState;
                 p.Info.ShooterVel = w.Comp.Ai.GridVel;
 

@@ -186,20 +186,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
         }
 
-        internal void CheckWeaponStorage()
-        {
-            for (int i = 0; i < CheckStorage.Count; i++)
-                ComputeStorage(CheckStorage[i]);
-
-            CheckStorage.Clear();
-        }
-
-        internal void DelayedComputeStorage(object o)
-        {
-            var w = o as Weapon;
-            ComputeStorage(w);
-        }
-
         internal void CheckDirtyGrids()
         {
             if (!NewGrids.IsEmpty)

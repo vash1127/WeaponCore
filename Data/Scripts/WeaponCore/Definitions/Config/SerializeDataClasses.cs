@@ -3,6 +3,7 @@ using ProtoBuf;
 using System.Collections.Generic;
 using System.ComponentModel;
 using VRageMath;
+using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent;
 using static WeaponCore.WeaponStateValues;
 
@@ -17,8 +18,6 @@ namespace WeaponCore
         CompState,
         ConstructGroups,
         ConstructFoci,
-        StateReload,
-        StateNoAmmo,
         TargetChange,
         RequestSetDps,
         RequestSetGuidance,
@@ -33,7 +32,6 @@ namespace WeaponCore
         FocusUpdate,
         FocusLockUpdate,
         ReticleUpdate,
-        TargetExpireUpdate,
         ClientAiAdd,
         ClientAiRemove,
         RequestMouseStates,
@@ -50,6 +48,7 @@ namespace WeaponCore
         SendSingleShot,
         ClientNotify,
         ServerVersion,
+        WeaponState,
     }
 
     #region packets
@@ -76,6 +75,8 @@ namespace WeaponCore
     [ProtoInclude(24, typeof(FloatUpdatePacket))]
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
     [ProtoInclude(26, typeof(ServerVersionPacket))]
+    [ProtoInclude(27, typeof(WeaponStatePacket))]
+
 
     public class Packet
     {
@@ -219,6 +220,22 @@ namespace WeaponCore
         {
             base.CleanUp();
             Data = null;
+        }
+    }
+
+    [ProtoContract]
+    public class WeaponStatePacket : Packet
+    {
+        [ProtoMember(1)] internal WeaponStateValues Data;
+        [ProtoMember(2)] internal int WeaponId;
+
+        public WeaponStatePacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+            WeaponId = 0;
         }
     }
 
@@ -548,18 +565,17 @@ namespace WeaponCore
 
             TurretCurrentCounter = syncFrom.TurretCurrentCounter;
             ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
-
             TurretRandom = new Random(CurrentSeed);
             ClientProjectileRandom = new Random(CurrentSeed);
         }
 
-        internal void ResetRandom()
+        internal void ReInitRandom()
         {
             TurretCurrentCounter = 0;
             ClientProjectileCurrentCounter = 0;
+            CurrentSeed = TurretRandom.Next(1, int.MaxValue);
             TurretRandom = new Random(CurrentSeed);
             ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
         }
     }
 

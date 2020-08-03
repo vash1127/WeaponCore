@@ -90,9 +90,6 @@ namespace WeaponCore
                 if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
                     ProblemRep.GenerateReport(cube);
 
-                if (CheckStorage.Count > 0)
-                    CheckWeaponStorage();
-
                 if (!IsClient && (!WeaponToPullAmmo.Empty || !WeaponsToRemoveAmmo.Empty) && ITask.IsComplete)
                     StartAmmoTask();
 
@@ -117,6 +114,14 @@ namespace WeaponCore
                 FutureEvents.Tick(Tick);
                 
                 if (!DedicatedServer && ActiveControlBlock != null && !InMenu) Wheel.UpdatePosition();
+
+                if (MpActive) {
+                    if (PacketsToClient.Count > 0 || PrunedPacketsToClient.Count > 0)
+                        ProccessServerPacketsForClients();
+                    if (PacketsToServer.Count > 0)
+                        ProccessClientPacketsForServer();
+                }
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -249,7 +254,7 @@ namespace WeaponCore
                     if (UiInput.InputChanged && ActiveControlBlock != null) 
                         SendMouseUpdate(TrackingAi, ActiveControlBlock);
                     
-                    if (TrackingAi != null)  {
+                    if (TrackingAi != null && TargetUi.DrawReticle)  {
                         var dummyTarget = PlayerDummyTargets[PlayerId];
                         if (dummyTarget.LastUpdateTick == Tick)
                             SendFakeTargetUpdate(TrackingAi, dummyTarget);

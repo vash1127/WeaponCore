@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 using ProtoBuf;
-using Sandbox.Game.Entities;
-using VRage.Game.Entity;
-using VRage.Utils;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef;
 using static WeaponCore.Support.WeaponComponent;
@@ -282,6 +276,7 @@ namespace WeaponCore
 
         internal void ResetCompState(WeaponComponent comp, bool apply, long playerId)
         {
+            Log.Line($"ResetCompState");
             var o = comp.Data.Repo.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
 
@@ -347,28 +342,24 @@ namespace WeaponCore
         [ProtoMember(6)] public LockModes[] Locked;
 
 
-        public bool Sync(GridAi ai, FocusData sync)
+        public void Sync(GridAi ai, FocusData sync)
         {
-            if (sync.Revision > Revision)
+            if (ai.Session.IsServer || sync.Revision > Revision)
             {
                 Revision = sync.Revision;
                 ActiveId = sync.ActiveId;
                 HasFocus = sync.HasFocus;
                 DistToNearestFocusSqr = sync.DistToNearestFocusSqr;
 
-                for (int i = 0; i < Target.Length; i++)
-                {
+                for (int i = 0; i < Target.Length; i++) {
                     Target[i] = sync.Target[i];
                     Locked[i] = sync.Locked[i];
                 }
 
                 if (ai == ai.Construct.RootAi)
                     ai.Construct.UpdateLeafFoci();
-
-                return true;
             }
-
-            return false;
+            else Log.Line($"FocusData older revision:  {sync.Revision}  > {Revision}");
         }
     }
 }

@@ -50,6 +50,9 @@ namespace WeaponCore
                 if (IsServer && ai.ScanBlockGroups)
                     ai.Construct.GroupRefresh(ai);
 
+                if (IsServer && Tick60 && ai.Construct.RootAi.Construct.RecentItems.Count > 0)
+                    ai.Construct.RootAi.Construct.CheckEmptyWeapons();
+
                 ///
                 /// Comp update section
                 ///
@@ -125,15 +128,23 @@ namespace WeaponCore
                             w.FinishBurst = false;
 
                             if (w.IsShooting)
+                            {
+                                Log.Line($"StopShooting !hadPower");
                                 w.StopShooting();
+                            }
                         }
 
                         ///
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.Reloading && w.State.CurrentAmmo <= 0)
-                            w.Reload();
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading && w.State.CurrentAmmo == 0) {
+                            if (IsServer)
+                                ComputeServerStorage(w);
+                            else
+                                w.ClientReload();
+                        }
+
 
                         ///
                         /// Update Weapon Hud Info
@@ -216,16 +227,23 @@ namespace WeaponCore
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.CurrentAmmo <= 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Data.Repo.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
-                        var validShootStates = fakeTarget || w.State.Action == ShootOn || w.SingleShotCounter > 0 || w.AiShooting && w.State.Action == ShootOff;
+                        var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
                         var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
+                        var shotReady = canShoot && (shoot || w.LockOnFireState);
 
-                        if (canShoot && (shoot || w.LockOnFireState)) {
+                        if (shotReady || w.ShootOnce) {
+
+                            if (shotReady && w.ShootOnce)
+                            {
+                                Log.Line($"ShootOnce overriden");
+                                w.ShootOnce = false;
+                            }
 
                             if (MpActive && HandlesInput && !ManualShot)
                                 ManualShot = !validShootStates && !w.FinishBurst && !delayedFire;
@@ -254,10 +272,10 @@ namespace WeaponCore
                             }
                             else if (w.ChargeUntilTick > Tick && !w.ActiveAmmoDef.AmmoDef.Const.MustCharge) {
                                 w.Charging = true;
-                                w.StopShooting(false, false);
+                                w.StopShooting(false);
                             }
                         }
-                        else if (w.IsShooting)  
+                        else if (w.IsShooting)
                             w.StopShooting();
                         else if (w.BarrelSpinning)
                             w.SpinBarrel(true);

@@ -201,7 +201,7 @@ namespace WeaponCore
                 mIds[(int) packet.PType] = packet.MId;
 
                 comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
-                SendCompState(comp, PacketType.CompState);
+                SendCompState(comp);
 
                 data.Report.PacketValid = true;
             }
@@ -232,8 +232,6 @@ namespace WeaponCore
                     GroupInfo group;
                     if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
                     {
-                        //Log.Line($"ServerOverRidesUpdate Comp2");
-
                         group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
                         data.Report.PacketValid = true;
                     }
@@ -257,7 +255,6 @@ namespace WeaponCore
                         GroupInfo groups;
                         if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
                         {
-                            Log.Line($"ServerOverRidesUpdate myGrid3");
                             groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session, SteamToPlayer[overRidesPacket.SenderId]);
                             data.Report.PacketValid = true;
                         }
@@ -438,7 +435,6 @@ namespace WeaponCore
                 MaxTrajectory = hitPacket.MaxTrajectory,
                 Type = NewProjectile.Kind.Client
             });
-            //CreateFixedWeaponProjectile(weapon, targetEnt, origin, direction, hitPacket.Velocity, hitPacket.Up, hitPacket.MuzzleId, weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef, hitPacket.MaxTrajectory);
 
             data.Report.PacketValid = true;
             return true;
@@ -501,9 +497,8 @@ namespace WeaponCore
             var comp = ent?.Components.Get<WeaponComponent>();
 
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                ++comp.Platform.Weapons[i].SingleShotCounter;
+                comp.Platform.Weapons[i].ShootOnce = true;
             PacketsToClient.Add(new PacketInfo { Packet = packet });
 
             data.Report.PacketValid = true;

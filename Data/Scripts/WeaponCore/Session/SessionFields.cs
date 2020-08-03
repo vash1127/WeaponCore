@@ -31,7 +31,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 17;
+        internal const int VersionControl = 20;
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
@@ -66,6 +66,8 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<AiDataPacket> PacketAiPool = new MyConcurrentPool<AiDataPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompDataPacket> PacketCompDataPool = new MyConcurrentPool<CompDataPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<WeaponStatePacket> WeaponStatePool = new MyConcurrentPool<WeaponStatePacket>(128, packet => packet.CleanUp());
+
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
         //internal readonly MyConcurrentPool<InventoryUpdate> InventoryUpdatePool = new MyConcurrentPool<InventoryUpdate>(64, inventory => inventory.Clean());
@@ -134,7 +136,6 @@ namespace WeaponCore
         internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
-        internal readonly List<Weapon> CheckStorage = new List<Weapon>();
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
         internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);

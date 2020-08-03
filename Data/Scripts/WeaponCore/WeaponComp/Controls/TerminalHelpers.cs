@@ -50,7 +50,8 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+                        if (comp.Data.Repo.State.TerminalAction != ShootOnce) 
+                            comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))
@@ -66,8 +67,8 @@ namespace WeaponCore.Control
 
                             return;
                         }
-
-                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        if (comp.Data.Repo.State.TerminalAction != ShootOn)
+                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -98,8 +99,8 @@ namespace WeaponCore.Control
 
                             return;
                         }
-
-                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        if (comp.Data.Repo.State.TerminalAction != ShootOn)
+                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -130,7 +131,8 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                        if (comp.Data.Repo.State.TerminalAction != ShootOff)
+                            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;
@@ -268,7 +270,11 @@ namespace WeaponCore.Control
 
                     }
 
-                    if(w.IsShooting) w.StopShooting();
+                    if (w.IsShooting)
+                    {
+                        w.StopShooting();
+                        Log.Line($"StopShooting OnOffAnimations");
+                    }
                     if (w.DrawingPower) w.StopPowerDraw();
 
                     if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
@@ -276,12 +282,6 @@ namespace WeaponCore.Control
                 }
                 else
                 {
-                    if (!w.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                        MyAPIGateway.Utilities.InvokeOnGameThread(() =>
-                        {
-                            if (!w.Reload())
-                                Session.ComputeStorage(w);
-                        });
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(TurnOn, out delay))
                         w.WeaponReadyTick = comp.Session.Tick + delay;

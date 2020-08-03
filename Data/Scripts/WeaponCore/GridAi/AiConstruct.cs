@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -125,6 +126,8 @@ namespace WeaponCore.Support
 
         public class Constructs
         {
+            internal readonly HashSet<MyDefinitionId> RecentItems = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
+            internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
             internal readonly List<string> MenuBlockGroups = new List<string>();
             internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
@@ -151,6 +154,9 @@ namespace WeaponCore.Support
 
             internal void Refresh(GridAi ai, RefreshCaller caller)
             {
+                if (RootAi.Session.IsServer && RootAi.Construct.RecentItems.Count > 0) 
+                    CheckEmptyWeapons();
+
                 OptimalDps = 0;
                 BlockCount = 0;
                 FatMap fatMap;
@@ -324,10 +330,19 @@ namespace WeaponCore.Support
 
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
-                    {
                         ai.Construct.Data.Repo.FocusData.Sync(ai, RootAi.Construct.Data.Repo.FocusData);
-                    }
                 }
+            }
+
+            internal void CheckEmptyWeapons()
+            {
+                Log.Line($"[CheckEmpty] Weapons:{OutOfAmmoWeapons.Count} - Items:{RecentItems.Count}");
+                foreach (var w in OutOfAmmoWeapons)
+                {
+                    if (RecentItems.Contains(w.ActiveAmmoDef.AmmoDefinitionId))
+                        w.CheckInventorySystem = true;
+                }
+                RecentItems.Clear();
             }
 
             internal void GroupRefresh(GridAi ai)

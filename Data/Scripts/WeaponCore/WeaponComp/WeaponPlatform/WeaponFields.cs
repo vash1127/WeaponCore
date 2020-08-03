@@ -48,11 +48,11 @@ namespace WeaponCore.Platform
         internal bool HeatLoopRunning;
         internal bool PreFired;
         internal bool FinishBurst;
-        internal bool FirstSync = true;
         internal bool LockOnFireState;
         internal bool ReloadSubscribed;
         internal bool CanHoldMultMags;
         internal bool ScheduleAmmoChange;
+        internal bool ShootOnce;
         internal uint GravityTick;
         internal uint ShootTick;
         internal uint TicksPerShot;
@@ -69,7 +69,6 @@ namespace WeaponCore.Platform
         internal int BarrelRate;
         internal int ArmorHits;
         internal int ShotsFired;
-        internal int SingleShotCounter;
 
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
@@ -100,7 +99,7 @@ namespace WeaponCore.Platform
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
         internal WeaponStateValues State;
-        internal WeaponStateValues.TransferTarget TargetData;
+        internal TransferTarget TargetData;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 
@@ -135,6 +134,7 @@ namespace WeaponCore.Platform
         internal uint ChargeDelayTicks;
         internal uint AnimationDelayTick;
         internal uint LastHeatUpdateTick;
+        internal uint LastInventoryTick;
         internal int ProposedAmmoId = -1;
         internal int FireCounter;
         internal int UniqueId;
@@ -143,6 +143,8 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int EnergyPriority;
         internal int LastBlockCount;
+        internal int ClientReloadId;
+        internal int ClientSimShots;
         internal float HeatPShot;
         internal float HsRate;
         internal float CurrentAmmoVolume;
@@ -196,11 +198,12 @@ namespace WeaponCore.Platform
         internal bool Charging;
         internal bool ClientStaticShot;
 
+        internal bool CheckInventorySystem = true;
         internal bool ShotReady
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || State.CurrentAmmo <= 0);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || State.CurrentAmmo == 0);
                 var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;

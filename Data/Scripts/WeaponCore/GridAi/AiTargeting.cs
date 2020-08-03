@@ -192,7 +192,7 @@ namespace WeaponCore.Support
             var numOfTargets = ai.SortedTargets.Count;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
 
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.State.WeaponRandom, Acquire);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets, w.TargetData.WeaponRandom, Acquire);
             try
             {
                 for (int x = 0; x < adjTargetCount; x++)
@@ -248,7 +248,7 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.State.WeaponRandom, Acquire, w, true)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.TargetData.WeaponRandom, Acquire, w, true)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
@@ -493,9 +493,10 @@ namespace WeaponCore.Support
                             if (Weapon.CanShootTarget(w, ref cubePos, targetLinVel, targetAccel, out predictedPos)) {
 
                                 ai.Session.ClosestRayCasts++;
-                                if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer)) {
-                                    var hitGrid = hit.HitEntity as MyCubeGrid;
-                                    if (hitGrid != null && grid == hitGrid || hit.HitEntity is MyFloatingObject || hit.HitEntity is IMyCharacter || w.Comp.Ai.Targets.ContainsKey(hitGrid)) 
+                                if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
+                                    var hitEnt = hit.HitEntity?.GetTopMostParent() as MyEntity;
+                                    var hitGrid = hitEnt as MyCubeGrid;
+                                    if (hitGrid != null && grid == hitGrid || hit.HitEntity is MyFloatingObject || hit.HitEntity is IMyCharacter || hitEnt != null && w.Comp.Ai.Targets.ContainsKey(hitEnt)) 
                                         bestTest = true;
                                 }
                             }
@@ -613,7 +614,7 @@ namespace WeaponCore.Support
             }
 
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.State.WeaponRandom, Acquire);
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize, w.TargetData.WeaponRandom, Acquire);
 
             for (int x = 0; x < numOfTargets; x++)
             {

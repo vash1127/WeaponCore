@@ -117,10 +117,13 @@ namespace WeaponCore
                         break;
                     }
                     case PacketType.CompState:
-                    case PacketType.StateReload:
-                    case PacketType.StateNoAmmo:
                     {
                         ClientStateUpdate(packetObj);
+                        break;
+                    }
+                    case PacketType.WeaponState:
+                    {
+                        ClientWeaponStateUpdate(packetObj);
                         break;
                     }
                     case PacketType.CompData:
@@ -133,20 +136,15 @@ namespace WeaponCore
                         ClientTargetUpdate(packetObj);
                         break;
                     }
-                    case PacketType.TargetExpireUpdate: 
-                    {
-                            ClientTargetExpireUpdate(packetObj);
-                            break;
-                    }
                     case PacketType.FullMouseUpdate: 
                     {
-                            ClientFullMouseUpdate(packetObj);
-                            break;
+                        ClientFullMouseUpdate(packetObj);
+                        break;
                     }
                     case PacketType.SendSingleShot: 
                     {
-                            ClientSendSingleShot(packetObj);
-                            break;
+                        ClientSendSingleShot(packetObj);
+                        break;
                     }
                     case PacketType.ProblemReport: 
                     {
@@ -391,8 +389,6 @@ namespace WeaponCore
                         break;
                     }
                     case PacketType.CompState:
-                    case PacketType.StateReload:
-                    case PacketType.StateNoAmmo:
                     {
                         var iPacket = (CompStatePacket)pInfo.Packet;
                         PacketStatePool.Return(iPacket);

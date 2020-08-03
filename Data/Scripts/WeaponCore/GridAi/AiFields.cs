@@ -45,7 +45,6 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
-        internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();

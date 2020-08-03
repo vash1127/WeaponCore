@@ -415,14 +415,18 @@ namespace WeaponCore.Api
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
             {
+                var foundWeapon = false;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (!allWeapons && i != weaponId) continue;
+                    
+                    foundWeapon = true;
+                    comp.Platform.Weapons[i].State.WeaponMode(comp, ShootOnce);
+                }
 
-                    var w = comp.Platform.Weapons[i];
-                    ++w.SingleShotCounter;
-                    w.Comp.Session.SendSingleShot(w.Comp);
-                    w.State.WeaponMode(comp, ShootOnce);
+                if (foundWeapon)  {
+                    var weaponKey = allWeapons ? -1 : weaponId;
+                    comp.ShootOnceCheck(true, weaponKey);
                 }
             }
         }

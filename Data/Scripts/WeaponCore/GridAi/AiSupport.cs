@@ -189,14 +189,6 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void CheckReload(MyDefinitionId magId)
-        {
-            foreach (var w in OutOfAmmoWeapons) {
-                if (w.ActiveAmmoDef.AmmoDefinitionId == magId)
-                    Session.CheckStorage.Add(w);
-            }
-        }
-
         internal void UpdateGridPower()
         {
             try
