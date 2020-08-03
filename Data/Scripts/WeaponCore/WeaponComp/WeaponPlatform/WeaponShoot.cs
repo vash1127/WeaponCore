@@ -241,7 +241,6 @@ namespace WeaponCore.Platform
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
 
                     if (ShootOnce) {
-                        Log.Line($"WeaponShoot ShootOnce - State:{State.Action}");
                         if (System.Session.IsServer && ShootOnce)
                             State.WeaponMode(Comp, ShootActions.ShootOff);
 

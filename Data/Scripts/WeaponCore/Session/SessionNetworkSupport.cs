@@ -244,7 +244,7 @@ namespace WeaponCore
                     }
 
 
-                    PrunedPacketsToClient[comp.Data.Repo] = new PacketInfo {
+                    PrunedPacketsToClient[w.TargetData] = new PacketInfo {
                         Entity = comp.MyCube,
                         Packet = iPacket,
                     };
@@ -311,7 +311,7 @@ namespace WeaponCore
                             iPacket.Data = w.State;
                         }
                         else {
-                            iPacket = WeaponStatePool.Get();
+                            iPacket = PacketWeaponPool.Get();
                             iPacket.MId = ++w.MIds[(int)type];
                             iPacket.EntityId = w.Comp.MyCube.EntityId;
                             iPacket.SenderId = MultiplayerId;
@@ -841,7 +841,6 @@ namespace WeaponCore
 
         internal void SendPlayerControlRequest(WeaponComponent comp, long playerId, CompStateValues.ControlMode mode)
         {
-            Log.Line($"SendPlayerControlRequest");
             if (IsClient)
             {
                 uint[] mIds;
@@ -881,7 +880,6 @@ namespace WeaponCore
 
         internal void SendAmmoCycleRequest(WeaponComponent comp, int weaponId, int newAmmoId)
         {
-            Log.Line($"SendAmmoCycleRequest");
             if (IsClient)
             {
                 uint[] mIds;
@@ -922,7 +920,6 @@ namespace WeaponCore
 
         internal void SendSetCompFloatRequest(WeaponComponent comp, float newDps, PacketType type)
         {
-            Log.Line($"SendSetCompFloatRequest");
             if (IsClient)
             {
                 uint[] mIds;
@@ -959,7 +956,6 @@ namespace WeaponCore
 
         internal void SendSetCompBoolRequest(WeaponComponent comp, bool newBool, PacketType type)
         {
-            Log.Line($"SendSetCompBoolRequest");
             if (IsClient)
             {
                 uint[] mIds;
@@ -996,7 +992,6 @@ namespace WeaponCore
 
         internal void SendTrackReticleUpdate(WeaponComponent comp, bool track)
         {
-            Log.Line($"SendTrackReticleUpdate");
             if (IsClient) {
 
                 uint[] mIds;
@@ -1021,7 +1016,6 @@ namespace WeaponCore
 
         internal void SendSingleShot(WeaponComponent comp)
         {
-            Log.Line($"SendSingleShot");
             if (IsClient)
             {
                 PacketsToServer.Add(new Packet

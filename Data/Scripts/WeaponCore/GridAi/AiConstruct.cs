@@ -36,9 +36,6 @@ namespace WeaponCore.Support
 
         public void SubGridChanges(bool clean = false, bool dupCheck = false)
         {
-            if (MarkedForClose)
-                Log.Line($"SubGridChanges and Marked: Closed:{Closed} - dupCheck:{dupCheck}");
-
             foreach (var grid in AddSubGrids)
             {
                 if (grid == MyGrid) continue;
@@ -336,7 +333,6 @@ namespace WeaponCore.Support
 
             internal void CheckEmptyWeapons()
             {
-                Log.Line($"[CheckEmpty] Weapons:{OutOfAmmoWeapons.Count} - Items:{RecentItems.Count}");
                 foreach (var w in OutOfAmmoWeapons)
                 {
                     if (RecentItems.Contains(w.ActiveAmmoDef.AmmoDefinitionId))

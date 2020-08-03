@@ -66,7 +66,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<AiDataPacket> PacketAiPool = new MyConcurrentPool<AiDataPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompDataPacket> PacketCompDataPool = new MyConcurrentPool<CompDataPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(128, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<WeaponStatePacket> WeaponStatePool = new MyConcurrentPool<WeaponStatePacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<WeaponStatePacket> PacketWeaponPool = new MyConcurrentPool<WeaponStatePacket>(128, packet => packet.CleanUp());
 
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);

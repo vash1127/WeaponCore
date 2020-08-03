@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
+using VRageRender.Messages;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 

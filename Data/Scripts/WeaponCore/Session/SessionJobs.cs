@@ -75,10 +75,8 @@ namespace WeaponCore
                     using (db.Ai.DbLock.AcquireExclusiveUsing())
                     {
                         var ai = db.Ai;
-                        if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version)
-                        {
+                        if (ai.MyGrid.MarkedForClose || ai.MarkedForClose || db.Version != ai.Version) {
                             ai.ScanInProgress = false;
-                            Log.Line($"[ProcessDbsCallBack] gridMarked: {ai.MyGrid.MarkedForClose} - aiMarked: {ai.MarkedForClose} - versionMismatch: {db.Version != ai.Version}");
                             continue;
                         }
 

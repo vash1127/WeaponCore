@@ -400,6 +400,12 @@ namespace WeaponCore
                         PacketTargetPool.Return(iPacket);
                         break;
                     }
+                    case PacketType.WeaponState:
+                    {
+                        var iPacket = (WeaponStatePacket)pInfo.Packet;
+                        PacketWeaponPool.Return(iPacket);
+                        break;
+                    }
                     case PacketType.ConstructGroups:
                     {
                         var iPacket = (ConstructGroupsPacket)pInfo.Packet;

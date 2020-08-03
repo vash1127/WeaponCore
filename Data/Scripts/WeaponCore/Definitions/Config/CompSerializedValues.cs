@@ -63,20 +63,33 @@ namespace WeaponCore
         {
             ++Revision;
             ++State.Revision;
-            if (type == PacketType.CompData)
+            Session.PacketInfo info;
+            if (type == PacketType.CompData && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.State, out info)) {
                 comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.State);
+                comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
+            }
 
-            for (int i = 0; i < Targets.Length; i++)
-            {
+            for (int i = 0; i < Targets.Length; i++) {
+
                 var t = Targets[i];
                 var ws = State.Weapons[i];
                 
                 if (type == PacketType.CompData) {
-                    comp.Session.PrunedPacketsToClient.Remove(t);
-                    comp.Session.PrunedPacketsToClient.Remove(ws);
+                    if (comp.Session.PrunedPacketsToClient.TryGetValue(t, out info)) {
+                        comp.Session.PrunedPacketsToClient.Remove(t);
+                        comp.Session.PacketTargetPool.Return((TargetPacket)info.Packet);
+                    }
+                    if (comp.Session.PrunedPacketsToClient.TryGetValue(ws, out info)) {
+                        comp.Session.PrunedPacketsToClient.Remove(ws);
+                        comp.Session.PacketWeaponPool.Return((WeaponStatePacket)info.Packet);
+                    }
                 }
-                else if (type == PacketType.CompState)
-                    comp.Session.PrunedPacketsToClient.Remove(ws);
+                else if (type == PacketType.CompState) {
+                    if (comp.Session.PrunedPacketsToClient.TryGetValue(ws, out info)) {
+                        comp.Session.PrunedPacketsToClient.Remove(ws);
+                        comp.Session.PacketWeaponPool.Return((WeaponStatePacket)info.Packet);
+                    }
+                }
 
                 ++t.Revision;
                 t.WeaponRandom.ReInitRandom();

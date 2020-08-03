@@ -151,7 +151,7 @@ namespace WeaponCore.Support
         internal void OnAddedToSceneTasks()
         {
             try {
-                if (Ai.MarkedForClose)
+                if (Ai.MarkedForClose && !Ai.Session.MpActive)
                     Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - CubeMarked:{MyCube.MarkedForClose} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} - AiContainsMe:{Ai.WeaponBase.ContainsKey(MyCube)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(MyCube.CubeGrid)}[{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}]");
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
