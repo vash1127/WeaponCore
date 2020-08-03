@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;

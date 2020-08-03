@@ -109,6 +109,8 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\ModelSupport\PartInfo.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponReload.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponAv.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponController.cs" />
