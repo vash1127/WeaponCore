@@ -50,8 +50,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction != ShootOnce) 
-                            comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
                     };
                 }
                 else if (a.Id.Equals("Shoot"))

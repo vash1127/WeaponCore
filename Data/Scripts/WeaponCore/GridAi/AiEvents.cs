@@ -136,7 +136,7 @@ namespace WeaponCore.Support
                 if (amount <= 0 || item.Content == null || inventory == null) return;
                 var itemDef = item.Content.GetObjectId();
                 if (Session.AmmoDefIds.Contains(itemDef))
-                    Construct.RootAi.Construct.RecentItems.Add(itemDef);
+                    Construct.RootAi?.Construct.RecentItems.Add(itemDef);
             }
             catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex}"); }
         }

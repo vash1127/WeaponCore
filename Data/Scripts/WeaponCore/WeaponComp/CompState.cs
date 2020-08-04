@@ -80,7 +80,6 @@ namespace WeaponCore.Support
                 if (w.Reload.CurrentAmmo > 0 && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;
             }
-
             if (numOfWeapons == loadedWeapons) {
 
                 for (int i = 0; i < Platform.Weapons.Length; i++)  {
@@ -111,7 +110,6 @@ namespace WeaponCore.Support
             var cycleShootOn = Data.Repo.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
             addShot = !cycleShootClick && action == ShootActions.ShootOnce;
-
             if (Data.Repo.Set.Overrides.ManualControl || Data.Repo.Set.Overrides.TargetPainter) {
                 Data.Repo.Set.Overrides.ManualControl = false;
                 Data.Repo.Set.Overrides.TargetPainter = false;

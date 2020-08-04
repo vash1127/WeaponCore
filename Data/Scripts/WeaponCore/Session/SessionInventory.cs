@@ -13,36 +13,6 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal static bool ComputeServerStorage(Weapon weapon)
-        {
-            var comp = weapon.Comp;
-            var s = comp.Session;
-            if (weapon.System.DesignatorWeapon) return false;
-            
-            if (!comp.MyCube.HasInventory || weapon.PullingAmmo) return false;
-
-            var ammo = weapon.ActiveAmmoDef;
-            if (!ammo.AmmoDef.Const.EnergyAmmo)
-            {
-                if (!s.IsCreative) {
-
-                    weapon.Reload.CurrentMags = comp.BlockInventory.GetItemAmount(ammo.AmmoDefinitionId);
-                    weapon.CurrentAmmoVolume = (float)weapon.Reload.CurrentMags * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
-                    var freeSpace = weapon.System.MaxAmmoVolume - (float) comp.BlockInventory.CurrentVolume;
-                    if (!weapon.PullingAmmo && weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && freeSpace > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume && (s.Tick - weapon.LastInventoryTick > 600 || weapon.CheckInventorySystem ))
-                    {
-                        weapon.CheckInventorySystem = false;
-                        weapon.LastInventoryTick = s.Tick;
-                        weapon.PullingAmmo = true;
-                        s.UniqueListAdd(weapon, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo);
-                        s.UniqueListAdd(comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
-                    }
-                }
-            }
-            
-            return !weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && weapon.ServerReload();
-        }
-
         internal void AmmoPull()  // In Thread
         {
             Weapon weapon = null;

@@ -7,6 +7,8 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
+
+
         internal void ChangeActiveAmmoServer()
         {
             var proposed = ProposedAmmoId != -1;
@@ -96,7 +98,7 @@ namespace WeaponCore.Platform
                     ScheduleAmmoChange = true;
 
                 if (proposedAmmo.AmmoDef.Const.Reloadable && canReload)
-                    Session.ComputeServerStorage(this);
+                    ComputeServerStorage();
             }
             else 
                 System.Session.SendAmmoCycleRequest(Comp, WeaponId, newAmmoId);
@@ -175,19 +177,42 @@ namespace WeaponCore.Platform
             return true;
         }
 
+        internal bool ComputeServerStorage()
+        {
+            if (System.DesignatorWeapon || !Comp.IsWorking || !Comp.MyCube.HasInventory || PullingAmmo || !ActiveAmmoDef.AmmoDef.Const.Reloadable) return false;
+
+            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+            {
+                var s = Comp.Session;
+                if (!s.IsCreative)
+                {
+
+                    Reload.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
+                    CurrentAmmoVolume = (float)Reload.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                    var freeSpace = System.MaxAmmoVolume - (float)Comp.BlockInventory.CurrentVolume;
+                    if (!PullingAmmo && CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume && (s.Tick - LastInventoryTick > 600 || CheckInventorySystem))
+                    {
+                        CheckInventorySystem = false;
+                        LastInventoryTick = s.Tick;
+                        PullingAmmo = true;
+                        s.UniqueListAdd(this, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo);
+                        s.UniqueListAdd(Comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
+                    }
+                }
+            }
+
+            var invalidStates = Reload.CurrentAmmo != 0 || Reloading;
+            return !invalidStates && ServerReload();
+        }
+
         internal bool ServerReload()
         {
-            var invalidState = Reload.CurrentAmmo != 0 || Reloading || PullingAmmo || State == null || ActiveAmmoDef.AmmoDef?.Const == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
-            if (invalidState || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || !Comp.IsWorking)
-                return false;
-
             if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
                 return false;
 
             var hadNoMags = NoMagsToLoad;
-            var scheduledChange = ScheduleAmmoChange;
 
-            if (scheduledChange) 
+            if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
 
             var hasAmmo = HasAmmo();

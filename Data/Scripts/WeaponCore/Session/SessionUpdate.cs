@@ -128,10 +128,7 @@ namespace WeaponCore
                             w.FinishBurst = false;
 
                             if (w.IsShooting)
-                            {
-                                Log.Line($"StopShooting !hadPower");
                                 w.StopShooting();
-                            }
                         }
 
                         ///
@@ -140,7 +137,7 @@ namespace WeaponCore
 
                         if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading && w.Reload.CurrentAmmo == 0) {
                             if (IsServer)
-                                ComputeServerStorage(w);
+                                w.ComputeServerStorage();
                             else
                                 w.ClientReload();
                         }
@@ -238,12 +235,6 @@ namespace WeaponCore
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
 
                         if (shotReady || w.ShootOnce) {
-
-                            if (shotReady && w.ShootOnce)
-                            {
-                                Log.Line($"ShootOnce overriden");
-                                w.ShootOnce = false;
-                            }
 
                             if (MpActive && HandlesInput && !ManualShot)
                                 ManualShot = !validShootStates && !w.FinishBurst && !delayedFire;

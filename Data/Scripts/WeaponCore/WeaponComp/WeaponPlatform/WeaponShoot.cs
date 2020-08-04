@@ -118,7 +118,7 @@ namespace WeaponCore.Platform
                 for (int i = 0; i < bps; i++) {
 
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        if (Reload.CurrentAmmo == 0 && !ShootOnce) {
+                        if (Reload.CurrentAmmo == 0) {
                             if (System.Session.MpActive && System.Session.IsServer)
                                 System.Session.SendWeaponReload(this);
                             break;
@@ -238,10 +238,9 @@ namespace WeaponCore.Platform
                     }
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
 
-                    if (ShootOnce) {
-                        if (System.Session.IsServer && ShootOnce)
+                    if (ShootOnce || State.Action == ShootActions.ShootOnce) {
+                        if (System.Session.IsServer) 
                             State.WeaponMode(Comp, ShootActions.ShootOff);
-
                         ShootOnce = false;
                     }
 
@@ -280,7 +279,7 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if ((System.Session.IsServer && Reload.CurrentAmmo == 0 && !Session.ComputeServerStorage(this) || System.Session.IsClient && Reload.CurrentAmmo == 0 && Reload.CurrentMags == 0) && ActiveAmmoDef.AmmoDef.Const.BurstMode) {
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (System.Session.IsServer && !ComputeServerStorage() || System.Session.IsClient && !ClientReload())) {
 
                     if (ShotsFired == System.ShotsPerBurst) {
                         uint delay = 0;

@@ -164,7 +164,6 @@ namespace WeaponCore
 
                 if (change)
                 {
-                    Log.Line($"ApplySettings change detected");
                     ResetCompState(comp, true, playerId);
                     if (comp.Session.MpActive)
                         comp.Session.SendCompData(comp);
@@ -221,10 +220,7 @@ namespace WeaponCore
             ResetCompState(comp, false, playerId);
 
             if (comp.Session.MpActive)
-            {
-                Log.Line($"change group state and send compdata");
                 comp.Session.SendCompData(comp);
-            }
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)
@@ -276,7 +272,6 @@ namespace WeaponCore
 
         internal void ResetCompState(WeaponComponent comp, bool apply, long playerId)
         {
-            Log.Line($"ResetCompState");
             var o = comp.Data.Repo.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
 
@@ -359,7 +354,7 @@ namespace WeaponCore
                 if (ai == ai.Construct.RootAi)
                     ai.Construct.UpdateLeafFoci();
             }
-            else Log.Line($"FocusData older revision:  {sync.Revision}  > {Revision}");
+            //else Log.Line($"FocusData older revision:  {sync.Revision}  > {Revision}");
         }
     }
 }

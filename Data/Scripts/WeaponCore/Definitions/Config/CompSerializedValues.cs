@@ -234,11 +234,15 @@ namespace WeaponCore
             else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
-        public void TerminalActionSetter(WeaponComponent comp, ShootActions action)
+        public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false)
         {
             TerminalAction = action;
+
             for (int i = 0; i < Weapons.Length; i++)
-                Weapons[i].WeaponMode(comp, action, true);
+                Weapons[i].Action = action;
+
+            if (syncWeapons)
+                comp.Session.SendCompState(comp);
         }
 
     }
@@ -257,13 +261,13 @@ namespace WeaponCore
             Action = sync.Action;
         }
 
-        public void WeaponMode(WeaponComponent comp, ShootActions action, bool calledByTerminal = false)
+        public void WeaponMode(WeaponComponent comp, ShootActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
-            if (!calledByTerminal)
+            if (resetTerminalAction)
                 comp.Data.Repo.State.TerminalAction = ShootActions.ShootOff;
 
             Action = action;
-            if (comp.Session.MpActive && comp.Session.IsServer && !calledByTerminal)
+            if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)
                 comp.Session.SendCompState(comp);
         }
 
