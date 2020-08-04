@@ -31,7 +31,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 20;
+        internal const int VersionControl = 22;
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
@@ -66,7 +66,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<AiDataPacket> PacketAiPool = new MyConcurrentPool<AiDataPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompDataPacket> PacketCompDataPool = new MyConcurrentPool<CompDataPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompStatePacket> PacketStatePool = new MyConcurrentPool<CompStatePacket>(128, packet => packet.CleanUp());
-        internal readonly MyConcurrentPool<WeaponStatePacket> PacketWeaponPool = new MyConcurrentPool<WeaponStatePacket>(128, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(128, packet => packet.CleanUp());
 
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(128, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);

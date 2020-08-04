@@ -277,7 +277,6 @@ namespace WeaponCore
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
                     {"Inventories", () => GetAi()?.Inventories.Count.ToString() ?? string.Empty },
-                    {"OutOfAmmoWeapons", () => GetAi()?.Construct.RootAi.Construct.OutOfAmmoWeapons.Count.ToString() ?? string.Empty },
                     {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
                     {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
@@ -405,7 +404,7 @@ namespace WeaponCore
                     },
                     {"AmmoTypeId", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.AmmoTypeId}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.AmmoTypeId}"); }
                     },
                     {"Action", () => {
                             var message = string.Empty;
@@ -429,15 +428,15 @@ namespace WeaponCore
                     },
                     {"CurrentAmmo", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentAmmo}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentAmmo}"); }
                     },
                     {"CurrentCharge", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentCharge}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentCharge}"); }
                     },
                     {"CurrentMags", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.State.CurrentMags}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentMags}"); }
                     },
                     {"LastEventCanDelay", () => {
                             var message = string.Empty;
@@ -883,7 +882,7 @@ namespace WeaponCore
                 }
 
                 foreach (var w in WeaponsToUpdate)  {
-                    w.State.CurrentMags = w.Comp.BlockInventory.GetItemAmount(w.ActiveAmmoDef.AmmoDefinitionId);
+                    w.Reload.CurrentMags = w.Comp.BlockInventory.GetItemAmount(w.ActiveAmmoDef.AmmoDefinitionId);
                     w.PullingAmmo = false;
                 }
                 //session.InventoryUpdatePool.Return(this);

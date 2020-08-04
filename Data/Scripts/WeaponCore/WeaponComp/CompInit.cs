@@ -34,7 +34,10 @@ namespace WeaponCore.Support
 
                     var weapon = Platform.Weapons[i];
 
-                    weapon.ChangeActiveAmmo();
+                    if (Session.IsServer)
+                        weapon.ChangeActiveAmmoServer();
+                    else weapon.ChangeActiveAmmoClient();
+
                     if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable) {
                         Log.Line($"[{weapon.System.WeaponName}] Your first ammoType is broken, I am crashing now Dave.");
                         return;

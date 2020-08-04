@@ -77,7 +77,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
 
-                if (w.State.CurrentAmmo > 0 && (checkAllWeapons || weaponToCheck == i))
+                if (w.Reload.CurrentAmmo > 0 && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;
             }
 
@@ -86,7 +86,7 @@ namespace WeaponCore.Support
                 for (int i = 0; i < Platform.Weapons.Length; i++)  {
 
                     var w = Platform.Weapons[i];
-                    
+
                     if (!checkAllWeapons && i != weaponToCheck)
                         continue;
                     
@@ -226,7 +226,7 @@ namespace WeaponCore.Support
                             else if (w.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                                 Session.FutureEvents.Schedule(w.TurnOnAV, null, 100);
 
-                            if (w.State.CurrentAmmo == 0)
+                            if (w.Reload.CurrentAmmo == 0)
                                 w.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);                            
                         }
                     }

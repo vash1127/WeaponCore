@@ -66,7 +66,9 @@ namespace WeaponCore
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
                     var w = Comp.Platform.Weapons[i];
+                    
                     w.State = Repo.State.Weapons[i];
+                    w.Reload = Repo.Reloads[i];
 
                     if (Comp.Session.IsServer)  {
                         Repo.Targets[i] = new TransferTarget();
@@ -76,6 +78,7 @@ namespace WeaponCore
                     }
                     else
                     {
+                        w.Reload = w.Comp.Data.Repo.Reloads[w.WeaponId];
                         w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
                         w.TargetData.WeaponRefreshClient(w);
                     }
@@ -87,12 +90,16 @@ namespace WeaponCore
                     State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length]},
                     Set = new CompSettingsValues(),
                     Targets = new TransferTarget[Comp.Platform.Weapons.Length],
+                    Reloads = new WeaponReloadValues[Comp.Platform.Weapons.Length],
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
                     var state = Repo.State.Weapons[i] = new WeaponStateValues();
+                    var reload = Repo.Reloads[i] = new WeaponReloadValues();
                     var w = Comp.Platform.Weapons[i];
+                    
                     w.State = state;
+                    w.Reload = reload;
 
                     Repo.Targets[i] = new TransferTarget();
                     w.TargetData = Repo.Targets[i];

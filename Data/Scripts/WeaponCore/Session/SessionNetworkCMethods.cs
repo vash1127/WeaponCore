@@ -176,18 +176,19 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientWeaponStateUpdate(PacketObj data)
+        private bool ClientWeaponReloadUpdate(PacketObj data)
         {
             var packet = data.Packet;
-            var weaponStatePacket = (WeaponStatePacket)packet;
+            var weaponReloadPacket = (WeaponReloadPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
-            var w = comp.Platform.Weapons[weaponStatePacket.WeaponId];
+            
+            var w = comp.Platform.Weapons[weaponReloadPacket.WeaponId];
             if (w.MIds[(int)packet.PType] < packet.MId)  {
                 w.MIds[(int)packet.PType] = packet.MId;
 
-                w.State.Sync(w, weaponStatePacket.Data);
+                w.Reload.Sync(w, weaponReloadPacket.Data);
             }
 
             data.Report.PacketValid = true;

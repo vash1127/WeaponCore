@@ -121,9 +121,9 @@ namespace WeaponCore
                         ClientStateUpdate(packetObj);
                         break;
                     }
-                    case PacketType.WeaponState:
+                    case PacketType.WeaponReload:
                     {
-                        ClientWeaponStateUpdate(packetObj);
+                        ClientWeaponReloadUpdate(packetObj);
                         break;
                     }
                     case PacketType.CompData:
@@ -400,10 +400,10 @@ namespace WeaponCore
                         PacketTargetPool.Return(iPacket);
                         break;
                     }
-                    case PacketType.WeaponState:
+                    case PacketType.WeaponReload:
                     {
-                        var iPacket = (WeaponStatePacket)pInfo.Packet;
-                        PacketWeaponPool.Return(iPacket);
+                        var iPacket = (WeaponReloadPacket)pInfo.Packet;
+                        PacketReloadPool.Return(iPacket);
                         break;
                     }
                     case PacketType.ConstructGroups:

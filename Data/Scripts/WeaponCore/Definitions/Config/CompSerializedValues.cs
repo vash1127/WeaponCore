@@ -19,6 +19,7 @@ namespace WeaponCore
         [ProtoMember(3)] public CompSettingsValues Set;
         [ProtoMember(4)] public CompStateValues State;
         [ProtoMember(5)] public TransferTarget[] Targets;
+        [ProtoMember(6)] public WeaponReloadValues[] Reloads;
 
         public void Sync(WeaponComponent comp, CompDataValues sync)
         {
@@ -31,6 +32,7 @@ namespace WeaponCore
                 for (int i = 0; i < Targets.Length; i++) {
                     var w = comp.Platform.Weapons[i];
                     sync.Targets[i].SyncTarget(w);
+                    Reloads[i].Sync(w, sync.Reloads[i]);
                 }
 
                 var s = comp.Session;
@@ -50,21 +52,25 @@ namespace WeaponCore
             State.PlayerId = -1;
             State.TrackingReticle = false;
             State.TerminalAction = ShootActions.ShootOff;
-            foreach (var w in State.Weapons)
+            for (int i = 0; i < Targets.Length; i++)
             {
-                w.Heat = 0;
-                w.Overheated = false;
-                w.Action = ShootActions.ShootOff;
+                var ws = State.Weapons[i];
+                var wr = Reloads[i];
+                ws.Heat = 0;
+                ws.Overheated = false;
+                ws.Action = ShootActions.ShootOff;
+                wr.StartId = 0;
+                wr.EndId = 0;
             }
             ResetCompDataRevisions();
         }
 
-        public void UpdateCompDataPacketInfo(WeaponComponent comp, PacketType type)
+        public void UpdateCompDataPacketInfo(WeaponComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
             Session.PacketInfo info;
-            if (type == PacketType.CompData && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.State, out info)) {
+            if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.State, out info)) {
                 comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.State);
                 comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
             }
@@ -72,28 +78,21 @@ namespace WeaponCore
             for (int i = 0; i < Targets.Length; i++) {
 
                 var t = Targets[i];
-                var ws = State.Weapons[i];
+                var wr = Reloads[i];
                 
-                if (type == PacketType.CompData) {
+                if (clean) {
                     if (comp.Session.PrunedPacketsToClient.TryGetValue(t, out info)) {
                         comp.Session.PrunedPacketsToClient.Remove(t);
                         comp.Session.PacketTargetPool.Return((TargetPacket)info.Packet);
                     }
-                    if (comp.Session.PrunedPacketsToClient.TryGetValue(ws, out info)) {
-                        comp.Session.PrunedPacketsToClient.Remove(ws);
-                        comp.Session.PacketWeaponPool.Return((WeaponStatePacket)info.Packet);
+                    if (comp.Session.PrunedPacketsToClient.TryGetValue(wr, out info)) {
+                        comp.Session.PrunedPacketsToClient.Remove(wr);
+                        comp.Session.PacketReloadPool.Return((WeaponReloadPacket)info.Packet);
                     }
                 }
-                else if (type == PacketType.CompState) {
-                    if (comp.Session.PrunedPacketsToClient.TryGetValue(ws, out info)) {
-                        comp.Session.PrunedPacketsToClient.Remove(ws);
-                        comp.Session.PacketWeaponPool.Return((WeaponStatePacket)info.Packet);
-                    }
-                }
-
+                ++wr.Revision;
                 ++t.Revision;
                 t.WeaponRandom.ReInitRandom();
-                ++ws.Revision;
             }
         }
 
@@ -103,11 +102,64 @@ namespace WeaponCore
             State.Revision = 0;
             for (int i = 0; i < Targets.Length; i++)  {
                 Targets[i].Revision = 0;
-                State.Weapons[i].Revision = 0;
+                Reloads[i].Revision = 0;
             }
         }
     }
 
+    [ProtoContract]
+    public class WeaponReloadValues
+    {
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2)] public int CurrentAmmo; //save
+        [ProtoMember(3)] public float CurrentCharge; //save
+        [ProtoMember(4)] public MyFixedPoint CurrentMags; // save
+        [ProtoMember(5)] public int AmmoTypeId; //save
+        [ProtoMember(6)] public int StartId; //save
+        [ProtoMember(7)] public int EndId; //save
+
+        public void Sync(Weapon w, WeaponReloadValues sync)
+        {
+            if (sync.Revision > Revision)
+            {
+                Revision = sync.Revision;
+                EndId = sync.EndId;
+                StartId = sync.StartId;
+                CurrentCharge = sync.CurrentCharge;
+                CurrentMags = sync.CurrentMags;
+
+                if (w.State.Action == ShootActions.ShootOnce && sync.CurrentAmmo > 0) CurrentAmmo = sync.CurrentAmmo - 1;
+                else if (w.ClientSimShots != 0) UpdateShotSimulation(w, sync);
+                else CurrentAmmo = sync.CurrentAmmo;
+
+                AmmoTypeId = sync.AmmoTypeId;
+
+                w.ChangeActiveAmmoClient();
+                if (CurrentAmmo == 0)
+                    w.ClientReload(true);
+            }
+            else Log.Line($"WeaponStateValues older revision:  {sync.Revision}  > {Revision}");
+        }
+
+        public void UpdateShotSimulation(Weapon w, WeaponReloadValues sync)
+        {
+            if (AmmoTypeId != sync.AmmoTypeId) {
+                CurrentAmmo = sync.CurrentAmmo;
+                w.ClientSimShots = 0;
+            }
+            else if (w.ClientEndId != EndId) {
+
+                if (EndId - w.ClientEndId > 1)
+                    Log.Line($"ReloadId skipped: {EndId - w.ClientEndId}");
+
+                var simLoss = w.ClientSimShots - CurrentAmmo;
+                CurrentAmmo = sync.CurrentAmmo - simLoss;
+                w.ClientSimShots = 0;
+
+                Log.Line($"simLoss: {simLoss} - newAmount:{CurrentAmmo} - wasAmount:{sync.CurrentAmmo}");
+            }
+        }
+    }
 
     [ProtoContract]
     public class CompSettingsValues
@@ -176,10 +228,8 @@ namespace WeaponCore
                 PlayerId = sync.PlayerId;
                 Control = sync.Control;
                 TerminalAction = sync.TerminalAction;
-                for (int i = 0; i < sync.Weapons.Length; i++) {
-                    var w = comp.Platform.Weapons[i];
-                    w.State.Sync(w, sync.Weapons[i]);
-                }
+                for (int i = 0; i < sync.Weapons.Length; i++) 
+                    comp.Platform.Weapons[i].State.Sync(sync.Weapons[i]);
             }
             else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
@@ -196,52 +246,15 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponStateValues
     {
-        [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public float Heat; // don't save
-        [ProtoMember(3)] public bool Overheated; //don't save
-        [ProtoMember(4)] public int CurrentAmmo; //save
-        [ProtoMember(5)] public float CurrentCharge; //save
-        [ProtoMember(6)] public MyFixedPoint CurrentMags; // save
-        [ProtoMember(7)] public int AmmoTypeId; //save
-        [ProtoMember(8)] public int ReloadId; //save
-        [ProtoMember(9), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
+        [ProtoMember(1)] public float Heat; // don't save
+        [ProtoMember(2)] public bool Overheated; //don't save
+        [ProtoMember(3), DefaultValue(ShootActions.ShootOff)] public ShootActions Action = ShootActions.ShootOff; // save
 
-        public void Sync(Weapon w, WeaponStateValues sync)
+        public void Sync(WeaponStateValues sync)
         {
-            if (sync.Revision > Revision)
-            {
-                Revision = sync.Revision;
-                ReloadId = sync.ReloadId;
-                CurrentCharge = sync.CurrentCharge;
-                CurrentMags = sync.CurrentMags;
-                Heat = sync.Heat;
-                Overheated = sync.Overheated;
-                AmmoTypeId = sync.AmmoTypeId;
-                Action = sync.Action;
-                
-                if (w.ClientSimShots != 0) {
-
-                    if (w.ClientReloadId != ReloadId) {
-
-                        if (ReloadId - w.ClientReloadId > 1)
-                            Log.Line($"ReloadId skipped: {ReloadId - w.ClientReloadId}");
-
-                        var simLoss = w.ClientSimShots - CurrentAmmo;
-                        CurrentAmmo = sync.CurrentAmmo - simLoss;
-                        w.ClientSimShots = 0;
-
-                        Log.Line($"simLoss: {simLoss} - newAmount:{CurrentAmmo} - wasAmount:{sync.CurrentAmmo}");
-                    }
-                }
-                else 
-                    CurrentAmmo = sync.CurrentAmmo;
-                
-
-                w.ChangeActiveAmmo();
-                if (CurrentAmmo == 0) 
-                    w.ClientReload(true);
-            }
-            else Log.Line($"WeaponStateValues older revision:  {sync.Revision}  > {Revision}");
+            Heat = sync.Heat;
+            Overheated = sync.Overheated;
+            Action = sync.Action;
         }
 
         public void WeaponMode(WeaponComponent comp, ShootActions action, bool calledByTerminal = false)
@@ -250,7 +263,7 @@ namespace WeaponCore
                 comp.Data.Repo.State.TerminalAction = ShootActions.ShootOff;
 
             Action = action;
-            if (comp.Session.MpActive && comp.Session.IsServer)
+            if (comp.Session.MpActive && comp.Session.IsServer && !calledByTerminal)
                 comp.Session.SendCompState(comp);
         }
 

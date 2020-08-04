@@ -37,7 +37,6 @@ namespace WeaponCore.Platform
                     TargetData.ClearTarget();
                     if (!Comp.Data.Repo.State.TrackingReticle)
                         Target.PushTargetToClient(this);
-                    //Comp.Session.SendTargetExpiredUpdate(Comp, WeaponId);
                 } 
             }
 

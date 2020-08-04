@@ -155,6 +155,7 @@ namespace WeaponCore
             uint[] mIds;
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
+
                 comp.Data.Repo.State.PlayerId = cyclePacket.PlayerId;
                 comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
                 data.Report.PacketValid = true;

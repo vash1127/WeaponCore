@@ -235,6 +235,8 @@ namespace WeaponCore.Platform
                 {                        
                     EventTriggerStateChanged(EventTriggers.Overheated, false);
                     State.Overheated = false;
+                    if (System.Session.MpActive && System.Session.IsServer)
+                        System.Session.SendCompState(Comp);
                 }
 
                 if (State.Heat > 0)

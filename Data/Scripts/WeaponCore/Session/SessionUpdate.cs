@@ -121,7 +121,7 @@ namespace WeaponCore
 
                             if (IsServer) {
                                 w.State.WeaponMode(comp, ShootOff);
-                                w.State.CurrentAmmo = 0;
+                                w.Reload.CurrentAmmo = 0;
                             }
 
                             w.Reloading = false;
@@ -138,7 +138,7 @@ namespace WeaponCore
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading && w.State.CurrentAmmo == 0) {
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading && w.Reload.CurrentAmmo == 0) {
                             if (IsServer)
                                 ComputeServerStorage(w);
                             else
@@ -227,7 +227,7 @@ namespace WeaponCore
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.State.CurrentAmmo == 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.Reload.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
                         var fakeTarget = comp.Data.Repo.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
@@ -320,16 +320,16 @@ namespace WeaponCore
 
                 if (Tick60 && w.DrawingPower)
                 {
-                    if ((w.State.CurrentCharge + w.UseablePower) < w.MaxCharge)
+                    if ((w.Reload.CurrentCharge + w.UseablePower) < w.MaxCharge)
                     {
-                        w.State.CurrentCharge += w.UseablePower;
+                        w.Reload.CurrentCharge += w.UseablePower;
                         comp.CurrentCharge += w.UseablePower;
 
                     }
                     else
                     {
-                        comp.CurrentCharge -= (w.State.CurrentCharge - w.MaxCharge);
-                        w.State.CurrentCharge = w.MaxCharge;
+                        comp.CurrentCharge -= (w.Reload.CurrentCharge - w.MaxCharge);
+                        w.Reload.CurrentCharge = w.MaxCharge;
                     }
                 }
 
@@ -376,7 +376,7 @@ namespace WeaponCore
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.State.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.Reload.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
                     if (!w.Comp.UnlimitedPower)
                     {

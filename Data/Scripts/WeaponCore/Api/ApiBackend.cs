@@ -661,9 +661,12 @@ namespace WeaponCore.Api
                     var ammoType = w.System.AmmoTypes[i];
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
-                        w.State.AmmoTypeId = i;
-                        if (comp.Session.MpActive && comp.Session.IsServer)
-                            comp.Session.SendCompData(comp);
+                        if (comp.Session.IsServer) {
+                            w.Reload.AmmoTypeId = i;
+                            if (comp.Session.MpActive)
+                                comp.Session.SendWeaponReload(w);
+                        }
+
 
                         break;
                     }

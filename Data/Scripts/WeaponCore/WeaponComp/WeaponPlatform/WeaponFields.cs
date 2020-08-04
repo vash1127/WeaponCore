@@ -49,7 +49,6 @@ namespace WeaponCore.Platform
         internal bool FinishBurst;
         internal bool LockOnFireState;
         internal bool ReloadSubscribed;
-        internal bool CanHoldMultMags;
         internal bool ScheduleAmmoChange;
         internal bool ShootOnce;
         internal uint GravityTick;
@@ -98,6 +97,7 @@ namespace WeaponCore.Platform
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
         internal WeaponStateValues State;
+        internal WeaponReloadValues Reload;
         internal TransferTarget TargetData;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
@@ -135,6 +135,7 @@ namespace WeaponCore.Platform
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
         internal int ProposedAmmoId = -1;
+        internal int ClientAmmoId = -1;
         internal int FireCounter;
         internal int UniqueId;
         internal int RateOfFire;
@@ -142,7 +143,8 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int EnergyPriority;
         internal int LastBlockCount;
-        internal int ClientReloadId;
+        internal int ClientEndId;
+        internal int ClientStartId;
         internal int ClientSimShots;
         internal float HeatPShot;
         internal float HsRate;
@@ -202,7 +204,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || State.CurrentAmmo == 0);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Reload.CurrentAmmo == 0);
                 var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;

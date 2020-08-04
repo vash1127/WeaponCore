@@ -381,8 +381,8 @@ namespace WeaponCore.Control
             var w = comp.Platform.Weapons[weaponId];
 
             var availAmmo = w.System.AmmoTypes.Length;
-            var currActive = w.System.AmmoTypes[w.State.AmmoTypeId];
-            var next = (w.State.AmmoTypeId + 1) % availAmmo;
+            var currActive = w.System.AmmoTypes[w.Reload.AmmoTypeId];
+            var next = (w.Reload.AmmoTypeId + 1) % availAmmo;
             var currDef = w.System.AmmoTypes[next];
 
             var change = false;

@@ -48,7 +48,7 @@ namespace WeaponCore
         SendSingleShot,
         ClientNotify,
         ServerVersion,
-        WeaponState,
+        WeaponReload,
     }
 
     #region packets
@@ -75,7 +75,7 @@ namespace WeaponCore
     [ProtoInclude(24, typeof(FloatUpdatePacket))]
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
     [ProtoInclude(26, typeof(ServerVersionPacket))]
-    [ProtoInclude(27, typeof(WeaponStatePacket))]
+    [ProtoInclude(27, typeof(WeaponReloadPacket))]
 
 
     public class Packet
@@ -224,12 +224,12 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class WeaponStatePacket : Packet
+    public class WeaponReloadPacket : Packet
     {
-        [ProtoMember(1)] internal WeaponStateValues Data;
+        [ProtoMember(1)] internal WeaponReloadValues Data;
         [ProtoMember(2)] internal int WeaponId;
 
-        public WeaponStatePacket() { }
+        public WeaponReloadPacket() { }
 
         public override void CleanUp()
         {

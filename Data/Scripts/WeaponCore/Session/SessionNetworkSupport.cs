@@ -189,7 +189,7 @@ namespace WeaponCore
             if (IsServer) {
 
                 const PacketType type = PacketType.CompData;
-                comp.Data.Repo.UpdateCompDataPacketInfo(comp, type);
+                comp.Data.Repo.UpdateCompDataPacketInfo(comp, true);
 
                 PacketInfo oldInfo;
                 CompDataPacket iPacket;
@@ -224,7 +224,7 @@ namespace WeaponCore
                 if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo)) {
 
                     const PacketType type = PacketType.TargetChange;
-                    comp.Data.Repo.UpdateCompDataPacketInfo(comp, type);
+                    comp.Data.Repo.UpdateCompDataPacketInfo(comp);
 
                     var w = comp.Platform.Weapons[weaponId];
                     PacketInfo oldInfo;
@@ -262,7 +262,7 @@ namespace WeaponCore
                 if (!comp.Session.PrunedPacketsToClient.ContainsKey(comp.Data.Repo)) {
 
                     const PacketType type = PacketType.CompState;
-                    comp.Data.Repo.UpdateCompDataPacketInfo(comp, type);
+                    comp.Data.Repo.UpdateCompDataPacketInfo(comp);
 
                     PacketInfo oldInfo;
                     CompStatePacket iPacket;
@@ -292,46 +292,41 @@ namespace WeaponCore
             else Log.Line($"SendCompState should never be called on Client");
         }
 
-        internal void SendWeaponState(Weapon w)
+        internal void SendWeaponReload(Weapon w)
         {
             if (IsServer) {
 
                 if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo)) {
 
-                    if (!PrunedPacketsToClient.ContainsKey(w.Comp.Data.Repo.State)) {
+                    const PacketType type = PacketType.WeaponReload;
+                    w.Comp.Data.Repo.UpdateCompDataPacketInfo(w.Comp);
 
-                        const PacketType type = PacketType.WeaponState;
-                        w.Comp.Data.Repo.UpdateCompDataPacketInfo(w.Comp, type);
-
-                        PacketInfo oldInfo;
-                        WeaponStatePacket iPacket;
-                        if (PrunedPacketsToClient.TryGetValue(w.State, out oldInfo)) {
-                            iPacket = (WeaponStatePacket)oldInfo.Packet;
-                            iPacket.EntityId = w.Comp.MyCube.EntityId;
-                            iPacket.Data = w.State;
-                        }
-                        else {
-                            iPacket = PacketWeaponPool.Get();
-                            iPacket.MId = ++w.MIds[(int)type];
-                            iPacket.EntityId = w.Comp.MyCube.EntityId;
-                            iPacket.SenderId = MultiplayerId;
-                            iPacket.PType = type;
-                            iPacket.Data = w.State;
-                            iPacket.WeaponId = w.WeaponId;
-                        }
-
-                        PrunedPacketsToClient[w.State] = new PacketInfo {
-                            Entity = w.Comp.MyCube,
-                            Packet = iPacket,
-                        };
+                    PacketInfo oldInfo;
+                    WeaponReloadPacket iPacket;
+                    if (PrunedPacketsToClient.TryGetValue(w.Reload, out oldInfo)) {
+                        iPacket = (WeaponReloadPacket)oldInfo.Packet;
+                        iPacket.EntityId = w.Comp.MyCube.EntityId;
+                        iPacket.Data = w.Reload;
                     }
-                    else
-                        SendCompState(w.Comp);
+                    else {
+                        iPacket = PacketReloadPool.Get();
+                        iPacket.MId = ++w.MIds[(int)type];
+                        iPacket.EntityId = w.Comp.MyCube.EntityId;
+                        iPacket.SenderId = MultiplayerId;
+                        iPacket.PType = type;
+                        iPacket.Data = w.Reload;
+                        iPacket.WeaponId = w.WeaponId;
+                    }
+
+                    PrunedPacketsToClient[w.Reload] = new PacketInfo {
+                        Entity = w.Comp.MyCube,
+                        Packet = iPacket,
+                    };
                 }
                 else 
                     SendCompData(w.Comp);
             }
-            else Log.Line($"SendWeaponState should never be called on Client");
+            else Log.Line($"SendWeaponReload should never be called on Client");
         }
 
         internal void SendClientNotify(long id, string message, bool singleClient = false, string color = null, int duration = 0)
