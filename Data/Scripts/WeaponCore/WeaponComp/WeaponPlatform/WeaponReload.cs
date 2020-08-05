@@ -211,7 +211,11 @@ namespace WeaponCore.Platform
         internal bool ServerReload()
         {
             if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
+            {
+
+                Log.Line($"AnimationDelayTick");
                 return false;
+            }
 
             var hadNoMags = NoMagsToLoad;
 
@@ -246,6 +250,7 @@ namespace WeaponCore.Platform
         {
             Reloading = true;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
+            Log.Line($"Start:{System.Session.Tick}");
             /*
             uint delay;
             if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {
@@ -316,6 +321,7 @@ namespace WeaponCore.Platform
 
                 ShootOnce = false;
                 Reloading = false;
+                Log.Line($"End:{System.Session.Tick}");
             }
 
         }

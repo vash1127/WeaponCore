@@ -37,6 +37,7 @@ namespace WeaponCore.Support
         {
             lock (_callbacks)
             {
+                delay = delay <= 0 ? 1 : delay;
                 _callbacks[(_offset + delay) % _maxDelay].Add(new FutureAction(callback, arg1));
             }
         }
@@ -54,7 +55,7 @@ namespace WeaponCore.Support
                             _callbacks[index][i].Callback(_callbacks[index][i].Arg1);
 
                         _callbacks[index].Clear();
-                        _offset = tick + 1;
+                        _offset = tick;
                     }
                     else 
                     {
@@ -67,7 +68,7 @@ namespace WeaponCore.Support
                                 _callbacks[pastIdx][j].Callback(_callbacks[pastIdx][j].Arg1);
 
                             _callbacks[pastIdx].Clear();
-                            _offset = tick + 1;
+                            _offset = tick;
                         }
                     }
 

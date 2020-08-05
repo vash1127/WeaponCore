@@ -119,7 +119,7 @@ namespace WeaponCore
                     Compile();
                     NetworkTransfer(true);
                 }
-                Session.FutureEvents.Schedule(CompleteReport, null, 600);
+                Session.FutureEvents.Schedule(CompleteReport, null, 300);
             }
 
             internal DataReport PullData(MyCubeBlock targetBlock)

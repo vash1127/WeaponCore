@@ -15,6 +15,10 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        private void Test(object o)
+        {
+            Log.Line($"callback:{Tick}");
+        }
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
             foreach (var ai in GridTargetingAIs.Values)
