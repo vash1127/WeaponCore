@@ -122,7 +122,6 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
                 Target.Reset(Comp.Session.Tick, Target.States.NoMagsToLoad);
-
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Remove(this);
 
                 NoMagsToLoad = false;
@@ -140,20 +139,14 @@ namespace WeaponCore.Platform
 
         internal bool ClientReload(bool networkCaller = false)
         {
-            var invalidState = Reload.CurrentAmmo != 0 || Reloading || ActiveAmmoDef.AmmoDef?.Const == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
+            var invalidState = Reload.CurrentAmmo != 0 || ClientStartId > Reload.StartId || Reloading || ActiveAmmoDef.AmmoDef?.Const == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
             if (invalidState || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || !Comp.IsWorking)
                 return false;
 
             var syncUp = Reload.StartId > ClientStartId;
 
-            if (syncUp)
-                ClientStartId = Reload.StartId;
-
             if (AnimationDelayTick > System.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing) && !syncUp)
-            {
-                Log.Line($"AnimationDelayTick");
                 return false;
-            }
 
             if (Reload.CurrentMags <= 0 && !syncUp) {
                 if (!NoMagsToLoad)
@@ -164,7 +157,10 @@ namespace WeaponCore.Platform
 
             ClientEndId = Reload.EndId;
             ClientAmmoId = Reload.AmmoTypeId;
-            ++ClientStartId;
+            
+            if (syncUp)
+                ClientStartId = Reload.StartId;
+            else ++ClientStartId;
 
             if (NoMagsToLoad) {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
@@ -211,11 +207,7 @@ namespace WeaponCore.Platform
         internal bool ServerReload()
         {
             if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
-            {
-
-                Log.Line($"AnimationDelayTick");
                 return false;
-            }
 
             var hadNoMags = NoMagsToLoad;
 
@@ -250,13 +242,7 @@ namespace WeaponCore.Platform
         {
             Reloading = true;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
-            Log.Line($"Start:{System.Session.Tick}");
-            /*
-            uint delay;
-            if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {
-                //AnimationDelayTick = Comp.Session.Tick + delay;
-            }
-            */
+
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {
@@ -321,7 +307,6 @@ namespace WeaponCore.Platform
 
                 ShootOnce = false;
                 Reloading = false;
-                Log.Line($"End:{System.Session.Tick}");
             }
 
         }

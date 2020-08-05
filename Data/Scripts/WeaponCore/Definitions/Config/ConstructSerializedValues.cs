@@ -13,9 +13,9 @@ namespace WeaponCore
         [ProtoMember(2)] public readonly Dictionary<string, GroupInfo> BlockGroups = new Dictionary<string, GroupInfo>();
         [ProtoMember(3)] public FocusData FocusData;
 
-        public bool Sync(Constructs construct, ConstructDataValues sync)
+        public bool Sync(Constructs construct, ConstructDataValues sync, bool localCall = false)
         {
-            FocusData.Sync(construct.RootAi, sync.FocusData);
+            FocusData.Sync(construct.RootAi, sync.FocusData, localCall);
             BlockGroups.Clear();
             foreach (var s in sync.BlockGroups)
                 BlockGroups[s.Key] = s.Value;
@@ -337,7 +337,7 @@ namespace WeaponCore
         [ProtoMember(6)] public LockModes[] Locked;
 
 
-        public void Sync(GridAi ai, FocusData sync)
+        public void Sync(GridAi ai, FocusData sync, bool localCall = false)
         {
             if (ai.Session.IsServer || sync.Revision > Revision)
             {
@@ -351,7 +351,7 @@ namespace WeaponCore
                     Locked[i] = sync.Locked[i];
                 }
 
-                if (ai == ai.Construct.RootAi)
+                if (ai == ai.Construct.RootAi && localCall)
                     ai.Construct.UpdateLeafFoci();
             }
             //else Log.Line($"FocusData older revision:  {sync.Revision}  > {Revision}");

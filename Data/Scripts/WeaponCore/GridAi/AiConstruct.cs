@@ -311,7 +311,7 @@ namespace WeaponCore.Support
                     GridAi ai;
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
                     {
-                        ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo);
+                        ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo, true);
                         if (RootAi.Session.HandlesInput)
                             ai.Construct.BuildMenuGroups();
                     }

@@ -67,7 +67,6 @@ namespace WeaponCore
                     if (ai.DbUpdated || !comp.UpdatedState) {
                         comp.DetectStateChanges();
                     }
-
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
                         
                         if (comp.Status != Started) comp.HealthCheck();
