@@ -484,12 +484,11 @@ namespace WeaponCore
 
                                     var rate = GetRate(move.MovementType, rateAngle, move.TicksToMove);
 
-                                    var traveled = 0d;
-
                                     for (int j = 0; j < move.TicksToMove; j++)
                                     {
 
                                         var progress = 0d;
+                                        var traveled = 0d;
                                         if (move.MovementType == RelMove.MoveType.ExpoGrowth)
                                         {
                                             var step = 0.001 * Math.Pow(rate, j + 1);
@@ -533,8 +532,6 @@ namespace WeaponCore
                                         emissiveIdSet.Add(id + moveIndexer.Count);
 
                                         CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
-
-                                        //Log.Line($"type: {type}");
 
                                         moveIndexer.Add(new[]
                                             {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
@@ -804,7 +801,7 @@ namespace WeaponCore
         {
             type = 6;
 
-            if (!String.IsNullOrEmpty(move.CenterEmpty) &&
+            if (!string.IsNullOrEmpty(move.CenterEmpty) &&
                                     (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
                                      move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
                                      move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
@@ -1048,8 +1045,6 @@ namespace WeaponCore
                         }
                     }
 
-                    //Log.Line(animation.Looping)
-                    
 
                     if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
                     {

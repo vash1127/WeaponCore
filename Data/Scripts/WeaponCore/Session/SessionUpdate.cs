@@ -283,6 +283,8 @@ namespace WeaponCore
                 UpdateDbsInQueue();
         }
 
+        private int _counter1;
+        private int _counter2;
         private void UpdateChargeWeapons() //Fully Inlined due to keen's mod profiler
         {
             for (int i = ChargingWeapons.Count - 1; i >= 0; i--)

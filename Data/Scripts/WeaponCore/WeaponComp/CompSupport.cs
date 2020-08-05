@@ -44,7 +44,7 @@ namespace WeaponCore.Support
                             Session.WeaponCountPool.Return(wCount);
                         }
                     }
-                    else if (!Session.LocalVersion) Log.Line($"didnt find counter for: {MyCube.BlockDefinition.Id.SubtypeId} - {MyCube.BlockDefinition.Id.SubtypeId.String}");
+                    else if (Session.LocalVersion) Log.Line($"didnt find counter for: {MyCube.BlockDefinition.Id.SubtypeId} - {MyCube.BlockDefinition.Id.SubtypeId.String}");
 
                     if (Ai.Data.Repo.ActiveTerminal == MyCube.EntityId)
                         Ai.Data.Repo.ActiveTerminal = 0;

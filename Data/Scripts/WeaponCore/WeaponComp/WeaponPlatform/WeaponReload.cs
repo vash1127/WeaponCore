@@ -144,13 +144,16 @@ namespace WeaponCore.Platform
             if (invalidState || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || !Comp.IsWorking)
                 return false;
 
-            var syncUp = Reload.StartId > ClientStartId;// && (State.Action != WeaponComponent.ShootActions.ShootOnce && State.Action != WeaponComponent.ShootActions.ShootClick);
+            var syncUp = Reload.StartId > ClientStartId;
 
             if (syncUp)
                 ClientStartId = Reload.StartId;
 
             if (AnimationDelayTick > System.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing) && !syncUp)
+            {
+                Log.Line($"AnimationDelayTick");
                 return false;
+            }
 
             if (Reload.CurrentMags <= 0 && !syncUp) {
                 if (!NoMagsToLoad)
@@ -242,12 +245,13 @@ namespace WeaponCore.Platform
         internal void StartReload()
         {
             Reloading = true;
+            EventTriggerStateChanged(EventTriggers.Reloading, true);
+            /*
             uint delay;
             if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay)) {
-                AnimationDelayTick = Comp.Session.Tick + delay;
-                EventTriggerStateChanged(EventTriggers.Reloading, true);
+                //AnimationDelayTick = Comp.Session.Tick + delay;
             }
-
+            */
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge && !Comp.Session.ChargingWeaponsIndexer.ContainsKey(this))
                 ChargeReload();
             else if (!ActiveAmmoDef.AmmoDef.Const.MustCharge) {

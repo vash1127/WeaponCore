@@ -262,7 +262,7 @@ namespace WeaponCore.Platform
                                     set = true;
 
                                     animation.StartTick = session.Tick + animation.MotionDelay;
-                                    session?.ThreadedAnimations?.Enqueue(animation);
+                                    session.ThreadedAnimations.Enqueue(animation);
 
                                     animation.Running = true;
                                     animation.CanPlay = canPlay;
