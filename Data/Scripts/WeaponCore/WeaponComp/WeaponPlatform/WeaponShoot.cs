@@ -118,12 +118,19 @@ namespace WeaponCore.Platform
                 for (int i = 0; i < bps; i++) {
 
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        if (Reload.CurrentAmmo == 0) {
+                        if (Reload.CurrentAmmo == 0 && ClientMakeUpShots == 0) {
                             if (System.Session.MpActive && System.Session.IsServer)
                                 System.Session.SendWeaponReload(this);
+                            if (System.Session.IsServer || ClientStaticShot) ShootOnce = false;
                             break;
                         }
+                        
                         if (Reload.CurrentAmmo > 0) --Reload.CurrentAmmo;
+                        else if (ClientMakeUpShots > 0)
+                        {
+                            Log.Line($"Shoot MakeUpShot:{ClientMakeUpShots}");
+                            --ClientMakeUpShots;
+                        }
 
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
                             if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)

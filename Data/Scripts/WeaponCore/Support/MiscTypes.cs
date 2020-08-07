@@ -77,8 +77,6 @@ namespace WeaponCore.Support
             weapon.TargetData.WeaponId = weapon.WeaponId;
             weapon.TargetData.EntityId = weapon.Target.TargetId;
             weapon.System.Session.SendTargetChange(weapon.Comp, weapon.WeaponId);
-            
-            //Log.Line($"PushTargetToClient: target:{weapon.TargetData.EntityId} - status:{weapon.Target.CurrentState} - {weapon.System.Session.PrunedPacketsToClient.ContainsKey(weapon.Comp.Data.Repo)}");
         }
 
         internal void ClientUpdate(Weapon w, TransferTarget tData)

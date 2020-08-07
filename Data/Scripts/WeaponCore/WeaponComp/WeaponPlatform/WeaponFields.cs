@@ -135,7 +135,6 @@ namespace WeaponCore.Platform
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
         internal int ProposedAmmoId = -1;
-        internal int ClientAmmoId = -1;
         internal int FireCounter;
         internal int UniqueId;
         internal int RateOfFire;
@@ -143,9 +142,8 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int EnergyPriority;
         internal int LastBlockCount;
-        internal int ClientEndId;
         internal int ClientStartId;
-        internal int ClientSimShots;
+        internal int ClientMakeUpShots;
         internal float HeatPShot;
         internal float HsRate;
         internal float CurrentAmmoVolume;

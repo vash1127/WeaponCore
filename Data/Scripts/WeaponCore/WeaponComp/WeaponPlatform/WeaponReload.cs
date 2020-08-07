@@ -101,7 +101,7 @@ namespace WeaponCore.Platform
                     ComputeServerStorage();
             }
             else 
-                System.Session.SendAmmoCycleRequest(Comp, WeaponId, newAmmoId);
+                System.Session.SendAmmoCycleRequest(this, newAmmoId);
         }
 
         internal bool HasAmmo()
@@ -139,28 +139,22 @@ namespace WeaponCore.Platform
 
         internal bool ClientReload(bool networkCaller = false)
         {
-            var invalidState = Reload.CurrentAmmo != 0 || ClientStartId > Reload.StartId || Reloading || ActiveAmmoDef.AmmoDef?.Const == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready;
-            if (invalidState || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon || !Comp.IsWorking)
-                return false;
-
             var syncUp = Reload.StartId > ClientStartId;
 
-            if (AnimationDelayTick > System.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing) && !syncUp)
-                return false;
+            if (!syncUp) {
 
-            if (Reload.CurrentMags <= 0 && !syncUp) {
-                if (!NoMagsToLoad)
-                    EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
-                NoMagsToLoad = true;
+                if (Reload.CurrentMags <= 0) {
+                    if (!NoMagsToLoad) {
+                        EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
+                    }
+                    NoMagsToLoad = true;
+                }
                 return false;
             }
-
-            ClientEndId = Reload.EndId;
-            ClientAmmoId = Reload.AmmoTypeId;
             
-            if (syncUp)
-                ClientStartId = Reload.StartId;
-            else ++ClientStartId;
+            ClientStartId = Reload.StartId;
+            ClientMakeUpShots += Reload.CurrentAmmo;
+            Reload.CurrentAmmo = 0;
 
             if (NoMagsToLoad) {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
@@ -289,22 +283,16 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
-
-                    if (System.Session.IsServer)
-                        Reload.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                    else if (ClientEndId == Reload.EndId && ClientAmmoId == Reload.AmmoTypeId) {
-                        Reload.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
-                        ClientSimShots = Reload.CurrentAmmo;
-                    }
-                }
+                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) 
+                    Reload.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
 
                 if (System.Session.IsServer) {
-                    ++Reload.EndId;
                     if (System.Session.MpActive)
                         System.Session.SendWeaponReload(this);
                 }
-
+                else 
+                    ClientMakeUpShots = 0;
+                
                 ShootOnce = false;
                 Reloading = false;
             }

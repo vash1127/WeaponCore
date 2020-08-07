@@ -60,7 +60,6 @@ namespace WeaponCore
                 ws.Overheated = false;
                 ws.Action = ShootActions.ShootOff;
                 wr.StartId = 0;
-                wr.EndId = 0;
             }
             ResetCompDataRevisions();
         }
@@ -116,47 +115,23 @@ namespace WeaponCore
         [ProtoMember(4)] public MyFixedPoint CurrentMags; // save
         [ProtoMember(5)] public int AmmoTypeId; //save
         [ProtoMember(6)] public int StartId; //save
-        [ProtoMember(7)] public int EndId; //save
 
         public void Sync(Weapon w, WeaponReloadValues sync)
         {
             if (sync.Revision > Revision)
             {
                 Revision = sync.Revision;
-                EndId = sync.EndId;
                 StartId = sync.StartId;
                 CurrentCharge = sync.CurrentCharge;
                 CurrentMags = sync.CurrentMags;
 
-                if (w.State.Action == ShootActions.ShootOnce && sync.CurrentAmmo > 0) CurrentAmmo = sync.CurrentAmmo - 1;
-                else if (w.ClientSimShots != 0) UpdateShotSimulation(w, sync);
-                else CurrentAmmo = sync.CurrentAmmo;
+                if (AmmoTypeId != sync.AmmoTypeId)
+                    CurrentAmmo = sync.CurrentAmmo;
 
                 AmmoTypeId = sync.AmmoTypeId;
 
                 w.ChangeActiveAmmoClient();
-                if (CurrentAmmo == 0)
-                    w.ClientReload(true);
-            }
-            else Log.Line($"WeaponStateValues older revision:  {sync.Revision}  > {Revision}");
-        }
-
-        public void UpdateShotSimulation(Weapon w, WeaponReloadValues sync)
-        {
-            if (AmmoTypeId != sync.AmmoTypeId) {
-                CurrentAmmo = sync.CurrentAmmo;
-                w.ClientSimShots = 0;
-            }
-            else if (w.ClientEndId != EndId) {
-
-                if (EndId - w.ClientEndId > 1)
-                    Log.Line($"ReloadId skipped: {EndId - w.ClientEndId}");
-
-                var simLoss = w.ClientSimShots - CurrentAmmo;
-                CurrentAmmo = sync.CurrentAmmo - simLoss;
-                w.ClientSimShots = 0;
-
-                Log.Line($"simLoss: {simLoss} - newAmount:{CurrentAmmo} - wasAmount:{sync.CurrentAmmo}");
+                w.ClientReload(true);
             }
         }
     }
@@ -231,7 +206,7 @@ namespace WeaponCore
                 for (int i = 0; i < sync.Weapons.Length; i++) 
                     comp.Platform.Weapons[i].State.Sync(sync.Weapons[i]);
             }
-            else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
+            //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
         public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false)
@@ -299,7 +274,7 @@ namespace WeaponCore
                 target.TargetPos = TargetPos;
                 target.ClientDirty = true;
             }
-            else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
+            //else Log.Line($"TransferTarget older revision:  {Revision}  > {w.TargetData.Revision}");
         }
 
         public void WeaponInit(Weapon w)
@@ -322,11 +297,16 @@ namespace WeaponCore
 
                 rand.ClientProjectileRandom = new Random(rand.CurrentSeed);
                 rand.TurretRandom = new Random(rand.CurrentSeed);
+                rand.AcquireRandom = new Random(rand.CurrentSeed);
+
                 for (int j = 0; j < rand.TurretCurrentCounter; j++)
                     rand.TurretRandom.Next();
 
                 for (int j = 0; j < rand.ClientProjectileCurrentCounter; j++)
                     rand.ClientProjectileRandom.Next();
+
+                for (int j = 0; j < rand.AcquireCurrentCounter; j++)
+                    rand.AcquireRandom.Next();
 
                 return;
             }

@@ -992,7 +992,6 @@ namespace WeaponCore
                             animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
                             var matrix = animation.Part.PositionComp.LocalMatrixRef;
 
-                            //animation.Part.OnClose += testing;
                             animation.Part.Render.AddRenderObjects();
 
                             animation.Part.PositionComp.SetLocalMatrix(ref matrix, null, true);

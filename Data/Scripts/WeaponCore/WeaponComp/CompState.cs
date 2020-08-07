@@ -77,7 +77,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
 
-                if (w.Reload.CurrentAmmo > 0 && (checkAllWeapons || weaponToCheck == i))
+                if ((w.Reload.CurrentAmmo > 0 || w.ClientMakeUpShots > 0) && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;
             }
             if (numOfWeapons == loadedWeapons) {
@@ -88,8 +88,9 @@ namespace WeaponCore.Support
 
                     if (!checkAllWeapons && i != weaponToCheck)
                         continue;
-                    
-                    if (addToCounter) w.ShootOnce = true;
+
+                    if (addToCounter)
+                        w.ShootOnce = true;
                     if (!Session.IsServer && w.System.TurretMovement == WeaponSystem.TurretType.Fixed && w.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.None && !w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
                         w.ClientStaticShot = true;
                 }

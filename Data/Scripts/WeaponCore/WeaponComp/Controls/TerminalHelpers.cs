@@ -66,8 +66,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction != ShootOn)
-                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
                     var oldWriter = a.Writer;

@@ -110,9 +110,6 @@ namespace WeaponCore.Platform
 
         public void StopShooting(bool power = true)
         {
-            if (System.Session.HandlesInput) 
-                StopShootingAv(power);
-
             FireCounter = 0;
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
@@ -129,7 +126,10 @@ namespace WeaponCore.Platform
                     StopPowerDraw();
 
             }
-            IsShooting = false;
+
+            if (System.Session.HandlesInput)
+                StopShootingAv(power);
+            else IsShooting = false;
         }
 
         public void DrawPower(bool adapt = false)

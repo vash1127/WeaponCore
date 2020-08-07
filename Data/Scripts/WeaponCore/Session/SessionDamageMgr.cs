@@ -637,8 +637,6 @@ namespace WeaponCore
                 IHitInfo hitInfo;
                 if (MyAPIGateway.Physics.CastRay(hitPos, hitEnt.Intersection.To, out hitInfo, 15))
                 {
-                    //var rotMatrix = Quaternion.CreateFromRotationMatrix(door.WorldMatrix);
-                    //var obb = new MyOrientedBoundingBoxD(door.PositionComp.WorldAABB.Center, door.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                     var obb = new MyOrientedBoundingBoxD(door.PositionComp.LocalAABB, door.PositionComp.WorldMatrixRef);
 
                     var sphere = new BoundingSphereD(hitInfo.Position + (hitEnt.Intersection.Direction * 0.15f), 0.01f);

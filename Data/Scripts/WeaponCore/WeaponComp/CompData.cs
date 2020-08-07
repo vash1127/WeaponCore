@@ -79,6 +79,7 @@ namespace WeaponCore
                     else
                     {
                         w.Reload = w.Comp.Data.Repo.Reloads[w.WeaponId];
+                        w.ClientStartId = w.Reload.StartId;
                         w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
                         w.TargetData.WeaponRefreshClient(w);
                     }

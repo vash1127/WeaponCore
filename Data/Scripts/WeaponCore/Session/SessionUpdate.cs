@@ -138,10 +138,10 @@ namespace WeaponCore
                         ///Check Reload
                         ///                        
 
-                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading && w.Reload.CurrentAmmo == 0) {
-                            if (IsServer)
+                        if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
+                            if (IsServer && w.Reload.CurrentAmmo == 0)
                                 w.ComputeServerStorage();
-                            else
+                            else if (IsClient)
                                 w.ClientReload();
                         }
 
@@ -227,8 +227,8 @@ namespace WeaponCore
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && (w.Reloading || w.Reload.CurrentAmmo == 0);
-                        var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Reload.CurrentAmmo == 0);
+                        var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
                         var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);

@@ -873,7 +873,7 @@ namespace WeaponCore
         }
 
 
-        internal void SendAmmoCycleRequest(WeaponComponent comp, int weaponId, int newAmmoId)
+        internal void SendAmmoCycleRequest(Weapon w, int newAmmoId)
         {
             if (IsClient)
             {
@@ -883,34 +883,17 @@ namespace WeaponCore
                     PacketsToServer.Add(new AmmoCycleRequestPacket
                     {
                         MId = ++mIds[(int)PacketType.AmmoCycleRequest],
-                        EntityId = comp.MyCube.EntityId,
+                        EntityId = w.Comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
                         PType = PacketType.AmmoCycleRequest,
-                        WeaponId = weaponId,
+                        WeaponId = w.WeaponId,
                         NewAmmoId = newAmmoId,
                         PlayerId = PlayerId,
                     });
                 }
                 else Log.Line($"SendAmmoCycleRequest no player MIds found");
             }
-            else if (HandlesInput)
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new AmmoCycleRequestPacket
-                    {
-                        MId = ++comp.MIds[(int)PacketType.AmmoCycleRequest],
-                        EntityId = comp.MyCube.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.AmmoCycleRequest,
-                        WeaponId = weaponId,
-                        NewAmmoId = newAmmoId,
-                        PlayerId = PlayerId,
-                    }
-                });
-            }
-            else Log.Line($"SendAmmoCycleRequest should never be called on Non-HandlesInput");
+            else Log.Line($"SendAmmoCycleRequest should never be called on Non-Client");
         }
 
         internal void SendSetCompFloatRequest(WeaponComponent comp, float newDps, PacketType type)

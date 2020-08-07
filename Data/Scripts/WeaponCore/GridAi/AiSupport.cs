@@ -134,8 +134,10 @@ namespace WeaponCore.Support
             }
 
             Random rnd;
-            if (type == RandomType.Acquire)
+            if (type == RandomType.Acquire) {
                 rnd = rng.AcquireRandom;
+                rng.AcquireCurrentCounter += count;
+            }
             else {
                 rnd = rng.ClientProjectileRandom;
                 rng.ClientProjectileCurrentCounter += count;

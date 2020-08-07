@@ -537,7 +537,8 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public int TurretCurrentCounter;
         [ProtoMember(2)] public int ClientProjectileCurrentCounter;
-        [ProtoMember(3)] public int CurrentSeed;
+        [ProtoMember(3)] public int AcquireCurrentCounter;
+        [ProtoMember(4)] public int CurrentSeed;
         public Random TurretRandom;
         public Random ClientProjectileRandom;
         public Random AcquireRandom;
@@ -565,17 +566,21 @@ namespace WeaponCore
 
             TurretCurrentCounter = syncFrom.TurretCurrentCounter;
             ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
+            AcquireCurrentCounter = syncFrom.AcquireCurrentCounter;
             TurretRandom = new Random(CurrentSeed);
             ClientProjectileRandom = new Random(CurrentSeed);
+            AcquireRandom = new Random(CurrentSeed);
         }
 
         internal void ReInitRandom()
         {
             TurretCurrentCounter = 0;
             ClientProjectileCurrentCounter = 0;
+            AcquireCurrentCounter = 0;
             CurrentSeed = TurretRandom.Next(1, int.MaxValue);
             TurretRandom = new Random(CurrentSeed);
             ClientProjectileRandom = new Random(CurrentSeed);
+            AcquireRandom = new Random(CurrentSeed);
         }
     }
 
