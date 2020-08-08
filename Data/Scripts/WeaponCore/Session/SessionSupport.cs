@@ -329,6 +329,8 @@ namespace WeaponCore
 
         internal void ProccessAmmoCallback()
         {
+            WeaponToPullAmmo.ApplyRemovals();
+            WeaponsToRemoveAmmo.ApplyRemovals();
             RemoveAmmo();
             MoveAmmo();
         }
@@ -351,6 +353,7 @@ namespace WeaponCore
             GridsToUpdateInvetories.Clear();
             GridsToUpdateInvetoriesIndexer.Clear();
 
+            WeaponToPullAmmo.ApplyAdditions();
             ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
         }
 

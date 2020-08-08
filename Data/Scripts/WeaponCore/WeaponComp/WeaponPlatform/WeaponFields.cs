@@ -15,8 +15,6 @@ namespace WeaponCore.Platform
     {
         internal int NextMuzzle;
         internal volatile bool Casting;
-        internal volatile bool PullingAmmo;
-        internal volatile bool RemovingAmmo;
         private readonly int _numOfBarrels;
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();

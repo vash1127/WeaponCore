@@ -92,8 +92,8 @@ namespace WeaponCore
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
-        internal readonly MyConcurrentList<Weapon> WeaponToPullAmmo = new MyConcurrentList<Weapon>(64);
-        internal readonly MyConcurrentList<Weapon> WeaponsToRemoveAmmo = new MyConcurrentList<Weapon>(64);
+        internal readonly ConcurrentCachingHashSet<Weapon> WeaponToPullAmmo = new ConcurrentCachingHashSet<Weapon>();
+        internal readonly ConcurrentCachingHashSet<Weapon> WeaponsToRemoveAmmo = new ConcurrentCachingHashSet<Weapon>();
         
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
