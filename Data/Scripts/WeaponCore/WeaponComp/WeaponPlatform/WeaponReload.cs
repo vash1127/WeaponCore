@@ -130,6 +130,9 @@ namespace WeaponCore.Platform
             {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Add(this);
+                
+                if (!NoMagsToLoad)
+                    CheckInventorySystem = true;
 
                 NoMagsToLoad = true;
             }
@@ -183,7 +186,7 @@ namespace WeaponCore.Platform
                     Reload.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
                     CurrentAmmoVolume = (float)Reload.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
                     var freeSpace = System.MaxAmmoVolume - (float)Comp.BlockInventory.CurrentVolume;
-                    if (CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume && (s.Tick - LastInventoryTick > 600 || CheckInventorySystem) && !s.PullingWeapons.Contains(this))
+                    if (CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume && !s.PullingWeapons.Contains(this) && (CheckInventorySystem || s.Tick - LastInventoryTick > 600 && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)))
                     {
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;
