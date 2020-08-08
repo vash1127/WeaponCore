@@ -15,33 +15,33 @@ namespace WeaponCore
     {
         internal void AmmoPull()  // In Thread
         {
+            Weapon weapon = null;
             try
             {
-                foreach (var weapon in WeaponToPullAmmo)
-                {
+                for (int i = WeaponToPullAmmo.Count - 1; i >= 0; i--) {
+
+                    weapon = WeaponToPullAmmo[i];
                     using (weapon.Comp.Ai?.MyGrid.Pin())
-                    using (weapon.Comp.MyCube.Pin())
-                    {
-                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || weapon.Comp.Ai.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
-                            WeaponToPullAmmo.Remove(weapon);
+                    using (weapon.Comp.MyCube.Pin()) {
+
+                        if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            //UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
+                            InvPullClean.Add(weapon);
                             continue;
                         }
 
                         var defId = weapon.ActiveAmmoDef.AmmoDefinitionId;
                         var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
-                        var magsNeeded = (int) ((fullAmount - weapon.CurrentAmmoVolume) /
-                                                weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                        var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume);
                         var magsAdded = 0;
 
-                        if (magsNeeded == 0 &&
-                            weapon.System.MaxAmmoVolume > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume)
+                        if (magsNeeded == 0 && weapon.System.MaxAmmoVolume > weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume)
                             magsNeeded = 1;
 
                         var ammoPullRequests = InventoryMoveRequestPool.Get();
                         ammoPullRequests.Weapon = weapon;
 
-                        for (int j = 0; j < weapon.Comp.Ai.Inventories.Count; j++)
-                        {
+                        for (int j = 0; j < weapon.Comp.Ai.Inventories.Count; j++) {
 
                             var inventory = weapon.Comp.Ai.Inventories[j];
                             var items = AmmoThreadItemList[inventory];
@@ -54,20 +54,18 @@ namespace WeaponCore
 
                                 var magsAvailable = item.Amount;
 
-                                if (((IMyInventory) inventory).CanTransferItemTo(weapon.Comp.BlockInventory, defId))
+                                if (((IMyInventory)inventory).CanTransferItemTo(weapon.Comp.BlockInventory, defId))
                                 {
                                     if (magsAvailable >= magsNeeded)
                                     {
-                                        ammoPullRequests.Inventories.Add(new InventoryMags
-                                            {Inventory = inventory, Item = item, Amount = magsNeeded});
+                                        ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsNeeded });
                                         magsAdded += magsNeeded;
                                         item.Amount -= magsAdded;
                                         magsNeeded = 0;
                                     }
                                     else
                                     {
-                                        ammoPullRequests.Inventories.Add(new InventoryMags
-                                            {Inventory = inventory, Item = item, Amount = magsAvailable});
+                                        ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsAvailable });
 
                                         magsNeeded -= magsAvailable;
                                         magsAdded += magsAvailable;
@@ -76,9 +74,7 @@ namespace WeaponCore
                                         items.RemoveAtFast(l);
                                         BetterInventoryItems.Return(item);
                                     }
-
-                                    weapon.CurrentAmmoVolume +=
-                                        magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                                    weapon.CurrentAmmoVolume += magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
                                 }
 
                                 if (magsNeeded <= 0)
@@ -92,12 +88,17 @@ namespace WeaponCore
                             InventoryMoveRequestPool.Return(ammoPullRequests);
 
                         weapon.Comp.Session.AmmoPulls++;
-
                     }
-                    WeaponToPullAmmo.Remove(weapon);
+                    //UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
+                    InvPullClean.Add(weapon);
                 }
             }
-            catch (Exception e) { Log.Line($"Error in AmmoPull: {e}"); }
+            catch (Exception e)
+            {
+                Log.Line($"Error in AmmoPull: {e}");
+                if(weapon != null)
+                    UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
+            }
         }
 
         internal void MoveAmmo()
@@ -127,21 +128,24 @@ namespace WeaponCore
 
         internal void AmmoToRemove() // In Thread
         {
-            Log.Line($"{WeaponsToRemoveAmmo.Count}");
-            foreach (var weapon in WeaponsToRemoveAmmo) {
-                var comp = weapon.Comp;
-                var defId = weapon.ActiveAmmoDef.AmmoDefinitionId;
-                var inventoryMoveRequests = InventoryMoveRequestPool.Get();
-                var items = AmmoThreadItemList[comp.BlockInventory];
+            for (int i = 0; i < WeaponsToRemoveAmmo.Count; i++) {
 
+                var weapon = WeaponsToRemoveAmmo[i];
                 using (weapon.Comp.Ai?.MyGrid.Pin())
                 using (weapon.Comp.MyCube.Pin())
                 {
-                    if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MyGrid.MarkedForClose || weapon.Comp.Ai.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+
+                    if (weapon.Comp.MyCube.MarkedForClose || weapon.Comp.Ai == null || weapon.Comp.Ai.MarkedForClose || weapon.Comp.Ai.MyGrid.MarkedForClose || !weapon.Comp.InventoryInited || weapon.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     {
-                        WeaponsToRemoveAmmo.Remove(weapon);
+                        //UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
+                        InvRemoveClean.Add(weapon);
                         continue;
                     }
+                    var comp = weapon.Comp;
+                    var defId = weapon.ActiveAmmoDef.AmmoDefinitionId;
+                    var inventoryMoveRequests = InventoryMoveRequestPool.Get();
+                    var ammoToMove = false;
+                    var items = AmmoThreadItemList[comp.BlockInventory];
 
                     for (int j = 0; j < items.Count; j++)
                     {
@@ -161,12 +165,13 @@ namespace WeaponCore
                             {
                                 if (((IMyInventory)comp.BlockInventory).CanTransferItemTo(inventory, defId))
                                 {
+                                    ammoToMove = true;
                                     inventoryMoveRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = canMove >= item.Amount ? item.Amount : canMove });
                                     AmmoThreadItemList[inventory].Add(item);
 
                                     if (canMove >= item.Amount)
                                     {
-                                        items.RemoveAtFast(l);
+                                        items.RemoveAtFast(i);
                                         BetterInventoryItems.Return(item);
                                         break;
                                     }
@@ -177,12 +182,12 @@ namespace WeaponCore
                             else Log.Line($"Ammoremove cannot move: {canMove}");
                         }
                     }
+
+                    inventoryMoveRequests.Weapon = weapon;
+                    AmmoToRemoveQueue.Add(inventoryMoveRequests);
+                    //UniqueListRemove(weapon, WeaponsToRemoveAmmoIndexer, WeaponsToRemoveAmmo);
+                    InvRemoveClean.Add(weapon);
                 }
-
-
-                inventoryMoveRequests.Weapon = weapon;
-                AmmoToRemoveQueue.Add(inventoryMoveRequests);
-                WeaponsToRemoveAmmo.Remove(weapon);
             }
             InventoryVolume.Clear();
         }

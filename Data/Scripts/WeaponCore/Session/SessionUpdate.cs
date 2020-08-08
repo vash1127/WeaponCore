@@ -104,7 +104,6 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-
                         if (w.WeaponReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)

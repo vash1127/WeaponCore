@@ -31,7 +31,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 23;
+        internal const int VersionControl = 22;
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
@@ -92,8 +92,8 @@ namespace WeaponCore
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
-        internal readonly ConcurrentCachingHashSet<Weapon> WeaponToPullAmmo = new ConcurrentCachingHashSet<Weapon>();
-        internal readonly ConcurrentCachingHashSet<Weapon> WeaponsToRemoveAmmo = new ConcurrentCachingHashSet<Weapon>();
+        internal readonly MyConcurrentList<Weapon> WeaponToPullAmmo = new MyConcurrentList<Weapon>(64);
+        internal readonly MyConcurrentList<Weapon> WeaponsToRemoveAmmo = new MyConcurrentList<Weapon>(64);
         
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
@@ -128,6 +128,9 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<MyCubeGrid> DeformProtection = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<Weapon> PullingWeapons = new HashSet<Weapon>();
+        internal readonly List<Weapon> InvPullClean = new List<Weapon>();
+        internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();
@@ -302,6 +305,7 @@ namespace WeaponCore
         internal bool ManualShot;
         internal bool ClientCheck;
         internal bool DbUpdating;
+        internal bool InventoryUpdate;
 
         internal enum AnimationType
         {

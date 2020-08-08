@@ -173,7 +173,7 @@ namespace WeaponCore.Platform
         internal bool ComputeServerStorage()
         {
             var s = Comp.Session;
-            if (System.DesignatorWeapon || !Comp.IsWorking || !Comp.MyCube.HasInventory ||  !ActiveAmmoDef.AmmoDef.Const.Reloadable || s.WeaponToPullAmmo.Contains(this)) return false;
+            if (System.DesignatorWeapon || !Comp.IsWorking || !Comp.MyCube.HasInventory || !ActiveAmmoDef.AmmoDef.Const.Reloadable) return false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
             {
@@ -183,11 +183,11 @@ namespace WeaponCore.Platform
                     Reload.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
                     CurrentAmmoVolume = (float)Reload.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
                     var freeSpace = System.MaxAmmoVolume - (float)Comp.BlockInventory.CurrentVolume;
-                    if (CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume && (s.Tick - LastInventoryTick > 600 || CheckInventorySystem))
+                    if (CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume && (s.Tick - LastInventoryTick > 600 || CheckInventorySystem) && !s.PullingWeapons.Contains(this))
                     {
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;
-                        s.WeaponToPullAmmo.Add(this);
+                        s.UniqueListAdd(this, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo, s.PullingWeapons);
                         s.UniqueListAdd(Comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
                     }
                 }

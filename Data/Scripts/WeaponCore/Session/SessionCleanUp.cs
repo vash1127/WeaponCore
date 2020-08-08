@@ -164,7 +164,6 @@ namespace WeaponCore
             WeaponToPullAmmoIndexer.Clear();
             AmmoToPullQueue.Clear();
             ChargingWeaponsIndexer.Clear();
-            WeaponToPullAmmoIndexer.Clear();
             WeaponsToRemoveAmmoIndexer.Clear();
             ChargingWeapons.Clear();
             WeaponsToRemoveAmmo.Clear();

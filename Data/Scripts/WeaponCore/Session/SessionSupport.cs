@@ -329,14 +329,23 @@ namespace WeaponCore
 
         internal void ProccessAmmoCallback()
         {
-            WeaponToPullAmmo.ApplyRemovals();
-            WeaponsToRemoveAmmo.ApplyRemovals();
+            for (int i = 0; i < InvPullClean.Count; i++)
+                UniqueListRemove(InvPullClean[i], WeaponToPullAmmoIndexer, WeaponToPullAmmo, PullingWeapons);
+
+            for (int i = 0; i < InvRemoveClean.Count; i++)
+                UniqueListRemove(InvRemoveClean[i], WeaponsToRemoveAmmoIndexer, WeaponsToRemoveAmmo);
+
+            InvPullClean.Clear();
+            InvRemoveClean.Clear();
+
             RemoveAmmo();
             MoveAmmo();
+            InventoryUpdate = false;
         }
 
         internal void StartAmmoTask()
         {
+            InventoryUpdate = true;
             if (ITask.valid && ITask.Exceptions != null)
                 TaskHasErrors(ref ITask, "ITask");
 
@@ -353,7 +362,6 @@ namespace WeaponCore
             GridsToUpdateInvetories.Clear();
             GridsToUpdateInvetoriesIndexer.Clear();
 
-            WeaponToPullAmmo.ApplyAdditions();
             ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
         }
 
@@ -381,6 +389,30 @@ namespace WeaponCore
             return false;
         }
 
+        internal bool UniqueListRemove<T>(T item, IDictionary<T, int> indexer, IList<T> list, HashSet<T> checkCache)
+        {
+            int oldPos;
+            if (indexer.TryGetValue(item, out oldPos))
+            {
+
+                indexer.Remove(item);
+                checkCache.Remove(item);
+                list.RemoveAtFast(oldPos);
+                var count = list.Count;
+                if (count > 0)
+                {
+                    count--;
+                    if (oldPos <= count)
+                        indexer[list[oldPos]] = oldPos;
+                    else
+                        indexer[list[count]] = count;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
         internal bool UniqueListAdd<T>(T item, IDictionary<T, int> indexer, IList<T> list)
         {
             if (indexer.ContainsKey(item))
@@ -388,6 +420,17 @@ namespace WeaponCore
 
             list.Add(item);
             indexer.Add(item, list.Count - 1);
+            return true;
+        }
+
+        internal bool UniqueListAdd<T>(T item, IDictionary<T, int> indexer, IList<T> list, HashSet<T> checkCache)
+        {
+            if (indexer.ContainsKey(item))
+                return false;
+
+            list.Add(item);
+            indexer.Add(item, list.Count - 1);
+            checkCache.Add(item);
             return true;
         }
 
