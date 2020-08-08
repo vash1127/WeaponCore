@@ -155,8 +155,6 @@ namespace WeaponCore.Platform
                             {
                                 var animation = AnimationsSet[state][i];
 
-                                if (System.Session.IsClient && (animation.Running || (muzzles != null && muzzles.Contains(animation.Muzzle)))) 
-                                    Log.Line($"[Fire Animation] state:{state} - active:{active} - !Running:{!animation.Running} - muzzleMatch:{(muzzles != null && muzzles.Contains(animation.Muzzle))} - alreadyTriggered: {animation.TriggerOnce && animation.Triggered}");
                                 if (active && !animation.Running && (animation.Muzzle == "Any" || (muzzles != null && muzzles.Contains(animation.Muzzle))))
                                 {
                                     if (animation.TriggerOnce && animation.Triggered) continue;

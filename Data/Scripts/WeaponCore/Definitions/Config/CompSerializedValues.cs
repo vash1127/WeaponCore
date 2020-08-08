@@ -209,12 +209,14 @@ namespace WeaponCore
             //else Log.Line($"CompStateValues older revision: {sync.Revision} > {Revision} - caller:{caller}");
         }
 
-        public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false)
+        public void TerminalActionSetter(WeaponComponent comp, ShootActions action, bool syncWeapons = false, bool updateWeapons = true)
         {
             TerminalAction = action;
-
-            for (int i = 0; i < Weapons.Length; i++)
-                Weapons[i].Action = action;
+            
+            if (updateWeapons) {
+                for (int i = 0; i < Weapons.Length; i++)
+                    Weapons[i].Action = action;
+            }
 
             if (syncWeapons)
                 comp.Session.SendCompState(comp);

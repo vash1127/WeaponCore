@@ -48,7 +48,6 @@ namespace WeaponCore.Platform
         internal bool LockOnFireState;
         internal bool ReloadSubscribed;
         internal bool ScheduleAmmoChange;
-        internal bool ShootOnce;
         internal uint GravityTick;
         internal uint ShootTick;
         internal uint TicksPerShot;
@@ -65,6 +64,7 @@ namespace WeaponCore.Platform
         internal int BarrelRate;
         internal int ArmorHits;
         internal int ShotsFired;
+        internal int LastMuzzle;
 
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
@@ -194,6 +194,7 @@ namespace WeaponCore.Platform
         internal bool Reloading;
         internal bool Charging;
         internal bool ClientStaticShot;
+        internal bool ShootOnce;
 
         internal bool CheckInventorySystem = true;
         internal bool ShotReady

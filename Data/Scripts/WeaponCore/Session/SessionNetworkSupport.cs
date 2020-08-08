@@ -872,6 +872,26 @@ namespace WeaponCore
             else Log.Line($"SendPlayerControlRequest should never be called on Server");
         }
 
+        internal void SendQueuedShot(Weapon w)
+        {
+            if (IsServer)
+            {
+                PacketsToClient.Add(new PacketInfo
+                {
+                    Entity = w.Comp.MyCube,
+                    Packet = new QueuedShotPacket
+                    {
+                        MId = ++w.MIds[(int)PacketType.QueueShot],
+                        EntityId = w.Comp.MyCube.EntityId,
+                        SenderId = MultiplayerId,
+                        PType = PacketType.QueueShot,
+                        WeaponId = w.WeaponId,
+                        PlayerId = w.Comp.Data.Repo.State.PlayerId,
+                    }
+                });
+            }
+            else Log.Line($"SendAmmoCycleRequest should never be called on Client");
+        }
 
         internal void SendAmmoCycleRequest(Weapon w, int newAmmoId)
         {
@@ -992,34 +1012,8 @@ namespace WeaponCore
             }
         }
 
-        internal void SendSingleShot(WeaponComponent comp)
-        {
-            if (IsClient)
-            {
-                PacketsToServer.Add(new Packet
-                {
-                    EntityId = comp.MyCube.EntityId,
-                    PType = PacketType.SendSingleShot,
-                    SenderId = MultiplayerId,
-                });
-            }
-            else
-            {
-                PacketsToClient.Add(new PacketInfo
-                {
-                    Entity = comp.MyCube,
-                    Packet = new Packet
-                    {
-                        EntityId = comp.MyCube.EntityId,
-                        PType = PacketType.SendSingleShot,
-                        SenderId = MultiplayerId,
-                    }
-                });
-            }
-        }
 
         #region Misc Network Methods
-
         private bool AuthorDebug()
         {
             var authorsOffline = ConnectedAuthors.Count == 0;

@@ -133,7 +133,6 @@ namespace WeaponCore.Platform
                 
                 if (!NoMagsToLoad)
                     CheckInventorySystem = true;
-
                 NoMagsToLoad = true;
             }
 
@@ -289,13 +288,13 @@ namespace WeaponCore.Platform
                     Reload.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
 
                 if (System.Session.IsServer) {
+                    ShootOnce = false;
                     if (System.Session.MpActive)
                         System.Session.SendWeaponReload(this);
                 }
                 else 
                     ClientMakeUpShots = 0;
                 
-                ShootOnce = false;
                 Reloading = false;
             }
 

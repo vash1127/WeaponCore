@@ -130,6 +130,7 @@ namespace WeaponCore
         {
             for (int i = 0; i < WeaponsToRemoveAmmo.Count; i++) {
 
+                Log.Line("test");
                 var weapon = WeaponsToRemoveAmmo[i];
                 using (weapon.Comp.Ai?.MyGrid.Pin())
                 using (weapon.Comp.MyCube.Pin())

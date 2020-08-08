@@ -141,9 +141,9 @@ namespace WeaponCore
                         ClientFullMouseUpdate(packetObj);
                         break;
                     }
-                    case PacketType.SendSingleShot: 
+                    case PacketType.QueueShot: 
                     {
-                        ClientSendSingleShot(packetObj);
+                        ClientQueueShot(packetObj);
                         break;
                     }
                     case PacketType.ProblemReport: 
@@ -250,11 +250,6 @@ namespace WeaponCore
                 case PacketType.PlayerControlRequest:
                 {
                     ServerPlayerControlRequest(packetObj);
-                    break;
-                }
-                case PacketType.SendSingleShot:
-                {
-                    ServerSendSingleShot(packetObj);
                     break;
                 }
                 case PacketType.ClientAiAdd:

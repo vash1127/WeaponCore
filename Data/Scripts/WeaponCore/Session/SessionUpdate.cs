@@ -238,6 +238,11 @@ namespace WeaponCore
 
                         if (shotReady || w.ShootOnce) {
 
+                            if (w.ShootOnce)
+                                Log.Line($"shotQueued: shotReady:{shotReady} - {w.State.Action}");
+                            if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))
+                                w.ShootOnce = false;
+
                             if (MpActive && HandlesInput && !ManualShot)
                                 ManualShot = !validShootStates && !w.FinishBurst && !delayedFire;
 

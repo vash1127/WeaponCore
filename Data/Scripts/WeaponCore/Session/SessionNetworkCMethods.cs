@@ -353,15 +353,18 @@ namespace WeaponCore
 
         }
 
-        private bool ClientSendSingleShot(PacketObj data)
+        private bool ClientQueueShot(PacketObj data)
         {
             var packet = data.Packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var queueShot = (QueuedShotPacket) packet;
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                comp.Platform.Weapons[i].ShootOnce = true;
+            var w = comp.Platform.Weapons[queueShot.WeaponId];
+            w.ShootOnce = true;
+            if (PlayerId == queueShot.PlayerId)
+                w.ClientStaticShot = true;
 
             data.Report.PacketValid = true;
 

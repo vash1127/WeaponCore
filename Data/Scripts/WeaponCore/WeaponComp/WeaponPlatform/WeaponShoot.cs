@@ -117,15 +117,31 @@ namespace WeaponCore.Platform
                 var selfDamage = 0f;
                 for (int i = 0; i < bps; i++) {
 
+                    var skipMuzzle = false;
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        if (Reload.CurrentAmmo == 0 && ClientMakeUpShots == 0) {
-                            if (System.Session.MpActive && System.Session.IsServer)
-                                System.Session.SendWeaponReload(this);
-                            if (System.Session.IsServer || ClientStaticShot) ShootOnce = false;
-                            break;
+                        
+                        if (Reload.CurrentAmmo == 0) {
+
+                            if (System.Session.IsServer)
+                                ShootOnce = false;
+
+                            if (ClientMakeUpShots == 0) {
+
+                                if (System.Session.MpActive && System.Session.IsServer)
+                                    System.Session.SendWeaponReload(this);
+
+                                if (!ShootOnce) break;
+                                skipMuzzle = true;
+                            }
                         }
                         
-                        if (Reload.CurrentAmmo > 0) --Reload.CurrentAmmo;
+                        if (Reload.CurrentAmmo > 0) {
+
+                            --Reload.CurrentAmmo;
+                            if (ShootOnce)
+                                DequeueShot();
+
+                        }
                         else if (ClientMakeUpShots > 0)
                         {
                             Log.Line($"Shoot MakeUpShot:{ClientMakeUpShots}");
@@ -138,7 +154,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    var current = NextMuzzle;
+                    var current = !skipMuzzle ? NextMuzzle : LastMuzzle;
                     var muzzle = Muzzles[current];
                     if (muzzle.LastUpdateTick != tick) {
                         var dummy = Dummies[current];
@@ -245,12 +261,6 @@ namespace WeaponCore.Platform
                     }
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
 
-                    if (ShootOnce || State.Action == ShootActions.ShootOnce) {
-                        if (System.Session.IsServer) 
-                            State.WeaponMode(Comp, ShootActions.ShootOff);
-                        ShootOnce = false;
-                    }
-
                     if (HeatPShot > 0) {
 
                         if (!HeatLoopRunning) {
@@ -275,7 +285,8 @@ namespace WeaponCore.Platform
                             break;
                         }
                     }
-
+                    
+                    LastMuzzle = NextMuzzle;
                     if (i == bps) NextMuzzle++;
 
                     NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
@@ -327,6 +338,28 @@ namespace WeaponCore.Platform
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
             }
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
+        }
+
+        private void DequeueShot()
+        {
+            ShootOnce = false;
+            if (System.Session.IsServer)
+            {
+                if (System.Session.MpActive) System.Session.SendQueuedShot(this);
+                if (State.Action == ShootActions.ShootOnce && ShotQueueEmpty())
+                    Comp.Data.Repo.State.TerminalActionSetter(Comp, ShootActions.ShootOff, true, false);
+            }
+        }
+
+        private bool ShotQueueEmpty()
+        {
+            State.Action = ShootActions.ShootOff;
+            var hasShot = false;
+            for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
+                if (Comp.Platform.Weapons[i].ShootOnce)
+                    hasShot = true;
+            }
+            return !hasShot;
         }
 
         private void SpawnEjection()

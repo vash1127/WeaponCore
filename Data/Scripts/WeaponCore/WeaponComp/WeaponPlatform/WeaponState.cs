@@ -113,8 +113,10 @@ namespace WeaponCore.Platform
             FireCounter = 0;
             CeaseFireDelayTick = uint.MaxValue / 2;
             _ticksUntilShoot = 0;
-            if (System.Session.IsServer) 
+            
+            if (System.Session.IsServer)
                 ShootOnce = false;
+
             PreFired = false;
             if (IsShooting && !System.DesignatorWeapon)
             {

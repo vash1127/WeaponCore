@@ -45,10 +45,10 @@ namespace WeaponCore
         FixedWeaponHitEvent,
         ProblemReport,
         TerminalMonitor,
-        SendSingleShot,
         ClientNotify,
         ServerVersion,
         WeaponReload,
+        QueueShot,
     }
 
     #region packets
@@ -76,7 +76,7 @@ namespace WeaponCore
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
     [ProtoInclude(26, typeof(ServerVersionPacket))]
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
-
+    [ProtoInclude(28, typeof(QueuedShotPacket))]
 
     public class Packet
     {
@@ -190,6 +190,23 @@ namespace WeaponCore
             base.CleanUp();
             WeaponId = 0;
             NewAmmoId = 0;
+            PlayerId = -1;
+        }
+    }
+
+    [ProtoContract]
+    public class QueuedShotPacket : Packet
+    {
+        [ProtoMember(1)] internal int WeaponId;
+        [ProtoMember(2), DefaultValue(-1)] internal long PlayerId;
+
+
+        public QueuedShotPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            WeaponId = 0;
             PlayerId = -1;
         }
     }
