@@ -289,13 +289,14 @@ namespace WeaponCore
             {
                 for (int i = 0; i < inventoryItems.Value.Count; i++)
                 {
-                    if (AmmoDefIds.Contains(inventoryItems.Value[i].Content.GetId()))
+                    var item = inventoryItems.Value[i];
+                    if (AmmoDefIds.Contains(item.Content.GetId()))
                     {
                         var newItem = BetterInventoryItems.Get();
-                        newItem.ItemId = inventoryItems.Value[i].ItemId;
-                        newItem.Amount = (int)inventoryItems.Value[i].Amount;
-                        newItem.Content = inventoryItems.Value[i].Content;
-                        newItem.DefId = inventoryItems.Value[i].Content.GetId();
+                        newItem.Item = item;
+                        newItem.Amount = (int)item.Amount;
+                        newItem.Content = item.Content;
+                        newItem.DefId = item.Content.GetId();
                         AmmoThreadItemList[inventoryItems.Key].Add(newItem);
                     }
                 }
@@ -307,7 +308,7 @@ namespace WeaponCore
                 foreach (var itemList in blockInventoryItems.Value)
                 {
                     var newItem = BetterInventoryItems.Get();
-                    newItem.ItemId = itemList.Value.ItemId;
+                    newItem.Item = itemList.Value.Item;
                     newItem.Amount = itemList.Value.Amount;
                     newItem.Content = itemList.Value.Content;
                     newItem.DefId = itemList.Value.Content.GetId();

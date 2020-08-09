@@ -205,8 +205,8 @@ namespace WeaponCore.Platform
 
                 if (set && System.DegRof && State.Heat >= (System.MaxHeat * .8))
                 {
-                    var systemRate = System.RateOfFire * Comp.Data.Repo.Set.RofModifier;
-                    var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Set.RofModifier;
+                    var systemRate = System.RateOfFire * Comp.Data.Repo.Base.Set.RofModifier;
+                    var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier;
                     var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
 
                     systemRate *= heatModifier;
@@ -224,8 +224,8 @@ namespace WeaponCore.Platform
                 else if (set && CurrentlyDegrading)
                 {
                     CurrentlyDegrading = false;
-                    RateOfFire = (int)(System.RateOfFire * Comp.Data.Repo.Set.RofModifier);
-                    BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Data.Repo.Set.RofModifier);
+                    RateOfFire = (int)(System.RateOfFire * Comp.Data.Repo.Base.Set.RofModifier);
+                    BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier);
                     TicksPerShot = (uint)(3600f / RateOfFire);
 
                     if (System.HasBarrelRotation) UpdateBarrelRotation();
@@ -247,7 +247,7 @@ namespace WeaponCore.Platform
                     LastHeatUpdateTick = 0;
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null} - Value:{Comp.Data.Repo == null} - Weapons:{Comp.Data.Repo?.State.Weapons[WeaponId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null} - Value:{Comp.Data.Repo == null} - Weapons:{Comp.Data.Repo?.Base.State.Weapons[WeaponId] == null}"); }
         }
 
         internal void TurnOnAV(object o)
@@ -277,12 +277,12 @@ namespace WeaponCore.Platform
             var newBase = 0f;
 
             if (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Set.DpsModifier;
+                newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage * Comp.Data.Repo.Base.Set.DpsModifier;
             else
                 newBase = ActiveAmmoDef.AmmoDef.Const.BaseDamage;
 
             if (ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon)
-                newBase *= Comp.Data.Repo.Set.Overload;
+                newBase *= Comp.Data.Repo.Base.Set.Overload;
 
             if (newBase < 0)
                 newBase = 0;
@@ -353,7 +353,7 @@ namespace WeaponCore.Platform
             Comp.Ai.UpdatePowerSources = true;
         }
 
-        internal void SpinBarrel(bool spinDown = false)
+        internal bool SpinBarrel(bool spinDown = false)
         {
             var matrix = MuzzlePart.Entity.PositionComp.LocalMatrixRef * BarrelRotationPerShot[BarrelRate];
             MuzzlePart.Entity.PositionComp.SetLocalMatrix(ref matrix, null, true);
@@ -378,6 +378,21 @@ namespace WeaponCore.Platform
                     RotateEmitter.StopSound(true);
             }
             else BarrelSpinning = true;
+
+            if (!spinDown)
+            {
+                if (BarrelRate < 9)
+                {
+                    if (_spinUpTick <= Comp.Session.Tick)
+                    {
+                        BarrelRate++;
+                        _spinUpTick = Comp.Session.Tick + _ticksBeforeSpinUp;
+                    }
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

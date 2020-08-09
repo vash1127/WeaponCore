@@ -419,7 +419,7 @@ namespace WeaponCore.Support
                 var effectExists = effect != null;
                 var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
-                if (effectStale || somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Set.Overrides.Activate ) {
+                if (effectStale || somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Base.Set.Overrides.Activate ) {
                     if (effectExists) {
 
                         if (muzzle.Av1Looping || manualExpire) effect.Stop();
@@ -488,7 +488,7 @@ namespace WeaponCore.Support
                     var effectExists = effect != null;
                     var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
-                    if (effectStale || somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Set.Overrides.Activate)
+                    if (effectStale || somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Base.Set.Overrides.Activate)
                     {
 
                         if (effectExists) {

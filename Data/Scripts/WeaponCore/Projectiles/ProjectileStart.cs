@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
                 var t = gen.Type;
                 var virts = gen.NewVirts;
                 var muzzle = gen.Muzzle;
-                var firingPlayer =  w.Comp.Data.Repo.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
+                var firingPlayer =  w.Comp.Data.Repo.Base.State.PlayerId == w.Comp.Session.PlayerId || w.ClientStaticShot;
                 w.ClientStaticShot = false;
 
                 var patternCycle = gen.PatternCycle;
@@ -31,19 +31,19 @@ namespace WeaponCore.Projectiles
                 p.Info.IsFiringPlayer = firingPlayer;
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
-                p.Info.Overrides = w.Comp.Data.Repo.Set.Overrides;
+                p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
                 
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
-                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.State.TrackingReticle;
+                p.Info.Target.IsFakeTarget = w.Comp.Data.Repo.Base.State.TrackingReticle;
                 p.Info.Target.FiringCube = w.Comp.MyCube;
 
-                p.Info.DummyTarget = w.Comp.Data.Repo.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.State.PlayerId] : null;
+                p.Info.DummyTarget = w.Comp.Data.Repo.Base.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
 
                 p.Info.WeaponId = w.WeaponId;
                 p.Info.BaseDamagePool = w.BaseDamage;
-                p.Info.EnableGuidance = w.Comp.Data.Repo.Set.Guidance;
+                p.Info.EnableGuidance = w.Comp.Data.Repo.Base.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
                 p.Info.WeaponRng = w.TargetData.WeaponRandom;
                 p.Info.LockOnFireState = w.LockOnFireState;

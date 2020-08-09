@@ -40,12 +40,12 @@ namespace WeaponCore.Projectiles
         internal LineD Beam;
         internal BoundingSphereD PruneSphere;
         internal BoundingSphereD DeadSphere;
-        internal double AccelLength;
+        internal double DeltaVelocityPerTick;
+        internal double AccelInMetersPerSec;
         internal double DistanceToTravelSqr;
         internal double VelocityLengthSqr;
         internal double DistanceFromCameraSqr;
         internal double OffsetSqr;
-        internal double StepPerSec;
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
@@ -260,14 +260,14 @@ namespace WeaponCore.Projectiles
 
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
-            StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
+            AccelInMetersPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
             var desiredSpeed = (Info.Direction * DesiredSpeed);
             var relativeSpeedCap = StartSpeed + desiredSpeed;
             MaxVelocity = relativeSpeedCap;
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
-            AccelLength = accelPerSec * StepConst;
-            AccelVelocity = (Info.Direction * AccelLength);
+            DeltaVelocityPerTick = accelPerSec * StepConst;
+            AccelVelocity = (Info.Direction * DeltaVelocityPerTick);
 
             if (ConstantSpeed)
             {
@@ -286,7 +286,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
-                Info.AvShot.Init(Info, StepPerSec * StepConst, MaxSpeed);
+                Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
                 if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.AreaEffect.AreaEffectRadius > 0 && Info.AmmoDef.AreaEffect.AreaEffectDamage > 0)
                 {
@@ -336,8 +336,6 @@ namespace WeaponCore.Projectiles
                     if (voxel == null && grid == null || grid != null && (grid.Physics == null || grid.Physics.IsPhantom || grid.IsPreview))
                         continue;
 
-                    // var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
-                    //var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                     var transform = staticEnt.PositionComp.WorldMatrixRef;
                     var box = staticEnt.PositionComp.LocalAABB;
                     var obb = new MyOrientedBoundingBoxD(box, transform);
@@ -443,7 +441,7 @@ namespace WeaponCore.Projectiles
             MaxVelocity = (Info.Direction * DesiredSpeed);
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
-            AccelVelocity = (Info.Direction * AccelLength);
+            AccelVelocity = (Info.Direction * DeltaVelocityPerTick);
 
             if (ConstantSpeed) {
                 Velocity = MaxVelocity;
@@ -483,19 +481,18 @@ namespace WeaponCore.Projectiles
         internal void RunSmart()
         {
             Vector3D newVel;
-            if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr))
-            {
+            if (DeltaVelocityPerTick <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {
+
                 var fake = Info.Target.IsFakeTarget;
                 var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseTime && HadTarget;
                 var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
                 var isZombie = Info.AmmoDef.Const.CanZombie && HadTarget && !fake && !validTarget && ZombieLifeTime > 0 && (ZombieLifeTime + SmartSlot) % 30 == 0;
                 var seekFirstTarget = !HadTarget && !validTarget && Info.Age > 120 && (Info.Age + SmartSlot) % 30 == 0;
 
-                if ((PickTarget && (Info.Age + SmartSlot) % 30 == 0 || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget)
-                {
+                if ((PickTarget && (Info.Age + SmartSlot) % 30 == 0 || gaveUpChase && validTarget || isZombie || seekFirstTarget) && NewTarget() || validTarget) {
+
                     HadTarget = true;
-                    if (ZombieLifeTime > 0)
-                    {
+                    if (ZombieLifeTime > 0) {
                         ZombieLifeTime = 0;
                         OffSetTarget();
                     }
@@ -505,11 +502,9 @@ namespace WeaponCore.Projectiles
                     else if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
                     else if (Info.Target.Entity != null) targetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
 
-
-                    if (Info.AmmoDef.Const.TargetOffSet && WasTracking)
+                    if (Info.AmmoDef.Const.TargetOffSet && WasTracking) 
                     {
-                        if (Info.Age - LastOffsetTime > 300)
-                        {
+                        if (Info.Age - LastOffsetTime > 300) {
                             double dist;
                             Vector3D.DistanceSquared(ref Position, ref targetPos, out dist);
                             if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Info.Direction, Position - targetPos) > 0)
@@ -522,54 +517,46 @@ namespace WeaponCore.Projectiles
 
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
                     if (!(Info.Target.IsProjectile || fake) && (physics == null || Vector3D.IsZero(targetPos)))
-                    {
                         PrevTargetPos = PredictedTargetPos;
-                    }
                     else
-                    {
                         PrevTargetPos = targetPos;
-                    }
 
                     var tVel = Vector3.Zero;
                     if (fake) tVel = Info.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
-                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr)
-                    {
-                        if (((WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0)) || !WasTracking))
-                        {
+                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {
+
+                        if (WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0) || !WasTracking) {
                             var targetDir = -Info.Direction;
                             var refDir = Vector3D.Normalize(Position - targetPos);
-                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree))
-                            {
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.AmmoDef.Const.TargetLossDegree)) {
                                 if (WasTracking)
                                     PickTarget = true;
                             }
                             else if (!WasTracking)
-                            {
                                 WasTracking = true;
-                            }
                         }
                     }
 
                     PrevTargetVel = tVel;
                 }
-                else
-                {
+                else {
+
                     var roam = Info.AmmoDef.Trajectory.Smarts.Roam;
                     PrevTargetPos = roam ? PredictedTargetPos : Position + (Info.Direction * Info.MaxTrajectory);
-                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget))
-                    {
+
+                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget)) {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
                         EarlyEnd = true;
                     }
 
-                    if (roam && Info.Age - LastOffsetTime > 300 && HadTarget)
-                    {
+                    if (roam && Info.Age - LastOffsetTime > 300 && HadTarget) {
+
                         double dist;
                         Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
-                        if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Info.Direction, Position - PrevTargetPos) > 0)
-                        {
+                        if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Info.Direction, Position - PrevTargetPos) > 0) {
+
                             OffSetTarget(true);
                             PrevTargetPos += TargetOffSet;
                             PredictedTargetPos = PrevTargetPos;
@@ -577,29 +564,28 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-
                 var missileToTarget = Vector3D.Normalize(PrevTargetPos - Position);
                 var relativeVelocity = PrevTargetVel - Velocity;
                 var normalMissileAcceleration = (relativeVelocity - (relativeVelocity.Dot(missileToTarget) * missileToTarget)) * Info.AmmoDef.Trajectory.Smarts.Aggressiveness;
 
                 Vector3D commandedAccel;
-                if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel = (missileToTarget * StepPerSec);
+                if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel = (missileToTarget * AccelInMetersPerSec);
                 else {
 
-                    var maxLateralThrust = StepPerSec * Math.Min(1, Math.Max(0, Info.AmmoDef.Const.MaxLateralThrust));
+                    var maxLateralThrust = AccelInMetersPerSec * Math.Min(1, Math.Max(0, Info.AmmoDef.Const.MaxLateralThrust));
                     if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust) {
                         Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
                         normalMissileAcceleration *= maxLateralThrust;
                     }
-                    commandedAccel = Math.Sqrt(Math.Max(0, StepPerSec * StepPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
+                    commandedAccel = Math.Sqrt(Math.Max(0, AccelInMetersPerSec * AccelInMetersPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
                 }
 
                 newVel = Velocity + (commandedAccel * StepConst);
-                AccelDir = commandedAccel / StepPerSec;
-                Vector3D.Normalize(ref Velocity, out Info.Direction);
+                AccelDir = commandedAccel / AccelInMetersPerSec;
+                Vector3D.Normalize(ref newVel, out Info.Direction);
             }
             else
-                newVel = Velocity += (Info.Direction * AccelLength);
+                newVel = Velocity += (Info.Direction * DeltaVelocityPerTick);
             VelocityLengthSqr = newVel.LengthSquared();
 
             if (VelocityLengthSqr > MaxSpeedSqr) newVel = Info.Direction * MaxSpeed;

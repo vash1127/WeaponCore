@@ -48,6 +48,7 @@ namespace WeaponCore.Platform
         internal bool LockOnFireState;
         internal bool ReloadSubscribed;
         internal bool ScheduleAmmoChange;
+        internal uint LastMagSeenTick;
         internal uint GravityTick;
         internal uint ShootTick;
         internal uint TicksPerShot;
@@ -65,7 +66,6 @@ namespace WeaponCore.Platform
         internal int ArmorHits;
         internal int ShotsFired;
         internal int LastMuzzle;
-
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
@@ -97,6 +97,7 @@ namespace WeaponCore.Platform
         internal WeaponStateValues State;
         internal WeaponReloadValues Reload;
         internal TransferTarget TargetData;
+        internal AmmoValues Ammo;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
         internal ParallelRayCallBack RayCallBack;
 
@@ -201,7 +202,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Reload.CurrentAmmo == 0);
+                var reloading = (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo || ActiveAmmoDef.AmmoDef.Const.MustCharge) && (Reloading || Ammo.CurrentAmmo == 0);
                 var canShoot = !State.Overheated && !reloading && !System.DesignatorWeapon;
                 var shotReady = canShoot && !Charging && (ShootTick <= Comp.Session.Tick) && (AnimationDelayTick <= Comp.Session.Tick || !LastEventCanDelay);
                 return shotReady;

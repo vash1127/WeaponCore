@@ -306,11 +306,11 @@ namespace WeaponCore
                     {"cubeIsWorking", () => GetComp()?.MyCube.IsWorking.ToString() ?? string.Empty },
                     {"MaxTargetDistance", () => GetComp()?.MaxTargetDistance.ToString(CultureInfo.InvariantCulture) ?? string.Empty },
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
-                    {"ControlType", () => GetComp()?.Data.Repo.State.Control.ToString() ?? string.Empty },
-                    {"PlayerId", () => GetComp()?.Data.Repo.State.PlayerId.ToString() ?? string.Empty },
-                    {"Activate", () => GetComp()?.Data.Repo.Set.Overrides.Activate.ToString() ?? string.Empty },
-                    {"FocusSubSystem", () => GetComp()?.Data.Repo.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
-                    {"FocusTargets", () => GetComp()?.Data.Repo.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
+                    {"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
+                    {"PlayerId", () => GetComp()?.Data.Repo.Base.State.PlayerId.ToString() ?? string.Empty },
+                    {"Activate", () => GetComp()?.Data.Repo.Base.Set.Overrides.Activate.ToString() ?? string.Empty },
+                    {"FocusSubSystem", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
+                    {"FocusTargets", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -404,7 +404,7 @@ namespace WeaponCore
                     },
                     {"AmmoTypeId", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.AmmoTypeId}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.AmmoTypeId}"); }
                     },
                     {"Action", () => {
                             var message = string.Empty;
@@ -428,15 +428,15 @@ namespace WeaponCore
                     },
                     {"CurrentAmmo", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentAmmo}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.CurrentAmmo}"); }
                     },
                     {"CurrentCharge", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentCharge}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.CurrentCharge}"); }
                     },
                     {"CurrentMags", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.CurrentMags}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Ammo.CurrentMags}"); }
                     },
                     {"LastEventCanDelay", () => {
                             var message = string.Empty;
@@ -665,10 +665,10 @@ namespace WeaponCore
 
             internal void Awaken(WeaponAcquire wa)
             {
-                var notValid = !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
+                var notValid = !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
                 if (notValid)
                 {
-                    if (!Session.IsClient) Log.Line($"[Awaken] isAsleep:{wa.Asleep} - cWorking:{wa.Weapon.Comp.IsWorking} - cOverride:{wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
+                    if (!Session.IsClient) Log.Line($"[Awaken] isAsleep:{wa.Asleep} - cWorking:{wa.Weapon.Comp.IsWorking} - cOverride:{wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
                     return;
                 }
 
@@ -684,10 +684,10 @@ namespace WeaponCore
 
             internal void AddAwake(WeaponAcquire wa)
             {
-                var notValid = !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
+                var notValid = !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
                 if (notValid)
                 {
-                    if (!Session.IsClient) Log.Line($"[AddAwake] isAsleep:{wa.Asleep} - cWorking:{wa.Weapon.Comp.IsWorking} - cOverride:{wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
+                    if (!Session.IsClient) Log.Line($"[AddAwake] isAsleep:{wa.Asleep} - cWorking:{wa.Weapon.Comp.IsWorking} - cOverride:{wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
                     return;
                 }
 
@@ -778,7 +778,7 @@ namespace WeaponCore
                 foreach (var wa in Asleep)
                 {
 
-                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Set.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
+                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
 
                     if (remove)
                     {
@@ -875,7 +875,7 @@ namespace WeaponCore
         {
             private int _amount;
             public MyObjectBuilder_PhysicalObject Content;
-            public uint ItemId;
+            public MyPhysicalInventoryItem Item;
             public MyDefinitionId DefId;
 
             public int Amount

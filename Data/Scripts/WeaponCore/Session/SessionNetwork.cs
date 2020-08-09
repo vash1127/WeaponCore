@@ -126,7 +126,12 @@ namespace WeaponCore
                         ClientWeaponReloadUpdate(packetObj);
                         break;
                     }
-                    case PacketType.CompData:
+                    case PacketType.WeaponAmmo:
+                    {
+                        ClientWeaponAmmoUpdate(packetObj);
+                        break;
+                    }
+                    case PacketType.CompBase:
                     {
                         ClientCompData(packetObj);
                         break;
@@ -377,10 +382,10 @@ namespace WeaponCore
                         PacketAiPool.Return(iPacket);
                         break;
                     }
-                    case PacketType.CompData:
+                    case PacketType.CompBase:
                     {
-                        var iPacket = (CompDataPacket)pInfo.Packet;
-                        PacketCompDataPool.Return(iPacket);
+                        var iPacket = (CompBasePacket)pInfo.Packet;
+                        PacketCompBasePool.Return(iPacket);
                         break;
                     }
                     case PacketType.CompState:
@@ -411,6 +416,12 @@ namespace WeaponCore
                     {
                         var iPacket = (ConstructFociPacket)pInfo.Packet;
                         PacketConstructFociPool.Return(iPacket);
+                        break;
+                    }
+                    case PacketType.WeaponAmmo:
+                    {
+                        var iPacket = (WeaponAmmoPacket)pInfo.Packet;
+                        PacketAmmoPool.Return(iPacket);
                         break;
                     }
                 }

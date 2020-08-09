@@ -279,7 +279,7 @@ namespace WeaponCore.Api
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready)
-                return comp.Data.Repo.State.PlayerId;
+                return comp.Data.Repo.Base.State.PlayerId;
 
             return -1;
         }
@@ -458,7 +458,7 @@ namespace WeaponCore.Api
         private static bool IsWeaponReadyToFire(IMyTerminalBlock weaponBlock, int weaponId = 0, bool anyWeaponReady = true, bool shotReady = false)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId && comp.IsWorking && comp.Data.Repo.Set.Overrides.Activate)
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId && comp.IsWorking && comp.Data.Repo.Base.Set.Overrides.Activate)
             {
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
@@ -508,7 +508,7 @@ namespace WeaponCore.Api
                     if (w.MaxTargetDistance > maxTargetDistance) 
                         maxTargetDistance = w.MaxTargetDistance;
                 
-                comp.Data.Repo.Set.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
+                comp.Data.Repo.Base.Set.Range = (float) (range > maxTargetDistance ? maxTargetDistance : range);
             }
         }
 
@@ -662,7 +662,7 @@ namespace WeaponCore.Api
                     if (ammoType.AmmoName == ammoTypeStr && ammoType.AmmoDef.Const.IsTurretSelectable)
                     {
                         if (comp.Session.IsServer) {
-                            w.Reload.AmmoTypeId = i;
+                            w.Ammo.AmmoTypeId = i;
                             if (comp.Session.MpActive)
                                 comp.Session.SendWeaponReload(w);
                         }

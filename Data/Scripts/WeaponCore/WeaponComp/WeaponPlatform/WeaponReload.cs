@@ -7,42 +7,45 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-
-
         internal void ChangeActiveAmmoServer()
         {
             var proposed = ProposedAmmoId != -1;
-            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[Reload.AmmoTypeId];
+            var ammoType = proposed ? System.AmmoTypes[ProposedAmmoId] : System.AmmoTypes[Ammo.AmmoTypeId];
             ScheduleAmmoChange = false;
 
             if (ActiveAmmoDef == ammoType)
                 return;
+            
+            ++Ammo.AmmoCycleId;
 
             if (proposed)
             {
-                Reload.AmmoTypeId = ProposedAmmoId;
+                Ammo.AmmoTypeId = ProposedAmmoId;
                 ProposedAmmoId = -1;
-                Reload.CurrentAmmo = 0;
-                Reload.CurrentMags = 0;
+                Ammo.CurrentAmmo = 0;
+                Ammo.CurrentMags = 0;
             }
 
-            ActiveAmmoDef = System.AmmoTypes[Reload.AmmoTypeId];
+            ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
+            Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+            
+            CheckInventorySystem = true;
 
             SetWeaponDps();
             UpdateWeaponRange();
 
             if (System.Session.MpActive)
-                System.Session.SendCompData(Comp);
+                System.Session.SendWeaponAmmoData(this);
         }
 
         internal void ChangeActiveAmmoClient()
         {
-            var ammoType = System.AmmoTypes[Reload.AmmoTypeId];
+            var ammoType = System.AmmoTypes[Ammo.AmmoTypeId];
 
             if (ActiveAmmoDef == ammoType)
                 return;
 
-            ActiveAmmoDef = System.AmmoTypes[Reload.AmmoTypeId];
+            ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
             SetWeaponDps();
             UpdateWeaponRange();
         }
@@ -61,10 +64,10 @@ namespace WeaponCore.Platform
                     {
                         if (!Comp.Session.MpActive)
                             MyAPIGateway.Utilities.ShowNotification($"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine", 3000, "Red");
-                        else if (Comp.Data.Repo.State.PlayerId > 0)
+                        else if (Comp.Data.Repo.Base.State.PlayerId > 0)
                         {
                             var message = $"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine";
-                            Comp.Session.SendClientNotify(Comp.Data.Repo.State.PlayerId, message, true, "Red", 3000);
+                            Comp.Session.SendClientNotify(Comp.Data.Repo.Base.State.PlayerId, message, true, "Red", 3000);
                         }
                         MyFloatingObjects.Spawn(ammoChange.Item, Dummies[0].Info.Position, MyPivotDir, MyPivotUp);
                     }
@@ -80,16 +83,16 @@ namespace WeaponCore.Platform
             {
                 ProposedAmmoId = newAmmoId;
                 var instantChange = System.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable;
-                var canReload = Reload.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
+                var canReload = Ammo.CurrentAmmo == 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable;
                 var proposedAmmo = System.AmmoTypes[ProposedAmmoId];
 
-                var unloadMag = !canReload && !instantChange && !Reloading && Reload.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                var unloadMag = !canReload && !instantChange && !Reloading && !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Ammo.CurrentAmmo == ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
                 if (unloadMag && proposedAmmo.AmmoDef.Const.Reloadable)
                 {
-                    Reload.CurrentAmmo = 0;
+                    Ammo.CurrentAmmo = 0;
                     canReload = true;
-                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = Reload.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
+                    System.Session.FutureEvents.Schedule(AmmoChange, new AmmoLoad { Amount = 1, Change = AmmoLoad.ChangeType.Add, OldId = Ammo.AmmoTypeId, Item = ActiveAmmoDef.AmmoDef.Const.AmmoItem }, 1);
                 }
 
                 if (instantChange)
@@ -106,33 +109,37 @@ namespace WeaponCore.Platform
 
         internal bool HasAmmo()
         {
-            if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon)
-            {
+            if (Comp.Session.IsCreative || !ActiveAmmoDef.AmmoDef.Const.Reloadable || System.DesignatorWeapon) {
                 NoMagsToLoad = false;
                 return true;
             }
-            Reload.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
-            var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
-            var nothingToLoad = Reload.CurrentMags <= 0 && !energyDrainable;
 
-            if (NoMagsToLoad)
-            {
+            Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+            var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
+            var nothingToLoad = Ammo.CurrentMags <= 0 && !energyDrainable;
+
+            if (NoMagsToLoad) {
                 if (nothingToLoad)
                     return false;
 
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
-                Target.Reset(Comp.Session.Tick, Target.States.NoMagsToLoad);
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Remove(this);
-
                 NoMagsToLoad = false;
+                LastMagSeenTick = System.Session.Tick;
+
+                if (System.Session.MpActive)
+                    System.Session.SendWeaponAmmoData(this);
             }
             else if (nothingToLoad)
             {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                 Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Add(this);
-                
-                if (!NoMagsToLoad)
+
+                if (!NoMagsToLoad) {
                     CheckInventorySystem = true;
+                    if (System.Session.MpActive)
+                        System.Session.SendWeaponAmmoData(this);
+                }
                 NoMagsToLoad = true;
             }
 
@@ -145,18 +152,17 @@ namespace WeaponCore.Platform
 
             if (!syncUp) {
 
-                if (Reload.CurrentMags <= 0) {
-                    if (!NoMagsToLoad) {
+                if (Ammo.CurrentMags <= 0) {
+                    if (!NoMagsToLoad) 
                         EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
-                    }
                     NoMagsToLoad = true;
                 }
                 return false;
             }
             
             ClientStartId = Reload.StartId;
-            ClientMakeUpShots += Reload.CurrentAmmo;
-            Reload.CurrentAmmo = 0;
+            ClientMakeUpShots += Ammo.CurrentAmmo;
+            Ammo.CurrentAmmo = 0;
 
             if (NoMagsToLoad) {
                 EventTriggerStateChanged(EventTriggers.NoMagsToLoad, false);
@@ -181,11 +187,16 @@ namespace WeaponCore.Platform
             {
                 if (!s.IsCreative)
                 {
+                    Comp.CurrentInventoryVolume = (float)Comp.BlockInventory.CurrentVolume;
+                    var freeSpace = System.MaxAmmoVolume - Comp.CurrentInventoryVolume;
+                    var spotsFree = (int)(freeSpace / ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                    CurrentAmmoVolume = Ammo.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
-                    Reload.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
-                    CurrentAmmoVolume = (float)Reload.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
-                    var freeSpace = System.MaxAmmoVolume - (float)Comp.BlockInventory.CurrentVolume;
-                    if (CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume && !s.PullingWeapons.Contains(this) && (CheckInventorySystem || s.Tick - LastInventoryTick > 600 && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)))
+                    var magsNeeded = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
+
+                    if (magsNeeded > 0 && CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume * magsNeeded && !s.PullingWeapons.Contains(this) && (CheckInventorySystem || s.Tick - LastInventoryTick > 600 && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)))
                     {
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;
@@ -195,7 +206,7 @@ namespace WeaponCore.Platform
                 }
             }
 
-            var invalidStates = Reload.CurrentAmmo != 0 || Reloading;
+            var invalidStates = Ammo.CurrentAmmo != 0 || Reloading;
             return !invalidStates && ServerReload();
         }
 
@@ -203,8 +214,6 @@ namespace WeaponCore.Platform
         {
             if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
                 return false;
-
-            var hadNoMags = NoMagsToLoad;
 
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
@@ -214,11 +223,8 @@ namespace WeaponCore.Platform
             FinishBurst = false;
             ShootOnce = false;
 
-            if (!hasAmmo) {
-                if (hadNoMags != NoMagsToLoad && System.Session.MpActive)
-                    System.Session.SendWeaponReload(this);
+            if (!hasAmmo) 
                 return false;
-            }
 
             ++Reload.StartId;
 
@@ -226,7 +232,10 @@ namespace WeaponCore.Platform
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
                 Comp.BlockInventory.RemoveItemsOfType(1, ActiveAmmoDef.AmmoDefinitionId);
-                Reload.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId);
+                Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+                
+                if (System.Session.IsServer && Ammo.CurrentMags == 0)
+                    CheckInventorySystem = true;
             }
 
             StartReload();
@@ -267,11 +276,8 @@ namespace WeaponCore.Platform
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
 
-                    if (System.Session.IsServer && ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
-                        Reload.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
-
-                    Comp.CurrentCharge -= Reload.CurrentCharge;
-                    Reload.CurrentCharge = MaxCharge;
+                    Comp.CurrentCharge -= Ammo.CurrentCharge;
+                    Ammo.CurrentCharge = MaxCharge;
                     Comp.CurrentCharge += MaxCharge;
 
                     ChargeUntilTick = 0;
@@ -284,8 +290,7 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, false);
 
-                if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) 
-                    Reload.CurrentAmmo = ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity;
+                Ammo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
                 if (System.Session.IsServer) {
                     ShootOnce = false;
@@ -294,7 +299,6 @@ namespace WeaponCore.Platform
                 }
                 else 
                     ClientMakeUpShots = 0;
-                
                 Reloading = false;
             }
 
@@ -303,9 +307,9 @@ namespace WeaponCore.Platform
         {
             if (!syncCharge)
             {
-                Reload.CurrentAmmo = 0;
-                Comp.CurrentCharge -= Reload.CurrentCharge;
-                Reload.CurrentCharge = 0;
+                Ammo.CurrentAmmo = 0;
+                Comp.CurrentCharge -= Ammo.CurrentCharge;
+                Ammo.CurrentCharge = 0;
             }
 
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);

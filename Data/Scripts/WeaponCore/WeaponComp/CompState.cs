@@ -60,7 +60,7 @@ namespace WeaponCore.Support
                     ShootOnceCheck();
 
                 if (Session.MpActive)
-                    Session.SendCompData(this);
+                    Session.SendCompBaseData(this);
 
             }
             else if (action == ShootActions.ShootOnce)
@@ -77,7 +77,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
 
-                if ((w.Reload.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
+                if ((w.Ammo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;
             }
             if (numOfWeapons == loadedWeapons) {
@@ -103,39 +103,39 @@ namespace WeaponCore.Support
 
         internal void ResetShootState(ShootActions action, long playerId)
         {
-            var cycleShootClick = Data.Repo.State.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
-            var cycleShootOn = Data.Repo.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
+            var cycleShootClick = Data.Repo.Base.State.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
+            var cycleShootOn = Data.Repo.Base.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
-            if (Data.Repo.Set.Overrides.ManualControl || Data.Repo.Set.Overrides.TargetPainter) {
-                Data.Repo.Set.Overrides.ManualControl = false;
-                Data.Repo.Set.Overrides.TargetPainter = false;
+            if (Data.Repo.Base.Set.Overrides.ManualControl || Data.Repo.Base.Set.Overrides.TargetPainter) {
+                Data.Repo.Base.Set.Overrides.ManualControl = false;
+                Data.Repo.Base.Set.Overrides.TargetPainter = false;
             }
-            Data.Repo.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
+            Data.Repo.Base.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
             if (action == ShootActions.ShootClick && HasTurret) 
-                Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
+                Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
             else if (action == ShootActions.ShootClick || action == ShootActions.ShootOnce ||  action == ShootActions.ShootOn)
-                Data.Repo.State.Control = CompStateValues.ControlMode.Toolbar;
+                Data.Repo.Base.State.Control = CompStateValues.ControlMode.Toolbar;
             else
-                Data.Repo.State.Control = CompStateValues.ControlMode.None;
+                Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
 
             playerId = Session.HandlesInput && playerId == -1 ? Session.PlayerId : playerId;
-            var newId = action == ShootActions.ShootOff && !Data.Repo.State.TrackingReticle ? -1 : playerId;
-            Data.Repo.State.PlayerId = newId;
+            var newId = action == ShootActions.ShootOff && !Data.Repo.Base.State.TrackingReticle ? -1 : playerId;
+            Data.Repo.Base.State.PlayerId = newId;
         }
 
         internal void ResetPlayerControl()
         {
-            Data.Repo.State.PlayerId = -1;
-            Data.Repo.State.Control = CompStateValues.ControlMode.None;
-            Data.Repo.Set.Overrides.ManualControl = false;
-            Data.Repo.Set.Overrides.TargetPainter = false;
+            Data.Repo.Base.State.PlayerId = -1;
+            Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
+            Data.Repo.Base.Set.Overrides.ManualControl = false;
+            Data.Repo.Base.Set.Overrides.TargetPainter = false;
 
-            var tAction = Data.Repo.State.TerminalAction;
+            var tAction = Data.Repo.Base.State.TerminalAction;
             if (tAction == ShootActions.ShootOnce || tAction == ShootActions.ShootClick) 
-                Data.Repo.State.TerminalActionSetter(this, ShootActions.ShootOff);
+                Data.Repo.Base.State.TerminalActionSetter(this, ShootActions.ShootOff);
 
-            Session.SendCompData(this);
+            Session.SendCompBaseData(this);
         }
 
         internal void DetectStateChanges()
@@ -152,7 +152,7 @@ namespace WeaponCore.Support
 
             UpdatedState = true;
 
-            var overRides = Data.Repo.Set.Overrides;
+            var overRides = Data.Repo.Base.Set.Overrides;
             var overActive = overRides.Activate;
             var attackNeutrals = overActive && overRides.Neutrals;
             var attackNoOwner = overActive && overRides.Unowned;
@@ -173,7 +173,7 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.State.TerminalAction == ShootActions.ShootOff) {
+            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == ShootActions.ShootOff) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;
@@ -216,7 +216,7 @@ namespace WeaponCore.Support
                             else if (w.AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                                 Session.FutureEvents.Schedule(w.TurnOnAV, null, 100);
 
-                            if (w.Reload.CurrentAmmo == 0)
+                            if (w.Ammo.CurrentAmmo == 0)
                                 w.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);                            
                         }
                     }

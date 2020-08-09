@@ -40,10 +40,7 @@ namespace WeaponCore.Platform
                 if (hitTopEnt == null)
                 {
                     if (ignoreTargets)
-                    {
                         return;
-                    }
-
                     masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
                     return;
@@ -51,9 +48,7 @@ namespace WeaponCore.Platform
 
                 var targetTopEnt = Weapon.Target.Entity?.GetTopMostParent();
                 if (targetTopEnt == null)
-                {
                     return;
-                }
 
                 var unexpectedHit = ignoreTargets || targetTopEnt != hitTopEnt;
                 var topAsGrid = hitTopEnt as MyCubeGrid;
@@ -85,9 +80,11 @@ namespace WeaponCore.Platform
                     }
                     return;
                 }
-                if (Weapon.System.ClosestFirst && topAsGrid != null)
+                if (Weapon.System.ClosestFirst && topAsGrid != null && topAsGrid == targetTopEnt)
                 {
-                    var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
+                    var halfExtMin = topAsGrid.PositionComp.LocalAABB.HalfExtents.Min();
+                    var minSize = topAsGrid.GridSizeR * 8;
+                    var maxChange = halfExtMin > minSize ? halfExtMin : minSize;
                     var targetPos = Weapon.Target.Entity.PositionComp.WorldMatrixRef.Translation;
                     var weaponPos = Weapon.MyPivotPos;
 

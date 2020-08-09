@@ -146,7 +146,7 @@ namespace WeaponCore.Projectiles
                         Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
                     }
 
-                    if (p.AccelLength > 0 && !p.Info.TriggeredPulse) {
+                    if (p.DeltaVelocityPerTick > 0 && !p.Info.TriggeredPulse) {
 
                         if (p.SmartsOn) p.RunSmart();
                         else {
@@ -157,7 +157,7 @@ namespace WeaponCore.Projectiles
 
                                 var distToMax = p.Info.MaxTrajectory - p.Info.DistanceTraveled;
 
-                                var stopDist = p.VelocityLengthSqr / 2 / (p.StepPerSec);
+                                var stopDist = p.VelocityLengthSqr / 2 / (p.AccelInMetersPerSec);
                                 if (distToMax <= stopDist)
                                     accel = false;
 
@@ -370,7 +370,7 @@ namespace WeaponCore.Projectiles
                         var vs = vp.AvShot;
 
                         vp.TracerLength = p.Info.TracerLength;
-                        vs.Init(vp, p.StepPerSec * StepConst, p.MaxSpeed);
+                        vs.Init(vp, p.AccelInMetersPerSec * StepConst, p.MaxSpeed);
 
                         if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
                             vs.ProEnded = true;

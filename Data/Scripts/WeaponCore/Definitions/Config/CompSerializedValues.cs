@@ -12,19 +12,95 @@ using static WeaponCore.WeaponStateValues;
 namespace WeaponCore
 {
     [ProtoContract]
-    public class CompDataValues
+    public class Repo
+    {
+        [ProtoMember(1)] public int Version = Session.VersionControl;
+        [ProtoMember(2)] public AmmoValues[] Ammos;
+        [ProtoMember(3)] public CompBaseValues Base;
+
+
+        public void ResetToFreshLoadState()
+        {
+            Base.Set.Overrides.TargetPainter = false;
+            Base.Set.Overrides.ManualControl = false;
+            Base.State.Control = CompStateValues.ControlMode.None;
+            Base.State.PlayerId = -1;
+            Base.State.TrackingReticle = false;
+            Base.State.TerminalAction = ShootActions.ShootOff;
+            for (int i = 0; i < Ammos.Length; i++)
+            {
+                var ws = Base.State.Weapons[i];
+                var wr = Base.Reloads[i];
+                var wa = Ammos[i];
+
+                wa.AmmoCycleId = 0;
+                ws.Heat = 0;
+                ws.Overheated = false;
+                ws.Action = ShootActions.ShootOff;
+                wr.StartId = 0;
+            }
+            ResetCompBaseRevisions();
+        }
+
+        public void ResetCompBaseRevisions()
+        {
+            Base.Revision = 0;
+            Base.State.Revision = 0;
+            for (int i = 0; i < Ammos.Length; i++)
+            {
+                Base.Targets[i].Revision = 0;
+                Base.Reloads[i].Revision = 0;
+                Ammos[i].Revision = 0;
+            }
+        }
+    }
+
+
+    [ProtoContract]
+    public class AmmoValues
     {
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public int Version = Session.VersionControl;
-        [ProtoMember(3)] public CompSettingsValues Set;
-        [ProtoMember(4)] public CompStateValues State;
-        [ProtoMember(5)] public TransferTarget[] Targets;
-        [ProtoMember(6)] public WeaponReloadValues[] Reloads;
+        [ProtoMember(2)] public int CurrentAmmo; //save
+        [ProtoMember(3)] public float CurrentCharge; //save
+        [ProtoMember(4)] public long CurrentMags; // save
+        [ProtoMember(5)] public int AmmoTypeId; //save
+        [ProtoMember(6)] public int AmmoCycleId; //save
 
-        public void Sync(WeaponComponent comp, CompDataValues sync)
+        public void Sync(Weapon w, AmmoValues sync)
         {
             if (sync.Revision > Revision)
             {
+                Revision = sync.Revision;
+                CurrentAmmo = sync.CurrentAmmo;
+                CurrentCharge = sync.CurrentCharge;
+
+                if (sync.CurrentMags <= 0 && CurrentMags != sync.CurrentMags)
+                    w.ClientReload(true);
+
+                CurrentMags = sync.CurrentMags;
+                AmmoTypeId = sync.AmmoTypeId;
+
+                if (sync.AmmoCycleId > AmmoCycleId)
+                    w.ChangeActiveAmmoClient();
+
+                AmmoCycleId = sync.AmmoCycleId;
+            }
+        }
+    }
+
+    [ProtoContract]
+    public class CompBaseValues
+    {
+        [ProtoMember(1)] public uint Revision;
+        [ProtoMember(2)] public CompSettingsValues Set;
+        [ProtoMember(3)] public CompStateValues State;
+        [ProtoMember(4)] public TransferTarget[] Targets;
+        [ProtoMember(5)] public WeaponReloadValues[] Reloads;
+
+        public void Sync(WeaponComponent comp, CompBaseValues sync)
+        {
+            if (sync.Revision > Revision) {
+
                 Revision = sync.Revision;
                 Set.Sync(comp, sync.Set);
                 State.Sync(comp, sync.State, CompStateValues.Caller.CompData);
@@ -40,37 +116,17 @@ namespace WeaponCore
                 if (s.Wheel.WheelActive && string.IsNullOrEmpty(s.Wheel.ActiveGroupName))
                     s.Wheel.ForceUpdate();
             }
-            else Log.Line($"CompDataValues older revision");
+            else Log.Line($"CompDynamicValues older revision");
 
         }
 
-        public void ResetToFreshLoadState()
-        {
-            Set.Overrides.TargetPainter = false;
-            Set.Overrides.ManualControl = false;
-            State.Control = CompStateValues.ControlMode.None;
-            State.PlayerId = -1;
-            State.TrackingReticle = false;
-            State.TerminalAction = ShootActions.ShootOff;
-            for (int i = 0; i < Targets.Length; i++)
-            {
-                var ws = State.Weapons[i];
-                var wr = Reloads[i];
-                ws.Heat = 0;
-                ws.Overheated = false;
-                ws.Action = ShootActions.ShootOff;
-                wr.StartId = 0;
-            }
-            ResetCompDataRevisions();
-        }
-
-        public void UpdateCompDataPacketInfo(WeaponComponent comp, bool clean = false)
+        public void UpdateCompBasePacketInfo(WeaponComponent comp, bool clean = false)
         {
             ++Revision;
             ++State.Revision;
             Session.PacketInfo info;
-            if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.State, out info)) {
-                comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.State);
+            if (clean && comp.Session.PrunedPacketsToClient.TryGetValue(comp.Data.Repo.Base.State, out info)) {
+                comp.Session.PrunedPacketsToClient.Remove(comp.Data.Repo.Base.State);
                 comp.Session.PacketStatePool.Return((CompStatePacket)info.Packet);
             }
 
@@ -94,27 +150,13 @@ namespace WeaponCore
                 t.WeaponRandom.ReInitRandom();
             }
         }
-
-        public void ResetCompDataRevisions()
-        {
-            Revision = 0;
-            State.Revision = 0;
-            for (int i = 0; i < Targets.Length; i++)  {
-                Targets[i].Revision = 0;
-                Reloads[i].Revision = 0;
-            }
-        }
     }
 
     [ProtoContract]
     public class WeaponReloadValues
     {
         [ProtoMember(1)] public uint Revision;
-        [ProtoMember(2)] public int CurrentAmmo; //save
-        [ProtoMember(3)] public float CurrentCharge; //save
-        [ProtoMember(4)] public MyFixedPoint CurrentMags; // save
-        [ProtoMember(5)] public int AmmoTypeId; //save
-        [ProtoMember(6)] public int StartId; //save
+        [ProtoMember(2)] public int StartId; //save
 
         public void Sync(Weapon w, WeaponReloadValues sync)
         {
@@ -122,15 +164,7 @@ namespace WeaponCore
             {
                 Revision = sync.Revision;
                 StartId = sync.StartId;
-                CurrentCharge = sync.CurrentCharge;
-                CurrentMags = sync.CurrentMags;
 
-                if (AmmoTypeId != sync.AmmoTypeId)
-                    CurrentAmmo = sync.CurrentAmmo;
-
-                AmmoTypeId = sync.AmmoTypeId;
-
-                w.ChangeActiveAmmoClient();
                 w.ClientReload(true);
             }
         }
@@ -241,7 +275,7 @@ namespace WeaponCore
         public void WeaponMode(WeaponComponent comp, ShootActions action, bool resetTerminalAction = true, bool syncCompState = true)
         {
             if (resetTerminalAction)
-                comp.Data.Repo.State.TerminalAction = ShootActions.ShootOff;
+                comp.Data.Repo.Base.State.TerminalAction = ShootActions.ShootOff;
 
             Action = action;
             if (comp.Session.MpActive && comp.Session.IsServer && syncCompState)

@@ -91,7 +91,7 @@ namespace WeaponCore.Support
 
                 if (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
-                var newRate = (int)(w.System.RateOfFire * comp.Data.Repo.Set.RofModifier);
+                var newRate = (int)(w.System.RateOfFire * comp.Data.Repo.Base.Set.RofModifier);
                 if (newRate < 1)
                     newRate = 1;
 

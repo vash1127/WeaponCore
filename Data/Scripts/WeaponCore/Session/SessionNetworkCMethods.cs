@@ -140,7 +140,7 @@ namespace WeaponCore
         private bool ClientCompData(PacketObj data)
         {
             var packet = data.Packet;
-            var compDataPacket = (CompDataPacket)packet;
+            var compDataPacket = (CompBasePacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
             var comp = ent?.Components.Get<WeaponComponent>();
             if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
@@ -148,7 +148,7 @@ namespace WeaponCore
             if (comp.MIds[(int)packet.PType] < packet.MId) {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.Sync(comp, compDataPacket.Data);
+                comp.Data.Repo.Base.Sync(comp, compDataPacket.Data);
             }
             else Log.Line($"compDataSync mId failed: {packet.PType} - mId:{packet.MId}");
 
@@ -168,7 +168,7 @@ namespace WeaponCore
             if (comp.MIds[(int)packet.PType] < packet.MId)  {
                 comp.MIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.State.Sync(comp, compStatePacket.Data, CompStateValues.Caller.Direct);
+                comp.Data.Repo.Base.State.Sync(comp, compStatePacket.Data, CompStateValues.Caller.Direct);
             }
 
             data.Report.PacketValid = true;
@@ -210,6 +210,27 @@ namespace WeaponCore
                 w.MIds[(int)packet.PType] = packet.MId;
 
                 targetPacket.Target.SyncTarget(w);
+            }
+
+            data.Report.PacketValid = true;
+
+            return true;
+        }
+
+        private bool ClientWeaponAmmoUpdate(PacketObj data)
+        {
+            var packet = data.Packet;
+            var ammoPacket = (WeaponAmmoPacket)packet;
+            var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId);
+            var comp = ent?.Components.Get<WeaponComponent>();
+
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg($"CompId: {packet.EntityId}", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
+
+            var w = comp.Platform.Weapons[ammoPacket.WeaponId];
+            if (w.MIds[(int)packet.PType] < packet.MId) {
+                w.MIds[(int)packet.PType] = packet.MId;
+
+                w.Ammo.Sync(w, ammoPacket.Data);
             }
 
             data.Report.PacketValid = true;

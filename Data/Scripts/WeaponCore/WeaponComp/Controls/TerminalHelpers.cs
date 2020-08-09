@@ -78,7 +78,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -97,7 +97,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction != ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction != ShootOn)
                             comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
@@ -110,7 +110,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -129,7 +129,7 @@ namespace WeaponCore.Control
 
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction != ShootOff)
+                        if (comp.Data.Repo.Base.State.TerminalAction != ShootOff)
                             comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
                     };
 
@@ -142,7 +142,7 @@ namespace WeaponCore.Control
                             oldWriter(blk, sb);
                             return;
                         }
-                        if (comp.Data.Repo.State.TerminalAction == ShootOn)
+                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
                             sb.Append("On");
                         else
                             sb.Append("Off");
@@ -318,7 +318,7 @@ namespace WeaponCore.Control
 
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
-            var on = blk.Components.Get<WeaponComponent>()?.Data.Repo?.State.TerminalAction == ShootClick;
+            var on = blk.Components.Get<WeaponComponent>()?.Data.Repo?.Base.State.TerminalAction == ShootClick;
 
             if (on)
                 sb.Append("On");
@@ -379,8 +379,8 @@ namespace WeaponCore.Control
             var w = comp.Platform.Weapons[weaponId];
 
             var availAmmo = w.System.AmmoTypes.Length;
-            var currActive = w.System.AmmoTypes[w.Reload.AmmoTypeId];
-            var next = (w.Reload.AmmoTypeId + 1) % availAmmo;
+            var currActive = w.System.AmmoTypes[w.Ammo.AmmoTypeId];
+            var next = (w.Ammo.AmmoTypeId + 1) % availAmmo;
             var currDef = w.System.AmmoTypes[next];
 
             var change = false;
@@ -403,7 +403,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.State.TerminalAction == ShootOn)
+            if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
                 sb.Append("On");
             else
                 sb.Append("Off");

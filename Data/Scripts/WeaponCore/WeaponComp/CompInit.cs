@@ -26,7 +26,7 @@ namespace WeaponCore.Support
 
                 Data.Load();
 
-                if (Session.IsServer)  
+                if (Session.IsServer)
                     Data.Repo.ResetToFreshLoadState();
 
                 var maxTrajectory = 0f;
@@ -48,8 +48,8 @@ namespace WeaponCore.Support
                         maxTrajectory = (float)weapon.MaxTargetDistance;
 
                 }
-                if (Data.Repo.Set.Range < 0)
-                    Data.Repo.Set.Range = maxTrajectory;
+                if (Data.Repo.Base.Set.Range <= 0)
+                    Data.Repo.Base.Set.Range = maxTrajectory;
                 
             }
             catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{Data.Repo == null} - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
@@ -59,8 +59,8 @@ namespace WeaponCore.Support
         {
             MaxHeat += weapon.System.MaxHeat;
 
-            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Set.RofModifier);
-            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Set.RofModifier);
+            weapon.RateOfFire = (int)(weapon.System.RateOfFire * Data.Repo.Base.Set.RofModifier);
+            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Data.Repo.Base.Set.RofModifier);
             HeatSinkRate += weapon.HsRate;
 
             if (weapon.System.HasBarrelRotation) weapon.UpdateBarrelRotation();

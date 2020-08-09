@@ -82,8 +82,8 @@ namespace WeaponCore
                             GunnerBlackList = true;
                             if (IsServer)
                             {
-                                comp.Data.Repo.State.PlayerId = PlayerId;
-                                comp.Data.Repo.State.Control = ControlMode.Camera;
+                                comp.Data.Repo.Base.State.PlayerId = PlayerId;
+                                comp.Data.Repo.Base.State.Control = ControlMode.Camera;
                             }
                             ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -118,8 +118,8 @@ namespace WeaponCore
                             {
                                 if (IsServer)
                                 {
-                                    comp.Data.Repo.State.PlayerId = -1;
-                                    comp.Data.Repo.State.Control = ControlMode.None;
+                                    comp.Data.Repo.Base.State.PlayerId = -1;
+                                    comp.Data.Repo.Base.State.Control = ControlMode.None;
 
                                 }
 

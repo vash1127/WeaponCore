@@ -35,7 +35,7 @@ namespace WeaponCore.Platform
 
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
-                    if (!Comp.Data.Repo.State.TrackingReticle)
+                    if (!Comp.Data.Repo.Base.State.TrackingReticle)
                         Target.PushTargetToClient(this);
                 } 
             }
@@ -172,7 +172,7 @@ namespace WeaponCore.Platform
 
         internal void UpdateWeaponRange()
         {
-            var range = Comp.Data.Repo.Set.Range < 0 ? double.MaxValue : Comp.Data.Repo.Set.Range; 
+            var range = Comp.Data.Repo.Base.Set.Range < 0 ? double.MaxValue : Comp.Data.Repo.Base.Set.Range; 
             var ammoMax = ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
             var hardPointMax = System.Values.Targeting.MaxTargetDistance > 0 ? System.Values.Targeting.MaxTargetDistance : double.MaxValue;
             var weaponRange = Math.Min(hardPointMax, ammoMax);

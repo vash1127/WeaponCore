@@ -44,9 +44,10 @@ namespace WeaponCore.Support
                     for (int i = 0; i < items.Count; i++)
                     {
                         var bItem = Session.BetterInventoryItems.Get();
-                        bItem.Amount = (int)items[i].Amount;
-                        bItem.ItemId = items[i].ItemId;
-                        bItem.Content = items[i].Content;
+                        var item = items[i];
+                        bItem.Amount = (int)item.Amount;
+                        bItem.Item = item;
+                        bItem.Content = item.Content;
 
                         Session.BlockInventoryItems[BlockInventory][items[i].ItemId] = bItem;
                     }
@@ -98,7 +99,7 @@ namespace WeaponCore.Support
                 cachedItem = Session.BetterInventoryItems.Get();
                 cachedItem.Amount = (int)amount;
                 cachedItem.Content = item.Content;
-                cachedItem.ItemId = item.ItemId;
+                cachedItem.Item = item;
                 Session.BlockInventoryItems[BlockInventory].TryAdd(item.ItemId, cachedItem);
             }
             else if (cachedItem.Amount + amount > 0)
@@ -162,7 +163,7 @@ namespace WeaponCore.Support
                     }
                 }
                 if (Session.MpActive && Session.IsServer)
-                    Session.SendCompData(this);
+                    Session.SendCompBaseData(this);
             }
             catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
         }
@@ -218,7 +219,7 @@ namespace WeaponCore.Support
                     {
                         shots = "\nCharging:" + w.Charging;
                     }
-                    else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.Reload.CurrentAmmo;
+                    else shots = "\n" + w.ActiveAmmoDef.AmmoDef.AmmoMagazine + ": " + w.Ammo.CurrentAmmo;
 
                     var burst = w.ActiveAmmoDef.AmmoDef.Const.BurstMode ? "\nBurst: " + w.ShotsFired + "(" + w.System.ShotsPerBurst + ") - Delay: " + w .System.Values.HardPoint.Loading.DelayAfterBurst : string.Empty;
 
@@ -233,14 +234,14 @@ namespace WeaponCore.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
-                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {IsWorking && weapon.Comp.Data.Repo.Set.Overrides.Activate}");
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {IsWorking && weapon.Comp.Data.Repo.Base.Set.Overrides.Activate}");
                         stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
                         stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
-                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.Reload.CurrentCharge})");
+                        stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.Ammo.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
                         stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");
                     }

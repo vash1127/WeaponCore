@@ -18,9 +18,8 @@ namespace WeaponCore.Platform
         {
             try
             {
-                var session = Comp.Session;
-                var tick = session.Tick;
-                var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
+                var s = Comp.Session;
+                var tick = s.Tick;
                 #region Prefire
                 if (_ticksUntilShoot++ < System.DelayToFire) {
 
@@ -30,49 +29,17 @@ namespace WeaponCore.Platform
                     if (ActiveAmmoDef.AmmoDef.Const.MustCharge || System.AlwaysFireFullBurst)
                         FinishBurst = true;
 
-                    if (!PreFired) {
-
-                        var nxtMuzzle = NextMuzzle;
-                        for (int i = 0; i < bps; i++) {
-                            _muzzlesToFire.Clear();
-                            _muzzlesToFire.Add(MuzzleIdToName[NextMuzzle]);
-                            if (i == bps) NextMuzzle++;
-                            nxtMuzzle = (nxtMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
-                        }
-
-                        EventTriggerStateChanged(EventTriggers.PreFire, true, _muzzlesToFire);
-
-                        PreFired = true;
-                    }
+                    if (!PreFired)
+                        SetPreFire();
                     return;
                 }
 
-                if (PreFired) {
-                    EventTriggerStateChanged(EventTriggers.PreFire, false);
-                    _muzzlesToFire.Clear();
-                    PreFired = false;
-
-                    if (AvCapable && System.PreFireSound && PreFiringEmitter.IsPlaying)
-                        StopPreFiringSound(false);
-                }
-
+                if (PreFired)
+                    UnSetPreFire();
                 #endregion
 
                 #region weapon timing
-                if (System.HasBarrelRotation) {
-
-                    SpinBarrel();
-                    if (BarrelRate < 9) {
-
-                        if (_spinUpTick <= tick) {
-                            BarrelRate++;
-                            _spinUpTick = tick + _ticksBeforeSpinUp;
-                        }
-                        return;
-                    }
-                }
-                
-                if (ShootTick > tick)
+                if (System.HasBarrelRotation && !SpinBarrel() || ShootTick > tick)
                     return;
 
                 if (LockOnFireState && (Target.Entity?.EntityId != Comp.Ai.Construct.Data.Repo.FocusData.Target[0] || Target.Entity?.EntityId != Comp.Ai.Construct.Data.Repo.FocusData.Target[1])) {
@@ -109,44 +76,36 @@ namespace WeaponCore.Platform
                 #endregion
 
                 #region Projectile Creation
-                var rnd = Comp.Data.Repo.Targets[WeaponId].WeaponRandom;
+                var rnd = Comp.Data.Repo.Base.Targets[WeaponId].WeaponRandom;
                 var pattern = ActiveAmmoDef.AmmoDef.Pattern;
 
                 FireCounter++;
                 List<NewVirtual> vProList = null;
                 var selfDamage = 0f;
-                for (int i = 0; i < bps; i++) {
+                for (int i = 0; i < System.Values.HardPoint.Loading.BarrelsPerShot; i++) {
 
-                    var skipMuzzle = false;
+                    var skipMuzzle = s.IsClient && Ammo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
                         
-                        if (Reload.CurrentAmmo == 0) {
+                        if (Ammo.CurrentAmmo == 0) {
 
-                            if (System.Session.IsServer)
+                            if (ShootOnce) 
                                 ShootOnce = false;
 
                             if (ClientMakeUpShots == 0) {
-
-                                if (System.Session.MpActive && System.Session.IsServer)
-                                    System.Session.SendWeaponReload(this);
-
-                                if (!ShootOnce) break;
-                                skipMuzzle = true;
+                                if (s.MpActive && s.IsServer)
+                                    s.SendWeaponReload(this);
+                                if (!skipMuzzle) break;
                             }
                         }
                         
-                        if (Reload.CurrentAmmo > 0) {
-
-                            --Reload.CurrentAmmo;
+                        if (Ammo.CurrentAmmo > 0) {
+                            --Ammo.CurrentAmmo;
                             if (ShootOnce)
                                 DequeueShot();
-
                         }
                         else if (ClientMakeUpShots > 0)
-                        {
-                            Log.Line($"Shoot MakeUpShot:{ClientMakeUpShots}");
                             --ClientMakeUpShots;
-                        }
 
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
                             if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
@@ -164,20 +123,20 @@ namespace WeaponCore.Platform
                         muzzle.LastUpdateTick = tick;
                     }
 
-                    if (ActiveAmmoDef.AmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic && Comp.Session.IsServer)
+                    if (ActiveAmmoDef.AmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic && s.IsServer)
                         Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.AmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     if (PlayTurretAv) {
                         if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping) {
                             muzzle.LastAv1Tick = tick;
                             muzzle.Av1Looping = System.Values.HardPoint.Graphics.Barrel1.Extras.Loop;
-                            session.Av.AvBarrels1.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                            s.Av.AvBarrels1.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
                         }
 
                         if (System.BarrelEffect2 && tick - muzzle.LastAv2Tick > System.Barrel2AvTicks && !muzzle.Av2Looping) {
                             muzzle.LastAv2Tick = tick;
                             muzzle.Av2Looping = System.Values.HardPoint.Graphics.Barrel2.Extras.Loop;
-                            session.Av.AvBarrels2.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                            s.Av.AvBarrels2.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
                         }
                     }
 
@@ -225,8 +184,8 @@ namespace WeaponCore.Platform
 
                             if (ammoPattern.Const.VirtualBeams && j == 0) {
                                 if (i == 0) {
-                                    vProList = System.Session.Projectiles.VirtInfoPools.Get();
-                                    System.Session.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });
+                                    vProList = s.Projectiles.VirtInfoPools.Get();
+                                    s.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });
                                 }
 
                                 MyEntity primeE = null;
@@ -236,7 +195,7 @@ namespace WeaponCore.Platform
                                     primeE = ammoPattern.Const.PrimeEntityPool.Get();
 
                                 if (ammoPattern.Const.TriggerModel)
-                                    triggerE = session.TriggerEntityPool.Get();
+                                    triggerE = s.TriggerEntityPool.Get();
 
                                 float shotFade;
                                 if (ammoPattern.Const.HasShotFade) {
@@ -249,14 +208,14 @@ namespace WeaponCore.Platform
                                 else shotFade = 0;
 
                                 var maxTrajectory = ammoPattern.Const.MaxTrajectoryGrows && FireCounter < ammoPattern.Trajectory.MaxTrajectoryTime ? ammoPattern.Const.TrajectoryStep * FireCounter : ammoPattern.Const.MaxTrajectory;
-                                var info = session.Projectiles.VirtInfoPool.Get();
+                                var info = s.Projectiles.VirtInfoPool.Get();
                                 
-                                info.AvShot = session.Av.AvShotPool.Get();
+                                info.AvShot = s.Av.AvShotPool.Get();
                                 info.InitVirtual(this, ammoPattern, primeE, triggerE, muzzle, maxTrajectory, shotFade);
                                 vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Muzzle = muzzle, VirtualId = _nextVirtual });
                             }
                             else
-                                System.Session.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern,  Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
+                                s.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern,  Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
                         }
                     }
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
@@ -264,30 +223,20 @@ namespace WeaponCore.Platform
                     if (HeatPShot > 0) {
 
                         if (!HeatLoopRunning) {
-                            Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
+                            s.FutureEvents.Schedule(UpdateWeaponHeat, null, 20);
                             HeatLoopRunning = true;
                         }
 
                         State.Heat += HeatPShot;
                         Comp.CurrentHeat += HeatPShot;
                         if (State.Heat >= System.MaxHeat) {
-
-                            if (!Comp.Session.IsClient && Comp.Data.Repo.Set.Overload > 1) {
-                                var dmg = .02f * Comp.MaxIntegrity;
-                                Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
-                            }
-                            EventTriggerStateChanged(EventTriggers.Overheated, true);
-
-                            var wasOver = State.Overheated;
-                            State.Overheated = true;
-                            if (System.Session.MpActive && System.Session.IsServer && !wasOver)
-                                System.Session.SendCompState(Comp);
+                            OverHeat();
                             break;
                         }
                     }
                     
                     LastMuzzle = NextMuzzle;
-                    if (i == bps) NextMuzzle++;
+                    if (i == System.Values.HardPoint.Loading.BarrelsPerShot) NextMuzzle++;
 
                     NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                 }
@@ -297,47 +246,89 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (System.Session.IsServer && !ComputeServerStorage() || System.Session.IsClient && !ClientReload())) {
-
-                    if (ShotsFired == System.ShotsPerBurst) {
-                        uint delay = 0;
-                        FinishBurst = false;
-                        if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
-
-                            session.FutureEvents.Schedule(o => 
-                            {
-                                EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                                ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
-                                StopShooting();
-                                //Log.Line($"StopShooting ShotsPerBurst delayed");
-
-                            }, null, delay);
-                        }
-                        else
-                            EventTriggerStateChanged(EventTriggers.BurstReload, true);
-
-                        if (IsShooting) {
-                            ShootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay : tick + TicksPerShot + delay;
-                            StopShooting();
-                            //Log.Line($"StopShooting ShotsPerBurst immediate");
-                        }
-
-                        if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
-                            Target.Reset(Comp.Session.Tick, Target.States.FiredBurst);
-                    }
-                    else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
-                        FinishBurst = true;
-                }
+                if (ActiveAmmoDef.AmmoDef.Const.BurstMode && (s.IsServer && !ComputeServerStorage() || s.IsClient && !ClientReload()))
+                    BurstMode();
 
                 _muzzlesToFire.Clear();
 
-                if (System.Session.IsServer && selfDamage > 0)
+                if (s.IsServer && selfDamage > 0)
                     ((IMyDestroyableObject)Comp.MyCube.SlimBlock).DoDamage(selfDamage, MyDamageType.Grind, true, null, Comp.MyCube.EntityId);
 
                 #endregion
-                _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
+                _nextVirtual = _nextVirtual + 1 < System.Values.HardPoint.Loading.BarrelsPerShot ? _nextVirtual + 1 : 0;
             }
             catch (Exception e) { Log.Line($"Error in shoot: {e}"); }
+        }
+
+        private void OverHeat()
+        {
+            if (!System.Session.IsClient && Comp.Data.Repo.Base.Set.Overload > 1) {
+                var dmg = .02f * Comp.MaxIntegrity;
+                Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
+            }
+            EventTriggerStateChanged(EventTriggers.Overheated, true);
+
+            var wasOver = State.Overheated;
+            State.Overheated = true;
+            if (System.Session.MpActive && System.Session.IsServer && !wasOver)
+                System.Session.SendCompState(Comp);
+        }
+
+        private void BurstMode()
+        {
+            if (ShotsFired == System.ShotsPerBurst) {
+
+                uint delay = 0;
+                FinishBurst = false;
+                var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+                if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay)) {
+
+                    System.Session.FutureEvents.Schedule(o => {
+                        EventTriggerStateChanged(EventTriggers.BurstReload, true);
+                        ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+                        StopShooting();
+
+                    }, null, delay);
+                }
+                else
+                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
+
+                if (IsShooting) {
+                    ShootTick = burstDelay > TicksPerShot ? System.Session.Tick + burstDelay + delay : System.Session.Tick + TicksPerShot + delay;
+                    StopShooting();
+                }
+
+                if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
+                    Target.Reset(System.Session.Tick, Target.States.FiredBurst);
+            }
+            else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
+                FinishBurst = true;
+        }
+
+        private void UnSetPreFire()
+        {
+            EventTriggerStateChanged(EventTriggers.PreFire, false);
+            _muzzlesToFire.Clear();
+            PreFired = false;
+
+            if (AvCapable && System.PreFireSound && PreFiringEmitter.IsPlaying)
+                StopPreFiringSound(false);
+        }
+
+        private void SetPreFire()
+        {
+            var nxtMuzzle = NextMuzzle;
+            for (int i = 0; i < System.Values.HardPoint.Loading.BarrelsPerShot; i++)
+            {
+                _muzzlesToFire.Clear();
+                _muzzlesToFire.Add(MuzzleIdToName[NextMuzzle]);
+                if (i == System.Values.HardPoint.Loading.BarrelsPerShot) NextMuzzle++;
+                nxtMuzzle = (nxtMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
+            }
+
+            EventTriggerStateChanged(EventTriggers.PreFire, true, _muzzlesToFire);
+
+            PreFired = true;
         }
 
         private void DequeueShot()
@@ -347,7 +338,7 @@ namespace WeaponCore.Platform
             {
                 if (System.Session.MpActive) System.Session.SendQueuedShot(this);
                 if (State.Action == ShootActions.ShootOnce && ShotQueueEmpty())
-                    Comp.Data.Repo.State.TerminalActionSetter(Comp, ShootActions.ShootOff, true, false);
+                    Comp.Data.Repo.Base.State.TerminalActionSetter(Comp, ShootActions.ShootOff, true, false);
             }
         }
 

@@ -99,7 +99,7 @@ namespace WeaponCore
                 if (!ai.Session.IdToCompMap.TryGetValue(CompIds[i], out comp))
                     continue;
 
-                var o = comp.Data.Repo.Set.Overrides;
+                var o = comp.Data.Repo.Base.Set.Overrides;
                 var change = false;
 
                 foreach (var setting in Settings)
@@ -166,14 +166,14 @@ namespace WeaponCore
                 {
                     ResetCompState(comp, true, playerId);
                     if (comp.Session.MpActive)
-                        comp.Session.SendCompData(comp);
+                        comp.Session.SendCompBaseData(comp);
                 }
             }
         }
 
         internal void SetValue(WeaponComponent comp, string setting, int v, long playerId)
         {
-            var o = comp.Data.Repo.Set.Overrides;
+            var o = comp.Data.Repo.Base.Set.Overrides;
             var enabled = v > 0;
             switch (setting)
             {
@@ -220,13 +220,13 @@ namespace WeaponCore
             ResetCompState(comp, false, playerId);
 
             if (comp.Session.MpActive)
-                comp.Session.SendCompData(comp);
+                comp.Session.SendCompBaseData(comp);
         }
 
         internal int GetCompSetting(string setting, WeaponComponent comp)
         {
             var value = 0;
-            var o = comp.Data.Repo.Set.Overrides;
+            var o = comp.Data.Repo.Base.Set.Overrides;
             switch (setting)
             {
 
@@ -272,13 +272,13 @@ namespace WeaponCore
 
         internal void ResetCompState(WeaponComponent comp, bool apply, long playerId)
         {
-            var o = comp.Data.Repo.Set.Overrides;
+            var o = comp.Data.Repo.Base.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
 
             if (userControl)
             {
-                comp.Data.Repo.State.PlayerId = playerId;
-                comp.Data.Repo.State.Control = CompStateValues.ControlMode.Ui;
+                comp.Data.Repo.Base.State.PlayerId = playerId;
+                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
                 if (o.ManualControl)
                 {
                     o.TargetPainter = false;
@@ -289,12 +289,12 @@ namespace WeaponCore
                     o.ManualControl = false;
                     if (apply) Settings["ManualControl"] = 0;
                 }
-                comp.Data.Repo.State.TerminalActionSetter(comp, ShootActions.ShootOff);
+                comp.Data.Repo.Base.State.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
             else
             {
-                comp.Data.Repo.State.PlayerId = -1;
-                comp.Data.Repo.State.Control = CompStateValues.ControlMode.None;
+                comp.Data.Repo.Base.State.PlayerId = -1;
+                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             }
         }
 

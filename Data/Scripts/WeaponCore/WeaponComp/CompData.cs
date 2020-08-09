@@ -10,7 +10,7 @@ namespace WeaponCore
     public class CompData
     {
         public readonly WeaponComponent Comp;
-        public CompDataValues Repo;
+        public Repo Repo;
 
         public CompData(WeaponComponent comp)
         {
@@ -41,7 +41,7 @@ namespace WeaponCore
         {
             if (Comp.MyCube.Storage == null) return;
 
-            CompDataValues load = null;
+            Repo load = null;
             string rawData;
             bool validData = false;
             if (Comp.MyCube.Storage.TryGetValue(Comp.Session.CompDataGuid, out rawData))
@@ -49,8 +49,8 @@ namespace WeaponCore
                 try
                 {
                     var base64 = Convert.FromBase64String(rawData);
-                    load = MyAPIGateway.Utilities.SerializeFromBinary<CompDataValues>(base64);
-                    validData = (load?.Set != null && load.State != null);
+                    load = MyAPIGateway.Utilities.SerializeFromBinary<Repo>(base64);
+                    validData = (load?.Base != null && load.Ammos != null);
                 }
                 catch (Exception e)
                 {
@@ -62,53 +62,61 @@ namespace WeaponCore
             {
                 Repo = load;
                 if (Comp.Session.IsServer)
-                    Repo.Targets = new TransferTarget[Comp.Platform.Weapons.Length];
+                    Repo.Base.Targets = new TransferTarget[Comp.Platform.Weapons.Length];
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
                     var w = Comp.Platform.Weapons[i];
                     
-                    w.State = Repo.State.Weapons[i];
-                    w.Reload = Repo.Reloads[i];
+                    w.State = Repo.Base.State.Weapons[i];
+                    w.Reload = Repo.Base.Reloads[i];
+                    w.Ammo = w.Comp.Data.Repo.Ammos[i];
 
                     if (Comp.Session.IsServer)  {
-                        Repo.Targets[i] = new TransferTarget();
-                        w.TargetData = Repo.Targets[i];
+                        Repo.Base.Targets[i] = new TransferTarget();
+                        w.TargetData = Repo.Base.Targets[i];
                         w.TargetData.WeaponRandom = new WeaponRandomGenerator();
                         w.TargetData.WeaponInit(w);
                     }
                     else
                     {
-                        w.Reload = w.Comp.Data.Repo.Reloads[w.WeaponId];
+                        w.Ammo = w.Comp.Data.Repo.Ammos[i];
                         w.ClientStartId = w.Reload.StartId;
-                        w.TargetData = w.Comp.Data.Repo.Targets[w.WeaponId];
+                        w.TargetData = w.Comp.Data.Repo.Base.Targets[i];
                         w.TargetData.WeaponRefreshClient(w);
                     }
                 }
             }
             else {
 
-                Repo = new CompDataValues {
-                    State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length]},
-                    Set = new CompSettingsValues(),
-                    Targets = new TransferTarget[Comp.Platform.Weapons.Length],
-                    Reloads = new WeaponReloadValues[Comp.Platform.Weapons.Length],
+                Repo = new Repo {
+                    Base = new CompBaseValues
+                    {
+                        State = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length] },
+                        Set = new CompSettingsValues(),
+                        Targets = new TransferTarget[Comp.Platform.Weapons.Length],
+                        Reloads = new WeaponReloadValues[Comp.Platform.Weapons.Length],
+                    },
+                    Ammos = new AmmoValues[Comp.Platform.Weapons.Length],
+
                 };
 
                 for (int i = 0; i < Comp.Platform.Weapons.Length; i++) {
-                    var state = Repo.State.Weapons[i] = new WeaponStateValues();
-                    var reload = Repo.Reloads[i] = new WeaponReloadValues();
+                    var state = Repo.Base.State.Weapons[i] = new WeaponStateValues();
+                    var reload = Repo.Base.Reloads[i] = new WeaponReloadValues();
+                    var ammo = Repo.Ammos[i] = new AmmoValues();
                     var w = Comp.Platform.Weapons[i];
                     
                     w.State = state;
                     w.Reload = reload;
+                    w.Ammo = ammo;
 
-                    Repo.Targets[i] = new TransferTarget();
-                    w.TargetData = Repo.Targets[i];
+                    Repo.Base.Targets[i] = new TransferTarget();
+                    w.TargetData = Repo.Base.Targets[i];
                     w.TargetData.WeaponRandom = new WeaponRandomGenerator();
                     w.TargetData.WeaponInit(w);
                 }
 
-                Repo.Set.Range = -1;
+                Repo.Base.Set.Range = -1;
             }
         }
     }

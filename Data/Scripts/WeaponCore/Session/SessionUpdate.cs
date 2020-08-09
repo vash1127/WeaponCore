@@ -15,10 +15,6 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void Test(object o)
-        {
-            Log.Line($"callback:{Tick}");
-        }
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
             foreach (var ai in GridTargetingAIs.Values)
@@ -67,35 +63,35 @@ namespace WeaponCore
                     if (ai.DbUpdated || !comp.UpdatedState) {
                         comp.DetectStateChanges();
                     }
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
                         
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
                     }
 
-                    if (IsServer && comp.Data.Repo.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.State.PlayerId))
+                    if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
                         comp.ResetPlayerControl();
 
                     if (HandlesInput) {
-                        var wasTrack = comp.Data.Repo.State.TrackingReticle;
+                        var wasTrack = comp.Data.Repo.Base.State.TrackingReticle;
 
-                        var isControllingPlayer = comp.Data.Repo.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && (comp.Data.Repo.Set.Overrides.TargetPainter || comp.Data.Repo.Set.Overrides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
+                        var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
+                        var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.TargetPainter || comp.Data.Repo.Base.Set.Overrides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
                         
                         if (IsServer)
-                            comp.Data.Repo.State.TrackingReticle = track;
+                            comp.Data.Repo.Base.State.TrackingReticle = track;
                         
                         if (MpActive && track != wasTrack)
                             comp.Session.SendTrackReticleUpdate(comp, track);
                     }
 
-                    var trackReticle = comp.Data.Repo.State.TrackingReticle;
+                    var trackReticle = comp.Data.Repo.Base.State.TrackingReticle;
                     comp.WasControlled = comp.UserControlled;
-                    comp.UserControlled = comp.Data.Repo.State.Control != ControlMode.None;
+                    comp.UserControlled = comp.Data.Repo.Base.State.Control != ControlMode.None;
 
-                    if (!PlayerMouseStates.TryGetValue(comp.Data.Repo.State.PlayerId, out comp.InputState)) 
+                    if (!PlayerMouseStates.TryGetValue(comp.Data.Repo.Base.State.PlayerId, out comp.InputState)) 
                         comp.InputState = DefaultInputStateData;
-                    var compManualMode = comp.Data.Repo.State.Control == ControlMode.Camera || (comp.Data.Repo.Set.Overrides.ManualControl && trackReticle);
+                    var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.ManualControl && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
 
                     ///
@@ -123,7 +119,7 @@ namespace WeaponCore
 
                             if (IsServer) {
                                 w.State.WeaponMode(comp, ShootOff);
-                                w.Reload.CurrentAmmo = 0;
+                                w.Ammo.CurrentAmmo = 0;
                             }
 
                             w.Reloading = false;
@@ -138,7 +134,7 @@ namespace WeaponCore
                         ///                        
 
                         if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
-                            if (IsServer && w.Reload.CurrentAmmo == 0)
+                            if (IsServer && w.Ammo.CurrentAmmo == 0)
                                 w.ComputeServerStorage();
                             else if (IsClient)
                                 w.ClientReload();
@@ -164,10 +160,13 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
                         bool targetLock = false;
+                        var noAmmo = w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600;
                         if (w.Target.HasTarget) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
-                            if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.State.PlayerId].LastUpdateTick > 120))
+                            if (!IsClient && noAmmo)
+                                w.Target.Reset(Tick, States.Expired);
+                            else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.Base.State.PlayerId].LastUpdateTick > 120))
                                 w.Target.Reset(Tick, States.Expired, !trackReticle);
                             else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);
@@ -198,14 +197,14 @@ namespace WeaponCore
 
                         w.ProjectilesNear = enemyProjectiles && w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
 
-                        if (comp.Data.Repo.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
+                        if (comp.Data.Repo.Base.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
 
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
-                        w.SeekTarget = (!IsClient && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == ShootClick)) || trackReticle && !w.Target.IsFakeTarget;
-                        if (!IsClient && (w.SeekTarget || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.State.Control == ControlMode.None || comp.Data.Repo.State.Control== ControlMode.Ui))
+                        w.SeekTarget = (!IsClient && !noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == ShootClick)) || trackReticle && !w.Target.IsFakeTarget;
+                        if (!IsClient && (w.SeekTarget || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui))
                         {
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
@@ -226,9 +225,9 @@ namespace WeaponCore
                         ///
                         ///
                         w.AiShooting = targetLock && !comp.UserControlled;
-                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Reload.CurrentAmmo == 0);
+                        var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
-                        var fakeTarget = comp.Data.Repo.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
+                        var fakeTarget = comp.Data.Repo.Base.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
                         var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
@@ -238,8 +237,6 @@ namespace WeaponCore
 
                         if (shotReady || w.ShootOnce) {
 
-                            if (w.ShootOnce)
-                                Log.Line($"shotQueued: shotReady:{shotReady} - {w.State.Action}");
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))
                                 w.ShootOnce = false;
 
@@ -299,7 +296,7 @@ namespace WeaponCore
                 var w = ChargingWeapons[i];
                 var comp = w.Comp;
                 var gridAi = comp.Ai;
-                if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate)
+                if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate)
                 {
                     if (w.DrawingPower)
                         w.StopPowerDraw();
@@ -320,16 +317,16 @@ namespace WeaponCore
 
                 if (Tick60 && w.DrawingPower)
                 {
-                    if ((w.Reload.CurrentCharge + w.UseablePower) < w.MaxCharge)
+                    if ((w.Ammo.CurrentCharge + w.UseablePower) < w.MaxCharge)
                     {
-                        w.Reload.CurrentCharge += w.UseablePower;
+                        w.Ammo.CurrentCharge += w.UseablePower;
                         comp.CurrentCharge += w.UseablePower;
 
                     }
                     else
                     {
-                        comp.CurrentCharge -= (w.Reload.CurrentCharge - w.MaxCharge);
-                        w.Reload.CurrentCharge = w.MaxCharge;
+                        comp.CurrentCharge -= (w.Ammo.CurrentCharge - w.MaxCharge);
+                        w.Ammo.CurrentCharge = w.MaxCharge;
                     }
                 }
 
@@ -376,7 +373,7 @@ namespace WeaponCore
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.Reload.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                    w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.Ammo.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
                     if (!w.Comp.UnlimitedPower)
                     {
@@ -401,7 +398,7 @@ namespace WeaponCore
             {
                 var w = AcquireTargets[i];
                 var comp = w.Comp;
-                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking || !comp.Data.Repo.Set.Overrides.Activate) {
+                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
                     
                     w.AcquiringTarget = false;
                     AcquireTargets.RemoveAtFast(i);
@@ -417,7 +414,7 @@ namespace WeaponCore
 
                 if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 
-                    if (seekProjectile || comp.Data.Repo.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
+                    if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
                         
                         AcquireChecks++;
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {

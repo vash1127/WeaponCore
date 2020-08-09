@@ -14,7 +14,7 @@ namespace WeaponCore
     {
         Invalid,
         AiData,
-        CompData,
+        CompBase,
         CompState,
         ConstructGroups,
         ConstructFoci,
@@ -48,6 +48,7 @@ namespace WeaponCore
         ClientNotify,
         ServerVersion,
         WeaponReload,
+        WeaponAmmo,
         QueueShot,
     }
 
@@ -67,7 +68,7 @@ namespace WeaponCore
     [ProtoInclude(16, typeof(OverRidesPacket))]
     [ProtoInclude(17, typeof(PlayerControlRequestPacket))]
     [ProtoInclude(18, typeof(TerminalMonitorPacket))]
-    [ProtoInclude(19, typeof(CompDataPacket))]
+    [ProtoInclude(19, typeof(CompBasePacket))]
     [ProtoInclude(20, typeof(CompStatePacket))]
     [ProtoInclude(21, typeof(TargetPacket))]
     [ProtoInclude(22, typeof(ConstructGroupsPacket))]
@@ -77,6 +78,7 @@ namespace WeaponCore
     [ProtoInclude(26, typeof(ServerVersionPacket))]
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
     [ProtoInclude(28, typeof(QueuedShotPacket))]
+    [ProtoInclude(29, typeof(WeaponAmmoPacket))]
 
     public class Packet
     {
@@ -212,6 +214,23 @@ namespace WeaponCore
     }
 
     [ProtoContract]
+    public class WeaponAmmoPacket : Packet
+    {
+        [ProtoMember(1)] internal AmmoValues Data;
+        [ProtoMember(2)] internal int WeaponId;
+
+
+        public WeaponAmmoPacket() { }
+
+        public override void CleanUp()
+        {
+            base.CleanUp();
+            Data = null;
+            WeaponId = 0;
+        }
+    }
+
+    [ProtoContract]
     public class PlayerControlRequestPacket : Packet
     {
         [ProtoMember(1)] internal long PlayerId;
@@ -257,10 +276,10 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class CompDataPacket : Packet
+    public class CompBasePacket : Packet
     {
-        [ProtoMember(1)] internal CompDataValues Data;
-        public CompDataPacket() { }
+        [ProtoMember(1)] internal CompBaseValues Data;
+        public CompBasePacket() { }
 
         public override void CleanUp()
         {

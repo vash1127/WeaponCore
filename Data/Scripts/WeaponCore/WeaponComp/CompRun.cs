@@ -98,7 +98,7 @@ namespace WeaponCore.Support
                         if (Session.IsClient)
                             weapon.Target.ClientDirty = true;
 
-                        if (weapon.Reload.CurrentAmmo == 0 && !weapon.Reloading)
+                        if (weapon.Ammo.CurrentAmmo == 0 && !weapon.Reloading)
                             weapon.EventTriggerStateChanged(EventTriggers.EmptyOnGameLoad, true);
                     }
                 } 
@@ -184,10 +184,10 @@ namespace WeaponCore.Support
                     if (maxTrajectory < weaponMaxRange)
                         maxTrajectory = weaponMaxRange;
 
-                    if (weapon.Reload.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
-                        weapon.Reload.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
+                    if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
+                        weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
-                    var notValid = !IsWorking || !Data.Repo.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
+                    var notValid = !IsWorking || !Data.Repo.Base.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
                     if (!notValid)
                         Session.AcqManager.AddAwake(weapon.Acquire);
                 }

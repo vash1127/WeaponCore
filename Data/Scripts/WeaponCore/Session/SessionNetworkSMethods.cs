@@ -156,7 +156,7 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                comp.Data.Repo.State.PlayerId = cyclePacket.PlayerId;
+                comp.Data.Repo.Base.State.PlayerId = cyclePacket.PlayerId;
                 comp.Platform.Weapons[cyclePacket.WeaponId].ChangeAmmo(cyclePacket.NewAmmoId);
                 data.Report.PacketValid = true;
             }
@@ -178,9 +178,9 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
                 mIds[(int)packet.PType] = packet.MId;
 
-                comp.Data.Repo.State.PlayerId = controlPacket.PlayerId;
-                comp.Data.Repo.State.Control = controlPacket.Mode;
-                SendCompData(comp);
+                comp.Data.Repo.Base.State.PlayerId = controlPacket.PlayerId;
+                comp.Data.Repo.Base.State.Control = controlPacket.Mode;
+                SendCompBaseData(comp);
                 data.Report.PacketValid = true;
             }
             else Log.Line($"ServerPlayerControlRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
@@ -201,7 +201,7 @@ namespace WeaponCore
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId)  {
                 mIds[(int) packet.PType] = packet.MId;
 
-                comp.Data.Repo.State.TrackingReticle = reticlePacket.Data;
+                comp.Data.Repo.Base.State.TrackingReticle = reticlePacket.Data;
                 SendCompState(comp);
 
                 data.Report.PacketValid = true;
