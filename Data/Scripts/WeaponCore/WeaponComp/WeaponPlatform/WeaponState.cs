@@ -17,8 +17,10 @@ namespace WeaponCore.Platform
                 if (PosChangedTick != Comp.Session.Tick)
                     UpdatePivotPos();
 
-                if (Comp.UserControlled)
+                if (Comp.UserControlled) {
+                    ReturingHome = false;
                     IsHome = false;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in PositionChanged: {ex}"); }
         }

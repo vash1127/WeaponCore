@@ -344,6 +344,24 @@ namespace WeaponCore
             InventoryUpdate = false;
         }
 
+        internal void UpdateHomingWeapons()
+        {
+            for (int i = HomingWeapons.Count - 1; i >= 0; i--)
+            {
+                var w = HomingWeapons[i];
+                var comp = w.Comp;
+                if (w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.IsWorking) {
+                    HomingWeapons.RemoveAtFast(i);
+                    continue;
+                }
+
+                w.TurretHomePosition();
+
+                if (w.IsHome || !w.ReturingHome)
+                    HomingWeapons.RemoveAtFast(i);
+            }
+        }
+
         internal void StartAmmoTask()
         {
             InventoryUpdate = true;

@@ -217,8 +217,8 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         ///
 
-                        if (w.TurretMode && !w.IsHome && !w.ReturingHome  && !w.Target.HasTarget && !comp.UserControlled)
-                            w.TurretHomePosition(true);
+                        if (w.TurretMode && !w.IsHome && !w.ReturingHome && !w.Target.HasTarget && !comp.UserControlled && w.State.Action == ShootOff)
+                            w.ScheduleWeaponHome();
 
                         ///
                         /// Determine if its time to shoot

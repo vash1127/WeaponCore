@@ -224,6 +224,7 @@ namespace WeaponCore.Platform
 
                 if (MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTargetSqr, true, false, out isTracking)) {
 
+                    weapon.ReturingHome = false;
                     locked = false;
                     weapon.AimBarrel();
                 }

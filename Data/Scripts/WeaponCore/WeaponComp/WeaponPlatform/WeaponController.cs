@@ -41,64 +41,67 @@ namespace WeaponCore.Platform
 
         }
 
-        public void TurretHomePosition(bool schedule = false)
+        public void ScheduleWeaponHome(bool sendNow = false)
         {
-            if (Comp == null || State == null || Target == null || Comp.MyCube == null) return;
-            using (Comp.MyCube.Pin())
-            {
+            if (ReturingHome)
+                return;
+
+            ReturingHome = true;
+            if (sendNow)
+                SendTurretHome();
+            else 
+                System.Session.FutureEvents.Schedule(SendTurretHome, null, 300u);
+        }
+
+        public void SendTurretHome(object o = null)
+        {
+            System.Session.HomingWeapons.Add(this);
+        }
+
+        public void TurretHomePosition()
+        {
+            using (Comp.MyCube.Pin()) {
+
                 if (Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-                if (State.Action != ShootActions.ShootOff || Comp.UserControlled || Target.HasTarget)
-                {
+                if (State.Action != ShootActions.ShootOff || Comp.UserControlled || Target.HasTarget || !ReturingHome) {
                     ReturingHome = false;
                     return;
                 }
-                ReturingHome = true;
 
-                if (Comp.BaseType == BlockType.Turret && Comp.TurretBase != null)
-                {
+                if (Comp.BaseType == BlockType.Turret && Comp.TurretBase != null) {
                     Azimuth = Comp.TurretBase.Azimuth;
                     Elevation = Comp.TurretBase.Elevation;
                 }
 
-                if(!schedule)
-                {
-                    var azStep = System.AzStep;
-                    var elStep = System.ElStep;
+                var azStep = System.AzStep;
+                var elStep = System.ElStep;
 
-                    var oldAz = Azimuth;
-                    var oldEl = Elevation;
+                var oldAz = Azimuth;
+                var oldEl = Elevation;
 
-                    if (oldAz > 0)
-                        Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
-                    else if (oldAz < 0)
-                        Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
+                if (oldAz > 0)
+                    Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
+                else if (oldAz < 0)
+                    Azimuth = oldAz + azStep < 0 ? oldAz + azStep : 0;
 
-                    if (oldEl > 0)
-                        Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
-                    else if (oldEl < 0)
-                        Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
+                if (oldEl > 0)
+                    Elevation = oldEl - elStep > 0 ? oldEl - elStep : 0;
+                else if (oldEl < 0)
+                    Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
-                    if (!MyUtils.IsEqual((float)oldAz, (float)Azimuth))
-                        AzimuthTick = Comp.Session.Tick;
+                if (!MyUtils.IsEqual((float)oldAz, (float)Azimuth))
+                    AzimuthTick = Comp.Session.Tick;
 
-                    if (!MyUtils.IsEqual((float)oldEl, (float)Elevation))
-                        ElevationTick = Comp.Session.Tick;
+                if (!MyUtils.IsEqual((float)oldEl, (float)Elevation))
+                    ElevationTick = Comp.Session.Tick;
 
-                    AimBarrel();
-                }
+                AimBarrel();
 
-                //Log.Line($"Azimuth: {Azimuth} Elevation: {Elevation} userControlled: {userControlled}");
-
-                if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
-                {
-                    ReturingHome = true;
+                if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) {
                     IsHome = false;
-                    Comp.Session.FutureEvents.Schedule(o => { TurretHomePosition(); }, null, (schedule ? 300u : 1u));
-                    //Log.Line("Schedule");
                 }
-                else
-                {
+                else {
                     IsHome = true;
                     ReturingHome = false;
                 }

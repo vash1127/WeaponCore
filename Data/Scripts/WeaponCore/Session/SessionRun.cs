@@ -113,7 +113,10 @@ namespace WeaponCore
                     ProfilePerformance();
 
                 FutureEvents.Tick(Tick);
-                
+
+                if (HomingWeapons.Count > 0)
+                    UpdateHomingWeapons();
+
                 if (!DedicatedServer && ActiveControlBlock != null && !InMenu) Wheel.UpdatePosition();
 
                 if (MpActive) {
