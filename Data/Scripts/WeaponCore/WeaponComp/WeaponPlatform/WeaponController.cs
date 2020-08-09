@@ -17,7 +17,10 @@ namespace WeaponCore.Platform
             if (AiOnlyWeapon) {
 
                 if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
-                    var azRotMatrix = Matrix.CreateFromAxisAngle(AzimuthPart.RotationAxis, (float)Azimuth);
+                    //var azRotMatrix = Matrix.CreateFromAxisAngle(w.AzimuthPart.RotationAxis, (float)w.Azimuth);
+                    Matrix azRotMatrix;
+                    Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
+
                     azRotMatrix.Translation = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation;
 
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azRotMatrix, null, true);
@@ -25,20 +28,26 @@ namespace WeaponCore.Platform
 
                 if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
 
-                    var elRotMatrix = Matrix.CreateFromAxisAngle(ElevationPart.RotationAxis, -(float)Elevation);
+                    //var elRotMatrix = Matrix.CreateFromAxisAngle(w.ElevationPart.RotationAxis, -(float)w.Elevation);
+                    Matrix elRotMatrix;
+                    Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
+
                     elRotMatrix.Translation = ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
 
                     ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
                 }
             }
-            else {   
+            else {
                 if (ElevationTick == Comp.Session.Tick)
+                {
                     Comp.TurretBase.Elevation = (float)Elevation;
+                }
 
                 if (AzimuthTick == Comp.Session.Tick)
+                {
                     Comp.TurretBase.Azimuth = (float)Azimuth;
+                }
             }
-
         }
 
         public void ScheduleWeaponHome(bool sendNow = false)

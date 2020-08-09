@@ -121,6 +121,7 @@ namespace WeaponCore.Platform
         internal float ShotEnergyCost;
         internal float LastHeat;
         internal uint CeaseFireDelayTick = uint.MaxValue / 2;
+        internal uint LastRotateTick;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;
@@ -164,6 +165,7 @@ namespace WeaponCore.Platform
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
 
+        internal bool Rotating;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;

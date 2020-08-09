@@ -886,7 +886,6 @@ namespace WeaponCore.Support
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                 MyParticleEffect effect;
                 if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.SurfaceHit, uint.MaxValue, out effect)) {
-                    Log.Line($"RunBeam failed to spawn: name:{AmmoDef.AmmoGraphics.Particles.Hit.Name} - {Hit.SurfaceHit}");
                     return;
                 }
 

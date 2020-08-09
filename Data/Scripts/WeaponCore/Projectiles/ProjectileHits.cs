@@ -328,7 +328,7 @@ namespace WeaponCore.Projectiles
 
                 p.Info.HitList.Clear();
             }
-            ValidateHits.Clear();
+            ValidateHits.ClearImmediate();
         }
 
         internal bool ProjectileHit(Projectile attacker, Projectile target, bool lineCheck, ref LineD beam)

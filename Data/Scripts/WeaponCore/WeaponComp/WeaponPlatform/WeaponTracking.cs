@@ -227,8 +227,15 @@ namespace WeaponCore.Platform
                     weapon.ReturingHome = false;
                     locked = false;
                     weapon.AimBarrel();
+                    /*
+                    weapon.LastRotateTick = weapon.System.Session.Tick;
+                    if (!weapon.Rotating) 
+                        weapon.System.Session.RotateWeapons.Add(weapon);
+                    */
                 }
             }
+            
+            weapon.Rotating = !locked;
 
             if (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Camera)
                 return isTracking;

@@ -170,6 +170,8 @@ namespace WeaponCore
             Hits.Clear();
             Emitters.Clear();
             SoundPairs.Clear();
+            RotateWeapons.ClearImmediate();
+            HomingWeapons.Clear();
             GridToMasterAi.Clear();
             Players.Clear();
             IdToCompMap.Clear();

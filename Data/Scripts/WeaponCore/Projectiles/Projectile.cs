@@ -87,6 +87,8 @@ namespace WeaponCore.Projectiles
         internal bool WasTracking;
         internal bool UseEntityCache;
         internal bool Intersecting;
+        internal bool SphereCheck;
+        internal bool LineCheck;
         internal enum CheckTypes
         {
             Ray,
@@ -287,7 +289,7 @@ namespace WeaponCore.Projectiles
             {
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed);
-                Info.AvShot.SetupSounds(DistanceFromCameraSqr);
+                Info.AvShot.SetupSounds(DistanceFromCameraSqr); //Pool initted sounds per Projectile type... this is expensive
                 if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.AreaEffect.AreaEffectRadius > 0 && Info.AmmoDef.AreaEffect.AreaEffectDamage > 0)
                 {
                     var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;

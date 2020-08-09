@@ -362,6 +362,53 @@ namespace WeaponCore
             }
         }
 
+        internal void RotatingWeapons()
+        {
+            RotateWeapons.ApplyAdditions();
+            MyAPIGateway.Parallel.For(0, RotateWeapons.Count, i => {
+
+                var w = RotateWeapons[i];
+                if (w.LastRotateTick != Tick) {
+                    RotateWeapons.Remove(w);
+                    return;
+                }
+
+                w.LastTrackedTick = Tick;
+                w.IsHome = false;
+
+                if (w.AiOnlyWeapon) {
+
+                    if (w.AzimuthTick == Tick && w.System.TurretMovement == WeaponSystem.TurretType.Full || w.System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
+                        //var azRotMatrix = Matrix.CreateFromAxisAngle(w.AzimuthPart.RotationAxis, (float)w.Azimuth);
+                        Matrix azRotMatrix;
+                        Matrix.CreateFromAxisAngle(ref w.AzimuthPart.RotationAxis, (float)w.Azimuth, out azRotMatrix);
+                        
+                        azRotMatrix.Translation = w.AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation;
+                        w.AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azRotMatrix, null, true);
+                    }
+
+                    if (w.ElevationTick == Tick && (w.System.TurretMovement == WeaponSystem.TurretType.Full || w.System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
+
+                        //var elRotMatrix = Matrix.CreateFromAxisAngle(w.ElevationPart.RotationAxis, -(float)w.Elevation);
+                        Matrix elRotMatrix;
+                        Matrix.CreateFromAxisAngle(ref w.ElevationPart.RotationAxis, -(float)w.Elevation, out elRotMatrix);
+                        
+                        elRotMatrix.Translation = w.ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
+
+                        w.ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
+                    }
+                }
+                else {
+                    if (w.ElevationTick == Tick)
+                        w.Comp.TurretBase.Elevation = (float)w.Elevation;
+
+                    if (w.AzimuthTick == Tick)
+                        w.Comp.TurretBase.Azimuth = (float)w.Azimuth;
+                }
+            });
+            RotateWeapons.ApplyRemovals();
+        }
+
         internal void StartAmmoTask()
         {
             InventoryUpdate = true;
