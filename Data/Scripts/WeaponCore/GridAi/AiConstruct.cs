@@ -590,17 +590,25 @@ namespace WeaponCore.Support
             return focus;
         }
 
-        internal bool GetPriorityTarget(GridAi ai, out MyEntity target)
+        internal bool GetPriorityTarget(GridAi ai, out MyEntity target, out int focusId)
         {
 
             var fd = ai.Construct.Data.Repo.FocusData;
 
             if (fd.Target[fd.ActiveId] > 0 && MyEntities.TryGetEntityById(fd.Target[fd.ActiveId], out target, true))
+            {
+                focusId = fd.ActiveId;
                 return true;
+            }
 
             for (int i = 0; i < fd.Target.Length; i++)
-                if (MyEntities.TryGetEntityById(fd.Target[i], out target, true)) return true;
+                if (MyEntities.TryGetEntityById(fd.Target[i], out target, true))
+                {
+                    focusId = i;
+                    return true;
+                }
 
+            focusId = -1;
             target = null;
             return false;
         }

@@ -32,7 +32,7 @@ namespace WeaponCore.Platform
                     if (!PreFired)
                         SetPreFire();
                     return;
-                }
+                } 
 
                 if (PreFired)
                     UnSetPreFire();
@@ -45,7 +45,8 @@ namespace WeaponCore.Platform
                 if (LockOnFireState && (Target.Entity?.EntityId != Comp.Ai.Construct.Data.Repo.FocusData.Target[0] || Target.Entity?.EntityId != Comp.Ai.Construct.Data.Repo.FocusData.Target[1])) {
                     
                     MyEntity focusTarget;
-                    if (!Comp.Ai.Construct.Focus.GetPriorityTarget(Comp.Ai, out focusTarget))
+                    int focusId;
+                    if (!Comp.Ai.Construct.Focus.GetPriorityTarget(Comp.Ai, out focusTarget, out focusId) || Comp.Ai.Construct.Data.Repo.FocusData.Locked[focusId] == FocusData.LockModes.None)
                         return;
                     
                     Target.LockTarget(this, focusTarget);
@@ -86,7 +87,7 @@ namespace WeaponCore.Platform
 
                     var skipMuzzle = s.IsClient && Ammo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
-                        
+
                         if (Ammo.CurrentAmmo == 0) {
 
                             if (ShootOnce) 
@@ -183,6 +184,7 @@ namespace WeaponCore.Platform
                                 patternCycle = ((FireCounter - 1) % ammoPattern.AmmoGraphics.Lines.Tracer.VisualFadeEnd) + 1;
 
                             if (ammoPattern.Const.VirtualBeams && j == 0) {
+
                                 if (i == 0) {
                                     vProList = s.Projectiles.VirtInfoPools.Get();
                                     s.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });

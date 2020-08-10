@@ -120,14 +120,12 @@ namespace WeaponCore
             {
                 var cube = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
-
                 if (fieldType != DotField)
                     if (cube == null || cube.MarkedForClose || !cube.IsWorking && !EffectedCubes.ContainsKey(cube.EntityId) || !(cube is IMyFunctionalBlock)) continue;
 
                 var blockHp = block.Integrity;
                 float damageScale = 1;
                 var tmpDamagePool = damagePool;
-
                 if (ammoDef.Const.DamageScaling)
                 {
                     var d = ammoDef.DamageScales;
@@ -173,7 +171,7 @@ namespace WeaponCore
                     tmpDamagePool -= blockHp;
                 }
 
-                if (fieldType == DotField && (IsServer || DedicatedServer))
+                if (fieldType == DotField && IsServer)
                 {
                     block.DoDamage(scaledDamage, MyDamageType.Explosion, sync, null, attackerId);
                     continue;

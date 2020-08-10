@@ -27,7 +27,8 @@ namespace WeaponCore.Platform
             }
 
             ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
-            Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
+            if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
+                Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
             
             CheckInventorySystem = true;
 
@@ -152,7 +153,7 @@ namespace WeaponCore.Platform
 
             if (!syncUp) {
 
-                if (Ammo.CurrentMags <= 0) {
+                if (Ammo.CurrentMags <= 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
                     if (!NoMagsToLoad) 
                         EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                     NoMagsToLoad = true;
@@ -181,7 +182,8 @@ namespace WeaponCore.Platform
         internal bool ComputeServerStorage()
         {
             var s = Comp.Session;
-            if (System.DesignatorWeapon || !Comp.IsWorking || !Comp.MyCube.HasInventory || !ActiveAmmoDef.AmmoDef.Const.Reloadable) return false;
+
+            if (System.DesignatorWeapon || !Comp.IsWorking || !ActiveAmmoDef.AmmoDef.Const.Reloadable || !Comp.MyCube.HasInventory ) return false;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
             {

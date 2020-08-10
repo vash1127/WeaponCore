@@ -57,7 +57,7 @@ namespace WeaponCore.Support
         internal double TracerLength;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
-        internal bool TriggeredPulse;
+        internal bool EwarAreaPulse;
         internal bool EwarActive;
         internal bool ModelOnly;
         internal bool LockOnFireState;
@@ -126,7 +126,7 @@ namespace WeaponCore.Support
             WeaponCache = null;
             VoxelCache = null;
             IsShrapnel = false;
-            TriggeredPulse = false;
+            EwarAreaPulse = false;
             EwarActive = false;
             ModelOnly = false;
             LockOnFireState = false;

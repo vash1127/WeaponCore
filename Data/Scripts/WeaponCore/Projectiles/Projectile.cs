@@ -596,14 +596,14 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (Info.AmmoDef.Const.Pulse && !Info.TriggeredPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.AmmoDef.Const.IsMine)
+            if (Info.AmmoDef.Const.Pulse && !Info.EwarAreaPulse && (VelocityLengthSqr <= 0 || AtMaxRange) && !Info.AmmoDef.Const.IsMine)
             {
-                Info.TriggeredPulse = true;
+                Info.EwarAreaPulse = true;
                 Velocity = Vector3D.Zero;
                 DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
             }
 
-            if (Info.TriggeredPulse)
+            if (Info.EwarAreaPulse)
             {
                 var areaSize = Info.AmmoDef.Const.AreaEffectSize;
                 var maxSteps = Info.AmmoDef.Const.PulseGrowTime;
@@ -665,39 +665,39 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     return;
                 case AreaEffectType.PushField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.PullField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.AnchorField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.EmpField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.OffenseField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.NavField:
-                    if (!Info.AmmoDef.Const.Pulse || Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
+                    if (!Info.AmmoDef.Const.Pulse || Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance)
                         Info.EwarActive = true;
                     break;
                 case AreaEffectType.DotField:
-                    if (Info.TriggeredPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
+                    if (Info.EwarAreaPulse && Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f <= Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                     {
                         Info.EwarActive = true;
                     }

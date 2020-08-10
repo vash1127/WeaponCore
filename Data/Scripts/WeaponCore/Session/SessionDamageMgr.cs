@@ -63,7 +63,7 @@ namespace WeaponCore
                         Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
                     }
-                    
+
                     switch (hitEnt.EventType)
                     {
                         case HitEntity.Type.Shield:
@@ -88,6 +88,7 @@ namespace WeaponCore
                             UpdateEffect(hitEnt, info);
                             continue;
                     }
+
                     Projectiles.HitEntityPool.Return(hitEnt);
                 }
 

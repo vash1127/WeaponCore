@@ -928,7 +928,7 @@ namespace WeaponCore.Support
             pulseInterval = ammoDef.AreaEffect.Pulse.Interval;
             growTime = ammoDef.AreaEffect.Pulse.GrowTime == 0 && pulseInterval > 0 ? 60 : ammoDef.AreaEffect.Pulse.GrowTime;
             pulseChance = ammoDef.AreaEffect.Pulse.PulseChance;
-            pulse = pulseInterval > 0 && pulseChance > 0;
+            pulse = pulseInterval > 0 && pulseChance > 0 && !ammoDef.Beams.Enable;
         }
 
         private void AreaEffects(AmmoDef ammoDef, out AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange)

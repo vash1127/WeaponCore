@@ -160,7 +160,7 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
                         bool targetLock = false;
-                        var noAmmo = w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600;
+                        var noAmmo =  w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && Tick - w.LastMagSeenTick > 600;
                         if (w.Target.HasTarget) {
 
                             if (w.PosChangedTick != Tick) w.UpdatePivotPos();
@@ -186,6 +186,8 @@ namespace WeaponCore
 
                                         if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity || comp.TrackingWeapon.Target.IsFakeTarget != w.Target.IsFakeTarget))
                                             w.Target.Reset(Tick, States.Expired);
+                                        else
+                                            targetLock = true;
                                     }
                                     else if (!Weapon.TargetAligned(w, w.Target, out targetPos) && !IsClient)
                                         w.Target.Reset(Tick, States.Expired);

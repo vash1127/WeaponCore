@@ -146,7 +146,7 @@ namespace WeaponCore.Projectiles
                         Vector3D.Normalize(ref p.Velocity, out p.Info.Direction);
                     }
 
-                    if (p.DeltaVelocityPerTick > 0 && !p.Info.TriggeredPulse) {
+                    if (p.DeltaVelocityPerTick > 0 && !p.Info.EwarAreaPulse) {
 
                         if (p.SmartsOn) p.RunSmart();
                         else {
@@ -264,7 +264,7 @@ namespace WeaponCore.Projectiles
                     p.Info.Ai.ComputeAccelSphere();
 
                 p.UseEntityCache = p.Info.Ai.AccelChecked && p.Info.DistanceTraveled <= p.Info.Ai.NearByEntitySphere.Radius && !p.Info.Ai.MarkedForClose;
-                var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.TriggeredPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
+                var triggerRange = p.Info.AmmoDef.Const.EwarTriggerRange > 0 && !p.Info.EwarAreaPulse ? p.Info.AmmoDef.Const.EwarTriggerRange : 0;
                 var useEwarSphere = (triggerRange > 0 || p.Info.EwarActive) && p.Info.AmmoDef.Const.Pulse;
                 p.Beam = useEwarSphere ? new LineD(p.Position + (-p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange), p.Position + (p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange)) : new LineD(p.LastPosition, p.Position);
 

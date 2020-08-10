@@ -29,8 +29,8 @@ namespace WeaponCore.Projectiles
                 var shieldFullBypass = shieldByPass && p.Info.AmmoDef.Const.ShieldBypassMod >= 1;
                 var genericFields = p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == PushField || p.Info.AmmoDef.Const.AreaEffect == PullField);
                 var found = false;
-                var notPulsing = (p.Info.AmmoDef.Const.EwarTriggerRange <= 0 || !p.Info.TriggeredPulse);
-                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && notPulsing;
+                var lineCheck = p.Info.AmmoDef.Const.CollisionIsLine && !p.Info.EwarAreaPulse;
+                var ewarProjectile = (p.Info.EwarActive || p.Info.AmmoDef.Const.EwarEffect);
 
                 bool projetileInShield = false;
                 var tick = p.Info.System.Session.Tick;
@@ -64,6 +64,7 @@ namespace WeaponCore.Projectiles
                         else if (p.CheckType == Projectile.CheckTypes.CachedSphere && p.PruneSphere.Contains(entSphere) == ContainmentType.Disjoint)
                             continue;
                     }
+
                     if (grid != null || character != null) {
                         var extBeam = new LineD(p.Beam.From - p.Beam.Direction * (entSphere.Radius * 2), p.Beam.To);
                         var transform = ent.PositionComp.WorldMatrixRef;
@@ -245,7 +246,7 @@ namespace WeaponCore.Projectiles
                                     if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock))
                                         continue;
                                 }
-                                if (!notPulsing) {
+                                if (!p.Info.EwarAreaPulse) {
 
                                     var forwardPos = p.Info.Age != 1 ? hitEntity.Intersection.From : hitEntity.Intersection.From + (hitEntity.Intersection.Direction * Math.Min(grid.GridSizeHalf, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled));
                                     grid.RayCastCells(forwardPos, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
@@ -266,9 +267,9 @@ namespace WeaponCore.Projectiles
                             else
                                 grid.RayCastCells(hitEntity.Intersection.From, hitEntity.Intersection.To, hitEntity.Vector3ICache, null, true, true);
 
-                            if (!(p.Info.EwarActive && p.Info.AmmoDef.Const.EwarEffect))
+                            if (!ewarProjectile)
                                 hitEntity.EventType = Grid;
-                            else if (!notPulsing)
+                            else if (!p.Info.EwarAreaPulse)
                                 hitEntity.EventType = Effect;
                             else
                                 hitEntity.EventType = Field;
@@ -370,7 +371,7 @@ namespace WeaponCore.Projectiles
 
             if (pulseTrigger) {
 
-                p.Info.TriggeredPulse = true;
+                p.Info.EwarAreaPulse = true;
                 p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                 p.Velocity = Vector3D.Zero;
                 p.Info.Hit.SurfaceHit = p.Position + p.Info.Direction * p.Info.AmmoDef.Const.EwarTriggerRange;
@@ -437,7 +438,7 @@ namespace WeaponCore.Projectiles
             var beam = x.Intersection;
             var count = y != null ? 2 : 1;
             var eWarPulse = info.AmmoDef.Const.Ewar && info.AmmoDef.Const.Pulse;
-            var triggerEvent = eWarPulse && !info.TriggeredPulse && info.AmmoDef.Const.EwarTriggerRange > 0;
+            var triggerEvent = eWarPulse && !info.EwarAreaPulse && info.AmmoDef.Const.EwarTriggerRange > 0;
             for (int i = 0; i < count; i++) {
                 var isX = i == 0;
 
