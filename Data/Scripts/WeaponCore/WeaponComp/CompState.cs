@@ -192,7 +192,8 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (ent == null || MyCube == null) return;
+                if (ent == null)
+                    return;
 
                 using (MyCube.Pin())
                 {

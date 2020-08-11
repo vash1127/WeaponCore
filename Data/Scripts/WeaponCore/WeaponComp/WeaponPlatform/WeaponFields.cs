@@ -35,6 +35,7 @@ namespace WeaponCore.Platform
         internal readonly bool AzimuthOnBase;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
+        internal readonly uint WeaponCreatedTick;
 
         internal Action<object> CancelableReloadAction = (o) => {};
         private readonly int _numModelBarrels;
@@ -230,6 +231,7 @@ namespace WeaponCore.Platform
 
             System = system;
             Comp = comp;
+            WeaponCreatedTick = System.Session.Tick;
 
             AnimationsSet = comp.Session.CreateWeaponAnimationSet(system, parts);
             foreach (var set in AnimationsSet) {
@@ -375,7 +377,8 @@ namespace WeaponCore.Platform
 
             MyEntity ejectorPart;
             if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
-                Ejector = new Dummy(ejectorPart, System.Values.Assignments.Ejector);
+                Ejector = new Dummy(ejectorPart,this, System.Values.Assignments.Ejector);
+
         }
     }
 }

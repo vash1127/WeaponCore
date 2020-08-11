@@ -725,7 +725,7 @@ namespace WeaponCore
             return particles;
         }
 
-        internal bool CreateParticleDummy(MyEntity cube, string emptyName, out Dummy particleDummy, out string PartName)
+        internal bool CreateParticleDummy(MyEntity cube, string emptyName, out Dummy particleDummy, out string partName)
         {
             var head = -1;
             var tmp = new Dictionary<string, IMyModelDummy>();
@@ -765,12 +765,12 @@ namespace WeaponCore
 
             if (dummyPart != null)
             {
-                particleDummy = new Dummy(dummyPart, emptyName);
-                PartName = nameLookup[dummyPart];
+                particleDummy = new Dummy(dummyPart, null, emptyName);
+                partName = nameLookup[dummyPart];
                 return true;
             }
 
-            PartName = "";
+            partName = "";
             return false;
         }
 

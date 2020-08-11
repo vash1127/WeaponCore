@@ -52,7 +52,7 @@ namespace WeaponCore.Platform
         internal void Clean()
         {
             for (int i = 0; i < Weapons.Length; i++) Weapons[i] = null;
-            Parts.Clean(Comp.MyCube);
+            Parts.Clean(null);
             Structure = null;
             State = PlatformState.Fresh;
             Comp = null;
@@ -212,7 +212,6 @@ namespace WeaponCore.Platform
                     }
 
                     weapon.MuzzlePart.Entity = muzzlePart;
-
                     weapon.HeatingParts = new List<MyEntity> {weapon.MuzzlePart.Entity};
 
                     if (muzzlePartName != "None")
@@ -339,7 +338,7 @@ namespace WeaponCore.Platform
                         weapon.MuzzleIdToName.Add(i, barrel);
                         if (weapon.Muzzles[i] == null)
                         {
-                            weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, barrel);
+                            weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Entity, weapon, barrel);
                             weapon.Muzzles[i] = new Muzzle(i, comp.Session);
                         }
                         else

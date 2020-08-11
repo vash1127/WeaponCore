@@ -189,7 +189,9 @@ namespace WeaponCore.Support
 
             Session = session;
             
-            CreatedTick = session.Tick;
+            if (CreatedTick == 0) 
+                CreatedTick = session.Tick;
+
             AiMarkedTick = uint.MaxValue;
             RegisterMyGridEvents(true, grid);
             AiSpawnTick = Session.Tick;

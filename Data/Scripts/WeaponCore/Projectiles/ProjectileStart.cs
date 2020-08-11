@@ -128,7 +128,7 @@ namespace WeaponCore.Projectiles
                 spawned += count;
             }
             ShrapnelToSpawn.Clear();
-
+            
             if (AddTargets.Count > 0)
                 AddProjectileTargets();
 
@@ -150,7 +150,6 @@ namespace WeaponCore.Projectiles
         {
             for (int i = 0; i < AddTargets.Count; i++)
             {
-
                 var p = AddTargets[i];
                 for (int t = 0; t < p.Info.Ai.TargetAis.Count; t++)
                 {
@@ -159,7 +158,6 @@ namespace WeaponCore.Projectiles
                     var addProjectile = p.Info.AmmoDef.Trajectory.Guidance != GuidanceType.None && targetAi.PointDefense;
                     if (!addProjectile && targetAi.PointDefense)
                     {
-
                         if (Vector3.Dot(p.Info.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrixRef.Translation) < 0)
                         {
 
@@ -170,7 +168,6 @@ namespace WeaponCore.Projectiles
 
                             if (!quickCheck)
                             {
-
                                 var deltaPos = targetSphere.Center - p.Info.Origin;
                                 var deltaVel = targetAi.GridVel - p.Info.Ai.GridVel;
                                 var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, p.Info.AmmoDef.Const.DesiredProjectileSpeed);
@@ -184,7 +181,7 @@ namespace WeaponCore.Projectiles
                     }
                     if (addProjectile)
                     {
-
+                        targetAi.DeadProjectiles.Remove(p);
                         targetAi.LiveProjectile.Add(p);
                         targetAi.LiveProjectileTick = Session.Tick;
                         targetAi.NewProjectileTick = Session.Tick;

@@ -2,13 +2,36 @@
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
     // based on code of Equinox's
     public class Dummy
     {
-        internal MyEntity Entity;
+
+        internal MyEntity Entity
+        {
+            get
+            {
+                if (_entity?.Model == null) {
+                    if (_weapon.System.Session.LocalVersion) Log.Line($"reset parts");
+                    _weapon.Comp.Platform.ResetParts(_weapon.Comp);
+                    if (_entity?.Model == null)
+                        Log.Line($"Dummy Entity/Model null");
+                }
+
+                return _entity;
+            }
+            set
+            {
+                if (value?.Model == null)
+                    Log.Line($"DummyModel null for weapon on set: {_weapon.System.WeaponName}");
+                _entity = value; 
+
+            }
+        }
+        //internal MyEntity Entity ;
 
         private IMyModel _cachedModel;
         private IMyModel _cachedSubpartModel;
@@ -19,9 +42,11 @@ namespace WeaponCore.Support
         private readonly string[] _path;
         private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
         private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
-
-        public Dummy(MyEntity e, params string[] path)
+        private readonly Weapon _weapon;
+        private MyEntity _entity;
+        public Dummy(MyEntity e, Weapon w, params string[] path)
         {
+            _weapon = w;
             Entity = e;
             _path = path;
         }
@@ -29,8 +54,8 @@ namespace WeaponCore.Support
         private bool _failed = true;
         internal void Update()
         {
-            _cachedModel = Entity.Model;
-            _cachedSubpart = Entity;
+            _cachedModel = _entity.Model;
+            _cachedSubpart = _entity;
             _cachedSubpartModel = _cachedSubpart?.Model;
             for (var i = 0; i < _path.Length - 1; i++)
             {
@@ -64,9 +89,15 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (!(_cachedModel == Entity?.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
-                if (Entity == null || _cachedSubpart == null)
+                if (_entity != null && _entity.Model == null && Entity.Model == null)
+                    Log.Line($"DummyInfo reset and still has invalid enity/model");
+
+                if (!(_cachedModel == _entity?.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
+                if (_entity == null || _cachedSubpart == null)
+                {
+                    Log.Line($"DummyInfo invalid");
                     return new DummyInfo();
+                }
 
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 CachedPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);

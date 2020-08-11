@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.Entities.Blocks;
 using VRage;
 using VRage.Game;
 using VRage.Utils;
@@ -38,7 +39,7 @@ namespace WeaponCore
                 MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
                 MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
             }
-
+            
             var env = MyDefinitionManager.Static.EnvironmentDefinition;
             if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
             else if (env.SmallShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.SmallShipMaxSpeed;
