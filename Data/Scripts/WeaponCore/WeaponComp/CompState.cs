@@ -173,14 +173,13 @@ namespace WeaponCore.Support
             var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
-            if (false && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == ShootActions.ShootOff) {
+            if (!targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == ShootActions.ShootOff) {
 
                 IsAsleep = true;
                 Ai.SleepingComps++;
             }
             else if (wasAsleep) {
 
-                Log.Line("waking up");
                 Ai.AwakeComps++;
             }
             else 

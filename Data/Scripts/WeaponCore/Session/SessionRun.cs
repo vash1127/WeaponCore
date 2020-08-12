@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -56,12 +57,11 @@ namespace WeaponCore
                     if (ClientPacketsToClean.Count > 0)
                         CleanClientPackets();
                 }
-
                 /*
                 for (int i = DebugLines.Count - 1; i >= 0; i--)
                     if (!DebugLines[i].Draw(Tick))
                         DebugLines.RemoveAtFast(i);
-
+                        */
                 TotalAcquireChecks += AcquireChecks;
 
                 if (AcquireChecks < LowAcquireChecks)
@@ -77,7 +77,6 @@ namespace WeaponCore
                     LowAcquireChecks = int.MaxValue;
                     HighAcquireChecks = int.MinValue;
                 }
-                */
 
                 // Environment.CurrentManagedThreadId
 

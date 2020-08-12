@@ -849,7 +849,7 @@ namespace WeaponCore.Support
 
         internal void DisposeAmmoEffect(bool instant, bool pause)
         {
-            if (AmmoEffect != null)
+            if (AmmoEffect != null && AmmoEffect.Loop && AmmoDef.AmmoGraphics.Particles.Ammo.Name == AmmoEffect.GetName())
             {
                 AmmoEffect.Stop(instant);
                 AmmoEffect = null;
@@ -861,7 +861,7 @@ namespace WeaponCore.Support
 
         internal void DisposeFieldEffect(bool instant, bool pause)
         {
-            if (FieldEffect != null)
+            if (FieldEffect != null && FieldEffect.Loop && AmmoDef.AreaEffect.Pulse.Particle.Name == FieldEffect.GetName())
             {
                 FieldEffect.Stop(instant);
                 FieldEffect = null;

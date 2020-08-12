@@ -578,6 +578,7 @@ namespace WeaponCore
         public Random TurretRandom;
         public Random ClientProjectileRandom;
         public Random AcquireRandom;
+        public int AcquireTmpCounter;
 
         public enum RandomType
         {
@@ -602,10 +603,9 @@ namespace WeaponCore
 
             TurretCurrentCounter = syncFrom.TurretCurrentCounter;
             ClientProjectileCurrentCounter = syncFrom.ClientProjectileCurrentCounter;
-            AcquireCurrentCounter = syncFrom.AcquireCurrentCounter;
+            AcquireTmpCounter = syncFrom.AcquireCurrentCounter;
             TurretRandom = new Random(CurrentSeed);
             ClientProjectileRandom = new Random(CurrentSeed);
-            AcquireRandom = new Random(CurrentSeed);
         }
 
         internal void ReInitRandom()
