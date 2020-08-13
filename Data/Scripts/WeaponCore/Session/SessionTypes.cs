@@ -336,11 +336,11 @@ namespace WeaponCore
                     },
                     {"AcquireEnabled", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.Enabled}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.Monitoring}"); }
                     },
                     {"AcquireAsleep", () => {
                             var message = string.Empty;
-                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.Asleep}"); }
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Acquire.IsSleeping}"); }
                     },
                     {"MaxTargetDistance", () => {
                             var message = string.Empty;
@@ -647,11 +647,11 @@ namespace WeaponCore
         internal class AcquireManager
         {
             internal Session Session;
-            internal readonly HashSet<WeaponAcquire> Awake = new HashSet<WeaponAcquire>();
+            internal readonly HashSet<WeaponAcquire> MonitorState = new HashSet<WeaponAcquire>();
             internal readonly HashSet<WeaponAcquire> Asleep = new HashSet<WeaponAcquire>();
 
             internal readonly List<WeaponAcquire> Collector = new List<WeaponAcquire>();
-            internal readonly List<WeaponAcquire> Removal = new List<WeaponAcquire>();
+            internal readonly List<WeaponAcquire> ToRemove = new List<WeaponAcquire>();
 
             internal int LastSleepSlot = -1;
             internal int LastAwakeSlot = -1;
@@ -663,126 +663,70 @@ namespace WeaponCore
                 Session = session;
             }
 
-            internal void Awaken(WeaponAcquire wa)
+            internal void Refresh(WeaponAcquire wa)
             {
-                var notValid = !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
-                if (notValid)
-                {
-                    if (!Session.IsClient) Log.Line($"[Awaken] isAsleep:{wa.Asleep} - cWorking:{wa.Weapon.Comp.IsWorking} - cOverride:{wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
-                    return;
-                }
-
                 wa.CreatedTick = Session.Tick;
 
-                if (!wa.Asleep)
+                if (!wa.IsSleeping)
                     return;
 
-                Asleep.Remove(wa);
-
-                AddAwake(wa);
+                Monitor(wa);
             }
 
-            internal void AddAwake(WeaponAcquire wa)
+            internal void Monitor(WeaponAcquire wa)
             {
-                var notValid = !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || !wa.Weapon.TrackTarget || Session.IsClient;
-                if (notValid)
-                {
-                    if (!Session.IsClient) Log.Line($"[AddAwake] isAsleep:{wa.Asleep} - cWorking:{wa.Weapon.Comp.IsWorking} - cOverride:{wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate} - tracking:{wa.Weapon.TrackTarget} - isClient:{Session.IsClient}");
-                    return;
-                }
-
-                wa.Enabled = true;
-                wa.Asleep = false;
+                wa.Monitoring = true;
+                wa.IsSleeping = false;
                 wa.CreatedTick = Session.Tick;
 
                 if (LastAwakeSlot < AwakeBuckets - 1)
-                {
-
                     wa.SlotId = ++LastAwakeSlot;
-
-                    Awake.Add(wa);
-                }
                 else
-                {
-
                     wa.SlotId = LastAwakeSlot = 0;
 
-                    Awake.Add(wa);
-                }
+                Asleep.Remove(wa);
+                MonitorState.Add(wa);
             }
 
-            internal void Remove(WeaponAcquire wa)
+            internal void Observer()
             {
-                wa.Enabled = false;
+                foreach (var wa in MonitorState) {
 
-                if (wa.Asleep)
-                {
-
-                    wa.Asleep = false;
-                    Asleep.Remove(wa);
-                }
-                else
-                {
-                    Awake.Remove(wa);
-                }
-            }
-
-
-            internal void UpdateAsleep()
-            {
-                WasAwake = 0;
-                WasAwake += Awake.Count;
-
-                foreach (var wa in Awake)
-                {
-
-                    if (wa.Weapon.Target.HasTarget)
-                    {
-                        Removal.Add(wa);
+                    if (wa.Weapon.Target.HasTarget) {
+                        ToRemove.Add(wa);
                         continue;
                     }
 
-                    if (Session.Tick - wa.CreatedTick > 599)
-                    {
+                    if (Session.Tick - wa.CreatedTick > 599) {
 
                         if (LastSleepSlot < AsleepBuckets - 1)
-                        {
-
                             wa.SlotId = ++LastSleepSlot;
-                            wa.Asleep = true;
-
-                            Asleep.Add(wa);
-                            Removal.Add(wa);
-                        }
                         else
-                        {
-
                             wa.SlotId = LastSleepSlot = 0;
-                            wa.Asleep = true;
 
-                            Asleep.Add(wa);
-                            Removal.Add(wa);
-                        }
+                        wa.IsSleeping = true;
+                        Asleep.Add(wa);
+                        ToRemove.Add(wa);
                     }
                 }
 
-                for (int i = 0; i < Removal.Count; i++)
-                    Awake.Remove(Removal[i]);
+                for (int i = 0; i < ToRemove.Count; i++) {
+                    var wa = ToRemove[i];
+                    wa.Monitoring = false;
+                    MonitorState.Remove(wa);
+                }
 
-                Removal.Clear();
+                ToRemove.Clear();
             }
-
 
             internal void ReorderSleep()
             {
-                foreach (var wa in Asleep)
-                {
+                foreach (var wa in Asleep) {
 
-                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || Session.IsClient || !wa.Weapon.TrackTarget;
+                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || !wa.Weapon.TrackTarget;
 
-                    if (remove)
-                    {
-                        Removal.Add(wa);
+                    if (remove) {
+                        ToRemove.Add(wa);
                         continue;
                     }
                     Collector.Add(wa);
@@ -790,35 +734,30 @@ namespace WeaponCore
 
                 Asleep.Clear();
 
-                for (int i = 0; i < Removal.Count; i++)
-                    Remove(Removal[i]);
+                for (int i = 0; i < ToRemove.Count; i++) {
+                    var wa = ToRemove[i];
+                    wa.IsSleeping = false;
+                    MonitorState.Remove(wa);
+                }
 
                 WasAsleep = Collector.Count;
 
                 ShellSort(Collector);
 
                 LastSleepSlot = -1;
-                for (int i = 0; i < Collector.Count; i++)
-                {
+
+                for (int i = 0; i < Collector.Count; i++) {
 
                     var wa = Collector[i];
                     if (LastSleepSlot < AsleepBuckets - 1)
-                    {
-
                         wa.SlotId = ++LastSleepSlot;
-
-                        Asleep.Add(wa);
-                    }
                     else
-                    {
-
                         wa.SlotId = LastSleepSlot = 0;
 
-                        Asleep.Add(wa);
-                    }
+                    Asleep.Add(wa);
                 }
                 Collector.Clear();
-                Removal.Clear();
+                ToRemove.Clear();
             }
 
             static void ShellSort(List<WeaponAcquire> list)
@@ -845,10 +784,10 @@ namespace WeaponCore
 
             internal void Clean()
             {
-                Awake.Clear();
+                MonitorState.Clear();
                 Asleep.Clear();
                 Collector.Clear();
-                Removal.Clear();
+                ToRemove.Clear();
             }
 
         }

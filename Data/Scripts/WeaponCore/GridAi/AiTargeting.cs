@@ -56,8 +56,8 @@ namespace WeaponCore.Support
             }
 
             if (targetType == TargetType.None) {
-                if (w.Target.CurrentState == Target.States.Acquired)
-                    w.System.Session.AcqManager.Remove(w.Acquire);
+                if (w.Target.CurrentState == Target.States.Acquired && w.Acquire.IsSleeping && w.Acquire.Monitoring && w.System.Session.AcqManager.MonitorState.Remove(w.Acquire))
+                    w.Acquire.Monitoring = false;
 
                 if (w.NewTarget.CurrentState != Target.States.NoTargetsSeen) w.NewTarget.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen);
                 if (w.Target.CurrentState != Target.States.NoTargetsSeen) w.Target.Reset(w.Comp.Session.Tick, Target.States.NoTargetsSeen, !w.Comp.Data.Repo.Base.State.TrackingReticle);

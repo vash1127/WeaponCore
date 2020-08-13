@@ -72,7 +72,7 @@ namespace WeaponCore
                 if (Tick60)
                 {
                     AverageAcquireChecks = TotalAcquireChecks / 60;
-                    Log.Line($"Low:{LowAcquireChecks} - High:{HighAcquireChecks} - Average:{AverageAcquireChecks} - Awake:{AcqManager.WasAwake} - Asleep:{AcqManager.WasAsleep}");
+                    Log.Line($"Low:{LowAcquireChecks} - High:{HighAcquireChecks} - Average:{AverageAcquireChecks} - Awake:{AcqManager.WasAwake}({AcqManager.MonitorState.Count}) - Asleep:{AcqManager.WasAsleep}(({AcqManager.Asleep.Count}))");
                     TotalAcquireChecks = 0;
                     LowAcquireChecks = int.MaxValue;
                     HighAcquireChecks = int.MinValue;
@@ -80,8 +80,10 @@ namespace WeaponCore
 
                 // Environment.CurrentManagedThreadId
 
-                if (Tick60) AcqManager.UpdateAsleep();
-                if (Tick600) AcqManager.ReorderSleep();
+                if (IsServer) {
+                    if (Tick60) AcqManager.Observer();
+                    if (Tick600) AcqManager.ReorderSleep();
+                }
 
                 if (!DedicatedServer && TerminalMon.Active)
                     TerminalMon.Monitor();

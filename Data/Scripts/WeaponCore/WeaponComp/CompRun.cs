@@ -187,9 +187,8 @@ namespace WeaponCore.Support
                     if (weapon.Ammo.CurrentAmmo > weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize)
                         weapon.Ammo.CurrentAmmo = weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize;
 
-                    var notValid = !IsWorking || !Data.Repo.Base.Set.Overrides.Activate || !weapon.TrackTarget || Session.IsClient;
-                    if (!notValid)
-                        Session.AcqManager.AddAwake(weapon.Acquire);
+                    if (Session.IsServer && weapon.TrackTarget)
+                        Session.AcqManager.Monitor(weapon.Acquire);
                 }
 
                 if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange) {

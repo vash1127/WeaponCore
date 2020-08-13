@@ -139,8 +139,10 @@ namespace WeaponCore.Support
 
                     w.RayCallBackClean();
 
-                    if (w.Acquire.Enabled) 
-                        w.Comp.Session.AcqManager.Remove(w.Acquire);
+                    w.Comp.Session.AcqManager.Asleep.Remove(w.Acquire);
+                    w.Comp.Session.AcqManager.MonitorState.Remove(w.Acquire);
+                    w.Acquire.Monitoring = false;
+                    w.Acquire.IsSleeping = false;
                 }
             }
         }

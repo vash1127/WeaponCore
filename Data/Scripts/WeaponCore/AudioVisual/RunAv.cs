@@ -153,6 +153,7 @@ namespace WeaponCore.Support
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
                                 hitEffect.UserScale = scale * scaler;
+                                /*
                                 if (!MyUtils.IsZero(av.Hit.HitVelocity, 1E-01F))
                                 {
                                     var hitVel = av.Hit.HitVelocity;
@@ -166,6 +167,8 @@ namespace WeaponCore.Support
 
                                     KeensBrokenParticles.Add(keenMess);
                                 }
+                                */
+                                hitEffect.Velocity = av.Hit.HitVelocity;
                             }
                         }
                     }

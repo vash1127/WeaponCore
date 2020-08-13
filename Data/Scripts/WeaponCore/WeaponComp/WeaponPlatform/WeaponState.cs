@@ -32,9 +32,6 @@ namespace WeaponCore.Platform
 
             if (!Target.HasTarget)
             {
-                if (!Acquire.Enabled)
-                    System.Session.AcqManager.AddAwake(Acquire);
-
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
                     if (!Comp.Data.Repo.Base.State.TrackingReticle)
@@ -203,10 +200,13 @@ namespace WeaponCore.Platform
         internal void WakeTargets()
         {
             LastTargetTick = Comp.Session.Tick;
-            if (Acquire.Enabled)
-                System.Session.AcqManager.Awaken(Acquire);
-            else
-                System.Session.AcqManager.AddAwake(Acquire);
+            if (System.Session.IsServer && TrackTarget)
+            {
+                if (Acquire.Monitoring)
+                    System.Session.AcqManager.Refresh(Acquire);
+                else
+                    System.Session.AcqManager.Monitor(Acquire);
+            }
 
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }

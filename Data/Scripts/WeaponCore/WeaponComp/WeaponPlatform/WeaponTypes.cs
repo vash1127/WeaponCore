@@ -129,8 +129,8 @@ namespace WeaponCore.Platform
             internal readonly Weapon Weapon;
             internal uint CreatedTick;
             internal int SlotId;
-            internal bool Asleep;
-            internal bool Enabled;
+            internal bool IsSleeping;
+            internal bool Monitoring;
 
             internal WeaponAcquire(Weapon weapon)
             {
