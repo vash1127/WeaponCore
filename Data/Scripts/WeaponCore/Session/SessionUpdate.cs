@@ -17,6 +17,8 @@ namespace WeaponCore
     {
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
+            AwakeComps = 0;
+            SleepingComps = 0;
             foreach (var ai in GridTargetingAIs.Values)
             {
                 ///
@@ -43,6 +45,8 @@ namespace WeaponCore
 
                 if (ai.UpdatePowerSources || !ai.HadPower && ai.MyGrid.IsPowered || ai.HasPower && !ai.MyGrid.IsPowered || Tick10)
                     ai.UpdateGridPower();
+                SleepingComps += ai.SleepingComps;
+                AwakeComps += ai.AwakeComps;
 
                 if (!ai.HasPower || IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
@@ -389,12 +393,6 @@ namespace WeaponCore
             }
         }
 
-        internal int LowAcquireChecks = int.MaxValue;
-        internal int HighAcquireChecks = int.MinValue;
-        internal int AverageAcquireChecks;
-        internal int TotalAcquireChecks;
-        internal int AcquireChecks;
-
         private void CheckAcquire()
         {
             for (int i = AcquireTargets.Count - 1; i >= 0; i--)
@@ -419,7 +417,6 @@ namespace WeaponCore
 
                     if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
                         
-                        AcquireChecks++;
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
                             var topMost = comp.TrackingWeapon.Target.Entity?.GetTopMostParent();
                             GridAi.AcquireTarget(w, false, topMost);

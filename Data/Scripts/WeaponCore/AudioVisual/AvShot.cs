@@ -824,7 +824,8 @@ namespace WeaponCore.Support
             }
 
             var renderId = AmmoDef.Const.PrimeModel && PrimeEntity != null ? PrimeEntity.Render.GetRenderObjectID() : uint.MaxValue;
-            if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect)) {
+            if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Ammo.Name, ref matrix, ref TracerFront, renderId, out AmmoEffect))
+            {
 
                 AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                 AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
@@ -839,9 +840,9 @@ namespace WeaponCore.Support
             var pos = TriggerEntity.PositionComp.WorldAABB.Center;
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
             {
-                AmmoEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
-                AmmoEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
-                AmmoEffect.UserScale = 1;
+                FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
+                FieldEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
+                FieldEffect.UserScale = 1;
                 FieldParticleStopped = false;
                 FieldParticleInited = true;
             }
@@ -849,7 +850,7 @@ namespace WeaponCore.Support
 
         internal void DisposeAmmoEffect(bool instant, bool pause)
         {
-            if (AmmoEffect != null && AmmoEffect.Loop && AmmoDef.AmmoGraphics.Particles.Ammo.Name == AmmoEffect.GetName())
+            if (AmmoEffect != null)
             {
                 AmmoEffect.Stop(instant);
                 AmmoEffect = null;
@@ -861,7 +862,7 @@ namespace WeaponCore.Support
 
         internal void DisposeFieldEffect(bool instant, bool pause)
         {
-            if (FieldEffect != null && FieldEffect.Loop && AmmoDef.AreaEffect.Pulse.Particle.Name == FieldEffect.GetName())
+            if (FieldEffect != null)
             {
                 FieldEffect.Stop(instant);
                 FieldEffect = null;
@@ -930,7 +931,7 @@ namespace WeaponCore.Support
                 HitParticle = ParticleState.Dirty;
                 if (System.Session.Av.ExplosionReady) {
                     if (OnScreen != Screen.None)
-                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef);
+                        SUtils.CreateFakeExplosion(System.Session, AmmoDef.AreaEffect.Detonation.DetonationRadius, TracerFront, Direction, Hit.Entity, AmmoDef, Hit.HitVelocity);
                 }
             }
 

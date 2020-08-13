@@ -153,6 +153,7 @@ namespace WeaponCore.Support
                                 hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
                                 hitEffect.UserScale = scale * scaler;
+                                hitEffect.Velocity = av.Hit.HitVelocity;
                                 /*
                                 if (!MyUtils.IsZero(av.Hit.HitVelocity, 1E-01F))
                                 {
@@ -168,7 +169,6 @@ namespace WeaponCore.Support
                                     KeensBrokenParticles.Add(keenMess);
                                 }
                                 */
-                                hitEffect.Velocity = av.Hit.HitVelocity;
                             }
                         }
                     }
@@ -178,8 +178,8 @@ namespace WeaponCore.Support
                         if (ExplosionReady && av.OnScreen != AvShot.Screen.None)
                         {
                             var pos = !MyUtils.IsZero(av.Hit.SurfaceHit) ? av.Hit.SurfaceHit : av.TracerFront;
-                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef);
-                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef);
+                            if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.Detonation.DetonationRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
+                            else SUtils.CreateFakeExplosion(Session, av.AmmoDef.AreaEffect.AreaEffectRadius, pos, av.Direction, av.Hit.Entity, av.AmmoDef, av.Hit.HitVelocity);
                         }
                     }
 

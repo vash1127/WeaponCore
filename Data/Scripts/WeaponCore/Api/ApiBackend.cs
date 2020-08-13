@@ -73,7 +73,7 @@ namespace WeaponCore.Api
                 ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool>(PbGetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, MyTuple<bool, int, int>>(PbGetProjectilesLockedOn),
-                ["GetSortedThreats"] = new Action<VRage.Game.ModAPI.Ingame.IMyEntity, ICollection<MyTuple<VRage.Game.ModAPI.Ingame.IMyEntity, float>>>(PbGetSortedThreats),
+                ["GetSortedThreats"] = new Action<VRage.Game.ModAPI.Ingame.IMyEntity, IDictionary<VRage.Game.ModAPI.Ingame.IMyEntity, float>>(PbGetSortedThreats),
                 ["GetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, int, VRage.Game.ModAPI.Ingame.IMyEntity>(PbGetAiFocus),
                 ["SetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool>(PbSetAiFocus),
                 ["GetWeaponTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, VRage.Game.ModAPI.Ingame.IMyEntity>(PbGetWeaponTarget),
@@ -204,7 +204,7 @@ namespace WeaponCore.Api
             SetWeaponTarget((IMyTerminalBlock) arg1, (IMyEntity) arg2, arg3);
         }
 
-        private IMyEntity PbGetWeaponTarget(object arg1, int arg2)
+        private VRage.Game.ModAPI.Ingame.IMyEntity PbGetWeaponTarget(object arg1, int arg2)
         {
             var entity = GetWeaponTarget((IMyTerminalBlock) arg1, arg2).Item4;
             return entity;
@@ -220,9 +220,18 @@ namespace WeaponCore.Api
             return GetAiFocus((IMyEntity) arg1, arg2);
         }
 
+        private readonly List<MyTuple<IMyEntity, float>> _tmpTargetList = new List<MyTuple<IMyEntity, float>>();
         private void PbGetSortedThreats(object arg1, object arg2)
         {
-            GetSortedThreats((IMyEntity) arg1, (ICollection<MyTuple<IMyEntity, float>>) arg2);
+            GetSortedThreats((IMyEntity) arg1, _tmpTargetList);
+            
+            var dict = (IDictionary<VRage.Game.ModAPI.Ingame.IMyEntity, float>) arg2;
+            
+            foreach (var i in _tmpTargetList)
+                dict[i.Item1] = i.Item2;
+
+            _tmpTargetList.Clear();
+
         }
 
         private MyTuple<bool, int, int> PbGetProjectilesLockedOn(object arg)

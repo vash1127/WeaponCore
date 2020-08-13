@@ -243,6 +243,8 @@ namespace WeaponCore
         internal string ServerVersion;
         internal object InitObj = new object();
 
+        internal int SleepingComps;
+        internal int AwakeComps;
         internal int WeaponIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;

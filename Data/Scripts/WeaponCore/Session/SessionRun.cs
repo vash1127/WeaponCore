@@ -62,20 +62,10 @@ namespace WeaponCore
                     if (!DebugLines[i].Draw(Tick))
                         DebugLines.RemoveAtFast(i);
                         */
-                TotalAcquireChecks += AcquireChecks;
 
-                if (AcquireChecks < LowAcquireChecks)
-                    LowAcquireChecks = AcquireChecks;
-                else if (AcquireChecks > HighAcquireChecks)
-                    HighAcquireChecks = AcquireChecks;
-                AcquireChecks = 0;
                 if (Tick60)
                 {
-                    AverageAcquireChecks = TotalAcquireChecks / 60;
-                    Log.Line($"Low:{LowAcquireChecks} - High:{HighAcquireChecks} - Average:{AverageAcquireChecks} - Awake:{AcqManager.WasAwake}({AcqManager.MonitorState.Count}) - Asleep:{AcqManager.WasAsleep}(({AcqManager.Asleep.Count}))");
-                    TotalAcquireChecks = 0;
-                    LowAcquireChecks = int.MaxValue;
-                    HighAcquireChecks = int.MinValue;
+                    Log.Line($"Awake: {AwakeComps} - Sleeping:{SleepingComps}))");
                 }
 
                 // Environment.CurrentManagedThreadId

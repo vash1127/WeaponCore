@@ -250,7 +250,7 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef)
+        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, Vector3D direction, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, Vector3 velocity)
         {
             var af = ammoDef.AreaEffect;
             var eInfo = af.Explosions;
@@ -282,6 +282,7 @@ namespace WeaponCore.Support
                 ObjectsRemoveDelayInMiliseconds = 0,
                 CustomEffect = eInfo.CustomParticle,
                 CreateParticleEffect = drawParticles,
+                Velocity = velocity,
             };
             if (hitEnt?.Physics != null)
                 explosionInfo.Velocity = hitEnt.Physics.LinearVelocity;
