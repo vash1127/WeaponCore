@@ -17,8 +17,6 @@ namespace WeaponCore
     {
         private void AiLoop()
         { //Fully Inlined due to keen's mod profiler
-            AwakeComps = 0;
-            SleepingComps = 0;
             foreach (var ai in GridTargetingAIs.Values)
             {
                 ///
@@ -45,10 +43,8 @@ namespace WeaponCore
 
                 if (ai.UpdatePowerSources || !ai.HadPower && ai.MyGrid.IsPowered || ai.HasPower && !ai.MyGrid.IsPowered || Tick10)
                     ai.UpdateGridPower();
-                SleepingComps += ai.SleepingComps;
-                AwakeComps += ai.AwakeComps;
 
-                if (!ai.HasPower || IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
+                if (!ai.HasPower || SleepFeature && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
                 if (IsServer && ai.ScanBlockGroups)

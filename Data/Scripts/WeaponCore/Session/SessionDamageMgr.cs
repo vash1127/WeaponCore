@@ -412,7 +412,6 @@ namespace WeaponCore
                     var blockBox = new BoundingBoxD(-halfExt, halfExt);
                     gridMatrix.Translation = grid.GridIntegerToWorld(grid.GridIntegerToWorld(rootBlock.Position));
                     obb = new MyOrientedBoundingBoxD(blockBox, gridMatrix);
-                    //obb = new MyOrientedBoundingBoxD(grid.GridIntegerToWorld(rootBlock.Position), blockBox.HalfExtents, Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrixRef));
                 }
 
                 var dist = obb.Intersects(ref hitEnt.Intersection);

@@ -63,11 +63,6 @@ namespace WeaponCore
                         DebugLines.RemoveAtFast(i);
                         */
 
-                if (Tick60)
-                {
-                    Log.Line($"Awake: {AwakeComps} - Sleeping:{SleepingComps}))");
-                }
-
                 // Environment.CurrentManagedThreadId
 
                 if (IsServer) {

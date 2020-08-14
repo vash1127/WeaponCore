@@ -404,7 +404,6 @@ namespace WeaponCore.Support
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
-
             var idxStart = glowCount - 1;
             var idxEnd = 0;
             for (int i = idxStart; i >= idxEnd; i--)

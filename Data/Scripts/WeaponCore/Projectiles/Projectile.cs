@@ -842,13 +842,18 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.HitEffects(true);
 
             State = ProjectileState.Dead;
+
+            var detInfo = Info.AmmoDef.AreaEffect.Detonation;
+            var afInfo = Info.AmmoDef.AreaEffect;
+            var detExp = !afInfo.Explosions.NoVisuals && afInfo.AreaEffect == AreaEffectType.Explosive && detInfo.DetonateOnEnd && (!detInfo.ArmOnlyOnHit || Info.ObjectsHit > 0);
+
             if (EnableAv)
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
                 if (!Info.AvShot.Active)
                     Info.System.Session.Av.AvShotPool.Return(Info.AvShot);
-                else Info.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
+                else Info.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = detExp };
             }
             else if (Info.AmmoDef.Const.VirtualBeams)
             {
@@ -857,7 +862,7 @@ namespace WeaponCore.Projectiles
                     var vp = VrPros[i];
                     if (!vp.AvShot.Active)
                         Info.System.Session.Av.AvShotPool.Return(vp.AvShot);
-                    else vp.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = Info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && Info.AvShot.FakeExplosion };
+                    else vp.AvShot.EndState = new AvClose { EndPos = Position, Dirty = true, DetonateFakeExp = detExp };
 
                     Info.System.Session.Projectiles.VirtInfoPool.Return(vp);
                 }

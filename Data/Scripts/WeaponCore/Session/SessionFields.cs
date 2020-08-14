@@ -243,8 +243,6 @@ namespace WeaponCore
         internal string ServerVersion;
         internal object InitObj = new object();
 
-        internal int SleepingComps;
-        internal int AwakeComps;
         internal int WeaponIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;
@@ -311,7 +309,7 @@ namespace WeaponCore
         internal bool ClientCheck;
         internal bool DbUpdating;
         internal bool InventoryUpdate;
-
+        internal bool SleepFeature;
         internal enum AnimationType
         {
             Movement,
