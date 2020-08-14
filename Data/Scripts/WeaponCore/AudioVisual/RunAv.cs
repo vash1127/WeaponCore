@@ -138,7 +138,7 @@ namespace WeaponCore.Support
                         else av.TravelEmitter.SetPosition(av.TracerFront);
                     }
 
-                    if (av.HitParticle == AvShot.ParticleState.Custom && false) 
+                    if (av.HitParticle == AvShot.ParticleState.Custom) 
                     {
                         if (av.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart) Log.Line($"Custom explosion 1");
                         av.HitParticle = AvShot.ParticleState.Dirty;
