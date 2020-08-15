@@ -255,10 +255,12 @@ namespace WeaponCore.Projectiles
 
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
-            if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
-                StaticEntCheck();
-            else if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr)
+            if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) {
                 LinePlanetCheck = true;
+                PruneQuery = MyEntityQueryType.Both;
+            }
+            else if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
+                StaticEntCheck();
 
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
@@ -329,12 +331,12 @@ namespace WeaponCore.Projectiles
                 var ai = Info.Ai;
                 LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
                 var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory), Info.MaxTrajectory);
-
                 for (int i = 0; i < ai.StaticsInRange.Count; i++)
                 {
                     var staticEnt = ai.StaticsInRange[i];
                     var voxel = staticEnt as MyVoxelBase;
                     var grid = staticEnt as MyCubeGrid;
+
                     if (voxel == null && grid == null || grid != null && (grid.Physics == null || grid.Physics.IsPhantom || grid.IsPreview))
                         continue;
 
@@ -342,7 +344,7 @@ namespace WeaponCore.Projectiles
                     var box = staticEnt.PositionComp.LocalAABB;
                     var obb = new MyOrientedBoundingBoxD(box, transform);
 
-                    if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
+                    if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) != ContainmentType.Disjoint)
                     {
                         if (voxel != null && voxel == voxel.RootVoxel)
                         {
@@ -802,7 +804,7 @@ namespace WeaponCore.Projectiles
         {
             if (State == ProjectileState.Destroy)
             {
-                Info.Hit = new Hit { Block = null, Entity = null, SurfaceHit = Position, LastHit = Position, HitVelocity = Velocity, HitTick = Info.System.Session.Tick };
+                Info.Hit = new Hit { Block = null, Entity = null, SurfaceHit = Position, LastHit = Position, HitVelocity = Info.InPlanetGravity ? Velocity * 0.33f : Velocity, HitTick = Info.System.Session.Tick };
                 if (EnableAv || Info.AmmoDef.Const.VirtualBeams)
                 {
                     Info.AvShot.ForceHitParticle = true;

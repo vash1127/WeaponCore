@@ -480,6 +480,7 @@ namespace WeaponCore.Support
         public readonly bool FeelsGravity;
         public readonly bool MaxTrajectoryGrows;
         public readonly bool HasShotFade;
+        public readonly bool CustomExplosionSound;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -557,7 +558,7 @@ namespace WeaponCore.Support
             AmmoParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Ammo.Name);
             HitParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AmmoGraphics.Particles.Hit.Name);
             FieldParticle = !string.IsNullOrEmpty(ammo.AmmoDef.AreaEffect.Pulse.Particle.Name);
-            
+            CustomExplosionSound = !string.IsNullOrEmpty(ammo.AmmoDef.AreaEffect.Explosions.CustomSound);
             DrawLine = ammo.AmmoDef.AmmoGraphics.Lines.Tracer.Enable;
             LineColorVariance = ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.Start > 0 && ammo.AmmoDef.AmmoGraphics.Lines.ColorVariance.End > 0;
             LineWidthVariance = ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.Start > 0 || ammo.AmmoDef.AmmoGraphics.Lines.WidthVariance.End > 0;

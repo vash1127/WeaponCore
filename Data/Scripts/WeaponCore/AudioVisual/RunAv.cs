@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
-using VRage.Game.Components;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-using WeaponCore.Support;
 
 namespace WeaponCore.Support
 {
@@ -140,16 +135,13 @@ namespace WeaponCore.Support
 
                     if (av.HitParticle == AvShot.ParticleState.Custom) 
                     {
-                        if (av.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart) Log.Line($"Custom explosion 1");
                         av.HitParticle = AvShot.ParticleState.Dirty;
                         if (av.OnScreen != AvShot.Screen.None) {
                             var pos = av.Hit.HitTick == Session.Tick && !MyUtils.IsZero(av.Hit.SurfaceHit) ? av.Hit.SurfaceHit : av.TracerFront;
                             var matrix = MatrixD.CreateTranslation(pos);
-                            if (av.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart) Log.Line($"Custom explosion 2");
 
                             MyParticleEffect hitEffect;
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
-                                if (av.AmmoDef.Trajectory.Guidance == WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType.Smart) Log.Line($"Custom explosion 3");
 
                                 hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
                                 var scaler = 1;
@@ -546,6 +538,11 @@ namespace WeaponCore.Support
                 }
                 catch (Exception ex) { Log.Line($"Exception in RunAvBarrels2: {ex} weapon:{weapon.System.WeaponName} - particleName:{weapon.System.Values.HardPoint.Graphics.Barrel2.Name} - aiNull:{weapon.Comp.Ai == null}"); }
             }
+        }
+        internal void ReturnSoundPair(object o)
+        {
+            var pair = (MySoundPair)o;
+            Session.SoundPairs.Push(pair);
         }
     }
 

@@ -264,6 +264,14 @@ namespace WeaponCore.Support
             else eFlags = MyExplosionFlags.CREATE_DECALS;
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
+
+            MySoundPair customSound = null;
+            if (ammoDef.Const.CustomExplosionSound && !eInfo.NoSound) {
+                customSound = session.SoundPairs.Count > 0 ? session.SoundPairs.Pop() : new MySoundPair();
+                customSound.Init(eInfo.CustomSound, false);
+                session.FutureEvents.Schedule(session.Av.ReturnSoundPair, customSound, 1800);
+            }
+
             MyExplosionInfo explosionInfo = new MyExplosionInfo
             {
                 PlayerDamage = 0.0f,
@@ -283,6 +291,7 @@ namespace WeaponCore.Support
                 CustomEffect = eInfo.CustomParticle,
                 CreateParticleEffect = drawParticles,
                 Velocity = velocity,
+                CustomSound = customSound,
             };
             if (hitEnt?.Physics != null)
                 explosionInfo.Velocity = hitEnt.Physics.LinearVelocity;

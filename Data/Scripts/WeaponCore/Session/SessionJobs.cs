@@ -148,7 +148,6 @@ namespace WeaponCore
                         if (ai.NearByShieldsTmp.Count > 0)
                             ai.NearByShield();
 
-                        if (ai.PlanetSurfaceInRange) ai.StaticsInRangeTmp.Add(ai.MyPlanet);
                         ai.StaticsInRange.Clear();
                         ai.StaticsInRange.AddRange(ai.StaticsInRangeTmp);
                         ai.StaticsInRangeTmp.Clear();

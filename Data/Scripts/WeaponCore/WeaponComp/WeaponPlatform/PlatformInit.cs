@@ -61,9 +61,9 @@ namespace WeaponCore.Platform
         internal PlatformState Init(WeaponComponent comp)
         {
 
-            if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose) {
+            if (comp.MyCube.MarkedForClose) {
                 State = PlatformState.Invalid;
-                Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) closed, init platform invalid, I am crashing now Dave.");
+                Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) markedForClose, init platform invalid, I am crashing now Dave.");
                 return State;
             }
             
