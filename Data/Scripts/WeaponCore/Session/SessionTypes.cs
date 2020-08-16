@@ -791,6 +791,13 @@ namespace WeaponCore
             }
 
         }
+
+        internal struct BlockDamage
+        {
+            internal float DirectModifer;
+            internal float AreaModifer;
+        }
+
         public class WeaponAmmoMoveRequest
         {
             public Weapon Weapon;

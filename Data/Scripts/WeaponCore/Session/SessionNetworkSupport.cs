@@ -405,7 +405,7 @@ namespace WeaponCore
             else Log.Line("SendPlayerConnectionUpdate should only be called on server");
         }
 
-        internal void SendServerVersion(ulong id)
+        internal void SendServerStartup(ulong id)
         {
             if (IsServer)
             {
@@ -413,12 +413,13 @@ namespace WeaponCore
                 {
                     Entity = null,
                     SingleClient = true,
-                    Packet = new ServerVersionPacket
+                    Packet = new ServerPacket
                     {
                         EntityId = 0,
                         SenderId = id,
-                        PType = PacketType.ServerVersion,
-                        Data = ModContext.ModName,
+                        PType = PacketType.ServerData,
+                        VersionString = ModContext.ModName,
+                        Data = Settings.Enforcement,
                     }
                 });
             }

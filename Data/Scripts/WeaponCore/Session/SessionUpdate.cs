@@ -1,11 +1,9 @@
-﻿using System;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
 using VRage.Game;
-using Sandbox.Game.Entities;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.ShootActions;
@@ -44,7 +42,7 @@ namespace WeaponCore
                 if (ai.UpdatePowerSources || !ai.HadPower && ai.MyGrid.IsPowered || ai.HasPower && !ai.MyGrid.IsPowered || Tick10)
                     ai.UpdateGridPower();
 
-                if (!ai.HasPower || SleepFeature && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
+                if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
                 if (IsServer && ai.ScanBlockGroups)
@@ -93,7 +91,6 @@ namespace WeaponCore
                         comp.InputState = DefaultInputStateData;
                     var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.ManualControl && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
-
                     ///
                     /// Weapon update section
                     ///
@@ -406,6 +403,7 @@ namespace WeaponCore
                     AcqManager.Monitor(w.Acquire);
 
                 var acquire = (w.Acquire.IsSleeping && AsleepCount == w.Acquire.SlotId || !w.Acquire.IsSleeping && AwakeCount == w.Acquire.SlotId);
+
                 var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && w.Comp.Ai.CheckProjectiles;
                 var checkTime = w.Target.TargetChanged || acquire || seekProjectile;
 
@@ -482,11 +480,6 @@ namespace WeaponCore
                 }
 
                 w.Shoot();
-
-                if (MpActive && IsServer && Tick - w.LastSyncTick > ResyncMinDelayTicks)
-                {
-                   // w.SendTarget();
-                }
             }
             ShootingWeapons.Clear();
         }

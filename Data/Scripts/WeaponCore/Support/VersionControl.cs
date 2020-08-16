@@ -1,64 +1,87 @@
 ﻿using System.IO;
 using Sandbox.ModAPI;
+using VRage.Game.VisualScripting;
+using VRage.Input;
 using WeaponCore.Support;
-namespace WeaponCore.Support
+
+namespace WeaponCore.Settings
 {
     internal class VersionControl
     {
-        public static void PrepConfigFile(Session session)
+        public CoreSettings Core;
+        public VersionControl(CoreSettings core)
         {
-            return;
-            const int version = 1;
-            const int debug = 0;
-            const int disableWeaponGridLimits = 0;
+            Core = core;
+        }
 
-            var dsCfgExists = MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg");
-            if (dsCfgExists)
-            {
-                var unPackCfg = MyAPIGateway.Utilities.ReadFileInGlobalStorage("WeaponCore.cfg");
-                var unPackedData = MyAPIGateway.Utilities.SerializeFromXML<Enforcements>(unPackCfg.ReadToEnd());
+        public void InitSettings()
+        {
+            if (MyAPIGateway.Utilities.FileExistsInGlobalStorage(Session.ClientCfgName)) {
+                
+                var writer = MyAPIGateway.Utilities.ReadFileInGlobalStorage(Session.ClientCfgName);
+                var xmlData = MyAPIGateway.Utilities.SerializeFromXML<CoreSettings.ClientSettings>(writer.ReadToEnd());
+                writer.Dispose();
 
-                if (unPackedData.Enforcement.Version == version) return;
-
-                session.Enforced.Enforcement.Debug = !unPackedData.Enforcement.Debug.Equals(-1) ? unPackedData.Enforcement.Debug : debug;
-                session.Enforced.Enforcement.DisableWeaponGridLimits = !unPackedData.Enforcement.DisableWeaponGridLimits.Equals(-1) ? unPackedData.Enforcement.DisableWeaponGridLimits : disableWeaponGridLimits;
-                if (unPackedData.Enforcement.Version < 1)
-                {
+                if (xmlData?.Version == Session.ClientCfgVersion) {
+                    Core.ClientConfig = xmlData;
+                    Core.Session.UiInput.ActionKey = Core.Session.KeyMap[xmlData.ActionButton];
+                    Core.Session.UiInput.MouseKey = Core.Session.MouseMap[xmlData.MenuButton];
                 }
-                session.Enforced.Enforcement.Version = version;
-                UpdateConfigFile(session, unPackCfg);
+                else
+                    WriteNewClientCfg();
             }
-            else
-            {
-                session.Enforced.Enforcement.Version = version;
-                session.Enforced.Enforcement.Debug = debug;
+            else WriteNewClientCfg();
 
-                WriteNewConfigFile(session);
+            if (Core.Session.IsServer) {
+                if (MyAPIGateway.Utilities.FileExistsInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings))) {
 
-                Log.Line($"wrote new config file - file exists: {MyAPIGateway.Utilities.FileExistsInGlobalStorage("DefenseShields.cfg")}");
+                    var writer = MyAPIGateway.Utilities.ReadFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings)); 
+                    var xmlData = MyAPIGateway.Utilities.SerializeFromXML<CoreSettings.ServerSettings>(writer.ReadToEnd());
+                    writer.Dispose();
+
+                    if (xmlData?.Version == Session.ServerCfgVersion) {
+                        Core.Enforcement = xmlData;
+                        if (Core.Enforcement.AreaDamageModifer < 0)
+                            Core.Enforcement.AreaDamageModifer = 1f;
+                        if (Core.Enforcement.DirectDamageModifer < 0)
+                            Core.Enforcement.DirectDamageModifer = 1f;
+                    }
+                    else
+                        WriteNewServerCfg();
+                }
+                else WriteNewServerCfg();
             }
         }
 
-        private static void UpdateConfigFile(Session session, TextReader unPackCfg)
+        public void UpdateClientEnforcements(CoreSettings.ServerSettings data)
         {
-            unPackCfg.Close();
-            unPackCfg.Dispose();
-            MyAPIGateway.Utilities.DeleteFileInGlobalStorage("WeaponCore.cfg");
-            var newCfg = MyAPIGateway.Utilities.WriteFileInGlobalStorage("WeaponCore.cfg");
-            var newData = MyAPIGateway.Utilities.SerializeToXML(session.Enforced);
-            newCfg.Write(newData);
-            newCfg.Flush();
-            newCfg.Close();
-            Log.Line($"wrote modified config file - file exists: {MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg")}");
+            Core.Enforcement = data;
+            Core.ClientWaiting = false;
         }
 
-        private static void WriteNewConfigFile(Session session)
+        private void WriteNewServerCfg()
         {
-            var cfg = MyAPIGateway.Utilities.WriteFileInGlobalStorage("WeaponCore.cfg");
-            var data = MyAPIGateway.Utilities.SerializeToXML(session.Enforced);
-            cfg.Write(data);
-            cfg.Flush();
-            cfg.Close();
+            MyAPIGateway.Utilities.DeleteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
+            Core.Enforcement = new CoreSettings.ServerSettings {Version = Session.ServerCfgVersion};
+            var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
+            var data = MyAPIGateway.Utilities.SerializeToXML(Core.Enforcement);
+            Write(writer, data);
+        }
+
+        private void WriteNewClientCfg()
+        {
+            MyAPIGateway.Utilities.DeleteFileInGlobalStorage(Session.ClientCfgName);
+            Core.ClientConfig = new CoreSettings.ClientSettings {Version = Session.ClientCfgVersion};
+            var writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage(Session.ClientCfgName);
+            var data = MyAPIGateway.Utilities.SerializeToXML(Core.ClientConfig);
+            Write(writer, data);
+        }
+
+        private static void Write(TextWriter writer, string data)
+        {
+            writer.Write(data);
+            writer.Flush();
+            writer.Dispose();
         }
     }
 }

@@ -87,6 +87,7 @@ namespace WeaponCore.Projectiles
         internal bool WasTracking;
         internal bool UseEntityCache;
         internal bool Intersecting;
+        internal bool FinalizeIntersection;
         internal bool SphereCheck;
         internal bool LineCheck;
         internal enum CheckTypes
@@ -140,7 +141,6 @@ namespace WeaponCore.Projectiles
             HadTarget = false;
             WasTracking = false;
             Intersecting = false;
-
 
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;

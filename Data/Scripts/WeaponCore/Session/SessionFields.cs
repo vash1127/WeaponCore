@@ -10,6 +10,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Input;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRage.Voxels;
@@ -18,6 +19,7 @@ using WeaponCore.Api;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using WeaponCore.Settings;
 using static WeaponCore.Support.GridAi;
 using Task = ParallelTasks.Task;
 
@@ -35,7 +37,10 @@ namespace WeaponCore
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
-
+        internal const int ServerCfgVersion = 0;
+        internal const int ClientCfgVersion = 0;
+        internal const string ServerCfgName = "WeaponCoreServer.cfg";
+        internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
         internal volatile bool TurretControls;
         internal volatile bool FixedMissileControls;
@@ -102,7 +107,8 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
-        
+
+        internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
@@ -121,7 +127,9 @@ namespace WeaponCore
         internal readonly Dictionary<ulong, uint[]> PlayerMIds = new Dictionary<ulong, uint[]>();
         internal readonly Dictionary<object, PacketInfo> PrunedPacketsToClient = new Dictionary<object, PacketInfo>();
         internal readonly Dictionary<long, WeaponComponent> IdToCompMap = new Dictionary<long, WeaponComponent>();
-        internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>(); 
+        internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>();
+        internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
+        internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
 
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
@@ -223,7 +231,7 @@ namespace WeaponCore
         internal Wheel Wheel;
         internal TargetUi TargetUi;
         internal Hud HudUi;
-        internal Enforcements Enforced;
+        internal CoreSettings Settings;
         internal TerminalMonitor TerminalMon;
         internal ProblemReport ProblemRep;
 
@@ -309,7 +317,9 @@ namespace WeaponCore
         internal bool ClientCheck;
         internal bool DbUpdating;
         internal bool InventoryUpdate;
-        internal bool SleepFeature;
+        internal bool GlobalDamageModifed;
+
+
         internal enum AnimationType
         {
             Movement,

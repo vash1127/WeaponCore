@@ -106,7 +106,7 @@ namespace WeaponCore
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             info.ObjectsHit++;
 
-            var damageScale = 1;
+            var damageScale = 1 * Settings.Enforcement.DirectDamageModifer;
             var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
             if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             var damageType = info.AmmoDef.DamageScales.Shields.Type;
@@ -116,15 +116,15 @@ namespace WeaponCore
 
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
-            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f) : 0;
-            var scaledDamage = (((info.BaseDamagePool * damageScale) + areaDamage) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod;
+            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * Settings.Enforcement.AreaDamageModifer : 0;
+            var scaledDamage = ((((info.BaseDamagePool * damageScale) + areaDamage) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod) ;
             if (fallOff)
             {
                 var fallOffMultipler = MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
             
-            var detonateDamage = detonateOnEnd ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier : 0;
+            var detonateDamage = detonateOnEnd ? ((areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * Settings.Enforcement.AreaDamageModifer : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
@@ -191,6 +191,8 @@ namespace WeaponCore
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var minAoeOffset = largeGrid ? 1.25 : 0.5f;
             var gridMatrix = grid.PositionComp.WorldMatrixRef;
+            var directDmgGlobal = Settings.Enforcement.DirectDamageModifer;
+            var areaDmgGlobal = Settings.Enforcement.AreaDamageModifer;
 
             var fallOff = t.AmmoDef.Const.FallOffScaling && t.DistanceTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
@@ -198,12 +200,13 @@ namespace WeaponCore
                 fallOffMultipler = (float) MathHelperD.Clamp(1.0 - ((t.DistanceTraveled - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
             
             var damagePool = t.BaseDamagePool;
+            int hits = 1;
             if (t.AmmoDef.Const.VirtualBeams)
             {
-                var hits = t.WeaponCache.Hits;
-                damagePool *= hits;
+                hits = t.WeaponCache.Hits;
                 areaEffectDmg *= hits;
             }
+            
             var objectsHit = t.ObjectsHit;
             var countBlocksAsObjects = t.AmmoDef.ObjectsHit.CountBlocks;
 
@@ -258,8 +261,10 @@ namespace WeaponCore
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
                     var blockHp = !IsClient ? block.Integrity : _slimHealthClient.ContainsKey(block) ? _slimHealthClient[block] : block.Integrity;
-                    float damageScale = 1;
-
+                    float damageScale = hits;
+                    float directDamageScale = directDmgGlobal;
+                    float areaDamageScale = areaDmgGlobal;
+                    float detDamageScale = areaDmgGlobal;
                     if (t.AmmoDef.Const.DamageScaling)
                     {
                         var d = t.AmmoDef.DamageScales;
@@ -297,6 +302,18 @@ namespace WeaponCore
                             if (found) damageScale *= modifier;
                             else if (t.AmmoDef.DamageScales.Custom.IgnoreAllOthers) continue;
                         }
+                        if (GlobalDamageModifed)
+                        {
+                            if (blockDef == null) blockDef = block.BlockDefinition;
+                            BlockDamage modifier;
+                            var found = BlockDamageMap.TryGetValue(blockDef, out modifier);
+
+                            if (found) {
+                                directDamageScale *= modifier.DirectModifer;
+                                areaDamageScale *= modifier.AreaModifer;
+                            }
+                        }
+
                         if (fallOff)
                             damageScale *= fallOffMultipler;
                     }
@@ -310,7 +327,7 @@ namespace WeaponCore
                         break;
                     }
 
-                    var scaledDamage = damagePool * damageScale;
+                    var scaledDamage = (damagePool * damageScale) * directDamageScale;
                     if (primaryDamage)
                     {
                         if (countBlocksAsObjects) objectsHit++;
@@ -335,7 +352,7 @@ namespace WeaponCore
                     }
                     else
                     {
-                        scaledDamage = areaEffectDmg * damageScale;
+                        scaledDamage = (areaEffectDmg  * damageScale) * areaDamageScale;
                         if (scaledDamage >= blockHp)
                         {
                             destroyed++;
@@ -370,9 +387,9 @@ namespace WeaponCore
                         var aoeOffset = Math.Min(areaRadius * 0.5f, travelOffset);
                         var expOffsetClamp = MathHelperD.Clamp(aoeOffset, minAoeOffset, 2f);
                         var blastCenter = hitEnt.HitPos.Value + (-hitEnt.Intersection.Direction * expOffsetClamp);
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg * damageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                        if ((areaEffectDmg * areaDamageScale) > 0) SUtils.CreateMissileExplosion(this, (areaEffectDmg  * damageScale) * areaDamageScale, areaRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                         if (detonateOnEnd && theEnd)
-                         SUtils.CreateMissileExplosion(this, detonateDmg  * damageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
+                         SUtils.CreateMissileExplosion(this, (detonateDmg * damageScale) * detDamageScale, detonateRadius, blastCenter, hitEnt.Intersection.Direction, attacker, grid, t.AmmoDef, true);
                     }
                     else if (!nova)
                     {
@@ -391,8 +408,8 @@ namespace WeaponCore
                             var aInfo = t.AmmoDef.AreaEffect;
                             var dInfo = aInfo.Detonation;
 
-                            if (dInfo.DetonationDamage > 0) damagePool = detonateDmg;
-                            else if (aInfo.AreaEffectDamage > 0) damagePool = areaEffectDmg;
+                            if (dInfo.DetonationDamage > 0) damagePool = (detonateDmg * detDamageScale);
+                            else if (aInfo.AreaEffectDamage > 0) damagePool = (areaEffectDmg * areaDamageScale);
                             else damagePool = scaledDamage;
                             break;
                         }
@@ -456,7 +473,9 @@ namespace WeaponCore
             if (character != null && info.AmmoDef.DamageScales.Characters >= 0)
                 damageScale *= info.AmmoDef.DamageScales.Characters;
 
-            var scaledDamage = info.BaseDamagePool * damageScale;
+            var areaEffect = info.AmmoDef.AreaEffect;
+            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * Settings.Enforcement.AreaDamageModifer : 0;
+            var scaledDamage = (float)((((info.BaseDamagePool * damageScale) * Settings.Enforcement.DirectDamageModifer) + areaDamage) * info.AmmoDef.Const.ShieldBypassMod);
 
             var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
             if (fallOff)
@@ -546,7 +565,7 @@ namespace WeaponCore
                 var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Radiant;
 
                 info.ObjectsHit++;
-                float damageScale = 1;
+                float damageScale = 1 * Settings.Enforcement.DirectDamageModifer;
                 if (info.AmmoDef.Const.VirtualBeams) damageScale *= info.WeaponCache.Hits;
 
                 var scaledDamage = info.BaseDamagePool * damageScale;
@@ -585,7 +604,7 @@ namespace WeaponCore
                 {
                     var det = info.AmmoDef.AreaEffect.Detonation;
                     var dRadius = det.DetonationRadius;
-                    var dDamage = det.DetonationDamage;
+                    var dDamage = det.DetonationDamage * Settings.Enforcement.AreaDamageModifer;
 
                     //var dObjHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(dRadius)), 5000, double.MaxValue);
                     //if (dRadius > 5) dObjHp *= 5;

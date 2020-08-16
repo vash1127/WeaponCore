@@ -41,6 +41,8 @@ namespace WeaponCore
         internal LineD AimRay;
         private readonly Session _session;
         internal readonly InputStateData ClientInputState;
+        internal MyKeys ActionKey;
+        internal MyMouseButtonsEnum MouseKey;
 
         internal UiInput(Session session)
         {
@@ -71,7 +73,7 @@ namespace WeaponCore
                 if (MouseButtonPressed)
                 {
                     ClientInputState.MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                    ClientInputState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
+                    ClientInputState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MouseKey);
                     ClientInputState.MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
                 }
                 else
@@ -98,7 +100,7 @@ namespace WeaponCore
 
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
-                ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.R);
+                ActionKeyReleased = MyAPIGateway.Input.IsNewKeyReleased(ActionKey);
 
                 if (ShiftPressed)
                 {
@@ -130,7 +132,7 @@ namespace WeaponCore
             else if (!s.InMenu && !s.Wheel.WheelActive)
             {
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
-                ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.R);
+                ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
 
                 if (CtrlPressed && ActionKeyPressed && GetAimRay(s, out AimRay) && Debug)
                 {

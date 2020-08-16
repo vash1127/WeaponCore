@@ -63,7 +63,7 @@
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiComp\AiCompRun.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileStart.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileTypes.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\Enforcements.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\CoreSettings.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSMethods.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkCMethods.cs" />

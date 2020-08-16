@@ -199,10 +199,38 @@ namespace WeaponCore.Support
             if (AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && System.Session.AvShotCache.TryGetValue(info.UniqueMuzzleId, out infoCache))
                 UpdateCache(infoCache);
         }
+        static void ShellSort(List<DeferedAv> list)
+        {
+            int length = list.Count;
+
+            for (int h = length / 2; h > 0; h /= 2)
+            {
+                for (int i = h; i < length; i += 1)
+                {
+                    var tempValue = list[i];
+                    var temp = Vector3D.DistanceSquared(tempValue.TracerFront, tempValue.AvShot.System.Session.CameraPos);
+
+                    int j;
+                    for (j = i; j >= h && Vector3D.DistanceSquared(list[j - h].TracerFront, tempValue.AvShot.System.Session.CameraPos) > temp; j -= h)
+                    {
+                        list[j] = list[j - h];
+                    }
+
+                    list[j] = tempValue;
+                }
+            }
+        }
 
         internal static void DeferedAvStateUpdates(Session s)
         {
-            for (int x = 0; x < s.Projectiles.DeferedAvDraw.Count; x++)
+            var drawCnt = s.Projectiles.DeferedAvDraw.Count;
+            var maxDrawCnt = s.Settings.ClientConfig.ClientOptimizations ? s.Settings.ClientConfig.MaxProjectiles : int.MaxValue;
+            if (drawCnt > maxDrawCnt)
+                ShellSort(s.Projectiles.DeferedAvDraw);
+
+            int onScreenCnt = 0;
+
+            for (int x = 0; x < drawCnt; x++)
             {
                 var d = s.Projectiles.DeferedAvDraw[x];
                 var a = d.AvShot;
@@ -272,6 +300,11 @@ namespace WeaponCore.Support
                         a.OnScreen = Screen.InProximity;
                     else if (Vector3D.DistanceSquared(a.TracerFront, s.CameraPos) <= 225)
                         a.OnScreen = Screen.InProximity;
+                }
+
+                if (maxDrawCnt > 0) {
+                    if (a.OnScreen != Screen.None && ++onScreenCnt > maxDrawCnt)
+                        a.OnScreen = Screen.None;
                 }
 
                 if (a.MuzzleId == -1)

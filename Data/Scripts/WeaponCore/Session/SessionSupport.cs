@@ -13,9 +13,6 @@ using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
 using Sandbox.Definitions;
-using Sandbox.Game.Entities.Cube;
-using System.Collections.Concurrent;
-using VRage.Collections;
 
 namespace WeaponCore
 {
@@ -365,10 +362,14 @@ namespace WeaponCore
         internal void RotatingWeapons()
         {
             RotateWeapons.ApplyAdditions();
-            MyAPIGateway.Parallel.For(0, RotateWeapons.Count, i => {
+            var rotCount = RotateWeapons.Count;
+            var minCount = Settings.Enforcement.ServerOptimizations ? 192 : 99999;
+            var stride = rotCount < minCount ? 100000 : 96;
+            MyAPIGateway.Parallel.For(0, rotCount, i => {
 
                 var w = RotateWeapons[i];
-                if (w.LastRotateTick != Tick) {
+
+                if (Tick - w.LastRotateTick > 100) {
                     RotateWeapons.Remove(w);
                     return;
                 }
@@ -379,7 +380,6 @@ namespace WeaponCore
                 if (w.AiOnlyWeapon) {
 
                     if (w.AzimuthTick == Tick && w.System.TurretMovement == WeaponSystem.TurretType.Full || w.System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
-                        //var azRotMatrix = Matrix.CreateFromAxisAngle(w.AzimuthPart.RotationAxis, (float)w.Azimuth);
                         Matrix azRotMatrix;
                         Matrix.CreateFromAxisAngle(ref w.AzimuthPart.RotationAxis, (float)w.Azimuth, out azRotMatrix);
                         
@@ -389,12 +389,10 @@ namespace WeaponCore
 
                     if (w.ElevationTick == Tick && (w.System.TurretMovement == WeaponSystem.TurretType.Full || w.System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
 
-                        //var elRotMatrix = Matrix.CreateFromAxisAngle(w.ElevationPart.RotationAxis, -(float)w.Elevation);
                         Matrix elRotMatrix;
                         Matrix.CreateFromAxisAngle(ref w.ElevationPart.RotationAxis, -(float)w.Elevation, out elRotMatrix);
                         
                         elRotMatrix.Translation = w.ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
-
                         w.ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
                     }
                 }
@@ -405,7 +403,7 @@ namespace WeaponCore
                     if (w.AzimuthTick == Tick)
                         w.Comp.TurretBase.Azimuth = (float)w.Azimuth;
                 }
-            });
+            }, stride);
             RotateWeapons.ApplyRemovals();
         }
 

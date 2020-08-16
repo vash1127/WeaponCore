@@ -149,21 +149,6 @@ namespace WeaponCore.Support
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
                                 hitEffect.UserScale = scale * scaler;
                                 hitEffect.Velocity = av.Hit.HitVelocity;
-                                /*
-                                if (!MyUtils.IsZero(av.Hit.HitVelocity, 1E-01F))
-                                {
-                                    var hitVel = av.Hit.HitVelocity;
-                                    Vector3D.ClampToSphere(ref hitVel, (float)av.MaxSpeed);
-                                    var keenMess = KeenMessPool.Get();
-                                    keenMess.Effect = hitEffect;
-                                    keenMess.AmmoDef = av.AmmoDef;
-                                    keenMess.Velocity = hitVel;
-                                    keenMess.LastTick = Session.Tick;
-                                    keenMess.Looping = false;
-
-                                    KeensBrokenParticles.Add(keenMess);
-                                }
-                                */
                             }
                         }
                     }

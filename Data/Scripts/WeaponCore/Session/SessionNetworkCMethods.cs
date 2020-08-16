@@ -319,13 +319,15 @@ namespace WeaponCore
             return true;
         }
 
-        private bool ClientServerVersion(PacketObj data)
+        private bool ClientServerData(PacketObj data)
         {
             var packet = data.Packet;
-            var updatePacket = (ServerVersionPacket)packet;
+            var updatePacket = (ServerPacket)packet;
 
-            ServerVersion = updatePacket.Data;
+            ServerVersion = updatePacket.VersionString;
+            Settings.VersionControl.UpdateClientEnforcements(updatePacket.Data);
             data.Report.PacketValid = true;
+            Log.Line($"Server enforcement received");
             return true;
         }
 

@@ -248,7 +248,7 @@ namespace WeaponCore
             DsUtil = null;
             DsUtil2 = null;
             SlimsSortedList = null;
-            Enforced = null;
+            Settings = null;
             StallReporter = null;
             TerminalMon = null;
             Physics = null;

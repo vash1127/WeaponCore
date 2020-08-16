@@ -17,7 +17,8 @@ namespace WeaponCore.Support
     internal class ProInfo
     {
         internal readonly Target Target = new Target(null, true);
-        internal readonly List<HitEntity> HitList = new List<HitEntity>();
+        internal readonly List<HitEntity> HitList = new List<HitEntity>(4);
+
         internal AvShot AvShot;
         internal WeaponSystem System;
         internal GridAi Ai;
@@ -95,7 +96,6 @@ namespace WeaponCore.Support
         {
             Target.Reset(System.Session.Tick, Target.States.ProjectileClosed);
             HitList.Clear();
-
             if (IsShrapnel)
             {
                 if (VoxelCache != null && System.Session != null)
@@ -154,6 +154,22 @@ namespace WeaponCore.Support
         }
     }
 
+    internal struct DeferedVoxels
+    {
+        internal enum VoxelIntersectBranch
+        {
+            None,
+            DeferedMissUpdate,
+            DeferFullCheck,
+            PseudoHit1,
+            PseudoHit2,
+        }
+
+        internal Projectile Projectile;
+        internal MyVoxelBase Voxel;
+        internal VoxelIntersectBranch Branch;
+    }
+
     internal class HitEntity
     {
         internal enum Type
@@ -168,8 +184,9 @@ namespace WeaponCore.Support
             Effect,
         }
 
-        public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
-        public readonly List<Vector3I> Vector3ICache = new List<Vector3I>();
+        public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>(16);
+        public readonly List<Vector3I> Vector3ICache = new List<Vector3I>(16);
+
         public MyEntity Entity;
         internal Projectile Projectile;
         public ProInfo Info;

@@ -91,9 +91,9 @@ namespace WeaponCore
                             ClientPlayerIdUpdate(packetObj); 
                             break;
                     }
-                    case PacketType.ServerVersion:
+                    case PacketType.ServerData:
                     {
-                        ClientServerVersion(packetObj);
+                        ClientServerData(packetObj);
                         break;
                     }
                     case PacketType.ClientMouseEvent: 

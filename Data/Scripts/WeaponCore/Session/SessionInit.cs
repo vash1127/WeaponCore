@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.Entities.Blocks;
 using VRage;
 using VRage.Game;
+using VRage.Input;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Settings;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -22,7 +25,6 @@ namespace WeaponCore
             IsCreative = MyAPIGateway.Session.CreativeMode;
             IsClient = !IsServer && !DedicatedServer && MpActive;
             HandlesInput = !IsServer || IsServer && !DedicatedServer;
-
             if (IsServer || DedicatedServer)
                 MyAPIGateway.Multiplayer.RegisterMessageHandler(ServerPacketId, ProccessServerPacket);
             else
@@ -62,13 +64,47 @@ namespace WeaponCore
             CheckDirtyGrids();
 
             ApiServer.Load();
+            GenerateButtonMap();
+            Settings = new CoreSettings(this);
 
-            if (!IsClient) Enforced = new Enforcements(this);
-            else
-            {
-                //Client enforcement request
-            }
             LocalVersion = ModContext.ModId == "WeaponCore";
+        }
+
+        internal void GenerateBlockDmgMap()
+        {
+            if (Settings.Enforcement.BlockModifers == null)
+                return;
+
+            foreach (var def in AllDefinitions) {
+                foreach (var blockModifer in Settings.Enforcement.BlockModifers) {
+                    if ((blockModifer.AreaDamageModifer >= 0 || blockModifer.DirectDamageModifer >= 0) && def.Id.SubtypeId.String == blockModifer.SubTypeId) {
+                        GlobalDamageModifed = true;
+                        BlockDamageMap[def] = new BlockDamage { DirectModifer = blockModifer.DirectDamageModifer >= 0 ? blockModifer.DirectDamageModifer : 1, AreaModifer = blockModifer.AreaDamageModifer >= 0 ? blockModifer.AreaDamageModifer : 1};
+                    }
+                }
+            }
+        }
+
+        internal void GenerateButtonMap()
+        {
+            var ieKeys = Enum.GetValues(typeof(MyKeys)).Cast<MyKeys>();
+            var keys = ieKeys as MyKeys[] ?? ieKeys.ToArray();
+            var kLength = keys.Length;
+            for (int i = 0; i < kLength; i++)
+            {
+                var key = keys[i];
+                 KeyMap[key.ToString()] = key;
+            }
+
+            var ieButtons = Enum.GetValues(typeof(MyMouseButtonsEnum)).Cast<MyMouseButtonsEnum>();
+            var buttons = ieButtons as MyMouseButtonsEnum[] ?? ieButtons.ToArray();
+
+            var bLength = buttons.Length;
+            for (int i = 0; i < bLength; i++)
+            {
+                var button = buttons[i];
+                MouseMap[button.ToString()] = button;
+            }
         }
 
         internal void Init()

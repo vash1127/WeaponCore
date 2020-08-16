@@ -281,7 +281,7 @@ namespace WeaponCore
 
                 if (IsServer && MpActive)  {
                     SendPlayerConnectionUpdate(id, true);
-                    SendServerVersion(player.SteamUserId);
+                    SendServerStartup(player.SteamUserId);
                 }
             }
             return false;

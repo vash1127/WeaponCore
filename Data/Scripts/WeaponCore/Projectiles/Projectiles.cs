@@ -28,13 +28,15 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
         internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32, hitEnt => hitEnt.Clean());
 
+        internal readonly ConcurrentCachingList<Projectile> FinalHitCheck = new ConcurrentCachingList<Projectile>(128);
+        internal readonly ConcurrentCachingList<Projectile> ValidateHits = new ConcurrentCachingList<Projectile>(128);
+        internal readonly ConcurrentCachingList<DeferedVoxels> DeferedVoxels = new ConcurrentCachingList<DeferedVoxels>(128);
         internal readonly List<Projectile> AddTargets = new List<Projectile>();
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
-        internal readonly ConcurrentCachingList<Projectile> ValidateHits = new ConcurrentCachingList<Projectile>(128);
-        internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
         internal readonly List<Projectile> ActiveProjetiles = new List<Projectile>(2048);
         internal readonly List<DeferedAv> DeferedAvDraw = new List<DeferedAv>(256);
         internal readonly List<NewProjectile> NewProjectiles = new List<NewProjectile>(256);
+        internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
 
         internal ulong CurrentProjectileId;
 
@@ -73,7 +75,12 @@ namespace WeaponCore.Projectiles
             Session.StallReporter.End();
 
             Session.StallReporter.Start($"ConfirmHit: {ValidateHits.Count}", 11);
-            ConfirmHits();
+            if (!ValidateHits.IsEmpty) {
+
+                InitialHitCheck();
+                DeferedVoxelCheck();
+                FinalizeHits();
+            }
             Session.StallReporter.End();
         }
 
@@ -246,6 +253,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
                 else p.AtMaxRange = true;
+
                 if (p.Info.AmmoDef.Const.Ewar)
                     p.RunEwar();
             }
@@ -331,46 +339,23 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Radius = p.Info.AmmoDef.Const.CollisionSize;
                     }
                 }
-
-                if (p.SphereCheck)
-                {
-                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60)
-                        p.CheckForNearVoxel(60);
-
-                    if (!p.UseEntityCache)
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.MyEntityList, p.PruneQuery);
-
-                }
-                else if (p.LineCheck)
-                {
-                    if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60) p.CheckForNearVoxel(60);
-
-                    if (!p.UseEntityCache)
-                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref p.Beam, p.MySegmentList, p.PruneQuery);
-                }
-
-                p.CheckType = p.UseEntityCache && p.SphereCheck ? CheckTypes.CachedSphere : p.UseEntityCache ? CheckTypes.CachedRay : p.SphereCheck ? CheckTypes.Sphere : CheckTypes.Ray;
-
-                if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0)
-                {
-                    ValidateHits.Add(p);
-                }
             }
-            /*
-            MyAPIGateway.Parallel.For(0, ActiveProjetiles.Count, i =>
+
+            var apCount = ActiveProjetiles.Count;
+            var minCount = Session.Settings.Enforcement.ServerOptimizations ? 96 : 99999;
+            var stride = apCount < minCount ? 100000 : 48;
+
+            MyAPIGateway.Parallel.For(0, apCount, i =>
             {
                 var p = ActiveProjetiles[i];
-                if (p.SphereCheck)
-                {
+                if (p.SphereCheck) {
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60)
                         p.CheckForNearVoxel(60);
 
                     if (!p.UseEntityCache)
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.MyEntityList, p.PruneQuery);
-
                 }
-                else if (p.LineCheck)
-                {
+                else if (p.LineCheck) {
                     if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.System.Session.Tick60) p.CheckForNearVoxel(60);
 
                     if (!p.UseEntityCache)
@@ -379,12 +364,10 @@ namespace WeaponCore.Projectiles
 
                 p.CheckType = p.UseEntityCache && p.SphereCheck ? CheckTypes.CachedSphere : p.UseEntityCache ? CheckTypes.CachedRay : p.SphereCheck ? CheckTypes.Sphere : CheckTypes.Ray;
 
-                if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0)
-                {
+                if (p.Info.Target.IsProjectile || p.UseEntityCache && p.Info.Ai.NearByEntityCache.Count > 0 || p.CheckType == CheckTypes.Ray && p.MySegmentList.Count > 0 || p.CheckType == CheckTypes.Sphere && p.MyEntityList.Count > 0) {
                     ValidateHits.Add(p);
                 }
-            });
-            */
+            }, stride);
             ValidateHits.ApplyAdditions();
         }
 

@@ -112,7 +112,7 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Ai.Session.PlayerId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Ai.Session.PlayerId, false);
-            var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+            var controlStringMiddle = MyAPIGateway.Input.GetControl(Session.UiInput.MouseKey).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Ai.Session.PlayerId, false);
         }
 
@@ -124,7 +124,7 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Ai.Session.PlayerId, true);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Ai.Session.PlayerId, true);
-            var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+            var controlStringMiddle = MyAPIGateway.Input.GetControl(Session.UiInput.MouseKey).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Ai.Session.PlayerId, true);
             Session.RemoveGps();
         }

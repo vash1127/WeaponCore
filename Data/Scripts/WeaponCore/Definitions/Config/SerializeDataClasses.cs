@@ -3,6 +3,7 @@ using ProtoBuf;
 using System.Collections.Generic;
 using System.ComponentModel;
 using VRageMath;
+using WeaponCore.Settings;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent;
 using static WeaponCore.WeaponStateValues;
@@ -46,7 +47,7 @@ namespace WeaponCore
         ProblemReport,
         TerminalMonitor,
         ClientNotify,
-        ServerVersion,
+        ServerData,
         WeaponReload,
         WeaponAmmo,
         QueueShot,
@@ -75,7 +76,7 @@ namespace WeaponCore
     [ProtoInclude(23, typeof(ConstructFociPacket))]
     [ProtoInclude(24, typeof(FloatUpdatePacket))]
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
-    [ProtoInclude(26, typeof(ServerVersionPacket))]
+    [ProtoInclude(26, typeof(ServerPacket))]
     [ProtoInclude(27, typeof(WeaponReloadPacket))]
     [ProtoInclude(28, typeof(QueuedShotPacket))]
     [ProtoInclude(29, typeof(WeaponAmmoPacket))]
@@ -369,16 +370,18 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ServerVersionPacket : Packet
+    public class ServerPacket : Packet
     {
-        [ProtoMember(1)] internal string Data;
+        [ProtoMember(1)] internal CoreSettings.ServerSettings Data;
+        [ProtoMember(2)] internal string VersionString;
 
-        public ServerVersionPacket() { }
+        public ServerPacket() { }
 
         public override void CleanUp()
         {
             base.CleanUp();
-            Data = string.Empty;
+            Data = null;
+            VersionString = string.Empty;
         }
     }
 
