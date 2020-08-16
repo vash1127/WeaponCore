@@ -153,7 +153,8 @@ namespace WeaponCore.Platform
 
             if (!syncUp) {
 
-                if (Ammo.CurrentMags <= 0 && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
+                var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
+                if (Ammo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
                     if (!NoMagsToLoad) 
                         EventTriggerStateChanged(EventTriggers.NoMagsToLoad, true);
                     NoMagsToLoad = true;
@@ -229,6 +230,7 @@ namespace WeaponCore.Platform
                 return false;
 
             ++Reload.StartId;
+            ++ClientStartId;
 
             if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
@@ -307,13 +309,9 @@ namespace WeaponCore.Platform
         }
         public void ChargeReload(bool syncCharge = false)
         {
-            if (!syncCharge)
-            {
-                Ammo.CurrentAmmo = 0;
-                Comp.CurrentCharge -= Ammo.CurrentCharge;
-                Ammo.CurrentCharge = 0;
-            }
-
+            Comp.CurrentCharge -= Ammo.CurrentCharge;
+            Ammo.CurrentCharge = 0;
+            Ammo.CurrentAmmo = 0;
             Comp.Session.UniqueListAdd(this, Comp.Session.ChargingWeaponsIndexer, Comp.Session.ChargingWeapons);
 
             if (!Comp.UnlimitedPower)

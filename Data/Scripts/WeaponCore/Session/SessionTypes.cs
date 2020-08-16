@@ -394,6 +394,14 @@ namespace WeaponCore
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reloading}"); }
                     },
+                    {"StartId", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.Reload.StartId}"); }
+                    },
+                    {"ClientStartId", () => {
+                            var message = string.Empty;
+                            return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.ClientStartId}"); }
+                    },
                     {"WeaponReadyTick", () => {
                             var message = string.Empty;
                             return !TryGetValidPlatform(out TmpPlatform) ? string.Empty : TmpPlatform.Weapons.Aggregate(message, (current, w) => current + $"{w.System.Session.Tick - w.WeaponReadyTick}"); }

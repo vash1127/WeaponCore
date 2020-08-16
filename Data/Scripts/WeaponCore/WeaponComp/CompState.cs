@@ -59,8 +59,13 @@ namespace WeaponCore.Support
                 if (action == ShootActions.ShootOnce)
                     ShootOnceCheck();
 
-                if (Session.MpActive)
+                if (Session.MpActive) {
                     Session.SendCompBaseData(this);
+                    if (action == ShootActions.ShootClick || action == ShootActions.ShootOn) {
+                        foreach (var w in Platform.Weapons)
+                            Session.SendWeaponAmmoData(w);
+                    }
+                }
 
             }
             else if (action == ShootActions.ShootOnce)
