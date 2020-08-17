@@ -92,7 +92,7 @@ namespace WeaponCore
 
                 if (reAdd.Comp.Ai != null && reAdd.Comp.Entity != null) 
                     reAdd.Comp.OnAddedToSceneTasks();
-                else Log.Line($"ChangeReAdds nullSkip: Version:{reAdd.Ai.Version}({reAdd.AiVersion}) - Marked/Closed:{reAdd.Ai.MarkedForClose}({reAdd.Ai.Closed})");
+                //else Log.Line($"ChangeReAdds nullSkip: Version:{reAdd.Ai.Version}({reAdd.AiVersion}) - Marked/Closed:{reAdd.Ai.MarkedForClose}({reAdd.Ai.Closed})");
                 CompReAdds.RemoveAtFast(i);
             }
         }

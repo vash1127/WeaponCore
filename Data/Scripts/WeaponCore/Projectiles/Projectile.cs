@@ -141,11 +141,12 @@ namespace WeaponCore.Projectiles
             HadTarget = false;
             WasTracking = false;
             Intersecting = false;
-
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
             PrevEndPointToCenterSqr = double.MaxValue;
+
+
             CachedId = Info.MuzzleId == -1 ? Info.WeaponCache.VirutalId : Info.MuzzleId;
             Guidance = Info.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != GuidanceType.None && Guidance != GuidanceType.TravelTo && !Info.AmmoDef.Const.IsBeamWeapon && Info.EnableGuidance;

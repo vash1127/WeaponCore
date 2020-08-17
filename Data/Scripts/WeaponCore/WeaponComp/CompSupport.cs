@@ -48,7 +48,8 @@ namespace WeaponCore.Support
 
                     if (Ai.Data.Repo.ActiveTerminal == MyCube.EntityId)
                         Ai.Data.Repo.ActiveTerminal = 0;
-
+                    
+                    GridAi testAi;
                     WeaponComponent comp;
                     if (Ai.WeaponBase.TryRemove(MyCube, out comp)) {
                         if (Platform.State == MyWeaponPlatform.PlatformState.Ready) {
@@ -64,7 +65,7 @@ namespace WeaponCore.Support
                         }
                         Ai.CompChange(false, this);
                     }
-                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)}");
+                    else Log.Line($"RemoveComp Weaponbase didn't have my comp: {Ai.Session.CompsDelayed.Contains(this)} - FoundAi:{Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out testAi)} - sameAi:{testAi == Ai}");
 
                     if (Ai.WeaponBase.Count == 0) {
                         GridAi gridAi;

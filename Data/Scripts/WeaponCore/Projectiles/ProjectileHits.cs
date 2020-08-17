@@ -222,8 +222,7 @@ namespace WeaponCore.Projectiles
 
                                 if (!p.Info.AmmoDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2) {
                                     MyCube cube;
-                                    if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock))
-                                    {
+                                    if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock)) {
                                         HitEntityPool.Return(hitEntity);
                                         continue;
                                     }

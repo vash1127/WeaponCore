@@ -127,7 +127,7 @@ namespace WeaponCore
                     if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
                         Wheel.ForceUpdate();
                 }
-                else Log.Line($"ClientAiDataUpdate MID failure - mId:{packet.MId}");
+                else Log.Line($"ClientAiDataUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
 
                 data.Report.PacketValid = true;
             }
@@ -150,7 +150,7 @@ namespace WeaponCore
 
                 comp.Data.Repo.Base.Sync(comp, compDataPacket.Data);
             }
-            else Log.Line($"compDataSync mId failed: {packet.PType} - mId:{packet.MId}");
+            else Log.Line($"compDataSync: mid fail - senderId:{packet.SenderId} - mId:{comp.MIds[(int)packet.PType]} >= {packet.MId}");
 
             data.Report.PacketValid = true;
 
@@ -266,7 +266,7 @@ namespace WeaponCore
                     else
                         return Error(data, Msg("SteamToPlayer missing Player"));
                 }
-                else Log.Line($"ClientFakeTargetUpdate comp MID failure - mId:{packet.MId}");
+                else Log.Line($"ClientFakeTargetUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
 
                 data.Report.PacketValid = true;
             }
@@ -295,7 +295,7 @@ namespace WeaponCore
 
                     PlayerMouseStates[playerId] = mousePacket.Data;
                 }
-                else Log.Line($"ClientClientMouseEvent: mid fail - senderId:{packet.SenderId}");
+                else Log.Line($"ClientClientMouseEvent: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
 
                 data.Report.PacketValid = true;
             }

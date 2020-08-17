@@ -219,7 +219,6 @@ namespace WeaponCore.Projectiles
                         }
                     }
                 }
-
                 if (p.ModelState == EntityState.Exists) {
 
                     var up = MatrixD.Identity.Up;
@@ -427,7 +426,8 @@ namespace WeaponCore.Projectiles
 
                     if (p.Info.BaseDamagePool <= 0 || p.State == ProjectileState.Depleted)
                         p.Info.AvShot.ProEnded = true;
-                    
+
+                    p.Intersecting = false;
                     continue;
                 }
 
