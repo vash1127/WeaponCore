@@ -912,12 +912,11 @@ namespace WeaponCore.Support
 
         internal void RunBeam()
         {
-            KeensMess mess;
+            MyParticleEffect effect;
             MatrixD matrix;
-            if (!System.Session.Av.RipMap.TryGetValue(UniqueMuzzleId, out mess)) {
+            if (!System.Session.Av.BeamEffects.TryGetValue(UniqueMuzzleId, out effect)) {
 
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
-                MyParticleEffect effect;
                 if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.SurfaceHit, uint.MaxValue, out effect)) {
                     return;
                 }
@@ -926,27 +925,16 @@ namespace WeaponCore.Support
                 effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 effect.WorldMatrix = matrix;
                 effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                var looping = effect.Loop;
                 Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
-
-                mess = System.Session.Av.KeenMessPool.Get();
-                mess.Effect = effect;
-                mess.AmmoDef = AmmoDef;
-                mess.Velocity = HitVelocity;
-                mess.LastTick = System.Session.Tick;
-                mess.Looping = looping;
-                mess.Id = UniqueMuzzleId;
-                System.Session.Av.KeensBrokenParticles.Add(mess);
-                System.Session.Av.RipMap.Add(UniqueMuzzleId, mess);
-
+                effect.Velocity = Hit.Entity != null ? HitVelocity : Vector3D.Zero;
             }
-            else if (mess.Effect != null && !mess.Effect.IsEmittingStopped) {
+            else if (effect != null && !effect.IsEmittingStopped) {
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
                 Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
-                mess.LastTick = System.Session.Tick;
-                mess.Velocity = HitVelocity;
-                mess.Effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance); ;
-                mess.Effect.WorldMatrix = matrix;
+                effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
+                Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
+                effect.Velocity = HitVelocity;
+                effect.WorldMatrix = matrix;
             }
         }
 

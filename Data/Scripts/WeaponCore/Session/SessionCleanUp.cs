@@ -191,14 +191,6 @@ namespace WeaponCore
             _slimsSet.Clear();
             _turretDefinitions.Clear();
 
-
-            
-            Av.RipMap.Clear();
-            foreach (var mess in Av.KeensBrokenParticles)
-                Av.KeenMessPool.Return(mess);
-            
-            Av.KeensBrokenParticles.Clear();
-
             foreach (var av in Av.AvShots) {
                 av.GlowSteps.Clear();
                 Av.AvShotPool.Return(av);

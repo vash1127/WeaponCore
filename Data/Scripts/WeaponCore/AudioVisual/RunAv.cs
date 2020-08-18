@@ -12,13 +12,11 @@ namespace WeaponCore.Support
     class RunAv
     {
         internal readonly MyConcurrentPool<AvShot> AvShotPool = new MyConcurrentPool<AvShot>(128, shot => shot.Close());
-        internal readonly MyConcurrentPool<KeensMess> KeenMessPool = new MyConcurrentPool<KeensMess>(128, mess => mess.Clean());
 
         internal readonly List<AvBarrel> AvBarrels1 = new List<AvBarrel>(128);
         internal readonly List<AvBarrel> AvBarrels2 = new List<AvBarrel>(128);
         internal readonly List<ParticleEvent> ParticlesToProcess = new List<ParticleEvent>(128);
-        internal readonly List<KeensMess> KeensBrokenParticles = new List<KeensMess>();
-        internal readonly Dictionary<ulong, KeensMess> RipMap = new Dictionary<ulong, KeensMess>();
+        internal readonly Dictionary<ulong, MyParticleEffect> BeamEffects = new Dictionary<ulong, MyParticleEffect>();
 
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
         internal readonly List<HitSound> HitSounds = new List<HitSound>(128);
@@ -46,26 +44,6 @@ namespace WeaponCore.Support
             Session = session;
         }
         
-        internal void RipParticles()
-        {
-            for (int i = KeensBrokenParticles.Count - 1; i >= 0; i--) {
-
-                var rip = KeensBrokenParticles[i];
-                var effect = rip.Effect;
-                if (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax) {
-
-                    if (rip.AmmoDef.Const.IsBeamWeapon)
-                        RipMap.Remove(rip.Id);
-
-                    KeenMessPool.Return(rip);
-                    KeensBrokenParticles.RemoveAtFast(i);
-                }
-                else if (Session.Tick != rip.LastTick) {
-                    var velSimulation = effect.WorldMatrix.Translation + (rip.Velocity * (MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS));
-                    effect.SetTranslation(ref velSimulation);
-                }
-            }
-        }
 
         private int _onScreens = 0;
         private int _shrinks = 0;
@@ -74,7 +52,6 @@ namespace WeaponCore.Support
 
         internal void End()
         {
-            if (KeensBrokenParticles.Count > 0) RipParticles();
             if (AvBarrels1.Count > 0) RunAvBarrels1();
             if (AvBarrels2.Count > 0) RunAvBarrels2();
             if (HitSounds.Count > 0) RunHitSounds();
@@ -543,26 +520,5 @@ namespace WeaponCore.Support
         internal MyEntity3DSoundEmitter Emitter;
         internal MySoundPair SoundPair;
         internal Vector3D Position;
-    }
-
-    internal class KeensMess
-    {
-        internal MyParticleEffect Effect;
-        internal WeaponDefinition.AmmoDef AmmoDef;
-        internal Vector3D Velocity;
-        internal uint LastTick;
-        internal bool Looping;
-        internal ulong Id;
-
-        public void Clean()
-        {
-            Effect?.Stop();
-            Effect = null;
-            AmmoDef = null;
-            Velocity = Vector3D.Zero;
-            LastTick = 0;
-            Looping = false;
-            Id = ulong.MaxValue;
-        }
     }
 }
