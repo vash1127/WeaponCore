@@ -103,8 +103,6 @@ namespace WeaponCore.Support
                     {
                         try
                         {
-
-
                             if (inventory != null && !sessionNull && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
                             {
                                 inventory.InventoryContentChanged -= CheckAmmoInventory;

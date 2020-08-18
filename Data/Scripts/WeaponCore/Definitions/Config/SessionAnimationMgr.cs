@@ -6,7 +6,6 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition;

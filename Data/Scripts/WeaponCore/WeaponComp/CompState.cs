@@ -27,12 +27,14 @@ namespace WeaponCore.Support
         private void Startup()
         {
             IsWorking = MyCube.IsWorking;
-            if (MyCube != null)
-                if (FunctionalBlock.Enabled)
-                {
-                    FunctionalBlock.Enabled = false;
-                    FunctionalBlock.Enabled = true;
-                }
+
+            if (!IsWorking)
+                Ai.PowerDistributor?.MarkForUpdate();
+
+            if (FunctionalBlock.Enabled) {
+                FunctionalBlock.Enabled = false;
+                FunctionalBlock.Enabled = true;
+            }
 
             Status = Start.Started;
         }

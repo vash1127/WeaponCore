@@ -134,6 +134,7 @@ namespace WeaponCore.Support
             internal readonly ConstructData Data = new ConstructData();
             internal float OptimalDps;
             internal int BlockCount;
+            internal uint LastRescanTick;
             internal GridAi RootAi;
 
             internal enum RefreshCaller
@@ -343,6 +344,11 @@ namespace WeaponCore.Support
 
             internal void GroupRefresh(GridAi ai)
             {
+                if (ai.Session.Tick - LastRescanTick < 30 || ai.Session.Tick - ai.AiSpawnTick < 200 && !ai.DbUpdated)
+                    return;
+                
+                LastRescanTick = ai.Session.Tick;
+
                 if (ai == RootAi)
                     UpdateConstruct(UpdateType.BlockScan);
                 else if (ai != RootAi) { 
