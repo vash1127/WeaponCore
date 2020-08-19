@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Groups;
 using VRage.Utils;
 using VRageMath;
 
@@ -937,10 +938,8 @@ namespace WeaponCore.Support
                 effect.WorldMatrix = matrix;
             }
         }
-
-
         internal void AvClose()
-        {
+        { 
             if (Vector3D.IsZero(TracerFront)) TracerFront = EndState.EndPos;
 
             if (AmmoDef.Const.AmmoParticle)
