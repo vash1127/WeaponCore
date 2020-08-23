@@ -383,7 +383,7 @@ namespace WeaponCore.Platform
                             weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
                         else
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAV, null, 4);
+                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAv, null, 4);
 
                     c++;
                 }
@@ -528,7 +528,7 @@ namespace WeaponCore.Platform
                             weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOnAV, null, 4);
                         else
                         if (weapon.AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAV, null, 4);
+                            weapon.Comp.Session.FutureEvents.Schedule(weapon.TurnOffAv, null, 4);
                 }
                 c++;
             }

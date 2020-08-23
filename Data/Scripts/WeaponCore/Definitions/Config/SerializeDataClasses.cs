@@ -543,7 +543,7 @@ namespace WeaponCore
     internal class InputStateData
     {
         [ProtoMember(1)] internal bool MouseButtonLeft;
-        [ProtoMember(2)] internal bool MouseButtonMiddle;
+        [ProtoMember(2)] internal bool MouseButtonMenu;
         [ProtoMember(3)] internal bool MouseButtonRight;
         [ProtoMember(4)] internal bool InMenu;
 
@@ -557,7 +557,7 @@ namespace WeaponCore
         internal void Sync(InputStateData syncFrom)
         {
             MouseButtonLeft = syncFrom.MouseButtonLeft;
-            MouseButtonMiddle = syncFrom.MouseButtonMiddle;
+            MouseButtonMenu = syncFrom.MouseButtonMenu;
             MouseButtonRight = syncFrom.MouseButtonRight;
             InMenu = syncFrom.InMenu;
         }

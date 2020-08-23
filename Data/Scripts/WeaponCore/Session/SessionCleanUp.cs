@@ -27,6 +27,7 @@ namespace WeaponCore
 
         internal void PurgeAll()
         {
+            PurgedAll = true;
             FutureEvents.Purge((int)Tick);
 
             foreach (var comp in CompsToStart)
@@ -83,11 +84,15 @@ namespace WeaponCore
 
             AcqManager.Clean();
 
+            foreach (var d in DirtySounds)
+                SoundsToClean.Add(d.Value);
+            SoundsToClean.ApplyAdditions();
+            CleanSounds();
+
+
             foreach (var e in Emitters)
                 e.Cleanup();
             Emitters.Clear();
-
-            SoundPairs.Clear();
 
             foreach (var item in EffectedCubes)
             {
@@ -130,8 +135,23 @@ namespace WeaponCore
             foreach (var structure in WeaponPlatforms.Values)
             {
                 foreach (var system in structure.WeaponSystems)
-                    foreach (var ammo in system.Value.AmmoTypes)
+                {
+                    system.Value.PreFirePairs.Clear();
+                    system.Value.FireWhenDonePairs.Clear();
+                    system.Value.FirePerShotPairs.Clear();
+                    system.Value.RotatePairs.Clear();
+                    system.Value.ReloadPairs.Clear();
+                    foreach (var ammo in system.Value.AmmoTypes) {
                         ammo.AmmoDef.Const.PrimeEntityPool?.Clean();
+                        ammo.AmmoDef.Const.HitDefaultSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitVoxelSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitShieldSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitFloatingSoundPairs.Clear();
+                        ammo.AmmoDef.Const.HitPlayerSoundPairs.Clear();
+                        ammo.AmmoDef.Const.TravelSoundPairs.Clear();
+                        ammo.AmmoDef.Const.CustomSoundPairs.Clear();
+                    }
+                }
 
                 structure.WeaponSystems.Clear();
             }
@@ -168,8 +188,6 @@ namespace WeaponCore
             ChargingWeapons.Clear();
             WeaponsToRemoveAmmo.Clear();
             Hits.Clear();
-            Emitters.Clear();
-            SoundPairs.Clear();
             RotateWeapons.ClearImmediate();
             HomingWeapons.Clear();
             GridToMasterAi.Clear();

@@ -41,7 +41,11 @@ namespace WeaponCore.Support
         public readonly MyStringHash ElevationPartName;
         public readonly WeaponDefinition Values;
         public readonly WeaponAmmoTypes[] AmmoTypes;
-
+        public readonly Stack<MySoundPair> PreFirePairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> FirePerShotPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> FireWhenDonePairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> RotatePairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> ReloadPairs = new Stack<MySoundPair>();
         public readonly Session Session;
 
         public readonly Dictionary<EventTriggers, PartAnimation[]> WeaponAnimationSet;
@@ -400,6 +404,13 @@ namespace WeaponCore.Support
 
         public readonly MyConcurrentPool<MyEntity> PrimeEntityPool;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
+        public readonly Stack<MySoundPair> HitDefaultSoundPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> HitShieldSoundPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> HitVoxelSoundPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> HitPlayerSoundPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> HitFloatingSoundPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> TravelSoundPairs = new Stack<MySoundPair>();
+        public readonly Stack<MySoundPair> CustomSoundPairs = new Stack<MySoundPair>();
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly AmmoDef[] AmmoPattern;
         public readonly int[] AmmoShufflePattern;
@@ -1093,6 +1104,12 @@ namespace WeaponCore.Support
             myEntity.PositionComp.SetWorldMatrix(ref MatrixD.Identity, null, false, false, false);
             myEntity.InScene = false;
             myEntity.Render.RemoveRenderObjects();
+        }
+
+        internal void ReturnSoundPair(object o)
+        {
+            var pair = (MySoundPair)o;
+            CustomSoundPairs.Push(pair);
         }
     }
 

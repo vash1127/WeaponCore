@@ -227,7 +227,8 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    var rootConstruct = comp.Ai.Construct.RootAi.Construct;
+                    var rootAi = comp.Ai.Construct.RootAi;
+                    var rootConstruct = rootAi.Construct;
                     rootConstruct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
 
                     GroupInfo group;
@@ -329,7 +330,8 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    ai.Construct.GroupRefresh(ai);
+                    //ai.Construct.GroupRefresh(ai);
+                    ai.ScanBlockGroups = true;
                     data.Report.PacketValid = true;
                 }
                 else Log.Line($"ServerRescanGroupRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");

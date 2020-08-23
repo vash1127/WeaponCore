@@ -5,6 +5,7 @@ using VRage.Game;
 using VRage.Input;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Wheel.Menu;
 namespace WeaponCore
@@ -16,9 +17,9 @@ namespace WeaponCore
             var s = Session;
             if (s.UiInput.MouseButtonPressed)
             {
-                if (s.UiInput.ClientInputState.MouseButtonMiddle && ChangeState == State.Open)
+                if (s.UiInput.ClientInputState.MouseButtonMenu && ChangeState == State.Open)
                     OpenWheel();
-                else if (s.UiInput.ClientInputState.MouseButtonMiddle && ChangeState == State.Close) 
+                else if (s.UiInput.ClientInputState.MouseButtonMenu && ChangeState == State.Close) 
                     CloseWheel();
             }
 
@@ -109,11 +110,15 @@ namespace WeaponCore
             }
             Ai.SupressMouseShoot = true;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Ai.Session.PlayerId, false);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.PlayerId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Ai.Session.PlayerId, false);
-            var controlStringMiddle = MyAPIGateway.Input.GetControl(Session.UiInput.MouseKey).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Ai.Session.PlayerId, false);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.PlayerId, false);
+            var controlStringMenuButton = MyAPIGateway.Input.GetControl(Session.UiInput.MouseButtonMenu)?.GetGameControlEnum().String;
+            if (!string.IsNullOrEmpty(controlStringMenuButton))
+            {
+                MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenuButton, Session.PlayerId, false);
+            }
+            else Log.Line($"OpenWheel mouseButtonControl null or empty: {Session.UiInput.MouseButtonMenu}");
         }
 
         internal void CloseWheel()
@@ -121,11 +126,15 @@ namespace WeaponCore
             WheelActive = false;
             Ai.SupressMouseShoot = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Ai.Session.PlayerId, true);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, Session.PlayerId, true);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Ai.Session.PlayerId, true);
-            var controlStringMiddle = MyAPIGateway.Input.GetControl(Session.UiInput.MouseKey).GetGameControlEnum().String;
-            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, Ai.Session.PlayerId, true);
+            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, Session.PlayerId, true);
+            var controlStringMenuButton = MyAPIGateway.Input.GetControl(Session.UiInput.MouseButtonMenu)?.GetGameControlEnum().String;
+            if (!string.IsNullOrEmpty(controlStringMenuButton))
+            {
+                MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenuButton, Session.PlayerId, true);
+            }
+            else Log.Line($"CloseWheel mouseButtonControl null or empty: {Session.UiInput.MouseButtonMenu}");
             Session.RemoveGps();
         }
         

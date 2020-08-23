@@ -6,8 +6,8 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Input;
 using VRageMath;
-using VRageRender.Messages;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -51,6 +51,7 @@ namespace WeaponCore
                 Timings();
 
                 if (IsClient)  {
+
                     if (ClientSideErrorPkt.Count > 0)
                         ReproccessClientErrorPackets();
 
@@ -234,10 +235,12 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
 
-
         public override void HandleInput()
         {
             if (HandlesInput && !SupressLoad) {
+
+                if (ControlRequest != ControlQuery.None)
+                    UpdateControlKeys();
 
                 UiInput.UpdateInputState();
                 if (MpActive)  {
@@ -253,6 +256,9 @@ namespace WeaponCore
 
                     if (PacketsToServer.Count > 0)
                         ProccessClientPacketsForServer();
+
+                    if (!SoundsToClean.IsEmpty)
+                        CleanSounds();
                 }
             }
         }
@@ -320,6 +326,9 @@ namespace WeaponCore
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ClientPacketId, ClientReceivedPacket);
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(StringPacketId, StringReceived);
                 }
+
+                if (HandlesInput)
+                    MyAPIGateway.Utilities.MessageEntered -= ChatMessageSet;
 
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 

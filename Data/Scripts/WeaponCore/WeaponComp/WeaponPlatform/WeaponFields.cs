@@ -271,51 +271,37 @@ namespace WeaponCore.Platform
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
-                FiringEmitter = System.Session.Emitters.Count > 0
-                    ? System.Session.Emitters.Pop()
-                    : new MyEntity3DSoundEmitter(null, true, 1f);
+                FiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
                 FiringEmitter.CanPlayLoopSounds = true;
                 FiringEmitter.Entity = Comp.MyCube;
-                FiringSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
-                FiringSound.Init(System.Values.HardPoint.Audio.FiringSound);
+                FiringSound = System.FireWhenDonePairs.Count > 0 ? System.FireWhenDonePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
             }
 
             if (AvCapable && system.PreFireSound)
             {
-                PreFiringEmitter = System.Session.Emitters.Count > 0
-                    ? System.Session.Emitters.Pop()
-                    : new MyEntity3DSoundEmitter(null, true, 1f);
+                PreFiringEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
                 PreFiringEmitter.CanPlayLoopSounds = true;
 
                 PreFiringEmitter.Entity = Comp.MyCube;
-                PreFiringSound = System.Session.SoundPairs.Count > 0
-                    ? System.Session.SoundPairs.Pop()
-                    : new MySoundPair();
-                PreFiringSound.Init(System.Values.HardPoint.Audio.PreFiringSound);
+                PreFiringSound = System.PreFirePairs.Count > 0 ? System.PreFirePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.PreFiringSound, false);
             }
 
             if (AvCapable && system.WeaponReloadSound)
             {
-                ReloadEmitter = System.Session.Emitters.Count > 0
-                    ? System.Session.Emitters.Pop()
-                    : new MyEntity3DSoundEmitter(null, true, 1f);
+                ReloadEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
                 ReloadEmitter.CanPlayLoopSounds = true;
 
                 ReloadEmitter.Entity = Comp.MyCube;
-                ReloadSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
-                ReloadSound.Init(System.Values.HardPoint.Audio.ReloadSound);
+                ReloadSound = System.ReloadPairs.Count > 0 ? System.ReloadPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.ReloadSound, false);
             }
 
             if (AvCapable && system.BarrelRotationSound)
             {
-                RotateEmitter = System.Session.Emitters.Count > 0
-                    ? System.Session.Emitters.Pop()
-                    : new MyEntity3DSoundEmitter(null, true, 1f);
+                RotateEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
                 RotateEmitter.CanPlayLoopSounds = true;
 
                 RotateEmitter.Entity = Comp.MyCube;
-                RotateSound = System.Session.SoundPairs.Count > 0 ? System.Session.SoundPairs.Pop() : new MySoundPair();
-                RotateSound.Init(System.Values.HardPoint.Audio.BarrelRotationSound);
+                RotateSound = System.RotatePairs.Count > 0 ? System.RotatePairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.BarrelRotationSound, false);
             }
 
             if (AvCapable)

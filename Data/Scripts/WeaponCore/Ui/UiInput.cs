@@ -17,7 +17,7 @@ namespace WeaponCore
         internal bool MouseButtonPressed;
         internal bool InputChanged;
         internal bool MouseButtonLeftWasPressed;
-        internal bool MouseButtonMiddleWasPressed;
+        internal bool MouseButtonMenuWasPressed;
         internal bool MouseButtonRightWasPressed;
         internal bool WasInMenu;
         internal bool WheelForward;
@@ -42,7 +42,7 @@ namespace WeaponCore
         private readonly Session _session;
         internal readonly InputStateData ClientInputState;
         internal MyKeys ActionKey;
-        internal MyMouseButtonsEnum MouseKey;
+        internal MyMouseButtonsEnum MouseButtonMenu;
 
         internal UiInput(Session session)
         {
@@ -64,7 +64,7 @@ namespace WeaponCore
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
 
                 MouseButtonLeftWasPressed = ClientInputState.MouseButtonLeft;
-                MouseButtonMiddleWasPressed = ClientInputState.MouseButtonMiddle;
+                MouseButtonMenuWasPressed = ClientInputState.MouseButtonMenu;
                 MouseButtonRightWasPressed = ClientInputState.MouseButtonRight;
 
                 WasInMenu = ClientInputState.InMenu;
@@ -73,13 +73,13 @@ namespace WeaponCore
                 if (MouseButtonPressed)
                 {
                     ClientInputState.MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                    ClientInputState.MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MouseKey);
+                    ClientInputState.MouseButtonMenu = MyAPIGateway.Input.IsMousePressed(MouseButtonMenu);
                     ClientInputState.MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
                 }
                 else
                 {
                     ClientInputState.MouseButtonLeft = false;
-                    ClientInputState.MouseButtonMiddle = false;
+                    ClientInputState.MouseButtonMenu = false;
                     ClientInputState.MouseButtonRight = false;
                 }
 
@@ -142,11 +142,11 @@ namespace WeaponCore
 
             if (_session.MpActive && !s.InGridAiBlock)
             {
-                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight ||  ClientInputState.MouseButtonMiddle || ClientInputState.MouseButtonRight)
+                if (ClientInputState.InMenu || ClientInputState.MouseButtonRight ||  ClientInputState.MouseButtonMenu || ClientInputState.MouseButtonRight)
                 {
                     ClientInputState.InMenu = false;
                     ClientInputState.MouseButtonLeft = false;
-                    ClientInputState.MouseButtonMiddle = false;
+                    ClientInputState.MouseButtonMenu = false;
                     ClientInputState.MouseButtonRight = false;
                     InputChanged = true;
                 }

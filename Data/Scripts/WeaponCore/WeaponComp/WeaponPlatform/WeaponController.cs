@@ -17,23 +17,19 @@ namespace WeaponCore.Platform
             if (AiOnlyWeapon) {
 
                 if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
-                    //var azRotMatrix = Matrix.CreateFromAxisAngle(w.AzimuthPart.RotationAxis, (float)w.Azimuth);
                     Matrix azRotMatrix;
                     Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
 
                     azRotMatrix.Translation = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation;
-
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azRotMatrix, null, true);
                 }
 
                 if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
 
-                    //var elRotMatrix = Matrix.CreateFromAxisAngle(w.ElevationPart.RotationAxis, -(float)w.Elevation);
                     Matrix elRotMatrix;
                     Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
 
                     elRotMatrix.Translation = ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
-
                     ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
                 }
             }
@@ -272,7 +268,7 @@ namespace WeaponCore.Platform
             PlayParticleEvent(EventTriggers.TurnOn, true, Vector3D.DistanceSquared(Comp.Session.CameraPos, MyPivotPos), null);
         }
 
-        internal void TurnOffAV(object o)
+        internal void TurnOffAv(object o)
         {
             if (Comp.MyCube == null || Comp.MyCube.MarkedForClose || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 

@@ -295,15 +295,13 @@ namespace WeaponCore
             {
                 var w = ChargingWeapons[i];
                 var comp = w.Comp;
-                var gridAi = comp.Ai;
-                if (comp == null || w.Comp.Ai == null || gridAi.MyGrid.MarkedForClose || gridAi.Concealed || !gridAi.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate)
-                {
+                var ai = comp.Ai;
+                if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     if (w.DrawingPower)
                         w.StopPowerDraw();
 
-                    if (w.Comp?.Ai != null) 
-                        w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
-                    w.Reloading = false;
+                    if (ai != null)
+                        ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
 
                     w.Reloading = false;
 
@@ -311,43 +309,36 @@ namespace WeaponCore
                     continue;
                 }
 
-                if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                    continue;
+                if (Tick60 && w.DrawingPower) {
 
-
-                if (Tick60 && w.DrawingPower)
-                {
-                    if ((w.Ammo.CurrentCharge + w.UseablePower) < w.MaxCharge)
-                    {
+                    if ((w.Ammo.CurrentCharge + w.UseablePower) < w.MaxCharge) {
                         w.Ammo.CurrentCharge += w.UseablePower;
                         comp.CurrentCharge += w.UseablePower;
-
                     }
-                    else
-                    {
+                    else {
                         comp.CurrentCharge -= (w.Ammo.CurrentCharge - w.MaxCharge);
                         w.Ammo.CurrentCharge = w.MaxCharge;
                     }
                 }
 
-                if (w.ChargeUntilTick <= Tick || !w.Reloading)
-                {
+                if (w.ChargeUntilTick <= Tick || !w.Reloading) {
+
                     if (w.Reloading)
                         w.Reloaded();
 
                     if (w.DrawingPower)
                         w.StopPowerDraw();
 
-                    w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+                    ai.OverPowered = ai.RequestedWeaponsDraw > 0 && ai.RequestedWeaponsDraw > ai.GridMaxPower;
 
                     UniqueListRemove(w, ChargingWeaponsIndexer, ChargingWeapons);
                     continue;
                 }
 
-                if (!w.Comp.Ai.OverPowered)
-                {
-                    if (!w.DrawingPower)
-                    {
+                if (!ai.OverPowered) {
+
+                    if (!w.DrawingPower) {
+
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         if(!w.Comp.UnlimitedPower)
@@ -355,28 +346,26 @@ namespace WeaponCore
 
                         w.ChargeDelayTicks = 0;
                     }
-
                     continue;
                 }
 
-                if (!w.DrawingPower || gridAi.RequestedPowerChanged || gridAi.AvailablePowerChanged || (w.RecalcPower && Tick60))
-                {
-                    if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)
-                    {
+                if (!w.DrawingPower || ai.RequestedPowerChanged || ai.AvailablePowerChanged || (w.RecalcPower && Tick60)) {
+
+                    if ((!ai.RequestIncrease || ai.PowerIncrease) && !Tick60) {
                         w.RecalcPower = true;
                         continue;
                     }
 
                     w.RecalcPower = false;
 
-                    var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+                    var percUseable = w.RequiredPower / ai.RequestedWeaponsDraw;
                     w.OldUseablePower = w.UseablePower;
-                    w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
+                    w.UseablePower = (ai.GridMaxPower * .98f) * percUseable;
 
                     w.ChargeDelayTicks = (uint)(((w.ActiveAmmoDef.AmmoDef.Const.ChargSize - w.Ammo.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                     w.ChargeUntilTick = w.ChargeDelayTicks + Tick;
-                    if (!w.Comp.UnlimitedPower)
-                    {
+
+                    if (!w.Comp.UnlimitedPower) {
                         if (!w.DrawingPower)
                             w.DrawPower();
                         else

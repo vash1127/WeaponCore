@@ -267,9 +267,8 @@ namespace WeaponCore.Support
 
             MySoundPair customSound = null;
             if (ammoDef.Const.CustomExplosionSound && !eInfo.NoSound) {
-                customSound = session.SoundPairs.Count > 0 ? session.SoundPairs.Pop() : new MySoundPair();
-                customSound.Init(eInfo.CustomSound, false);
-                session.FutureEvents.Schedule(session.Av.ReturnSoundPair, customSound, 1800);
+                customSound = ammoDef.Const.CustomSoundPairs.Count > 0 ? ammoDef.Const.CustomSoundPairs.Pop() : new MySoundPair(eInfo.CustomSound, false);
+                session.FutureEvents.Schedule(ammoDef.Const.ReturnSoundPair, customSound, 1800);
             }
 
             MyExplosionInfo explosionInfo = new MyExplosionInfo

@@ -354,11 +354,16 @@ namespace WeaponCore.Support
             for (int i = 0; i < HitSounds.Count; i++)
             {
                 var av = HitSounds[i];
+
+                av.Emitter.StoppedPlaying += Session.DirtySound;
+                if (Session.DirtySounds.ContainsKey(av.Emitter))
+                    Log.Line($"RunHitSounds already had emitter: {av.Emitter.SoundPair.ToString()}");
+
+                Session.DirtySounds[av.Emitter] =  new Session.CleanSound { Emitter = av.Emitter, EmitterPool = Session.Emitters, SoundPair = av.SoundPair, SoundPairPool = av.Pool, SpawnTick = Session.Tick };
+                
                 av.Emitter.SetPosition(av.Position);
                 av.Emitter.PlaySound(av.SoundPair);
 
-                Session.SoundPairs.Push(av.SoundPair);
-                Session.Emitters.Push(av.Emitter);
             }
             HitSounds.Clear();
         }
@@ -371,7 +376,7 @@ namespace WeaponCore.Support
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
-
+                
                 var manualExpire = ticksAgo >= weapon.System.Barrel1AvTicks;
                 var somethingEnded = !muzzle.Av1Looping && manualExpire || weapon.StopBarrelAv || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
@@ -501,11 +506,6 @@ namespace WeaponCore.Support
                 catch (Exception ex) { Log.Line($"Exception in RunAvBarrels2: {ex} weapon:{weapon.System.WeaponName} - particleName:{weapon.System.Values.HardPoint.Graphics.Barrel2.Name} - aiNull:{weapon.Comp.Ai == null}"); }
             }
         }
-        internal void ReturnSoundPair(object o)
-        {
-            var pair = (MySoundPair)o;
-            Session.SoundPairs.Push(pair);
-        }
     }
 
     internal struct AvBarrel
@@ -519,6 +519,7 @@ namespace WeaponCore.Support
     {
         internal MyEntity3DSoundEmitter Emitter;
         internal MySoundPair SoundPair;
+        internal Stack<MySoundPair> Pool;
         internal Vector3D Position;
     }
 }

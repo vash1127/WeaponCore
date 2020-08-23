@@ -41,7 +41,10 @@ namespace WeaponCore
                 MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
                 MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
             }
-            
+
+            if (HandlesInput)
+                MyAPIGateway.Utilities.MessageEntered += ChatMessageSet;
+
             var env = MyDefinitionManager.Static.EnvironmentDefinition;
             if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
             else if (env.SmallShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.SmallShipMaxSpeed;
@@ -66,7 +69,7 @@ namespace WeaponCore
             ApiServer.Load();
             GenerateButtonMap();
             Settings = new CoreSettings(this);
-
+            GenerateBlockDmgMap();
             LocalVersion = ModContext.ModId == "WeaponCore";
         }
 

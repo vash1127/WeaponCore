@@ -90,7 +90,7 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, false);
                             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, PlayerId, false);
-                            var controlStringMiddle = MyAPIGateway.Input.GetControl(UiInput.MouseKey).GetGameControlEnum().String;
+                            var controlStringMiddle = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, false);
 
                             if (HandlesInput && MpActive)
@@ -107,7 +107,7 @@ namespace WeaponCore
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, true);
                         var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, PlayerId, true);
-                        var controlStringMiddle = MyAPIGateway.Input.GetControl(UiInput.MouseKey).GetGameControlEnum().String;
+                        var controlStringMiddle = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         GridAi gridAi;

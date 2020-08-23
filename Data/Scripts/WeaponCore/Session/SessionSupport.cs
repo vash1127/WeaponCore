@@ -13,6 +13,7 @@ using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using VRage.Input;
 
 namespace WeaponCore
 {
@@ -356,6 +357,114 @@ namespace WeaponCore
 
                 if (w.IsHome || !w.ReturingHome)
                     HomingWeapons.RemoveAtFast(i);
+            }
+        }
+
+        internal void DirtySound(MyEntity3DSoundEmitter emitter)
+        {
+            CleanSound sound;
+            if (DirtySounds.TryRemove(emitter, out sound)) {
+                SoundsToClean.Add(sound);
+                SoundsToClean.ApplyAdditions();
+            }
+            else Log.Line($"DirtySound failed after {Tick - sound.SpawnTick} - {emitter.SoundPair.ToString()}");
+        }
+
+        internal void CleanSounds()
+        {
+            for (int i = 0; i < SoundsToClean.Count; i++)
+            {
+                var sound = SoundsToClean[i];
+                if (sound.Emitter.IsPlaying)
+                    sound.Emitter.StopSound(true, true);
+                sound.Emitter.Entity = null;
+                sound.EmitterPool.Push(sound.Emitter);
+                sound.SoundPairPool.Push(sound.SoundPair);
+            }
+            SoundsToClean.ClearImmediate();
+        }
+
+        private void UpdateControlKeys()
+        {
+            if (ControlRequest == ControlQuery.Keyboard) {
+
+                MyAPIGateway.Input.GetListOfPressedKeys(_pressedKeys);
+                if (_pressedKeys.Count > 0 && _pressedKeys[0] != MyKeys.Enter) {
+
+                    var firstKey = _pressedKeys[0];
+                    Settings.ClientConfig.ActionKey = firstKey.ToString();
+                    UiInput.ActionKey = firstKey;
+                    ControlRequest = ControlQuery.None;
+                    Settings.VersionControl.UpdateClientCfgFile();
+                    MyAPIGateway.Utilities.ShowNotification($"{firstKey.ToString()} is now the WeaponCore Action Key", 10000);
+                }
+            }
+            else if (ControlRequest == ControlQuery.Mouse) {
+
+                MyAPIGateway.Input.GetListOfPressedMouseButtons(_pressedButtons);
+                if (_pressedButtons.Count > 0) {
+
+                    var firstButton = _pressedButtons[0];
+                    var invalidButtons = firstButton == MyMouseButtonsEnum.Left || firstButton == MyMouseButtonsEnum.Right || firstButton == MyMouseButtonsEnum.None;
+
+                    if (!invalidButtons)
+                    {
+                        Settings.ClientConfig.MenuButton = firstButton.ToString();
+                        UiInput.MouseButtonMenu = firstButton;
+                        Settings.VersionControl.UpdateClientCfgFile();
+                        MyAPIGateway.Utilities.ShowNotification($"{firstButton.ToString()}MouseButton will now open and close the WeaponCore Menu", 10000);
+                    }
+                    else MyAPIGateway.Utilities.ShowNotification($"{firstButton.ToString()}Button is an invalid mouse button for this function", 10000);
+                    ControlRequest = ControlQuery.None;
+                }
+            }
+            _pressedKeys.Clear();
+            _pressedButtons.Clear();
+        }
+
+        private void ChatMessageSet(string message, ref bool sendToOthers)
+        {
+            var somethingUpdated = false;
+            Log.Line($"message: {message}");
+
+            if (message.StartsWith("/wc"))
+            {
+                switch (message)
+                {
+
+                    case "/wc remap keyboard":
+                        ControlRequest = ControlQuery.Keyboard;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the key you want to use for the WeaponCore Action key", 10000);
+                        break;
+                    case "/wc remap mouse":
+                        ControlRequest = ControlQuery.Mouse;
+                        somethingUpdated = true;
+                        MyAPIGateway.Utilities.ShowNotification($"Press the mouse button you want to use to open and close the WeaponCore Menu", 10000);
+                        break;
+                }
+
+                if (ControlRequest == ControlQuery.None) {
+
+                    string[] tokens = message.Split(' ');
+
+                    if (tokens.Length > 2 && tokens[1].Equals("drawlimit")) {
+
+                        int maxDrawCount;
+                        if (int.TryParse(tokens[2], out maxDrawCount)) {
+                            Settings.ClientConfig.MaxProjectiles = maxDrawCount;
+                            var enabled = maxDrawCount != 0;
+                            Settings.ClientConfig.ClientOptimizations = enabled;
+                            somethingUpdated = true;
+                            MyAPIGateway.Utilities.ShowNotification($"The maximum onscreen projectiles is now set to {maxDrawCount} and is Enabled:{enabled}", 10000);
+                            Settings.VersionControl.UpdateClientCfgFile();
+                        }
+                    }
+                }
+
+                if (!somethingUpdated)
+                    MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n '/wc remap keyboard'  -- Remaps action key (default R)\n '/wc remap mouse'  -- Remaps menu mouse key (default middle button)\n '/wc drawlimit 3000'  -- Limits total number of projectiles on screen (default unlimited)\n", 10000);
+                sendToOthers = false;
             }
         }
 

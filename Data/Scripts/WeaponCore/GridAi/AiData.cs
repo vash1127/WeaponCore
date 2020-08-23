@@ -21,7 +21,6 @@ namespace WeaponCore
 
             StorageInit();
             Load();
-
             if (Ai.Session.IsServer)
             {
                 Repo.ControllingPlayers.Clear();

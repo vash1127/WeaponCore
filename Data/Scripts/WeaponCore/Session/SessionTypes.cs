@@ -800,10 +800,26 @@ namespace WeaponCore
 
         }
 
+        internal enum ControlQuery
+        {
+            None,
+            Keyboard,
+            Mouse,
+        }
+
         internal struct BlockDamage
         {
             internal float DirectModifer;
             internal float AreaModifer;
+        }
+
+        internal struct CleanSound
+        {
+            internal Stack<MyEntity3DSoundEmitter> EmitterPool;
+            internal Stack<MySoundPair> SoundPairPool;
+            internal MyEntity3DSoundEmitter Emitter;
+            internal MySoundPair SoundPair;
+            internal uint SpawnTick;
         }
 
         public class WeaponAmmoMoveRequest

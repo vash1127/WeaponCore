@@ -199,6 +199,14 @@ namespace WeaponCore
         {
             var ai = s.TrackingAi;
             var validFocus = false;
+            var size0 = s.Settings.Enforcement.ShipSizes[0];
+            var size1 = s.Settings.Enforcement.ShipSizes[1];
+            var size2 = s.Settings.Enforcement.ShipSizes[2];
+            var size3 = s.Settings.Enforcement.ShipSizes[3];
+            var size4 = s.Settings.Enforcement.ShipSizes[4];
+            var size5 = s.Settings.Enforcement.ShipSizes[5];
+            var size6 = s.Settings.Enforcement.ShipSizes[6];
+
             for (int i = 0; i < ai.Construct.Data.Repo.FocusData.Target.Length; i++)
             {
                 var targetId = ai.Construct.Data.Repo.FocusData.Target[i];
@@ -210,10 +218,11 @@ namespace WeaponCore
                 var grid = target as MyCubeGrid;
                 var partCount = 1;
                 var largeGrid = false;
-
+                var smallGrid = false;
                 if (grid != null)  {
 
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+                    smallGrid = !largeGrid;
                     GridAi targetAi;
                     FatMap fatMap;
                     if (s.GridTargetingAIs.TryGetValue(grid, out targetAi))
@@ -230,12 +239,12 @@ namespace WeaponCore
                 var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
-                if (largeGrid && partCount > 24000) ai.TargetState[i].Size = 6;
-                else if (largeGrid && partCount > 12000) ai.TargetState[i].Size = 5;
-                else if (largeGrid && partCount > 6000) ai.TargetState[i].Size = 4;
-                else if (largeGrid && partCount > 3000) ai.TargetState[i].Size = 3;
-                else if (largeGrid) ai.TargetState[i].Size = 2;
-                else if (partCount > 2000) ai.TargetState[i].Size = 1;
+                if ((size6.LargeGrid && largeGrid || !size6.LargeGrid && smallGrid) && partCount > size6.BlockCount) ai.TargetState[i].Size = 6;
+                else if ((size5.LargeGrid && largeGrid || !size5.LargeGrid && smallGrid) && partCount > size5.BlockCount) ai.TargetState[i].Size = 5;
+                else if ((size4.LargeGrid && largeGrid || !size4.LargeGrid && smallGrid) && partCount > size4.BlockCount) ai.TargetState[i].Size = 4;
+                else if ((size3.LargeGrid && largeGrid || !size3.LargeGrid && smallGrid) && partCount > size3.BlockCount) ai.TargetState[i].Size = 3;
+                else if ((size2.LargeGrid && largeGrid || !size2.LargeGrid && smallGrid) && partCount > size2.BlockCount) ai.TargetState[i].Size = 2;
+                else if ((size1.LargeGrid && largeGrid || !size1.LargeGrid && smallGrid) && partCount > size1.BlockCount) ai.TargetState[i].Size = 1;
                 else ai.TargetState[i].Size = 0;
 
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, s.ApproachDegrees);

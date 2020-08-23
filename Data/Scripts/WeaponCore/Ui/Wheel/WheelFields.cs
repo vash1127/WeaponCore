@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.ModAPI;
+using VRage.Input;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -365,8 +366,21 @@ namespace WeaponCore
                 var controlBlockActive = Session.ActiveControlBlock != null && (Session.ActiveControlBlock is MyCockpit || Session.ActiveControlBlock is MyRemoteControl || Session.ActiveControlBlock is MyCameraBlock);
 
                 var isGridAi = controlBlockActive && (Session.GridToMasterAi.TryGetValue(Session.ActiveControlBlock.CubeGrid, out Ai));
-                if (MyAPIGateway.Input.WasMiddleMouseReleased() && !WheelActive && isGridAi) return State.Open;
-                if (MyAPIGateway.Input.WasMiddleMouseReleased() && WheelActive) return State.Close;
+                bool menuButtonReleased = false;
+                switch (Session.UiInput.MouseButtonMenu)
+                {
+                    case MyMouseButtonsEnum.Middle:
+                        menuButtonReleased = MyAPIGateway.Input.WasMiddleMouseReleased();
+                        break;
+                    case MyMouseButtonsEnum.XButton1:
+                        menuButtonReleased = MyAPIGateway.Input.WasXButton1MouseReleased();
+                        break;
+                    case MyMouseButtonsEnum.XButton2:
+                        menuButtonReleased = MyAPIGateway.Input.WasXButton2MouseReleased();
+                        break;
+                }
+                if (menuButtonReleased && !WheelActive && isGridAi) return State.Open;
+                if (menuButtonReleased && WheelActive) return State.Close;
                 return State.NoChange;
             }
         }
