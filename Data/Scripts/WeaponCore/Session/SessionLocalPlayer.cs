@@ -90,8 +90,8 @@ namespace WeaponCore
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, false);
                             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, PlayerId, false);
-                            var controlStringMiddle = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
-                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, false);
+                            var controlStringMenu = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, false);
 
                             if (HandlesInput && MpActive)
                                 SendPlayerControlRequest(comp, PlayerId, ControlMode.Camera);
@@ -107,8 +107,8 @@ namespace WeaponCore
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, PlayerId, true);
                         var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, PlayerId, true);
-                        var controlStringMiddle = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, PlayerId, true);
+                        var controlStringMenu = MyAPIGateway.Input.GetControl(UiInput.MouseButtonMenu).GetGameControlEnum().String;
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMenu, PlayerId, true);
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         GridAi gridAi;
                         if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))

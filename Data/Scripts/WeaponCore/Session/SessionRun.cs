@@ -256,10 +256,10 @@ namespace WeaponCore
 
                     if (PacketsToServer.Count > 0)
                         ProccessClientPacketsForServer();
-
-                    if (!SoundsToClean.IsEmpty)
-                        CleanSounds();
                 }
+
+                if (Tick60 && SoundsToClean.Count > 0)
+                    CleanSounds();
             }
         }
 

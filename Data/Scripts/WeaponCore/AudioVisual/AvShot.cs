@@ -813,12 +813,12 @@ namespace WeaponCore.Support
 
                     if (pool != null && pair != null) {
 
-                        var hitEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
-                        if (hitEmitter.IsPlaying)
-                            Log.Line($"already playing");
+                        var hitEmitter = System.Session.Av.HitEmitters.Count > 0 ? System.Session.Av.HitEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
+
                         hitEmitter.Entity = Hit.Entity;
                         hitEmitter.CanPlayLoopSounds = false;
                         System.Session.Av.HitSounds.Add(new HitSound { Pool = pool, Emitter = hitEmitter, SoundPair = pair, Position = Hit.SurfaceHit });
+
                         HitSoundInitted = true;
                     }
                 }
@@ -833,7 +833,8 @@ namespace WeaponCore.Support
 
             if (!AmmoDef.Const.IsBeamWeapon && AmmoDef.Const.AmmoTravelSound) {
                 HasTravelSound = true;
-                TravelEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                TravelEmitter = System.Session.Av.TravelEmitters.Count > 0 ? System.Session.Av.TravelEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
+
                 TravelEmitter.CanPlayLoopSounds = true;
                 TravelSound = AmmoDef.Const.TravelSoundPairs.Count > 0 ? AmmoDef.Const.TravelSoundPairs.Pop() : new MySoundPair(AmmoDef.AmmoAudio.TravelSound, false);
             }
@@ -847,7 +848,8 @@ namespace WeaponCore.Support
             if (!IsShrapnel && FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr) {
                 StartSoundActived = true;
 
-                FireEmitter = System.Session.Emitters.Count > 0 ? System.Session.Emitters.Pop() : new MyEntity3DSoundEmitter(null, true, 1f);
+                FireEmitter = System.Session.Av.FireEmitters.Count > 0 ? System.Session.Av.FireEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
+
                 FireEmitter.CanPlayLoopSounds = true;
                 FireEmitter.Entity = FiringBlock;
                 FireSound = System.FirePerShotPairs.Count > 0 ? System.FirePerShotPairs.Pop() : new MySoundPair(System.Values.HardPoint.Audio.FiringSound, false);
@@ -1009,30 +1011,12 @@ namespace WeaponCore.Support
             EndState = new AvClose();
 
             if (FireEmitter != null)
-            {
-                if (System.Session.DirtySounds.ContainsKey(FireEmitter))
-                    Log.Line($"Av Close() already contains FireEmitter");
-
-                if (!FireEmitter.IsPlaying || FireEmitter.Loop)
-                {
-                    System.Session.Emitters.Push(FireEmitter);
-                    System.FirePerShotPairs.Push(FireSound);
-                }
-                else
-                {
-                    FireEmitter.StoppedPlaying += System.Session.DirtySound;
-                    System.Session.DirtySounds[FireEmitter] = new Session.CleanSound { Emitter = FireEmitter, EmitterPool = System.Session.Emitters, SoundPair = FireSound, SoundPairPool = System.FirePerShotPairs, SpawnTick = System.Session.Tick };
-                }
-            }
-
+                System.Session.SoundsToClean.Add(new Session.CleanSound { Emitter = FireEmitter, EmitterPool = System.Session.Av.FireEmitters, SoundPair = FireSound, SoundPairPool = System.FirePerShotPairs, SpawnTick = System.Session.Tick });
+            
             if (TravelEmitter != null) {
                 
-                if (AmmoSound) 
-                    TravelEmitter.StopSound(true);
-
                 AmmoSound = false;
-                System.Session.Emitters.Push(TravelEmitter);
-                AmmoDef.Const.TravelSoundPairs.Push(TravelSound);
+                System.Session.SoundsToClean.Add(new Session.CleanSound { Force = true, Emitter = TravelEmitter, EmitterPool = System.Session.Av.TravelEmitters, SoundPair = TravelSound, SoundPairPool = AmmoDef.Const.TravelSoundPairs, SpawnTick = System.Session.Tick });
             }
 
             if (AmmoEffect != null)

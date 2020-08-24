@@ -133,6 +133,18 @@ namespace WeaponCore.Support
 
                         Entity.NeedsWorldMatrix = true;
 
+                        // ReInit Counters
+                        var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
+                        if (!Ai.WeaponCounter.ContainsKey(blockDef)) // Need to account for reinit case
+                            Ai.WeaponCounter[blockDef] = Session.WeaponCountPool.Get();
+
+                        var wCounter = Ai.WeaponCounter[blockDef];
+                        wCounter.Max = Platform.Structure.GridWeaponCap;
+
+                        wCounter.Current++;
+                        Constructs.UpdateWeaponCounters(Ai);
+                        // end ReInit
+
                         if (!Ai.GridInit || !Ai.Session.GridToFatMap.ContainsKey(Ai.MyGrid)) 
                             Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                         else 

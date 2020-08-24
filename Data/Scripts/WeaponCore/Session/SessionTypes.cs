@@ -820,6 +820,7 @@ namespace WeaponCore
             internal MyEntity3DSoundEmitter Emitter;
             internal MySoundPair SoundPair;
             internal uint SpawnTick;
+            internal bool Force;
         }
 
         public class WeaponAmmoMoveRequest

@@ -21,6 +21,9 @@ namespace WeaponCore.Support
         internal readonly List<AvShot> AvShots = new List<AvShot>(128);
         internal readonly List<HitSound> HitSounds = new List<HitSound>(128);
         internal readonly Stack<AfterGlow> Glows = new Stack<AfterGlow>();
+        internal readonly Stack<MyEntity3DSoundEmitter> FireEmitters = new Stack<MyEntity3DSoundEmitter>();
+        internal readonly Stack<MyEntity3DSoundEmitter> TravelEmitters = new Stack<MyEntity3DSoundEmitter>();
+        internal readonly Stack<MyEntity3DSoundEmitter> HitEmitters = new Stack<MyEntity3DSoundEmitter>();
 
         internal Session Session;
 
@@ -355,15 +358,9 @@ namespace WeaponCore.Support
             {
                 var av = HitSounds[i];
 
-                av.Emitter.StoppedPlaying += Session.DirtySound;
-                if (Session.DirtySounds.ContainsKey(av.Emitter))
-                    Log.Line($"RunHitSounds already had emitter: {av.Emitter.SoundPair.ToString()}");
-
-                Session.DirtySounds[av.Emitter] =  new Session.CleanSound { Emitter = av.Emitter, EmitterPool = Session.Emitters, SoundPair = av.SoundPair, SoundPairPool = av.Pool, SpawnTick = Session.Tick };
-                
                 av.Emitter.SetPosition(av.Position);
                 av.Emitter.PlaySound(av.SoundPair);
-
+                Session.SoundsToClean.Add(new Session.CleanSound { Emitter = av.Emitter, EmitterPool = HitEmitters, SoundPair = av.SoundPair, SoundPairPool = av.Pool, SpawnTick = Session.Tick });
             }
             HitSounds.Clear();
         }

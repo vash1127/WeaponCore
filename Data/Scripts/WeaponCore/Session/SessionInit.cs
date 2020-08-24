@@ -69,23 +69,7 @@ namespace WeaponCore
             ApiServer.Load();
             GenerateButtonMap();
             Settings = new CoreSettings(this);
-            GenerateBlockDmgMap();
             LocalVersion = ModContext.ModId == "WeaponCore";
-        }
-
-        internal void GenerateBlockDmgMap()
-        {
-            if (Settings.Enforcement.BlockModifers == null)
-                return;
-
-            foreach (var def in AllDefinitions) {
-                foreach (var blockModifer in Settings.Enforcement.BlockModifers) {
-                    if ((blockModifer.AreaDamageModifer >= 0 || blockModifer.DirectDamageModifer >= 0) && def.Id.SubtypeId.String == blockModifer.SubTypeId) {
-                        GlobalDamageModifed = true;
-                        BlockDamageMap[def] = new BlockDamage { DirectModifer = blockModifer.DirectDamageModifer >= 0 ? blockModifer.DirectDamageModifer : 1, AreaModifer = blockModifer.AreaDamageModifer >= 0 ? blockModifer.AreaDamageModifer : 1};
-                    }
-                }
-            }
         }
 
         internal void GenerateButtonMap()

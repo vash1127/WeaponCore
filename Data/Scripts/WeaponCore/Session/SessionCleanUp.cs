@@ -84,15 +84,21 @@ namespace WeaponCore
 
             AcqManager.Clean();
 
-            foreach (var d in DirtySounds)
-                SoundsToClean.Add(d.Value);
-            SoundsToClean.ApplyAdditions();
-            CleanSounds();
-
+            CleanSounds(true);
 
             foreach (var e in Emitters)
-                e.Cleanup();
+                e.StopSound(true);
+            foreach (var e in Av.HitEmitters)
+                e.StopSound(true);
+            foreach (var e in Av.FireEmitters)
+                e.StopSound(true);
+            foreach (var e in Av.TravelEmitters)
+                e.StopSound(true);
+
             Emitters.Clear();
+            Av.HitEmitters.Clear();
+            Av.FireEmitters.Clear();
+            Av.TravelEmitters.Clear();
 
             foreach (var item in EffectedCubes)
             {

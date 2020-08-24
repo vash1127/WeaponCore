@@ -33,12 +33,12 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 26;
+        internal const int VersionControl = 27;
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
-        internal const int ServerCfgVersion = 0;
-        internal const int ClientCfgVersion = 0;
+        internal const int ServerCfgVersion = 1;
+        internal const int ClientCfgVersion = 1;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
@@ -74,9 +74,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponReloadPacket> PacketReloadPool = new MyConcurrentPool<WeaponReloadPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
-
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
-        //internal readonly MyConcurrentPool<InventoryUpdate> InventoryUpdatePool = new MyConcurrentPool<InventoryUpdate>(64, inventory => inventory.Clean());
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
@@ -94,20 +92,22 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, List<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, List<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponToPullAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
-        internal readonly ConcurrentDictionary<MyEntity3DSoundEmitter, CleanSound> DirtySounds = new ConcurrentDictionary<MyEntity3DSoundEmitter, CleanSound>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
         internal readonly MyConcurrentList<Weapon> WeaponToPullAmmo = new MyConcurrentList<Weapon>(64);
         internal readonly MyConcurrentList<Weapon> WeaponsToRemoveAmmo = new MyConcurrentList<Weapon>(64);
 
-        internal readonly ConcurrentCachingList<CleanSound> SoundsToClean = new ConcurrentCachingList<CleanSound>(32);
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
+        internal readonly ConcurrentCachingList<Weapon> RotateWeapons = new ConcurrentCachingList<Weapon>(128);
+
+        internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
 
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
-        internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
+
+        internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
 
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
@@ -131,6 +131,9 @@ namespace WeaponCore
         internal readonly Dictionary<uint, MyPhysicalInventoryItem> AmmoItems = new Dictionary<uint, MyPhysicalInventoryItem>();
         internal readonly Dictionary<string, MyKeys> KeyMap = new Dictionary<string, MyKeys>();
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
+        internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
+        internal readonly Dictionary<GridAi, int> GridsToUpdateInvetoriesIndexer = new Dictionary<GridAi, int>();
+
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
@@ -138,6 +141,7 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<MyCubeGrid> DeformProtection = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Weapon> PullingWeapons = new HashSet<Weapon>();
+
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
@@ -145,7 +149,6 @@ namespace WeaponCore
         internal readonly List<Projectile> Hits = new List<Projectile>(16);
         internal readonly List<Weapon> AcquireTargets = new List<Weapon>(128);
         internal readonly List<Weapon> HomingWeapons = new List<Weapon>(128);
-        internal readonly ConcurrentCachingList<Weapon> RotateWeapons = new ConcurrentCachingList<Weapon>(128);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
@@ -158,18 +161,12 @@ namespace WeaponCore
         internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
-        internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
-
-        /// <summary>
-        /// DsUniqueListFastRemove without the class for less method calls
-        /// </summary>
-        internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
-        internal readonly Dictionary<GridAi, int> GridsToUpdateInvetoriesIndexer = new Dictionary<GridAi, int>();
-
-
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly List<GridAi> GridsToUpdateInvetories = new List<GridAi>(64);
-       
+        internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
+
+        internal readonly int[] AuthorSettings = new int[6];
+
         ///
         ///
         ///
@@ -180,7 +177,6 @@ namespace WeaponCore
         internal readonly Guid CompDataGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid AiDataGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Guid ConstructDataGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
-
 
         internal readonly double VisDirToleranceCosine;
         internal readonly double AimDirToleranceCosine;
@@ -195,14 +191,17 @@ namespace WeaponCore
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
 
-        internal readonly int[] AuthorSettings = new int[6];
-
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
+
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
+
+        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
+        internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
+        internal Color[] HeatEmissives;
 
         internal ControlQuery ControlRequest;
         internal IMyPhysics Physics;
@@ -217,7 +216,7 @@ namespace WeaponCore
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
-        internal Action<Vector3, float> ProjectileAddedCallback = (locationay, health) => { };
+        internal Action<Vector3, float> ProjectileAddedCallback = (location, health) => { };
         internal ShieldApi SApi = new ShieldApi();
         internal NetworkReporter Reporter = new NetworkReporter();
         internal MyStorageData TmpStorage = new MyStorageData();
@@ -238,9 +237,6 @@ namespace WeaponCore
         internal ProblemReport ProblemRep;
 
         internal MatrixD CameraMatrix;
-        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
-        internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
-        internal Color[] HeatEmissives;
 
         internal Vector3D CameraPos;
         internal Vector3D PlayerPos;

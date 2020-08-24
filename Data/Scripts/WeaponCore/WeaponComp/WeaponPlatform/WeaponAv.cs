@@ -52,10 +52,10 @@ namespace WeaponCore.Platform
         public void StopShootingAv(bool power)
         {
             if (System.Values.HardPoint.Audio.FireSoundEndDelay > 0)
-                Comp.Session.FutureEvents.Schedule(StopFiringSound, false, System.Values.HardPoint.Audio.FireSoundEndDelay);
+                Comp.Session.FutureEvents.Schedule(StopFiringSound, null, System.Values.HardPoint.Audio.FireSoundEndDelay);
             else StopFiringSound(false);
 
-            StopPreFiringSound(false);
+            StopPreFiringSound();
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
             if (!power) StopRotateSound();
             for (int i = 0; i < Muzzles.Length; i++)
@@ -301,37 +301,50 @@ namespace WeaponCore.Platform
 
         public void StartPreFiringSound()
         {
-            if (PreFiringSound == null)
+            if (PreFiringEmitter == null)
                 return;
-            PreFiringEmitter?.PlaySound(PreFiringSound);
+
+            PreFiringEmitter.PlaySound(PreFiringSound);
         }
 
-        public void StopPreFiringSound(bool force)
+        public void StopPreFiringSound()
         {
-            PreFiringEmitter?.StopSound(force);
+            if (PreFiringEmitter == null)
+                return;
+
+            PreFiringEmitter.StopSound(false);
         }
 
         public void StartFiringSound()
         {
-            if (FiringSound == null)
+            if (FiringEmitter == null)
                 return;
-            FiringEmitter?.PlaySound(FiringSound);
+
+            FiringEmitter.PlaySound(FiringSound);
         }
 
         public void StopFiringSound(object o = null)
         {
-            var force = o as bool? ?? false;
-            FiringEmitter?.StopSound(force);
+            if (FiringEmitter == null)
+                return;
+
+            FiringEmitter.StopSound(false);
         }
 
         public void StopReloadSound()
         {
-            ReloadEmitter?.StopSound(true);
+            if (ReloadEmitter == null)
+                return;
+
+            ReloadEmitter.StopSound(true);
         }
 
         public void StopRotateSound()
         {
-            RotateEmitter?.StopSound(true);
+            if (RotateEmitter == null)
+                return;
+
+            RotateEmitter.StopSound(true);
         }
     }
 }

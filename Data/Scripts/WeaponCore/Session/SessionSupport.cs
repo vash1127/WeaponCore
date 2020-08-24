@@ -360,28 +360,24 @@ namespace WeaponCore
             }
         }
 
-        internal void DirtySound(MyEntity3DSoundEmitter emitter)
-        {
-            CleanSound sound;
-            if (DirtySounds.TryRemove(emitter, out sound)) {
-                SoundsToClean.Add(sound);
-                SoundsToClean.ApplyAdditions();
-            }
-            else Log.Line($"DirtySound failed after {Tick - sound.SpawnTick} - {emitter.SoundPair.ToString()}");
-        }
 
-        internal void CleanSounds()
+        internal void CleanSounds(bool force = false)
         {
-            for (int i = 0; i < SoundsToClean.Count; i++)
+            for (int i = SoundsToClean.Count - 1; i >= 0; i--)
             {
                 var sound = SoundsToClean[i];
-                if (sound.Emitter.IsPlaying)
-                    sound.Emitter.StopSound(true, true);
-                sound.Emitter.Entity = null;
-                sound.EmitterPool.Push(sound.Emitter);
-                sound.SoundPairPool.Push(sound.SoundPair);
+                var age = Tick - sound.SpawnTick;
+                if (force || age > 4 && (sound.Force || !sound.Emitter.IsPlaying))
+                {
+                    if (sound.Force) {
+                        sound.Emitter.StopSound(true);
+                    }
+                    sound.Emitter.Entity = null;
+                    sound.EmitterPool.Push(sound.Emitter);
+                    sound.SoundPairPool.Push(sound.SoundPair);
+                    SoundsToClean.RemoveAtFast(i);
+                }
             }
-            SoundsToClean.ClearImmediate();
         }
 
         private void UpdateControlKeys()

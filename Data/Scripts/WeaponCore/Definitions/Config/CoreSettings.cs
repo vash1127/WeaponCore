@@ -45,7 +45,7 @@ namespace WeaponCore.Settings
             [ProtoMember(3)] public bool DisableWeaponGridLimits;
             [ProtoMember(4)] public float DirectDamageModifer = 1;
             [ProtoMember(5)] public float AreaDamageModifer = 1;
-            [ProtoMember(6)] public bool ServerOptimizations;
+            [ProtoMember(6)] public bool ServerOptimizations = true;
             [ProtoMember(7)] public bool ServerSleepSupport;
             [ProtoMember(8)] public BlockModifer[] BlockModifers =
             {
@@ -62,7 +62,6 @@ namespace WeaponCore.Settings
                 new ShipSize {Name = "Cruiser", BlockCount = 6000, LargeGrid = true },
                 new ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true },
                 new ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true },
-
             };
         }
 

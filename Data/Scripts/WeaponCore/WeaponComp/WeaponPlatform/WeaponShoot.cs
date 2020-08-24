@@ -314,7 +314,7 @@ namespace WeaponCore.Platform
             PreFired = false;
 
             if (AvCapable && System.PreFireSound && PreFiringEmitter.IsPlaying)
-                StopPreFiringSound(false);
+                StopPreFiringSound();
         }
 
         private void SetPreFire()

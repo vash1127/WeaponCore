@@ -50,6 +50,8 @@ namespace WeaponCore.Settings
                         WriteNewServerCfg();
                 }
                 else WriteNewServerCfg();
+
+               GenerateBlockDmgMap();
             }
         }
 
@@ -57,6 +59,7 @@ namespace WeaponCore.Settings
         {
             Core.Enforcement = data;
             Core.ClientWaiting = false;
+            GenerateBlockDmgMap();
         }
 
         private void WriteNewServerCfg()
@@ -91,6 +94,7 @@ namespace WeaponCore.Settings
             writer.Flush();
             writer.Dispose();
         }
+
         private void CorruptionCheck()
         {
             if (Core.Enforcement.AreaDamageModifer < 0)
@@ -98,7 +102,7 @@ namespace WeaponCore.Settings
             if (Core.Enforcement.DirectDamageModifer < 0)
                 Core.Enforcement.DirectDamageModifer = 1f;
 
-            if (Core.Enforcement.ShipSizes == null || Core.Enforcement.ShipSizes.Length < 7)
+            if (Core.Enforcement.ShipSizes == null || Core.Enforcement.ShipSizes.Length != 7)
             {
                 Core.Enforcement.ShipSizes = new[]
                 {
@@ -119,6 +123,25 @@ namespace WeaponCore.Settings
                     new CoreSettings.ServerSettings.BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
                     new CoreSettings.ServerSettings.BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
                 };
+            }
+        }
+
+
+        private void GenerateBlockDmgMap()
+        {
+            if (Core.Enforcement.BlockModifers == null)
+                return;
+
+            foreach (var def in Core.Session.AllDefinitions)
+            {
+                foreach (var blockModifer in Core.Enforcement.BlockModifers)
+                {
+                    if ((blockModifer.AreaDamageModifer >= 0 || blockModifer.DirectDamageModifer >= 0) && def.Id.SubtypeId.String == blockModifer.SubTypeId)
+                    {
+                        Core.Session.GlobalDamageModifed = true;
+                        Core.Session.BlockDamageMap[def] = new Session.BlockDamage { DirectModifer = blockModifer.DirectDamageModifer >= 0 ? blockModifer.DirectDamageModifer : 1, AreaModifer = blockModifer.AreaDamageModifer >= 0 ? blockModifer.AreaDamageModifer : 1 };
+                    }
+                }
             }
         }
     }
