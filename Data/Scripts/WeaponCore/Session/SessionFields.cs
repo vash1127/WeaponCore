@@ -44,6 +44,7 @@ namespace WeaponCore
         internal volatile bool Inited;
         internal volatile bool TurretControls;
         internal volatile bool FixedMissileControls;
+        internal volatile bool FixedMissileReloadControls;
         internal volatile bool FixedGunControls;
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;

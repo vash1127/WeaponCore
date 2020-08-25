@@ -81,7 +81,7 @@ namespace WeaponCore
                     obs.Add(new MyObjectBuilder_InteriorTurret().GetType());
                     obs.Add(new MyObjectBuilder_LargeGatlingTurret().GetType());
                 }
-                else if (typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun))
+                else if (typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun) || typeof(T) == typeof(IMySmallMissileLauncherReload))
                 {
                     if (!session.BaseControlsActions)
                     {

@@ -55,6 +55,15 @@ namespace WeaponCore
 
                             TurretControls = true;
                         }
+                        else if (!FixedMissileReloadControls && controllableGun is IMySmallMissileLauncherReload)
+                        {
+                            if (IsServer && MpActive && !DedicatedServer)
+                                CreateTerminalUi<IMySmallMissileLauncherReload>(this);
+                            else
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncherReload>(this));
+
+                            FixedMissileReloadControls = true;
+                        }
                         else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher)
                         {
                             if (IsServer && MpActive && !DedicatedServer)
