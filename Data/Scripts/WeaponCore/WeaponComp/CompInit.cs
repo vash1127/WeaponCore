@@ -93,7 +93,6 @@ namespace WeaponCore.Support
             if (Ai.SubGridInitTick != Session.Tick)
             {
                 Ai.SubGridInitTick = Session.Tick;
-                //lock (Ai.DbLock)
                 using (Ai.DbLock.AcquireExclusiveUsing()) 
                 {
                     var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);

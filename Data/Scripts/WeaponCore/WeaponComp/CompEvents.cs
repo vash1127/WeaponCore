@@ -246,7 +246,7 @@ namespace WeaponCore.Support
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");
                         stringBuilder.Append($"\nisAligned: {weapon.Target.IsAligned}");
                         stringBuilder.Append($"\nCanShoot: {weapon.ShotReady} - Charging: {weapon.Charging}");
-                        stringBuilder.Append($"\nAiShooting: {weapon.AiShooting} - lastCheck: {weapon.Comp.Session.Tick - weapon.Target.CheckTick}");
+                        stringBuilder.Append($"\nAiShooting: {weapon.AiShooting}");
                         stringBuilder.Append($"\n{(weapon.ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? "ChargeSize: " + weapon.ActiveAmmoDef.AmmoDef.Const.ChargSize.ToString() : "MagSize: " +  weapon.ActiveAmmoDef.AmmoDef.Const.MagazineSize.ToString())} - CurrentCharge: {CurrentCharge}({weapon.Ammo.CurrentCharge})");
                         stringBuilder.Append($"\nChargeTime: {weapon.ChargeUntilTick}({weapon.Comp.Ai.Session.Tick}) - Delay: {weapon.ChargeDelayTicks}");
                         stringBuilder.Append($"\nCharging: {weapon.Charging}({weapon.ActiveAmmoDef.AmmoDef.Const.MustCharge}) - Delay: {weapon.ChargeDelayTicks}");

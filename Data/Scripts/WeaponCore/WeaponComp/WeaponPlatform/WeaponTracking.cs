@@ -248,17 +248,10 @@ namespace WeaponCore.Platform
             var wasAligned = weapon.Target.IsAligned;
             weapon.Target.IsAligned = isAligned;
             var alignedChange = wasAligned != isAligned;
-            if (alignedChange && isAligned)
-            {
+            if (alignedChange && isAligned) {
                 if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer)
-                {
                     for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
-                    {
-                        var w = weapon.Comp.Platform.Weapons[i];
-                        w.Target.StateChange(false, Target.States.Expired);
-                        w.Target.CheckTick -= 240;
-                    }
-                }
+                        weapon.Comp.Platform.Weapons[i].Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
             }
             /*
             else if (alignedChange && !weapon.System.DelayCeaseFire)

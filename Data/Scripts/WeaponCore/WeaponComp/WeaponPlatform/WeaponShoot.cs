@@ -53,7 +53,6 @@ namespace WeaponCore.Platform
                 }
 
                 ShootTick = tick + TicksPerShot;
-                Target.CheckTick = 0;
 
                 if (!IsShooting) StartShooting();
 
@@ -381,24 +380,31 @@ namespace WeaponCore.Platform
         private void EjectionSpawnCallback(MyEntity entity)
         {
             var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-            
+            var itemTtl = ejectDef.CompDef.ItemLifeTime;
+
             if (ejectDef.Speed > 0) {
+
                 var delay = ejectDef.CompDef.Delay;
+                var delaySpeed = delay > itemTtl + 1 || itemTtl == 0;
+
                 if (delay <=0)
                     SetSpeed(entity);
-                else
+                else if (delaySpeed)
                     System.Session.FutureEvents.Schedule(SetSpeed, entity, (uint)(System.Session.Tick + delay));
             }
 
-            if (ejectDef.CompDef.ItemLifeTime > 0)
-                System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + ejectDef.CompDef.ItemLifeTime));
+            if (itemTtl > 0)
+                System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + itemTtl));
         }
 
         private void SetSpeed(object o)
         {
             var entity = (MyEntity)o;
-            var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-            entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS), Vector3.Zero);
+
+            if (entity != null) {
+                var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
+                entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS), Vector3.Zero);
+            }
         }
 
         private static void RemoveEjection(object o)

@@ -140,9 +140,9 @@ namespace WeaponCore.Support
 
             var tAction = Data.Repo.Base.State.TerminalAction;
             if (tAction == ShootActions.ShootOnce || tAction == ShootActions.ShootClick) 
-                Data.Repo.Base.State.TerminalActionSetter(this, ShootActions.ShootOff);
-
-            Session.SendCompBaseData(this);
+                Data.Repo.Base.State.TerminalActionSetter(this, ShootActions.ShootOff, Session.MpActive);
+            if (Session.MpActive) 
+                Session.SendCompBaseData(this);
         }
 
         internal void DetectStateChanges()

@@ -171,14 +171,6 @@ namespace WeaponCore.Support
 
                                 if (leadingAi.MyGrid.EntityId > grid.EntityId)
                                     leadingAi = thisAi;
-                                /*
-                                var thisRadius = thisAi.MyGrid.PositionComp.LocalVolume.Radius;
-                                var leaderRadius = leadingAi.MyGrid.PositionComp.LocalVolume.Radius;
-                                
-                                if (thisRadius > leaderRadius)
-                                    leadingAi = thisAi;
-                                else if (MyUtils.IsEqual(thisRadius, leaderRadius) && leadingAi.MyGrid.EntityId > grid.EntityId)
-                                */
                             }
                         } 
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
@@ -250,7 +242,18 @@ namespace WeaponCore.Support
                 }
                 else //remove
                 {
-                    ai.Data.Repo.ControllingPlayers.Remove(playerId);
+                    if (ai.Data.Repo.ControllingPlayers.Remove(playerId) && ai.Data.Repo.ControllingPlayers.Count == 0)
+                    {
+                        foreach (var g in ai.Construct.Data.Repo.BlockGroups)
+                        {
+                            var set = g.Value.Settings;
+                            set["ManualControl"] = 0;
+                            set["TargetPainter"] = 0;
+                        }
+
+                        if (ai.Session.MpActive)
+                            ai.Session.SendConstructGroups(ai);
+                    }
                     ai.AiSleep = false;
                 }
                 if (ai.Session.MpActive)
@@ -265,11 +268,7 @@ namespace WeaponCore.Support
                 if (cAi.SubGrids.Count > 1) {
                     foreach (var sub in cAi.SubGrids) {
                         if (sub == null || sub == cAi.MyGrid)
-                        {
-                            if (sub == null)
-                                Log.Line($"UpdateWeaponCounters: how was sub null?");
                             continue;
-                        }
 
                         GridAi subAi;
                         if (cAi.Session.GridTargetingAIs.TryGetValue(sub, out subAi))

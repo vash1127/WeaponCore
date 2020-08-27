@@ -30,7 +30,6 @@ namespace WeaponCore.Support
         internal readonly MyShipController FakeShipController = new MyShipController();
         internal readonly Constructs Construct = new Constructs();
         internal readonly FastResourceLock DbLock = new FastResourceLock();
-        //internal readonly object DbLock = new object();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -118,7 +117,6 @@ namespace WeaponCore.Support
         internal bool InPlanetGravity;
         internal bool FirstRun = true;
         internal bool ScanBlockGroups;
-        internal bool ScanBlockGroupSettings;
         internal bool Registered;
         internal bool MarkedForClose;
         internal bool Closed;
@@ -130,7 +128,6 @@ namespace WeaponCore.Support
         internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
-        internal uint TurnOffManualTick;
         internal uint ProjectileTicker;
         internal uint LastDetectEvent;
         internal uint LastGroupScanTick;

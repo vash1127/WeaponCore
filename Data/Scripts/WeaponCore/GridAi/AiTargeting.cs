@@ -26,7 +26,6 @@ namespace WeaponCore.Support
         {
             //w.HitOther = false;
             var tick = w.Comp.Session.Tick;
-            w.Target.CheckTick = tick;
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
 

@@ -15,8 +15,8 @@ namespace WeaponCore.Support
 {
     internal class Target
     {
-        internal States PreviousState = States.Expired;
-        internal States CurrentState = States.Expired;
+        internal States PreviousState = States.NotSet;
+        internal States CurrentState = States.NotSet;
         internal bool HasTarget;
         internal bool IsAligned;
         internal bool IsProjectile;
@@ -33,7 +33,6 @@ namespace WeaponCore.Support
         internal int[] BlockDeck = new int[0];
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
-        internal uint CheckTick;
         internal uint ExpiredTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
@@ -45,7 +44,12 @@ namespace WeaponCore.Support
 
         public enum States
         {
+            NotSet,
             Expired,
+            ClearTargets,
+            WeaponNotReady,
+            AnimationOff,
+            Designator,
             Acquired,
             NoTargetsSeen,
             ProjectileClosed,

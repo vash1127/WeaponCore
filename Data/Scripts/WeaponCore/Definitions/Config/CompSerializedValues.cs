@@ -297,7 +297,6 @@ namespace WeaponCore
         {
             if (Revision > w.TargetData.Revision)
             {
-
                 w.TargetData.Revision = Revision;
                 w.TargetData.EntityId = EntityId;
                 w.TargetData.TargetPos = TargetPos;
