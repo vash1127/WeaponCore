@@ -45,6 +45,7 @@ namespace WeaponCore.Support
         public enum States
         {
             NotSet,
+            ControlReset,
             Expired,
             ClearTargets,
             WeaponNotReady,

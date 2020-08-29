@@ -16,24 +16,32 @@ namespace WeaponCore
     public partial class Session
     {
         #region UI Config
-        internal static void CreateShootActionSet<T>() where T : IMyTerminalBlock
+
+        internal static void CreateDefaultActions<T>() where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateShoot();
             CreateCustomActions<T>.CreateShootOn();
             CreateCustomActions<T>.CreateShootOff();
             CreateCustomActions<T>.CreateShootOnce();
+            CreateCustomActionSet<T>();
+        }
+
+        internal static void CreateCustomActionSet<T>() where T : IMyTerminalBlock
+        {
+            CreateCustomActions<T>.CreateShootClick();
+            CreateCustomActions<T>.CreateNeutrals();
+            CreateCustomActions<T>.CreateFriendly();
+            CreateCustomActions<T>.CreateUnowned();
+            CreateCustomActions<T>.CreateMaxSize();
+            CreateCustomActions<T>.CreateMinSize();
+            CreateCustomActions<T>.CreateMovementState();
             CreateCustomActions<T>.CreateControl();
             CreateCustomActions<T>.CreateSubSystems();
-            CreateCustomActions<T>.CreateNeutrals();
             CreateCustomActions<T>.CreateProjectiles();
             CreateCustomActions<T>.CreateBiologicals();
             CreateCustomActions<T>.CreateMeteors();
-            CreateCustomActions<T>.CreateFriendly();
-            CreateCustomActions<T>.CreateUnowned();
             CreateCustomActions<T>.CreateFocusTargets();
             CreateCustomActions<T>.CreateFocusSubSystem();
-            CreateCustomActions<T>.CreateMaxSize();
-            CreateCustomActions<T>.CreateMinSize();
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
@@ -89,19 +97,17 @@ namespace WeaponCore
 
                 if (typeof(T) == typeof(IMyLargeTurretBase))
                 {
-
                     if (!session.BaseControlsActions)
                     {
-
                         TerminalHelpers.AlterActions<IMyUserControllableGun>();
                         TerminalHelpers.AlterControls<IMyUserControllableGun>();
                         TerminalHelpers.AddUiControls<T>();
                         session.BaseControlsActions = true;
                     }
 
-                    CreateCustomActions<T>.CreateShootClick();
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
+                    CreateCustomActionSet<T>();
 
                     obs.Add(new MyObjectBuilder_LargeMissileTurret().GetType());
                     obs.Add(new MyObjectBuilder_InteriorTurret().GetType());
@@ -118,7 +124,7 @@ namespace WeaponCore
                         session.BaseControlsActions = true;
                     }
 
-                    CreateCustomActions<T>.CreateShootClick();
+                    CreateCustomActionSet<T>();
 
                     obs.Add(new MyObjectBuilder_SmallMissileLauncher().GetType());
                     obs.Add(new MyObjectBuilder_SmallMissileLauncherReload().GetType());
@@ -131,8 +137,7 @@ namespace WeaponCore
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
                     TerminalHelpers.AddUiControls<T>();
-                    CreateShootActionSet<T>();
-                    CreateCustomActions<T>.CreateShootClick();
+                    CreateDefaultActions<T>();
                 }
 
                 TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);

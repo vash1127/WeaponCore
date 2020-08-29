@@ -357,6 +357,14 @@ namespace WeaponCore
     [ProtoContract]
     public class GroupOverrides
     {
+        public enum MoveModes
+        {
+            Any,
+            Moving,
+            Mobile,
+            Moored,
+        }
+
         [ProtoMember(1)] public bool Neutrals;
         [ProtoMember(2)] public bool Unowned;
         [ProtoMember(3)] public bool Friendly;
@@ -364,18 +372,19 @@ namespace WeaponCore
         [ProtoMember(5)] public bool ManualControl;
         [ProtoMember(6)] public bool FocusTargets;
         [ProtoMember(7)] public bool FocusSubSystem;
-        [ProtoMember(8)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(9), DefaultValue(true)] public bool Meteors;
-        [ProtoMember(10), DefaultValue(true)] public bool Biologicals;
-        [ProtoMember(11), DefaultValue(true)] public bool Projectiles;
-        [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
-        [ProtoMember(13)] public int MinSize;
-
+        [ProtoMember(8)] public int MinSize;
+        [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
+        [ProtoMember(10), DefaultValue(true)] public bool Meteors;
+        [ProtoMember(11), DefaultValue(true)] public bool Biologicals;
+        [ProtoMember(12), DefaultValue(true)] public bool Projectiles;
+        [ProtoMember(13), DefaultValue(16384)] public int MaxSize = 16384;
+        [ProtoMember(14), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
 
         public GroupOverrides() { }
 
         public void Sync(GroupOverrides syncFrom)
         {
+            MoveMode = syncFrom.MoveMode;
             MaxSize = syncFrom.MaxSize;
             MinSize = syncFrom.MinSize;
             Neutrals = syncFrom.Neutrals;

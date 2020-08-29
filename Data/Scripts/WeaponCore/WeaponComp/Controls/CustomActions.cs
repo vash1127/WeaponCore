@@ -77,6 +77,18 @@ namespace WeaponCore.Control
             GroupInfo.SetValue(comp, newMode, value, comp.Session.PlayerId);
         }
 
+        internal static void TerminActionMovementMode(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
+            var value = numValue + 1 <= 3 ? numValue + 1 : 0;
+
+            GroupInfo.SetValue(comp, "MovementModes", value, comp.Session.PlayerId);
+        }
+
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
@@ -394,14 +406,20 @@ namespace WeaponCore.Control
                 sb.Append("Auto");
         }
 
+        internal static void MovementModeWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            sb.Append(comp.Data.Repo.Base.Set.Overrides.MoveMode);
+        }
+
         internal static void SubSystemWriter(IMyTerminalBlock blk, StringBuilder sb)
         {
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
-            var newValue = numValue + 1 <= 7 ? numValue + 1 : 0;
-            sb.Append((WeaponDefinition.TargetingDef.BlockTypes)newValue);
+            sb.Append(comp.Data.Repo.Base.Set.Overrides.SubSystem);
         }
         #endregion
 

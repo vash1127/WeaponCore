@@ -158,6 +158,7 @@ namespace WeaponCore.Support
             internal bool IsGrid;
             internal bool LargeGrid;
             internal bool Approaching;
+            internal bool IsStatic;
             internal int PartCount;
             internal int FatCount;
             internal float OffenseRating;
@@ -172,6 +173,7 @@ namespace WeaponCore.Support
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
                 FatCount = detectInfo.FatCount;
+                IsStatic = myGrid != null && myGrid.Physics.IsStatic;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
                 MyGrid = myGrid;

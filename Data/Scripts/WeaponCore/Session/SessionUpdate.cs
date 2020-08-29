@@ -236,7 +236,6 @@ namespace WeaponCore
 
                         if (shotReady || w.ShootOnce) {
 
-                            Log.Line($"{fakeTarget} - {w.State.Action == ShootOn} - {w.AiShooting && w.State.Action == ShootOff}");
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))
                                 w.ShootOnce = false;
 

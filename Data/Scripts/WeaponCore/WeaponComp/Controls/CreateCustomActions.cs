@@ -100,7 +100,7 @@ namespace WeaponCore.Control
         public static void CreateNeutrals()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Neutrals");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Icon = @"Textures\GUI\Icons\Actions\NeutralToggle.dds";
             action.Name = new StringBuilder($"Neutrals On/Off");
             action.Action = CustomActions.TerminalActionToggleNeutrals;
             action.Writer = CustomActions.NeutralWriter;
@@ -113,7 +113,7 @@ namespace WeaponCore.Control
         public static void CreateProjectiles()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Projectiles");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Icon = @"Textures\GUI\Icons\Actions\MissileToggle.dds";
             action.Name = new StringBuilder($"Projectiles On/Off");
             action.Action = CustomActions.TerminalActionToggleProjectiles;
             action.Writer = CustomActions.ProjectilesWriter;
@@ -126,7 +126,7 @@ namespace WeaponCore.Control
         public static void CreateBiologicals()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Biologicals");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Icon = @"Textures\GUI\Icons\Actions\CharacterToggle.dds";
             action.Name = new StringBuilder($"Biologicals On/Off");
             action.Action = CustomActions.TerminalActionToggleBiologicals;
             action.Writer = CustomActions.BiologicalsWriter;
@@ -139,7 +139,7 @@ namespace WeaponCore.Control
         public static void CreateMeteors()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Meteors");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Icon = @"Textures\GUI\Icons\Actions\MeteorToggle.dds";
             action.Name = new StringBuilder($"Meteors On/Off");
             action.Action = CustomActions.TerminalActionToggleMeteors;
             action.Writer = CustomActions.MeteorsWriter;
@@ -152,7 +152,7 @@ namespace WeaponCore.Control
         public static void CreateFriendly()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Friendly");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Icon = @"Textures\GUI\Icons\Actions\NeutralToggle.dds";
             action.Name = new StringBuilder($"Friendly On/Off");
             action.Action = CustomActions.TerminalActionToggleFriendly;
             action.Writer = CustomActions.FriendlyWriter;
@@ -165,7 +165,7 @@ namespace WeaponCore.Control
         public static void CreateUnowned()
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"Unowned");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Icon = @"Textures\GUI\Icons\Actions\NeutralToggle.dds";
             action.Name = new StringBuilder($"Unowned On/Off");
             action.Action = CustomActions.TerminalActionToggleUnowned;
             action.Writer = CustomActions.UnownedWriter;
@@ -245,6 +245,19 @@ namespace WeaponCore.Control
             action1.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
+        }
+
+        public static void CreateMovementState()
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"TargetingMode");
+            action.Icon = @"Textures\GUI\Icons\Actions\MovingObjectToggle.dds";
+            action.Name = new StringBuilder($"Targeting Mode");
+            action.Action = CustomActions.TerminActionMovementMode;
+            action.Writer = CustomActions.MovementModeWriter;
+            action.Enabled = CustomActions.CompReady;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
         internal static void CreateCycleAmmoOptions(string name, int id, string path) 

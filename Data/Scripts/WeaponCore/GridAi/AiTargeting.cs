@@ -80,9 +80,12 @@ namespace WeaponCore.Support
             var forceFoci =  overRides.FocusTargets;
             var minRadius = overRides.MinSize * 0.5f;
             var maxRadius = overRides.MaxSize * 0.5f;
-
             var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
-            var maxTargetRadius = maxRadius > s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+            var maxTargetRadius = maxRadius < s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+            var moveMode = overRides.MoveMode;
+            var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
+            var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
+            var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
             var acquired = false;
 
 
@@ -116,6 +119,9 @@ namespace WeaponCore.Support
 
                 if (!attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
+                if (movingMode && info.VelLenSqr < 1 || !fireOnStation && info.IsStatic || stationOnly && !info.IsStatic)
+                    continue;
+
                 var character = info.Target as IMyCharacter;
                 if (character != null && (!s.TrackCharacters || !overRides.Biologicals)) continue;
 
@@ -131,7 +137,7 @@ namespace WeaponCore.Support
                     continue;
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
-                if (targetRadius < minTargetRadius || targetRadius > maxTargetRadius) continue;
+                if (targetRadius < minTargetRadius || targetRadius > maxTargetRadius && maxTargetRadius < 8192) continue;
                 if (info.IsGrid && s.TrackGrids)
                 {
                     if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
@@ -177,7 +183,11 @@ namespace WeaponCore.Support
             var minRadius = overRides.MinSize * 0.5f;
             var maxRadius = overRides.MaxSize * 0.5f;
             var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
-            var maxTargetRadius = maxRadius > s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+            var maxTargetRadius = maxRadius < s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+            var moveMode = overRides.MoveMode;
+            var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
+            var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
+            var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -223,9 +233,12 @@ namespace WeaponCore.Support
                     }
                     if (info?.Target == null || info.Target.MarkedForClose || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
+                    if (movingMode && info.VelLenSqr < 1 || !fireOnStation && info.IsStatic || stationOnly && !info.IsStatic)
+                        continue;
+
                     var character = info.Target as IMyCharacter;
                     var targetRadius = character != null ? info.TargetRadius * 5 : info.TargetRadius;
-                    if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
+                    if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius && maxTargetRadius < 8192 || !focusTarget && info.OffenseRating <= 0) continue;
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);

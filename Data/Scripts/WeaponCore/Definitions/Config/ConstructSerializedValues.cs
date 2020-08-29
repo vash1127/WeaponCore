@@ -30,7 +30,7 @@ namespace WeaponCore
 
         [ProtoMember(2)] public readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
-            {"MaxSize", 9999},
+            {"MaxSize", 16384},
             {"MinSize", 0},
             {"Neutrals", 0},
             {"Projectiles", 0 },
@@ -50,7 +50,7 @@ namespace WeaponCore
 
         public readonly Dictionary<string, int> DefaultSettings = new Dictionary<string, int>()
         {
-            {"MaxSize", 9999}, {"MinSize", 0}, {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"TargetPainter", 0},  {"ManualControl", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
+            {"MaxSize", 16384}, {"MinSize", 0}, {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"TargetPainter", 0},  {"ManualControl", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
         };
 
         internal enum ChangeStates
@@ -121,6 +121,11 @@ namespace WeaponCore
                             if (!change && o.SubSystem != blockType) change = true;
                             o.SubSystem = blockType;
                             break;
+                        case "MovementModes":
+                            var moveType = (GroupOverrides.MoveModes)v;
+                            if (!change && o.MoveMode != moveType) change = true;
+                            o.MoveMode = moveType;
+                            break;
                         case "FocusSubSystem":
                             if (!change && o.FocusSubSystem != enabled) change = true;
                             o.FocusSubSystem = enabled;
@@ -166,7 +171,7 @@ namespace WeaponCore
 
                 if (change)
                 {
-                    ResetCompState(comp, playerId, Settings);
+                    ResetCompState(comp, playerId, false, Settings);
                     if (comp.Session.MpActive)
                         comp.Session.SendCompBaseData(comp);
                 }
@@ -177,6 +182,8 @@ namespace WeaponCore
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var enabled = v > 0;
+            var clearTargets = false;
+
             switch (setting)
             {
                 case "MaxSize":
@@ -188,11 +195,16 @@ namespace WeaponCore
                 case "SubSystems":
                     o.SubSystem = (BlockTypes)v;
                     break;
+                case "MovementModes":
+                    o.MoveMode = (GroupOverrides.MoveModes)v;
+                    clearTargets = true;
+                    break;
                 case "FocusSubSystem":
                     o.FocusSubSystem = enabled;
                     break;
                 case "FocusTargets":
                     o.FocusTargets = enabled;
+                    clearTargets = true;
                     break;
                 case "ManualControl":
                     o.ManualControl = enabled;
@@ -205,6 +217,7 @@ namespace WeaponCore
                     break;
                 case "Friendly":
                     o.Friendly = enabled;
+                    clearTargets = true;
                     break;
                 case "Meteors":
                     o.Meteors = enabled;
@@ -214,72 +227,26 @@ namespace WeaponCore
                     break;
                 case "Projectiles":
                     o.Projectiles = enabled;
+                    clearTargets = true;
                     break;
                 case "Neutrals":
                     o.Neutrals = enabled;
+                    clearTargets = true;
                     break;
             }
 
-            ResetCompState(comp, playerId);
+            ResetCompState(comp, playerId, clearTargets);
 
             if (comp.Session.MpActive)
                 comp.Session.SendCompBaseData(comp);
         }
 
-        internal int GetCompSetting(string setting, WeaponComponent comp)
-        {
-            var value = 0;
-            var o = comp.Data.Repo.Base.Set.Overrides;
-            switch (setting)
-            {
-                case "MaxSize":
-                    value = o.MaxSize;
-                    break;
-                case "MinSize":
-                    value = o.MinSize;
-                    break;
-                case "SubSystems":
-                    value = (int)o.SubSystem;
-                    break;
-                case "FocusSubSystem":
-                    value = o.FocusSubSystem ? 1 : 0;
-                    break;
-                case "FocusTargets":
-                    value = o.FocusTargets ? 1 : 0;
-                    break;
-                case "ManaulControl":
-                    value = o.ManualControl ? 1 : 0;
-                    break;
-                case "TargetPainter":
-                    value = o.TargetPainter ? 1 : 0;
-                    break;
-                case "Unowned":
-                    value = o.Unowned ? 1 : 0;
-                    break;
-                case "Friendly":
-                    value = o.Friendly ? 1 : 0;
-                    break;
-                case "Meteors":
-                    value = o.Meteors ? 1 : 0;
-                    break;
-                case "Biologicals":
-                    value = o.Biologicals ? 1 : 0;
-                    break;
-                case "Projectiles":
-                    value = o.Projectiles ? 1 : 0;
-                    break;
-                case "Neutrals":
-                    value = o.Neutrals ? 1 : 0;
-                    break;
-            }
-            return value;
-        }
 
-        internal static void ResetCompState(WeaponComponent comp, long playerId, Dictionary<string, int> settings = null)
+        internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
-
+            
             if (userControl)
             {
                 comp.Data.Repo.Base.State.PlayerId = playerId;
@@ -301,6 +268,9 @@ namespace WeaponCore
                 comp.Data.Repo.Base.State.PlayerId = -1;
                 comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
             }
+
+            if (resetTarget)
+                ClearTargets(comp);
         }
 
         private static void ClearTargets(WeaponComponent comp)
@@ -309,7 +279,7 @@ namespace WeaponCore
             {
                 var weapon = comp.Platform.Weapons[i];
                 if (weapon.Target.HasTarget)
-                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.Expired);
+                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.ControlReset);
             }
         }
 

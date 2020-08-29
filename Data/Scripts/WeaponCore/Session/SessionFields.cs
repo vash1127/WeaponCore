@@ -249,6 +249,7 @@ namespace WeaponCore
         internal string ServerVersion;
         internal object InitObj = new object();
 
+        internal uint MenuRetireNoticeTick;
         internal int WeaponIdCounter;
         internal int PlayerEventId;
         internal int TargetRequests;

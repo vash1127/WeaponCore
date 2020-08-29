@@ -303,7 +303,7 @@ namespace WeaponCore.Support
             var maxDiameter = Values.Targeting.MaximumDiameter;
 
             minTargetRadius = (float)(minDiameter > 0 ? minDiameter * 0.5d : 0);
-            maxTargetRadius = (float)(maxDiameter > 0 ? maxDiameter * 0.5d : float.MaxValue);
+            maxTargetRadius = (float)(maxDiameter > 0 ? maxDiameter * 0.5d : 8192);
         }
 
 
