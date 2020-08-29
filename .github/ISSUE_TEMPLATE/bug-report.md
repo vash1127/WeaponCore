@@ -2,7 +2,7 @@
 name: Bug Report
 about: Leave a bug report, tell us whats wrong! Please read the issue posting guidelines before posting, it's in the wiki!
 title: ""
-labels: Housecleaning (Bug)
+labels: Bug Report
 assignees: ''
 
 ---
