@@ -764,7 +764,6 @@ namespace WeaponCore
         private void Paused()
         {
             _paused = true;
-            if (Wheel.WheelActive && Wheel.Ai != null) Wheel.CloseWheel();
         }
 
         public bool TaskHasErrors(ref Task task, string taskName)

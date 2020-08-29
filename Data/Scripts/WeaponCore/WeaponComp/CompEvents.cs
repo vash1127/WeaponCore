@@ -2,14 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRage.Game.ModAPI.Interfaces;
 using static WeaponCore.Platform.MyWeaponPlatform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -112,12 +108,12 @@ namespace WeaponCore.Support
             }
         }
 
-        private void OnMarkForClose(MyEntity myEntity)
+        private static void OnMarkForClose(MyEntity myEntity)
         {
             var cube = (MyCubeBlock)myEntity;
             
             var comp = cube.Components.Get<WeaponComponent>();
-            if (comp.Slim == comp.Ai.FakeShipController.SlimBlock)
+            if (comp?.Ai != null && comp.Slim == comp.Ai.FakeShipController.SlimBlock)
             {
                 comp.Ai.PowerDirty = true;
             }
@@ -131,7 +127,7 @@ namespace WeaponCore.Support
                 IsFunctional = myCubeBlock.IsFunctional;
 
                 if (Platform.State == PlatformState.Incomplete) {
-                    Log.Line($"Init on Complete");
+                    Log.Line($"Init on Incomplete");
                     Init();
                 }
                 else {
@@ -240,7 +236,7 @@ namespace WeaponCore.Support
                 {
                     foreach (var weapon in Platform.Weapons)
                     {
-                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {IsWorking && weapon.Comp.Data.Repo.Base.Set.Overrides.Activate}");
+                        stringBuilder.Append($"\n\nWeapon: {weapon.System.WeaponName} - Enabled: {IsWorking}");
                         stringBuilder.Append($"\nTargetState: {weapon.Target.CurrentState} - Manual: {weapon.Comp.UserControlled || weapon.Target.IsFakeTarget}");
                         stringBuilder.Append($"\nEvent: {weapon.LastEvent} - Ammo :{!weapon.NoMagsToLoad}");
                         stringBuilder.Append($"\nOverHeat: {weapon.State.Overheated} - Shooting: {weapon.IsShooting}");

@@ -889,8 +889,13 @@ namespace WeaponCore.Support
                 AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
                 AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
                 AmmoEffect.UserScale = 1;
+
+
                 AmmoParticleStopped = false;
                 AmmoParticleInited = true;
+                var loop = AmmoEffect.Loop || AmmoEffect.DurationMax <= 0;
+                if (!loop)
+                    AmmoEffect = null;
             }
         }
 
@@ -969,7 +974,7 @@ namespace WeaponCore.Support
             if (Vector3D.IsZero(TracerFront)) TracerFront = EndState.EndPos;
 
             if (AmmoDef.Const.AmmoParticle)
-                DisposeAmmoEffect(false, false);
+                DisposeAmmoEffect(true, false);
 
             if (EndState.DetonateFakeExp){
 

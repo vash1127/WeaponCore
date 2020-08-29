@@ -61,7 +61,7 @@ namespace WeaponCore
                     if (ai.DbUpdated || !comp.UpdatedState) {
                         comp.DetectStateChanges();
                     }
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate || comp.Status != Started || comp.MyCube.MarkedForClose) {
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking  || comp.Status != Started || comp.MyCube.MarkedForClose) {
                         
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
@@ -236,6 +236,7 @@ namespace WeaponCore
 
                         if (shotReady || w.ShootOnce) {
 
+                            Log.Line($"{fakeTarget} - {w.State.Action == ShootOn} - {w.AiShooting && w.State.Action == ShootOff}");
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))
                                 w.ShootOnce = false;
 
@@ -296,7 +297,7 @@ namespace WeaponCore
                 var w = ChargingWeapons[i];
                 var comp = w.Comp;
                 var ai = comp.Ai;
-                if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking  || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
                     if (w.DrawingPower)
                         w.StopPowerDraw();
 
@@ -381,7 +382,7 @@ namespace WeaponCore
             {
                 var w = AcquireTargets[i];
                 var comp = w.Comp;
-                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking || !comp.Data.Repo.Base.Set.Overrides.Activate || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
+                if (w.Comp.IsAsleep || w.Comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || !comp.Ai.HasPower || comp.Ai.Concealed || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !comp.IsWorking  || w.NoMagsToLoad && w.Ammo.CurrentAmmo == 0 && Tick - w.LastMagSeenTick > 600) {
                     
                     w.AcquiringTarget = false;
                     AcquireTargets.RemoveAtFast(i);

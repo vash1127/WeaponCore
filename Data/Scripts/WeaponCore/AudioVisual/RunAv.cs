@@ -98,7 +98,7 @@ namespace WeaponCore.Support
                         av.TriggerEntity.PositionComp.SetWorldMatrix(ref av.TriggerMatrix, null, false, false, false);
 
                         if (av.OnScreen != AvShot.Screen.None && av.AmmoDef.Const.FieldParticle && av.FieldEffect != null)
-                            av.AmmoEffect.WorldMatrix = av.PrimeMatrix;
+                            av.FieldEffect.WorldMatrix = av.PrimeMatrix;
                     }
 
                     if (av.HasTravelSound)
@@ -381,7 +381,7 @@ namespace WeaponCore.Support
                 var effectExists = effect != null;
                 var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
-                if (effectStale || somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Base.Set.Overrides.Activate ) {
+                if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
 
                         if (muzzle.Av1Looping || manualExpire) effect.Stop();
@@ -450,7 +450,7 @@ namespace WeaponCore.Support
                     var effectExists = effect != null;
                     var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
-                    if (effectStale || somethingEnded || !weapon.Comp.IsWorking || !weapon.Comp.Data.Repo.Base.Set.Overrides.Activate)
+                    if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
                     {
 
                         if (effectExists) {

@@ -448,7 +448,7 @@ namespace WeaponCore
             else Log.Line($"SendUpdateRequest should only be called on clients");
         }
 
-        internal void SendOverRidesClientComp(WeaponComponent comp, string groupName, string settings, int value)
+        internal void SendOverRidesClientComp(WeaponComponent comp, string settings, int value)
         {
             if (IsClient)
             {
@@ -461,7 +461,6 @@ namespace WeaponCore
                         PType = PacketType.OverRidesUpdate,
                         EntityId = comp.MyCube.EntityId,
                         SenderId = MultiplayerId,
-                        GroupName = groupName,
                         Setting = settings,
                         Value = value,
                     });

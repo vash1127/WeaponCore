@@ -74,12 +74,17 @@ namespace WeaponCore.Support
             var ai = p.Info.Ai;
             var weaponPos = p.Position;
             var overRides = p.Info.Overrides;
-            var overActive = overRides.Activate;
-            var attackNeutrals = overActive && overRides.Neutrals;
-            var attackFriends = overActive && overRides.Friendly;
-            var attackNoOwner = overActive && overRides.Unowned;
-            var forceFoci = overActive && overRides.FocusTargets;
+            var attackNeutrals =  overRides.Neutrals;
+            var attackFriends = overRides.Friendly;
+            var attackNoOwner =  overRides.Unowned;
+            var forceFoci =  overRides.FocusTargets;
+            var minRadius = overRides.MinSize * 0.5f;
+            var maxRadius = overRides.MaxSize * 0.5f;
+
+            var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
+            var maxTargetRadius = maxRadius > s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
             var acquired = false;
+
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -126,7 +131,7 @@ namespace WeaponCore.Support
                     continue;
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
+                if (targetRadius < minTargetRadius || targetRadius > maxTargetRadius) continue;
                 if (info.IsGrid && s.TrackGrids)
                 {
                     if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
@@ -157,11 +162,10 @@ namespace WeaponCore.Support
         {
             var comp = w.Comp;
             var overRides = comp.Data.Repo.Base.Set.Overrides;
-            var overActive = overRides.Activate;
-            var attackNeutrals = overActive && overRides.Neutrals;
-            var attackFriends = overActive && overRides.Friendly;
-            var attackNoOwner = overActive && overRides.Unowned;
-            var forceFoci = overActive && overRides.FocusTargets;
+            var attackNeutrals =  overRides.Neutrals;
+            var attackFriends = overRides.Friendly;
+            var attackNoOwner =  overRides.Unowned;
+            var forceFoci = overRides.FocusTargets;
             var session = w.Comp.Session;
             var ai = comp.Ai;
             session.TargetRequests++;
@@ -170,6 +174,11 @@ namespace WeaponCore.Support
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
+            var minRadius = overRides.MinSize * 0.5f;
+            var maxRadius = overRides.MaxSize * 0.5f;
+            var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
+            var maxTargetRadius = maxRadius > s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
             int offset = 0;
@@ -216,7 +225,7 @@ namespace WeaponCore.Support
 
                     var character = info.Target as IMyCharacter;
                     var targetRadius = character != null ? info.TargetRadius * 5 : info.TargetRadius;
-                    if (targetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
+                    if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);

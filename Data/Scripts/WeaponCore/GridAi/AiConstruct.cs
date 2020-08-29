@@ -9,7 +9,6 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
-using static WeaponCore.Wheel;
 using static WeaponCore.FocusData;
 namespace WeaponCore.Support
 {
@@ -123,6 +122,13 @@ namespace WeaponCore.Support
 
         public class Constructs
         {
+            internal struct GroupMember
+            {
+                internal string Name;
+                internal WeaponComponent Comp;
+            }
+
+
             internal readonly HashSet<MyDefinitionId> RecentItems = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
             internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
@@ -391,7 +397,6 @@ namespace WeaponCore.Support
                     }
                     else
                     {
-                        //if (!RootAi.Session.DedicatedServer) Log.Line($"[BuildMenuGroups] skipping group:{groupName} - cnt:{RootAi.Construct.Data.Repo.BlockGroups[groupName].CompIds.Count}");
                         MembersPool.Return(membersList);
                     }
                 }

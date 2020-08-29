@@ -110,11 +110,6 @@ namespace WeaponCore
                     sync.Targets[i].SyncTarget(w);
                     Reloads[i].Sync(w, sync.Reloads[i]);
                 }
-
-                var s = comp.Session;
-                s.Wheel.Dirty = true;
-                if (s.Wheel.WheelActive && string.IsNullOrEmpty(s.Wheel.ActiveGroupName))
-                    s.Wheel.ForceUpdate();
             }
             else Log.Line($"CompDynamicValues older revision");
 
@@ -362,24 +357,27 @@ namespace WeaponCore
     [ProtoContract]
     public class GroupOverrides
     {
-        [ProtoMember(1), DefaultValue(true)] public bool Activate = true;
-        [ProtoMember(2)] public bool Neutrals;
-        [ProtoMember(3)] public bool Unowned;
-        [ProtoMember(4)] public bool Friendly;
-        [ProtoMember(5)] public bool TargetPainter;
-        [ProtoMember(6)] public bool ManualControl;
-        [ProtoMember(7)] public bool FocusTargets;
-        [ProtoMember(8)] public bool FocusSubSystem;
-        [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(10), DefaultValue(true)] public bool Meteors;
-        [ProtoMember(11), DefaultValue(true)] public bool Biologicals;
-        [ProtoMember(12), DefaultValue(true)] public bool Projectiles;
+        [ProtoMember(1)] public bool Neutrals;
+        [ProtoMember(2)] public bool Unowned;
+        [ProtoMember(3)] public bool Friendly;
+        [ProtoMember(4)] public bool TargetPainter;
+        [ProtoMember(5)] public bool ManualControl;
+        [ProtoMember(6)] public bool FocusTargets;
+        [ProtoMember(7)] public bool FocusSubSystem;
+        [ProtoMember(8)] public BlockTypes SubSystem = BlockTypes.Any;
+        [ProtoMember(9), DefaultValue(true)] public bool Meteors;
+        [ProtoMember(10), DefaultValue(true)] public bool Biologicals;
+        [ProtoMember(11), DefaultValue(true)] public bool Projectiles;
+        [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
+        [ProtoMember(13)] public int MinSize;
+
 
         public GroupOverrides() { }
 
         public void Sync(GroupOverrides syncFrom)
         {
-            Activate = syncFrom.Activate;
+            MaxSize = syncFrom.MaxSize;
+            MinSize = syncFrom.MinSize;
             Neutrals = syncFrom.Neutrals;
             Unowned = syncFrom.Unowned;
             Friendly = syncFrom.Friendly;

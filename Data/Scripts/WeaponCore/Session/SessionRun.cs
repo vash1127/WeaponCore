@@ -104,7 +104,6 @@ namespace WeaponCore
                 if (HomingWeapons.Count > 0)
                     UpdateHomingWeapons();
 
-                if (!DedicatedServer && ActiveControlBlock != null && !InMenu) Wheel.UpdatePosition();
 
                 if (MpActive) {
                     if (PacketsToClient.Count > 0 || PrunedPacketsToClient.Count > 0)
@@ -151,7 +150,7 @@ namespace WeaponCore
 
                 }
 
-                if (!DedicatedServer && !Wheel.WheelActive && !InMenu) {
+                if (!DedicatedServer && !InMenu) {
                     UpdateLocalAiAndCockpit();
                     if (UiInput.PlayerCamera && ActiveCockPit != null) 
                         TargetSelection();
@@ -216,7 +215,6 @@ namespace WeaponCore
                 if (SupressLoad || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
-
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
@@ -226,7 +224,6 @@ namespace WeaponCore
 
                 if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                 {
-                    if (Wheel.WheelActive) Wheel.DrawWheel();
                     TargetUi.DrawTargetUi();
                 }
                 Av.Run();

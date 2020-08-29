@@ -274,7 +274,6 @@ namespace WeaponCore
             UiInput = null;
             TargetUi = null;
             Placer = null;
-            Wheel = null;
             TargetGps = null;
             SApi.Unload();
             SApi = null;

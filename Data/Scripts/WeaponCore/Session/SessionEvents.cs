@@ -195,9 +195,6 @@ namespace WeaponCore
             try
             {
                 InMenu = true;
-                if (Wheel.WheelActive)
-                    Wheel.CloseWheel();
-
                 GridAi ai;
                 if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
                     if (IsServer)

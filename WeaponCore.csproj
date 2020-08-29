@@ -107,6 +107,8 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompRun.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Controls\CreateCustomActions.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Controls\CustomActions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\ModelSupport\PartInfo.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponReload.cs" />
@@ -146,9 +148,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Utils.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Menu.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Wheel.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\WheelFields.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HavokWrapper">

@@ -67,11 +67,6 @@ namespace WeaponCore
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
                     rootConstruct.BuildMenuGroups();
                     rootConstruct.UpdateLeafGroups();
-
-                    Wheel.Dirty = true;
-                    if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
-                        Wheel.ForceUpdate();
-
                 }
                 else Log.Line($"ClientConstructGroups MID failure - mId:{packet.MId}");
             
@@ -123,9 +118,6 @@ namespace WeaponCore
                     ai.MIds[(int)packet.PType] = packet.MId;
 
                     ai.Data.Repo.Sync(aiSyncPacket.Data);
-                    Wheel.Dirty = true;
-                    if (Wheel.WheelActive && string.IsNullOrEmpty(Wheel.ActiveGroupName))
-                        Wheel.ForceUpdate();
                 }
                 else Log.Line($"ClientAiDataUpdate: mid fail - senderId:{packet.SenderId} - mId:{ai.MIds[(int)packet.PType]} >= {packet.MId}");
 

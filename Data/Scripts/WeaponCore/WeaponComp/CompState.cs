@@ -160,10 +160,9 @@ namespace WeaponCore.Support
             UpdatedState = true;
 
             var overRides = Data.Repo.Base.Set.Overrides;
-            var overActive = overRides.Activate;
-            var attackNeutrals = overActive && overRides.Neutrals;
-            var attackNoOwner = overActive && overRides.Unowned;
-            var attackFriends = overActive && overRides.Friendly;
+            var attackNeutrals = overRides.Neutrals;
+            var attackNoOwner = overRides.Unowned;
+            var attackFriends = overRides.Friendly;
             var targetNonThreats = (attackNoOwner || attackNeutrals || attackFriends);
             
             TargetNonThreats = targetNonThreats;

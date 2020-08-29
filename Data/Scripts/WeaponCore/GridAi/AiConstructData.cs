@@ -28,6 +28,8 @@ namespace WeaponCore
                 {
                     bg.Value.CompIds.Clear();
                     bg.Value.ChangeState = GroupInfo.ChangeStates.None;
+                    bg.Value.Settings["ManualControl"] = 0;
+                    bg.Value.Settings["TargetPainter"] = 0;
                 }
             }
         }

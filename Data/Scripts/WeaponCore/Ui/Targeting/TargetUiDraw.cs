@@ -18,7 +18,7 @@ namespace WeaponCore
             
             DrawReticle = false;
             if (!s.InGridAiBlock && !s.UpdateLocalAiAndCockpit()) return;
-            if (!s.Wheel.WheelActive && ActivateSelector()) DrawSelector();
+            if (ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && GetTargetState(s)) DrawTarget();
         }
 
@@ -77,7 +77,7 @@ namespace WeaponCore
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
             for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
             {
-                if (focus.Target[i] <= 0 || s.Wheel.WheelActive && i > 0) continue;
+                if (focus.Target[i] <= 0) continue;
                 var lockMode = focus.Locked[i];
 
                 var targetState = s.TrackingAi.TargetState[i];
@@ -90,7 +90,7 @@ namespace WeaponCore
                     Vector3D offset;
                     float scale;
                     MyStringId textureName;
-                    _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, s.Wheel.WheelActive, s, out textureName, out scale, out offset);
+                    _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, false, s, out textureName, out scale, out offset);
 
                     var color = Color.White;
                     switch (lockMode)

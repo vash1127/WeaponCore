@@ -30,7 +30,8 @@ namespace WeaponCore
 
         [ProtoMember(2)] public readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
-            {"Active", 1},
+            {"MaxSize", 9999},
+            {"MinSize", 0},
             {"Neutrals", 0},
             {"Projectiles", 0 },
             {"Biologicals", 0 },
@@ -49,7 +50,7 @@ namespace WeaponCore
 
         public readonly Dictionary<string, int> DefaultSettings = new Dictionary<string, int>()
         {
-            {"Active", 1},  {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"TargetPainter", 0},  {"ManualControl", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
+            {"MaxSize", 9999}, {"MinSize", 0}, {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"TargetPainter", 0},  {"ManualControl", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
         };
 
         internal enum ChangeStates
@@ -83,7 +84,7 @@ namespace WeaponCore
             }
             else if (comp.Session.IsClient)
             {
-                comp.Session.SendOverRidesClientComp(comp, Name, setting, value);
+                comp.Session.SendOverRidesClientComp(comp, setting, value);
             }
         }
 
@@ -105,10 +106,15 @@ namespace WeaponCore
                     var enabled = v > 0;
                     switch (setting.Key)
                     {
-                        case "Active":
-                            if (!change && o.Activate != enabled) change = true;
-                            o.Activate = enabled;
-                            if (!comp.Session.IsClient && !o.Activate) ClearTargets(comp);
+                        case "MaxSize":
+                            var maxSize = v;
+                            if (!change && o.MaxSize != maxSize) change = true;
+                            o.MaxSize = maxSize;
+                            break;
+                        case "MinSize":
+                            var minSize = v;
+                            if (!change && o.MinSize != minSize) change = true;
+                            o.MinSize = minSize;
                             break;
                         case "SubSystems":
                             var blockType = (BlockTypes)v;
@@ -160,23 +166,24 @@ namespace WeaponCore
 
                 if (change)
                 {
-                    ResetCompState(comp, true, playerId);
+                    ResetCompState(comp, playerId, Settings);
                     if (comp.Session.MpActive)
                         comp.Session.SendCompBaseData(comp);
                 }
             }
         }
 
-        internal void SetValue(WeaponComponent comp, string setting, int v, long playerId)
+        internal static void SetValue(WeaponComponent comp, string setting, int v, long playerId)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var enabled = v > 0;
             switch (setting)
             {
-
-                case "Active":
-                    o.Activate = enabled;
-                    if (!comp.Session.IsClient && !o.Activate) ClearTargets(comp);
+                case "MaxSize":
+                    o.MaxSize = v;
+                    break;
+                case "MinSize":
+                    o.MinSize = v;
                     break;
                 case "SubSystems":
                     o.SubSystem = (BlockTypes)v;
@@ -213,7 +220,7 @@ namespace WeaponCore
                     break;
             }
 
-            ResetCompState(comp, false, playerId);
+            ResetCompState(comp, playerId);
 
             if (comp.Session.MpActive)
                 comp.Session.SendCompBaseData(comp);
@@ -225,9 +232,11 @@ namespace WeaponCore
             var o = comp.Data.Repo.Base.Set.Overrides;
             switch (setting)
             {
-
-                case "Active":
-                    value = o.Activate ? 1 : 0;
+                case "MaxSize":
+                    value = o.MaxSize;
+                    break;
+                case "MinSize":
+                    value = o.MinSize;
                     break;
                 case "SubSystems":
                     value = (int)o.SubSystem;
@@ -266,7 +275,7 @@ namespace WeaponCore
             return value;
         }
 
-        internal void ResetCompState(WeaponComponent comp, bool apply, long playerId)
+        internal static void ResetCompState(WeaponComponent comp, long playerId, Dictionary<string, int> settings = null)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
             var userControl = o.ManualControl || o.TargetPainter;
@@ -278,12 +287,12 @@ namespace WeaponCore
                 if (o.ManualControl)
                 {
                     o.TargetPainter = false;
-                    if (apply) Settings["TargetPainter"] = 0;
+                    if (settings != null) settings["TargetPainter"] = 0;
                 }
                 else
                 {
                     o.ManualControl = false;
-                    if (apply) Settings["ManualControl"] = 0;
+                    if (settings != null) settings["ManualControl"] = 0;
                 }
                 comp.Data.Repo.Base.State.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
@@ -294,14 +303,13 @@ namespace WeaponCore
             }
         }
 
-        private void ClearTargets(WeaponComponent comp)
+        private static void ClearTargets(WeaponComponent comp)
         {
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-
                 var weapon = comp.Platform.Weapons[i];
                 if (weapon.Target.HasTarget)
-                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.ClearTargets);
+                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.Expired);
             }
         }
 

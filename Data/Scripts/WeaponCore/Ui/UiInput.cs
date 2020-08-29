@@ -12,8 +12,6 @@ namespace WeaponCore
         internal int PreviousWheel;
         internal int CurrentWheel;
         internal int ShiftTime;
-        internal bool LeftMouseReleased;
-        internal bool RightMouseReleased;
         internal bool MouseButtonPressed;
         internal bool InputChanged;
         internal bool MouseButtonLeftWasPressed;
@@ -57,7 +55,7 @@ namespace WeaponCore
             WheelBackward = false;
             AimRay = new LineD();
 
-            if (!s.InGridAiBlock || s.Wheel.WheelActive) s.UpdateLocalAiAndCockpit();
+            if (!s.InGridAiBlock) s.UpdateLocalAiAndCockpit();
 
             if (s.InGridAiBlock && !s.InMenu)
             {
@@ -129,7 +127,7 @@ namespace WeaponCore
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 }
             }
-            else if (!s.InMenu && !s.Wheel.WheelActive)
+            else if (!s.InMenu)
             {
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
                 ActionKeyPressed = MyAPIGateway.Input.IsKeyPress(ActionKey);
@@ -156,17 +154,6 @@ namespace WeaponCore
                 WheelForward = true;
             else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
                 WheelBackward = true;
-
-            if (s.Wheel.WheelActive)
-            {
-                LeftMouseReleased = MyAPIGateway.Input.IsNewLeftMouseReleased();
-                RightMouseReleased = MyAPIGateway.Input.IsNewRightMouseReleased();
-            }
-            else
-            {
-                LeftMouseReleased = false;
-                RightMouseReleased = false;
-            }
         }
 
         internal bool GetAimRay(Session s, out LineD ray)

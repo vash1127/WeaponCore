@@ -33,7 +33,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 27;
+        internal const int VersionControl = 28;
         internal const uint ResyncMinDelayTicks = 120;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
@@ -230,7 +230,6 @@ namespace WeaponCore
         internal StallReporter StallReporter;
         internal StallReporter InnerStallReporter;
         internal UiInput UiInput;
-        internal Wheel Wheel;
         internal TargetUi TargetUi;
         internal Hud HudUi;
         internal CoreSettings Settings;
@@ -371,7 +370,6 @@ namespace WeaponCore
         {
             UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
-            Wheel = new Wheel(this);
             HudUi = new Hud(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);

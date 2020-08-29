@@ -308,9 +308,10 @@ namespace WeaponCore
                     {"Status", () => GetComp()?.Status.ToString() ?? string.Empty },
                     {"ControlType", () => GetComp()?.Data.Repo.Base.State.Control.ToString() ?? string.Empty },
                     {"PlayerId", () => GetComp()?.Data.Repo.Base.State.PlayerId.ToString() ?? string.Empty },
-                    {"Activate", () => GetComp()?.Data.Repo.Base.Set.Overrides.Activate.ToString() ?? string.Empty },
                     {"FocusSubSystem", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusSubSystem.ToString() ?? string.Empty },
                     {"FocusTargets", () => GetComp()?.Data.Repo.Base.Set.Overrides.FocusTargets.ToString() ?? string.Empty },
+                    {"MaxSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MaxSize.ToString() ?? string.Empty },
+                    {"MinSize", () => GetComp()?.Data.Repo.Base.Set.Overrides.MinSize.ToString() ?? string.Empty },
                 };
 
                 return compFields;
@@ -731,7 +732,7 @@ namespace WeaponCore
             {
                 foreach (var wa in Asleep) {
 
-                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.Comp.Data.Repo.Base.Set.Overrides.Activate || !wa.Weapon.TrackTarget;
+                    var remove = wa.Weapon.Target.HasTarget || wa.Weapon.Comp.IsAsleep || !wa.Weapon.Comp.IsWorking || !wa.Weapon.TrackTarget;
 
                     if (remove) {
                         ToRemove.Add(wa);

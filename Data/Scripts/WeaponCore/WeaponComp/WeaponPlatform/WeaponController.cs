@@ -146,7 +146,8 @@ namespace WeaponCore.Platform
                 MyPivotPos = centerTestPos;
             else
             {
-                var perpDir2 = Vector3D.Cross(MyPivotDir, axis);
+                Vector3D perpDir2;
+;               Vector3D.Cross(ref MyPivotDir, ref axis, out perpDir2);
                 var point1To2 = weaponCenter - centerTestPos;
                 
                 double point1Dot;
