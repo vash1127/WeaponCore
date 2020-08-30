@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Interfaces.Terminal;
-using VRage.ModAPI;
-using VRage.Utils;
-using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponComponent.ShootActions;
-using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef.EventTriggers;
 
 namespace WeaponCore.Control
 {
@@ -59,25 +52,19 @@ namespace WeaponCore.Control
             comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
         }
 
-        internal static void TerminActionControlMode(IMyTerminalBlock blk)
+        internal static void TerminalActionControlMode(IMyTerminalBlock blk)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
+            
+            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.Control;
+            var value = numValue + 1 <= 2 ? numValue + 1 : 0;
 
-            var manual = comp.Data.Repo.Base.Set.Overrides.ManualControl;
-            var painter = comp.Data.Repo.Base.Set.Overrides.TargetPainter;
-            var auto = !manual && !painter;
-
-            var newMode = auto ? "ManualControl" : "Painter";
-
-            var newBool = auto || manual;
-            var value = newBool ? 1 : 0;
-
-            GroupInfo.SetValue(comp, newMode, value, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "ControlModes", value, comp.Session.PlayerId);
         }
 
-        internal static void TerminActionMovementMode(IMyTerminalBlock blk)
+        internal static void TerminalActionMovementMode(IMyTerminalBlock blk)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
@@ -86,7 +73,7 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
             var value = numValue + 1 <= 3 ? numValue + 1 : 0;
 
-            GroupInfo.SetValue(comp, "MovementModes", value, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "MovementModes", value, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)
@@ -130,7 +117,7 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
             var value = numValue + 1 <= 7 ? numValue + 1 : 0;
 
-            GroupInfo.SetValue(comp, "SubSystems", value, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
@@ -142,7 +129,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Neutrals;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleProjectiles(IMyTerminalBlock blk)
@@ -151,10 +138,10 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                 return;
 
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Neutrals;
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Projectiles;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleBiologicals(IMyTerminalBlock blk)
@@ -166,7 +153,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Biologicals;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleMeteors(IMyTerminalBlock blk)
@@ -178,7 +165,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Meteors;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleFriendly(IMyTerminalBlock blk)
@@ -190,7 +177,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Friendly;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleUnowned(IMyTerminalBlock blk)
@@ -202,7 +189,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.Unowned;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleFocusTargets(IMyTerminalBlock blk)
@@ -214,7 +201,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusTargets;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionToggleFocusSubSystem(IMyTerminalBlock blk)
@@ -226,7 +213,7 @@ namespace WeaponCore.Control
             var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
             var newValue = newBool ? 1 : 0;
 
-            GroupInfo.SetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMaxSizeIncrease(IMyTerminalBlock blk)
@@ -238,7 +225,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize * 2;
             var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 16384;
 
-            GroupInfo.SetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMaxSizeDecrease(IMyTerminalBlock blk)
@@ -250,7 +237,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize / 2;
             var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 1;
 
-            GroupInfo.SetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMinSizeIncrease(IMyTerminalBlock blk)
@@ -262,7 +249,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize == 0 ? 1 : comp.Data.Repo.Base.Set.Overrides.MinSize * 2;
             var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 128;
 
-            GroupInfo.SetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMinSizeDecrease(IMyTerminalBlock blk)
@@ -274,7 +261,7 @@ namespace WeaponCore.Control
             var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize / 2;
             var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 0;
 
-            GroupInfo.SetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
+            GroupInfo.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
         }
         #endregion
 
@@ -398,12 +385,7 @@ namespace WeaponCore.Control
         {
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            if (comp.Data.Repo.Base.Set.Overrides.ManualControl)
-                sb.Append("Manual");
-            else if (comp.Data.Repo.Base.Set.Overrides.TargetPainter)
-                sb.Append("Painter");
-            else
-                sb.Append("Auto");
+            sb.Append(comp.Data.Repo.Base.Set.Overrides.Control);
         }
 
         internal static void MovementModeWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -427,6 +409,12 @@ namespace WeaponCore.Control
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+        }
+
+        internal static bool HasTurret(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.HasTurret;
         }
     }
 }

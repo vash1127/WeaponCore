@@ -250,11 +250,8 @@ namespace WeaponCore.Support
                 {
                     if (ai.Data.Repo.ControllingPlayers.Remove(playerId) && ai.Data.Repo.ControllingPlayers.Count == 0)
                     {
-                        foreach (var g in ai.Construct.Data.Repo.BlockGroups)
-                        {
-                            var set = g.Value.Settings;
-                            set["ManualControl"] = 0;
-                            set["TargetPainter"] = 0;
+                        foreach (var g in ai.Construct.Data.Repo.BlockGroups) {
+                            g.Value.Settings["ControlModes"] = 0;
                         }
 
                         if (ai.Session.MpActive)

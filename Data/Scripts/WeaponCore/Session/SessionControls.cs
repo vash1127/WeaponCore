@@ -57,32 +57,28 @@ namespace WeaponCore
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
                     TerminalMon.HandleInputUpdate(comp);
-                    int rangeControl = -1;
                     IMyTerminalControl wcRangeControl = null;
                     for (int i = controls.Count - 1; i >= 0; i--)
                     {
-                        if (controls[i].Id.Equals("Range"))
+                        var control = controls[i];
+                        if (control.Id.Equals("Range"))
                         {
-                            rangeControl = i;
                             controls.RemoveAt(i);
                         }
-                        else if (controls[i].Id.Equals("WC_Range"))
+                        else if (control.Id.Equals("UseConveyor"))
                         {
-                            wcRangeControl = controls[i];
+                            controls.RemoveAt(i);
+                        }
+                        else if (control.Id.Equals("WC_Range"))
+                        {
+                            wcRangeControl = control;
                             controls.RemoveAt(i);
                         }
                     }
 
-                    if (rangeControl != -1)
-                        controls.RemoveAt(rangeControl);
-
                     if (wcRangeControl != null)
                     {
-                        if (rangeControl != -1)
-                            controls.Insert(rangeControl, wcRangeControl);
-
-                        else
-                            controls.Add(wcRangeControl);
+                        controls.Add(wcRangeControl);
                     }
                 }
             }
@@ -138,9 +134,9 @@ namespace WeaponCore
                     TerminalHelpers.AlterControls<T>();
                     TerminalHelpers.AddUiControls<T>();
                     CreateDefaultActions<T>();
+                    TerminalHelpers.CreateSorterControls<T>();
                 }
-
-                TerminalHelpers.AddSlider<T>(-5, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
+                TerminalHelpers.AddTurretControls<T>();
 
                 if (obs.Count == 0) return;
 

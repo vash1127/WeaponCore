@@ -173,7 +173,7 @@ namespace WeaponCore.Support
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
                 FatCount = detectInfo.FatCount;
-                IsStatic = myGrid != null && myGrid.Physics.IsStatic;
+                IsStatic = Target.Physics.IsStatic;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
                 MyGrid = myGrid;

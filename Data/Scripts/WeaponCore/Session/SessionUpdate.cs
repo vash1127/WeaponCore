@@ -74,7 +74,7 @@ namespace WeaponCore
                         var wasTrack = comp.Data.Repo.Base.State.TrackingReticle;
 
                         var isControllingPlayer = comp.Data.Repo.Base.State.PlayerId == PlayerId;
-                        var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.TargetPainter || comp.Data.Repo.Base.Set.Overrides.ManualControl) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
+                        var track = (isControllingPlayer && (comp.Data.Repo.Base.Set.Overrides.Control != GroupOverrides.ControlModes.Auto) && TargetUi.DrawReticle && !InMenu && comp.Ai.Construct.RootAi.Data.Repo.ControllingPlayers.ContainsKey(PlayerId));
                         if (IsServer)
                             comp.Data.Repo.Base.State.TrackingReticle = track;
                         
@@ -88,7 +88,7 @@ namespace WeaponCore
 
                     if (!PlayerMouseStates.TryGetValue(comp.Data.Repo.Base.State.PlayerId, out comp.InputState)) 
                         comp.InputState = DefaultInputStateData;
-                    var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.ManualControl && trackReticle);
+                    var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
                     var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
                     ///
                     /// Weapon update section
@@ -226,7 +226,7 @@ namespace WeaponCore
                         w.AiShooting = targetLock && !comp.UserControlled;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
-                        var fakeTarget = comp.Data.Repo.Base.Set.Overrides.TargetPainter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
+                        var fakeTarget = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
                         var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;

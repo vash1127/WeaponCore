@@ -242,7 +242,6 @@ namespace WeaponCore
                     iPacket.Data = comp.Data.Repo.Base;
                 }
 
-
                 PrunedPacketsToClient[comp.Data.Repo.Base] = new PacketInfo {
                     Entity = comp.MyCube,
                     Packet = iPacket,

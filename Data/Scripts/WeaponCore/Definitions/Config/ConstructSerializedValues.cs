@@ -38,8 +38,7 @@ namespace WeaponCore
             {"Meteors", 0 },
             {"Friendly", 0},
             {"Unowned", 0},
-            {"TargetPainter", 0},
-            {"ManualControl", 0},
+            {"ControlModes", 0},
             {"FocusTargets", 0},
             {"FocusSubSystem", 0},
             {"SubSystems", 0},
@@ -50,7 +49,7 @@ namespace WeaponCore
 
         public readonly Dictionary<string, int> DefaultSettings = new Dictionary<string, int>()
         {
-            {"MaxSize", 16384}, {"MinSize", 0}, {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"TargetPainter", 0},  {"ManualControl", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
+            {"MaxSize", 16384}, {"MinSize", 0}, {"Neutrals", 0},  {"Projectiles", 0 },  {"Biologicals", 0 },  {"Meteors", 0 },  {"Friendly", 0},  {"Unowned", 0},  {"ControlModes", 0},  {"FocusTargets", 0},  {"FocusSubSystem", 0},  {"SubSystems", 0},
         };
 
         internal enum ChangeStates
@@ -76,7 +75,7 @@ namespace WeaponCore
             }
         }
 
-        internal void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
+        internal static void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
         {
             if (comp.Session.IsServer)
             {
@@ -126,6 +125,11 @@ namespace WeaponCore
                             if (!change && o.MoveMode != moveType) change = true;
                             o.MoveMode = moveType;
                             break;
+                        case "ControlMode":
+                            var controlType = (GroupOverrides.ControlModes)v;
+                            if (!change && o.Control != controlType) change = true;
+                            o.Control = controlType;
+                            break;
                         case "FocusSubSystem":
                             if (!change && o.FocusSubSystem != enabled) change = true;
                             o.FocusSubSystem = enabled;
@@ -133,14 +137,6 @@ namespace WeaponCore
                         case "FocusTargets":
                             if (!change && o.FocusTargets != enabled) change = true;
                             o.FocusTargets = enabled;
-                            break;
-                        case "ManualControl":
-                            if (!change && o.ManualControl != enabled) change = true;
-                            o.ManualControl = enabled;
-                            break;
-                        case "TargetPainter":
-                            if (!change && o.TargetPainter != enabled) change = true;
-                            o.TargetPainter = enabled;
                             break;
                         case "Unowned":
                             if (!change && o.Unowned != enabled) change = true;
@@ -199,18 +195,16 @@ namespace WeaponCore
                     o.MoveMode = (GroupOverrides.MoveModes)v;
                     clearTargets = true;
                     break;
+                case "ControlModes":
+                    o.Control = (GroupOverrides.ControlModes)v;
+                    clearTargets = true;
+                    break;
                 case "FocusSubSystem":
                     o.FocusSubSystem = enabled;
                     break;
                 case "FocusTargets":
                     o.FocusTargets = enabled;
                     clearTargets = true;
-                    break;
-                case "ManualControl":
-                    o.ManualControl = enabled;
-                    break;
-                case "TargetPainter":
-                    o.TargetPainter = enabled;
                     break;
                 case "Unowned":
                     o.Unowned = enabled;
@@ -245,22 +239,13 @@ namespace WeaponCore
         internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
         {
             var o = comp.Data.Repo.Base.Set.Overrides;
-            var userControl = o.ManualControl || o.TargetPainter;
+            var userControl = o.Control != GroupOverrides.ControlModes.Auto;
             
             if (userControl)
             {
                 comp.Data.Repo.Base.State.PlayerId = playerId;
                 comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
-                if (o.ManualControl)
-                {
-                    o.TargetPainter = false;
-                    if (settings != null) settings["TargetPainter"] = 0;
-                }
-                else
-                {
-                    o.ManualControl = false;
-                    if (settings != null) settings["ManualControl"] = 0;
-                }
+                if (settings != null) settings["ControlModes"] = (int)o.Control;
                 comp.Data.Repo.Base.State.TerminalActionSetter(comp, ShootActions.ShootOff);
             }
             else

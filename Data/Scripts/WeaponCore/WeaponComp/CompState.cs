@@ -113,10 +113,9 @@ namespace WeaponCore.Support
             var cycleShootClick = Data.Repo.Base.State.TerminalAction == ShootActions.ShootClick && action == ShootActions.ShootClick;
             var cycleShootOn = Data.Repo.Base.State.TerminalAction == ShootActions.ShootOn && action == ShootActions.ShootOn;
             var cycleSomething = cycleShootOn || cycleShootClick;
-            if (Data.Repo.Base.Set.Overrides.ManualControl || Data.Repo.Base.Set.Overrides.TargetPainter) {
-                Data.Repo.Base.Set.Overrides.ManualControl = false;
-                Data.Repo.Base.Set.Overrides.TargetPainter = false;
-            }
+
+            Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
+
             Data.Repo.Base.State.TerminalActionSetter(this, cycleSomething ? ShootActions.ShootOff : action);
 
             if (action == ShootActions.ShootClick && HasTurret) 
@@ -135,8 +134,7 @@ namespace WeaponCore.Support
         {
             Data.Repo.Base.State.PlayerId = -1;
             Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
-            Data.Repo.Base.Set.Overrides.ManualControl = false;
-            Data.Repo.Base.Set.Overrides.TargetPainter = false;
+            Data.Repo.Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
 
             var tAction = Data.Repo.Base.State.TerminalAction;
             if (tAction == ShootActions.ShootOnce || tAction == ShootActions.ShootClick) 

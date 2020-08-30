@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
 using WeaponCore.Support;
 using WeaponCore.Platform;
 
@@ -26,7 +27,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Cycle SubSystems");
             action.Action = CustomActions.TerminActionCycleSubSystem;
             action.Writer = CustomActions.SubSystemWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -37,9 +38,9 @@ namespace WeaponCore.Control
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"ControlMode");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action.Name = new StringBuilder($"Control Mode");
-            action.Action = CustomActions.TerminActionControlMode;
+            action.Action = CustomActions.TerminalActionControlMode;
             action.Writer = CustomActions.ControlStateWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -104,7 +105,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Neutrals On/Off");
             action.Action = CustomActions.TerminalActionToggleNeutrals;
             action.Writer = CustomActions.NeutralWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -117,7 +118,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Projectiles On/Off");
             action.Action = CustomActions.TerminalActionToggleProjectiles;
             action.Writer = CustomActions.ProjectilesWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -130,7 +131,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Biologicals On/Off");
             action.Action = CustomActions.TerminalActionToggleBiologicals;
             action.Writer = CustomActions.BiologicalsWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -143,7 +144,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Meteors On/Off");
             action.Action = CustomActions.TerminalActionToggleMeteors;
             action.Writer = CustomActions.MeteorsWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -156,7 +157,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Friendly On/Off");
             action.Action = CustomActions.TerminalActionToggleFriendly;
             action.Writer = CustomActions.FriendlyWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -169,7 +170,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Unowned On/Off");
             action.Action = CustomActions.TerminalActionToggleUnowned;
             action.Writer = CustomActions.UnownedWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -182,7 +183,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"FocusTargets On/Off");
             action.Action = CustomActions.TerminalActionToggleFocusTargets;
             action.Writer = CustomActions.FocusTargetsWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -195,7 +196,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"FocusSubSystem On/Off");
             action.Action = CustomActions.TerminalActionToggleFocusSubSystem;
             action.Writer = CustomActions.FocusSubSystemWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -208,7 +209,7 @@ namespace WeaponCore.Control
             action0.Name = new StringBuilder($"MaxSize Increase");
             action0.Action = CustomActions.TerminalActionMaxSizeIncrease;
             action0.Writer = CustomActions.MaxSizeWriter;
-            action0.Enabled = CustomActions.CompReady;
+            action0.Enabled = CustomActions.HasTurret;
             action0.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -218,7 +219,7 @@ namespace WeaponCore.Control
             action1.Name = new StringBuilder($"MaxSize Decrease");
             action1.Action = CustomActions.TerminalActionMaxSizeDecrease;
             action1.Writer = CustomActions.MaxSizeWriter;
-            action1.Enabled = CustomActions.CompReady;
+            action1.Enabled = CustomActions.HasTurret;
             action1.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -231,7 +232,7 @@ namespace WeaponCore.Control
             action0.Name = new StringBuilder($"MinSize Increase");
             action0.Action = CustomActions.TerminalActionMinSizeIncrease;
             action0.Writer = CustomActions.MinSizeWriter;
-            action0.Enabled = CustomActions.CompReady;
+            action0.Enabled = CustomActions.HasTurret;
             action0.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -241,7 +242,7 @@ namespace WeaponCore.Control
             action1.Name = new StringBuilder($"MinSize Decrease");
             action1.Action = CustomActions.TerminalActionMinSizeDecrease;
             action1.Writer = CustomActions.MinSizeWriter;
-            action1.Enabled = CustomActions.CompReady;
+            action1.Enabled = CustomActions.HasTurret;
             action1.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -252,9 +253,9 @@ namespace WeaponCore.Control
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"TargetingMode");
             action.Icon = @"Textures\GUI\Icons\Actions\MovingObjectToggle.dds";
             action.Name = new StringBuilder($"Targeting Mode");
-            action.Action = CustomActions.TerminActionMovementMode;
+            action.Action = CustomActions.TerminalActionMovementMode;
             action.Writer = CustomActions.MovementModeWriter;
-            action.Enabled = CustomActions.CompReady;
+            action.Enabled = CustomActions.HasTurret;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

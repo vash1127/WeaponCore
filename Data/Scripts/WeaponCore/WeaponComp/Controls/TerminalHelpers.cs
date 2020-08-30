@@ -23,7 +23,7 @@ namespace WeaponCore.Control
 
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-            for (int i = isTurretType ? 12 : 0; i < actions.Count; i++)
+            for (int i = isTurretType ? 11 : 0; i < actions.Count; i++)
             {
                 var a = actions[i];
 
@@ -161,19 +161,17 @@ namespace WeaponCore.Control
             HashSet<string> visibleControls = new HashSet<string>
             {
                 "OnOff",
+                "Shoot",
                 "ShowInTerminal",
                 "ShowInInventory",
                 "ShowInToolbarConfig",
                 "Name",
-                "ShowOnHUD",
-                "CustomData",
                 "Control",
             };
 
             for (int i = isTurretType ? 12 : 0; i < controls.Count; i++)
             {
                 var c = controls[i];
-
                 if (!visibleControls.Contains(c.Id))
                     c.Visible = b => !b.Components.Has<WeaponComponent>();
 
@@ -204,34 +202,106 @@ namespace WeaponCore.Control
 
         internal static void AddUiControls<T>() where T : IMyTerminalBlock
         {
-            Separator<T>(0, "WC_sep1", HasExtraUi);
+            Separator<T>(-1, "WC_sep1", NoExtraUi);
 
-            AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.RequestSetGuidance,
+            AddWeaponOnOff<T>(-2, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.RequestSetGuidance,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.HasGuidanceToggle;
                 });
 
-            AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.RequestSetDps,
+            AddSlider<T>(-3, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", WepUi.GetDps, WepUi.RequestSetDps,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.HasDamageSlider;
                 });
 
-            AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.RequestSetRof,
+            AddSlider<T>(-4, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", WepUi.GetRof, WepUi.RequestSetRof,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.HasRofSlider;
                 });
 
-            AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.RequestSetOverload, true,
+            AddCheckbox<T>(-5, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.RequestSetOverload, true,
                 (block, i) =>
                 {
                     var comp = block?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.CanOverload;
+                });
+
+            //AddSlider<T>(-6, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
+
+            //Separator<T>(-7, "WC_sep2", IsTrue);
+
+        }
+
+        internal static void CreateSorterControls<T>() where T : IMyTerminalBlock
+        {
+            AddOnOffSwitchNoAction<T>(-15, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null;
+                });
+        }
+
+        internal static void AddTurretControls<T>() where T : IMyTerminalBlock
+        {
+
+            Separator<T>(-7, "WC_sep2", IsTrue);
+
+            AddSlider<T>(-8, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
+
+            AddOnOffSwitchNoAction<T>(-9, "Neutrals", "Target Neutrals", "Target Neutrals", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret;
+                });
+
+            AddOnOffSwitchNoAction<T>(-10, "Biologicals", "Target Biologicals", "Target Biologicals", WepUi.GetBiologicals, WepUi.RequestSetBiologicals, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret && comp.TrackingWeapon.System.TrackCharacters;
+                });
+
+            AddOnOffSwitchNoAction<T>(-11, "Projectiles", "Target Projectiles", "Target Projectiles", WepUi.GetProjectiles, WepUi.RequestSetProjectiles, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret && comp.TrackingWeapon.System.TrackProjectile;
+                });
+
+            AddOnOffSwitchNoAction<T>(-12, "Meteors", "Target Meteors", "Target Meteors", WepUi.GetMeteors, WepUi.RequestSetMeteors, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret && comp.TrackingWeapon.System.TrackMeteors;
+                });
+
+            AddOnOffSwitchNoAction<T>(-13, "FocusFire", "Target FocusFire", "Target FocusFire", WepUi.GetFocusFire, WepUi.RequestSetFocusFire, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret;
+                });
+
+            AddOnOffSwitchNoAction<T>(-14, "SubSystems", "Target SubSystems", "Target SubSystems", WepUi.GetSubSystems, WepUi.RequestSetSubSystems, true,
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret;
+                });
+
+            AddComboboxNoAction<T>(-15, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetSubSystem, WepUi.RequestSubSystem, WepUi.ListSubSystems, 
+                (block, i) =>
+                {
+                    var comp = block?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.HasTurret;
                 });
         }
 
@@ -239,6 +309,35 @@ namespace WeaponCore.Control
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             return comp != null && comp.CanOverload && comp.HasRofSlider && comp.HasDamageSlider && comp.HasGuidanceToggle;
+        }
+
+        internal static bool IsTrue(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null;
+        }
+
+        internal static bool NoExtraUi(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && !(comp.CanOverload && comp.HasRofSlider && comp.HasDamageSlider && comp.HasGuidanceToggle);
+        }
+
+        internal static bool HasTurret(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.HasTurret;
+        }
+
+        internal static bool NoTurret(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && !comp.HasTurret;
+        }
+
+        internal static bool NoExtraUiAndHasTurret(IMyTerminalBlock block, int notUsed)
+        {
+            return HasTurret(block) && NoExtraUi(block);
         }
 
         private static void OnOffAnimations(WeaponComponent comp, bool on)
@@ -308,11 +407,6 @@ namespace WeaponCore.Control
         }
         #endregion
 
-        #region Support methods
-
-
-        #endregion
-
         #region terminal control methods
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter) where T : IMyTerminalBlock
@@ -366,6 +460,26 @@ namespace WeaponCore.Control
             return s;
         }
 
+        internal static IMyTerminalControlSlider AddSliderNoActions<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, int, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null) where T : IMyTerminalBlock
+        {
+            var s = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
+
+            s.Title = MyStringId.GetOrCompute(title);
+            s.Tooltip = MyStringId.GetOrCompute(tooltip);
+            s.Enabled = b => true;
+            s.Visible = b => visibleGetter(b, id);
+            s.Getter = getter;
+            s.Setter = setter;
+            s.Writer = (b, v) => v.Append(getter(b).ToString("N2"));
+
+            if (minGetter != null)
+                s.SetLimits(minGetter, maxGetter);
+
+            MyAPIGateway.TerminalControls.AddControl<T>(s);
+
+            return s;
+        }
+
         internal static IMyTerminalControlCheckbox AddCheckbox<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, bool allowGroup, Func<IMyTerminalBlock, int, bool> visibleGetter = null) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, T>("WC_" + name);
@@ -381,6 +495,54 @@ namespace WeaponCore.Control
 
             CreateOnOffActionSet<T>(c, name, id, visibleGetter, allowGroup);
 
+            return c;
+        }
+
+        internal static IMyTerminalControlCheckbox AddCheckboxNoAction<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, bool allowGroup, Func<IMyTerminalBlock, int, bool> visibleGetter = null) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, T>("WC_" + name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Visible = b => visibleGetter != null && visibleGetter(b, id);
+            c.Enabled = b => true;
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            return c;
+        }
+
+        internal static IMyTerminalControlOnOffSwitch AddOnOffSwitchNoAction<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, bool allowGroup, Func<IMyTerminalBlock, int, bool> visibleGetter = null) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>("WC_" + name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.OnText = MyStringId.GetOrCompute("On");
+            c.OffText = MyStringId.GetOrCompute("Off");
+            c.Getter = getter;
+            c.Setter = setter;
+            c.Visible = b => visibleGetter != null && visibleGetter(b, id);
+            c.Enabled = b => true;
+            
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            return c;
+        }
+
+        internal static IMyTerminalControlCombobox AddComboboxNoAction<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, long> getter, Action<IMyTerminalBlock, long> setter, Action<List<MyTerminalControlComboBoxItem>> fillAction, Func<IMyTerminalBlock, int, bool> visibleGetter = null) where T : IMyTerminalBlock {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCombobox, T>("WC_" + name);
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.ComboBoxContent = fillAction;
+            c.Getter = getter;
+            c.Setter = setter;
+
+            c.Visible = b => visibleGetter != null && visibleGetter(b, id);
+            c.Enabled = b => true;
+
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
             return c;
         }
 

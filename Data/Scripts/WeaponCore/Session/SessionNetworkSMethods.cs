@@ -218,7 +218,6 @@ namespace WeaponCore
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
             var comp = ent?.Components.Get<WeaponComponent>();
             var myGrid = ent as MyCubeGrid;
-
             if (comp?.Ai == null && myGrid == null) return Error(data, Msg("Comp", comp != null), Msg("Ai+Grid"));
 
             if (comp?.Ai != null)
@@ -227,17 +226,9 @@ namespace WeaponCore
                 if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
                     mIds[(int)packet.PType] = packet.MId;
 
-                    var rootAi = comp.Ai.Construct.RootAi;
-                    var rootConstruct = rootAi.Construct;
-                    rootConstruct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
-
-                    GroupInfo group;
-                    if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out group))
-                    {
-                        group.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
-                        data.Report.PacketValid = true;
-                    }
-                    else Log.Line($"ServerOverRidesUpdate couldn't find group: {overRidesPacket.GroupName}");
+                    comp.Ai.Construct.RootAi.ScanBlockGroups = true;
+                    GroupInfo.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
+                    data.Report.PacketValid = true;
                 }
                 else Log.Line($"ServerOverRidesUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
             }

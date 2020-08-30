@@ -21,8 +21,7 @@ namespace WeaponCore
 
         public void ResetToFreshLoadState()
         {
-            Base.Set.Overrides.TargetPainter = false;
-            Base.Set.Overrides.ManualControl = false;
+            Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
             Base.State.Control = CompStateValues.ControlMode.None;
             Base.State.PlayerId = -1;
             Base.State.TrackingReticle = false;
@@ -365,20 +364,26 @@ namespace WeaponCore
             Moored,
         }
 
+        public enum ControlModes
+        {
+            Auto,
+            Manual,
+            Painter,
+        }
+
         [ProtoMember(1)] public bool Neutrals;
         [ProtoMember(2)] public bool Unowned;
         [ProtoMember(3)] public bool Friendly;
-        [ProtoMember(4)] public bool TargetPainter;
-        [ProtoMember(5)] public bool ManualControl;
-        [ProtoMember(6)] public bool FocusTargets;
-        [ProtoMember(7)] public bool FocusSubSystem;
-        [ProtoMember(8)] public int MinSize;
-        [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(10), DefaultValue(true)] public bool Meteors;
-        [ProtoMember(11), DefaultValue(true)] public bool Biologicals;
-        [ProtoMember(12), DefaultValue(true)] public bool Projectiles;
-        [ProtoMember(13), DefaultValue(16384)] public int MaxSize = 16384;
-        [ProtoMember(14), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
+        [ProtoMember(4)] public bool FocusTargets;
+        [ProtoMember(5)] public bool FocusSubSystem;
+        [ProtoMember(6)] public int MinSize;
+        [ProtoMember(7), DefaultValue(ControlModes.Auto)] public ControlModes Control = ControlModes.Auto;
+        [ProtoMember(8), DefaultValue(BlockTypes.Any)] public BlockTypes SubSystem = BlockTypes.Any;
+        [ProtoMember(9)] public bool Meteors;
+        [ProtoMember(10)] public bool Biologicals;
+        [ProtoMember(11)] public bool Projectiles;
+        [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
+        [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
 
         public GroupOverrides() { }
 
@@ -390,14 +395,14 @@ namespace WeaponCore
             Neutrals = syncFrom.Neutrals;
             Unowned = syncFrom.Unowned;
             Friendly = syncFrom.Friendly;
-            TargetPainter = syncFrom.TargetPainter;
-            ManualControl = syncFrom.ManualControl;
+            Control = syncFrom.Control;
             FocusTargets = syncFrom.FocusTargets;
             FocusSubSystem = syncFrom.FocusSubSystem;
             SubSystem = syncFrom.SubSystem;
             Meteors = syncFrom.Meteors;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
+
         }
     }
 }

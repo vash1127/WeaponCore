@@ -184,6 +184,7 @@ namespace WeaponCore.Support
             var maxRadius = overRides.MaxSize * 0.5f;
             var minTargetRadius = minRadius > 0 ? minRadius : s.MinTargetRadius;
             var maxTargetRadius = maxRadius < s.MaxTargetRadius ? maxRadius : s.MaxTargetRadius;
+
             var moveMode = overRides.MoveMode;
             var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
             var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;

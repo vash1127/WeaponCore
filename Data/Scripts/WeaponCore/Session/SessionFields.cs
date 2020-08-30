@@ -33,8 +33,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 28;
-        internal const uint ResyncMinDelayTicks = 120;
+        internal const int VersionControl = 31;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 1;
