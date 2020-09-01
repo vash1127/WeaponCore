@@ -17,7 +17,7 @@ namespace WeaponCore
         AiData,
         CompBase,
         CompState,
-        ConstructGroups,
+        Construct,
         ConstructFoci,
         TargetChange,
         RequestSetDps,
@@ -42,7 +42,6 @@ namespace WeaponCore
         ReleaseActiveUpdate,
         AmmoCycleRequest,
         PlayerControlRequest,
-        RescanGroupRequest,
         FixedWeaponHitEvent,
         ProblemReport,
         TerminalMonitor,
@@ -72,7 +71,7 @@ namespace WeaponCore
     [ProtoInclude(19, typeof(CompBasePacket))]
     [ProtoInclude(20, typeof(CompStatePacket))]
     [ProtoInclude(21, typeof(TargetPacket))]
-    [ProtoInclude(22, typeof(ConstructGroupsPacket))]
+    [ProtoInclude(22, typeof(ConstructPacket))]
     [ProtoInclude(23, typeof(ConstructFociPacket))]
     [ProtoInclude(24, typeof(FloatUpdatePacket))]
     [ProtoInclude(25, typeof(ClientNotifyPacket))]
@@ -151,11 +150,11 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class ConstructGroupsPacket : Packet
+    public class ConstructPacket : Packet
     {
         [ProtoMember(1)] internal ConstructDataValues Data;
 
-        public ConstructGroupsPacket() { }
+        public ConstructPacket() { }
 
         public override void CleanUp()
         {

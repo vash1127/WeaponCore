@@ -24,12 +24,6 @@ namespace WeaponCore
             if (Ai.Session.IsServer)
             {
                 Repo.FocusData = new FocusData { Target = new long[2], Locked = new FocusData.LockModes[2]};
-                foreach (var bg in Repo.BlockGroups)
-                {
-                    bg.Value.CompIds.Clear();
-                    bg.Value.ChangeState = GroupInfo.ChangeStates.None;
-                    bg.Value.Settings["ControlModes"] = 0;
-                }
             }
         }
 

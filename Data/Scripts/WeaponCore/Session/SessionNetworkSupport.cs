@@ -5,7 +5,6 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore
@@ -88,7 +87,7 @@ namespace WeaponCore
         #endregion
 
         #region ServerOnly
-        internal void SendConstructGroups(GridAi ai)
+        internal void SendConstruct(GridAi ai)
         {
             if (IsServer) {
 
@@ -96,18 +95,18 @@ namespace WeaponCore
                 ++ai.Construct.Data.Repo.FocusData.Revision;
 
                 PacketInfo oldInfo;
-                ConstructGroupsPacket iPacket;
+                ConstructPacket iPacket;
                 if (PrunedPacketsToClient.TryGetValue(ai.Construct.Data.Repo, out oldInfo)) {
-                    iPacket = (ConstructGroupsPacket)oldInfo.Packet;
+                    iPacket = (ConstructPacket)oldInfo.Packet;
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.Data = ai.Construct.Data.Repo;
                 }
                 else {
                     iPacket = PacketConstructPool.Get();
-                    iPacket.MId = ++ai.MIds[(int)PacketType.ConstructGroups];
+                    iPacket.MId = ++ai.MIds[(int)PacketType.Construct];
                     iPacket.EntityId = ai.MyGrid.EntityId;
                     iPacket.SenderId = MultiplayerId;
-                    iPacket.PType = PacketType.ConstructGroups;
+                    iPacket.PType = PacketType.Construct;
                     iPacket.Data = ai.Construct.Data.Repo;
                 }
 
@@ -116,7 +115,7 @@ namespace WeaponCore
                     Packet = iPacket,
                 };
             }
-            else Log.Line($"SendConstructGroups should never be called on Client");
+            else Log.Line($"SendConstruct should never be called on Client");
         }
 
         internal void SendConstructFoci(GridAi ai)
@@ -147,7 +146,7 @@ namespace WeaponCore
                         Packet = iPacket,
                     };
                 }
-                else SendConstructGroups(ai);
+                else SendConstruct(ai);
 
             }
             else Log.Line($"SendConstructGroups should never be called on Client");
@@ -467,51 +466,6 @@ namespace WeaponCore
                 else Log.Line($"SendOverRidesClientComp no player MIds found");
             }
             else Log.Line($"SendOverRidesClientComp should only be called on clients");
-        }
-
-
-        internal void SendGroupUpdate(GridAi ai)
-        {
-            if (IsClient)
-            {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
-                {
-                    PacketsToServer.Add(new Packet
-                    {
-                        MId = ++mIds[(int)PacketType.RescanGroupRequest],
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = MultiplayerId,
-                        PType = PacketType.RescanGroupRequest,
-                    });
-                }
-                else Log.Line($"SendGroupUpdate no player MIds found");
-            }
-            else Log.Line($"SendGroupUpdate should only be called on client");
-        }
-
-
-        internal void SendOverRidesClientAi(GridAi ai, string groupName, string settings, int value)
-        {
-            if (IsClient)
-            {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(MultiplayerId, out mIds))
-                {
-                    PacketsToServer.Add(new OverRidesPacket
-                    {
-                        MId = ++mIds[(int)PacketType.OverRidesUpdate],
-                        PType = PacketType.OverRidesUpdate,
-                        EntityId = ai.MyGrid.EntityId,
-                        SenderId = MultiplayerId,
-                        GroupName = groupName,
-                        Setting = settings,
-                        Value = value,
-                    });
-                }
-                else Log.Line($"SendOverRidesClientAi no player MIds found");
-            }
-            else Log.Line($"SendOverRidesClientAi should only be called on clients");
         }
 
         internal void SendFixedGunHitEvent(MyCubeBlock firingCube, MyEntity hitEnt, Vector3 origin, Vector3 velocity, Vector3 up, int muzzleId, int systemId, int ammoIndex, float maxTrajectory)

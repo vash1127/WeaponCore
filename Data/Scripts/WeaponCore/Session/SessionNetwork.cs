@@ -101,9 +101,9 @@ namespace WeaponCore
                             ClientClientMouseEvent(packetObj);
                             break;
                     }
-                    case PacketType.ConstructGroups:
+                    case PacketType.Construct:
                     {
-                        ClientConstructGroups(packetObj);
+                        ClientConstruct(packetObj);
                         break;
                     }
                     case PacketType.ConstructFoci:
@@ -274,10 +274,6 @@ namespace WeaponCore
                     ServerRequestShootUpdate(packetObj);
                     break;
                 }
-                case PacketType.RescanGroupRequest: {
-                    ServerRescanGroupRequest(packetObj);
-                    break;
-                }
                 case PacketType.FixedWeaponHitEvent: {
                     ServerFixedWeaponHitEvent(packetObj);
                     break;
@@ -406,9 +402,9 @@ namespace WeaponCore
                         PacketReloadPool.Return(iPacket);
                         break;
                     }
-                    case PacketType.ConstructGroups:
+                    case PacketType.Construct:
                     {
-                        var iPacket = (ConstructGroupsPacket)pInfo.Packet;
+                        var iPacket = (ConstructPacket)pInfo.Packet;
                         PacketConstructPool.Return(iPacket);
                         break;
                     }

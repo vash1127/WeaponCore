@@ -45,6 +45,7 @@
     <None Include="Data\Energy_Ammo.sbc" />
     <None Include="Data\Energy_Magazine.sbc" />
     <None Include="Data\EntityComponents.sbc" />
+    <None Include="packages.config" />
     <None Include="WeaponCore.ruleset" />
   </ItemGroup>
   <ItemGroup>
@@ -68,6 +69,8 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSMethods.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkCMethods.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionNetworkSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\Api\Water.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\Api\WaterModAPI.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VersionControl.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudSupport.cs" />
@@ -194,6 +197,9 @@
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.XmlSerializers.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Serialization" />
+    <Reference Include="System.Xml.XmlSerializer" />
     <Reference Include="VRage, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.dll</HintPath>

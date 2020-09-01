@@ -10,24 +10,53 @@ using WeaponCore.Platform;
 using Sandbox.Definitions;
 using VRage.Game;
 using Sandbox.Common.ObjectBuilders;
-
+using VRage.Game.Entity;
+using static WeaponCore.Support.WeaponComponent.ShootActions;
+using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore
 {
     public partial class Session
     {
         #region UI Config
+        public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        {
+            try
+            {
+                AlterActions<T>();
+                AlterControls<T>();
 
-        internal static void CreateDefaultActions<T>() where T : IMyTerminalBlock
+                TerminalHelpers.AddUiControls<T>();
+
+                if (typeof(T) == typeof(IMyLargeTurretBase) || typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun) || typeof(T) == typeof(IMySmallMissileLauncherReload))
+                {
+
+                    session.BaseControlsActions = true;
+                    CreateCustomActionSet<T>(session);
+                }
+                else if (typeof(T) == typeof(IMyConveyorSorter))
+                {
+
+                    CreateDefaultActions<T>(session);
+                    TerminalHelpers.CreateSorterControls<T>();
+                }
+
+                TerminalHelpers.AddTurretControls<T>();
+            }
+            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
+        }
+
+        internal static void CreateDefaultActions<T>(Session session) where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateShoot();
             CreateCustomActions<T>.CreateShootOn();
             CreateCustomActions<T>.CreateShootOff();
             CreateCustomActions<T>.CreateShootOnce();
-            CreateCustomActionSet<T>();
+            CreateCustomActionSet<T>(session);
         }
 
-        internal static void CreateCustomActionSet<T>() where T : IMyTerminalBlock
+        internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
         {
+            CreateCustomActions<T>.CreateCycleAmmo(session);
             CreateCustomActions<T>.CreateShootClick();
             CreateCustomActions<T>.CreateNeutrals();
             CreateCustomActions<T>.CreateFriendly();
@@ -35,7 +64,7 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateMaxSize();
             CreateCustomActions<T>.CreateMinSize();
             CreateCustomActions<T>.CreateMovementState();
-            CreateCustomActions<T>.CreateControl();
+            CreateCustomActions<T>.CreateControlModes();
             CreateCustomActions<T>.CreateSubSystems();
             CreateCustomActions<T>.CreateProjectiles();
             CreateCustomActions<T>.CreateBiologicals();
@@ -84,131 +113,234 @@ namespace WeaponCore
             }
         }
 
-        public static void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
+        internal static void AlterActions<T>()
         {
-            try
-            {
+            var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
 
-                var obs = new HashSet<Type>();
+            List<IMyTerminalAction> actions;
+            MyAPIGateway.TerminalControls.GetActions<T>(out actions);
+            for (int i = isTurretType ? 11 : 0; i < actions.Count; i++) {
 
-                if (typeof(T) == typeof(IMyLargeTurretBase))
-                {
-                    if (!session.BaseControlsActions)
-                    {
-                        TerminalHelpers.AlterActions<IMyUserControllableGun>();
-                        TerminalHelpers.AlterControls<IMyUserControllableGun>();
-                        TerminalHelpers.AddUiControls<T>();
-                        session.BaseControlsActions = true;
-                    }
+                var a = actions[i];
 
-                    TerminalHelpers.AlterActions<T>();
-                    TerminalHelpers.AlterControls<T>();
-                    CreateCustomActionSet<T>();
+                if (!a.Id.Contains("OnOff") && !a.Id.Contains("Shoot") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
+                    a.Enabled = b => !b.Components.Has<WeaponComponent>();
+                else if (a.Id.Equals("Control")) {
 
-                    obs.Add(new MyObjectBuilder_LargeMissileTurret().GetType());
-                    obs.Add(new MyObjectBuilder_InteriorTurret().GetType());
-                    obs.Add(new MyObjectBuilder_LargeGatlingTurret().GetType());
+                    a.Enabled = (b) => {
+                        WeaponComponent comp;
+                        return !b.Components.TryGet(out comp) && comp.BaseType == WeaponComponent.BlockType.Turret;
+                    };
                 }
-                else if (typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun) || typeof(T) == typeof(IMySmallMissileLauncherReload))
-                {
+                else if (a.Id.Equals("ShootOnce")) {
 
-                    if (!session.BaseControlsActions)
-                    {
-                        TerminalHelpers.AlterActions<IMyUserControllableGun>();
-                        TerminalHelpers.AlterControls<IMyUserControllableGun>();
-                        TerminalHelpers.AddUiControls<T>();
-                        session.BaseControlsActions = true;
-                    }
+                    var oldAction = a.Action;
+                    a.Action = blk => {
 
-                    CreateCustomActionSet<T>();
-
-                    obs.Add(new MyObjectBuilder_SmallMissileLauncher().GetType());
-                    obs.Add(new MyObjectBuilder_SmallMissileLauncherReload().GetType());
-                    obs.Add(new MyObjectBuilder_SmallGatlingGun().GetType());
-                }
-                else if (typeof(T) == typeof(IMyConveyorSorter))
-                {
-
-                    obs.Add(new MyObjectBuilder_ConveyorSorter().GetType());
-                    TerminalHelpers.AlterActions<T>();
-                    TerminalHelpers.AlterControls<T>();
-                    TerminalHelpers.AddUiControls<T>();
-                    CreateDefaultActions<T>();
-                    TerminalHelpers.CreateSorterControls<T>();
-                }
-                TerminalHelpers.AddTurretControls<T>();
-
-                if (obs.Count == 0) return;
-
-                var wepIDs = new HashSet<int>();
-                foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in session.WeaponPlatforms)
-                {
-
-                    foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in session.WeaponPlatforms[wp.Key].WeaponSystems)
-                    {
-
-                        MyDefinitionId defId;
-                        MyDefinitionBase def = null;
-                        Type type = null;
-                        if (session.ReplaceVanilla && session.VanillaCoreIds.TryGetValue(wp.Key, out defId))
-                        {
-                            if (!MyDefinitionManager.Static.TryGetDefinition(defId, out def)) return;
-                            type = defId.TypeId;
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            if (comp == null)
+                                oldAction(blk);
+                            return;
                         }
+                        comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
+                    };
+                }
+                else if (a.Id.Equals("Shoot")) {
+
+                    var oldAction = a.Action;
+                    a.Action = blk => {
+
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            if (comp == null)
+                                oldAction(blk);
+                            return;
+                        }
+                        comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                    };
+
+                    var oldWriter = a.Writer;
+                    a.Writer = (blk, sb) => {
+
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            oldWriter(blk, sb);
+                            return;
+                        }
+                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
+                            sb.Append("On");
                         else
-                        {
+                            sb.Append("Off");
+                    };
+                }
+                else if (a.Id.Equals("Shoot_On")) {
 
-                            foreach (var tmpdef in session.AllDefinitions)
-                            {
-                                if (tmpdef.Id.SubtypeId == wp.Key)
-                                {
-                                    type = tmpdef.Id.TypeId;
-                                    def = tmpdef;
-                                    break;
-                                }
-                            }
+                    var oldAction = a.Action;
+                    a.Action = blk => {
 
-                            if (type == null)
-                                return;
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            if (comp == null) oldAction(blk);
+                            return;
                         }
+                        if (comp.Data.Repo.Base.State.TerminalAction != ShootOn)
+                            comp.RequestShootUpdate(ShootOn, comp.Session.DedicatedServer ? 0 : -1);
+                    };
 
-                        try
+                    var oldWriter = a.Writer;
+                    a.Writer = (blk, sb) =>
+                    {
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         {
-
-                            if (obs.Contains(type))
-                            {
-
-                                var wepName = ws.Value.WeaponName;
-                                var wepIdHash = ws.Value.WeaponIdHash;
-                                if (!wepIDs.Contains(wepIdHash))
-                                    wepIDs.Add(wepIdHash);
-                                else
-                                    continue;
-
-                                if (!ws.Value.DesignatorWeapon)
-                                {
-                                    if (ws.Value.AmmoTypes.Length > 1)
-                                    {
-
-                                        var c = 0;
-                                        for (int i = 0; i < ws.Value.AmmoTypes.Length; i++)
-                                        {
-                                            if (ws.Value.AmmoTypes[i].AmmoDef.Const.IsTurretSelectable)
-                                                c++;
-                                        }
-
-                                        if (c > 1)
-                                            CreateCustomActions<T>.CreateCycleAmmoOptions(wepName, wepIdHash, session.ModPath());
-                                    }
-                                }
-                            }
+                            oldWriter(blk, sb);
+                            return;
                         }
-                        catch (Exception e) { Log.Line($"Keen Broke it: {e}"); }
+                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
+                            sb.Append("On");
+                        else
+                            sb.Append("Off");
+                    };
+                }
+                else if (a.Id.Equals("Shoot_Off")) {
+
+                    var oldAction = a.Action;
+                    a.Action = blk => {
+
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            if (comp == null)  oldAction(blk);
+                            return;
+                        }
+                        if (comp.Data.Repo.Base.State.TerminalAction != ShootOff)
+                            comp.RequestShootUpdate(ShootOff, comp.Session.DedicatedServer ? 0 : -1);
+                    };
+
+                    var oldWriter = a.Writer;
+                    a.Writer = (blk, sb) => {
+
+                        var comp = blk.Components.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                            oldWriter(blk, sb);
+                            return;
+                        }
+                        if (comp.Data.Repo.Base.State.TerminalAction == ShootOn)
+                            sb.Append("On");
+                        else
+                            sb.Append("Off");
+                    };
+                }
+            }
+        }
+
+        internal static void AlterControls<T>() where T : IMyTerminalBlock
+        {
+            var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
+
+            List<IMyTerminalControl> controls;
+            MyAPIGateway.TerminalControls.GetControls<T>(out controls);
+
+            HashSet<string> visibleControls = new HashSet<string>
+            {
+                "OnOff",
+                "Shoot",
+                "ShowInTerminal",
+                "ShowInInventory",
+                "ShowInToolbarConfig",
+                "Name",
+                "Control",
+            };
+
+            for (int i = isTurretType ? 12 : 0; i < controls.Count; i++)
+            {
+                var c = controls[i];
+                if (!visibleControls.Contains(c.Id))
+                    c.Visible = b => !b.Components.Has<WeaponComponent>();
+
+                switch (c.Id)
+                {
+                    case "Control":
+                        c.Visible = b =>
+                        {
+                            var comp = b?.Components?.Get<WeaponComponent>();
+                            return comp == null || comp.HasTurret;
+                        };
+                        break;
+
+                    case "OnOff":
+                        {
+                            ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, on) =>
+                            {
+                                var comp = blk?.Components?.Get<WeaponComponent>();
+                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+                                OnOffAnimations(comp, on);
+                            };
+                            break;
+                        }
+                }
+            }
+        }
+
+        private static void OnOffAnimations(WeaponComponent comp, bool on)
+        {
+            if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+
+                var w = comp.Platform.Weapons[i];
+                if (w == null) continue;
+
+                if (!on) {
+
+                    if (w.TurretMode) {
+                        var azSteps = w.Azimuth / w.System.AzStep;
+                        var elSteps = w.Elevation / w.System.ElStep;
+
+                        if (azSteps < 0) azSteps *= -1;
+                        if (azSteps < 0) azSteps *= -1;
+
+                        w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
+
+                        if (!w.Comp.Session.IsClient) w.Target.Reset(comp.Session.Tick, Target.States.AnimationOff);
+                        w.ScheduleWeaponHome(true);
                     }
+
+                    if (w.IsShooting) {
+                        w.StopShooting();
+                        Log.Line($"StopShooting OnOffAnimations");
+                    }
+                    if (w.DrawingPower) w.StopPowerDraw();
+
+                    if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge)
+                        w.Reloading = false;
+                }
+                else {
+
+                    uint delay;
+                    if (w.System.WeaponAnimationLengths.TryGetValue(EventTriggers.TurnOn, out delay))
+                        w.WeaponReadyTick = comp.Session.Tick + delay;
+
+                    if (w.LastEvent == EventTriggers.TurnOff && w.AnimationDelayTick > comp.Session.Tick)
+                        w.WeaponReadyTick += w.AnimationDelayTick - comp.Session.Tick;
                 }
 
+                if (w.AnimationDelayTick < comp.Session.Tick || w.LastEvent == EventTriggers.TurnOn || w.LastEvent == EventTriggers.TurnOff) {
+                    w.EventTriggerStateChanged(EventTriggers.TurnOn, on);
+                    w.EventTriggerStateChanged(EventTriggers.TurnOff, !on);
+                }
+                else {
+
+                    comp.Session.FutureEvents.Schedule(o => {
+                        w.EventTriggerStateChanged(EventTriggers.TurnOn, on);
+                        w.EventTriggerStateChanged(EventTriggers.TurnOff, !on);
+                    },
+                        null,
+                        w.AnimationDelayTick - comp.Session.Tick
+                    );
+                }
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
 
         public static void PurgeTerminalSystem()

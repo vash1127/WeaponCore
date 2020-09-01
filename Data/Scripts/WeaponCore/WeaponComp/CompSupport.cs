@@ -90,25 +90,21 @@ namespace WeaponCore.Support
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)  {
                 var w = comp.Platform.Weapons[i];
 
-                if (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
+                if (w.ActiveAmmoDef.AmmoDef.Const.MustCharge) continue;
 
-                var newRate = (int)(w.System.RateOfFire * comp.Data.Repo.Base.Set.RofModifier);
-                if (newRate < 1)
-                    newRate = 1;
-
-                w.RateOfFire = newRate;
+                w.UpdateRof();
             }
 
             SetDps(comp);
         }
 
-        internal static void SetDps(WeaponComponent comp, bool ammoChange = false)
+        internal static void SetDps(WeaponComponent comp, bool change = false)
         {
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
-                if (!ammoChange && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
+                if (!change && (!w.ActiveAmmoDef.AmmoDef.Const.IsBeamWeapon || w.ActiveAmmoDef.AmmoDef.Const.MustCharge)) continue;
                 comp.Session.FutureEvents.Schedule(w.SetWeaponDps, null, 1);
             }
         }

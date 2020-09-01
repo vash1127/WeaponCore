@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
-using WeaponCore.Control;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -31,7 +29,7 @@ namespace WeaponCore
             
             if (comp.Session.IsServer)  {
                 comp.Data.Repo.Base.Set.DpsModifier = newValue;
-                WeaponComponent.SetDps(comp);
+                WeaponComponent.SetDps(comp, true);
                 if (comp.Session.MpActive)
                     comp.Session.SendCompBaseData(comp);
             }
@@ -120,7 +118,7 @@ namespace WeaponCore
             return comp.Data.Repo.Base.Set.Range;
         }
 
-        internal static bool ShowRange(IMyTerminalBlock block, int notUsed)
+        internal static bool ShowRange(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
@@ -161,7 +159,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            GroupInfo.RequestSetValue(comp, "Neutrals", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "Neutrals", value, comp.Session.PlayerId);
         }
 
         internal static bool GetFocusFire(IMyTerminalBlock block)
@@ -176,7 +174,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             var value = newValue ? 1 : 0;
-            GroupInfo.RequestSetValue(comp, "FocusTargets", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "FocusTargets", value, comp.Session.PlayerId);
         }
 
         internal static bool GetSubSystems(IMyTerminalBlock block)
@@ -192,7 +190,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             var value = newValue ? 1 : 0;
 
-            GroupInfo.RequestSetValue(comp, "FocusSubSystem", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "FocusSubSystem", value, comp.Session.PlayerId);
         }
 
         internal static bool GetBiologicals(IMyTerminalBlock block)
@@ -207,7 +205,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             var value = newValue ? 1 : 0;
-            GroupInfo.RequestSetValue(comp, "Biologicals", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "Biologicals", value, comp.Session.PlayerId);
         }
 
         internal static bool GetProjectiles(IMyTerminalBlock block)
@@ -224,7 +222,7 @@ namespace WeaponCore
 
             var value = newValue ? 1 : 0;
             Log.Line($"newValue:{value} - oldValue:{comp.Data.Repo.Base.Set.Overrides.Projectiles}");
-            GroupInfo.RequestSetValue(comp, "Projectiles", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "Projectiles", value, comp.Session.PlayerId);
         }
 
         internal static bool GetMeteors(IMyTerminalBlock block)
@@ -240,7 +238,7 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            GroupInfo.RequestSetValue(comp, "Meteors", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "Meteors", value, comp.Session.PlayerId);
         }
 
         internal static bool GetShoot(IMyTerminalBlock block)
@@ -271,7 +269,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
-            GroupInfo.RequestSetValue(comp, "SubSystems", (int) newValue, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "SubSystems", (int) newValue, comp.Session.PlayerId);
         }
 
         internal static void ListSubSystems(List<MyTerminalControlComboBoxItem> subSystemList)
@@ -289,6 +287,61 @@ namespace WeaponCore
             new MyTerminalControlComboBoxItem() { Key = 5, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)5}") },
             new MyTerminalControlComboBoxItem() { Key = 6, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)6}") },
             new MyTerminalControlComboBoxItem() { Key = 7, Value = MyStringId.GetOrCompute($"{(WeaponDefinition.TargetingDef.BlockTypes)7}") },
+        };
+
+        internal static long GetMovementMode(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            return (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
+        }
+
+        internal static void RequestMovementMode(IMyTerminalBlock block, long newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            WeaponComponent.RequestSetValue(comp, "MovementModes", (int)newValue, comp.Session.PlayerId);
+        }
+
+        internal static void ListMovementModes(List<MyTerminalControlComboBoxItem> moveList)
+        {
+            foreach (var sub in MoveList) moveList.Add(sub);
+        }
+
+        private static readonly List<MyTerminalControlComboBoxItem> MoveList = new List<MyTerminalControlComboBoxItem>()
+        {
+            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)0}") },
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)2}") },
+            new MyTerminalControlComboBoxItem() { Key = 3, Value = MyStringId.GetOrCompute($"{(GroupOverrides.MoveModes)3}") },
+        };
+
+        internal static long GetControlMode(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            return (int)comp.Data.Repo.Base.Set.Overrides.Control;
+        }
+
+        internal static void RequestControlMode(IMyTerminalBlock block, long newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            WeaponComponent.RequestSetValue(comp, "ControlModes", (int)newValue, comp.Session.PlayerId);
+        }
+
+        internal static void ListControlModes(List<MyTerminalControlComboBoxItem> controlList)
+        {
+            foreach (var sub in ControlList) controlList.Add(sub);
+        }
+
+        private static readonly List<MyTerminalControlComboBoxItem> ControlList = new List<MyTerminalControlComboBoxItem>()
+        {
+            new MyTerminalControlComboBoxItem() { Key = 0, Value = MyStringId.GetOrCompute($"{(GroupOverrides.ControlModes)0}") },
+            new MyTerminalControlComboBoxItem() { Key = 1, Value = MyStringId.GetOrCompute($"{(GroupOverrides.ControlModes)1}") },
+            new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute($"{(GroupOverrides.ControlModes)2}") },
         };
     }
 }

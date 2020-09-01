@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using VRage.Game.Entity;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -190,6 +191,111 @@ namespace WeaponCore.Support
                 Ai.AwakeComps++;
         }
 
+        internal static void RequestSetValue(WeaponComponent comp, string setting, int value, long playerId)
+        {
+            if (comp.Session.IsServer)
+            {
+                SetValue(comp, setting, value, playerId);
+            }
+            else if (comp.Session.IsClient)
+            {
+                comp.Session.SendOverRidesClientComp(comp, setting, value);
+            }
+        }
+
+        internal static void SetValue(WeaponComponent comp, string setting, int v, long playerId)
+        {
+            var o = comp.Data.Repo.Base.Set.Overrides;
+            var enabled = v > 0;
+            var clearTargets = false;
+
+            switch (setting)
+            {
+                case "MaxSize":
+                    o.MaxSize = v;
+                    break;
+                case "MinSize":
+                    o.MinSize = v;
+                    break;
+                case "SubSystems":
+                    o.SubSystem = (WeaponDefinition.TargetingDef.BlockTypes)v;
+                    break;
+                case "MovementModes":
+                    o.MoveMode = (GroupOverrides.MoveModes)v;
+                    clearTargets = true;
+                    break;
+                case "ControlModes":
+                    o.Control = (GroupOverrides.ControlModes)v;
+                    clearTargets = true;
+                    break;
+                case "FocusSubSystem":
+                    o.FocusSubSystem = enabled;
+                    break;
+                case "FocusTargets":
+                    o.FocusTargets = enabled;
+                    clearTargets = true;
+                    break;
+                case "Unowned":
+                    o.Unowned = enabled;
+                    break;
+                case "Friendly":
+                    o.Friendly = enabled;
+                    clearTargets = true;
+                    break;
+                case "Meteors":
+                    o.Meteors = enabled;
+                    break;
+                case "Biologicals":
+                    o.Biologicals = enabled;
+                    break;
+                case "Projectiles":
+                    o.Projectiles = enabled;
+                    clearTargets = true;
+                    break;
+                case "Neutrals":
+                    o.Neutrals = enabled;
+                    clearTargets = true;
+                    break;
+            }
+
+            ResetCompState(comp, playerId, clearTargets);
+
+            if (comp.Session.MpActive)
+                comp.Session.SendCompBaseData(comp);
+        }
+
+
+        internal static void ResetCompState(WeaponComponent comp, long playerId, bool resetTarget, Dictionary<string, int> settings = null)
+        {
+            var o = comp.Data.Repo.Base.Set.Overrides;
+            var userControl = o.Control != GroupOverrides.ControlModes.Auto;
+
+            if (userControl)
+            {
+                comp.Data.Repo.Base.State.PlayerId = playerId;
+                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.Ui;
+                if (settings != null) settings["ControlModes"] = (int)o.Control;
+                comp.Data.Repo.Base.State.TerminalActionSetter(comp, ShootActions.ShootOff);
+            }
+            else
+            {
+                comp.Data.Repo.Base.State.PlayerId = -1;
+                comp.Data.Repo.Base.State.Control = CompStateValues.ControlMode.None;
+            }
+
+            if (resetTarget)
+                ClearTargets(comp);
+        }
+
+        private static void ClearTargets(WeaponComponent comp)
+        {
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var weapon = comp.Platform.Weapons[i];
+                if (weapon.Target.HasTarget)
+                    comp.Platform.Weapons[i].Target.Reset(comp.Session.Tick, Target.States.ControlReset);
+            }
+        }
 
         internal void SubpartClosed(MyEntity ent)
         {

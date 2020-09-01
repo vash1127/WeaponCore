@@ -180,7 +180,6 @@ namespace WeaponCore.Support
                     }
 
                     SubGridInit();
-                    if (Ai.Session.IsServer) Ai.Construct.RootAi.ScanBlockGroups = true;
                 }
 
                 var maxTrajectory = 0d;

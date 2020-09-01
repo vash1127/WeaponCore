@@ -122,25 +122,14 @@ namespace WeaponCore.Support
 
         public class Constructs
         {
-            internal struct GroupMember
-            {
-                internal string Name;
-                internal WeaponComponent Comp;
-            }
-
-
             internal readonly HashSet<MyDefinitionId> RecentItems = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
             internal readonly HashSet<Weapon> OutOfAmmoWeapons = new HashSet<Weapon>();
             internal readonly List<GridAi> RefreshedAis = new List<GridAi>();
-            internal readonly List<string> MenuBlockGroups = new List<string>();
-            internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
-            internal readonly Dictionary<string, List<GroupMember>> MenuBlockGroupMap = new Dictionary<string, List<GroupMember>>();
             internal readonly Dictionary<MyStringHash, int> Counter = new Dictionary<MyStringHash, int>(MyStringHash.Comparer);
             internal readonly Focus Focus = new Focus();
             internal readonly ConstructData Data = new ConstructData();
             internal float OptimalDps;
             internal int BlockCount;
-            internal uint LastRescanTick;
             internal GridAi RootAi;
 
             internal enum RefreshCaller
@@ -151,7 +140,7 @@ namespace WeaponCore.Support
 
             internal enum UpdateType
             {
-                BlockScan,
+                Full,
                 Focus,
                 None,
             }
@@ -193,7 +182,6 @@ namespace WeaponCore.Support
                     }
 
                     UpdateWeaponCounters(ai);
-                    if (RootAi.Session.IsServer) RootAi.ScanBlockGroups = true;
                     return;
                 }
                 Log.Line($"ConstructRefresh Failed main Ai no FatMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
@@ -205,16 +193,11 @@ namespace WeaponCore.Support
             {
                 switch (type)
                 {
-                    case UpdateType.BlockScan:
+                    case UpdateType.Full:
                     {
-                        RootAi.ReScanBlockGroups();
-                        
-                        if (RootAi.Session.HandlesInput) 
-                            BuildMenuGroups();
-                        
-                        UpdateLeafGroups();
+                        UpdateLeafs();
                         if (RootAi.Session.MpActive && RootAi.Session.IsServer && sync)
-                            RootAi.Session.SendConstructGroups(RootAi);
+                            RootAi.Session.SendConstruct(RootAi);
                         break;
                     }
                     case UpdateType.Focus:
@@ -250,12 +233,8 @@ namespace WeaponCore.Support
                 {
                     if (ai.Data.Repo.ControllingPlayers.Remove(playerId) && ai.Data.Repo.ControllingPlayers.Count == 0)
                     {
-                        foreach (var g in ai.Construct.Data.Repo.BlockGroups) {
-                            g.Value.Settings["ControlModes"] = 0;
-                        }
-
                         if (ai.Session.MpActive)
-                            ai.Session.SendConstructGroups(ai);
+                            ai.Session.SendConstruct(ai);
                     }
                     ai.AiSleep = false;
                 }
@@ -304,7 +283,7 @@ namespace WeaponCore.Support
                 return Counter.TryGetValue(weaponHash, out value) ? value : 0;
             }
 
-            internal void UpdateLeafGroups()
+            internal void UpdateLeafs()
             {
                 foreach (var sub in RootAi.SubGrids)
                 {
@@ -315,8 +294,6 @@ namespace WeaponCore.Support
                     if (RootAi.Session.GridTargetingAIs.TryGetValue(sub, out ai))
                     {
                         ai.Construct.Data.Repo.Sync(ai.Construct, RootAi.Construct.Data.Repo, true);
-                        if (RootAi.Session.HandlesInput)
-                            ai.Construct.BuildMenuGroups();
                     }
                 }
             }
@@ -344,61 +321,6 @@ namespace WeaponCore.Support
                 RecentItems.Clear();
             }
 
-            internal void GroupRefresh(GridAi ai)
-            {
-                if (ai.Session.Tick - LastRescanTick < 30 || ai.Session.Tick - ai.AiSpawnTick < 200 && !ai.DbUpdated)
-                    return;
-                
-                LastRescanTick = ai.Session.Tick;
-
-                if (ai == RootAi)
-                    UpdateConstruct(UpdateType.BlockScan);
-                else if (ai != RootAi) { 
-                    ai.ScanBlockGroups = false;
-                    RootAi.ScanBlockGroups = true;
-                }
-            }
-
-            internal void BuildMenuGroups()
-            {
-                MenuBlockGroups.Clear();
-
-                foreach (var group in MenuBlockGroupMap)
-                {
-                    group.Value.Clear();
-                    MembersPool.Return(group.Value);
-                }
-
-                MenuBlockGroupMap.Clear();
-
-                foreach (var group in RootAi.Construct.Data.Repo.BlockGroups)
-                {
-                    var groupName = group.Key;
-                    var membersList = MembersPool.Get();
-
-                    var added = false;
-                    foreach (var compId in group.Value.CompIds)
-                    {
-                        WeaponComponent comp;
-                        if (RootAi.Session.IdToCompMap.TryGetValue(compId, out comp))
-                        {
-                            added = true;
-                            var groupMember = new GroupMember { Comp = comp, Name = groupName };
-                            membersList.Add(groupMember);
-                        }
-                    }
-
-                    if (added) {
-                        MenuBlockGroups.Add(groupName);
-                        MenuBlockGroupMap.Add(groupName, membersList);
-                    }
-                    else
-                    {
-                        MembersPool.Return(membersList);
-                    }
-                }
-            }
-
             internal void Init(GridAi ai)
             {
                 RootAi = ai;
@@ -413,9 +335,6 @@ namespace WeaponCore.Support
                 RootAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
-                MenuBlockGroupMap.Clear();
-                MenuBlockGroups.Clear();
-                MembersPool.Clean();
             }
         }
     }

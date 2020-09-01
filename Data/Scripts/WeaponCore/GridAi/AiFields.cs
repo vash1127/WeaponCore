@@ -116,7 +116,6 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
         internal bool FirstRun = true;
-        internal bool ScanBlockGroups;
         internal bool Registered;
         internal bool MarkedForClose;
         internal bool Closed;

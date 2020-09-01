@@ -49,11 +49,11 @@ namespace WeaponCore
             ClientSideErrorPkt.ApplyChanges();
         }
 
-        private bool ClientConstructGroups(PacketObj data)
+        private bool ClientConstruct(PacketObj data)
         {
             var packet = data.Packet;
             var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-            var cgPacket = (ConstructGroupsPacket)packet;
+            var cgPacket = (ConstructPacket)packet;
             if (myGrid == null) return Error(data, Msg($"Grid: {packet.EntityId}"));
 
             GridAi ai;
@@ -65,8 +65,7 @@ namespace WeaponCore
                     var rootConstruct = ai.Construct.RootAi.Construct;
 
                     rootConstruct.Data.Repo.Sync(rootConstruct, cgPacket.Data);
-                    rootConstruct.BuildMenuGroups();
-                    rootConstruct.UpdateLeafGroups();
+                    rootConstruct.UpdateLeafs();
                 }
                 else Log.Line($"ClientConstructGroups MID failure - mId:{packet.MId}");
             

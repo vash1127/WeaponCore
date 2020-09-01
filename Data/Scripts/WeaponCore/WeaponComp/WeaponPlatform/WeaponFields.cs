@@ -58,10 +58,8 @@ namespace WeaponCore.Platform
         internal uint ElevationTick;
         internal uint AzimuthTick;
 
-        internal double TimePerShot;
         internal float HeatPerc;
 
-        //internal int LoadId;
         internal int ShortLoadId;
         internal int BarrelRate;
         internal int ArmorHits;

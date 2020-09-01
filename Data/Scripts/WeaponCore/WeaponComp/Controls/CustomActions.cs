@@ -61,7 +61,7 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.Control;
             var value = numValue + 1 <= 2 ? numValue + 1 : 0;
 
-            GroupInfo.RequestSetValue(comp, "ControlModes", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "ControlModes", value, comp.Session.PlayerId);
         }
 
         internal static void TerminalActionMovementMode(IMyTerminalBlock blk)
@@ -73,7 +73,195 @@ namespace WeaponCore.Control
             var numValue = (int)comp.Data.Repo.Base.Set.Overrides.MoveMode;
             var value = numValue + 1 <= 3 ? numValue + 1 : 0;
 
-            GroupInfo.RequestSetValue(comp, "MovementModes", value, comp.Session.PlayerId);
+            WeaponComponent.RequestSetValue(comp, "MovementModes", value, comp.Session.PlayerId);
+        }
+
+        internal static void TerminActionCycleSubSystem(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
+            var value = numValue + 1 <= 7 ? numValue + 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Neutrals;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleProjectiles(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Projectiles;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleBiologicals(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Biologicals;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleMeteors(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Meteors;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleFriendly(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Friendly;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleUnowned(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Unowned;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleFocusTargets(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusTargets;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionToggleFocusSubSystem(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionMaxSizeIncrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize * 2;
+            var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 16384;
+
+            WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionMaxSizeDecrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize / 2;
+            var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 1;
+
+            WeaponComponent.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionMinSizeIncrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize == 0 ? 1 : comp.Data.Repo.Base.Set.Overrides.MinSize * 2;
+            var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 128;
+
+            WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionMinSizeDecrease(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize / 2;
+            var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 0;
+
+            WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
+        }
+
+        internal static void TerminalActionCycleAmmoNew(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var w = comp.Platform.Weapons[i];
+
+                var availAmmo = w.System.AmmoTypes.Length;
+                var currActive = w.System.AmmoTypes[w.Ammo.AmmoTypeId];
+                var next = (w.Ammo.AmmoTypeId + 1) % availAmmo;
+                var currDef = w.System.AmmoTypes[next];
+
+                var change = false;
+
+                while (!(currActive.Equals(currDef)))
+                {
+                    if (currDef.AmmoDef.Const.IsTurretSelectable)
+                    {
+                        change = true;
+                        break;
+                    }
+
+                    next = (next + 1) % availAmmo;
+                    currDef = w.System.AmmoTypes[next];
+                }
+
+                if (change)
+                    w.ChangeAmmo(next);
+            }
         }
 
         internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)
@@ -107,164 +295,7 @@ namespace WeaponCore.Control
             if (change)
                 w.ChangeAmmo(next);
         }
-
-        internal static void TerminActionCycleSubSystem(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var numValue = (int)comp.Data.Repo.Base.Set.Overrides.SubSystem;
-            var value = numValue + 1 <= 7 ? numValue + 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "SubSystems", value, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleNeutrals(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Neutrals;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "Neutrals", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleProjectiles(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Projectiles;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "Projectiles", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleBiologicals(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Biologicals;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "Biologicals", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleMeteors(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Meteors;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleFriendly(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Friendly;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "Friendly", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleUnowned(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.Unowned;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "Unowned", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleFocusTargets(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusTargets;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "FocusTargets", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionToggleFocusSubSystem(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var newBool = !comp.Data.Repo.Base.Set.Overrides.FocusSubSystem;
-            var newValue = newBool ? 1 : 0;
-
-            GroupInfo.RequestSetValue(comp, "FocusSubSystem", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionMaxSizeIncrease(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize * 2;
-            var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 16384;
-
-            GroupInfo.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionMaxSizeDecrease(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MaxSize / 2;
-            var newValue = nextValue > 0 && nextValue < 16384 ? nextValue : 1;
-
-            GroupInfo.RequestSetValue(comp, "MaxSize", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionMinSizeIncrease(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize == 0 ? 1 : comp.Data.Repo.Base.Set.Overrides.MinSize * 2;
-            var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 128;
-
-            GroupInfo.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
-        }
-
-        internal static void TerminalActionMinSizeDecrease(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
-                return;
-
-            var nextValue = comp.Data.Repo.Base.Set.Overrides.MinSize / 2;
-            var newValue = nextValue > 0 && nextValue < 128 ? nextValue : 0;
-
-            GroupInfo.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
-        }
         #endregion
-
 
         #region Writters
         internal static void ClickShootWriter(IMyTerminalBlock blk, StringBuilder sb)
@@ -403,18 +434,14 @@ namespace WeaponCore.Control
 
             sb.Append(comp.Data.Repo.Base.Set.Overrides.SubSystem);
         }
+
+        internal static void AmmoSelectionWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.AmmoSelectionWeaponIds.Count == 0) return;
+            var w = comp.Platform.Weapons[comp.AmmoSelectionWeaponIds[0]];
+            sb.Append(w.ActiveAmmoDef.AmmoDef.AmmoRound);
+        }
         #endregion
-
-        internal static bool CompReady(IMyTerminalBlock blk)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-        }
-
-        internal static bool HasTurret(IMyTerminalBlock block)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            return comp != null && comp.HasTurret;
-        }
     }
 }

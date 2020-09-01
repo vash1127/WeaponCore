@@ -234,7 +234,6 @@ namespace WeaponCore
             BlockTypePool.Clean();
             ConcurrentListPool.Clean();
 
-            GroupInfoPool.Clean();
             TargetInfoPool.Clean();
             PacketObjPool.Clean();
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Jakaria;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -33,7 +34,7 @@ namespace WeaponCore
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
-        internal const int VersionControl = 31;
+        internal const int VersionControl = 32;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 1;
@@ -57,7 +58,6 @@ namespace WeaponCore
 
         internal readonly MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>(64);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());
-        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>(128, info => info.Clean());
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128, invMove => invMove.Clean());
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100, cList => cList.ClearImmediate());
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128, fatMap => fatMap.Clean());
@@ -66,7 +66,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<List<IMySlimBlock>> SlimPool = new MyConcurrentPool<List<IMySlimBlock>>(128, slim => slim.Clear());
         internal readonly MyConcurrentPool<MyWeaponPlatform> PlatFormPool = new MyConcurrentPool<MyWeaponPlatform>(256, platform => platform.Clean());
         internal readonly MyConcurrentPool<PacketObj> PacketObjPool = new MyConcurrentPool<PacketObj>(128, packet => packet.Clean());
-        internal readonly MyConcurrentPool<ConstructGroupsPacket> PacketConstructPool = new MyConcurrentPool<ConstructGroupsPacket>(64, packet => packet.CleanUp());
+        internal readonly MyConcurrentPool<ConstructPacket> PacketConstructPool = new MyConcurrentPool<ConstructPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<ConstructFociPacket> PacketConstructFociPool = new MyConcurrentPool<ConstructFociPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<AiDataPacket> PacketAiPool = new MyConcurrentPool<AiDataPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<CompBasePacket> PacketCompBasePool = new MyConcurrentPool<CompBasePacket>(64, packet => packet.CleanUp());
@@ -133,6 +133,8 @@ namespace WeaponCore
         internal readonly Dictionary<string, MyMouseButtonsEnum> MouseMap = new Dictionary<string, MyMouseButtonsEnum>();
         internal readonly Dictionary<Weapon, int> ChargingWeaponsIndexer = new Dictionary<Weapon, int>();
         internal readonly Dictionary<GridAi, int> GridsToUpdateInvetoriesIndexer = new Dictionary<GridAi, int>();
+        internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
+        internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
 
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
@@ -198,7 +200,6 @@ namespace WeaponCore
 
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
-
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal Color[] HeatEmissives;
@@ -218,6 +219,7 @@ namespace WeaponCore
         internal ApiBackend Api;
         internal Action<Vector3, float> ProjectileAddedCallback = (location, health) => { };
         internal ShieldApi SApi = new ShieldApi();
+        internal WaterModAPI WApi = new WaterModAPI();
         internal NetworkReporter Reporter = new NetworkReporter();
         internal MyStorageData TmpStorage = new MyStorageData();
         internal InputStateData DefaultInputStateData = new InputStateData();
@@ -317,7 +319,7 @@ namespace WeaponCore
         internal bool DbUpdating;
         internal bool InventoryUpdate;
         internal bool GlobalDamageModifed;
-
+        internal bool WaterMod;
 
         internal enum AnimationType
         {
@@ -364,7 +366,7 @@ namespace WeaponCore
 
         internal int UniqueWeaponId => WeaponIdCounter++;
 
-        public T CastProhibit<T>(T ptr, object val) => (T) val;
+        public static T CastProhibit<T>(T ptr, object val) => (T) val;
 
         public Session()
         {

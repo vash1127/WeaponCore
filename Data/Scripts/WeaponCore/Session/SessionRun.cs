@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -278,6 +276,8 @@ namespace WeaponCore
                         if (mod.Name != ModContext.ModId)
                             SupressLoad = true;
                     }
+                    else if (mod.PublishedFileId == 2200451495)
+                        WaterMod = true;
                 }
 
                 if (SupressLoad)
@@ -315,6 +315,12 @@ namespace WeaponCore
 
                 if (!ITask.IsComplete)
                     ITask.Wait();
+
+                if (WaterMod)
+                {
+                    WApi.Unregister();
+                    WApi.RecievedData -= WApiReceiveData;
+                }
 
                 if (IsServer || DedicatedServer)
                     MyAPIGateway.Multiplayer.UnregisterMessageHandler(ServerPacketId, ProccessServerPacket);

@@ -32,6 +32,7 @@ namespace WeaponCore.Platform
             
             CheckInventorySystem = true;
 
+            UpdateRof();
             SetWeaponDps();
             UpdateWeaponRange();
 
@@ -47,6 +48,7 @@ namespace WeaponCore.Platform
                 return;
 
             ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
+            UpdateRof();
             SetWeaponDps();
             UpdateWeaponRange();
         }

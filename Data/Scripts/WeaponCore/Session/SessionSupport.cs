@@ -421,9 +421,8 @@ namespace WeaponCore
         private void ChatMessageSet(string message, ref bool sendToOthers)
         {
             var somethingUpdated = false;
-            Log.Line($"message: {message}");
 
-            if (message.StartsWith("/wc"))
+            if (message.StartsWith("/wc "))
             {
                 switch (message)
                 {

@@ -217,48 +217,17 @@ namespace WeaponCore
             var overRidesPacket = (OverRidesPacket)packet;
             var ent = MyEntities.GetEntityByIdOrDefault(packet.EntityId, null, true);
             var comp = ent?.Components.Get<WeaponComponent>();
-            var myGrid = ent as MyCubeGrid;
-            if (comp?.Ai == null && myGrid == null) return Error(data, Msg("Comp", comp != null), Msg("Ai+Grid"));
+            if (comp?.Ai == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return Error(data, Msg("Comp", comp != null), Msg("Ai", comp?.Ai != null), Msg("Ai", comp?.Platform.State == MyWeaponPlatform.PlatformState.Ready));
 
-            if (comp?.Ai != null)
-            {
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                    mIds[(int)packet.PType] = packet.MId;
+            uint[] mIds;
+            if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
+                mIds[(int)packet.PType] = packet.MId;
 
-                    comp.Ai.Construct.RootAi.ScanBlockGroups = true;
-                    GroupInfo.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
-                    data.Report.PacketValid = true;
-                }
-                else Log.Line($"ServerOverRidesUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+                WeaponComponent.RequestSetValue(comp, overRidesPacket.Setting, overRidesPacket.Value, SteamToPlayer[overRidesPacket.SenderId]);
+                data.Report.PacketValid = true;
             }
-            else if (myGrid != null)
-            {
-                GridAi ai;
-                if (GridTargetingAIs.TryGetValue(myGrid, out ai))  {
-
-                    uint[] mIds;
-                    if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                        mIds[(int)packet.PType] = packet.MId;
-
-                        var rootConstruct = ai.Construct.RootAi.Construct;
-
-                        rootConstruct.UpdateConstruct(GridAi.Constructs.UpdateType.BlockScan);
-
-                        GroupInfo groups;
-                        if (rootConstruct.Data.Repo.BlockGroups.TryGetValue(overRidesPacket.GroupName, out groups))
-                        {
-                            groups.RequestApplySettings(ai, overRidesPacket.Setting, overRidesPacket.Value, ai.Session, SteamToPlayer[overRidesPacket.SenderId]);
-                            data.Report.PacketValid = true;
-                        }
-                        else
-                            return Error(data, Msg("Block group not found"));
-                    }
-                    else Log.Line($"ServerOverRidesUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
-                }
-                else
-                    return Error(data, Msg($"GridAi not found, is marked:{myGrid.MarkedForClose}, has root:{GridToMasterAi.ContainsKey(myGrid)}"));
-            }
+            else Log.Line($"ServerOverRidesUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            
             return true;
         }
 
@@ -306,32 +275,6 @@ namespace WeaponCore
 
             return true;
         }
-
-        private bool ServerRescanGroupRequest(PacketObj data)
-        {
-            var packet = data.Packet;
-            var myGrid = MyEntities.GetEntityByIdOrDefault(packet.EntityId) as MyCubeGrid;
-
-            if (myGrid == null) return Error(data, Msg("Grid"));
-
-            GridAi ai;
-            if (GridToMasterAi.TryGetValue(myGrid, out ai)) {
-
-                uint[] mIds;
-                if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int)packet.PType] < packet.MId)  {
-                    mIds[(int)packet.PType] = packet.MId;
-
-                    //ai.Construct.GroupRefresh(ai);
-                    ai.ScanBlockGroups = true;
-                    data.Report.PacketValid = true;
-                }
-                else Log.Line($"ServerRescanGroupRequest: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
-
-            }
-
-            return true;
-        }
-
 
         private bool ServerFocusUpdate(PacketObj data)
         {

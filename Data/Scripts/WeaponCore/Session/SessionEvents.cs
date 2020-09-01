@@ -37,49 +37,24 @@ namespace WeaponCore
 
                     lock (InitObj)
                     {
-                        if (!SorterControls && myEntity is MyConveyorSorter)
-                        {
-                            if (IsServer && MpActive && !DedicatedServer)
-                                CreateTerminalUi<IMyConveyorSorter>(this);
-                            else
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
-
+                        if (!SorterControls && myEntity is MyConveyorSorter) {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyConveyorSorter>(this));
                             SorterControls = true;
                         }
-                        else if (!TurretControls && turret != null)
-                        {
-                            if (IsServer && MpActive && !DedicatedServer)
-                                CreateTerminalUi<IMyLargeTurretBase>(this);
-                            else
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
-
+                        else if (!TurretControls && turret != null) {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMyLargeTurretBase>(this));
                             TurretControls = true;
                         }
-                        else if (!FixedMissileReloadControls && controllableGun is IMySmallMissileLauncherReload)
-                        {
-                            if (IsServer && MpActive && !DedicatedServer)
-                                CreateTerminalUi<IMySmallMissileLauncherReload>(this);
-                            else
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncherReload>(this));
-
+                        else if (!FixedMissileReloadControls && controllableGun is IMySmallMissileLauncherReload) {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncherReload>(this));
                             FixedMissileReloadControls = true;
                         }
-                        else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher)
-                        {
-                            if (IsServer && MpActive && !DedicatedServer)
-                                CreateTerminalUi<IMySmallMissileLauncher>(this);
-                            else
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
-
+                        else if (!FixedMissileControls && controllableGun is IMySmallMissileLauncher) {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallMissileLauncher>(this));
                             FixedMissileControls = true;
                         }
-                        else if (!FixedGunControls && controllableGun is IMySmallGatlingGun)
-                        {
-                            if (IsServer && MpActive && !DedicatedServer)
-                                CreateTerminalUi<IMySmallGatlingGun>(this);
-                            else
-                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
-
+                        else if (!FixedGunControls && controllableGun is IMySmallGatlingGun) {
+                            MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUi<IMySmallGatlingGun>(this));
                             FixedGunControls = true;
                         }
                     }
@@ -197,9 +172,7 @@ namespace WeaponCore
                 InMenu = true;
                 GridAi ai;
                 if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
-                    if (IsServer)
-                        ai.ScanBlockGroups = true;
-                    else SendGroupUpdate(ai);
+                    //Send updates?
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in MenuOpened: {ex}"); }
@@ -213,9 +186,7 @@ namespace WeaponCore
                 HudUi.NeedsUpdate = true;
                 GridAi ai;
                 if (ActiveControlBlock != null && GridToMasterAi.TryGetValue(ActiveControlBlock.CubeGrid, out ai))  {
-                    if (IsServer)
-                        ai.ScanBlockGroups = true;
-                    else SendGroupUpdate(ai);
+                    //Send updates?
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in MenuClosed: {ex}"); }
@@ -291,6 +262,24 @@ namespace WeaponCore
                 }
             }
             return false;
+        }
+
+        private void WApiReceiveData()
+        {
+            if (WApi.Registered) {
+                WaterMap.Clear();
+                MaxWaterHeightSqr.Clear();
+                for (int i = 0; i < WApi.Waters.Count; i++) {
+                    var water = WApi.Waters[i];
+                    if (water.planet != null)
+                    {
+                        WaterMap[water.planet] = water;
+                        var maxWaterHeight = water.radius + water.waveHeight;
+                        var maxWaterHeightSqr = maxWaterHeight * maxWaterHeight;
+                        MaxWaterHeightSqr[water.planet] = maxWaterHeightSqr;
+                    }
+                }
+            }
         }
     }
 }

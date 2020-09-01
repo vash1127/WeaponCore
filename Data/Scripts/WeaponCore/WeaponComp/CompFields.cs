@@ -21,7 +21,7 @@ namespace WeaponCore.Support
         internal readonly IMySlimBlock Slim;
         internal readonly MyStringHash SubtypeHash;
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
-
+        internal readonly List<int> AmmoSelectionWeaponIds = new List<int>();
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
         internal readonly IMyTerminalBlock TerminalBlock;
@@ -40,7 +40,6 @@ namespace WeaponCore.Support
         internal uint IsWorkingChangedTick;
 
         internal int WeaponsTracking;
-
         internal double MaxTargetDistance = double.MinValue;
         internal double MaxTargetDistanceSqr = double.MinValue;
         internal double MinTargetDistance = double.MaxValue;
@@ -82,6 +81,7 @@ namespace WeaponCore.Support
         internal bool Registered;
         internal bool ResettingSubparts;
         internal bool HasArmor;
+        internal bool UiEnabled;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

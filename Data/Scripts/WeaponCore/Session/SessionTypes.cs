@@ -273,7 +273,6 @@ namespace WeaponCore
                     {"Version", () => GetAi()?.Version.ToString() ?? string.Empty },
                     {"RootAiId", () => GetAi()?.Construct.RootAi?.MyGrid.EntityId.ToString() ?? string.Empty },
                     {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
-                    {"BlockGroups", () => GetAi()?.Construct.Data.Repo.BlockGroups.Count.ToString() ?? string.Empty },
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
                     {"Inventories", () => GetAi()?.Inventories.Count.ToString() ?? string.Empty },

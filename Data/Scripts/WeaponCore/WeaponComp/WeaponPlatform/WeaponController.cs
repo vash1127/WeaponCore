@@ -214,30 +214,13 @@ namespace WeaponCore.Platform
 
                 if (set && System.DegRof && State.Heat >= (System.MaxHeat * .8))
                 {
-                    var systemRate = System.RateOfFire * Comp.Data.Repo.Base.Set.RofModifier;
-                    var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier;
-                    var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
-
-                    systemRate *= heatModifier;
-
-                    if (systemRate < 1)
-                        systemRate = 1;
-
-                    RateOfFire = (int)systemRate;
-                    BarrelSpinRate = (int)barrelRate;
-                    TicksPerShot = (uint)(3600f / RateOfFire);
-
-                    if (System.HasBarrelRotation) UpdateBarrelRotation();
                     CurrentlyDegrading = true;
+                    UpdateRof();
                 }
                 else if (set && CurrentlyDegrading)
                 {
                     CurrentlyDegrading = false;
-                    RateOfFire = (int)(System.RateOfFire * Comp.Data.Repo.Base.Set.RofModifier);
-                    BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier);
-                    TicksPerShot = (uint)(3600f / RateOfFire);
-
-                    if (System.HasBarrelRotation) UpdateBarrelRotation();
+                    UpdateRof();
                 }
 
                 if (State.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
@@ -257,6 +240,24 @@ namespace WeaponCore.Platform
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.Data.Repo == null}  - Session:{Comp?.Session == null} - Value:{Comp.Data.Repo == null} - Weapons:{Comp.Data.Repo?.Base.State.Weapons[WeaponId] == null}"); }
+        }
+
+        internal void UpdateRof()
+        {
+            var systemRate = System.RateOfFire * Comp.Data.Repo.Base.Set.RofModifier;
+            var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier;
+            var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
+
+            systemRate *= heatModifier;
+
+            if (systemRate < 1)
+                systemRate = 1;
+
+            RateOfFire = (int)systemRate;
+            BarrelSpinRate = (int)barrelRate;
+            TicksPerShot = (uint)(3600f / RateOfFire);
+
+            if (System.HasBarrelRotation) UpdateBarrelRotation();
         }
 
         internal void TurnOnAV(object o)
@@ -315,7 +316,6 @@ namespace WeaponCore.Platform
             RequiredPower *= mulitplier;
 
             TicksPerShot = (uint)(3600f / RateOfFire);
-            TimePerShot = (3600d / RateOfFire);
 
             var oldDps = Dps;
             var oldMaxCharge = MaxCharge;

@@ -1,12 +1,5 @@
 ﻿using System.Collections.Generic;
 using ProtoBuf;
-using Sandbox.Game.Entities;
-using VRage.Game.Entity;
-using VRage.Sync;
-using VRage.Utils;
-using WeaponCore.Platform;
-using WeaponCore.Support;
-
 
 namespace WeaponCore
 {

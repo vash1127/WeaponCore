@@ -188,11 +188,14 @@ namespace WeaponCore
 
             Overrides.Sync(sync.Overrides);
 
-            if (Overload != sync.Overload || Math.Abs(RofModifier - sync.RofModifier) > 0.0001f || Math.Abs(DpsModifier - sync.DpsModifier) > 0.0001f) {
+            var rofChange = Math.Abs(RofModifier - sync.RofModifier) > 0.0001f;
+            var dpsChange = Math.Abs(DpsModifier - sync.DpsModifier) > 0.0001f;
+
+            if (Overload != sync.Overload || rofChange || dpsChange) {
                 Overload = sync.Overload;
                 RofModifier = sync.RofModifier;
                 DpsModifier = sync.DpsModifier;
-                SetRof(comp);
+                if (rofChange) SetRof(comp);
             }
         }
 

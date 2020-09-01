@@ -64,67 +64,6 @@ namespace WeaponCore.Support
             }
         }
 
-        private readonly List<string> _tmpGroupKeys = new List<string>();
-        internal void ReScanBlockGroups()
-        {
-            if (Session.Tick - LastGroupScanTick < 60)
-                return;
-            
-            if (TerminalSystem == null)
-                TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
-            
-            if (TerminalSystem != null) {
-
-                TerminalSystem.GetBlockGroups(null, group =>
-                {
-                    GroupInfo groupInfo = null;
-                    if (Construct.Data.Repo.BlockGroups.TryGetValue(group.Name, out groupInfo)) {
-                        groupInfo.ChangeState = GroupInfo.ChangeStates.None;
-                        groupInfo.Name = group.Name;
-                        groupInfo.CompIds.Clear();
-                    }
-
-                    group.GetBlocks(null, block =>
-                    {
-                        var cube = (MyCubeBlock) block;
-                        WeaponComponent comp;
-                        if (cube.Components.TryGet(out comp) && SubGrids.Contains(cube.CubeGrid)) {
-
-                            if (groupInfo == null) {
-                                groupInfo = Session.GroupInfoPool.Get();
-                                groupInfo.Name = group.Name;
-                                groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
-                                Construct.Data.Repo.BlockGroups.Add(group.Name, groupInfo);
-                            }
-                            groupInfo.CompIds.Add(comp.MyCube.EntityId);
-                            if (groupInfo.ChangeState == GroupInfo.ChangeStates.None)
-                                groupInfo.ChangeState = GroupInfo.ChangeStates.Modify;
-                        }
-                        return false;
-                    });
-
-                    return false;
-                });
-
-                foreach (var group in Construct.Data.Repo.BlockGroups) {
-                    if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
-                    {
-                        Session.GroupInfoPool.Return(group.Value);
-                        _tmpGroupKeys.Add(group.Key);
-                    }
-                    else group.Value.ChangeState = GroupInfo.ChangeStates.None;
-                }
-
-                for (int i = 0; i < _tmpGroupKeys.Count; i++)
-                    Construct.Data.Repo.BlockGroups.Remove(_tmpGroupKeys[i]);
-                _tmpGroupKeys.Clear();
-
-                ScanBlockGroups = false;
-
-                LastGroupScanTick = Session.Tick;
-            }
-        }
-
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
         {
             var count = cardsToSort - firstCard;

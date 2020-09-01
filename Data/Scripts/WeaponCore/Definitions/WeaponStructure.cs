@@ -78,6 +78,7 @@ namespace WeaponCore.Support
         public readonly int BarrelSpinRate;
         public readonly int ShotsPerBurst;
 
+        public readonly bool HasAmmoSelection;
         public readonly bool HasEjector;
         public readonly bool HasBarrelRotation;
         public readonly bool BarrelEffect1;
@@ -102,6 +103,7 @@ namespace WeaponCore.Support
         public readonly bool BarrelRotationSound;
         public readonly bool PreFireSound;
         public readonly bool LockOnFocus;
+        public readonly bool HasGuidedAmmo;
         public readonly HardwareDef.ArmorState Armor;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
@@ -184,11 +186,18 @@ namespace WeaponCore.Support
                 if (delay > DelayToFire)
                     DelayToFire = (int)delay;
 
-            for (int i = 0; i < AmmoTypes.Length; i++)
-            {
+            var ammoSelections = 0;
+            for (int i = 0; i < AmmoTypes.Length; i++) {
+
                 var ammo = AmmoTypes[i];
                 ammo.AmmoDef.Const = new AmmoConstants(ammo, Values, Session, this, i);
+                if (ammo.AmmoDef.Const.GuidedAmmoDetected)
+                    HasGuidedAmmo = true;
+
+                if (ammo.AmmoDef.Const.IsTurretSelectable)
+                    ++ammoSelections;
             }
+            HasAmmoSelection = ammoSelections > 1;
         }
 
         private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
@@ -492,6 +501,7 @@ namespace WeaponCore.Support
         public readonly bool MaxTrajectoryGrows;
         public readonly bool HasShotFade;
         public readonly bool CustomExplosionSound;
+        public readonly bool GuidedAmmoDetected;
         public readonly float TargetLossDegree;
         public readonly float TrailWidth;
         public readonly float ShieldBypassMod;
@@ -550,9 +560,13 @@ namespace WeaponCore.Support
             if (AmmoItem.Content != null && !session.AmmoItems.ContainsKey(AmmoItem.ItemId)) 
                 session.AmmoItems[AmmoItem.ItemId] = AmmoItem;
 
+            var guidedAmmo = false;
             for (int i = 0; i < wDef.Ammos.Length; i++)
             {
                 var ammoType = wDef.Ammos[i];
+                if (ammoType.Trajectory.Guidance != None)
+                    guidedAmmo = true;
+
                 if (ammoType.AmmoRound.Equals(ammo.AmmoDef.Shrapnel.AmmoRound))
                     ShrapnelId = i;
             }
@@ -601,7 +615,7 @@ namespace WeaponCore.Support
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
 
-            ComputeAmmoPattern(ammo, wDef, out AmmoPattern, out PatternIndexCnt, out AmmoShufflePattern);
+            ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out AmmoShufflePattern, out GuidedAmmoDetected);
 
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
@@ -687,7 +701,7 @@ namespace WeaponCore.Support
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
-        private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern)
+        private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern, out bool guidedDetected)
         {
             var pattern = ammo.AmmoDef.Pattern;
             var indexPos = 0;
@@ -695,8 +709,7 @@ namespace WeaponCore.Support
             int indexCount;
             if (!pattern.Enable)
                 indexCount = 1;
-            else
-            {
+            else {
                 indexCount = pattern.Ammos.Length;
                 if (!pattern.SkipParent) indexCount += 1;
             }
@@ -712,19 +725,24 @@ namespace WeaponCore.Support
             if (!pattern.Enable || !pattern.SkipParent)
                 ammoPattern[indexPos++] = ammo.AmmoDef;
 
-            if (pattern.Enable)
-            {
-                for (int i = 0; i < wDef.Ammos.Length; i++)
-                {
+            if (pattern.Enable) {
+
+                for (int i = 0; i < wDef.Ammos.Length; i++) {
+
                     var ammoDef = wDef.Ammos[i];
-                    for (int j = 0; j < ammo.AmmoDef.Pattern.Ammos.Length; j++)
-                    {
+                    for (int j = 0; j < ammo.AmmoDef.Pattern.Ammos.Length; j++) {
+
                         var aPattern = ammo.AmmoDef.Pattern.Ammos[j];
-                        if (aPattern.Equals(ammoDef.AmmoRound))
+
+                        if (aPattern.Equals(ammoDef.AmmoRound)) {
                             ammoPattern[indexPos++] = ammoDef;
+                            if (!guidedAmmo && ammoDef.Trajectory.Guidance != None)
+                                guidedAmmo = true;
+                        }
                     }
                 }
             }
+            guidedDetected = guidedAmmo;
         }
 
         internal void GetParticleInfo(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session)
@@ -1198,7 +1216,9 @@ namespace WeaponCore.Support
                 WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, weaponAmmo, weaponIdHash, weaponId));
                 weaponId++;
             }
-
+            if (PrimaryWeapon == -1)
+                PrimaryWeapon = 0;
+            
             GridWeaponCap = gridWeaponCap;
             MuzzlePartNames = muzzlePartNames;
         }

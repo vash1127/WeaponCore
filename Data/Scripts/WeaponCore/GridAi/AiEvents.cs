@@ -57,8 +57,7 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId));
 
-                if (isWeaponBase && Session.IsServer) Construct.RootAi.ScanBlockGroups = true;
-                else if (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler)
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler))
                 {
                     MyInventory inventory;
                     if (cube.HasInventory && cube.TryGetInventory(out inventory))
@@ -97,9 +96,7 @@ namespace WeaponCore.Support
                 try {
                     var battery = cube as MyBatteryBlock;
                     MyInventory inventory;
-                    if (isWeaponBase && Session.IsServer)
-                        Construct.RootAi.ScanBlockGroups = true;
-                    else if (cube.HasInventory && cube.TryGetInventory(out inventory))
+                    if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory))
                     {
                         try
                         {

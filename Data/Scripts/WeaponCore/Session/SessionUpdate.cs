@@ -45,9 +45,6 @@ namespace WeaponCore
                 if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
-                if (IsServer && ai.ScanBlockGroups)
-                    ai.Construct.GroupRefresh(ai);
-
                 if (IsServer && Tick60 && ai.Construct.RootAi.Construct.RecentItems.Count > 0)
                     ai.Construct.RootAi.Construct.CheckEmptyWeapons();
 
