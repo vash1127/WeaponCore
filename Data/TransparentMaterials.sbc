@@ -112,7 +112,7 @@
 			<IsFlareOccluder>false</IsFlareOccluder>
 		</TransparentMaterial>
 
-		<!-- Region Weapon Assignment Menu -->
+		<!-- Region Weapon Assignment Menu 
 		<TransparentMaterial>
 			<Id>
 				<TypeId>TransparentMaterialDefinition</TypeId>
@@ -2341,7 +2341,7 @@
 			<IsFlareOccluder>false</IsFlareOccluder>
 		</TransparentMaterial>  
 
-
+-->
 
 		<!-- Target HUD Icons -->
 
