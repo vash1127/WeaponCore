@@ -98,7 +98,10 @@ namespace WeaponCore
                 PlayersLoaded = true;
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
+            {
                 ShieldApiLoaded = true;
+                ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
+            }
         }
 
         internal void ProfilePerformance()

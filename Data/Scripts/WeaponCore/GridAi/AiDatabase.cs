@@ -119,16 +119,11 @@ namespace WeaponCore.Support
             for (int i = 0; i < NearByEntitiesTmp; i++) {
 
                 var ent = _possibleTargets[i];
-                var hasPhysics = ent.Physics != null;
-                if (Session.ShieldApiLoaded && hasPhysics && !ent.Physics.Enabled && ent.Physics.IsPhantom && !ent.Render.CastShadows && ent.Render.Visible) {
+                if (Session.ShieldApiLoaded && ent.DefinitionId?.SubtypeId == Session.ShieldHash && ent.Render.Visible) {
 
-                    long testId;
-                    if (long.TryParse(ent.Name, out testId)) {
-
-                        var shieldblock = Session.SApi.MatchEntToShieldFast(ent, false);
-                        if (shieldblock != null)
-                            NearByShieldsTmp.Add(new Shields { Id = testId, ShieldEnt = ent, ShieldBlock = (MyCubeBlock)shieldblock});
-                    }
+                    var shieldblock = Session.SApi.MatchEntToShieldFast(ent, false);
+                    if (shieldblock != null)
+                        NearByShieldsTmp.Add(new Shields { Id = ent.Hierarchy.ChildId, ShieldEnt = ent, ShieldBlock = (MyCubeBlock)shieldblock });
                 }
                 var voxel = ent as MyVoxelBase;
                 var grid = ent as MyCubeGrid;

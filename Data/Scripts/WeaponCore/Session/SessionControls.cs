@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using WeaponCore.Support;
-using VRage.Utils;
 using WeaponCore.Control;
 using WeaponCore.Platform;
-using Sandbox.Definitions;
-using VRage.Game;
-using Sandbox.Common.ObjectBuilders;
-using VRage.Game.Entity;
 using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 namespace WeaponCore
@@ -22,10 +18,10 @@ namespace WeaponCore
         {
             try
             {
-                AlterActions<T>();
-                AlterControls<T>();
+                AlterActions<T>(session);
+                AlterControls<T>(session);
 
-                TerminalHelpers.AddUiControls<T>();
+                TerminalHelpers.AddUiControls<T>(session);
 
                 if (typeof(T) == typeof(IMyLargeTurretBase) || typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun) || typeof(T) == typeof(IMySmallMissileLauncherReload))
                 {
@@ -37,40 +33,40 @@ namespace WeaponCore
                 {
 
                     CreateDefaultActions<T>(session);
-                    TerminalHelpers.CreateSorterControls<T>();
+                    TerminalHelpers.CreateSorterControls<T>(session);
                 }
 
-                TerminalHelpers.AddTurretControls<T>();
+                TerminalHelpers.AddTurretControls<T>(session);
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }
 
         internal static void CreateDefaultActions<T>(Session session) where T : IMyTerminalBlock
         {
-            CreateCustomActions<T>.CreateShoot();
-            CreateCustomActions<T>.CreateShootOn();
-            CreateCustomActions<T>.CreateShootOff();
-            CreateCustomActions<T>.CreateShootOnce();
+            CreateCustomActions<T>.CreateShoot(session);
+            CreateCustomActions<T>.CreateShootOn(session);
+            CreateCustomActions<T>.CreateShootOff(session);
+            CreateCustomActions<T>.CreateShootOnce(session);
             CreateCustomActionSet<T>(session);
         }
 
         internal static void CreateCustomActionSet<T>(Session session) where T : IMyTerminalBlock
         {
             CreateCustomActions<T>.CreateCycleAmmo(session);
-            CreateCustomActions<T>.CreateShootClick();
-            CreateCustomActions<T>.CreateNeutrals();
-            CreateCustomActions<T>.CreateFriendly();
-            CreateCustomActions<T>.CreateUnowned();
-            CreateCustomActions<T>.CreateMaxSize();
-            CreateCustomActions<T>.CreateMinSize();
-            CreateCustomActions<T>.CreateMovementState();
-            CreateCustomActions<T>.CreateControlModes();
-            CreateCustomActions<T>.CreateSubSystems();
-            CreateCustomActions<T>.CreateProjectiles();
-            CreateCustomActions<T>.CreateBiologicals();
-            CreateCustomActions<T>.CreateMeteors();
-            CreateCustomActions<T>.CreateFocusTargets();
-            CreateCustomActions<T>.CreateFocusSubSystem();
+            CreateCustomActions<T>.CreateShootClick(session);
+            CreateCustomActions<T>.CreateNeutrals(session);
+            CreateCustomActions<T>.CreateFriendly(session);
+            CreateCustomActions<T>.CreateUnowned(session);
+            CreateCustomActions<T>.CreateMaxSize(session);
+            CreateCustomActions<T>.CreateMinSize(session);
+            CreateCustomActions<T>.CreateMovementState(session);
+            CreateCustomActions<T>.CreateControlModes(session);
+            CreateCustomActions<T>.CreateSubSystems(session);
+            CreateCustomActions<T>.CreateProjectiles(session);
+            CreateCustomActions<T>.CreateBiologicals(session);
+            CreateCustomActions<T>.CreateMeteors(session);
+            CreateCustomActions<T>.CreateFocusTargets(session);
+            CreateCustomActions<T>.CreateFocusSubSystem(session);
         }
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
@@ -113,7 +109,7 @@ namespace WeaponCore
             }
         }
 
-        internal static void AlterActions<T>()
+        internal static void AlterActions<T>(Session session)
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
 
@@ -124,13 +120,14 @@ namespace WeaponCore
                 var a = actions[i];
 
                 if (!a.Id.Contains("OnOff") && !a.Id.Contains("Shoot") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
-                    a.Enabled = b => !b.Components.Has<WeaponComponent>();
+                {
+                    a.Enabled = TerminalHelpers.HasComp;
+                    session.AlteredActions.Add(a);
+                }
                 else if (a.Id.Equals("Control")) {
 
-                    a.Enabled = (b) => {
-                        WeaponComponent comp;
-                        return !b.Components.TryGet(out comp) && comp.BaseType == WeaponComponent.BlockType.Turret;
-                    };
+                    a.Enabled = TerminalHelpers.HasTurret;
+                    session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("ShootOnce")) {
 
@@ -145,6 +142,7 @@ namespace WeaponCore
                         }
                         comp.RequestShootUpdate(ShootOnce, comp.Session.DedicatedServer ? 0 : -1);
                     };
+                    session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("Shoot")) {
 
@@ -173,6 +171,7 @@ namespace WeaponCore
                         else
                             sb.Append("Off");
                     };
+                    session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("Shoot_On")) {
 
@@ -202,6 +201,7 @@ namespace WeaponCore
                         else
                             sb.Append("Off");
                     };
+                    session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("Shoot_Off")) {
 
@@ -230,19 +230,19 @@ namespace WeaponCore
                         else
                             sb.Append("Off");
                     };
+                    session.AlteredActions.Add(a);
                 }
             }
         }
 
-        internal static void AlterControls<T>() where T : IMyTerminalBlock
+        internal static void AlterControls<T>(Session session) where T : IMyTerminalBlock
         {
             var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
 
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<T>(out controls);
 
-            HashSet<string> visibleControls = new HashSet<string>
-            {
+            HashSet<string> visibleControls = new HashSet<string> {
                 "OnOff",
                 "Shoot",
                 "ShowInTerminal",
@@ -252,35 +252,35 @@ namespace WeaponCore
                 "Control",
             };
 
-            for (int i = isTurretType ? 12 : 0; i < controls.Count; i++)
-            {
-                var c = controls[i];
-                if (!visibleControls.Contains(c.Id))
-                    c.Visible = b => !b.Components.Has<WeaponComponent>();
+            for (int i = isTurretType ? 12 : 0; i < controls.Count; i++) {
 
-                switch (c.Id)
-                {
+                var c = controls[i];
+                if (!visibleControls.Contains(c.Id)) {
+                    c.Visible = TerminalHelpers.HasComp;
+                    session.AlteredControls.Add(c);
+                    continue;
+                }
+
+                switch (c.Id) {
+
                     case "Control":
-                        c.Visible = b =>
-                        {
-                            var comp = b?.Components?.Get<WeaponComponent>();
-                            return comp == null || comp.HasTurret;
-                        };
+                        c.Visible = TerminalHelpers.NoTurret;
+                        session.AlteredControls.Add(c);
                         break;
 
                     case "OnOff":
-                        {
-                            ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, on) =>
-                            {
-                                var comp = blk?.Components?.Get<WeaponComponent>();
-                                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-                                OnOffAnimations(comp, on);
-                            };
-                            break;
-                        }
+                        ((IMyTerminalControlOnOffSwitch) c).Setter += OnOffSetter;
+                        session.AlteredControls.Add(c);
+                        break;
                 }
             }
+        }
+
+        private static void OnOffSetter(IMyTerminalBlock block, bool on)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            OnOffAnimations(comp, on);
         }
 
         private static void OnOffAnimations(WeaponComponent comp, bool on)
@@ -343,43 +343,64 @@ namespace WeaponCore
             }
         }
 
-        public static void PurgeTerminalSystem()
+        public static void PurgeTerminalSystem(Session session)
         {
-            var actions = new List<IMyTerminalAction>();
-            var controls = new List<IMyTerminalControl>();
-            var sControls = new List<IMyTerminalControl>();
-            var sActions = new List<IMyTerminalAction>();
+            foreach (var a in session.CustomActions)
+            {
+                MyAPIGateway.TerminalControls.RemoveAction<IMyTerminalBlock>(a);
 
-            MyAPIGateway.TerminalControls.GetActions<IMyUserControllableGun>(out actions);
-            MyAPIGateway.TerminalControls.GetControls<IMyUserControllableGun>(out controls);
+                a.Writer = EmptyWritter;
+                a.Action = EmptyAction;
+                a.Enabled = EmptyBool;
+                a.Action = null;
+                a.Enabled = null;
+            }
+            session.CustomActions.Clear();
 
-            foreach (var a in actions)
+            foreach (var a in session.AlteredActions)
             {
-                a.Writer = (block, builder) => { };
-                a.Action = block => { };
-                a.Enabled = block => false;
-                MyAPIGateway.TerminalControls.RemoveAction<IMyUserControllableGun>(a);
-            }
-            foreach (var a in controls)
-            {
-                a.Enabled = block => false;
-                a.Visible = block => false;
-                MyAPIGateway.TerminalControls.RemoveControl<IMyUserControllableGun>(a);
-            }
+                MyAPIGateway.TerminalControls.RemoveAction<IMyTerminalBlock>(a);
 
-            foreach (var a in sActions)
-            {
-                a.Writer = (block, builder) => { };
-                a.Action = block => { };
-                a.Enabled = block => false;
-                MyAPIGateway.TerminalControls.RemoveAction<MyConveyorSorter>(a);
+                a.Writer = EmptyWritter;
+                a.Action = EmptyAction;
+                a.Enabled = EmptyBool;
+                a.Action = null;
+                a.Enabled = null;
             }
-            foreach (var c in sControls)
+            session.AlteredActions.Clear();
+
+            foreach (var c in session.CustomControls)
             {
-                c.Enabled = block => false;
-                c.Visible = block => false;
-                MyAPIGateway.TerminalControls.RemoveControl<MyConveyorSorter>(c);
+                MyAPIGateway.TerminalControls.RemoveControl<IMyTerminalBlock>(c);
+                c.Enabled = EmptyBool;
+                c.Visible = EmptyBool;
+                c.Enabled = null;
+                c.Visible = null;
             }
+            session.CustomControls.Clear();
+
+            foreach (var c in session.AlteredControls)
+            {
+                MyAPIGateway.TerminalControls.RemoveControl<IMyTerminalBlock>(c);
+                c.Enabled = EmptyBool;
+                c.Visible = EmptyBool;
+                c.Enabled = null;
+                c.Visible = null;
+            }
+            session.AlteredControls.Clear();
+        }
+
+        private static void EmptyAction(IMyTerminalBlock obj)
+        {
+        }
+
+        private static bool EmptyBool(IMyTerminalBlock obj)
+        {
+            return false;
+        }
+
+        public static void EmptyWritter(IMyTerminalBlock myTerminalBlock, StringBuilder stringBuilder)
+        {
         }
         #endregion
     }

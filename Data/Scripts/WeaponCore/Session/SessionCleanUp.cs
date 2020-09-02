@@ -64,7 +64,7 @@ namespace WeaponCore
             GridAiPool.Clean();
 
 
-            PurgeTerminalSystem();
+            PurgeTerminalSystem(this);
             HudUi.Purge();
             TerminalMon.Purge();
             foreach (var reports in Reporter.ReportData.Values)

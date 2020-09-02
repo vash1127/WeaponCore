@@ -97,13 +97,12 @@ namespace WeaponCore.Projectiles
                     }
 
                     HitEntity hitEntity = null;
-                    var checkShield = Session.ShieldApiLoaded && ent.Physics != null && ent.Physics.IsPhantom && ent.Render.Visible && !ent.Physics.Enabled;
+                    var checkShield = Session.ShieldApiLoaded && Session.ShieldHash == ent.DefinitionId?.SubtypeId && ent.Render.Visible;
                     MyTuple<IMyTerminalBlock, MyTuple<bool, bool, float, float, float, int>, MyTuple<MatrixD, MatrixD>>? shieldInfo = null;
                     if (checkShield && (!shieldFullBypass && !p.ShieldBypassed || p.Info.EwarActive && (p.Info.AmmoDef.Const.AreaEffect == DotField || p.Info.AmmoDef.Const.AreaEffect == EmpField))) {
 
                         shieldInfo = p.Info.System.Session.SApi.MatchEntToShieldFastExt(ent, true);
                         if (shieldInfo != null && !myGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid)) {
-
                             if (p.Info.IsShrapnel || Vector3D.Transform(p.Info.Origin, shieldInfo.Value.Item3.Item1).LengthSquared() > 1) {
 
                                 p.EntitiesNear = true;

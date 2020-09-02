@@ -232,13 +232,16 @@ namespace WeaponCore.Control
             WeaponComponent.RequestSetValue(comp, "MinSize", newValue, comp.Session.PlayerId);
         }
 
-        internal static void TerminalActionCycleAmmoNew(IMyTerminalBlock block)
+        internal static void TerminalActionCycleAmmo(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
+
+                if (!w.System.HasAmmoSelection)
+                    continue;
 
                 var availAmmo = w.System.AmmoTypes.Length;
                 var currActive = w.System.AmmoTypes[w.Ammo.AmmoTypeId];
@@ -262,38 +265,6 @@ namespace WeaponCore.Control
                 if (change)
                     w.ChangeAmmo(next);
             }
-        }
-
-        internal static void TerminalActionCycleAmmo(IMyTerminalBlock blk, int id)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            int weaponId;
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponIdHash != id)
-                return;
-
-            var w = comp.Platform.Weapons[weaponId];
-
-            var availAmmo = w.System.AmmoTypes.Length;
-            var currActive = w.System.AmmoTypes[w.Ammo.AmmoTypeId];
-            var next = (w.Ammo.AmmoTypeId + 1) % availAmmo;
-            var currDef = w.System.AmmoTypes[next];
-
-            var change = false;
-
-            while (!(currActive.Equals(currDef)))
-            {
-                if (currDef.AmmoDef.Const.IsTurretSelectable)
-                {
-                    change = true;
-                    break;
-                }
-
-                next = (next + 1) % availAmmo;
-                currDef = w.System.AmmoTypes[next];
-            }
-
-            if (change)
-                w.ChangeAmmo(next);
         }
         #endregion
 

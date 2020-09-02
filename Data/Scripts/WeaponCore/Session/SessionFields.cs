@@ -5,6 +5,7 @@ using Jakaria;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
 using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Collections;
@@ -143,6 +144,10 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<MyCubeGrid> DeformProtection = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Weapon> PullingWeapons = new HashSet<Weapon>();
+        internal readonly HashSet<IMyTerminalAction> CustomActions = new HashSet<IMyTerminalAction>();
+        internal readonly HashSet<IMyTerminalAction> AlteredActions = new HashSet<IMyTerminalAction>();
+        internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
+        internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
@@ -166,6 +171,7 @@ namespace WeaponCore
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly List<GridAi> GridsToUpdateInvetories = new List<GridAi>(64);
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
+
 
         internal readonly int[] AuthorSettings = new int[6];
 
@@ -238,7 +244,6 @@ namespace WeaponCore
         internal ProblemReport ProblemRep;
 
         internal MatrixD CameraMatrix;
-
         internal Vector3D CameraPos;
         internal Vector3D PlayerPos;
         internal Task PTask = new Task();
@@ -246,6 +251,7 @@ namespace WeaponCore
         internal Task DbTask = new Task();
         internal Task ITask = new Task();
         internal Task CTask = new Task();
+        internal MyStringHash ShieldHash;
         internal string TriggerEntityModel;
         internal string ServerVersion;
         internal object InitObj = new object();
