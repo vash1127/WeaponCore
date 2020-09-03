@@ -1,16 +1,19 @@
-﻿using Sandbox.ModAPI;
+﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using System;
 using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Utils;
+using WeaponCore.Support;
 
 namespace Jakaria
 {
     public class WaterModAPI
     {
         public const ushort ModHandlerID = 50271;
-        public const int ModAPIVersion = 7;
+        public const int ModAPIVersion = 8;
 
         /// <summary>
         /// List of all water objects in the world, null if not registered
@@ -45,7 +48,7 @@ namespace Jakaria
         /// <summary>
         /// Used to tell in chat what mod is out of date
         /// </summary>
-        private string ModName = "UnknownMod";
+        private string _modName = "UnknownMod";
 
         //Water API Guide
         //Drag WaterModAPI.cs and Water.cs into your mod
@@ -59,7 +62,7 @@ namespace Jakaria
         /// </summary>
         public void Register(string modName)
         {
-            ModName = modName;
+            _modName = modName;
             MyAPIGateway.Utilities.RegisterMessageHandler(ModHandlerID, ModHandler);
         }
 
@@ -74,7 +77,6 @@ namespace Jakaria
         /// <summary>
         /// Do not use, for interfacing with Water Mod
         /// </summary>
-        /// <param name="data"></param>
         private void ModHandler(object data)
         {
             if (data == null)
@@ -86,12 +88,24 @@ namespace Jakaria
                 OnRegisteredEvent?.Invoke();
             }
 
-            if (data is byte[])
+            var bytes = data as byte[];
+            if (bytes != null)
             {
-                Waters = MyAPIGateway.Utilities.SerializeFromBinary<List<Water>>((byte[])data);
+                Waters = MyAPIGateway.Utilities.SerializeFromBinary<List<Water>>(bytes);
 
                 if (Waters == null)
-                    return;
+                {
+                    Waters = new List<Water>();
+                    Log.Line($"Waters was null!");
+                }
+                else {
+
+                    foreach (var w in Waters) {
+                        if (w.PlanetId != 0)
+                            w.Init(w.PlanetId);
+                        else Log.Line($"planetId was 0");
+                    }
+                }
 
                 int count = Waters.Count;
                 RecievedData?.Invoke();
@@ -104,8 +118,8 @@ namespace Jakaria
 
             if (data is int && (int)data != ModAPIVersion)
             {
-                MyLog.Default.WriteLine("Water API V" + ModAPIVersion + " for " + ModName + " is outdated, expected V" + (int)data);
-                MyAPIGateway.Utilities.ShowMessage(ModName, "Water API V" + ModAPIVersion + " is outdated, expected V" + (int)data);
+                MyLog.Default.WriteLine("Water API V" + ModAPIVersion + " for " + _modName + " is outdated, expected V" + (int)data);
+                MyAPIGateway.Utilities.ShowMessage(_modName, "Water API V" + ModAPIVersion + " is outdated, expected V" + (int)data);
             }
         }
 
@@ -116,7 +130,8 @@ namespace Jakaria
         {
             foreach (var water in Waters)
             {
-                water.currentRadius = (float)Math.Max(water.radius + (Math.Sin((water.waveTimer) * water.waveSpeed) * water.waveHeight), 0);
+                water.WaveTimer++;
+                water.CurrentRadius = (float)Math.Max(water.Radius + (Math.Sin((water.WaveTimer) * water.WaveSpeed) * water.WaveHeight), 0);
             }
         }
     }

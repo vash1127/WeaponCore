@@ -54,6 +54,7 @@ namespace WeaponCore
         internal volatile uint Tick;
 
         internal readonly TargetCompare TargetCompare = new TargetCompare();
+        internal readonly WaterModAPI WApi = new WaterModAPI();
 
         internal static readonly HashSet<ulong> AuthorIds = new HashSet<ulong> { 76561197969691953, 76561198061737246 };
 
@@ -136,6 +137,7 @@ namespace WeaponCore
         internal readonly Dictionary<GridAi, int> GridsToUpdateInvetoriesIndexer = new Dictionary<GridAi, int>();
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
+        internal readonly Dictionary<MyPlanet, MyEntity> WaterEntityMap = new Dictionary<MyPlanet, MyEntity>();
 
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
@@ -225,7 +227,6 @@ namespace WeaponCore
         internal ApiBackend Api;
         internal Action<Vector3, float> ProjectileAddedCallback = (location, health) => { };
         internal ShieldApi SApi = new ShieldApi();
-        internal WaterModAPI WApi = new WaterModAPI();
         internal NetworkReporter Reporter = new NetworkReporter();
         internal MyStorageData TmpStorage = new MyStorageData();
         internal InputStateData DefaultInputStateData = new InputStateData();
@@ -252,6 +253,7 @@ namespace WeaponCore
         internal Task ITask = new Task();
         internal Task CTask = new Task();
         internal MyStringHash ShieldHash;
+        internal MyStringHash WaterHash;
         internal string TriggerEntityModel;
         internal string ServerVersion;
         internal object InitObj = new object();
@@ -309,6 +311,7 @@ namespace WeaponCore
         internal bool ShieldMod;
         internal bool ReplaceVanilla;
         internal bool ShieldApiLoaded;
+        internal bool WaterApiLoaded;
         internal bool TargetArmed;
         internal bool InGridAiBlock;
         internal bool IsCreative;

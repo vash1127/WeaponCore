@@ -21,19 +21,17 @@ namespace WeaponCore
                 AlterActions<T>(session);
                 AlterControls<T>(session);
 
+                TerminalHelpers.CreateGenericControls<T>(session);
                 TerminalHelpers.AddUiControls<T>(session);
 
                 if (typeof(T) == typeof(IMyLargeTurretBase) || typeof(T) == typeof(IMySmallMissileLauncher) || typeof(T) == typeof(IMySmallGatlingGun) || typeof(T) == typeof(IMySmallMissileLauncherReload))
                 {
-
                     session.BaseControlsActions = true;
                     CreateCustomActionSet<T>(session);
                 }
                 else if (typeof(T) == typeof(IMyConveyorSorter))
                 {
-
                     CreateDefaultActions<T>(session);
-                    TerminalHelpers.CreateSorterControls<T>(session);
                 }
 
                 TerminalHelpers.AddTurretControls<T>(session);
@@ -121,12 +119,12 @@ namespace WeaponCore
 
                 if (!a.Id.Contains("OnOff") && !a.Id.Contains("Shoot") && !a.Id.Contains("WC_") && !a.Id.Contains("Control"))
                 {
-                    a.Enabled = TerminalHelpers.HasComp;
+                    a.Enabled = TerminalHelpers.NotWcBlock;
                     session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("Control")) {
 
-                    a.Enabled = TerminalHelpers.HasTurret;
+                    a.Enabled = TerminalHelpers.NotWcTurret;
                     session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("ShootOnce")) {
@@ -249,6 +247,8 @@ namespace WeaponCore
                 "ShowInInventory",
                 "ShowInToolbarConfig",
                 "Name",
+                "ShowOnHUD",
+                "CustomData",
                 "Control",
             };
 
@@ -256,15 +256,18 @@ namespace WeaponCore
 
                 var c = controls[i];
                 if (!visibleControls.Contains(c.Id)) {
-                    c.Visible = TerminalHelpers.HasComp;
+                    c.Visible = TerminalHelpers.NotWcBlock;
                     session.AlteredControls.Add(c);
                     continue;
                 }
 
                 switch (c.Id) {
-
+                    case "Shoot":
+                        c.Visible = TerminalHelpers.NotWcBlock;
+                        session.AlteredControls.Add(c);
+                        break;
                     case "Control":
-                        c.Visible = TerminalHelpers.NoTurret;
+                        c.Visible = TerminalHelpers.NotWcOrIsTurret;
                         session.AlteredControls.Add(c);
                         break;
 

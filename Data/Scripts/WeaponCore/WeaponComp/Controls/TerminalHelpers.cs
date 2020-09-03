@@ -53,7 +53,7 @@ namespace WeaponCore.Control
             Separator<T>(session, -19, "WC_sep4", HasTurret);
         }
 
-        internal static void CreateSorterControls<T>(Session session) where T : IMyTerminalBlock
+        internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
         {
             AddOnOffSwitchNoAction<T>(session, -20, "Shoot", "Shoot", "Shoot On/Off", WepUi.GetShoot, WepUi.RequestSetShoot, true, IsReady);
         }
@@ -168,9 +168,26 @@ namespace WeaponCore.Control
             builder.Append(WepUi.GetRof(block).ToString("N2"));
         }
 
-        public static void EmptyStringBuilder(IMyTerminalBlock block, StringBuilder builder)
+        internal static void EmptyStringBuilder(IMyTerminalBlock block, StringBuilder builder)
         {
             builder.Append("");
+        }
+
+        internal static bool NotWcBlock(IMyTerminalBlock block)
+        {
+            return !block.Components.Has<WeaponComponent>(); ;
+        }
+
+        internal static bool NotWcTurret(IMyTerminalBlock block)
+        {
+            WeaponComponent comp;
+            return !block.Components.TryGet(out comp) && comp.BaseType == WeaponComponent.BlockType.Turret;
+        }
+
+        internal static bool NotWcOrIsTurret(IMyTerminalBlock block)
+        {
+            WeaponComponent comp;
+            return !block.Components.TryGet(out comp) || comp.HasTurret;
         }
 
         #region terminal control methods

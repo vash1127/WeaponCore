@@ -21,11 +21,12 @@ namespace WeaponCore
 
         public void ResetToFreshLoadState()
         {
-            Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
-            Base.State.Control = CompStateValues.ControlMode.None;
-            Base.State.PlayerId = -1;
+            //Base.Set.Overrides.Control = GroupOverrides.ControlModes.Auto;
+            //Base.State.Control = CompStateValues.ControlMode.None;
+            //Base.State.PlayerId = -1;
             Base.State.TrackingReticle = false;
-            Base.State.TerminalAction = ShootActions.ShootOff;
+            if (Base.State.TerminalAction == ShootActions.ShootOnce) 
+                Base.State.TerminalAction = ShootActions.ShootOff;
             for (int i = 0; i < Ammos.Length; i++)
             {
                 var ws = Base.State.Weapons[i];
@@ -35,7 +36,8 @@ namespace WeaponCore
                 wa.AmmoCycleId = 0;
                 ws.Heat = 0;
                 ws.Overheated = false;
-                ws.Action = ShootActions.ShootOff;
+                if (ws.Action == ShootActions.ShootOnce)
+                    ws.Action = ShootActions.ShootOff;
                 wr.StartId = 0;
             }
             ResetCompBaseRevisions();

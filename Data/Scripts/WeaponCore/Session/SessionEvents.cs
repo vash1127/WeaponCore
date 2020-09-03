@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ObjectBuilders;
+using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.GridAi;
 using static WeaponCore.Support.WeaponDefinition.HardPointDef.HardwareDef;
@@ -267,19 +272,69 @@ namespace WeaponCore
         private void WApiReceiveData()
         {
             if (WApi.Registered) {
+                /*
                 WaterMap.Clear();
                 MaxWaterHeightSqr.Clear();
                 for (int i = 0; i < WApi.Waters.Count; i++) {
+                    
                     var water = WApi.Waters[i];
-                    if (water.planet != null)
-                    {
-                        WaterMap[water.planet] = water;
-                        var maxWaterHeight = water.radius + water.waveHeight;
+                    if (water.Planet != null) {
+
+                        WaterMap[water.Planet] = water;
+                        var maxWaterHeight = 61015;
                         var maxWaterHeightSqr = maxWaterHeight * maxWaterHeight;
-                        MaxWaterHeightSqr[water.planet] = maxWaterHeightSqr;
+                        MaxWaterHeightSqr[water.Planet] = maxWaterHeightSqr;
+
+                        MyEntity waterEntity;
+                        if (WaterEntityMap.TryGetValue(water.Planet, out waterEntity))
+                            SetShape(waterEntity, water.Planet, maxWaterHeight);
+                        else {
+                            waterEntity = CreateWaterEntity(water.Planet);
+                            SetShape(waterEntity, water.Planet, maxWaterHeight);
+                            WaterEntityMap[water.Planet] = waterEntity;
+                        }
+                        if (waterEntity.DefinitionId?.SubtypeId == WaterHash) 
+                            Log.Line($"wvRadius: {waterEntity.PositionComp.WorldVolume.Radius} - lvRadius: {waterEntity.PositionComp.LocalVolume.Radius} - waabbhalfExt:{waterEntity.PositionComp.WorldAABB.HalfExtents.Length()} - laabbHalfExt:{waterEntity.PositionComp.LocalAABB.HalfExtents.Length()} - maxRadius:{maxWaterHeight}({water.CurrentRadius})");
                     }
                 }
+                */
             }
+        }
+
+        private MyEntity CreateWaterEntity(MyPlanet planet)
+        {
+            var ent = new MyEntity {NeedsWorldMatrix = true};
+            ent.Init(new StringBuilder("Water"), null, null, null, null);
+            ent.Name = $"{planet.EntityId}";
+            ent.DefinitionId = new MyDefinitionId(MyObjectBuilderType.Invalid, WaterHash);
+            //ent.Render.CastShadows = false;
+            //ent.Render.Visible = false;
+            //ent.Save = false;
+            MyEntities.Add(ent);
+            return ent;
+        }
+
+        private static void SetShape(MyEntity entity, MyPlanet planet, float radius)
+        {
+            var halfExtents = Vector3.Zero + (Vector3D.Forward * radius);
+            //var box = BoundingBox.CreateFromHalfExtent(Vector3.Zero, halfExtents);
+            //var waterMatrix = MatrixD.Rescale(Matrix.Zero, halfExtents);
+
+            var waterMatrix = MatrixD.CreateWorld(planet.PositionComp.WorldAABB.Center);
+            waterMatrix = MatrixD.Rescale(waterMatrix, 1);
+            /*
+            entity.PositionComp.LocalAABB = box;
+            entity.PositionComp.SetLocalMatrix(ref waterMatrix, null, true);
+            */
+            entity.PositionComp.LocalVolume = new BoundingSphere(Vector3.Zero, radius);
+
+            entity.PositionComp.SetWorldMatrix(ref waterMatrix, null, true, true, true, false, true, true);
+            //entity.PositionComp.SetLocalMatrix(ref Matrix.Zero, null, true);
+            //entity.PositionComp.LocalAABB = BoundingBox.CreateFromHalfExtent(Vector3.Zero, (float)radius * 0.58f);
+            //entity.PositionComp.SetPosition(planet.PositionComp.WorldAABB.Center, null);
+
+            //Log.Line($"initted flats: {entity.Flags}");
+            //Log.Line($"boxHalfExtents:{box.HalfExtents.Length()} - radius:{radius}[{halfExtents.Length()}]");
         }
     }
 }

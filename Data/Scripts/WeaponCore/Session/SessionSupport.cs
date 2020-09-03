@@ -12,6 +12,7 @@ using VRage.Game;
 using Sandbox.Common.ObjectBuilders;
 using VRage.Utils;
 using System.Collections.Generic;
+using Jakaria;
 using Sandbox.Definitions;
 using VRage.Input;
 
@@ -101,6 +102,12 @@ namespace WeaponCore
             {
                 ShieldApiLoaded = true;
                 ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
+            }
+            if (WaterMod && !WaterApiLoaded)
+            {
+                WaterApiLoaded = true;
+
+                Log.Line($"water mod registered");
             }
         }
 

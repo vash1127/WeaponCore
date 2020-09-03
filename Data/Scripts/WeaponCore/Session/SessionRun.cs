@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -230,10 +232,42 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
 
-        public override void HandleInput()
+        public override void HandleInput()  
         {
             if (HandlesInput && !SupressLoad) {
 
+                /*
+                foreach (var m in WaterEntityMap)
+                {
+                    if (m.Value.DefinitionId?.SubtypeId == WaterHash)
+                    {
+                        m.Value.PositionComp.SetPosition(m.Key.PositionComp.WorldAABB.Center);
+                        LineD line;
+                        UiInput.GetAimRay(this, out line);
+                        var ray = new RayD(line.From, line.Direction);
+                        var dist = ray.Intersects(m.Value.PositionComp.WorldVolume);
+                        if (dist.HasValue)
+                        {
+                            var hitPos = ray.Position + (ray.Direction * dist.Value);
+                            if (dist > 1) DsDebugDraw.DrawSingleVec(hitPos, 2f, Color.Red);
+                            if (Tick60)
+                            {
+                                Log.Line($"{hitPos} - {dist.Value} - {m.Value.PositionComp.WorldVolume.Center} - {m.Value.PositionComp.WorldVolume.Radius}");
+                                Log.Line($"{Vector3D.Distance(hitPos, CameraPos)} - {m.Value.Flags} - {m.Value.MarkedForClose} - {m.Value.InScene}");
+                            }
+                        }
+                        var list = new List<MyLineSegmentOverlapResult<MyEntity>>();
+                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref line, list, MyEntityQueryType.Both);
+                        foreach (var e in list)
+                        {
+                            if (e.Element.DefinitionId?.SubtypeId == WaterHash)
+                            {
+                                Log.Line($"hit:{e.Distance}");
+                            }
+                        }
+                    }
+                }
+                */
                 if (ControlRequest != ControlQuery.None)
                     UpdateControlKeys();
 
@@ -282,6 +316,13 @@ namespace WeaponCore
 
                 if (SupressLoad)
                     return;
+
+                if (WaterMod)
+                {
+                    WaterHash = MyStringHash.GetOrCompute("Water");
+                    WApi.Register("WeaponCore");
+                    WApi.RecievedData += WApiReceiveData;
+                }
 
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();

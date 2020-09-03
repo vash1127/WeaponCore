@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Jakaria;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
@@ -70,12 +71,6 @@ namespace WeaponCore
             GenerateButtonMap();
             Settings = new CoreSettings(this);
             LocalVersion = ModContext.ModId == "WeaponCore";
-            if (WaterMod)
-            {
-                WApi.Register("WeaponCore");
-                WApi.RecievedData += WApiReceiveData;
-                Log.Line($"water mod registered");
-            }
         }
 
         internal void GenerateButtonMap()

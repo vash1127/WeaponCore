@@ -123,6 +123,15 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
+                    if (Session.WaterApiLoaded && Session.WaterHash == ent.DefinitionId?.SubtypeId)
+                    {
+                        if (ent.PositionComp.WorldVolume.Contains(p.Position) != ContainmentType.Disjoint || ent.PositionComp.WorldVolume.Contains(p.LastEntityPos) != ContainmentType.Disjoint)
+                        {
+                            Log.Line("water detected");
+                        }
+                        else Log.Line($"broadphase water detect");
+                    }
+
                     var destroyable = ent as IMyDestroyableObject;
                     var voxel = ent as MyVoxelBase;
                     if (voxel != null && voxel == voxel?.RootVoxel) {
