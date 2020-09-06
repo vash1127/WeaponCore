@@ -436,6 +436,7 @@ namespace WeaponCore.Support
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
         public readonly int MaxLifeTime;
+        public readonly int MinArmingTime;
         public readonly int MaxTargets;
         public readonly int PulseInterval;
         public readonly int PulseChance;
@@ -523,7 +524,6 @@ namespace WeaponCore.Support
         public readonly float MaxTrajectory;
         public readonly float ShotFadeStep;
         public readonly float TrajectoryStep;
-
         public readonly double AreaRadiusSmall;
         public readonly double AreaRadiusLarge;
         public readonly double AreaEffectSize;
@@ -618,7 +618,7 @@ namespace WeaponCore.Support
             ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out AmmoShufflePattern, out GuidedAmmoDetected);
 
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
-            AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange);
+            AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
 
             DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
             Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
@@ -962,7 +962,7 @@ namespace WeaponCore.Support
             pulse = pulseInterval > 0 && pulseChance > 0 && !ammoDef.Beams.Enable;
         }
 
-        private void AreaEffects(AmmoDef ammoDef, out AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange)
+        private void AreaEffects(AmmoDef ammoDef, out AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect, out double eWarTriggerRange, out int minArmingTime)
         {
             areaEffect = ammoDef.AreaEffect.AreaEffect;
             areaEffectDamage = ammoDef.AreaEffect.AreaEffectDamage;
@@ -976,6 +976,7 @@ namespace WeaponCore.Support
             eWar = areaEffect > (AreaEffectType)2;
             eWarEffect = areaEffect > (AreaEffectType)3;
             eWarTriggerRange = eWar && Pulse && ammoDef.AreaEffect.EwarFields.TriggerRange > 0 ? ammoDef.AreaEffect.EwarFields.TriggerRange : 0;
+            minArmingTime = ammoDef.AreaEffect.Detonation.MinArmingTime;
         }
 
 

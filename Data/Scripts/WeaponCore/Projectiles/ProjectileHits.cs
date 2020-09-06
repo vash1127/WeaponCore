@@ -129,7 +129,6 @@ namespace WeaponCore.Projectiles
                         {
                             Log.Line("water detected");
                         }
-                        else Log.Line($"broadphase water detect");
                     }
 
                     var destroyable = ent as IMyDestroyableObject;

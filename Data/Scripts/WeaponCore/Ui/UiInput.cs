@@ -168,7 +168,7 @@ namespace WeaponCore
             var character = MyAPIGateway.Session.Player.Character;
             if (character != null)
             {
-                ray = new LineD(s.PlayerPos, s.PlayerPos + (character.WorldMatrix.Forward * 1000000));
+                ray = new LineD(s.PlayerPos, s.PlayerPos + (character.WorldMatrix.Forward * 100));
                 return true;
             }
             ray = new LineD();

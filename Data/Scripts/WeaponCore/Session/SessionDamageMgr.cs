@@ -115,7 +115,7 @@ namespace WeaponCore
             var shieldByPass = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
 
             var areaEffect = info.AmmoDef.AreaEffect;
-            var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
+            var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * Settings.Enforcement.AreaDamageModifer : 0;
             var scaledDamage = ((((info.BaseDamagePool * damageScale) + areaDamage) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod) ;
             if (fallOff)
@@ -176,7 +176,7 @@ namespace WeaponCore
             var areaEffect = t.AmmoDef.AreaEffect.AreaEffect;
             var explosive = areaEffect == AreaEffectType.Explosive;
             var radiant = areaEffect == AreaEffectType.Radiant;
-            var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd;
+            var detonateOnEnd = t.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && t.Age >= t.AmmoDef.AreaEffect.Detonation.MinArmingTime;
             var detonateDmg = t.AmmoDef.Const.DetonationDamage;
             var shieldBypass = t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var attackerId = shieldBypass ? grid.EntityId : t.Target.FiringCube.EntityId;
@@ -529,7 +529,7 @@ namespace WeaponCore
                 attacker.BaseDamagePool = 0;
                 pTarget.Info.BaseHealthPool -= scaledDamage;
 
-                if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd)
+                if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && attacker.Age >= attacker.AmmoDef.AreaEffect.Detonation.MinArmingTime)
                 {
                     var areaSphere = new BoundingSphereD(pTarget.Position, attacker.AmmoDef.AreaEffect.Detonation.DetonationRadius);
                     foreach (var sTarget in attacker.Ai.LiveProjectile)
@@ -562,7 +562,7 @@ namespace WeaponCore
 
             using (destObj.Pin())
             {
-                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Radiant;
+                var detonateOnEnd = info.AmmoDef.Const.AmmoAreaEffect && info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && info.AmmoDef.AreaEffect.AreaEffect != AreaEffectType.Radiant;
 
                 info.ObjectsHit++;
                 float damageScale = 1 * Settings.Enforcement.DirectDamageModifer;

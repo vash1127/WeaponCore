@@ -832,7 +832,7 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose()
         {
-            if (GenerateShrapnel)
+            if (GenerateShrapnel && Info.Age >= Info.AmmoDef.Const.MinArmingTime)
                 SpawnShrapnel();
 
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);

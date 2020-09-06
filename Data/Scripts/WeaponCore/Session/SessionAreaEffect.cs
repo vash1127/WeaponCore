@@ -40,7 +40,7 @@ namespace WeaponCore
                 if (grid.Physics == null || !grid.Physics.Enabled || grid.Physics.IsStatic)
                     return;
                 var dir = info.AmmoDef.Const.AreaEffect == PushField ? hitEnt.Intersection.Direction : -hitEnt.Intersection.Direction;
-                grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, dir * info.AmmoDef.Const.AreaEffectDamage, grid.Physics?.CenterOfMassWorld, Vector3.Zero);
+                grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, dir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), grid.Physics?.CenterOfMassWorld, Vector3.Zero);
             }
             else
             {

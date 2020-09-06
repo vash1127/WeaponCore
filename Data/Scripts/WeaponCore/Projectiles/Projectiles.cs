@@ -233,7 +233,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
-                    if (!p.SmartsOn && p.Info.Age > p.Info.AmmoDef.Const.MaxLifeTime) {
+                    if (p.Info.Age > p.Info.AmmoDef.Const.MaxLifeTime) {
                         p.DistanceToTravelSqr = p.Info.DistanceTraveled * p.Info.DistanceTraveled;
                         p.EarlyEnd = true;
                     }
@@ -281,7 +281,7 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = dInfo.DetonationRadius;
 
-                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0)) {
+                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && p.Info.Age >= dInfo.MinArmingTime && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0)) {
 
                         if (!p.UseEntityCache)
                             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, p.MyEntityList, p.PruneQuery);
