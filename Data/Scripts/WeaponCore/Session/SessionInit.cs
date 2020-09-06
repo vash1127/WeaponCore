@@ -71,6 +71,7 @@ namespace WeaponCore
             GenerateButtonMap();
             Settings = new CoreSettings(this);
             LocalVersion = ModContext.ModId == "WeaponCore";
+            CounterKeenLogMessage();
         }
 
         internal void GenerateButtonMap()

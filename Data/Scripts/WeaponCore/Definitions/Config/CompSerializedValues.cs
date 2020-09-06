@@ -384,9 +384,9 @@ namespace WeaponCore
         [ProtoMember(6)] public int MinSize;
         [ProtoMember(7), DefaultValue(ControlModes.Auto)] public ControlModes Control = ControlModes.Auto;
         [ProtoMember(8), DefaultValue(BlockTypes.Any)] public BlockTypes SubSystem = BlockTypes.Any;
-        [ProtoMember(9)] public bool Meteors;
-        [ProtoMember(10)] public bool Biologicals;
-        [ProtoMember(11)] public bool Projectiles;
+        [ProtoMember(9), DefaultValue(true)] public bool Meteors = true;
+        [ProtoMember(10), DefaultValue(true)] public bool Biologicals = true;
+        [ProtoMember(11), DefaultValue(true)] public bool Projectiles = true;
         [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
 

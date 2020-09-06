@@ -25,7 +25,6 @@ namespace WeaponCore.Support
         internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
             //w.HitOther = false;
-            var tick = w.Comp.Session.Tick;
             var targetType = TargetType.None;
             if (w.PosChangedTick != w.Comp.Session.Tick) w.UpdatePivotPos();
 
@@ -34,7 +33,7 @@ namespace WeaponCore.Support
                 w.AimCone.ConeDir = w.MyPivotDir;
                 w.AimCone.ConeTip = w.MyPivotPos;
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
-                var shootProjectile = pCount > 0 && w.System.TrackProjectile;
+                var shootProjectile = pCount > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles;
                 var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
                 var onlyCheckProjectile = w.ProjectilesNear && !w.Target.TargetChanged && w.Comp.Session.Count != w.Acquire.SlotId && !attemptReset;
 

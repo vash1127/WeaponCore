@@ -106,7 +106,6 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
-        internal readonly bool TrackProjectiles;
         internal readonly bool PrimaryWeaponGroup;
         internal readonly bool AiOnlyWeapon;
 
@@ -352,8 +351,6 @@ namespace WeaponCore.Platform
             MuzzlePart = new PartInfo { Entity = entity };
             AzimuthOnBase = azimuthPart.Parent == comp.MyCube;
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
-
-            TrackProjectiles = System.TrackProjectile;
 
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();

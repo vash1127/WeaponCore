@@ -192,7 +192,7 @@ namespace WeaponCore
             ChargingWeaponsIndexer.Clear();
             WeaponsToRemoveAmmoIndexer.Clear();
             ChargingWeapons.Clear();
-            WeaponsToRemoveAmmo.Clear();
+            //WeaponsToRemoveAmmo.Clear();
             Hits.Clear();
             RotateWeapons.ClearImmediate();
             HomingWeapons.Clear();

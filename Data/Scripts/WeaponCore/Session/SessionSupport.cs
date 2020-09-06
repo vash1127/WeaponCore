@@ -139,7 +139,6 @@ namespace WeaponCore
             TargetSets = 0;
             TargetResets = 0;
             AmmoMoveTriggered = 0;
-            AmmoPulls = 0;
             Load = 0d;
             DsUtil.Clean();
         }
@@ -324,7 +323,6 @@ namespace WeaponCore
                 }
             }
 
-            AmmoToRemove();
             AmmoPull();
 
             foreach (var itemList in AmmoThreadItemList)
@@ -341,13 +339,9 @@ namespace WeaponCore
             for (int i = 0; i < InvPullClean.Count; i++)
                 UniqueListRemove(InvPullClean[i], WeaponToPullAmmoIndexer, WeaponToPullAmmo, PullingWeapons);
 
-            for (int i = 0; i < InvRemoveClean.Count; i++)
-                UniqueListRemove(InvRemoveClean[i], WeaponsToRemoveAmmoIndexer, WeaponsToRemoveAmmo);
-
             InvPullClean.Clear();
             InvRemoveClean.Clear();
 
-            RemoveAmmo();
             MoveAmmo();
             InventoryUpdate = false;
         }
@@ -738,6 +732,12 @@ namespace WeaponCore
                         category.Value.ItemIds.Remove(removeList[i]);
                 }
             }
+            CounterKeenLogMessage();
+        }
+
+        private static void CounterKeenLogMessage()
+        {
+            MyLog.Default.WriteLineAndConsole("\n***\n    [WeaponCore] You can safely ignore log messages from keen stating 'Mod WeaponCore is accessing physics from parallel threads' WC is using a thread safe parallel.for, not a parallel task\n***");
         }
 
         internal static double ModRadius(double radius, bool largeBlock)

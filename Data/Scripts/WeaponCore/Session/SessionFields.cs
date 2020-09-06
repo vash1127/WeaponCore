@@ -49,7 +49,6 @@ namespace WeaponCore
         internal volatile bool FixedGunControls;
         internal volatile bool SorterControls;
         internal volatile bool BaseControlsActions;
-        internal volatile int AmmoPulls;
         internal volatile uint LastDeform;
         internal volatile uint Tick;
 
@@ -98,7 +97,6 @@ namespace WeaponCore
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
         internal readonly MyConcurrentList<Weapon> WeaponToPullAmmo = new MyConcurrentList<Weapon>(64);
-        internal readonly MyConcurrentList<Weapon> WeaponsToRemoveAmmo = new MyConcurrentList<Weapon>(64);
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
@@ -167,7 +165,6 @@ namespace WeaponCore
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
         internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
-        internal readonly List<WeaponAmmoMoveRequest> AmmoToRemoveQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);

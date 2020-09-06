@@ -84,7 +84,7 @@ namespace WeaponCore.Support
             if (weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory > maxTrajectory)
                 maxTrajectory = weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory;
 
-            if (weapon.TrackProjectiles)
+            if (weapon.System.TrackProjectile)
                 Ai.PointDefense = true;
         }
 

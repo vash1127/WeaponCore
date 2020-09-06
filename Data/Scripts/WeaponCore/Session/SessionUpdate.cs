@@ -190,7 +190,7 @@ namespace WeaponCore
                             }
                         }
 
-                        w.ProjectilesNear = enemyProjectiles && w.TrackProjectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
+                        w.ProjectilesNear = enemyProjectiles && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles && !w.Target.HasTarget && (w.Target.TargetChanged || SCount == w.ShortLoadId );
 
                         if (comp.Data.Repo.Base.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
@@ -390,7 +390,7 @@ namespace WeaponCore
 
                 var acquire = (w.Acquire.IsSleeping && AsleepCount == w.Acquire.SlotId || !w.Acquire.IsSleeping && AwakeCount == w.Acquire.SlotId);
 
-                var seekProjectile = w.ProjectilesNear || w.TrackProjectiles && w.Comp.Ai.CheckProjectiles;
+                var seekProjectile = w.ProjectilesNear || w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles && w.Comp.Ai.CheckProjectiles;
                 var checkTime = w.Target.TargetChanged || acquire || seekProjectile;
 
                 if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
