@@ -248,18 +248,10 @@ namespace WeaponCore.Platform
             var wasAligned = weapon.Target.IsAligned;
             weapon.Target.IsAligned = isAligned;
             var alignedChange = wasAligned != isAligned;
-            if (alignedChange && isAligned) {
-                if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer)
-                    for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
-                        weapon.Comp.Platform.Weapons[i].Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
+            if (weapon.System.DesignatorWeapon && weapon.System.Session.IsServer && alignedChange && !isAligned) {
+                for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
+                    weapon.Comp.Platform.Weapons[i].Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
             }
-            /*
-            else if (alignedChange && !weapon.System.DelayCeaseFire)
-            {
-                Log.Line($"StopShooting9");
-                weapon.StopShooting();
-            }
-            */
             targetLock = isTracking && weapon.Target.IsAligned;
             return isTracking;
         }
