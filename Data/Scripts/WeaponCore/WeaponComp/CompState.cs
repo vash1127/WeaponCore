@@ -65,8 +65,8 @@ namespace WeaponCore.Support
                 if (Session.MpActive) {
                     Session.SendCompBaseData(this);
                     if (action == ShootActions.ShootClick || action == ShootActions.ShootOn) {
-                        //foreach (var w in Platform.Weapons)
-                            //Session.SendWeaponAmmoData(w);
+                        foreach (var w in Platform.Weapons)
+                            Session.SendWeaponAmmoData(w);
                     }
                 }
 

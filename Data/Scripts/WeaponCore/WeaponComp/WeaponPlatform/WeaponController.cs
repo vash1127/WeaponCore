@@ -306,16 +306,16 @@ namespace WeaponCore.Platform
             UpdateShotEnergy();
             UpdateRequiredPower();
 
-            var mulitplier = (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
+            var multiplier = (ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && ActiveAmmoDef.AmmoDef.Const.BaseDamage > 0) ? BaseDamage / ActiveAmmoDef.AmmoDef.Const.BaseDamage : 1;
 
-            var dpsMulti = mulitplier;
+            var dpsMulti = multiplier;
 
             if (BaseDamage > ActiveAmmoDef.AmmoDef.Const.BaseDamage)
-                mulitplier *= mulitplier;
+                multiplier *= multiplier;
 
-            HeatPShot = System.HeatPerShot * mulitplier;
+            HeatPShot = System.HeatPerShot * multiplier;
 
-            RequiredPower *= mulitplier;
+            RequiredPower *= multiplier;
 
             TicksPerShot = (uint)(3600f / RateOfFire);
 
@@ -323,13 +323,13 @@ namespace WeaponCore.Platform
             var oldMaxCharge = MaxCharge;
 
             if (ActiveAmmoDef.AmmoDef.Const.MustCharge)
-                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * mulitplier;
+                MaxCharge = ActiveAmmoDef.AmmoDef.Const.ChargSize * multiplier;
 
             Dps = ActiveAmmoDef.AmmoDef.Const.PeakDps * dpsMulti;
 
-            var neweHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
+            var newHeatPSec = (60f / TicksPerShot) * HeatPShot * System.BarrelsPerShot;
 
-            var heatDif = oldHeatPSec - neweHeatPSec;
+            var heatDif = oldHeatPSec - newHeatPSec;
             var dpsDif = oldDps - Dps;
             var powerDif = oldRequired - RequiredPower;
             var chargeDif = oldMaxCharge - MaxCharge;

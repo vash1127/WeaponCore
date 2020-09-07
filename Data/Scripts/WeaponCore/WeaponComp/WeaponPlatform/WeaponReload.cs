@@ -301,28 +301,23 @@ namespace WeaponCore.Platform
 
                 if (System.Session.IsServer) {
                     
-                    Log.Line($"Server Reloaded");
                     ++Reload.EndId;
                     ShootOnce = false;
                     if (System.Session.MpActive)
                         System.Session.SendWeaponReload(this);
                 }
                 else {
-                    Log.Line($"Client Reloaded");
                     ClientReloading = false;
                     ClientMakeUpShots = 0;
                 }
 
                 ++ClientEndId;
                 Reloading = false;
-
-                //Log.Line($"Reloaded: AmmoCharge:{Ammo.CurrentCharge} - CompCharge:{Comp.CurrentCharge} - Ammo:{Ammo.CurrentAmmo}");
             }
 
         }
         public void ChargeReload(bool syncCharge = false)
         {
-            //Log.Line($"ChargeReload");
             Comp.CurrentCharge -= Ammo.CurrentCharge;
             Ammo.CurrentCharge = 0;
             Ammo.CurrentAmmo = 0;

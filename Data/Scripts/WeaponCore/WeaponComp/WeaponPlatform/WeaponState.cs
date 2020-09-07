@@ -32,6 +32,11 @@ namespace WeaponCore.Platform
 
             if (!Target.HasTarget)
             {
+                if (DrawingPower) {
+                    Charging = false;
+                    StopPowerDraw();
+                }
+
                 if (Comp.Session.MpActive && Comp.Session.IsServer)  {
                     TargetData.ClearTarget();
                     if (!Comp.Data.Repo.Base.State.TrackingReticle)
