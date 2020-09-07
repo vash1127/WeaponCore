@@ -81,6 +81,7 @@ namespace WeaponCore
                     {
                         w.Ammo = w.Comp.Data.Repo.Ammos[i];
                         w.ClientStartId = w.Reload.StartId;
+                        w.ClientEndId = w.Reload.EndId;
                         w.TargetData = w.Comp.Data.Repo.Base.Targets[i];
                         w.TargetData.WeaponRefreshClient(w);
                     }

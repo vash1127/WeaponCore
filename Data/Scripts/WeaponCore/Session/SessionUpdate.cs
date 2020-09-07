@@ -127,10 +127,16 @@ namespace WeaponCore
                         ///                        
 
                         if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
+
                             if (IsServer && w.Ammo.CurrentAmmo == 0)
                                 w.ComputeServerStorage();
-                            else if (IsClient)
-                                w.ClientReload();
+                            else if (IsClient) {
+
+                                if (w.ClientReloading && w.Reload.EndId > w.ClientEndId && w.Reload.StartId == w.ClientStartId)
+                                    w.Reloaded();
+                                else 
+                                    w.ClientReload();
+                            }
                         }
 
 
@@ -294,6 +300,7 @@ namespace WeaponCore
                 var comp = w.Comp;
                 var ai = comp.Ai;
                 if (ai == null || ai.MyGrid.MarkedForClose || ai.Concealed || !ai.HasPower || comp.MyCube.MarkedForClose || !comp.IsWorking  || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) {
+                    
                     if (w.DrawingPower)
                         w.StopPowerDraw();
 
@@ -313,12 +320,17 @@ namespace WeaponCore
                         comp.CurrentCharge += w.UseablePower;
                     }
                     else {
+                        
                         comp.CurrentCharge -= (w.Ammo.CurrentCharge - w.MaxCharge);
+                        
+                        if (comp.CurrentCharge < 0)
+                            comp.CurrentCharge = 0;
+
                         w.Ammo.CurrentCharge = w.MaxCharge;
                     }
                 }
 
-                if (w.ChargeUntilTick <= Tick || !w.Reloading) {
+                if (!w.Reloading || IsServer && w.ChargeUntilTick <= Tick || IsClient && w.Reload.EndId > w.ClientEndId) {
 
                     if (w.Reloading)
                         w.Reloaded();

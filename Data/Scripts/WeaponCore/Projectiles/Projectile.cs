@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -187,7 +188,7 @@ namespace WeaponCore.Projectiles
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = !Vector3D.IsZero(OriginTargetPos);
 
-            if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && LockedTarget)
+            if (SmartsOn && Info.AmmoDef.Const.TargetOffSet && (LockedTarget || Info.Target.IsFakeTarget))
             {
                 OffSetTarget();
                 OffsetSqr = Info.AmmoDef.Trajectory.Smarts.Inaccuracy * Info.AmmoDef.Trajectory.Smarts.Inaccuracy;
@@ -530,7 +531,7 @@ namespace WeaponCore.Projectiles
                     if (fake) tVel = Info.DummyTarget.LinearVelocity;
                     else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
-                    if (!fake && Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {
+                    if (Info.AmmoDef.Const.TargetLossDegree > 0 && Vector3D.DistanceSquared(Info.Origin, Position) >= Info.AmmoDef.Const.SmartsDelayDistSqr) {
 
                         if (WasTracking && (Info.System.Session.Tick20 || Vector3.Dot(Info.Direction, Position - targetPos) > 0) || !WasTracking) {
                             var targetDir = -Info.Direction;

@@ -158,12 +158,11 @@ namespace WeaponCore.Support
                             w.Target.Reset(Session.Tick, Target.States.Offline);
                     }
                 }
-
                 if (Session.MpActive && Session.IsServer) {
                     Session.SendCompBaseData(this);
                     if (IsWorking) {
-                        foreach (var w in Platform.Weapons)
-                            Session.SendWeaponAmmoData(w);
+                        //foreach (var w in Platform.Weapons)
+                            //Session.SendWeaponAmmoData(w);
                     }
                 }
             }

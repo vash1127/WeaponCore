@@ -127,7 +127,7 @@ namespace WeaponCore.Projectiles
                     {
                         if (ent.PositionComp.WorldVolume.Contains(p.Position) != ContainmentType.Disjoint || ent.PositionComp.WorldVolume.Contains(p.LastEntityPos) != ContainmentType.Disjoint)
                         {
-                            Log.Line("water detected");
+                            //Log.Line("water detected");
                         }
                     }
 

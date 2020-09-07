@@ -250,19 +250,25 @@ namespace WeaponCore
                         {
                             var hitPos = ray.Position + (ray.Direction * dist.Value);
                             if (dist > 1) DsDebugDraw.DrawSingleVec(hitPos, 2f, Color.Red);
-                            if (Tick60)
+                            if (Tick180)
                             {
-                                Log.Line($"{hitPos} - {dist.Value} - {m.Value.PositionComp.WorldVolume.Center} - {m.Value.PositionComp.WorldVolume.Radius}");
-                                Log.Line($"{Vector3D.Distance(hitPos, CameraPos)} - {m.Value.Flags} - {m.Value.MarkedForClose} - {m.Value.InScene}");
+                                Log.Line($"hitPos:{hitPos} - dist:{dist.Value} - radius:{m.Value.PositionComp.WorldVolume.Radius}");
+                                Log.Line($"distFromCamera:{Vector3D.Distance(hitPos, CameraPos)} - flags:{m.Value.Flags} - marked:{m.Value.MarkedForClose} - inScene:{m.Value.InScene}");
+                                Log.Line($"distFromCenter: {Vector3D.Distance(m.Value.PositionComp.WorldAABB.Center, m.Key.PositionComp.WorldAABB.Center)}");
+                                Log.Line($"{m.Key.PositionComp.WorldAABB.HalfExtents.Length()}({m.Key.PositionComp.WorldVolume.Radius}) - {m.Value.PositionComp.LocalAABB.HalfExtents.Length()}({m.Value.PositionComp.WorldVolume.Radius})");
                             }
                         }
-                        var list = new List<MyLineSegmentOverlapResult<MyEntity>>();
-                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref line, list, MyEntityQueryType.Both);
-                        foreach (var e in list)
+
+                        if (Tick60)
                         {
-                            if (e.Element.DefinitionId?.SubtypeId == WaterHash)
+                            var list = new List<MyLineSegmentOverlapResult<MyEntity>>();
+                            MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref line, list, MyEntityQueryType.Both);
+                            foreach (var e in list)
                             {
-                                Log.Line($"hit:{e.Distance}");
+                                if (e.Element.DefinitionId?.SubtypeId == WaterHash)
+                                {
+                                    Log.Line($"hit:{e.Distance} - distFromCenter:{Vector3D.Distance(e.Element.PositionComp.WorldAABB.Center, m.Key.PositionComp.WorldAABB.Center)}");
+                                }
                             }
                         }
                     }

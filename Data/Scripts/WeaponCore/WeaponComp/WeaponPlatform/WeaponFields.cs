@@ -141,6 +141,7 @@ namespace WeaponCore.Platform
         internal int EnergyPriority;
         internal int LastBlockCount;
         internal int ClientStartId;
+        internal int ClientEndId;
         internal int ClientMakeUpShots;
         internal float HeatPShot;
         internal float HsRate;
@@ -163,6 +164,7 @@ namespace WeaponCore.Platform
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
 
+        internal bool ClientReloading;
         internal bool Rotating;
         internal bool IsTurret;
         internal bool TurretMode;

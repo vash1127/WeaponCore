@@ -732,12 +732,14 @@ namespace WeaponCore
                         category.Value.ItemIds.Remove(removeList[i]);
                 }
             }
-            CounterKeenLogMessage();
+            CounterKeenLogMessage(false);
         }
 
-        private static void CounterKeenLogMessage()
+        private static void CounterKeenLogMessage(bool console = true)
         {
-            MyLog.Default.WriteLineAndConsole("\n***\n    [WeaponCore] You can safely ignore log messages from keen stating 'Mod WeaponCore is accessing physics from parallel threads' WC is using a thread safe parallel.for, not a parallel task\n***");
+            var message = "\n***\n    [WeaponCore] Ignore log messages from keen stating 'Mod WeaponCore is accessing physics from parallel threads'\n     WC is using a thread safe parallel.for, not a parallel task\n***";
+            if (console) MyLog.Default.WriteLineAndConsole(message);
+            else MyLog.Default.WriteLine(message);
         }
 
         internal static double ModRadius(double radius, bool largeBlock)

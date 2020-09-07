@@ -154,7 +154,6 @@ namespace WeaponCore.Platform
             var syncUp = Reload.StartId > ClientStartId;
 
             if (!syncUp) {
-
                 var energyDrainable = ActiveAmmoDef.AmmoDef.Const.EnergyAmmo && Comp.Ai.HasPower;
                 if (Ammo.CurrentMags <= 0 && !energyDrainable && ActiveAmmoDef.AmmoDef.Const.Reloadable && !System.DesignatorWeapon) {
                     if (!NoMagsToLoad) 
@@ -163,7 +162,6 @@ namespace WeaponCore.Platform
                 }
                 return false;
             }
-            
             ClientStartId = Reload.StartId;
             ClientMakeUpShots += Ammo.CurrentAmmo;
             Ammo.CurrentAmmo = 0;
@@ -173,6 +171,7 @@ namespace WeaponCore.Platform
                 NoMagsToLoad = false;
             }
 
+            ClientReloading = true;
             Reloading = true;
             FinishBurst = false;
 
@@ -219,7 +218,6 @@ namespace WeaponCore.Platform
         {
             if (AnimationDelayTick > Comp.Session.Tick && (LastEventCanDelay || LastEvent == EventTriggers.Firing))
                 return false;
-
             if (ScheduleAmmoChange) 
                 ChangeActiveAmmoServer();
 
@@ -280,6 +278,7 @@ namespace WeaponCore.Platform
 
                 if (State == null || Comp.Data.Repo == null || Comp.Ai == null || Comp.MyCube.MarkedForClose) return;
 
+
                 LastLoadedTick = Comp.Session.Tick;
 
                 if (ActiveAmmoDef.AmmoDef.Const.MustCharge) {
@@ -301,12 +300,20 @@ namespace WeaponCore.Platform
                 Ammo.CurrentAmmo = !ActiveAmmoDef.AmmoDef.Const.EnergyAmmo ? ActiveAmmoDef.AmmoDef.Const.MagazineDef.Capacity : ActiveAmmoDef.AmmoDef.Const.EnergyMagSize;
 
                 if (System.Session.IsServer) {
+                    
+                    Log.Line($"Server Reloaded");
+                    ++Reload.EndId;
                     ShootOnce = false;
                     if (System.Session.MpActive)
                         System.Session.SendWeaponReload(this);
                 }
-                else 
+                else {
+                    Log.Line($"Client Reloaded");
+                    ClientReloading = false;
                     ClientMakeUpShots = 0;
+                }
+
+                ++ClientEndId;
                 Reloading = false;
 
                 //Log.Line($"Reloaded: AmmoCharge:{Ammo.CurrentCharge} - CompCharge:{Comp.CurrentCharge} - Ammo:{Ammo.CurrentAmmo}");

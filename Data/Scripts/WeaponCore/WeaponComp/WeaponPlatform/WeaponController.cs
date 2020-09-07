@@ -219,12 +219,14 @@ namespace WeaponCore.Platform
                 }
                 else if (set && CurrentlyDegrading)
                 {
-                    CurrentlyDegrading = false;
+                    if (State.Heat <= (System.MaxHeat * .4)) 
+                        CurrentlyDegrading = false;
+
                     UpdateRof();
                 }
 
                 if (State.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
-                {                        
+                {
                     EventTriggerStateChanged(EventTriggers.Overheated, false);
                     State.Overheated = false;
                     if (System.Session.MpActive && System.Session.IsServer)
@@ -248,7 +250,7 @@ namespace WeaponCore.Platform
             var barrelRate = System.BarrelSpinRate * Comp.Data.Repo.Base.Set.RofModifier;
             var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
 
-            systemRate *= heatModifier;
+            systemRate *= CurrentlyDegrading ? heatModifier : 1;
 
             if (systemRate < 1)
                 systemRate = 1;

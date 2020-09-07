@@ -153,6 +153,7 @@ namespace WeaponCore
     {
         [ProtoMember(1)] public uint Revision;
         [ProtoMember(2)] public int StartId; //save
+        [ProtoMember(3)] public int EndId; //save
 
         public void Sync(Weapon w, WeaponReloadValues sync)
         {
@@ -160,8 +161,10 @@ namespace WeaponCore
             {
                 Revision = sync.Revision;
                 StartId = sync.StartId;
+                EndId = sync.EndId;
 
                 w.ClientReload(true);
+
             }
         }
     }
