@@ -183,7 +183,6 @@ namespace WeaponCore
             DsUtil.Purge();
             DsUtil2.Purge();
 
-            _effectActive = false;
             ShootingWeapons.Clear();
             RemoveEffectsFromGrid.Clear();
             WeaponToPullAmmo.Clear();
@@ -192,7 +191,6 @@ namespace WeaponCore
             ChargingWeaponsIndexer.Clear();
             WeaponsToRemoveAmmoIndexer.Clear();
             ChargingWeapons.Clear();
-            //WeaponsToRemoveAmmo.Clear();
             Hits.Clear();
             RotateWeapons.ClearImmediate();
             HomingWeapons.Clear();
