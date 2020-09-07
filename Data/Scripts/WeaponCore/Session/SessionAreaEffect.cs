@@ -8,7 +8,6 @@ using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
-using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
@@ -26,7 +25,6 @@ namespace WeaponCore
 
         private readonly Queue<long> _effectPurge = new Queue<long>();
         internal readonly HashSet<MyCubeGrid> RemoveEffectsFromGrid = new HashSet<MyCubeGrid>();
-        private bool _effectActive;
 
         private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
@@ -45,7 +43,7 @@ namespace WeaponCore
                 Vector3D normHitDir;
                 Vector3D.Normalize(ref hitDir, out normHitDir);
 
-                normHitDir = info.AmmoDef.Const.AreaEffect == PullField ? normHitDir : -normHitDir;
+                normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
                 grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), grid.Physics.CenterOfMassWorld, Vector3.Zero);
             }
             else
@@ -298,11 +296,7 @@ namespace WeaponCore
             }
 
             while (_effectPurge.Count != 0)
-            {
                 EffectedCubes.Remove(_effectPurge.Dequeue());
-            }
-
-            if (EffectedCubes.Count == 0) _effectActive = false;
         }
 
 
