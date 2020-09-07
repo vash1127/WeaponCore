@@ -31,7 +31,7 @@ namespace WeaponCore
         private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-            if (grid == null || grid.MarkedForClose) return;
+            if (grid?.Physics == null || grid.MarkedForClose) return;
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
             if (healthPool <= 0) return;
@@ -39,8 +39,14 @@ namespace WeaponCore
             {
                 if (grid.Physics == null || !grid.Physics.Enabled || grid.Physics.IsStatic)
                     return;
-                var dir = info.AmmoDef.Const.AreaEffect == PushField ? hitEnt.Intersection.Direction : -hitEnt.Intersection.Direction;
-                grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, dir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), grid.Physics?.CenterOfMassWorld, Vector3.Zero);
+
+                var hitDir = hitEnt.HitPos ?? Vector3D.Zero - grid.Physics.CenterOfMassWorld;
+
+                Vector3D normHitDir;
+                Vector3D.Normalize(ref hitDir, out normHitDir);
+
+                normHitDir = info.AmmoDef.Const.AreaEffect == PullField ? normHitDir : -normHitDir;
+                grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), grid.Physics.CenterOfMassWorld, Vector3.Zero);
             }
             else
             {

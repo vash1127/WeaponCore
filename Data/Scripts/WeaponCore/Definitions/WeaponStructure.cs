@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
@@ -13,7 +12,6 @@ using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
@@ -1168,7 +1166,6 @@ namespace WeaponCore.Support
 
                 var typeName = w.Value.Item1;
                 var weaponDef = new WeaponDefinition();
-
                 foreach (var weapon in wDefList)
                     if (weapon.HardPoint.WeaponName == typeName) weaponDef = weapon;
 
@@ -1209,6 +1206,7 @@ namespace WeaponCore.Support
 
 
                     Session.AmmoDefIds.Add(ammoDefId);
+                    Session.AmmoDamageMap[ammo] = null;
                     weaponAmmo[i] = new WeaponSystem.WeaponAmmoTypes { AmmoDef = ammo, AmmoDefinitionId = ammoDefId, EjectionDefinitionId = ejectionDefId, AmmoName = ammo.AmmoRound, IsShrapnel = shrapnelNames.Contains(ammo.AmmoRound) };
                 }
 

@@ -1,14 +1,15 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Sandbox.ModAPI;
-using VRage.Game.VisualScripting;
-using VRage.Input;
 using WeaponCore.Support;
+using static WeaponCore.Settings.CoreSettings.ServerSettings;
 
 namespace WeaponCore.Settings
 {
     internal class VersionControl
     {
         public CoreSettings Core;
+        private readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> _tmpAmmoModiferMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         public VersionControl(CoreSettings core)
         {
             Core = core;
@@ -52,6 +53,7 @@ namespace WeaponCore.Settings
                 else WriteNewServerCfg();
 
                GenerateBlockDmgMap();
+               GenerateAmmoDmgMap();
             }
         }
 
@@ -60,6 +62,7 @@ namespace WeaponCore.Settings
             Core.Enforcement = data;
             Core.ClientWaiting = false;
             GenerateBlockDmgMap();
+            GenerateAmmoDmgMap();
         }
 
         private void WriteNewServerCfg()
@@ -106,13 +109,13 @@ namespace WeaponCore.Settings
             {
                 Core.Enforcement.ShipSizes = new[]
                 {
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Scout", BlockCount = 0, LargeGrid = false},
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Fighter", BlockCount = 2000, LargeGrid = false},
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Frigate", BlockCount = 0, LargeGrid = true},
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Destroyer", BlockCount = 3000, LargeGrid = true},
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Cruiser", BlockCount = 6000, LargeGrid = true},
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true},
-                    new CoreSettings.ServerSettings.ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true},
+                    new ShipSize {Name = "Scout", BlockCount = 0, LargeGrid = false},
+                    new ShipSize {Name = "Fighter", BlockCount = 2000, LargeGrid = false},
+                    new ShipSize {Name = "Frigate", BlockCount = 0, LargeGrid = true},
+                    new ShipSize {Name = "Destroyer", BlockCount = 3000, LargeGrid = true},
+                    new ShipSize {Name = "Cruiser", BlockCount = 6000, LargeGrid = true},
+                    new ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true},
+                    new ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true},
                 };
             }
 
@@ -120,8 +123,17 @@ namespace WeaponCore.Settings
             {
                 Core.Enforcement.BlockModifers = new[]
                 {
-                    new CoreSettings.ServerSettings.BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
-                    new CoreSettings.ServerSettings.BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
+                    new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f},
+                    new BlockModifer { SubTypeId = "TestSubId2", DirectDamageModifer = -1f, AreaDamageModifer = 0f }
+                };
+            }
+
+            if (Core.Enforcement.AmmoModifers == null)
+            {
+                Core.Enforcement.AmmoModifers = new[]
+                {
+                    new AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
+                    new AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
                 };
             }
         }
@@ -143,6 +155,22 @@ namespace WeaponCore.Settings
                     }
                 }
             }
+        }
+
+        private void GenerateAmmoDmgMap()
+        {
+            if (Core.Enforcement.AmmoModifers == null)
+                return;
+
+            foreach (var modifer in Core.Enforcement.AmmoModifers)
+                foreach (var pair in Core.Session.AmmoDamageMap)
+                    if (modifer.Name == pair.Key.AmmoRound)
+                        _tmpAmmoModiferMap[pair.Key] =  modifer;
+
+            foreach (var t in _tmpAmmoModiferMap)
+                Core.Session.AmmoDamageMap[t.Key] = t.Value;
+
+            _tmpAmmoModiferMap.Clear();
         }
     }
 }

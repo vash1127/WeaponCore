@@ -40,13 +40,22 @@ namespace WeaponCore.Settings
                 [ProtoMember(3)] public bool LargeGrid;
             }
 
+            [ProtoContract]
+            public class AmmoModifer
+            {
+                [ProtoMember(1)] public string Name;
+                [ProtoMember(2)] public float DirectDamageModifer;
+                [ProtoMember(3)] public float AreaDamageModifer;
+                [ProtoMember(4)] public float DetonationDamageModifer;
+            }
+
             [ProtoMember(1)] public int Version = -1;
             [ProtoMember(2)] public int Debug = -1;
             [ProtoMember(3)] public bool DisableWeaponGridLimits;
             [ProtoMember(4)] public float DirectDamageModifer = 1;
             [ProtoMember(5)] public float AreaDamageModifer = 1;
             [ProtoMember(6)] public bool ServerOptimizations = true;
-            [ProtoMember(7)] public bool ServerSleepSupport;
+            [ProtoMember(7)] public bool ServerSleepSupport = true;
             [ProtoMember(8)] public BlockModifer[] BlockModifers =
             {
                 new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f}, 
@@ -62,6 +71,12 @@ namespace WeaponCore.Settings
                 new ShipSize {Name = "Cruiser", BlockCount = 6000, LargeGrid = true },
                 new ShipSize {Name = "Battleship", BlockCount = 12000, LargeGrid = true },
                 new ShipSize {Name = "Capital", BlockCount = 24000, LargeGrid = true },
+            };
+            [ProtoMember(10)]
+            public AmmoModifer[] AmmoModifers =
+            {
+                new AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
+                new AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
             };
         }
 

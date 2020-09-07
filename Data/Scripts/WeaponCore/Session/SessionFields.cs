@@ -23,6 +23,7 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using WeaponCore.Settings;
 using static WeaponCore.Support.GridAi;
+using static WeaponCore.Settings.CoreSettings.ServerSettings;
 using Task = ParallelTasks.Task;
 
 namespace WeaponCore
@@ -38,7 +39,7 @@ namespace WeaponCore
         internal const int VersionControl = 32;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
-        internal const int ServerCfgVersion = 1;
+        internal const int ServerCfgVersion = 2;
         internal const int ClientCfgVersion = 1;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
@@ -136,7 +137,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<MyPlanet, MyEntity> WaterEntityMap = new Dictionary<MyPlanet, MyEntity>();
-
+        internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();

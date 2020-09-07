@@ -536,12 +536,15 @@ namespace WeaponCore.Projectiles
 
                 MyEntity ent;
                 HitEntity hitEnt;
+                HitEntity otherHit;
                 if (isX) {
                     hitEnt = x;
+                    otherHit = y;
                     ent = hitEnt.Entity;
                 }
                 else {
                     hitEnt = y;
+                    otherHit = x;
                     ent = hitEnt.Entity;
                 }
 
@@ -559,6 +562,12 @@ namespace WeaponCore.Projectiles
                     dist = hitEnt.HitDist.Value;
                 }
                 else if (grid != null) {
+
+                    /*
+                    var otherGrid = otherHit?.Entity as MyCubeGrid;
+                    if (otherGrid != null && otherGrid.IsInSameLogicalGroupAs(grid))
+                        hitEnt.SubGrids.Add(otherHit);
+                    */
 
                     if (hitEnt.Hit) {
 

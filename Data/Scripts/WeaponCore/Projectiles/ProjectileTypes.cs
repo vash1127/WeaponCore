@@ -186,7 +186,7 @@ namespace WeaponCore.Support
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>(16);
         public readonly List<Vector3I> Vector3ICache = new List<Vector3I>(16);
-
+        public readonly HashSet<HitEntity> SubGrids = new HashSet<HitEntity>();
         public MyEntity Entity;
         internal Projectile Projectile;
         public ProInfo Info;
