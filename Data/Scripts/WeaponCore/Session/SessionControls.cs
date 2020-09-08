@@ -235,8 +235,7 @@ namespace WeaponCore
 
         internal static void AlterControls<T>(Session session) where T : IMyTerminalBlock
         {
-            var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
-
+            var validType = typeof(T) == typeof(IMyUserControllableGun);
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<T>(out controls);
 
@@ -251,8 +250,7 @@ namespace WeaponCore
                 "CustomData",
                 "Control",
             };
-
-            for (int i = isTurretType ? 12 : 0; i < controls.Count; i++) {
+            for (int i = validType ? 12 : 0; i < controls.Count; i++) {
 
                 var c = controls[i];
                 if (!visibleControls.Contains(c.Id)) {

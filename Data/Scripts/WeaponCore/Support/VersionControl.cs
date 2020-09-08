@@ -179,10 +179,7 @@ namespace WeaponCore.Settings
                 };
             }
             if (write)
-            {
-                Log.Line($"corrupted save file, rewriting");
                 SaveServerCfg();
-            }
         }
 
 

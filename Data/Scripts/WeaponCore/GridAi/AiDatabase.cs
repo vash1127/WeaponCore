@@ -33,6 +33,7 @@ namespace WeaponCore.Support
 
         internal void Scan()
         {
+            var hasFocus = Construct.Data.Repo?.FocusData != null && Construct.Data.Repo.FocusData.HasFocus;
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref ScanVolume, _possibleTargets);
             NearByEntitiesTmp = _possibleTargets.Count;
 

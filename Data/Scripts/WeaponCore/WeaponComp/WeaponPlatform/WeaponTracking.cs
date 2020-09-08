@@ -663,7 +663,7 @@ namespace WeaponCore.Platform
                 }
 
                 var cube = Target.Entity as MyCubeBlock;
-                if (cube != null && !cube.IsWorking)
+                if (cube != null && !cube.IsWorking && !Comp.Ai.Construct.Focus.EntityIsFocused(Comp.Ai, cube.CubeGrid))
                 {
                     masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                     if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);

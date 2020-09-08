@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.WorldEnvironment.ObjectBuilders;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
@@ -572,6 +573,26 @@ namespace WeaponCore.Support
 
             }
             return fd.DistToNearestFocusSqr <= w.MaxTargetDistanceSqr;
+        }
+
+        internal bool EntityIsFocused(GridAi ai, MyEntity entToCheck)
+        {
+            var targets = ai.Construct?.Data?.Repo?.FocusData?.Target;
+
+            if (targets != null)
+            {
+                for (int i = 0; i < targets.Length; i++)
+                {
+                    var tId = targets[i];
+                    if (tId == 0)
+                        continue;
+
+                    MyEntity target;
+                    if (MyEntities.TryGetEntityById(tId, out target) && target == entToCheck)
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }
