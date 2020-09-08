@@ -55,7 +55,7 @@ namespace WeaponCore.Settings
             [ProtoMember(4)] public float DirectDamageModifer = 1;
             [ProtoMember(5)] public float AreaDamageModifer = 1;
             [ProtoMember(6)] public bool ServerOptimizations = true;
-            [ProtoMember(7)] public bool ServerSleepSupport = true;
+            [ProtoMember(7)] public bool ServerSleepSupport = false;
             [ProtoMember(8)] public BlockModifer[] BlockModifers =
             {
                 new BlockModifer {SubTypeId = "TestSubId1", DirectDamageModifer = 0.5f, AreaDamageModifer = 0.1f}, 

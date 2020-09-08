@@ -55,9 +55,9 @@ namespace WeaponCore
 
                     var comp = ai.Weapons[i];
 
-                    if (ai.DbUpdated || !comp.UpdatedState) {
+                    if (ai.DbUpdated || !comp.UpdatedState) 
                         comp.DetectStateChanges();
-                    }
+
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking  || comp.Status != Started || comp.MyCube.MarkedForClose) {
                         
                         if (comp.Status != Started) comp.HealthCheck();
@@ -219,7 +219,7 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         ///
 
-                        if (w.TurretMode && !w.IsHome && !w.ReturingHome && !w.Target.HasTarget && !comp.UserControlled && w.State.Action == ShootOff)
+                        if (w.TurretMode && !w.IsHome && !w.ReturingHome && !w.Target.HasTarget && Tick - w.Target.ResetTick > 239 && !comp.UserControlled && w.State.Action == ShootOff)
                             w.ScheduleWeaponHome();
 
                         ///

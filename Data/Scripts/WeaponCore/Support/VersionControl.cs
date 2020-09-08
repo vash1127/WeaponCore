@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Resources;
 using Sandbox.ModAPI;
 using WeaponCore.Support;
 using static WeaponCore.Settings.CoreSettings.ServerSettings;
@@ -38,21 +40,26 @@ namespace WeaponCore.Settings
 
                 if (MyAPIGateway.Utilities.FileExistsInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings))) {
 
-                    var writer = MyAPIGateway.Utilities.ReadFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings)); 
-                    var xmlData = MyAPIGateway.Utilities.SerializeFromXML<CoreSettings.ServerSettings>(writer.ReadToEnd());
+                    var writer = MyAPIGateway.Utilities.ReadFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
+
+                    CoreSettings.ServerSettings xmlData = null;
+                    
+                    try { xmlData = MyAPIGateway.Utilities.SerializeFromXML<CoreSettings.ServerSettings>(writer.ReadToEnd()); }
+                    catch (Exception e) { writer.Dispose(); }
+
                     writer.Dispose();
 
                     if (xmlData?.Version == Session.ServerCfgVersion) {
-
                         Core.Enforcement = xmlData;
-                        CorruptionCheck();
+                        CorruptionCheck(true);
                     }
                     else
-                        WriteNewServerCfg();
+                        GenerateConfig(xmlData);
                 }
-                else WriteNewServerCfg();
+                else GenerateConfig();
+                
 
-               GenerateBlockDmgMap();
+                GenerateBlockDmgMap();
                GenerateAmmoDmgMap();
             }
         }
@@ -65,13 +72,15 @@ namespace WeaponCore.Settings
             GenerateAmmoDmgMap();
         }
 
-        private void WriteNewServerCfg()
+        private void GenerateConfig(CoreSettings.ServerSettings oldSettings = null)
         {
-            MyAPIGateway.Utilities.DeleteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
-            Core.Enforcement = new CoreSettings.ServerSettings {Version = Session.ServerCfgVersion};
-            var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
-            var data = MyAPIGateway.Utilities.SerializeToXML(Core.Enforcement);
-            Write(writer, data);
+            
+            if (oldSettings != null) RebuildConfig(oldSettings);
+            else
+                Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
+
+            CorruptionCheck();
+            SaveServerCfg();
         }
 
         private void WriteNewClientCfg()
@@ -90,6 +99,14 @@ namespace WeaponCore.Settings
             var data = MyAPIGateway.Utilities.SerializeToXML(Core.ClientConfig);
             Write(writer, data);
         }
+        
+        private void SaveServerCfg()
+        {
+            MyAPIGateway.Utilities.DeleteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
+            var writer = MyAPIGateway.Utilities.WriteFileInWorldStorage(Session.ServerCfgName, typeof(CoreSettings.ServerSettings));
+            var data = MyAPIGateway.Utilities.SerializeToXML(Core.Enforcement);
+            Write(writer, data);
+        }
 
         private static void Write(TextWriter writer, string data)
         {
@@ -98,10 +115,35 @@ namespace WeaponCore.Settings
             writer.Dispose();
         }
 
-        private void CorruptionCheck()
+        private void RebuildConfig(CoreSettings.ServerSettings oldSettings)
+        {
+            var oldAmmoModifers = oldSettings.AmmoModifers;
+            var oldBlockModifers = oldSettings.BlockModifers;
+            var oldShipSizes = oldSettings.ShipSizes;
+            var oldSleep = oldSettings.ServerSleepSupport;
+            var oldOptimize = oldSettings.ServerOptimizations;
+
+            Core.Enforcement = new CoreSettings.ServerSettings { Version = Session.ServerCfgVersion };
+
+            if (oldAmmoModifers != null)
+                Core.Enforcement.AmmoModifers = oldAmmoModifers;
+
+            if (oldBlockModifers != null)
+                Core.Enforcement.BlockModifers = oldBlockModifers;
+
+            if (oldShipSizes != null)
+                Core.Enforcement.ShipSizes = oldShipSizes;
+
+            Core.Enforcement.ServerSleepSupport = oldSleep;
+
+            Core.Enforcement.ServerOptimizations = oldOptimize;
+        }
+
+        private void CorruptionCheck(bool write = false)
         {
             if (Core.Enforcement.AreaDamageModifer < 0)
                 Core.Enforcement.AreaDamageModifer = 1f;
+            
             if (Core.Enforcement.DirectDamageModifer < 0)
                 Core.Enforcement.DirectDamageModifer = 1f;
 
@@ -135,6 +177,11 @@ namespace WeaponCore.Settings
                     new AmmoModifer {Name = "TestAmmo1", DirectDamageModifer = 1f, AreaDamageModifer = 0.5f, DetonationDamageModifer = 3.5f},
                     new AmmoModifer {Name = "TestAmmo2", DirectDamageModifer = 2f, AreaDamageModifer = 0f, DetonationDamageModifer = 0f },
                 };
+            }
+            if (write)
+            {
+                Log.Line($"corrupted save file, rewriting");
+                SaveServerCfg();
             }
         }
 

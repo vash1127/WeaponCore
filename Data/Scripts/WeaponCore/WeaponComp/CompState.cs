@@ -175,7 +175,7 @@ namespace WeaponCore.Support
 
             var otherRangeSqr = Ai.TargetingInfo.OtherRangeSqr;
             var threatRangeSqr = Ai.TargetingInfo.ThreatRangeSqr;
-            var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr
+            var targetInrange = TargetNonThreats ? otherRangeSqr <= MaxTargetDistanceSqr && otherRangeSqr >=MinTargetDistanceSqr || threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >= MinTargetDistanceSqr
                 : threatRangeSqr <= MaxTargetDistanceSqr && threatRangeSqr >=MinTargetDistanceSqr;
 
             if (Ai.Session.Settings.Enforcement.ServerSleepSupport && !targetInrange && WeaponsTracking == 0 && Ai.Construct.RootAi.Data.Repo.ControllingPlayers.Count <= 0 && Session.TerminalMon.Comp != this && Data.Repo.Base.State.TerminalAction == ShootActions.ShootOff) {

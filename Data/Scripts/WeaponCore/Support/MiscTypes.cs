@@ -34,6 +34,7 @@ namespace WeaponCore.Support
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
         internal uint ExpiredTick;
+        internal uint ResetTick;
         internal BlockTypes LastBlockType;
         internal Vector3D TargetPos;
         internal double HitShortDist;
@@ -178,6 +179,7 @@ namespace WeaponCore.Support
             OrigDistance = 0;
             TopEntityId = 0;
             TargetId = 0;
+            ResetTick = expiredTick;
             if (expire)
             {
                 StateChange(false, reason);

@@ -39,7 +39,7 @@ namespace WeaponCore
         internal const int VersionControl = 32;
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
-        internal const int ServerCfgVersion = 2;
+        internal const int ServerCfgVersion = 3;
         internal const int ClientCfgVersion = 1;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
