@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimation;
@@ -66,6 +67,11 @@ namespace WeaponCore.Platform
                 muzzle.Av2Looping = false;
                 muzzle.LastAv2Tick = Comp.Session.Tick;
 
+                MyParticleEffect effect;
+                if (System.Session.Av.BeamEffects.TryGetValue(muzzle.UniqueId, out effect)) {
+                    effect.Stop();
+                    System.Session.Av.BeamEffects.Remove(muzzle.UniqueId);
+                }
             }
             IsShooting = false;
         }

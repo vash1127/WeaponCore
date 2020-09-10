@@ -953,6 +953,9 @@ namespace WeaponCore.Support
                     return;
                 }
 
+                if (effect.Loop || effect.DurationMax <= 0)
+                    System.Session.Av.BeamEffects[UniqueMuzzleId] = effect;
+
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
                 effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 effect.WorldMatrix = matrix;

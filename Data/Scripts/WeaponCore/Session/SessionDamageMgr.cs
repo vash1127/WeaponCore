@@ -154,7 +154,7 @@ namespace WeaponCore
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;
                     else 
-                        info.BaseDamagePool *= info.AmmoDef.Const.ShieldBypassMod;
+                        info.BaseDamagePool -= combinedDamage;
                 }
                 else info.BaseDamagePool = (objHp * -1);
                 if (info.AmmoDef.Mass <= 0) return;
@@ -189,6 +189,7 @@ namespace WeaponCore
             var shieldBypass = t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass;
             var attackerId = shieldBypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
+            
             var areaEffectDmg = areaEffect != AreaEffectType.Disabled ? t.AmmoDef.Const.AreaEffectDamage : 0;
             var hitMass = t.AmmoDef.Mass;
             var sync = MpActive && (DedicatedServer || IsServer);
@@ -196,7 +197,7 @@ namespace WeaponCore
             var radiantCascade = radiant && !detonateOnEnd;
             var primeDamage = !radiantCascade || !hasAreaDmg;
             var radiantBomb = radiant && detonateOnEnd;
-            var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
+            var damageType = shieldBypass ? ShieldBypassDamageType : explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var minAoeOffset = largeGrid ? 1.25 : 0.5f;
             var gridMatrix = grid.PositionComp.WorldMatrixRef;
             AmmoModifer ammoModifer;
