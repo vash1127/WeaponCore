@@ -51,6 +51,8 @@ namespace WeaponCore.Platform
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
             obj.OnMarkForClose -= EntPartClose;
+            if (Comp.MyCube.IsWorking)
+                Comp.Status = WeaponComponent.Start.ReInit;
         }
 
         internal void UpdateRequiredPower()

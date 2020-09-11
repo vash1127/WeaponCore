@@ -116,6 +116,7 @@ namespace WeaponCore.Platform
         internal void UpdatePivotPos()
         {
             if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
             PosChangedTick = Comp.Session.Tick;
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;

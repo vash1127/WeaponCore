@@ -58,9 +58,10 @@ namespace WeaponCore
                     if (ai.DbUpdated || !comp.UpdatedState) 
                         comp.DetectStateChanges();
 
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking  || comp.Status != Started || comp.MyCube.MarkedForClose) {
+                    if (comp.Status != Started) comp.HealthCheck();
+
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose) {
                         
-                        if (comp.Status != Started) comp.HealthCheck();
                         continue;
                     }
 
@@ -93,6 +94,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
+
                         if (w.WeaponReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)
@@ -407,9 +409,11 @@ namespace WeaponCore
 
                 if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 
+
                     if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
-                        
+
                         if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.HasTarget) {
+
                             var topMost = comp.TrackingWeapon.Target.Entity?.GetTopMostParent();
                             GridAi.AcquireTarget(w, false, topMost);
                         }
