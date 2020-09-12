@@ -55,15 +55,13 @@ namespace WeaponCore
 
                     var comp = ai.Weapons[i];
 
+                    if (comp.Status != Started)
+                        comp.HealthCheck();
+
                     if (ai.DbUpdated || !comp.UpdatedState) 
                         comp.DetectStateChanges();
-
-                    if (comp.Status != Started) comp.HealthCheck();
-
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose) {
-                        
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose) 
                         continue;
-                    }
 
                     if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
                         comp.ResetPlayerControl();
@@ -94,7 +92,6 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
 
                         var w = comp.Platform.Weapons[j];
-
                         if (w.WeaponReadyTick > Tick) {
 
                             if (w.Target.HasTarget && !IsClient)

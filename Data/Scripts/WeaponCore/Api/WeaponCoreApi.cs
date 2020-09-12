@@ -286,6 +286,7 @@ namespace WeaponCore.Api
             [ProtoMember(4)] internal HardPointDef HardPoint;
             [ProtoMember(5)] internal AmmoDef[] Ammos;
             [ProtoMember(6)] internal string ModPath;
+            [ProtoMember(7)] internal Dictionary<string, UpgradeValues[]> Upgrades;
 
             [ProtoContract]
             public struct ModelAssignmentsDef
@@ -442,6 +443,20 @@ namespace WeaponCore.Api
             }
 
             [ProtoContract]
+            public struct UpgradeValues
+            {
+                [ProtoMember(1)] internal string[] Ammo;
+                [ProtoMember(2)] internal int RateOfFireMod;
+                [ProtoMember(3)] internal int BarrelsPerShotMod;
+                [ProtoMember(4)] internal int ReloadMod;
+                [ProtoMember(5)] internal int MaxHeatMod;
+                [ProtoMember(6)] internal int HeatSinkRateMod;
+                [ProtoMember(7)] internal int ShotsInBurstMod;
+                [ProtoMember(8)] internal int DelayAfterBurstMod;
+                [ProtoMember(9)] internal int AmmoPriority;
+            }
+
+            [ProtoContract]
             public struct HardPointDef
             {
                 public enum Prediction
@@ -465,6 +480,20 @@ namespace WeaponCore.Api
                 [ProtoMember(11)] internal HardPointParticleDef Graphics;
                 [ProtoMember(12)] internal OtherDef Other;
                 [ProtoMember(13)] internal bool AddToleranceToTracking;
+
+                [ProtoContract]
+                public struct UpgradeValues
+                {
+                    [ProtoMember(1)] internal string[] Ammo;
+                    [ProtoMember(2)] internal int RateOfFireMod;
+                    [ProtoMember(3)] internal int BarrelsPerShotMod;
+                    [ProtoMember(4)] internal int ReloadMod;
+                    [ProtoMember(5)] internal int MaxHeatMod;
+                    [ProtoMember(6)] internal int HeatSinkRateMod;
+                    [ProtoMember(7)] internal int ShotsInBurstMod;
+                    [ProtoMember(8)] internal int DelayAfterBurstMod;
+                    [ProtoMember(9)] internal int AmmoPriority;
+                }
 
                 [ProtoContract]
                 public struct LoadingDef
@@ -600,6 +629,8 @@ namespace WeaponCore.Api
                     [ProtoMember(7)] internal CustomScalesDef Custom;
                     [ProtoMember(8)] internal ShieldDef Shields;
                     [ProtoMember(9)] internal FallOffDef FallOff;
+                    [ProtoMember(10)] internal double HealthHitModifier;
+                    [ProtoMember(11)] internal double VoxelHitModifier;
 
                     [ProtoContract]
                     public struct FallOffDef

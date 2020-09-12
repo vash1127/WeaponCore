@@ -229,8 +229,6 @@ namespace WeaponCore.Support
                     stringBuilder.Append("\nName: " + w.System.WeaponName + shots + burst + "\nReloading: " + w.Reloading + endReturn);
                 }
 
-
-                stringBuilder.Append("\n\n** Use Weapon Wheel Menu\n** to control weapons using\n** MMB outside of this terminal");
                 if (Debug)
                 {
                     foreach (var weapon in Platform.Weapons)

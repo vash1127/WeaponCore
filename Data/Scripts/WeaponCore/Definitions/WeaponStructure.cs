@@ -534,6 +534,8 @@ namespace WeaponCore.Support
         public readonly double CollisionSize;
         public readonly double SmartsDelayDistSqr;
         public readonly double SegmentStep;
+        public readonly double HealthHitModifier;
+        public readonly double VoxelHitModifier;
 
         internal AmmoConstants(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, Session session, WeaponSystem system, int ammoIndex)
         {
@@ -618,7 +620,7 @@ namespace WeaponCore.Support
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
 
-            DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
+            DamageScales(ammo.AmmoDef, out DamageScaling, out FallOffScaling,out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage, out HealthHitModifier, out VoxelHitModifier);
             Beams(ammo.AmmoDef, out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             CollisionShape(ammo.AmmoDef, out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay) * (CollisionSize * ammo.AmmoDef.Trajectory.Smarts.TrackingDelay);
@@ -1018,7 +1020,7 @@ namespace WeaponCore.Support
             collisionSize = size;
         }
 
-        private void DamageScales(AmmoDef ammoDef, out bool damageScaling, out bool fallOffScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)
+        private void DamageScales(AmmoDef ammoDef, out bool damageScaling, out bool fallOffScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage, out double healthHitModifer, out double voxelHitModifer)
         {
             armorScaling = false;
             customDamageScales = false;
@@ -1044,6 +1046,8 @@ namespace WeaponCore.Support
             }
             selfDamage = ammoDef.DamageScales.SelfDamage && !IsBeamWeapon;
             voxelDamage = ammoDef.DamageScales.DamageVoxels;
+            healthHitModifer = ammoDef.DamageScales.HealthHitModifier > 0 ? ammoDef.DamageScales.HealthHitModifier : 1;
+            voxelHitModifer = ammoDef.DamageScales.VoxelHitModifier > 0 ? ammoDef.DamageScales.VoxelHitModifier : 1;
         }
 
         private void Energy(WeaponSystem.WeaponAmmoTypes ammoPair, WeaponSystem system, WeaponDefinition wDef, out bool energyAmmo, out bool mustCharge, out bool reloadable, out int energyMagSize, out int chargeSize, out bool burstMode, out bool shotReload)
