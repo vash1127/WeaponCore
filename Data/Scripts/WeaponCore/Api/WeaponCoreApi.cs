@@ -905,6 +905,24 @@ namespace WeaponCore.Api
                         [ProtoMember(3)] internal bool Depletable;
                         [ProtoMember(4)] internal double TriggerRange;
                         [ProtoMember(5)] internal int MaxStacks;
+                        [ProtoMember(6)] internal PushPullDef Force;
+
+                        [ProtoContract]
+                        public struct PushPullDef
+                        {
+                            public enum Force
+                            {
+                                ProjectileLastPosition,
+                                ProjectileOrigin,
+                                HitPosition,
+                                TargetCenter,
+                                TargetCenterOfMass,
+                            }
+
+                            [ProtoMember(1)] internal Force ForceFrom;
+                            [ProtoMember(2)] internal Force ForceTo;
+                            [ProtoMember(3)] internal Force Position;
+                        }
                     }
 
                     [ProtoContract]

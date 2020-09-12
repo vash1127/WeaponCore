@@ -10,6 +10,7 @@ using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef;
+using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.EwarFieldsDef.PushPullDef;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.AreaDamageDef.AreaEffectType;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Projectiles.Projectiles;
@@ -26,38 +27,79 @@ namespace WeaponCore
         private readonly Queue<long> _effectPurge = new Queue<long>();
         internal readonly HashSet<MyCubeGrid> RemoveEffectsFromGrid = new HashSet<MyCubeGrid>();
 
-        private void UpdateField(HitEntity hitEnt, ProInfo info)
+        private static void PushPull(HitEntity hitEnt, ProInfo info)
         {
-            var grid = hitEnt.Entity as MyCubeGrid;
-            if (grid?.Physics == null || grid.MarkedForClose) return;
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
             if (healthPool <= 0) return;
-            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField)
-            {
-                if (grid.Physics == null || !grid.Physics.Enabled || grid.Physics.IsStatic)
-                    return;
 
-                var hitDir = hitEnt.HitPos ?? Vector3D.Zero - grid.Physics.CenterOfMassWorld;
+            if (hitEnt.Entity.Physics == null || !hitEnt.Entity.Physics.Enabled || hitEnt.Entity.Physics.IsStatic || !hitEnt.HitPos.HasValue)
+                return;
 
-                Vector3D normHitDir;
-                Vector3D.Normalize(ref hitDir, out normHitDir);
+            var forceDef = info.AmmoDef.AreaEffect.EwarFields.Force;
 
-                normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
-                grid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), grid.Physics.CenterOfMassWorld, Vector3.Zero);
+            Vector3D forceFrom = Vector3D.Zero;
+            Vector3D forceTo = Vector3D.Zero;
+            Vector3D forcePosition = Vector3D.Zero;
+
+            if (forceDef.ForceFrom == Force.ProjectileLastPosition) forceFrom = hitEnt.Intersection.From;
+            else if (forceDef.ForceFrom == Force.ProjectileOrigin) forceFrom = info.Origin;
+            else if (forceDef.ForceFrom == Force.HitPosition) forceFrom = hitEnt.HitPos.Value;
+            else if (forceDef.ForceFrom == Force.TargetCenter) forceFrom = hitEnt.Entity.PositionComp.WorldAABB.Center;
+            else if (forceDef.ForceFrom == Force.TargetCenterOfMass) forceFrom = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+            if (forceDef.ForceTo == Force.ProjectileLastPosition) forceTo = hitEnt.Intersection.From;
+            else if (forceDef.ForceTo == Force.ProjectileOrigin) forceTo = info.Origin;
+            else if (forceDef.ForceTo == Force.HitPosition) forceTo = hitEnt.HitPos.Value;
+            else if (forceDef.ForceTo == Force.TargetCenter) forceTo = hitEnt.Entity.PositionComp.WorldAABB.Center;
+            else if (forceDef.ForceTo == Force.TargetCenterOfMass) forceTo = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+            if (forceDef.Position == Force.ProjectileLastPosition) forcePosition = hitEnt.Intersection.From;
+            else if (forceDef.Position == Force.ProjectileOrigin) forcePosition = info.Origin;
+            else if (forceDef.Position == Force.HitPosition) forcePosition = hitEnt.HitPos.Value;
+            else if (forceDef.Position == Force.TargetCenter) forcePosition = hitEnt.Entity.PositionComp.WorldAABB.Center;
+            else if (forceDef.Position == Force.TargetCenterOfMass) forcePosition = hitEnt.Entity.Physics.CenterOfMassWorld;
+
+            var hitDir = forceTo - forceFrom;
+
+            Vector3D normHitDir;
+            Vector3D.Normalize(ref hitDir, out normHitDir);
+
+            normHitDir = info.AmmoDef.Const.AreaEffect == PushField ? normHitDir : -normHitDir;
+            hitEnt.Entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normHitDir * (info.AmmoDef.Const.AreaEffectDamage * hitEnt.Entity.Physics.Mass), forcePosition, Vector3.Zero);
+            
+            if (depletable) 
+                info.BaseHealthPool -= healthPool;
+        }
+
+        private void UpdateField(HitEntity hitEnt, ProInfo info)
+        {
+            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField) {
+                PushPull(hitEnt, info);
+                return;
             }
-            else
-            {
-                var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
-                GetAndSortBlocksInSphere(info.AmmoDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
-                ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
-            }
 
-            if (depletable) info.BaseHealthPool -= healthPool;
+            var grid = hitEnt.Entity as MyCubeGrid;
+            if (grid?.Physics == null || grid.MarkedForClose) return;
+
+            var attackerId = info.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            GetAndSortBlocksInSphere(info.AmmoDef, hitEnt.Info.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
+
+            var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
+            var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
+            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
+
+            if (depletable) 
+                info.BaseHealthPool -= healthPool;
         }
 
         private void UpdateEffect(HitEntity hitEnt, ProInfo info)
         {
+            if (info.AmmoDef.Const.AreaEffect == PullField || info.AmmoDef.Const.AreaEffect == PushField) {
+                PushPull(hitEnt, info);
+                return;
+            }
+
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaEffectType, GridEffect> effects;
