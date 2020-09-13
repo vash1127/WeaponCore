@@ -589,7 +589,7 @@ namespace WeaponCore.Api
         {
             float power = 0f;
             WeaponStructure weapons;
-            if (_session.WeaponPlatforms.TryGetValue(weaponDef.SubtypeId, out weapons))
+            if (_session.WeaponPlatforms.TryGetValue(weaponDef, out weapons))
             {
                 foreach(var systems in weapons.WeaponSystems)
                 {

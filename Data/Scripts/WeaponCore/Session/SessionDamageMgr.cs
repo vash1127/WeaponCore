@@ -138,7 +138,7 @@ namespace WeaponCore
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
             if (heal) combinedDamage *= -1;
-            var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || info.AmmoDef.Const.HitParticle);
+            var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
 
             var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, combinedDamage, energy, applyToShield);
             if (hit.HasValue)
