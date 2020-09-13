@@ -38,7 +38,7 @@ namespace WeaponCore
 
                 if (sorter != null || turret != null || controllableGun != null)
                 {
-                    if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+                    if (!(ReplaceVanilla && VanillaIds.ContainsKey(cube.BlockDefinition.Id)) && !WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id)) return;
 
                     lock (InitObj)
                     {

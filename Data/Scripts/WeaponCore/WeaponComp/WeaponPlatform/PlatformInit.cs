@@ -6,7 +6,9 @@ using WeaponCore.Support;
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.ObjectBuilders;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Support.WeaponComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
@@ -37,12 +39,12 @@ namespace WeaponCore.Platform
 
         internal void Setup(WeaponComponent comp)
         {
-            if (!comp.Session.WeaponPlatforms.ContainsKey(comp.SubtypeHash))
+            if (!comp.Session.WeaponPlatforms.ContainsKey(comp.MyCube.BlockDefinition.Id))
             {
                 Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) was not found in platform setup, I am crashing now Dave.");
                 return;
             }
-            Structure = comp.Session.WeaponPlatforms[comp.SubtypeHash];
+            Structure = comp.Session.WeaponPlatforms[comp.MyCube.BlockDefinition.Id];
             Comp = comp;
 
             if (Weapons.Length != Structure.MuzzlePartNames.Length)

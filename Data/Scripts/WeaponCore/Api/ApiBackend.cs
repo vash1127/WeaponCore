@@ -322,7 +322,7 @@ namespace WeaponCore.Api
         private bool GetBlockWeaponMap(IMyTerminalBlock weaponBlock, IDictionary<string, int> collection)
         {
             WeaponStructure weaponStructure;
-            if (_session.WeaponPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id.SubtypeId, out weaponStructure))
+            if (_session.WeaponPlatforms.TryGetValue(weaponBlock.SlimBlock.BlockDefinition.Id, out weaponStructure))
             {
                 foreach (var weaponSystem in weaponStructure.WeaponSystems.Values)
                 {

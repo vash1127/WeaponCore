@@ -278,7 +278,7 @@ namespace WeaponCore
                     else
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
-                WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons, modPath);
+                WeaponPlatforms[defId] = new WeaponStructure(this, tDef, weapons, modPath);
             }
 
 

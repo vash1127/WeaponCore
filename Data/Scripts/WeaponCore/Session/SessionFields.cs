@@ -111,7 +111,7 @@ namespace WeaponCore
         internal readonly Queue<PartAnimation> ThreadedAnimations = new Queue<PartAnimation>();
 
         internal readonly Dictionary<MyDefinitionBase, BlockDamage> BlockDamageMap = new Dictionary<MyDefinitionBase, BlockDamage>();
-        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+        internal readonly Dictionary<MyDefinitionId, WeaponStructure> WeaponPlatforms = new Dictionary<MyDefinitionId, WeaponStructure>(MyDefinitionId.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();

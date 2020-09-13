@@ -620,7 +620,7 @@ namespace WeaponCore
                         if (toolbarItem != null)
                         {
                             var defId = (MyDefinitionId)toolbarItem.defId;
-                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId.SubtypeId))
+                            if ((ReplaceVanilla && VanillaIds.ContainsKey(defId)) || WeaponPlatforms.ContainsKey(defId))
                             {
                                 var index = ob.Toolbar.Slots[i].Index;
                                 var item = ob.Toolbar.Slots[i].Item;
