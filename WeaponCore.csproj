@@ -168,6 +168,12 @@
     <Reference Include="Sandbox.Graphics">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\Sandbox.Graphics.dll</HintPath>
     </Reference>
+    <Reference Include="SpaceEngineers.Game">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.Game.dll</HintPath>
+    </Reference>
+    <Reference Include="SpaceEngineers.ObjectBuilders">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.dll</HintPath>
+    </Reference>
     <Reference Include="SpaceEngineers.ObjectBuilders.XmlSerializers">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.ObjectBuilders.XmlSerializers.dll</HintPath>
     </Reference>

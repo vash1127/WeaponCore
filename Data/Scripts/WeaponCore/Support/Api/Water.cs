@@ -76,7 +76,6 @@ namespace Jakaria
             PlanetId = planetId;
             if (MyEntities.TryGetEntityById(planetId, out Planet, true))
             {
-                Log.Line("found planet");
                 Position = Planet.PositionComp.GetPosition();
                 Radius = Planet.MinimumRadius * radiusMultiplier;
                 CurrentRadius = Radius;
