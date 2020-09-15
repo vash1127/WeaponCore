@@ -121,6 +121,9 @@ namespace WeaponCore
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
 
+                if (PlayerCamera && FirstPersonView && s.ControlledEntity is IMyUserControllableGun)
+                    s.HudUi.NeedsUpdate = true;
+
                 if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();

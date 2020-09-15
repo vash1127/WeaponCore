@@ -328,7 +328,7 @@ namespace WeaponCore.Projectiles
 
                 if (branch == VoxelIntersectBranch.DeferFullCheck) {
 
-                    if (p.Beam.Length > 50) {
+                    if (p.Beam.Length > 85) {
                         IHitInfo hit;
                         p.Info.System.Session.Physics.CastLongRay(p.Beam.From, p.Beam.To, out hit, false);
                         if (hit?.HitEntity is MyVoxelBase)

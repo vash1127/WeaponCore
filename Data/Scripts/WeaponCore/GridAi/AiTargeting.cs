@@ -275,9 +275,9 @@ namespace WeaponCore.Support
                         return;
                     }
                     var meteor = info.Target as MyMeteor;
-                    if (meteor != null && !s.TrackMeteors && !overRides.Meteors) continue;
+                    if (meteor != null && !s.TrackMeteors || !overRides.Meteors) continue;
 
-                    if (character != null && (!s.TrackCharacters && !overRides.Biologicals || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
+                    if (character != null && (!s.TrackCharacters || !overRides.Biologicals || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
 
