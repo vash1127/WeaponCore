@@ -135,12 +135,12 @@ namespace WeaponCore
         internal void UpdateHudSettings()
         {
             //runs once on first draw then only again if a menu is closed
-            var fovModifier = _session.Camera.FovWithZoom / _defaultFov;
+            var fovModifier = _session.CurrentFovWithZoom / _defaultFov;
             NeedsUpdate = false;
             _lastHudUpdateTick = 0;
             _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
             _aspectratioInv = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
-            _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * Math.Tan(_session.Camera.FovWithZoom * 0.5f);
+            _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * _session.ScaleFov;
             _viewPortSize.X = (_viewPortSize.Y * _aspectratio);
             _viewPortSize.Z = -(_session.Camera.NearPlaneDistance * 2);
 
@@ -151,7 +151,7 @@ namespace WeaponCore
 
             _reloadWidth = _reloadWidthConst * fovModifier;
             _reloadHeight = _reloadHeightConst * fovModifier;
-            _reloadOffset = _reloadWidth * (1.9f * fovModifier);
+            _reloadOffset = _reloadWidth * fovModifier;
             _reloadHeightOffset = (_reloadHeightOffsetConst * (2 * fovModifier)) * fovModifier;
 
             _textSize = _WeaponHudFontHeight * fovModifier;

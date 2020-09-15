@@ -207,6 +207,7 @@ namespace WeaponCore
                 var stackedInfo = _weapontoDraw[i];
                 var weapon = stackedInfo.HighestValueWeapon;
                 var name = weapon.System.WeaponName + ": ";
+
                 var textOffset = bgStartPosX - _bgWidth + _reloadWidth + _padding;
                 var hasHeat = weapon.HeatPerc > 0;
                 var reloading = weapon.Reloading && weapon.Reloading && weapon.Comp.Session.Tick - weapon.LastLoadedTick > 30;
@@ -278,7 +279,7 @@ namespace WeaponCore
 
                         stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                         stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
-                        stackedInfo.CachedReloadTexture.Position.X = textOffset - _reloadOffset;
+                        stackedInfo.CachedReloadTexture.Position.X = (textOffset - (_padding * 0.5f)) - _reloadOffset;
                         stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y;
                         stackedInfo.CachedReloadTexture.Width = _reloadWidth;
                         stackedInfo.CachedReloadTexture.Height = _reloadHeight;
