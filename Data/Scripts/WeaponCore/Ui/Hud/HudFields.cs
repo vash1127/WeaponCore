@@ -60,6 +60,8 @@ namespace WeaponCore
         private readonly Color _bgColor = new Color(40, 54, 62, 1);
         private readonly FontType _hudFont = FontType.Mono;
         private int _currentLargestName;
+        private float _paddingHeat;
+        private float _paddingReload;
         private float _padding;
         private float _reloadHeight;
         private float _reloadWidth;

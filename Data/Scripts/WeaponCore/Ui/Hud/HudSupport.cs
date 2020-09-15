@@ -166,6 +166,9 @@ namespace WeaponCore
             _heatOffsetY = (_heatHeight * 3f) * fovModifier;
 
             _infoPaneloffset = _infoPanelOffset * fovModifier;
+            _paddingHeat = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.0001f, 0.0001f, 0.0003f) : 0;
+            _paddingReload = _session.CurrentFovWithZoom < 1 ? MathHelper.Clamp(_session.CurrentFovWithZoom * 0.002f, 0.0002f, 0.001f) : 0.001f;
+
             _symbolWidth = _heatWidth + _padding;
         }
 

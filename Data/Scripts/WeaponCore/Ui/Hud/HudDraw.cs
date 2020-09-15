@@ -252,7 +252,7 @@ namespace WeaponCore
                     stackedInfo.CachedHeatTexture.Material = _heatBarTexture[heatBarIndex].Material;
                     stackedInfo.CachedHeatTexture.Color = Color.Transparent;
                     stackedInfo.CachedHeatTexture.Position.X = CurrWeaponDisplayPos.X - _heatOffsetX;
-                    stackedInfo.CachedHeatTexture.Position.Y = CurrWeaponDisplayPos.Y - _heatOffsetY;
+                    stackedInfo.CachedHeatTexture.Position.Y = CurrWeaponDisplayPos.Y - _heatOffsetY - _paddingHeat;
                     stackedInfo.CachedHeatTexture.Width = _heatWidth;
                     stackedInfo.CachedHeatTexture.Height = _heatHeight;
                     stackedInfo.CachedHeatTexture.P0 = _heatBarTexture[heatBarIndex].P0;
@@ -279,7 +279,7 @@ namespace WeaponCore
 
                         stackedInfo.CachedReloadTexture.Material = texture[stackedInfo.ReloadIndex].Material;
                         stackedInfo.CachedReloadTexture.Color = Color.GhostWhite * _session.UiOpacity;
-                        stackedInfo.CachedReloadTexture.Position.X = (textOffset - (_padding * 0.5f)) - _reloadOffset;
+                        stackedInfo.CachedReloadTexture.Position.X = (textOffset - _paddingReload) - _reloadOffset;
                         stackedInfo.CachedReloadTexture.Position.Y = CurrWeaponDisplayPos.Y;
                         stackedInfo.CachedReloadTexture.Width = _reloadWidth;
                         stackedInfo.CachedReloadTexture.Height = _reloadHeight;
