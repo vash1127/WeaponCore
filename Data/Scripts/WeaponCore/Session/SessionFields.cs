@@ -287,6 +287,7 @@ namespace WeaponCore
         internal double ScaleFov;
         internal float UiBkOpacity;
         internal float UiOpacity;
+        internal float CurrentFovWithZoom;
         internal bool PurgedAll;
         internal bool InMenu;
         internal bool GunnerBlackList;

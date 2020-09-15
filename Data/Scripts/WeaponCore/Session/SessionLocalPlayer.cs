@@ -132,6 +132,11 @@ namespace WeaponCore
             }
         }
 
+        private void FovChanged()
+        {
+            HudUi.NeedsUpdate = true;
+        }
+
         private void ShowClientNotify(ClientNotifyPacket notify)
         {
             MyAPIGateway.Utilities.ShowNotification(notify.Message, notify.Duration > 0 ? notify.Duration : 1000, notify.Color == string.Empty ? "White" : notify.Color);

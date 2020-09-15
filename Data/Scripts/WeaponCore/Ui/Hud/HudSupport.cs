@@ -137,7 +137,7 @@ namespace WeaponCore
             //runs once on first draw then only again if a menu is closed
             var fovModifier = _session.Camera.FovWithZoom / _defaultFov;
             NeedsUpdate = false;
-
+            _lastHudUpdateTick = 0;
             _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
             _aspectratioInv = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
             _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * Math.Tan(_session.Camera.FovWithZoom * 0.5f);

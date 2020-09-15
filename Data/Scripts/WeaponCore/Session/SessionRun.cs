@@ -218,7 +218,13 @@ namespace WeaponCore
                 CameraMatrix = Session.Camera.WorldMatrix;
                 CameraPos = CameraMatrix.Translation;
                 CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-                ScaleFov = Math.Tan(Camera.FovWithZoom * 0.5);
+                var newFov = Camera.FovWithZoom;
+                
+                if (!MyUtils.IsEqual(newFov, CurrentFovWithZoom))
+                    FovChanged();
+
+                CurrentFovWithZoom = newFov;
+                ScaleFov = Math.Tan(CurrentFovWithZoom * 0.5);
 
                 if (HudUi.TexturesToAdd > 0) HudUi.DrawTextures();
 
