@@ -6,7 +6,6 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
-using WeaponCore.Support;
 
 namespace Jakaria
 {
@@ -48,7 +47,7 @@ namespace Jakaria
         /// <summary>
         /// Used to tell in chat what mod is out of date
         /// </summary>
-        private string _modName = "UnknownMod";
+        private string ModName = "UnknownMod";
 
         //Water API Guide
         //Drag WaterModAPI.cs and Water.cs into your mod
@@ -62,7 +61,7 @@ namespace Jakaria
         /// </summary>
         public void Register(string modName)
         {
-            _modName = modName;
+            ModName = modName;
             MyAPIGateway.Utilities.RegisterMessageHandler(ModHandlerID, ModHandler);
         }
 
@@ -82,30 +81,19 @@ namespace Jakaria
             if (data == null)
                 return;
 
-            if (!Registered)
+            if (data is byte[])
             {
-                Registered = true;
-                OnRegisteredEvent?.Invoke();
-            }
-
-            var bytes = data as byte[];
-            if (bytes != null)
-            {
-                Waters = MyAPIGateway.Utilities.SerializeFromBinary<List<Water>>(bytes);
+                Waters = MyAPIGateway.Utilities.SerializeFromBinary<List<Water>>((byte[])data);
 
                 if (Waters == null)
-                {
                     Waters = new List<Water>();
-                    Log.Line($"Waters was null!");
-                }
-                else {
+                else foreach (var water in Waters)
+                    {
+                        MyEntity entity = MyEntities.GetEntityById(water.planetID);
 
-                    foreach (var w in Waters) {
-                        if (w.PlanetId != 0)
-                            w.Init(w.PlanetId);
-                        else Log.Line($"planetId was 0");
+                        if (entity != null)
+                            water.planet = MyEntities.GetEntityById(water.planetID) as MyPlanet;
                     }
-                }
 
                 int count = Waters.Count;
                 RecievedData?.Invoke();
@@ -116,10 +104,16 @@ namespace Jakaria
                     WaterRemovedEvent?.Invoke();
             }
 
+            if (!Registered)
+            {
+                Registered = true;
+                OnRegisteredEvent?.Invoke();
+            }
+
             if (data is int && (int)data != ModAPIVersion)
             {
-                MyLog.Default.WriteLine("Water API V" + ModAPIVersion + " for " + _modName + " is outdated, expected V" + (int)data);
-                MyAPIGateway.Utilities.ShowMessage(_modName, "Water API V" + ModAPIVersion + " is outdated, expected V" + (int)data);
+                MyLog.Default.WriteLine("Water API V" + ModAPIVersion + " for " + ModName + " is outdated, expected V" + (int)data);
+                MyAPIGateway.Utilities.ShowMessage(ModName, "Water API V" + ModAPIVersion + " is outdated, expected V" + (int)data);
             }
         }
 
@@ -130,8 +124,8 @@ namespace Jakaria
         {
             foreach (var water in Waters)
             {
-                water.WaveTimer++;
-                water.CurrentRadius = (float)Math.Max(water.Radius + (Math.Sin((water.WaveTimer) * water.WaveSpeed) * water.WaveHeight), 0);
+                water.waveTimer++;
+                water.currentRadius = (float)Math.Max(water.radius + (Math.Sin((water.waveTimer) * water.waveSpeed) * water.waveHeight), 0);
             }
         }
     }

@@ -111,7 +111,6 @@ namespace WeaponCore
                     if (PacketsToServer.Count > 0)
                         ProccessClientPacketsForServer();
                 }
-
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

@@ -272,32 +272,31 @@ namespace WeaponCore
         private void WApiReceiveData()
         {
             if (WApi.Registered) {
-                /*
                 WaterMap.Clear();
                 MaxWaterHeightSqr.Clear();
                 for (int i = 0; i < WApi.Waters.Count; i++) {
                     
                     var water = WApi.Waters[i];
-                    if (water.Planet != null) {
+                    if (water.planet != null) {
 
-                        WaterMap[water.Planet] = water;
-                        var maxWaterHeight = 61015;
+                        WaterMap[water.planet] = water;
+                        var maxWaterHeight = water.radius;
+                        Log.Line($"{water.radius} - {water.currentRadius}");
                         var maxWaterHeightSqr = maxWaterHeight * maxWaterHeight;
-                        MaxWaterHeightSqr[water.Planet] = maxWaterHeightSqr;
+                        MaxWaterHeightSqr[water.planet] = maxWaterHeightSqr;
 
                         MyEntity waterEntity;
-                        if (WaterEntityMap.TryGetValue(water.Planet, out waterEntity))
-                            SetShape(waterEntity, water.Planet, maxWaterHeight);
+                        if (WaterEntityMap.TryGetValue(water.planet, out waterEntity))
+                            SetShape(waterEntity, water.planet, maxWaterHeight);
                         else {
-                            waterEntity = CreateWaterEntity(water.Planet);
-                            SetShape(waterEntity, water.Planet, maxWaterHeight);
-                            WaterEntityMap[water.Planet] = waterEntity;
+                            waterEntity = CreateWaterEntity(water.planet);
+                            SetShape(waterEntity, water.planet, maxWaterHeight);
+                            WaterEntityMap[water.planet] = waterEntity;
                         }
                         if (waterEntity.DefinitionId?.SubtypeId == WaterHash) 
-                            Log.Line($"wvRadius: {waterEntity.PositionComp.WorldVolume.Radius} - lvRadius: {waterEntity.PositionComp.LocalVolume.Radius} - waabbhalfExt:{waterEntity.PositionComp.WorldAABB.HalfExtents.Length()} - laabbHalfExt:{waterEntity.PositionComp.LocalAABB.HalfExtents.Length()} - maxRadius:{maxWaterHeight}({water.CurrentRadius})");
+                            Log.Line($"wvRadius: {waterEntity.PositionComp.WorldVolume.Radius} - lvRadius: {waterEntity.PositionComp.LocalVolume.Radius} - waabbhalfExt:{waterEntity.PositionComp.WorldAABB.HalfExtents.Length()} - laabbHalfExt:{waterEntity.PositionComp.LocalAABB.HalfExtents.Length()} - maxRadius:{maxWaterHeight}({water.currentRadius})");
                     }
                 }
-                */
             }
         }
 

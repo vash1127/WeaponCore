@@ -104,11 +104,7 @@ namespace WeaponCore
                 ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
             }
             if (WaterMod && !WaterApiLoaded)
-            {
                 WaterApiLoaded = true;
-
-                Log.Line($"water mod registered");
-            }
         }
 
         internal void ProfilePerformance()
