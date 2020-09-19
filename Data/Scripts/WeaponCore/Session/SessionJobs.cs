@@ -53,7 +53,6 @@ namespace WeaponCore
             for (int i = 0; i < DbsToUpdate.Count; i++) {
 
                 var db = DbsToUpdate[i];
-                //lock (db.Ai.DbLock) {
                 using (db.Ai.DbLock.AcquireExclusiveUsing())  {
 
                     var ai = db.Ai;
@@ -71,7 +70,6 @@ namespace WeaponCore
                 for (int d = 0; d < DbsToUpdate.Count; d++)
                 {
                     var db = DbsToUpdate[d];
-                    //lock (db.Ai.DbLock)
                     using (db.Ai.DbLock.AcquireExclusiveUsing())
                     {
                         var ai = db.Ai;

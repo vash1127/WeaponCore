@@ -39,7 +39,6 @@ namespace WeaponCore.Projectiles
         internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
 
         internal ulong CurrentProjectileId;
-
         internal Projectiles(Session session)
         {
             Session = session;

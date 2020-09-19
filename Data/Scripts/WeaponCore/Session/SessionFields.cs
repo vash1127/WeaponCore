@@ -328,6 +328,20 @@ namespace WeaponCore
         internal bool InventoryUpdate;
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
+        internal enum SafeZoneAction
+        {
+            Damage = 1,
+            Shooting = 2,
+            Drilling = 4,
+            Welding = 8,
+            Grinding = 16, // 0x00000010
+            VoxelHand = 32, // 0x00000020
+            Building = 64, // 0x00000040
+            LandingGearLock = 128, // 0x00000080
+            ConvertToStation = 256, // 0x00000100
+            All = ConvertToStation | LandingGearLock | Building | VoxelHand | Grinding | Welding | Drilling | Shooting | Damage, // 0x000001FF
+            AdminIgnore = ConvertToStation | Building | VoxelHand | Grinding | Welding | Drilling | Shooting, // 0x0000017E
+        }
 
         internal enum AnimationType
         {

@@ -32,6 +32,8 @@ namespace WeaponCore.Control
 
             AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Target Neutrals", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTurret);
 
+            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Target Unowned", WepUi.GetUnowned, WepUi.RequestSetUnowned, true, HasTurret);
+
             AddOnOffSwitchNoAction<T>(session, -10, "Biologicals", "Target Biologicals", "Target Biologicals", WepUi.GetBiologicals, WepUi.RequestSetBiologicals, true, TrackBiologicals);
 
             AddOnOffSwitchNoAction<T>(session, -11, "Projectiles", "Target Projectiles", "Target Projectiles", WepUi.GetProjectiles, WepUi.RequestSetProjectiles, true,TrackProjectiles);

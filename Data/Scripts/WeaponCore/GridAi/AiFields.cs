@@ -120,6 +120,7 @@ namespace WeaponCore.Support
         internal bool MarkedForClose;
         internal bool Closed;
         internal bool ScanInProgress;
+        internal bool CanShoot;
 
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;

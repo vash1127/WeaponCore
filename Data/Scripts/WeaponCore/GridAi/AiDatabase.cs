@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -128,11 +129,12 @@ namespace WeaponCore.Support
                 }
                 var voxel = ent as MyVoxelBase;
                 var grid = ent as MyCubeGrid;
+                var safeZone = ent as MySafeZone;
 
-                var blockingThings = ent.Physics != null && grid != null || voxel != null && voxel == voxel.RootVoxel;
+                var blockingThings = safeZone != null || ent.Physics != null && grid != null || voxel != null && voxel == voxel.RootVoxel;
                 if (!blockingThings || voxel != null && (voxel.RootVoxel is MyPlanet || voxel.PositionComp.LocalVolume.Radius < 15)) continue;
 
-                if (voxel != null || ent.Physics.IsStatic)
+                if (voxel != null || safeZone != null || ent.Physics.IsStatic)
                     StaticsInRangeTmp.Add(ent);
 
                 FatMap map;
@@ -226,11 +228,14 @@ namespace WeaponCore.Support
             MyEntity closestEnt = null;
             var closestCenter = Vector3D.Zero;
             double closestDistSqr = double.MaxValue;
+            CanShoot = true;
             for (int i = 0; i < StaticsInRange.Count; i++) {
 
                 var ent = StaticsInRange[i];
                 if (ent == null) continue;
                 if (ent.MarkedForClose) continue;
+                var safeZone = ent as MySafeZone;
+                
 
                 var staticCenter = ent.PositionComp.WorldAABB.Center;
                 if (ent is MyCubeGrid) StaticGridInRange = true;
@@ -241,6 +246,12 @@ namespace WeaponCore.Support
                     closestDistSqr = distSqr;
                     closestEnt = ent;
                     closestCenter = staticCenter;
+                }
+
+                if (CanShoot && safeZone != null) {
+
+                    if (safeZone.PositionComp.WorldVolume.Contains(MyGrid.PositionComp.WorldVolume) != ContainmentType.Disjoint && !((Session.SafeZoneAction)safeZone.AllowedActions).HasFlag(Session.SafeZoneAction.Shooting))
+                        CanShoot = !TouchingSafeZone(safeZone);
                 }
             }
 
@@ -257,6 +268,18 @@ namespace WeaponCore.Support
                 ClosestStaticSqr = distSqr;
             }
             else if (ClosestPlanetSqr < ClosestStaticSqr) ClosestStaticSqr = ClosestPlanetSqr;
+        }
+
+        private bool TouchingSafeZone(MySafeZone safeZone)
+        {
+            var myObb = new MyOrientedBoundingBoxD(MyGrid.PositionComp.LocalAABB, MyGrid.PositionComp.WorldMatrixRef);
+            
+            if (safeZone.Shape == MySafeZoneShape.Sphere) {
+                var sphere = new BoundingSphereD(safeZone.PositionComp.WorldVolume.Center, safeZone.Radius);
+                return myObb.Intersects(ref sphere);
+            }
+
+            return new MyOrientedBoundingBoxD(safeZone.PositionComp.LocalAABB, safeZone.PositionComp.WorldMatrixRef).Contains(ref myObb) != ContainmentType.Disjoint;
         }
 
         internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)

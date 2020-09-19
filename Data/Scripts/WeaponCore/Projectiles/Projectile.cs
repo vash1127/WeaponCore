@@ -253,16 +253,24 @@ namespace WeaponCore.Projectiles
 
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
             var pruneStaticCheck = Info.Ai.ClosestPlanetSqr * 0.5 < MaxTrajectorySqr || Info.Ai.StaticGridInRange;
-            PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            //PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange || !DynamicGuidance && !FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+
+            if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) {
+                LinePlanetCheck = true;
+                PruneQuery = MyEntityQueryType.Both;
+            }
 
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
 
+            /*
             if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) {
                 LinePlanetCheck = true;
                 PruneQuery = MyEntityQueryType.Both;
             }
             else if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
                 StaticEntCheck();
+            */
 
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
@@ -325,7 +333,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.ModelOnly = !LineOrNotModel && ModelState == EntityState.Exists;
             }
         }
-
+        /*
         internal void StaticEntCheck()
         {
             try
@@ -338,6 +346,10 @@ namespace WeaponCore.Projectiles
                     var staticEnt = ai.StaticsInRange[i];
                     var voxel = staticEnt as MyVoxelBase;
                     var grid = staticEnt as MyCubeGrid;
+                    var safeZone = staticEnt as MySafeZone;
+
+                    if (safeZone?.GetIntersectionWithLineAndBoundingSphere(ref lineTest, 1) != null)
+                        PruneQuery = MyEntityQueryType.Both;
 
                     if (voxel == null && grid == null || grid != null && (grid.Physics == null || grid.Physics.IsPhantom || grid.IsPreview))
                         continue;
@@ -348,6 +360,7 @@ namespace WeaponCore.Projectiles
 
                     if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) != ContainmentType.Disjoint)
                     {
+
                         if (voxel != null && voxel == voxel.RootVoxel)
                         {
                             LinePlanetCheck = true;
@@ -362,6 +375,7 @@ namespace WeaponCore.Projectiles
             }
             catch (Exception ex) { Log.Line($"Exception in StaticEntCheck: {ex} AiNull:{Info.Ai == null} - StaticsNull:{Info.Ai?.StaticsInRange == null} - FiringCubeNull:{Info.Target.FiringCube?.CubeGrid == null} - AmmoNull:{Info.AmmoDef == null}) - {Info.WeaponCache == null} - {Info.WeaponCache?.VoxelHits[CachedId] == null} "); }
         }
+        */
         #endregion
 
         #region Run

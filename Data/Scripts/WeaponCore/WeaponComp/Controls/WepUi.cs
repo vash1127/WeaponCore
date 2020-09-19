@@ -162,6 +162,22 @@ namespace WeaponCore
             WeaponComponent.RequestSetValue(comp, "Neutrals", value, comp.Session.PlayerId);
         }
 
+        internal static bool GetUnowned(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Base.Set.Overrides.Unowned;
+        }
+
+        internal static void RequestSetUnowned(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            WeaponComponent.RequestSetValue(comp, "Unowned", value, comp.Session.PlayerId);
+        }
+
         internal static bool GetFocusFire(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();

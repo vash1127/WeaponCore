@@ -9,6 +9,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Game.ObjectBuilders.Components;
 using VRage.Utils;
 using VRageMath;
 using VRageRender;
@@ -82,17 +83,27 @@ namespace WeaponCore.Projectiles
                     var safeZone = ent as MySafeZone;
                     if (safeZone != null) {
 
-                        var outSideSphere = safeZone.Shape == MySafeZoneShape.Sphere && safeZone.PositionComp.WorldVolume.Contains(p.Info.Origin) == ContainmentType.Disjoint;
-                        var outSideBox = safeZone.Shape == MySafeZoneShape.Box && safeZone.PositionComp.WorldAABB.Contains(p.Info.Origin) == ContainmentType.Disjoint;
-                        var outside = outSideSphere || outSideBox;
-                        if (outside) {
+                        var action = (Session.SafeZoneAction)safeZone.AllowedActions;
+                        if (!action.HasFlag(Session.SafeZoneAction.Damage)) {
 
-                            p.State = Projectile.ProjectileState.Detonate;
-                            p.EarlyEnd = true;
+                            bool intersects;
+                            if (safeZone.Shape == MySafeZoneShape.Sphere) {
+                                var sphere = new BoundingSphereD(safeZone.PositionComp.WorldVolume.Center, safeZone.Radius);
+                                var dist = ray.Intersects(sphere);
+                                intersects = dist != null && dist <= p.Beam.Length;
+                            }
+                            else 
+                                intersects = new MyOrientedBoundingBoxD(safeZone.PositionComp.LocalAABB, safeZone.PositionComp.WorldMatrixRef).Intersects(ref p.Beam) != null;
 
-                            if (p.EnableAv)
-                                p.Info.AvShot.ForceHitParticle = true;
-                            break;
+                            if (intersects) {
+
+                                p.State = Projectile.ProjectileState.Depleted;
+                                p.EarlyEnd = true;
+
+                                if (p.EnableAv)
+                                    p.Info.AvShot.ForceHitParticle = true;
+                                break;
+                            }
                         }
                     }
 

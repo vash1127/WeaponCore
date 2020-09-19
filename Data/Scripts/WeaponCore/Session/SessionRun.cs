@@ -58,13 +58,6 @@ namespace WeaponCore
                     if (ClientPacketsToClean.Count > 0)
                         CleanClientPackets();
                 }
-                /*
-                for (int i = DebugLines.Count - 1; i >= 0; i--)
-                    if (!DebugLines[i].Draw(Tick))
-                        DebugLines.RemoveAtFast(i);
-                        */
-
-                // Environment.CurrentManagedThreadId
 
                 if (IsServer) {
                     if (Tick60) AcqManager.Observer();
@@ -151,7 +144,7 @@ namespace WeaponCore
 
                 if (!DedicatedServer && !InMenu) {
                     UpdateLocalAiAndCockpit();
-                    if (UiInput.PlayerCamera && ActiveCockPit != null) 
+                    if (UiInput.PlayerCamera && ActiveCockPit != null || ActiveControlBlock is MyRemoteControl && !UiInput.PlayerCamera) 
                         TargetSelection();
                 }
 
