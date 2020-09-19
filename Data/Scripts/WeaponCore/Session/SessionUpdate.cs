@@ -236,7 +236,7 @@ namespace WeaponCore
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);
                         var shotReady = canShoot && (shoot || w.LockOnFireState);
 
-                        if ((shotReady || w.ShootOnce) && !ai.CanShoot) {
+                        if ((shotReady || w.ShootOnce) && ai.CanShoot) {
 
                             if (w.ShootOnce && IsServer && (shotReady || w.State.Action != ShootOnce))
                                 w.ShootOnce = false;

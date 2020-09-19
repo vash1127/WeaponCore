@@ -116,11 +116,11 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool InPlanetGravity;
         internal bool FirstRun = true;
+        internal bool CanShoot = true;
         internal bool Registered;
         internal bool MarkedForClose;
         internal bool Closed;
         internal bool ScanInProgress;
-        internal bool CanShoot;
 
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;

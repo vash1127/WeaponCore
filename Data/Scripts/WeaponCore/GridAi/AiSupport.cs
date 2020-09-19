@@ -345,6 +345,7 @@ namespace WeaponCore.Support
             PowerDistributor = null;
             Session = null;
             Closed = true;
+            CanShoot = true;
             Version++;
         }
     }
