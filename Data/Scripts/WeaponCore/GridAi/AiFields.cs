@@ -87,6 +87,8 @@ namespace WeaponCore.Support
         internal BoundingSphereD NearByEntitySphere;
         internal BoundingSphereD GridVolume;
         internal BoundingSphereD ScanVolume;
+        internal BoundingSphereD WaterVolume;
+
         internal long MyOwner;
         internal bool AiSleep;
         internal bool DbUpdated;
@@ -121,6 +123,7 @@ namespace WeaponCore.Support
         internal bool MarkedForClose;
         internal bool Closed;
         internal bool ScanInProgress;
+        internal bool TouchingWater;
 
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;

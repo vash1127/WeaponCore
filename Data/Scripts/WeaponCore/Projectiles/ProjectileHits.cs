@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Jakaria;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -48,6 +49,10 @@ namespace WeaponCore.Projectiles
                 var collectionCount = !useEntityCollection ? p.MySegmentList.Count : entityCollection.Count;
                 var ray = new RayD(ref p.Beam.From, ref p.Beam.Direction);
                 var myGrid = p.Info.Target.FiringCube.CubeGrid;
+                
+                Water water = null;
+                if (Session.WaterApiLoaded && p.Info.MyPlanet != null)
+                    Session.WaterMap.TryGetValue(p.Info.MyPlanet, out water);
 
                 for (int i = 0; i < collectionCount; i++) {
 
@@ -81,10 +86,10 @@ namespace WeaponCore.Projectiles
                         if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
                     }
                     var safeZone = ent as MySafeZone;
-                    if (safeZone != null) {
+                    if (safeZone != null && safeZone.Enabled) {
 
                         var action = (Session.SafeZoneAction)safeZone.AllowedActions;
-                        if (!action.HasFlag(Session.SafeZoneAction.Damage)) {
+                        if ((action & Session.SafeZoneAction.Damage) == 0) {
 
                             bool intersects;
                             if (safeZone.Shape == MySafeZoneShape.Sphere) {
@@ -134,14 +139,6 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    if (Session.WaterApiLoaded && Session.WaterHash == ent.DefinitionId?.SubtypeId)
-                    {
-                        if (ent.PositionComp.WorldVolume.Contains(p.Position) != ContainmentType.Disjoint || ent.PositionComp.WorldVolume.Contains(p.LastEntityPos) != ContainmentType.Disjoint)
-                        {
-                            //Log.Line("water detected");
-                        }
-                    }
-
                     var destroyable = ent as IMyDestroyableObject;
                     var voxel = ent as MyVoxelBase;
                     if (voxel != null && voxel == voxel?.RootVoxel) {
@@ -167,40 +164,56 @@ namespace WeaponCore.Projectiles
 
                                 if (p.LinePlanetCheck) {
 
-                                    var surfacePos = p.Info.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
-                                    var planetCenter = p.Info.MyPlanet.PositionComp.WorldAABB.Center;
-                                    double surfaceToCenter;
-                                    Vector3D.DistanceSquared(ref surfacePos, ref planetCenter, out surfaceToCenter);
-                                    double endPointToCenter;
-                                    Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out endPointToCenter);
-                                    double startPointToCenter;
-                                    Vector3D.DistanceSquared(ref p.Info.Origin, ref planetCenter, out startPointToCenter);
+                                    if (water != null && !p.Info.AmmoDef.IgnoreWater) {
+                                        var waterSphere = new BoundingSphereD(p.Info.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
+                                        var estiamtedSurfaceDistance = ray.Intersects(waterSphere);
 
-                                    var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
-                                    Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
-                                    if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (p.Beam.Length * p.Beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
-
-                                        var estiamtedSurfaceDistance = ray.Intersects(p.Info.VoxelCache.PlanetSphere);
-                                        var fullCheck = p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint || !estiamtedSurfaceDistance.HasValue;
-
-                                        if (!fullCheck && estiamtedSurfaceDistance.HasValue && (estiamtedSurfaceDistance.Value <= p.Beam.Length || p.Info.VoxelCache.PlanetSphere.Radius < 1)) {
-
-                                            double distSqr;
+                                        if (estiamtedSurfaceDistance.HasValue && estiamtedSurfaceDistance.Value <= p.Beam.Length) {
                                             var estimatedHit = ray.Position + (ray.Direction * estiamtedSurfaceDistance.Value);
-                                            Vector3D.DistanceSquared(ref p.Info.VoxelCache.FirstPlanetHit, ref estimatedHit, out distSqr);
-
-                                            if (distSqr > 625) fullCheck = true;
-                                            else {
-                                                voxelHit = estimatedHit;
-                                                voxelState = VoxelIntersectBranch.PseudoHit2;
-                                            }
+                                            voxelHit = estimatedHit;
+                                            voxelState = VoxelIntersectBranch.PseudoHit2;
                                         }
+                                    }
+                                    else
+                                    {
+                                        var surfacePos = p.Info.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
+                                        var planetCenter = p.Info.MyPlanet.PositionComp.WorldAABB.Center;
+                                        double surfaceToCenter;
+                                        Vector3D.DistanceSquared(ref surfacePos, ref planetCenter, out surfaceToCenter);
+                                        double endPointToCenter;
+                                        Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out endPointToCenter);
+                                        double startPointToCenter;
+                                        Vector3D.DistanceSquared(ref p.Info.Origin, ref planetCenter, out startPointToCenter);
 
-                                        if (fullCheck)
-                                            voxelState = VoxelIntersectBranch.DeferFullCheck;
+                                        var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
+                                        Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
+                                        if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (p.Beam.Length * p.Beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition))
+                                        {
 
-                                        if (voxelHit.HasValue && Vector3D.DistanceSquared(voxelHit.Value, p.Info.VoxelCache.PlanetSphere.Center) > p.Info.VoxelCache.PlanetSphere.Radius * p.Info.VoxelCache.PlanetSphere.Radius)
-                                            p.Info.VoxelCache.GrowPlanetCache(voxelHit.Value);
+                                            var estiamtedSurfaceDistance = ray.Intersects(p.Info.VoxelCache.PlanetSphere);
+                                            var fullCheck = p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint || !estiamtedSurfaceDistance.HasValue;
+
+                                            if (!fullCheck && estiamtedSurfaceDistance.HasValue && (estiamtedSurfaceDistance.Value <= p.Beam.Length || p.Info.VoxelCache.PlanetSphere.Radius < 1))
+                                            {
+
+                                                double distSqr;
+                                                var estimatedHit = ray.Position + (ray.Direction * estiamtedSurfaceDistance.Value);
+                                                Vector3D.DistanceSquared(ref p.Info.VoxelCache.FirstPlanetHit, ref estimatedHit, out distSqr);
+
+                                                if (distSqr > 625) fullCheck = true;
+                                                else
+                                                {
+                                                    voxelHit = estimatedHit;
+                                                    voxelState = VoxelIntersectBranch.PseudoHit2;
+                                                }
+                                            }
+
+                                            if (fullCheck)
+                                                voxelState = VoxelIntersectBranch.DeferFullCheck;
+
+                                            if (voxelHit.HasValue && Vector3D.DistanceSquared(voxelHit.Value, p.Info.VoxelCache.PlanetSphere.Center) > p.Info.VoxelCache.PlanetSphere.Radius * p.Info.VoxelCache.PlanetSphere.Radius)
+                                                p.Info.VoxelCache.GrowPlanetCache(voxelHit.Value);
+                                        }
                                     }
                                 }
                             }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Jakaria;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -199,6 +200,7 @@ namespace WeaponCore.Support
                     if (pointDistSqr < 0) pointDistSqr = 0;
                     ClosestPlanetSqr = pointDistSqr;
                     PlanetSurfaceInRange = pointDistSqr <= MaxTargetingRangeSqr;
+                    TouchingWater = Session.WaterApiLoaded && GridTouchingWater();
                 }
                 else {
                     InPlanetGravity = false;
@@ -210,6 +212,7 @@ namespace WeaponCore.Support
                     pointDistSqr -= (gridRadius * gridRadius);
                     if (pointDistSqr < 0) pointDistSqr = 0;
                     ClosestPlanetSqr = pointDistSqr;
+                    TouchingWater = false;
                 }
             }
             else {
@@ -218,7 +221,18 @@ namespace WeaponCore.Support
                 PlanetSurfaceInRange = false;
                 InPlanetGravity = false;
                 ClosestPlanetSqr = double.MaxValue;
+                TouchingWater = false;
             }
+        }
+
+        private bool GridTouchingWater()
+        {
+            Water water;
+            if (Session.WaterMap.TryGetValue(MyPlanet, out water)) {
+                WaterVolume = new BoundingSphereD(MyPlanet.PositionComp.WorldAABB.Center, water.radius + water.waveHeight);
+                return new MyOrientedBoundingBoxD(MyGrid.PositionComp.LocalAABB, MyGrid.PositionComp.WorldMatrixRef).Intersects(ref WaterVolume);
+            }
+            return false;
         }
 
         internal void MyStaticInfo()
@@ -248,9 +262,9 @@ namespace WeaponCore.Support
                     closestCenter = staticCenter;
                 }
 
-                if (CanShoot && safeZone != null) {
+                if (CanShoot && safeZone != null && safeZone.Enabled) {
 
-                    if (safeZone.PositionComp.WorldVolume.Contains(MyGrid.PositionComp.WorldVolume) != ContainmentType.Disjoint && !((Session.SafeZoneAction)safeZone.AllowedActions).HasFlag(Session.SafeZoneAction.Shooting))
+                    if (safeZone.PositionComp.WorldVolume.Contains(MyGrid.PositionComp.WorldVolume) != ContainmentType.Disjoint && ((Session.SafeZoneAction)safeZone.AllowedActions & Session.SafeZoneAction.Shooting) == 0)
                         CanShoot = !TouchingSafeZone(safeZone);
                 }
             }

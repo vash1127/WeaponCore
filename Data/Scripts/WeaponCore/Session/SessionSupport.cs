@@ -103,8 +103,12 @@ namespace WeaponCore
                 ShieldApiLoaded = true;
                 ShieldHash = MyStringHash.GetOrCompute("DefenseShield");
             }
-            if (WaterMod && !WaterApiLoaded)
+
+            if (WaterMod && !WaterApiLoaded && !Settings.ClientWaiting && WApi.Waters != null)
+            {
                 WaterApiLoaded = true;
+                WApiReceiveData();
+            }
         }
 
         internal void ProfilePerformance()

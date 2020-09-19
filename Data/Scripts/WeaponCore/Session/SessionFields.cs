@@ -328,6 +328,8 @@ namespace WeaponCore
         internal bool InventoryUpdate;
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
+
+        [Flags]
         internal enum SafeZoneAction
         {
             Damage = 1,

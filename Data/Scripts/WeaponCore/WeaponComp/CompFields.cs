@@ -66,6 +66,7 @@ namespace WeaponCore.Support
         internal bool IsAsleep;
         internal bool IsFunctional;
         internal bool IsWorking;
+        internal bool IsDisabled;
         internal bool HasEnergyWeapon;
         internal bool HasGuidanceToggle;
         internal bool HasDamageSlider;
@@ -82,6 +83,7 @@ namespace WeaponCore.Support
         internal bool ResettingSubparts;
         internal bool HasArmor;
         internal bool UiEnabled;
+        internal bool ShootSubmerged;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

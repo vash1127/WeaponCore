@@ -234,44 +234,6 @@ namespace WeaponCore
         {
             if (HandlesInput && !SupressLoad) {
 
-                /*
-                foreach (var m in WaterEntityMap)
-                {
-                    if (m.Value.DefinitionId?.SubtypeId == WaterHash)
-                    {
-                        m.Value.PositionComp.SetPosition(m.Key.PositionComp.WorldAABB.Center);
-                        LineD line;
-                        UiInput.GetAimRay(this, out line);
-                        var ray = new RayD(line.From, line.Direction);
-                        var dist = ray.Intersects(m.Value.PositionComp.WorldVolume);
-                        if (dist.HasValue)
-                        {
-                            var hitPos = ray.Position + (ray.Direction * dist.Value);
-                            if (dist > 1) DsDebugDraw.DrawSingleVec(hitPos, 2f, Color.Red);
-                            if (Tick180)
-                            {
-                                Log.Line($"hitPos:{hitPos} - dist:{dist.Value} - radius:{m.Value.PositionComp.WorldVolume.Radius}");
-                                Log.Line($"distFromCamera:{Vector3D.Distance(hitPos, CameraPos)} - flags:{m.Value.Flags} - marked:{m.Value.MarkedForClose} - inScene:{m.Value.InScene}");
-                                Log.Line($"distFromCenter: {Vector3D.Distance(m.Value.PositionComp.WorldAABB.Center, m.Key.PositionComp.WorldAABB.Center)}");
-                                Log.Line($"{m.Key.PositionComp.WorldAABB.HalfExtents.Length()}({m.Key.PositionComp.WorldVolume.Radius}) - {m.Value.PositionComp.LocalAABB.HalfExtents.Length()}({m.Value.PositionComp.WorldVolume.Radius})");
-                            }
-                        }
-
-                        if (Tick60)
-                        {
-                            var list = new List<MyLineSegmentOverlapResult<MyEntity>>();
-                            MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref line, list, MyEntityQueryType.Both);
-                            foreach (var e in list)
-                            {
-                                if (e.Element.DefinitionId?.SubtypeId == WaterHash)
-                                {
-                                    Log.Line($"hit:{e.Distance} - distFromCenter:{Vector3D.Distance(e.Element.PositionComp.WorldAABB.Center, m.Key.PositionComp.WorldAABB.Center)}");
-                                }
-                            }
-                        }
-                    }
-                }
-                */
                 if (ControlRequest != ControlQuery.None)
                     UpdateControlKeys();
 

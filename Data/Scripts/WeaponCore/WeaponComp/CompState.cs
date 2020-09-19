@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
@@ -169,6 +170,7 @@ namespace WeaponCore.Support
                 Ai.TargetNonThreats = true;
             var wasAsleep = IsAsleep;
             IsAsleep = false;
+            IsDisabled = Ai.TouchingWater && !ShootSubmerged && Ai.WaterVolume.Contains(MyCube.PositionComp.WorldAABB.Center) != ContainmentType.Disjoint;
 
             if (!Ai.Session.IsServer)
                 return;

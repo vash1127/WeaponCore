@@ -332,6 +332,7 @@ namespace WeaponCore.Support
             RequestIncrease = false;
             DbReady = false;
             GridInit = false;
+            TouchingWater = false;
             Data.Clean();
 
             MyShield = null;

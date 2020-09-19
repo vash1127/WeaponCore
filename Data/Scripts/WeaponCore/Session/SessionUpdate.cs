@@ -60,7 +60,7 @@ namespace WeaponCore
 
                     if (ai.DbUpdated || !comp.UpdatedState) 
                         comp.DetectStateChanges();
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose) 
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.IsAsleep || !comp.IsWorking || comp.MyCube.MarkedForClose || comp.IsDisabled) 
                         continue;
 
                     if (IsServer && comp.Data.Repo.Base.State.PlayerId > 0 && !ai.Data.Repo.ControllingPlayers.ContainsKey(comp.Data.Repo.Base.State.PlayerId))
