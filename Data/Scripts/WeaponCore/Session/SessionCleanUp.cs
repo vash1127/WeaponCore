@@ -105,9 +105,8 @@ namespace WeaponCore
                 var cubeid = item.Key;
                 var blockInfo = item.Value;
                 var functBlock = blockInfo.FunctBlock;
-                var cube = blockInfo.CubeBlock;
 
-                if (cube == null || cube.MarkedForClose)
+                if (functBlock == null || functBlock.MarkedForClose)
                 {
                     _effectPurge.Enqueue(cubeid);
                     continue;
@@ -115,7 +114,7 @@ namespace WeaponCore
 
                 functBlock.EnabledChanged -= ForceDisable;
                 functBlock.Enabled = blockInfo.FirstState;
-                cube.SetDamageEffect(false);
+                functBlock.SetDamageEffect(false);
                 _effectPurge.Enqueue(cubeid);
             }
 

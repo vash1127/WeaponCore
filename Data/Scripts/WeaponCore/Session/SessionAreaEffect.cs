@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -253,11 +254,12 @@ namespace WeaponCore
                         damagePool = tmpDamagePool;
                         blockState.FunctBlock = ((IMyFunctionalBlock)cube);
                         var originState = blockState.FunctBlock.Enabled;
-                        blockState.CubeBlock = cube;
                         blockState.FirstTick = Tick + 1;
                         blockState.FirstState = originState;
                         blockState.NextTick = nextTick;
                         blockState.Endtick = Tick + (duration + 1);
+                        blockState.Session = this;
+                        blockState.AmmoDef = ammoDef;
                         if (!blockDisabled) blockState.Health = blockHp - scaledDamage;
                         else
                         {
@@ -296,8 +298,7 @@ namespace WeaponCore
                 var blockInfo = item.Value;
                 var functBlock = blockInfo.FunctBlock;
                 var health = blockInfo.Health;
-                var cube = blockInfo.CubeBlock;
-                if (cube == null || cube.MarkedForClose)
+                if (functBlock == null || functBlock.MarkedForClose)
                 {
                     _effectPurge.Enqueue(cubeid);
                     continue;
@@ -305,11 +306,18 @@ namespace WeaponCore
 
                 if (health <= 0)
                 {
-                    if (cube.IsWorking)
+                    if (functBlock.IsWorking)
                     {
                         functBlock.Enabled = false;
                         functBlock.EnabledChanged += ForceDisable;
-                        cube.SetDamageEffect(true);
+                        
+                        if (HandlesInput) {
+                            functBlock.AppendingCustomInfo += blockInfo.AppendCustomInfo;
+                            functBlock.RefreshCustomInfo();
+                        }
+
+                        if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                            functBlock.SetDamageEffect(true);
                     }
                 }
 
@@ -317,12 +325,17 @@ namespace WeaponCore
                 {
                     if (Tick60)
                     {
+                        if (HandlesInput && LastTerminal == functBlock) 
+                            functBlock.RefreshCustomInfo();
                         var grid = (MyCubeGrid) functBlock.CubeGrid;
                         if (RemoveEffectsFromGrid.Contains(grid))
                         {
                             functBlock.EnabledChanged -= ForceDisable;
                             functBlock.Enabled = blockInfo.FirstState;
-                            cube.SetDamageEffect(false);
+                            
+                            if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                                functBlock.SetDamageEffect(false);
+
                             _effectPurge.Enqueue(cubeid);
                             RemoveEffectsFromGrid.Remove(grid);
                         }
@@ -331,8 +344,16 @@ namespace WeaponCore
                 else
                 {
                     functBlock.EnabledChanged -= ForceDisable;
+                    if (HandlesInput) {
+                        functBlock.AppendingCustomInfo -= blockInfo.AppendCustomInfo;
+                        functBlock.RefreshCustomInfo();
+                    }
+
                     functBlock.Enabled = blockInfo.FirstState;
-                    cube.SetDamageEffect(false);
+                    
+                    if (!blockInfo.AmmoDef.AreaEffect.EwarFields.DisableParticleEffect)
+                        functBlock.SetDamageEffect(false);
+
                     _effectPurge.Enqueue(cubeid);
                 }
             }
@@ -406,13 +427,23 @@ namespace WeaponCore
 
     internal struct BlockState
     {
-        public MyCubeBlock CubeBlock;
+        public Session Session;
+        public AmmoDef AmmoDef;
         public IMyFunctionalBlock FunctBlock;
         public bool FirstState;
         public uint FirstTick;
         public uint NextTick;
         public uint Endtick;
         public float Health;
+
+
+        internal void AppendCustomInfo(IMyTerminalBlock block, StringBuilder stringBuilder)
+        {
+            var seconds = (Endtick - Session.Tick) / 60;
+            if (Endtick > Session.Tick && seconds > 0)
+                stringBuilder.Append($"\n*****************************************\nDisabled due to Electronic Warfare!\nRebooting in {seconds} seconds");
+            else stringBuilder.Clear();
+        }
     }
 
     internal class GridEffect
