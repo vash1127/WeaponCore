@@ -115,6 +115,8 @@ namespace WeaponCore
                 functBlock.EnabledChanged -= ForceDisable;
                 functBlock.Enabled = blockInfo.FirstState;
                 functBlock.SetDamageEffect(false);
+                if (HandlesInput)
+                    functBlock.AppendingCustomInfo -= blockInfo.AppendCustomInfo;
                 _effectPurge.Enqueue(cubeid);
             }
 
