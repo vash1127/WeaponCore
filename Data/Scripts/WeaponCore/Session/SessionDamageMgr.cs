@@ -133,7 +133,7 @@ namespace WeaponCore
                 scaledDamage *= fallOffMultipler;
             }
             
-            var detonateDamage = detonateOnEnd ? ((areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * detDmgGlobal : 0;
+            var detonateDamage = detonateOnEnd ? (areaEffect.AreaEffect == AreaEffectType.Radiant ? areaEffect.Detonation.DetonationDamage : (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * detDmgGlobal : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
