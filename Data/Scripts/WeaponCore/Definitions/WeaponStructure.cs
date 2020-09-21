@@ -936,22 +936,47 @@ namespace WeaponCore.Support
             }
 
             baseDps = BaseDamage * shotsPerSec;
-            areaDps = (float)(!AmmoAreaEffect ? 0 : ((a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5d)) * shotsPerSec));
-            detDps = (float)(a.AreaEffect.Detonation.DetonateOnEnd ? (a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d)) * shotsPerSec : 0);
+            areaDps = (getAreaDmg(a) * shotsPerSec);
+            detDps = (getDetDmg(a) * shotsPerSec);
 
             if (hasShrapnel)
             {
                 var sAmmo = wDef.Ammos[ShrapnelId];
                 var fragments = a.Shrapnel.Fragments;
                 baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
-                areaDps += sAmmo.AreaEffect.AreaEffect == AreaEffectType.Disabled ? 0 : (float)((sAmmo.AreaEffect.AreaEffectDamage * (sAmmo.AreaEffect.AreaEffectRadius * 0.5d)) * fragments) * shotsPerSec;
-                detDps += sAmmo.AreaEffect.Detonation.DetonateOnEnd ? ((sAmmo.AreaEffect.Detonation.DetonationDamage * (sAmmo.AreaEffect.Detonation.DetonationRadius * 0.5f)) * fragments) * shotsPerSec : 0;
+                areaDps += (getAreaDmg(sAmmo) * fragments) * shotsPerSec;
+                detDps += (getDetDmg(sAmmo) * fragments) * shotsPerSec;
             }
             peakDps = (baseDps + areaDps + detDps);
             effectiveDps = (float) (peakDps * effectiveModifier);
             if (mexLogLevel >= 1) Log.Line($"peakDps= {peakDps}");
 
-            if (mexLogLevel >= 1) Log.Line($"Effecetive DPS(mult) = {effectiveDps}");
+            if (mexLogLevel >= 1) Log.Line($"Effective DPS(mult) = {effectiveDps}");
+        }
+
+        private float getAreaDmg(AmmoDef a)
+        {
+            if (!AmmoAreaEffect)
+            {
+                return 0;
+            }
+            if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
+            {
+                return a.AreaEffect.AreaEffectDamage;
+            }
+            return (float)(a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5d));
+        }
+        private float getDetDmg(AmmoDef a)
+        {
+            if (!a.AreaEffect.Detonation.DetonateOnEnd)
+            {
+                return 0;
+            }
+            if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
+            {
+                return a.AreaEffect.Detonation.DetonationDamage;
+            }
+            return (float)(a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d));
         }
 
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
