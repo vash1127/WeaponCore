@@ -27,6 +27,8 @@ namespace WeaponCore.Platform
             }
 
             ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
+            PrepAmmoShuffle();
+
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo)
                 Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
             
@@ -48,9 +50,20 @@ namespace WeaponCore.Platform
                 return;
 
             ActiveAmmoDef = System.AmmoTypes[Ammo.AmmoTypeId];
+            PrepAmmoShuffle();
+
             UpdateRof();
             SetWeaponDps();
             UpdateWeaponRange();
+        }
+
+        internal void PrepAmmoShuffle()
+        {
+            if (AmmoShufflePattern.Length != ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt) 
+                Array.Resize(ref AmmoShufflePattern, ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt);
+
+            for (int i = 0; i < AmmoShufflePattern.Length; i++)
+                AmmoShufflePattern[i] = i;
         }
 
         internal void AmmoChange(object o)

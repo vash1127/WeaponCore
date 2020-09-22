@@ -420,7 +420,6 @@ namespace WeaponCore.Support
         public readonly Stack<MySoundPair> CustomSoundPairs = new Stack<MySoundPair>();
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly AmmoDef[] AmmoPattern;
-        public readonly int[] AmmoShufflePattern;
         public readonly MyStringId[] TracerTextures;
         public readonly MyStringId[] TrailTextures;
         public readonly MyStringId[] SegmentTextures;
@@ -615,7 +614,7 @@ namespace WeaponCore.Support
 
             MaxLateralThrust = MathHelperD.Clamp(ammo.AmmoDef.Trajectory.Smarts.MaxLateralThrust, 0.000001, 1);
 
-            ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out AmmoShufflePattern, out GuidedAmmoDetected);
+            ComputeAmmoPattern(ammo, wDef, guidedAmmo, out AmmoPattern, out PatternIndexCnt, out GuidedAmmoDetected);
 
             Fields(ammo.AmmoDef, out PulseInterval, out PulseChance, out Pulse, out PulseGrowTime);
             AreaEffects(ammo.AmmoDef, out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect, out EwarTriggerRange, out MinArmingTime);
@@ -701,7 +700,7 @@ namespace WeaponCore.Support
             trajectoryStep = MaxTrajectoryGrows ? MaxTrajectory / ammo.AmmoDef.Trajectory.MaxTrajectoryTime : MaxTrajectory;
         }
 
-        private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out int[] ammoShufflePattern, out bool guidedDetected)
+        private void ComputeAmmoPattern(WeaponSystem.WeaponAmmoTypes ammo, WeaponDefinition wDef, bool guidedAmmo, out AmmoDef[] ammoPattern, out int patternIndex, out bool guidedDetected)
         {
             var pattern = ammo.AmmoDef.Pattern;
             var indexPos = 0;
@@ -717,10 +716,6 @@ namespace WeaponCore.Support
             patternIndex = indexCount;
 
             ammoPattern = new AmmoDef[indexCount];
-
-            ammoShufflePattern = new int[indexCount];
-            for (int i = 0; i < indexCount; i++)
-                ammoShufflePattern[i] = i;
 
             if (!pattern.Enable || !pattern.SkipParent)
                 ammoPattern[indexPos++] = ammo.AmmoDef;

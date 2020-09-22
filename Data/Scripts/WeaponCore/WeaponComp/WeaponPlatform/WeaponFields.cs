@@ -98,6 +98,7 @@ namespace WeaponCore.Platform
         internal TransferTarget TargetData;
         internal AmmoValues Ammo;
         internal WeaponSystem.WeaponAmmoTypes ActiveAmmoDef;
+        internal int[] AmmoShufflePattern = {0};
         internal ParallelRayCallBack RayCallBack;
 
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;

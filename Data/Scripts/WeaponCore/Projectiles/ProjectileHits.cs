@@ -174,8 +174,9 @@ namespace WeaponCore.Projectiles
                                             voxelState = VoxelIntersectBranch.PseudoHit2;
                                         }
                                     }
-                                    else
-                                    {
+
+                                    if (voxelState != VoxelIntersectBranch.PseudoHit2) {
+
                                         var surfacePos = p.Info.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
                                         var planetCenter = p.Info.MyPlanet.PositionComp.WorldAABB.Center;
                                         double surfaceToCenter;
@@ -187,22 +188,19 @@ namespace WeaponCore.Projectiles
 
                                         var prevEndPointToCenter = p.PrevEndPointToCenterSqr;
                                         Vector3D.DistanceSquared(ref surfacePos, ref p.Position, out p.PrevEndPointToCenterSqr);
-                                        if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (p.Beam.Length * p.Beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition))
-                                        {
+                                        if (surfaceToCenter > endPointToCenter || p.PrevEndPointToCenterSqr <= (p.Beam.Length * p.Beam.Length) || endPointToCenter > startPointToCenter && prevEndPointToCenter > p.DistanceToTravelSqr || surfaceToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) {
 
                                             var estiamtedSurfaceDistance = ray.Intersects(p.Info.VoxelCache.PlanetSphere);
                                             var fullCheck = p.Info.VoxelCache.PlanetSphere.Contains(p.Info.Origin) != ContainmentType.Disjoint || !estiamtedSurfaceDistance.HasValue;
 
-                                            if (!fullCheck && estiamtedSurfaceDistance.HasValue && (estiamtedSurfaceDistance.Value <= p.Beam.Length || p.Info.VoxelCache.PlanetSphere.Radius < 1))
-                                            {
+                                            if (!fullCheck && estiamtedSurfaceDistance.HasValue && (estiamtedSurfaceDistance.Value <= p.Beam.Length || p.Info.VoxelCache.PlanetSphere.Radius < 1)) {
 
                                                 double distSqr;
                                                 var estimatedHit = ray.Position + (ray.Direction * estiamtedSurfaceDistance.Value);
                                                 Vector3D.DistanceSquared(ref p.Info.VoxelCache.FirstPlanetHit, ref estimatedHit, out distSqr);
 
                                                 if (distSqr > 625) fullCheck = true;
-                                                else
-                                                {
+                                                else {
                                                     voxelHit = estimatedHit;
                                                     voxelState = VoxelIntersectBranch.PseudoHit2;
                                                 }
