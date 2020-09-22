@@ -1,4 +1,5 @@
 ﻿using System;
+using Jakaria;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -685,6 +686,18 @@ namespace WeaponCore.Platform
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
                 return false;
+            }
+
+            Water water = null;
+            if (System.Session.WaterApiLoaded && !ActiveAmmoDef.AmmoDef.IgnoreWater && Comp.Ai.InPlanetGravity && Comp.Ai.MyPlanet != null && System.Session.WaterMap.TryGetValue(Comp.Ai.MyPlanet, out water))
+            {
+                var waterSphere = new BoundingSphereD(Comp.Ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
+                if (waterSphere.Contains(targetPos) != ContainmentType.Disjoint)
+                {
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    return false;
+                }
             }
 
             Casting = true;

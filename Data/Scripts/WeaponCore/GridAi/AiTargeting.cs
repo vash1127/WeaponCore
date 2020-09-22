@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using Jakaria;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -87,6 +88,10 @@ namespace WeaponCore.Support
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
             var acquired = false;
 
+            Water water = null;
+            BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
+            if (s.Session.WaterApiLoaded && !p.Info.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
+                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -137,11 +142,17 @@ namespace WeaponCore.Support
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 if (targetRadius < minTargetRadius || targetRadius > maxTargetRadius && maxTargetRadius < 8192) continue;
+
+                if (water != null) {
+                    if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius).Contains(new BoundingSphereD(targetPos, targetRadius)) == ContainmentType.Contains)
+                        continue;
+                }
+
                 if (info.IsGrid && s.TrackGrids)
                 {
                     if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
-                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, null, !focusTarget)) continue;
+                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, ref waterSphere, null, !focusTarget)) continue;
                     acquired = true;
                     break;
                 }
@@ -188,6 +199,11 @@ namespace WeaponCore.Support
             var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
             var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
+
+            Water water = null;
+            BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
+            if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
+                waterSphere = new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius);
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -244,6 +260,11 @@ namespace WeaponCore.Support
                     var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
 
+                    if (water != null) {
+                        if (new BoundingSphereD(ai.MyPlanet.PositionComp.WorldAABB.Center, water.radius).Contains(new BoundingSphereD(targetCenter, targetRadius)) == ContainmentType.Contains)
+                            continue;
+                    }
+
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
@@ -269,7 +290,7 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.TargetData.WeaponRandom, Acquire, w, !focusTarget)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
@@ -316,7 +337,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}
         }
 
-        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, Weapon w = null, bool checkPower = true)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -340,10 +361,10 @@ namespace WeaponCore.Support
                                 target.Top5.Clear();
 
                             target.LastBlockType = bt;
-                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, w, checkPower))
+                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, ref waterSphere, w,  checkPower))
                                 return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type,  checkPower)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type,  ref waterSphere, checkPower)) return true;
                     }
 
                     if (focusSubSystem) break;
@@ -352,10 +373,10 @@ namespace WeaponCore.Support
                 if (system.OnlySubSystems || focusSubSystem && w.Comp.Data.Repo.Base.Set.Overrides.SubSystem != Any) return false;
             }
             FatMap fatMap;
-            return system.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, type, checkPower);
+            return system.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, wRng, type, ref waterSphere, checkPower);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -421,6 +442,9 @@ namespace WeaponCore.Support
                     Vector3D predictedPos;
                     if (!Weapon.CanShootTarget(w, ref blockPos, targetLinVel, targetAccel, out predictedPos)) continue;
 
+                    if (system.Session.WaterApiLoaded && waterSphere.Radius > 2 && waterSphere.Contains(predictedPos) != ContainmentType.Disjoint)
+                        continue;
+
                     blocksSighted++;
 
                     system.Session.RandomRayCasts++;
@@ -466,7 +490,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, Weapon w = null, bool checkPower = true)
+        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere ,Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -499,7 +523,10 @@ namespace WeaponCore.Support
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-                
+
+                if (ai.Session.WaterApiLoaded && waterSphere.Radius > 2 && waterSphere.Contains(cubePos) != ContainmentType.Disjoint)
+                    continue;
+
                 if (test < minValue3) {
 
                     IHitInfo hit = null;
