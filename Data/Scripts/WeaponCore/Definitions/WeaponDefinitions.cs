@@ -599,7 +599,14 @@ namespace WeaponCore.Support
                 [ProtoMember(5)] internal DetonateDef Detonation;
                 [ProtoMember(6)] internal ExplosionDef Explosions;
                 [ProtoMember(7)] internal EwarFieldsDef EwarFields;
+                [ProtoMember(8)] internal AreaInfluence Base;
 
+                [ProtoContract]
+                public struct AreaInfluence
+                {
+                    [ProtoMember(1)] internal double Radius;
+                    [ProtoMember(2)] internal float EffectStrength;
+                }
 
 
                 [ProtoContract]
@@ -660,9 +667,9 @@ namespace WeaponCore.Support
                     [ProtoMember(3)] internal float Scale;
                     [ProtoMember(4)] internal string CustomParticle;
                     [ProtoMember(5)] internal string CustomSound;
+                    [ProtoMember(6)] internal bool NoShrapnel;
+                    [ProtoMember(7)] internal bool NoDeformation;
                 }
-
-
             }
 
             [ProtoContract]

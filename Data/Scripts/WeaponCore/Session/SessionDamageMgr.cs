@@ -124,7 +124,7 @@ namespace WeaponCore
 
             var areaEffect = info.AmmoDef.AreaEffect;
             var detonateOnEnd = info.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && info.Age >= info.AmmoDef.AreaEffect.Detonation.MinArmingTime && areaEffect.AreaEffect != AreaEffectType.Disabled && !shieldByPass;
-            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * areaDmgGlobal : 0;
+            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;
             var scaledBaseDamage = info.BaseDamagePool * damageScale;
             var scaledDamage = (((scaledBaseDamage + areaDamage) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod) ;
             if (fallOff)
@@ -133,7 +133,7 @@ namespace WeaponCore
                 scaledDamage *= fallOffMultipler;
             }
             
-            var detonateDamage = detonateOnEnd ? (areaEffect.AreaEffect == AreaEffectType.Radiant ? areaEffect.Detonation.DetonationDamage : (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * detDmgGlobal : 0;
+            var detonateDamage = detonateOnEnd ? (areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : (info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * detDmgGlobal : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
@@ -420,11 +420,9 @@ namespace WeaponCore
                             i--;
                             t.BaseDamagePool = 0;
                             t.ObjectsHit = objectsHit;
-                            var aInfo = t.AmmoDef.AreaEffect;
-                            var dInfo = aInfo.Detonation;
 
-                            if (dInfo.DetonationDamage > 0) damagePool = (detonateDmg * detDamageScale);
-                            else if (aInfo.AreaEffectDamage > 0) damagePool = (areaEffectDmg * areaDamageScale);
+                            if (t.AmmoDef.Const.DetonationDamage > 0) damagePool = (detonateDmg * detDamageScale);
+                            else if (t.AmmoDef.Const.AreaEffectDamage > 0) damagePool = (areaEffectDmg * areaDamageScale);
                             else damagePool = scaledDamage;
                             break;
                         }
@@ -495,7 +493,7 @@ namespace WeaponCore
                 damageScale *= info.AmmoDef.DamageScales.Characters;
 
             var areaEffect = info.AmmoDef.AreaEffect;
-            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * areaDmgGlobal : 0;
+            var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;
             var scaledDamage = (float)((((info.BaseDamagePool * damageScale) * directDmgGlobal) + areaDamage) * info.AmmoDef.Const.ShieldBypassMod);
 
             var fallOff = info.AmmoDef.Const.FallOffScaling && info.DistanceTraveled > info.AmmoDef.DamageScales.FallOff.Distance;
@@ -551,7 +549,7 @@ namespace WeaponCore
 
                 if (attacker.AmmoDef.Const.DetonationDamage > 0 && attacker.AmmoDef.AreaEffect.Detonation.DetonateOnEnd && attacker.Age >= attacker.AmmoDef.AreaEffect.Detonation.MinArmingTime)
                 {
-                    var areaSphere = new BoundingSphereD(pTarget.Position, attacker.AmmoDef.AreaEffect.Detonation.DetonationRadius);
+                    var areaSphere = new BoundingSphereD(pTarget.Position, attacker.AmmoDef.Const.DetonationRadius);
                     foreach (var sTarget in attacker.Ai.LiveProjectile)
                     {
                         if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint)
@@ -602,7 +600,7 @@ namespace WeaponCore
                     scaledDamage *= fallOffMultipler;
                 }
 
-                var oRadius = info.AmmoDef.AreaEffect.AreaEffectRadius;
+                var oRadius = info.AmmoDef.Const.AreaEffectSize;
                 var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
                 var tRadius = oRadius < minTestRadius && !info.AmmoDef.Const.IsBeamWeapon ? minTestRadius : oRadius;
                 var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 5000, double.MaxValue);
@@ -626,9 +624,8 @@ namespace WeaponCore
 
                 if (detonateOnEnd && info.BaseDamagePool <= 0)
                 {
-                    var det = info.AmmoDef.AreaEffect.Detonation;
-                    var dRadius = det.DetonationRadius;
-                    var dDamage = det.DetonationDamage * detDmgGlobal;
+                    var dRadius = info.AmmoDef.Const.DetonationRadius;
+                    var dDamage = info.AmmoDef.Const.DetonationDamage * detDmgGlobal;
 
                     if (dRadius < 1.5) dRadius = 1.5f;
 

@@ -180,12 +180,6 @@ namespace WeaponCore.Control
             return !block.Components.Has<WeaponComponent>(); ;
         }
 
-        internal static bool NotWcTurret(IMyTerminalBlock block)
-        {
-            WeaponComponent comp;
-            return !block.Components.TryGet(out comp) && comp.BaseType == WeaponComponent.BlockType.Turret;
-        }
-
         internal static bool NotWcOrIsTurret(IMyTerminalBlock block)
         {
             WeaponComponent comp;

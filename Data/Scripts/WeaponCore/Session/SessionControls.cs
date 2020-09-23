@@ -109,11 +109,9 @@ namespace WeaponCore
 
         internal static void AlterActions<T>(Session session)
         {
-            var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
-
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-            for (int i = isTurretType ? 11 : 0; i < actions.Count; i++) {
+            for (int i = 0; i < actions.Count; i++) {
 
                 var a = actions[i];
 
@@ -124,7 +122,7 @@ namespace WeaponCore
                 }
                 else if (a.Id.Equals("Control")) {
 
-                    a.Enabled = TerminalHelpers.NotWcTurret;
+                    a.Enabled = TerminalHelpers.NotWcOrIsTurret;
                     session.AlteredActions.Add(a);
                 }
                 else if (a.Id.Equals("ShootOnce")) {

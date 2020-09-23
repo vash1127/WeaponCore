@@ -276,10 +276,10 @@ namespace WeaponCore.Projectiles
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)) {
                     
-                    var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
                     p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = dInfo.DetonationRadius;
+                    p.PruneSphere.Radius = p.Info.AmmoDef.Const.DetonationRadius;
 
+                    var dInfo = p.Info.AmmoDef.AreaEffect.Detonation;
                     if (p.MoveToAndActivate || dInfo.DetonateOnEnd && p.Info.Age >= dInfo.MinArmingTime && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0)) {
 
                         if (!p.UseEntityCache)

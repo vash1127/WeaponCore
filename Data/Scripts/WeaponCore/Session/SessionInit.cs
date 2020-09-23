@@ -118,7 +118,7 @@ namespace WeaponCore
                 foreach (var ammo in x.Ammos)
                 {
                     var ae = ammo.AreaEffect;
-                    var areaRadius = ae.AreaEffectRadius;
+                    var areaRadius = ae.Base.Radius > 0 ? ae.Base.Radius : ae.AreaEffectRadius;
                     var detonateRadius = ae.Detonation.DetonationRadius;
                     var fragments = ammo.Shrapnel.Fragments > 0 ? ammo.Shrapnel.Fragments : 1;
                     if (areaRadius > 0)

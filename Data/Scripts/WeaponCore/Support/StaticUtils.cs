@@ -212,6 +212,9 @@ namespace WeaponCore.Support
         public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponDefinition.AmmoDef ammoDef, bool forceNoDraw = false)
         {
             var af = ammoDef.AreaEffect;
+            var justShrapnel = !af.Explosions.NoShrapnel && af.Explosions.NoDeformation;
+            var justDeform = af.Explosions.NoShrapnel && !af.Explosions.NoDeformation;
+
             var eInfo = af.Explosions;
             var playSound = !eInfo.NoSound && !forceNoDraw;
             var sphere = new BoundingSphereD(position, radius);
@@ -219,10 +222,26 @@ namespace WeaponCore.Support
             cullSphere.Radius = radius * 5;
             MyExplosionFlags eFlags;
             var drawParticles = !forceNoDraw && !eInfo.NoVisuals && session.Camera.IsInFrustum(ref cullSphere);
+
             if (drawParticles)
-                eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+            {
+                if (justShrapnel)
+                    eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS;
+                else if (justDeform)
+                    eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.APPLY_DEFORMATION;
+                else
+                    eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+            }
             else
-                eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+            {
+                if (justShrapnel)
+                    eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS;
+                else if (justDeform)
+                    eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.APPLY_DEFORMATION;
+                else
+                    eFlags = MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+            }
+
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
             var explosionInfo = new MyExplosionInfo

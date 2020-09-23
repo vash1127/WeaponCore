@@ -39,7 +39,7 @@ namespace WeaponCore.Support
                     else weapon.ChangeActiveAmmoClient();
 
                     if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable) {
-                        Log.Line($"[{weapon.System.WeaponName}] Your first ammoType is broken, I am crashing now Dave.");
+                        Log.Line($"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
                         return;
                     }
 

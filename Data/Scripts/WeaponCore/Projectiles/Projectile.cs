@@ -253,7 +253,6 @@ namespace WeaponCore.Projectiles
 
             var staticIsInRange = Info.Ai.ClosestStaticSqr * 0.5 < MaxTrajectorySqr;
             var pruneStaticCheck = Info.Ai.ClosestPlanetSqr * 0.5 < MaxTrajectorySqr || Info.Ai.StaticGridInRange;
-            //PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
             PruneQuery = (DynamicGuidance && pruneStaticCheck) || FeelsGravity && staticIsInRange || !DynamicGuidance && !FeelsGravity && staticIsInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
 
             if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) {
@@ -262,15 +261,6 @@ namespace WeaponCore.Projectiles
             }
 
             if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
-
-            /*
-            if (Info.Ai.PlanetSurfaceInRange && Info.Ai.ClosestPlanetSqr <= MaxTrajectorySqr) {
-                LinePlanetCheck = true;
-                PruneQuery = MyEntityQueryType.Both;
-            }
-            else if (!DynamicGuidance && !FeelsGravity && staticIsInRange)
-                StaticEntCheck();
-            */
 
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
@@ -294,7 +284,6 @@ namespace WeaponCore.Projectiles
 
             TravelMagnitude = Velocity * StepConst;
             FieldTime = Info.AmmoDef.Const.Ewar || Info.AmmoDef.Const.IsMine ? Info.AmmoDef.Trajectory.FieldTime : 0;
-
             State = !Info.AmmoDef.Const.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
 
             if (EnableAv)
@@ -302,7 +291,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr); //Pool initted sounds per Projectile type... this is expensive
-                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.AreaEffect.AreaEffectRadius > 0 && Info.AmmoDef.AreaEffect.AreaEffectDamage > 0)
+                if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.Const.AreaEffectSize > 0 && Info.AmmoDef.Const.AreaEffectDamage > 0)
                 {
                     var hitPlayChance = Info.AmmoDef.AmmoGraphics.Particles.Hit.Extras.HitPlayChance;
                     Info.AvShot.HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
@@ -333,49 +322,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.ModelOnly = !LineOrNotModel && ModelState == EntityState.Exists;
             }
         }
-        /*
-        internal void StaticEntCheck()
-        {
-            try
-            {
-                var ai = Info.Ai;
-                LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
-                var lineTest = new LineD(Position, Position + (Info.Direction * Info.MaxTrajectory), Info.MaxTrajectory);
-                for (int i = 0; i < ai.StaticsInRange.Count; i++)
-                {
-                    var staticEnt = ai.StaticsInRange[i];
-                    var voxel = staticEnt as MyVoxelBase;
-                    var grid = staticEnt as MyCubeGrid;
-                    var safeZone = staticEnt as MySafeZone;
 
-                    if (safeZone?.GetIntersectionWithLineAndBoundingSphere(ref lineTest, 1) != null)
-                        PruneQuery = MyEntityQueryType.Both;
-
-                    if (voxel == null && grid == null || grid != null && (grid.Physics == null || grid.Physics.IsPhantom || grid.IsPreview))
-                        continue;
-
-                    var transform = staticEnt.PositionComp.WorldMatrixRef;
-                    var box = staticEnt.PositionComp.LocalAABB;
-                    var obb = new MyOrientedBoundingBoxD(box, transform);
-
-                    if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) != ContainmentType.Disjoint)
-                    {
-
-                        if (voxel != null && voxel == voxel.RootVoxel)
-                        {
-                            LinePlanetCheck = true;
-                            PruneQuery = MyEntityQueryType.Both;
-                            break;
-                        }
-                        if (grid != null && grid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid)) continue;
-                        PruneQuery = MyEntityQueryType.Both;
-                        break;
-                    }
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in StaticEntCheck: {ex} AiNull:{Info.Ai == null} - StaticsNull:{Info.Ai?.StaticsInRange == null} - FiringCubeNull:{Info.Target.FiringCube?.CubeGrid == null} - AmmoNull:{Info.AmmoDef == null}) - {Info.WeaponCache == null} - {Info.WeaponCache?.VoxelHits[CachedId] == null} "); }
-        }
-        */
         #endregion
 
         #region Run
@@ -448,7 +395,6 @@ namespace WeaponCore.Projectiles
             LockedTarget = true;
 
             if (Guidance == GuidanceType.DetectFixed) return;
-
             Vector3D.DistanceSquared(ref Info.Origin, ref predictedPos, out DistanceToTravelSqr);
             Info.DistanceTraveled = 0;
             Info.PrevDistanceTraveled = 0;
@@ -668,7 +614,7 @@ namespace WeaponCore.Projectiles
                         if (netted.Info.Target.FiringCube.CubeGrid.IsSameConstructAs(Info.Target.FiringCube.CubeGrid) || netted.Info.Target.IsProjectile) continue;
                         if (Info.WeaponRng.ClientProjectileRandom.NextDouble() * 100f < Info.AmmoDef.Const.PulseChance || !Info.AmmoDef.Const.Pulse)
                         {
-                            Info.BaseEwarPool -= Info.AmmoDef.AreaEffect.AreaEffectDamage;
+                            Info.BaseEwarPool -= Info.AmmoDef.Const.AreaEffectDamage;
                             if (Info.BaseEwarPool <= 0)
                             {
                                 Info.EwarActive = true;
@@ -781,7 +727,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv) {
                 if (Info.AvShot.Cloaked && minDist <= deCloakRadius) Info.AvShot.Cloaked = false;
-                else if (!Info.AvShot.Cloaked && minDist > deCloakRadius) Info.AvShot.Cloaked = true;
+                else if (Info.AvShot.AmmoDef.Trajectory.Mines.Cloak && !Info.AvShot.Cloaked && minDist > deCloakRadius) Info.AvShot.Cloaked = true;
             }
 
             if (minDist <= Info.AmmoDef.Const.CollisionSize) activate = true;

@@ -205,8 +205,7 @@ namespace WeaponCore
                         /// 
                         //if (w.System.WeaponName.Contains("RailgunxTurret")) Log.Line($"{w.System.WeaponName} - track:{trackReticle} - fake:{w.Target.IsFakeTarget} - state:{w.Target.CurrentState}");
                         var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == ShootClick));
-                        if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui))
-                        {
+                        if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
                             w.AcquiringTarget = true;
                             AcquireTargets.Add(w);
                         }
