@@ -951,28 +951,28 @@ namespace WeaponCore.Support
 
         private float GetAreaDmg(AmmoDef a)
         {
-            if (!AmmoAreaEffect)
-            {
-                return 0;
-            }
-            if (AreaEffect == AreaEffectType.Radiant)
-            {
-                return AreaEffectDamage;
-            }
-            return (float)(AreaEffectDamage * (AreaEffectSize * 0.5d));
-        }
-
-        private float GetDetDmg(AmmoDef a)
-        {
-            if (!a.AreaEffect.Detonation.DetonateOnEnd)
+            if (a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
             {
                 return 0;
             }
             if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
             {
-                return DetonationDamage;
+                return a.AreaEffect.AreaEffectDamage;
             }
-            return (float)(DetonationDamage * (DetonationRadius * 0.5d));
+            return (float)(a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5d));
+        }
+
+        private float GetDetDmg(AmmoDef a)
+        {
+            if (!a.AreaEffect.Detonation.DetonateOnEnd && a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
+            {
+                return 0;
+            }
+            if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
+            {
+                return a.AreaEffect.Detonation.DetonationDamage;
+            }
+            return (float)(a.AreaEffect.Detonation.DetonationDamage * (a.AreaEffect.Detonation.DetonationRadius * 0.5d));
         }
 
         private void Fields(AmmoDef ammoDef, out int pulseInterval, out int pulseChance, out bool pulse, out int growTime)
