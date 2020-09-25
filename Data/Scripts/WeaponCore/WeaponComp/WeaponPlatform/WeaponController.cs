@@ -259,7 +259,6 @@ namespace WeaponCore.Platform
             RateOfFire = (int)systemRate;
             BarrelSpinRate = (int)barrelRate;
             TicksPerShot = (uint)(3600f / RateOfFire);
-
             if (System.HasBarrelRotation) UpdateBarrelRotation();
         }
 

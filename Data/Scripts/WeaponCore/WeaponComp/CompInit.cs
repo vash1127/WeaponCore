@@ -38,7 +38,7 @@ namespace WeaponCore.Support
                         weapon.ChangeActiveAmmoServer();
                     else weapon.ChangeActiveAmmoClient();
 
-                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable) {
+                    if (weapon.ActiveAmmoDef.AmmoDef == null || !weapon.ActiveAmmoDef.AmmoDef.Const.IsTurretSelectable && weapon.System.AmmoTypes.Length > 1) {
                         Log.Line($"[{weapon.System.WeaponName}] Your first ammoType is broken (isNull:{weapon.ActiveAmmoDef.AmmoDef == null}), I am crashing now Dave.");
                         return;
                     }

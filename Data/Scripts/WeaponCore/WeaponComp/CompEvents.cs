@@ -227,6 +227,22 @@ namespace WeaponCore.Support
                     var endReturn = i + 1 != weaponCnt ? "\n" : string.Empty;
 
                     stringBuilder.Append("\nName: " + w.System.WeaponName + shots + burst + "\nReloading: " + w.Reloading + endReturn);
+
+                    string otherAmmo = null;
+                    for (int j = 0; j < w.System.AmmoTypes.Length; j++)
+                    {
+                        var ammo = w.System.AmmoTypes[j];
+                        if (ammo == w.ActiveAmmoDef || !ammo.AmmoDef.Const.IsTurretSelectable || string.IsNullOrEmpty(ammo.AmmoDef.AmmoMagazine) || ammo.AmmoName == "Blank" || ammo.AmmoName == "Energy")
+                            continue;
+                        
+                        if (otherAmmo == null)
+                            otherAmmo = "\n\nAlternate Magazines:";
+
+                        otherAmmo += $"\n{ammo.AmmoDef.AmmoMagazine}";
+                    }
+
+                    if (otherAmmo != null)
+                        stringBuilder.Append(otherAmmo);
                 }
 
                 if (Debug)

@@ -55,6 +55,7 @@ namespace WeaponCore.Support
         public readonly Prediction Prediction;
         public readonly TurretType TurretMovement;
         public readonly FiringSoundState FiringSound;
+        public readonly HardwareDef.ArmorState Armor;
 
         public readonly string WeaponName;
         public readonly string[] Barrels;
@@ -102,7 +103,6 @@ namespace WeaponCore.Support
         public readonly bool PreFireSound;
         public readonly bool LockOnFocus;
         public readonly bool HasGuidedAmmo;
-        public readonly HardwareDef.ArmorState Armor;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
@@ -220,7 +220,6 @@ namespace WeaponCore.Support
                 if (Values.HardPoint.Loading.BarrelSpinRate > 0) barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate < 3600 ? Values.HardPoint.Loading.BarrelSpinRate : 3599;
                 else barrelSpinRate = RateOfFire < 3699 ? RateOfFire : 3599;
             }
-
             hasBarrelRotation = barrelSpinRate > 0;
         }
 

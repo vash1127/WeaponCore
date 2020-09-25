@@ -75,18 +75,14 @@ namespace WeaponCore.Platform
         internal void UpdateBarrelRotation()
         {
             const int loopCnt = 10;
-            var interval = (3600f / System.BarrelSpinRate) * ((float)Math.PI / _numModelBarrels);
+            var interval = System.Values.HardPoint.Loading.DeterministicSpin ? (3600f / System.BarrelSpinRate) * (1f / _numModelBarrels) : (3600f / System.BarrelSpinRate) * ((float)Math.PI / _numModelBarrels);
             var steps = (360f / _numModelBarrels) / interval;
-
             _ticksBeforeSpinUp = (uint)interval / loopCnt;
-            for (int i = 0; i < loopCnt; i++)
-            {
+            for (int i = 0; i < loopCnt; i++) {
 
                 var multi = (float)(i + 1) / loopCnt;
                 var angle = MathHelper.ToRadians(steps * multi);
-
-                switch (System.Values.HardPoint.Other.RotateBarrelAxis)
-                {
+                switch (System.Values.HardPoint.Other.RotateBarrelAxis) {
 
                     case 1:
                         BarrelRotationPerShot[i] = MuzzlePart.ToTransformation * Matrix.CreateRotationX(angle) * MuzzlePart.FromTransformation;

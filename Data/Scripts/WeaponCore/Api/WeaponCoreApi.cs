@@ -515,6 +515,7 @@ namespace WeaponCore.Api
                     [ProtoMember(14)] internal int BarrelSpinRate;
                     [ProtoMember(15)] internal bool FireFullBurst;
                     [ProtoMember(16)] internal bool GiveUpAfterBurst;
+                    [ProtoMember(17)] internal bool DeterministicSpin;
                 }
 
 
