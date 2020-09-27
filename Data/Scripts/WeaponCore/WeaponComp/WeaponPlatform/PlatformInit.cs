@@ -83,7 +83,7 @@ namespace WeaponCore.Platform
             }
 
             var blockDef = Comp.MyCube.BlockDefinition.Id.SubtypeId; 
-            if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef)) // Need to account for reinit case
+            if (!Comp.Ai.WeaponCounter.ContainsKey(blockDef)) 
                 Comp.Ai.WeaponCounter[blockDef] = Comp.Session.WeaponCountPool.Get();
 
             var wCounter = comp.Ai.WeaponCounter[blockDef];

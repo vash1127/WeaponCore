@@ -229,7 +229,7 @@ namespace WeaponCore
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
                         var validShootStates = fakeTarget || w.State.Action == ShootOn || w.AiShooting && w.State.Action == ShootOff;
-                        var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && (comp.InputState.MouseButtonLeft && j % 2 == 0 || comp.InputState.MouseButtonRight && j == 1);
+                        var manualShot = (compManualMode || w.State.Action == ShootClick) && canManualShoot && comp.InputState.MouseButtonLeft;
                         var delayedFire = w.System.DelayCeaseFire && !w.Target.IsAligned && Tick - w.CeaseFireDelayTick <= w.System.CeaseFireDelay;
                         var shoot = (validShootStates || manualShot || w.FinishBurst || delayedFire);
                         w.LockOnFireState = !shoot && w.System.LockOnFocus && ai.Construct.Data.Repo.FocusData.HasFocus && ai.Construct.Focus.FocusInRange(w);

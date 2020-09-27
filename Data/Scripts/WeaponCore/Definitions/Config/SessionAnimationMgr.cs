@@ -908,13 +908,14 @@ namespace WeaponCore
             return setColors;
         }
 
+        internal readonly Dictionary<string, IMyModelDummy> DummyList = new Dictionary<string, IMyModelDummy>();
         internal Vector3 GetPartLocation(string partName, IMyModel model)
         {
-            Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
-            model.GetDummies(dummyList);
+            DummyList.Clear();
+            model.GetDummies(DummyList);
 
             IMyModelDummy dummy;
-            if (dummyList.TryGetValue(partName, out dummy))
+            if (DummyList.TryGetValue(partName, out dummy))
                 return dummy.Matrix.Translation;
 
             return Vector3.Zero;
@@ -922,11 +923,11 @@ namespace WeaponCore
 
         internal IMyModelDummy GetPartDummy(string partName, IMyModel model)
         {
-            Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
-            model.GetDummies(dummyList);
+            DummyList.Clear();
+            model.GetDummies(DummyList);
 
             IMyModelDummy dummy;
-            if (dummyList.TryGetValue(partName, out dummy))
+            if (DummyList.TryGetValue(partName, out dummy))
                 return dummy;
 
             return null;
@@ -1072,7 +1073,7 @@ namespace WeaponCore
                 var particleEvent = Av.ParticlesToProcess[i];
                 var playedFull = Tick - particleEvent.PlayTick > particleEvent.MaxPlayTime;
                 var obb = particleEvent.MyDummy.Entity.PositionComp.WorldAABB;
-                var playable = Camera.IsInFrustum(ref obb) && Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance;
+                var playable = Vector3D.DistanceSquared(CameraPos, obb.Center) <= particleEvent.Distance && Camera.IsInFrustum(ref obb);
                 if (particleEvent.PlayTick <= Tick && !playedFull && !particleEvent.Stop && playable)
                 {
                     var dummyInfo = particleEvent.MyDummy.Info;

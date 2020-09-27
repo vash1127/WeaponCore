@@ -84,7 +84,6 @@ namespace WeaponCore.Support
 
                         if ((av.Cloaked || av.OnScreen == AvShot.Screen.None) && av.PrimeEntity.InScene)
                         {
-                            Log.Line($"test: {av.Cloaked} - {av.OnScreen == AvShot.Screen.None}");
                             av.PrimeEntity.InScene = false;
                             av.PrimeEntity.Render.RemoveRenderObjects();
                         }
