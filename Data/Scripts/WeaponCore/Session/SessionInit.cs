@@ -180,6 +180,16 @@ namespace WeaponCore
                 var subTypeIdHash = MyStringHash.GetOrCompute(tDef.Key);
                 SubTypeIdHashMap[tDef.Key] = subTypeIdHash;
 
+                WeaponAreaRestriction areaRestriction;
+                if (this.WeaponAreaRestrictions.ContainsKey(subTypeIdHash))
+                {
+                    areaRestriction = this.WeaponAreaRestrictions[subTypeIdHash];
+                } else
+                {
+                    areaRestriction = new WeaponAreaRestriction();
+                    this.WeaponAreaRestrictions[subTypeIdHash] = areaRestriction;
+                }
+
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];
                 var hasTurret = false;
                 var firstWeapon = true;
@@ -199,6 +209,27 @@ namespace WeaponCore
                         MyDefinitionId defid;
                         var matchingDef = def.Id.SubtypeName == tDef.Key || (ReplaceVanilla && VanillaCoreIds.TryGetValue(MyStringHash.GetOrCompute(tDef.Key), out defid) && defid == def.Id);
                         if (matchingDef) {
+
+                            if (wepDef.HardPoint.Other.RestrictionRadius > 0)
+                            {
+                                if (wepDef.HardPoint.Other.CheckForAnyWeapon && !areaRestriction.CheckForAnyWeapon)
+                                {
+                                    areaRestriction.CheckForAnyWeapon = true;
+                                }
+                                if (wepDef.HardPoint.Other.CheckInflatedBox)
+                                {
+                                    if (areaRestriction.RestrictionBoxInflation <  wepDef.HardPoint.Other.RestrictionRadius)
+                                    {
+                                        areaRestriction.RestrictionBoxInflation = wepDef.HardPoint.Other.RestrictionRadius;
+                                    }
+                                } else
+                                {
+                                    if (areaRestriction.RestrictionRadius < wepDef.HardPoint.Other.RestrictionRadius)
+                                    {
+                                        areaRestriction.RestrictionRadius = wepDef.HardPoint.Other.RestrictionRadius;
+                                    }
+                                }
+                            }
 
                             WeaponCoreBlockDefs[tDef.Key] = def.Id;
                             var designator = false;
