@@ -162,7 +162,13 @@ namespace WeaponCore
                             {
                                 MyCubeBuilder.Static.NotifyPlacementUnable();
                                 MyCubeBuilder.Static.Deactivate();
+                                return;
                             }
+                        }
+                        if (IsWeaponAreaRestricted(subtypeIdHash, MyCubeBuilder.Static.GetBuildBoundingBox(), grid, 0))
+                        {
+                            MyCubeBuilder.Static.NotifyPlacementUnable();
+                            MyCubeBuilder.Static.Deactivate();
                         }
                     }
                 }

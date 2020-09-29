@@ -293,6 +293,9 @@ namespace WeaponCore.Support
                 [ProtoMember(3)] internal int RotateBarrelAxis;
                 [ProtoMember(4)] internal bool MuzzleCheck;
                 [ProtoMember(5)] internal bool Debug;
+                [ProtoMember(6)] internal double RestrictionRadius;
+                [ProtoMember(7)] internal bool CheckInflatedBox;
+                [ProtoMember(8)] internal bool CheckForAnyWeapon;
             }
 
             [ProtoContract]

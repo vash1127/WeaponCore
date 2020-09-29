@@ -855,5 +855,12 @@ namespace WeaponCore
                 set { Interlocked.Exchange(ref _amount, value);  }
             }
         }
+
+        public class WeaponAreaRestriction
+        {
+            public double RestrictionRadius = 0;
+            public double RestrictionBoxInflation = 0;
+            public bool CheckForAnyWeapon = false;
+        }
     }
 }
