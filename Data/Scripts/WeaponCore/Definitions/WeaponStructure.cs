@@ -955,11 +955,13 @@ namespace WeaponCore.Support
             {
                 return 0;
             }
+            var areaEffectDamage = a.AreaEffect.Base.EffectStrength > 0 ? a.AreaEffect.Base.EffectStrength : a.AreaEffect.AreaEffectDamage;
+            var areaEffectSize = a.AreaEffect.Base.Radius > 0 ? a.AreaEffect.Base.Radius : a.AreaEffect.AreaEffectRadius;
             if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
             {
-                return a.AreaEffect.AreaEffectDamage;
+                return areaEffectDamage;
             }
-            return (float)(a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5d));
+            return (float)(areaEffectDamage * (areaEffectSize * 0.5d));
         }
 
         private float GetDetDmg(AmmoDef a)
