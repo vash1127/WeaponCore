@@ -187,7 +187,7 @@ namespace WeaponCore
                 } else
                 {
                     areaRestriction = new WeaponAreaRestriction();
-                    this.WeaponAreaRestrictions[subTypeIdHash] = areaRestriction;
+                    WeaponAreaRestrictions[subTypeIdHash] = areaRestriction;
                 }
 
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];

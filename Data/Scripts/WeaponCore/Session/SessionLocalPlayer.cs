@@ -142,6 +142,8 @@ namespace WeaponCore
             MyAPIGateway.Utilities.ShowNotification(notify.Message, notify.Duration > 0 ? notify.Duration : 1000, notify.Color == string.Empty ? "White" : notify.Color);
         }
 
+        private Color RestrictionAreaColor = new Color(128, 0, 128, 96);
+
         private void UpdatePlacer()
         {
             if (!Placer.Visible) Placer = null;
@@ -165,10 +167,43 @@ namespace WeaponCore
                                 return;
                             }
                         }
-                        if (IsWeaponAreaRestricted(subtypeIdHash, MyCubeBuilder.Static.GetBuildBoundingBox(), grid, 0))
+
+                        if (WeaponAreaRestrictions.ContainsKey(subtypeIdHash))
                         {
-                            MyCubeBuilder.Static.NotifyPlacementUnable();
-                            MyCubeBuilder.Static.Deactivate();
+                            MyOrientedBoundingBoxD restrictedBox;
+                            BoundingSphereD restrictedSphere;
+                            if (IsWeaponAreaRestricted(subtypeIdHash, MyCubeBuilder.Static.GetBuildBoundingBox(), grid, 0, out restrictedBox, out restrictedSphere))
+                            {
+                                MyCubeBuilder.Static.NotifyPlacementUnable();
+                                MyCubeBuilder.Static.Deactivate();
+                            }
+
+                            if (MyAPIGateway.Session.Config.HudState == 1)
+                            {
+                                if (restrictedBox.HalfExtent.AbsMax() > 0)
+                                {
+                                    DsDebugDraw.DrawBox(restrictedBox, RestrictionAreaColor);
+                                }
+                                if (restrictedSphere.Radius > 0)
+                                {
+                                    DsDebugDraw.DrawSphere(restrictedSphere, RestrictionAreaColor);
+                                }
+                                for (int i = 0; i < gridAi.Weapons.Count; i++)
+                                {
+                                    MyOrientedBoundingBoxD b;
+                                    BoundingSphereD s;
+                                    WeaponComponent Comp = gridAi.Weapons[i];
+                                    CalculateRestrictedShapes(Comp.MyCube.BlockDefinition.Id.SubtypeId, new MyOrientedBoundingBoxD(Comp.MyCube.PositionComp.LocalAABB, Comp.MyCube.PositionComp.WorldMatrixRef), out b, out s);
+                                    if (s.Radius > 0)
+                                    {
+                                        DsDebugDraw.DrawSphere(s, RestrictionAreaColor);
+                                    }
+                                    if (b.HalfExtent.AbsMax() > 0)
+                                    {
+                                        DsDebugDraw.DrawBox(b, RestrictionAreaColor);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
