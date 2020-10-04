@@ -188,7 +188,7 @@ namespace WeaponCore.Platform
             Reloading = true;
             FinishBurst = false;
 
-            //if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
+            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             StartReload();
             return true;
@@ -245,7 +245,7 @@ namespace WeaponCore.Platform
             ++Reload.StartId;
             ++ClientStartId;
 
-            //if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
+            if (!ActiveAmmoDef.AmmoDef.Const.HasShotReloadDelay) ShotsFired = 0;
 
             if (!ActiveAmmoDef.AmmoDef.Const.EnergyAmmo) {
                 if (Comp.BlockInventory.ItemsCanBeRemoved(1, ActiveAmmoDef.AmmoDef.Const.AmmoItem))
