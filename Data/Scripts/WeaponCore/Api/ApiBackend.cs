@@ -571,7 +571,7 @@ namespace WeaponCore.Api
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.MaxHeat > 0)
             {
-                return 0; //fix me
+                return comp.CurrentHeat;
             }
             return 0f;
         }

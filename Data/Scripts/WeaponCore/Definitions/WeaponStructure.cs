@@ -849,44 +849,16 @@ namespace WeaponCore.Support
 
             if (!EnergyAmmo && MagazineSize > 0 || IsHybrid)
             {
-                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(MagazineSize / l.ShotsInBurst)) : 0;
-                burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
-
-                var drainPerMin = ((MagazineSize / (double)s.RateOfFire) / s.BarrelsPerShot) * 3600d;
-                drainPerMin = MagazineSize >= 1 ? drainPerMin : 1;
-
-                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
-                var timePerMag = drainPerMin + s.ReloadTime + timeSpentOnBurst;
-
-                shotsPerSec = (float) (((3600d / timePerMag) * MagazineSize) / 60 * l.TrajectilesPerBarrel);
+                shotsPerSec = GetShotsPerSecond(MagazineSize, s.RateOfFire, s.ReloadTime, s.BarrelsPerShot, l.TrajectilesPerBarrel, l.ShotsInBurst, l.DelayAfterBurst);
             }
             else if (EnergyAmmo && a.EnergyMagazineSize > 0)
             {
-                var burstPerMag = l.ShotsInBurst > 0 ? (int)Math.Floor((double)(a.EnergyMagazineSize / l.ShotsInBurst)) : 0;
-                burstPerMag = burstPerMag >= 1 ? burstPerMag - 1 : burstPerMag;
-
-                var drainPerMin = ((a.EnergyMagazineSize / (double)s.RateOfFire) / s.BarrelsPerShot) * 3600d;
-                drainPerMin = a.EnergyMagazineSize >= 1 ? drainPerMin : 1;
-
-                var timeSpentOnBurst = l.DelayAfterBurst > 0 ? burstPerMag * l.DelayAfterBurst : 0;
-                var timePerMag = drainPerMin + s.ReloadTime + timeSpentOnBurst;
-
-                shotsPerSec = (float) (((3600d / timePerMag) * a.EnergyMagazineSize) / 60 * l.TrajectilesPerBarrel);
-
+                shotsPerSec = GetShotsPerSecond(a.EnergyMagazineSize, s.RateOfFire, s.ReloadTime, s.BarrelsPerShot, l.TrajectilesPerBarrel, l.ShotsInBurst, l.DelayAfterBurst);
             }
             else
             {
-                //Log.Line($"Burst Fire");
                 var shotyPerBurst = s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1;
-                var burstTime = ((((3600f / s.RateOfFire) * shotyPerBurst) + l.DelayAfterBurst) + s.ReloadTime) / 60;
-                //Log.Line($"BURST - burstTime = {burstTime}");
-                var projectilesInBurst = ((s.BarrelsPerShot * l.TrajectilesPerBarrel) * (s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1));
-                //Log.Line($"BURST - projectilesInBurst = {projectilesInBurst}");
-                var burstPerMin = (60 / burstTime);
-                var burstProjectilesPerMin = burstPerMin * projectilesInBurst;
-                var burstPerSec = burstProjectilesPerMin / 60;
-                //Log.Line($"BURST - shotsPerSec = {burstPerSec}");
-                shotsPerSec = burstPerSec;
+                shotsPerSec = GetShotsPerSecond(1, s.RateOfFire, 0, s.BarrelsPerShot, l.TrajectilesPerBarrel, shotyPerBurst, l.DelayAfterBurst);
             }
             var shotsPerSecPower = shotsPerSec; //save for power calc
 
@@ -933,9 +905,10 @@ namespace WeaponCore.Support
             baseDps = BaseDamage * shotsPerSec;
             areaDps = (GetAreaDmg(a) * shotsPerSec);
             detDps = (GetDetDmg(a) * shotsPerSec);
-
+            if (mexLogLevel >= 1) Log.Line($"Got Area damage of {GetDetDmg(a)} @ {shotsPerSec} areadps={areaDps} basedps={baseDps} detdps={detDps}");
             if (hasShrapnel)
             {
+                Log.Line("Had shrapnel");
                 var sAmmo = wDef.Ammos[ShrapnelId];
                 var fragments = a.Shrapnel.Fragments;
                 baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;
@@ -949,17 +922,36 @@ namespace WeaponCore.Support
             if (mexLogLevel >= 1) Log.Line($"Effective DPS(mult) = {effectiveDps}");
         }
 
+        private float GetShotsPerSecond(int magCapacity, int rof, int reloadTime, int barrelsPerShot, int trajectilesPerBarrel, int shotsInBurst, int delayAfterBurst)
+        {
+            shotsInBurst = shotsInBurst > 0 ? shotsInBurst : 1;
+            var burstsPerRoF = (float) rof / (float) shotsInBurst;
+            var reloadsPerRoF = (float) rof / (float) (magCapacity / barrelsPerShot);
+            var ticksReloading = (float) reloadsPerRoF * (float) reloadTime;
+
+            var ticksDelaying = (float) burstsPerRoF * (float) delayAfterBurst;
+
+            Log.Line($"burstsPerRof={burstsPerRoF} reloadsPerRof={reloadsPerRoF} ticksReloading={ticksReloading} ticksDelaying={ticksDelaying}");
+
+            float shotsPerSecond = (float)rof / (60f + (ticksReloading / 60) + (ticksDelaying / 60));
+
+            return (float) shotsPerSecond * (float)trajectilesPerBarrel * (float)barrelsPerShot;
+        }
+
         private float GetAreaDmg(AmmoDef a)
         {
             if (a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
             {
+                Log.Line("Ammo area effect was disabled");
                 return 0;
             }
+            var areaEffectDamage = a.AreaEffect.Base.EffectStrength > 0 ? a.AreaEffect.Base.EffectStrength : a.AreaEffect.AreaEffectDamage;
+            var areaEffectSize = a.AreaEffect.Base.Radius > 0 ? a.AreaEffect.Base.Radius : a.AreaEffect.AreaEffectRadius;
             if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
             {
-                return a.AreaEffect.AreaEffectDamage;
+                return areaEffectDamage;
             }
-            return (float)(a.AreaEffect.AreaEffectDamage * (a.AreaEffect.AreaEffectRadius * 0.5d));
+            return (float)(areaEffectDamage * (areaEffectSize * 0.5d));
         }
 
         private float GetDetDmg(AmmoDef a)

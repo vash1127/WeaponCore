@@ -791,39 +791,53 @@ namespace WeaponCore
             return false;
         }
 
-        public bool IsWeaponAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity)
+        public void CalculateRestrictedShapes(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
+            restrictedSphere = new BoundingSphereD();
+            restrictedBox = new MyOrientedBoundingBoxD();
+
             if (!WeaponAreaRestrictions.ContainsKey(subtype))
-                return false;
+                return;
 
             WeaponAreaRestriction restriction = WeaponAreaRestrictions[subtype];
             if (restriction.RestrictionBoxInflation < 0.1 && restriction.RestrictionRadius < 0.1)
-                return false;
+                return;
 
-            if (!GridToMasterAi.ContainsKey(myGrid))
-                return false;
-
-            GridAi ai = GridToMasterAi[myGrid];
-            List<MyEntity> nearbyBlocks = new List<MyEntity>();
             bool checkBox = restriction.RestrictionBoxInflation > 0;
             bool checkSphere = restriction.RestrictionRadius > 0;
-            BoundingSphereD restrictedSphere = new BoundingSphereD();
-            MyOrientedBoundingBoxD restrictedBox = new MyOrientedBoundingBoxD();
-            double queryRadius = 0;
+
             if (checkBox)
             {
                 restrictedBox = new MyOrientedBoundingBoxD(cubeBoundingBox.Center, cubeBoundingBox.HalfExtent, cubeBoundingBox.Orientation);
                 restrictedBox.HalfExtent = restrictedBox.HalfExtent + new Vector3D(Math.Sign(restrictedBox.HalfExtent.X) * restriction.RestrictionBoxInflation, Math.Sign(restrictedBox.HalfExtent.Y) * restriction.RestrictionBoxInflation, Math.Sign(restrictedBox.HalfExtent.Z) * restriction.RestrictionBoxInflation);
-                queryRadius = restrictedBox.HalfExtent.AbsMax();
             }
             if (checkSphere)
             {
                 restrictedSphere = new BoundingSphereD(cubeBoundingBox.Center, restriction.RestrictionRadius);
-                if (queryRadius < restriction.RestrictionRadius)
-                    queryRadius = restriction.RestrictionRadius;
             }
-            BoundingSphereD querySphere = new BoundingSphereD(cubeBoundingBox.Center, queryRadius);
+        }
 
+        public bool IsWeaponAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
+        {
+            if (!GridToMasterAi.ContainsKey(myGrid))
+            {
+                restrictedSphere = new BoundingSphereD();
+                restrictedBox = new MyOrientedBoundingBoxD();
+                return false;
+            }
+
+            GridAi ai = GridToMasterAi[myGrid];
+            List<MyEntity> nearbyBlocks = new List<MyEntity>();
+            CalculateRestrictedShapes(subtype, cubeBoundingBox, out restrictedBox, out restrictedSphere);
+            double queryRadius = Math.Max(restrictedBox.HalfExtent.AbsMax(), restrictedSphere.Radius);
+            if (queryRadius < 0.01)
+            {
+                return false;
+            }
+            WeaponAreaRestriction restriction = WeaponAreaRestrictions[subtype];
+            bool checkBox = restriction.RestrictionBoxInflation > 0;
+            bool checkSphere = restriction.RestrictionRadius > 0;
+            BoundingSphereD querySphere = new BoundingSphereD(cubeBoundingBox.Center, queryRadius);
 
             foreach (var grid in ai.SubGrids)
             {
