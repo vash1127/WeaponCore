@@ -199,6 +199,7 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly List<MyKeys> _pressedKeys = new List<MyKeys>();
         private readonly List<MyMouseButtonsEnum> _pressedButtons = new List<MyMouseButtonsEnum>();
+        private readonly List<MyEntity> _tmpNearByBlocks = new List<MyEntity>();
 
         internal List<RadiatedBlock> SlimsSortedList = new List<RadiatedBlock>(1024);
         internal MyConcurrentPool<MyEntity> TriggerEntityPool;

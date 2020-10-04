@@ -213,6 +213,7 @@ namespace WeaponCore
             _slimHealthClient.Clear();
             _slimsSet.Clear();
             _turretDefinitions.Clear();
+            _tmpNearByBlocks.Clear();
 
             foreach (var av in Av.AvShots) {
                 av.GlowSteps.Clear();

@@ -819,48 +819,48 @@ namespace WeaponCore
 
         public bool IsWeaponAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
-            if (!GridToMasterAi.ContainsKey(myGrid))
-            {
+            _tmpNearByBlocks.Clear();
+            if (!GridToMasterAi.ContainsKey(myGrid)) {
                 restrictedSphere = new BoundingSphereD();
                 restrictedBox = new MyOrientedBoundingBoxD();
                 return false;
             }
 
-            GridAi ai = GridToMasterAi[myGrid];
-            List<MyEntity> nearbyBlocks = new List<MyEntity>();
+            var ai = GridToMasterAi[myGrid];
             CalculateRestrictedShapes(subtype, cubeBoundingBox, out restrictedBox, out restrictedSphere);
-            double queryRadius = Math.Max(restrictedBox.HalfExtent.AbsMax(), restrictedSphere.Radius);
+            var queryRadius = Math.Max(restrictedBox.HalfExtent.AbsMax(), restrictedSphere.Radius);
+            
             if (queryRadius < 0.01)
-            {
                 return false;
-            }
-            WeaponAreaRestriction restriction = WeaponAreaRestrictions[subtype];
-            bool checkBox = restriction.RestrictionBoxInflation > 0;
-            bool checkSphere = restriction.RestrictionRadius > 0;
-            BoundingSphereD querySphere = new BoundingSphereD(cubeBoundingBox.Center, queryRadius);
+            
+            var restriction = WeaponAreaRestrictions[subtype];
+            var checkBox = restriction.RestrictionBoxInflation > 0;
+            var checkSphere = restriction.RestrictionRadius > 0;
+            var querySphere = new BoundingSphereD(cubeBoundingBox.Center, queryRadius);
 
-            foreach (var grid in ai.SubGrids)
-            {
-                if (!this.GridTargetingAIs.ContainsKey(grid))
+            foreach (var grid in ai.SubGrids) {
+                if (!GridTargetingAIs.ContainsKey(grid))
                     continue;
-                grid.Hierarchy.QuerySphere(ref querySphere, nearbyBlocks);
+
+                grid.Hierarchy.QuerySphere(ref querySphere, _tmpNearByBlocks);
             }
 
-            for (int l = 0; l < nearbyBlocks.Count; l++)
-            {
-                var cube = nearbyBlocks[l] as MyCubeBlock;
+            for (int l = 0; l < _tmpNearByBlocks.Count; l++) {
+
+                var cube = _tmpNearByBlocks[l] as MyCubeBlock;
                 if (cube == null || cube.EntityId == ignoredEntity || !WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeId.String))
                     continue;
 
                 if (!restriction.CheckForAnyWeapon && cube.BlockDefinition.Id.SubtypeId != subtype)
                     continue;
 
-                if (checkBox)
-                {
-                    MyOrientedBoundingBoxD cubeBox = new MyOrientedBoundingBoxD(cube.PositionComp.LocalAABB, cube.PositionComp.WorldMatrixRef);
+                if (checkBox) {
+
+                    var cubeBox = new MyOrientedBoundingBoxD(cube.PositionComp.LocalAABB, cube.PositionComp.WorldMatrixRef);
                     if (restrictedBox.Contains(ref cubeBox) != ContainmentType.Disjoint)
                         return true;
                 }
+
                 if (checkSphere && restrictedSphere.Contains(cube.PositionComp.WorldAABB) != ContainmentType.Disjoint)                
                     return true;
             }
