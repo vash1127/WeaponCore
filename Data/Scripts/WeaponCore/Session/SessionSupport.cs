@@ -1,20 +1,19 @@
-﻿using System;
-using ParallelTasks;
-using Sandbox.ModAPI;
-using VRageMath;
-using WeaponCore.Support;
-using WeaponCore.Platform;
+﻿using ParallelTasks;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using System;
+using System.Collections.Generic;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
-using VRage.Game;
-using Sandbox.Common.ObjectBuilders;
-using VRage.Utils;
-using System.Collections.Generic;
-using Jakaria;
-using Sandbox.Definitions;
 using VRage.Input;
+using VRage.ModAPI;
+using VRage.Utils;
+using VRageMath;
+using WeaponCore.Platform;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -789,6 +788,82 @@ namespace WeaponCore
                 return true;
             }
 
+            return false;
+        }
+
+        public void CalculateRestrictedShapes(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
+        {
+            restrictedSphere = new BoundingSphereD();
+            restrictedBox = new MyOrientedBoundingBoxD();
+
+            if (!WeaponAreaRestrictions.ContainsKey(subtype))
+                return;
+
+            WeaponAreaRestriction restriction = WeaponAreaRestrictions[subtype];
+            if (restriction.RestrictionBoxInflation < 0.1 && restriction.RestrictionRadius < 0.1)
+                return;
+
+            bool checkBox = restriction.RestrictionBoxInflation > 0;
+            bool checkSphere = restriction.RestrictionRadius > 0;
+
+            if (checkBox)
+            {
+                restrictedBox = new MyOrientedBoundingBoxD(cubeBoundingBox.Center, cubeBoundingBox.HalfExtent, cubeBoundingBox.Orientation);
+                restrictedBox.HalfExtent = restrictedBox.HalfExtent + new Vector3D(Math.Sign(restrictedBox.HalfExtent.X) * restriction.RestrictionBoxInflation, Math.Sign(restrictedBox.HalfExtent.Y) * restriction.RestrictionBoxInflation, Math.Sign(restrictedBox.HalfExtent.Z) * restriction.RestrictionBoxInflation);
+            }
+            if (checkSphere)
+            {
+                restrictedSphere = new BoundingSphereD(cubeBoundingBox.Center, restriction.RestrictionRadius);
+            }
+        }
+
+        public bool IsWeaponAreaRestricted(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, MyCubeGrid myGrid, long ignoredEntity, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
+        {
+            if (!GridToMasterAi.ContainsKey(myGrid))
+            {
+                restrictedSphere = new BoundingSphereD();
+                restrictedBox = new MyOrientedBoundingBoxD();
+                return false;
+            }
+
+            GridAi ai = GridToMasterAi[myGrid];
+            List<MyEntity> nearbyBlocks = new List<MyEntity>();
+            CalculateRestrictedShapes(subtype, cubeBoundingBox, out restrictedBox, out restrictedSphere);
+            double queryRadius = Math.Max(restrictedBox.HalfExtent.AbsMax(), restrictedSphere.Radius);
+            if (queryRadius < 0.01)
+            {
+                return false;
+            }
+            WeaponAreaRestriction restriction = WeaponAreaRestrictions[subtype];
+            bool checkBox = restriction.RestrictionBoxInflation > 0;
+            bool checkSphere = restriction.RestrictionRadius > 0;
+            BoundingSphereD querySphere = new BoundingSphereD(cubeBoundingBox.Center, queryRadius);
+
+            foreach (var grid in ai.SubGrids)
+            {
+                if (!this.GridTargetingAIs.ContainsKey(grid))
+                    continue;
+                grid.Hierarchy.QuerySphere(ref querySphere, nearbyBlocks);
+            }
+
+            for (int l = 0; l < nearbyBlocks.Count; l++)
+            {
+                var cube = nearbyBlocks[l] as MyCubeBlock;
+                if (cube == null || cube.EntityId == ignoredEntity || !WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeId.String))
+                    continue;
+
+                if (!restriction.CheckForAnyWeapon && cube.BlockDefinition.Id.SubtypeId != subtype)
+                    continue;
+
+                if (checkBox)
+                {
+                    MyOrientedBoundingBoxD cubeBox = new MyOrientedBoundingBoxD(cube.PositionComp.LocalAABB, cube.PositionComp.WorldMatrixRef);
+                    if (restrictedBox.Contains(ref cubeBox) != ContainmentType.Disjoint)
+                        return true;
+                }
+                if (checkSphere && restrictedSphere.Contains(cube.PositionComp.WorldAABB) != ContainmentType.Disjoint)                
+                    return true;
+            }
             return false;
         }
 

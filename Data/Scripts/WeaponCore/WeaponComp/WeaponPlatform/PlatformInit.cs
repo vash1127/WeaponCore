@@ -107,6 +107,14 @@ namespace WeaponCore.Platform
                 Log.Line($"{blockDef.String} over block limits: {wCounter.Current}.");
                 return State;
             }
+            MyOrientedBoundingBoxD b;
+            BoundingSphereD s;
+            if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, new MyOrientedBoundingBoxD(Comp.MyCube.PositionComp.LocalAABB, Comp.MyCube.PositionComp.WorldMatrixRef), Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, out b, out s))
+            {
+                State = PlatformState.Invalid;
+                Log.Line($"{blockDef.String} was too close to another weapon");
+                return State;
+            }
 
             Parts.Entity = comp.Entity as MyEntity;
 
