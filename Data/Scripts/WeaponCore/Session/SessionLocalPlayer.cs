@@ -142,7 +142,7 @@ namespace WeaponCore
             MyAPIGateway.Utilities.ShowNotification(notify.Message, notify.Duration > 0 ? notify.Duration : 1000, notify.Color == string.Empty ? "White" : notify.Color);
         }
 
-        private Color RestrictionAreaColor = new Color(128, 0, 128, 96);
+        private readonly Color RestrictionAreaColor = new Color(128, 0, 128, 96);
 
         private void UpdatePlacer()
         {
@@ -226,7 +226,7 @@ namespace WeaponCore
                 {
                     if (UiInput.CurrentWheel != UiInput.PreviousWheel)
                         TargetUi.SelectNext();
-                    else if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift)
+                    else if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift) 
                         TrackingAi.Construct.Focus.RequestNextActive(UiInput.LongShift, TrackingAi);
                 }
             }

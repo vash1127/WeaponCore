@@ -40,6 +40,10 @@ namespace WeaponCore
         {
             var s = _session;
             var ai = s.TrackingAi;
+
+            if (s.Tick - MasterUpdateTick > 600 || MasterUpdateTick < 600 && _masterTargets.Count == 0)
+                BuildMasterCollections(ai);
+
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var cockPit = s.ActiveCockPit;
@@ -121,9 +125,9 @@ namespace WeaponCore
             if (!manualSelect) {
                 var activeColor = closestEnt != null && !_masterTargets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null && !(closestEnt is MyVoxelBase) ? activeColor : Color.White;
-                if (!foundTarget) {
+               
+                if (!foundTarget) 
                     ai.Session.PlayerDummyTargets[ai.Session.PlayerId].Update(end, ai);
-                }
             }
 
             return foundTarget || foundOther;
@@ -136,7 +140,6 @@ namespace WeaponCore
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
-
             var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1;
             if (s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed || updateTick && !UpdateCache()) return;
             _cacheIdleTicks = s.Tick;
@@ -173,7 +176,7 @@ namespace WeaponCore
             return _endIdx >= 0;
         }
 
-        private void BuildMasterCollections(GridAi ai)
+        internal void BuildMasterCollections(GridAi ai)
         {
             _masterTargets.Clear();
             for (int i = 0; i < ai.Construct.RefreshedAis.Count; i++)  {
@@ -186,7 +189,6 @@ namespace WeaponCore
                     _toPruneMasterDict[tInfo.Target] = tInfo;
                 }
             }
-
             _sortedMasterList.Clear();
             _toSortMasterList.AddRange(_toPruneMasterDict.Values);
             _toPruneMasterDict.Clear();
@@ -197,6 +199,7 @@ namespace WeaponCore
                 _sortedMasterList.Add(_toSortMasterList[i].Target);
 
             _toSortMasterList.Clear();
+            MasterUpdateTick = ai.Session.Tick;
         }
 
         private bool RayCheckTargets(Vector3D origin, Vector3D dir, out MyEntity closestEnt, out Vector3D hitPos, out bool foundOther, bool checkOthers = false)

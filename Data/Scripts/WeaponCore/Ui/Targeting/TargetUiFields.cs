@@ -19,6 +19,7 @@ namespace WeaponCore
         internal double AdjScale;
         internal bool DrawReticle;
         internal uint ReticleOnSelfTick;
+        internal uint MasterUpdateTick;
         internal int ReticleAgeOnSelf;
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");

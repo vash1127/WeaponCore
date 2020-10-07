@@ -931,8 +931,6 @@ namespace WeaponCore.Support
 
             var ticksDelaying = (float) burstsPerRoF * (float) delayAfterBurst;
 
-            Log.Line($"burstsPerRof={burstsPerRoF} reloadsPerRof={reloadsPerRoF} ticksReloading={ticksReloading} ticksDelaying={ticksDelaying}");
-
             float shotsPerSecond = (float)rof / (60f + (ticksReloading / 60) + (ticksDelaying / 60));
 
             return (float) shotsPerSecond * (float)trajectilesPerBarrel * (float)barrelsPerShot;
@@ -941,10 +939,8 @@ namespace WeaponCore.Support
         private float GetAreaDmg(AmmoDef a)
         {
             if (a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
-            {
-                Log.Line("Ammo area effect was disabled");
                 return 0;
-            }
+
             var areaEffectDamage = a.AreaEffect.Base.EffectStrength > 0 ? a.AreaEffect.Base.EffectStrength : a.AreaEffect.AreaEffectDamage;
             var areaEffectSize = a.AreaEffect.Base.Radius > 0 ? a.AreaEffect.Base.Radius : a.AreaEffect.AreaEffectRadius;
             if (a.AreaEffect.AreaEffect == AreaEffectType.Radiant)
