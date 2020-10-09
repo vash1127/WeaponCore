@@ -72,12 +72,16 @@ namespace WeaponCore.Support
 
             if (!weapon.System.DesignatorWeapon)
             {
-                PeakDps += weapon.ActiveAmmoDef.AmmoDef.Const.PeakDps;
-                EffectiveDps += weapon.ActiveAmmoDef.AmmoDef.Const.EffectiveDps;
-                ShotsPerSec += weapon.ActiveAmmoDef.AmmoDef.Const.ShotsPerSec;
-                BaseDps += weapon.ActiveAmmoDef.AmmoDef.Const.BaseDps;
-                AreaDps += weapon.ActiveAmmoDef.AmmoDef.Const.AreaDps;
-                DetDps += weapon.ActiveAmmoDef.AmmoDef.Const.DetDps;
+                var patternSize = weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern.Length;
+                foreach (var ammo in weapon.ActiveAmmoDef.AmmoDef.Const.AmmoPattern)
+                {
+                    PeakDps += ammo.Const.PeakDps / (float) patternSize;
+                    EffectiveDps += ammo.Const.EffectiveDps / (float) patternSize;
+                    ShotsPerSec += ammo.Const.ShotsPerSec / (float) patternSize;
+                    BaseDps += ammo.Const.BaseDps / (float) patternSize;
+                    AreaDps += ammo.Const.AreaDps / (float) patternSize;
+                    DetDps += ammo.Const.DetDps / (float) patternSize;
+                }
             }
 
             maxTrajectory = 0;

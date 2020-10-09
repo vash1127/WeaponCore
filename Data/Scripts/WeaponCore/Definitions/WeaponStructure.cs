@@ -766,13 +766,13 @@ namespace WeaponCore.Support
             }
         }
 
+        private int mexLogLevel = 0;
         private void GetPeakDps(WeaponSystem.WeaponAmmoTypes ammoDef, WeaponSystem system, WeaponDefinition wDef, out float peakDps, out float effectiveDps, out float shotsPerSec, out float baseDps, out float areaDps, out float detDps)
         {
             var s = system;
             var a = ammoDef.AmmoDef;
             var hasShrapnel = ShrapnelId > -1;
             var l = wDef.HardPoint.Loading;
-            var mexLogLevel = 0; //dirty log levels :P
 
 
             if (mexLogLevel >= 1) Log.Line($"-----");
@@ -905,7 +905,7 @@ namespace WeaponCore.Support
             baseDps = BaseDamage * shotsPerSec;
             areaDps = (GetAreaDmg(a) * shotsPerSec);
             detDps = (GetDetDmg(a) * shotsPerSec);
-            if (mexLogLevel >= 1) Log.Line($"Got Area damage of {GetDetDmg(a)} @ {shotsPerSec} areadps={areaDps} basedps={baseDps} detdps={detDps}");
+            if (mexLogLevel >= 1) Log.Line($"Got Area damage={GetAreaDmg(a)} det={GetDetDmg(a)} @ {shotsPerSec} areadps={areaDps} basedps={baseDps} detdps={detDps}");
             if (hasShrapnel)
             {
                 Log.Line("Had shrapnel");
@@ -925,12 +925,14 @@ namespace WeaponCore.Support
         private float GetShotsPerSecond(int magCapacity, int rof, int reloadTime, int barrelsPerShot, int trajectilesPerBarrel, int shotsInBurst, int delayAfterBurst)
         {
             shotsInBurst = shotsInBurst > 0 ? shotsInBurst : 1;
+            if (mexLogLevel > 0) Log.Line($"magCapacity={magCapacity} rof={rof} reloadTime={reloadTime} barrelsPerShot={barrelsPerShot} trajectilesPerBarrel={trajectilesPerBarrel} shotsInBurst={shotsInBurst} delayAfterBurst={delayAfterBurst}");
             var burstsPerRoF = (float) rof / (float) shotsInBurst;
-            var reloadsPerRoF = (float) rof / (float) (magCapacity / barrelsPerShot);
+            var reloadsPerRoF = (float) rof /  ((float)magCapacity / (float)barrelsPerShot);
             var ticksReloading = (float) reloadsPerRoF * (float) reloadTime;
 
             var ticksDelaying = (float) burstsPerRoF * (float) delayAfterBurst;
 
+            if (mexLogLevel > 0) Log.Line($"burstsPerRof={burstsPerRoF} reloadsPerRof={reloadsPerRoF} ticksReloading={ticksReloading} ticksDelaying={ticksDelaying}");
             float shotsPerSecond = (float)rof / (60f + (ticksReloading / 60) + (ticksDelaying / 60));
 
             return (float) shotsPerSecond * (float)trajectilesPerBarrel * (float)barrelsPerShot;
