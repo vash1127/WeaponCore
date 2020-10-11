@@ -135,7 +135,12 @@ namespace WeaponCore
 
                 WeaponComponent comp;
                 if (!cube.Components.TryGet(out comp)) return;
-                
+
+                for (int i = 0; i < comp.Monitors.Length; i++) {
+                    comp.Monitors[i].Clear();
+                    comp.Monitors[i] = null;
+                }
+
                 //IdToCompMap.Remove(comp.MyCube.EntityId);
 
                 if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)

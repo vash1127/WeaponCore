@@ -363,6 +363,7 @@ namespace WeaponCore.Platform
             if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
                 Ejector = new Dummy(ejectorPart,this, System.Values.Assignments.Ejector);
 
+            Monitors = Comp.Monitors[WeaponId];
         }
     }
 }

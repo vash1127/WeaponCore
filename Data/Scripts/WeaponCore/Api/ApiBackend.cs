@@ -764,16 +764,18 @@ namespace WeaponCore.Api
         internal static void MonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
-                comp.Platform.Weapons[weaponId].Monitors.Add(callback);
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.Weapons.Length > weaponId)
+                comp.Monitors[weaponId].Add(callback);
         }
+
         // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
         internal static void UnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
-                comp.Platform.Weapons[weaponId].Monitors.Remove(callback);
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.Weapons.Length > weaponId)
+                comp.Monitors[weaponId].Remove(callback);
         }
+
         // POs, Dir, baseDamageLeft, HealthLeft, TargetEntityId, AmmoName 
         private MyTuple<Vector3D, Vector3D, float, float, long, string> GetProjectileState(ulong projectileId)
         {

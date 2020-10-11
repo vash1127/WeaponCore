@@ -22,6 +22,7 @@ namespace WeaponCore.Support
         internal readonly MyStringHash SubtypeHash;
         internal readonly List<PartAnimation> AllAnimations = new List<PartAnimation>();
         internal readonly List<int> AmmoSelectionWeaponIds = new List<int>();
+        internal readonly List<Action<long, int, ulong, long, Vector3D, bool>>[] Monitors;
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
         internal readonly IMyTerminalBlock TerminalBlock;
@@ -143,9 +144,12 @@ namespace WeaponCore.Support
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
+
+            Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>[Platform.Weapons.Length];
+            for (int i = 0; i < Monitors.Length; i++)
+                Monitors[i] = new List<Action<long, int, ulong, long, Vector3D, bool>>();
+
             Data = new CompData(this);
-            //Data.State = new CompState(this);
-            //Data.Set = new CompSettings(this);
 
             MyCube.OnClose += Session.CloseComps;
         }        
