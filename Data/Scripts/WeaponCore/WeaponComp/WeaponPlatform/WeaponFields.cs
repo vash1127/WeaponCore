@@ -34,7 +34,7 @@ namespace WeaponCore.Platform
         internal readonly PartInfo ElevationPart;
         internal readonly bool AzimuthOnBase;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
-        internal readonly List<Action<long, int, ulong, long, Vector3D>> Monitors = new List<Action<long, int, ulong, long, Vector3D>>();
+        internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
         internal readonly uint WeaponCreatedTick;
 

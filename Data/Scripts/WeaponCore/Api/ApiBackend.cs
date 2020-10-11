@@ -62,8 +62,8 @@ namespace WeaponCore.Api
                 ["SetActiveAmmo"] = new Action<IMyTerminalBlock, int, string>(SetActiveAmmo),
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
-                ["UnMonitorProjectile"] = new Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D>>(UnMonitorProjectileCallback),
-                ["MonitorProjectile"] = new Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D>>(MonitorProjectileCallback),
+                ["UnMonitorProjectile"] = new Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(UnMonitorProjectileCallback),
+                ["MonitorProjectile"] = new Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(MonitorProjectileCallback),
                 ["GetProjectileState"] = new Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>>(GetProjectileState),
                 ["GetConstructEffectiveDps"] = new Func<IMyEntity, float>(GetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<IMyTerminalBlock, long>(GetPlayerController),
@@ -760,15 +760,15 @@ namespace WeaponCore.Api
             }
         }
 
-        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos 
-        private void MonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D> callback)
+        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        internal static void MonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
                 comp.Platform.Weapons[weaponId].Monitors.Add(callback);
         }
-        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos 
-        private void UnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D> callback)
+        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        internal static void UnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
         {
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)

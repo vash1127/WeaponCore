@@ -115,7 +115,7 @@ namespace WeaponCore.Projectiles
                 if (p.Info.Monitors?.Count > 0) {
                     Session.MonitoredProjectiles[p.Info.Id] = p;
                     for (int j = 0; j < p.Info.Monitors.Count; j++)
-                        p.Info.Monitors[j].Invoke(w.Comp.MyCube.EntityId, w.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position);
+                        p.Info.Monitors[j].Invoke(w.Comp.MyCube.EntityId, w.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position, true);
                 }
 
             }

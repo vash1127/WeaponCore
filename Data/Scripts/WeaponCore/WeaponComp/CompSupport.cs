@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.ModAPI;
+using WeaponCore.Api;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
@@ -130,6 +132,10 @@ namespace WeaponCore.Support
                     w.Comp.Session.AcqManager.MonitorState.Remove(w.Acquire);
                     w.Acquire.Monitoring = false;
                     w.Acquire.IsSleeping = false;
+                    for (int i = w.Monitors.Count - 1; i >= 0; i--) {
+                        ApiBackend.UnMonitorProjectileCallback((IMyTerminalBlock)w.Comp.MyCube, w.WeaponId, w.Monitors[i]);
+                        w.Monitors.RemoveAtFast(i);
+                    }
                 }
             }
         }

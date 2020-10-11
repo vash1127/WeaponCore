@@ -39,7 +39,7 @@ namespace WeaponCore.Support
         internal Hit Hit = new Hit();
         internal WeaponRandomGenerator WeaponRng;
         internal FakeTarget DummyTarget;
-        internal List<Action<long, int, ulong, long, Vector3D>> Monitors;
+        internal List<Action<long, int, ulong, long, Vector3D, bool>> Monitors;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
@@ -98,7 +98,7 @@ namespace WeaponCore.Support
         {
             if (Monitors?.Count > 0) {
                 for (int i = 0; i < Monitors.Count; i++)
-                    Monitors[i].Invoke(Target.FiringCube.EntityId, WeaponId,Id, Target.TargetId, Hit.LastHit);
+                    Monitors[i].Invoke(Target.FiringCube.EntityId, WeaponId,Id, Target.TargetId, Hit.LastHit, false);
 
                 System.Session.MonitoredProjectiles.Remove(Id);
             }

@@ -48,8 +48,8 @@ namespace WeaponCore.Api
         private Action<IMyTerminalBlock, int, string> _setActiveAmmo;
         private Action<Action<Vector3, float>> _registerProjectileAdded;
         private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
-        private Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D>> _monitorProjectile;
-        private Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D>> _unMonitorProjectile;
+        private Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>> _monitorProjectile;
+        private Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>> _unMonitorProjectile;
         private Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>> _getProjectileState;
 
         private Func<IMyEntity, float> _getConstructEffectiveDps;
@@ -154,8 +154,8 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "SetActiveAmmo", ref _setActiveAmmo);
             AssignMethod(delegates, "RegisterProjectileAdded", ref _registerProjectileAdded);
             AssignMethod(delegates, "UnRegisterProjectileAdded", ref _unRegisterProjectileAdded);
-            AssignMethod(delegates, "MonitorProjectileAdded", ref _monitorProjectile);
-            AssignMethod(delegates, "UnMonitorProjectileAdded", ref _unMonitorProjectile);
+            AssignMethod(delegates, "MonitorProjectile", ref _monitorProjectile);
+            AssignMethod(delegates, "UnMonitorProjectile", ref _unMonitorProjectile);
             AssignMethod(delegates, "GetProjectileState", ref _getProjectileState);
             AssignMethod(delegates, "GetConstructEffectiveDps", ref _getConstructEffectiveDps);
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
@@ -271,10 +271,10 @@ namespace WeaponCore.Api
         public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) =>
             _unRegisterProjectileAdded?.Invoke(action);
 
-        public void MonitorProjectileCallback(IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D> action) =>
+        public void MonitorProjectileCallback(IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D, bool> action) =>
             _monitorProjectile?.Invoke(weapon, weaponId, action);
 
-        public void UnMonitorProjectileCallback(IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D> action) =>
+        public void UnMonitorProjectileCallback(IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D, bool> action) =>
             _unMonitorProjectile?.Invoke(weapon, weaponId, action);
 
         public MyTuple<Vector3D, Vector3D, float, float, long, string> GetProjectileState(ulong projectileId) =>
