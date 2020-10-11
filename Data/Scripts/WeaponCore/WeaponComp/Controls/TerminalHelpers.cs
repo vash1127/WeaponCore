@@ -24,15 +24,15 @@ namespace WeaponCore.Control
 
         }
 
-        internal static void AddTurretControls<T>(Session session) where T : IMyTerminalBlock
+        internal static void AddTurretOrTrackingControls<T>(Session session) where T : IMyTerminalBlock
         {
-            Separator<T>(session, -7, "WC_sep2", HasTurret);
+            Separator<T>(session, -7, "WC_sep2", HasTracking);
 
             AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
 
-            AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Target Neutrals", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTurret);
+            AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Target Neutrals", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Target Unowned", WepUi.GetUnowned, WepUi.RequestSetUnowned, true, HasTurret);
+            AddOnOffSwitchNoAction<T>(session, -6, "Unowned", "Target Unowned", "Target Unowned", WepUi.GetUnowned, WepUi.RequestSetUnowned, true, HasTracking);
 
             AddOnOffSwitchNoAction<T>(session, -10, "Biologicals", "Target Biologicals", "Target Biologicals", WepUi.GetBiologicals, WepUi.RequestSetBiologicals, true, TrackBiologicals);
 
@@ -40,19 +40,19 @@ namespace WeaponCore.Control
 
             AddOnOffSwitchNoAction<T>(session, -12, "Meteors", "Target Meteors", "Target Meteors", WepUi.GetMeteors, WepUi.RequestSetMeteors, true, TrackMeteors);
 
-            AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Target FocusFire", WepUi.GetFocusFire,  WepUi.RequestSetFocusFire, true, HasTurret);
+            AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Target FocusFire", WepUi.GetFocusFire,  WepUi.RequestSetFocusFire, true, HasTracking);
 
-            AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target SubSystems", WepUi.GetSubSystems, WepUi.RequestSetSubSystems, true, HasTurret);
+            AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target SubSystems", WepUi.GetSubSystems, WepUi.RequestSetSubSystems, true, HasTracking);
 
-            Separator<T>(session, -15, "WC_sep3", HasTurret);
+            Separator<T>(session, -15, "WC_sep3", HasTracking);
 
-            AddComboboxNoAction<T>(session, -16, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetSubSystem, WepUi.RequestSubSystem, WepUi.ListSubSystems, HasTurret);
+            AddComboboxNoAction<T>(session, -16, "PickSubSystem", "Pick SubSystem", "Pick SubSystem", WepUi.GetSubSystem, WepUi.RequestSubSystem, WepUi.ListSubSystems, HasTracking);
 
-            AddComboboxNoAction<T>(session, -17, "TrackingMode", "Tracking Mode", "Tracking Mode", WepUi.GetMovementMode, WepUi.RequestMovementMode, WepUi.ListMovementModes, HasTurret);
+            AddComboboxNoAction<T>(session, -17, "TrackingMode", "Tracking Mode", "Tracking Mode", WepUi.GetMovementMode, WepUi.RequestMovementMode, WepUi.ListMovementModes, HasTracking);
             
             AddComboboxNoAction<T>(session, -18, "ControlModes", "Control Mode", "Control Mode", WepUi.GetControlMode, WepUi.RequestControlMode, WepUi.ListControlModes, TurretOrGuidedAmmo);
 
-            Separator<T>(session, -19, "WC_sep4", HasTurret);
+            Separator<T>(session, -19, "WC_sep4", HasTracking);
         }
 
         internal static void CreateGenericControls<T>(Session session) where T : IMyTerminalBlock
@@ -132,6 +132,12 @@ namespace WeaponCore.Control
             return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.AmmoSelectionWeaponIds.Count > 0;
         }
 
+        internal static bool HasTracking(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.HasTracking;
+        }
+
         internal static bool HasTurret(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
@@ -149,12 +155,10 @@ namespace WeaponCore.Control
             var comp = block?.Components?.Get<WeaponComponent>();
             return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.TrackingWeapon.System.HasGuidedAmmo;
         }
-
         internal static bool TurretOrGuidedAmmo(IMyTerminalBlock block)
         {
             return HasTurret(block) || GuidedAmmo(block);
         }
-
         internal static void SliderWriterRange(IMyTerminalBlock block, StringBuilder builder)
         {
             builder.Append(WepUi.GetRange(block).ToString("N2"));

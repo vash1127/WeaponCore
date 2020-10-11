@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.ShootActions;
 using static WeaponCore.Platform.MyWeaponPlatform.PlatformState;
+using IMyTerminalBlock = Sandbox.ModAPI.IMyTerminalBlock;
+
 namespace WeaponCore.Api
 {
     internal class ApiBackend
@@ -57,6 +62,9 @@ namespace WeaponCore.Api
                 ["SetActiveAmmo"] = new Action<IMyTerminalBlock, int, string>(SetActiveAmmo),
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
+                ["UnMonitorProjectile"] = new Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D>>(UnMonitorProjectileCallback),
+                ["MonitorProjectile"] = new Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D>>(MonitorProjectileCallback),
+                ["GetProjectileState"] = new Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>>(GetProjectileState),
                 ["GetConstructEffectiveDps"] = new Func<IMyEntity, float>(GetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<IMyTerminalBlock, long>(GetPlayerController),
                 ["GetWeaponAzimuthMatrix"] = new Func<IMyTerminalBlock, int, Matrix>(GetWeaponAzimuthMatrix),
@@ -74,9 +82,9 @@ namespace WeaponCore.Api
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool>(PbGetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, MyTuple<bool, int, int>>(PbGetProjectilesLockedOn),
                 ["GetSortedThreats"] = new Action<VRage.Game.ModAPI.Ingame.IMyEntity, IDictionary<VRage.Game.ModAPI.Ingame.IMyEntity, float>>(PbGetSortedThreats),
-                ["GetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, int, VRage.Game.ModAPI.Ingame.IMyEntity>(PbGetAiFocus),
+                ["GetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetAiFocus),
                 ["SetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool>(PbSetAiFocus),
-                ["GetWeaponTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, VRage.Game.ModAPI.Ingame.IMyEntity>(PbGetWeaponTarget),
+                ["GetWeaponTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetWeaponTarget),
                 ["SetWeaponTarget"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int>(PbSetWeaponTarget),
                 ["FireWeaponOnce"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, int>(PbFireWeaponOnce),
                 ["ToggleWeaponFire"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, bool, int>(PbToggleWeaponFire),
@@ -204,10 +212,9 @@ namespace WeaponCore.Api
             SetWeaponTarget((IMyTerminalBlock) arg1, (IMyEntity) arg2, arg3);
         }
 
-        private VRage.Game.ModAPI.Ingame.IMyEntity PbGetWeaponTarget(object arg1, int arg2)
+        private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetWeaponTarget(object arg1, int arg2)
         {
-            var entity = GetWeaponTarget((IMyTerminalBlock) arg1, arg2).Item4;
-            return entity;
+            return GetDetailedEntityInfo(GetWeaponTarget((IMyTerminalBlock)arg1, arg2));
         }
 
         private bool PbSetAiFocus(object arg1, object arg2, int arg3)
@@ -215,9 +222,84 @@ namespace WeaponCore.Api
             return SetAiFocus((IMyEntity) arg1, (IMyEntity) arg2, arg3);
         }
 
-        private VRage.Game.ModAPI.Ingame.IMyEntity PbGetAiFocus(object arg1, int arg2)
+        private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetAiFocus(object arg1, int arg2)
         {
-            return GetAiFocus((IMyEntity) arg1, arg2);
+            return GetEntityInfo(GetAiFocus((IMyEntity)arg1, arg2));
+        }
+
+        private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target)
+        {
+            var e = target.Item4;
+            if (!target.Item1 || e?.Physics == null)
+                return new MyDetectedEntityInfo();
+
+            var grid = e.GetTopMostParent() as MyCubeGrid;
+            var block = e as IMyTerminalBlock;
+            var player = e as IMyCharacter;
+            var projectile = target.Item2;
+            var fake = target.Item3;
+
+            string name;
+            MyDetectedEntityType type;
+            var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
+
+            if (grid != null)
+            {
+                name = block != null ? block.CustomName : grid.DisplayName;
+                type = grid.GridSizeEnum == MyCubeSize.Large ? MyDetectedEntityType.LargeGrid : MyDetectedEntityType.SmallGrid;
+            }
+            else if (player != null)
+            {
+                type = MyDetectedEntityType.CharacterOther;
+                name = player.GetFriendlyName();
+
+            }
+            else if (fake)
+            {
+                type = MyDetectedEntityType.None;
+                name = "ManualTargeting";
+            }
+            else if (projectile)
+            {
+                type = MyDetectedEntityType.Missile;
+                name = "Projectile";
+            }
+            else
+            {
+                type = MyDetectedEntityType.Unknown;
+                name = e.GetFriendlyName();
+            }
+            return new MyDetectedEntityInfo(e.EntityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, e.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
+        }
+
+        private MyDetectedEntityInfo GetEntityInfo(IMyEntity target)
+        {
+            var e = target;
+            if (e?.Physics == null)
+                return new MyDetectedEntityInfo();
+
+            var grid = e.GetTopMostParent() as MyCubeGrid;
+            var block = e as IMyTerminalBlock;
+            var player = e as IMyCharacter;
+
+            string name;
+            MyDetectedEntityType type;
+            var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
+
+            if (grid != null) {
+                name = block != null ? block.CustomName : grid.DisplayName;
+                type = grid.GridSizeEnum == MyCubeSize.Large ? MyDetectedEntityType.LargeGrid : MyDetectedEntityType.SmallGrid;
+            }
+            else if (player != null) {
+                type = MyDetectedEntityType.CharacterOther;
+                name = player.GetFriendlyName();
+
+            }
+            else {
+                type = MyDetectedEntityType.Unknown;
+                name = e.GetFriendlyName();
+            }
+            return new MyDetectedEntityInfo(e.EntityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, e.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
         }
 
         private readonly List<MyTuple<IMyEntity, float>> _tmpTargetList = new List<MyTuple<IMyEntity, float>>();
@@ -587,29 +669,7 @@ namespace WeaponCore.Api
 
         private float GetMaxPower(MyDefinitionId weaponDef)
         {
-            float power = 0f;
-            WeaponStructure weapons;
-            if (_session.WeaponPlatforms.TryGetValue(weaponDef, out weapons))
-            {
-                foreach(var systems in weapons.WeaponSystems)
-                {
-                    var system = systems.Value;
-
-                    /*
-                    if (!system.EnergyAmmo && !system.IsHybrid)
-                        power += 0.001f;
-                    else
-                    {
-                        var ewar = (int)system.Values.Ammo.AreaEffect.AreaEffect > 3;
-                        var shotEnergyCost = ewar ? system.Values.HardPoint.EnergyCost * system.Values.Ammo.AreaEffect.AreaEffectDamage : system.Values.HardPoint.EnergyCost * system.Values.Ammo.BaseDamage;
-
-                        power += ((shotEnergyCost * (system.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * system.Values.HardPoint.Loading.BarrelsPerShot) * system.Values.HardPoint.Loading.TrajectilesPerBarrel;
-                    }
-                    */
-
-                }
-            }
-            return power;
+            return 0f; //Need to implement
         }
 
         private static void DisableRequiredPower(IMyTerminalBlock weaponBlock)
@@ -698,6 +758,30 @@ namespace WeaponCore.Api
             {
                 Log.Line($"Cannot remove Action, Action is not registered: {e}");
             }
+        }
+
+        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos 
+        private void MonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D> callback)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
+                comp.Platform.Weapons[weaponId].Monitors.Add(callback);
+        }
+        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos 
+        private void UnMonitorProjectileCallback(IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D> callback)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Session.IsServer && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
+                comp.Platform.Weapons[weaponId].Monitors.Remove(callback);
+        }
+        // POs, Dir, baseDamageLeft, HealthLeft, TargetEntityId, AmmoName 
+        private MyTuple<Vector3D, Vector3D, float, float, long, string> GetProjectileState(ulong projectileId)
+        {
+            Projectile p;
+            if (_session.MonitoredProjectiles.TryGetValue(projectileId, out p))
+                return new MyTuple<Vector3D, Vector3D, float, float, long, string>(p.Position, p.Info.Direction, p.Info.BaseDamagePool, p.Info.BaseHealthPool, p.Info.Target.TargetId, p.Info.AmmoDef.AmmoRound);
+
+            return new MyTuple<Vector3D, Vector3D, float, float, long, string>();
         }
 
         private float GetConstructEffectiveDps(IMyEntity entity)

@@ -34,7 +34,7 @@ namespace WeaponCore
                     CreateDefaultActions<T>(session);
                 }
 
-                TerminalHelpers.AddTurretControls<T>(session);
+                TerminalHelpers.AddTurretOrTrackingControls<T>(session);
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
         }

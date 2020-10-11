@@ -213,6 +213,5 @@ namespace WeaponCore.Platform
 
             ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
-
     }
 }

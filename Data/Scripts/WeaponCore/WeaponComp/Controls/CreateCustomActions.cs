@@ -85,7 +85,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Cycle SubSystems");
             action.Action = CustomActions.TerminActionCycleSubSystem;
             action.Writer = CustomActions.SubSystemWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -113,7 +113,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Neutrals On/Off");
             action.Action = CustomActions.TerminalActionToggleNeutrals;
             action.Writer = CustomActions.NeutralWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -127,7 +127,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Projectiles On/Off");
             action.Action = CustomActions.TerminalActionToggleProjectiles;
             action.Writer = CustomActions.ProjectilesWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -141,7 +141,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Biologicals On/Off");
             action.Action = CustomActions.TerminalActionToggleBiologicals;
             action.Writer = CustomActions.BiologicalsWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -155,7 +155,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Meteors On/Off");
             action.Action = CustomActions.TerminalActionToggleMeteors;
             action.Writer = CustomActions.MeteorsWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -169,7 +169,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Friendly On/Off");
             action.Action = CustomActions.TerminalActionToggleFriendly;
             action.Writer = CustomActions.FriendlyWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -183,7 +183,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Unowned On/Off");
             action.Action = CustomActions.TerminalActionToggleUnowned;
             action.Writer = CustomActions.UnownedWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -197,7 +197,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"FocusTargets On/Off");
             action.Action = CustomActions.TerminalActionToggleFocusTargets;
             action.Writer = CustomActions.FocusTargetsWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -211,7 +211,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"FocusSubSystem On/Off");
             action.Action = CustomActions.TerminalActionToggleFocusSubSystem;
             action.Writer = CustomActions.FocusSubSystemWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -225,7 +225,7 @@ namespace WeaponCore.Control
             action0.Name = new StringBuilder($"MaxSize Increase");
             action0.Action = CustomActions.TerminalActionMaxSizeIncrease;
             action0.Writer = CustomActions.MaxSizeWriter;
-            action0.Enabled = TerminalHelpers.HasTurret;
+            action0.Enabled = TerminalHelpers.HasTracking;
             action0.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -236,7 +236,7 @@ namespace WeaponCore.Control
             action1.Name = new StringBuilder($"MaxSize Decrease");
             action1.Action = CustomActions.TerminalActionMaxSizeDecrease;
             action1.Writer = CustomActions.MaxSizeWriter;
-            action1.Enabled = TerminalHelpers.HasTurret;
+            action1.Enabled = TerminalHelpers.HasTracking;
             action1.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -250,7 +250,7 @@ namespace WeaponCore.Control
             action0.Name = new StringBuilder($"MinSize Increase");
             action0.Action = CustomActions.TerminalActionMinSizeIncrease;
             action0.Writer = CustomActions.MinSizeWriter;
-            action0.Enabled = TerminalHelpers.HasTurret;
+            action0.Enabled = TerminalHelpers.HasTracking;
             action0.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
@@ -261,7 +261,7 @@ namespace WeaponCore.Control
             action1.Name = new StringBuilder($"MinSize Decrease");
             action1.Action = CustomActions.TerminalActionMinSizeDecrease;
             action1.Writer = CustomActions.MinSizeWriter;
-            action1.Enabled = TerminalHelpers.HasTurret;
+            action1.Enabled = TerminalHelpers.HasTracking;
             action1.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
@@ -275,7 +275,7 @@ namespace WeaponCore.Control
             action.Name = new StringBuilder($"Tracking Mode");
             action.Action = CustomActions.TerminalActionMovementMode;
             action.Writer = CustomActions.MovementModeWriter;
-            action.Enabled = TerminalHelpers.HasTurret;
+            action.Enabled = TerminalHelpers.HasTracking;
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

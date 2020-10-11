@@ -32,7 +32,6 @@ namespace WeaponCore.Projectiles
                 p.Info.ClientSent = t == Kind.Client;
                 p.Info.AmmoDef = a;
                 p.Info.Overrides = w.Comp.Data.Repo.Base.Set.Overrides;
-                
                 p.Info.Target.Entity = t != Kind.Client ? w.Target.Entity : gen.TargetEnt;
                 p.Info.Target.Projectile = w.Target.Projectile;
                 p.Info.Target.IsProjectile = w.Target.Projectile != null;
@@ -111,6 +110,14 @@ namespace WeaponCore.Projectiles
 
                 Session.Projectiles.ActiveProjetiles.Add(p);
                 p.Start();
+
+                p.Info.Monitors = w.Monitors;
+                if (p.Info.Monitors?.Count > 0) {
+                    Session.MonitoredProjectiles[p.Info.Id] = p;
+                    for (int j = 0; j < p.Info.Monitors.Count; j++)
+                        p.Info.Monitors[j].Invoke(w.Comp.MyCube.EntityId, w.WeaponId, p.Info.Id, p.Info.Target.TargetId, p.Position);
+                }
+
             }
             NewProjectiles.Clear();
         }

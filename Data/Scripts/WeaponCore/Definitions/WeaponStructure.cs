@@ -908,7 +908,6 @@ namespace WeaponCore.Support
             if (mexLogLevel >= 1) Log.Line($"Got Area damage of {GetDetDmg(a)} @ {shotsPerSec} areadps={areaDps} basedps={baseDps} detdps={detDps}");
             if (hasShrapnel)
             {
-                Log.Line("Had shrapnel");
                 var sAmmo = wDef.Ammos[ShrapnelId];
                 var fragments = a.Shrapnel.Fragments;
                 baseDps += (sAmmo.BaseDamage * fragments) * shotsPerSec;

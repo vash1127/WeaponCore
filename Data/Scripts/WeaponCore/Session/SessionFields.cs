@@ -139,6 +139,7 @@ namespace WeaponCore
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
         internal readonly Dictionary<MyPlanet, MyEntity> WaterEntityMap = new Dictionary<MyPlanet, MyEntity>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
+        internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();

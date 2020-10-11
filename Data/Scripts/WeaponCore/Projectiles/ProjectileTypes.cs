@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -38,6 +39,7 @@ namespace WeaponCore.Support
         internal Hit Hit = new Hit();
         internal WeaponRandomGenerator WeaponRng;
         internal FakeTarget DummyTarget;
+        internal List<Action<long, int, ulong, long, Vector3D>> Monitors;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
@@ -94,6 +96,14 @@ namespace WeaponCore.Support
 
         internal void Clean()
         {
+            if (Monitors?.Count > 0) {
+                for (int i = 0; i < Monitors.Count; i++)
+                    Monitors[i].Invoke(Target.FiringCube.EntityId, WeaponId,Id, Target.TargetId, Hit.LastHit);
+
+                System.Session.MonitoredProjectiles.Remove(Id);
+            }
+            Monitors = null;
+
             Target.Reset(System.Session.Tick, Target.States.ProjectileClosed);
             HitList.Clear();
             if (IsShrapnel)

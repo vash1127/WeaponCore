@@ -574,6 +574,7 @@ namespace WeaponCore.Platform
             w.Comp.HasRofSlider = w.Comp.HasRofSlider || (ui.RateOfFire && !w.CanUseChargeAmmo);
             w.Comp.CanOverload = w.Comp.CanOverload || (ui.EnableOverload && w.CanUseBeams && !w.CanUseChargeAmmo);
             w.Comp.HasTurret = w.Comp.HasTurret || (w.System.Values.HardPoint.Ai.TurretAttached);
+            w.Comp.HasTracking = w.Comp.HasTracking || w.System.Values.HardPoint.Ai.TrackTargets;
             w.Comp.HasChargeWeapon = w.Comp.HasChargeWeapon || w.CanUseChargeAmmo;
             w.Comp.ShootSubmerged = w.Comp.ShootSubmerged || w.System.Values.HardPoint.CanShootSubmerged;
             if (ui.DamageModifier || ui.EnableOverload || ui.RateOfFire || ui.ToggleGuidance)
