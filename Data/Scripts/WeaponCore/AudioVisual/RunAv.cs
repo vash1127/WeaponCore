@@ -360,7 +360,7 @@ namespace WeaponCore.Support
 
                 av.Emitter.SetPosition(av.Position);
                 av.Emitter.PlaySound(av.SoundPair);
-                Session.SoundsToClean.Add(new Session.CleanSound { Emitter = av.Emitter, EmitterPool = HitEmitters, SoundPair = av.SoundPair, SoundPairPool = av.Pool, SpawnTick = Session.Tick });
+                Session.SoundsToClean.Add(new Session.CleanSound { Hit = av.Hit, Emitter = av.Emitter, EmitterPool = HitEmitters, SoundPair = av.SoundPair, SoundPairPool = av.Pool, SpawnTick = Session.Tick });
             }
             HitSounds.Clear();
         }
@@ -518,5 +518,6 @@ namespace WeaponCore.Support
         internal MySoundPair SoundPair;
         internal Stack<MySoundPair> Pool;
         internal Vector3D Position;
+        internal bool Hit;
     }
 }

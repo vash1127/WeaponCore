@@ -821,6 +821,7 @@ namespace WeaponCore
             internal MySoundPair SoundPair;
             internal uint SpawnTick;
             internal bool Force;
+            internal bool Hit;
         }
 
         public class WeaponAmmoMoveRequest

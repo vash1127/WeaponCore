@@ -816,8 +816,8 @@ namespace WeaponCore.Support
                         var hitEmitter = System.Session.Av.HitEmitters.Count > 0 ? System.Session.Av.HitEmitters.Pop() : new MyEntity3DSoundEmitter(null, false, 1f);
 
                         hitEmitter.Entity = Hit.Entity;
-                        hitEmitter.CanPlayLoopSounds = false;
-                        System.Session.Av.HitSounds.Add(new HitSound { Pool = pool, Emitter = hitEmitter, SoundPair = pair, Position = Hit.SurfaceHit });
+                        //hitEmitter.CanPlayLoopSounds = false;
+                        System.Session.Av.HitSounds.Add(new HitSound { Hit = true, Pool = pool, Emitter = hitEmitter, SoundPair = pair, Position = Hit.SurfaceHit });
 
                         HitSoundInitted = true;
                     }

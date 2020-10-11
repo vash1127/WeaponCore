@@ -33,6 +33,7 @@ namespace WeaponCore
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
+
                 if (weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose && weaponComp.MyCube.BlockDefinition.HasPhysics)
                     continue;
 

@@ -126,13 +126,6 @@ namespace WeaponCore
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 }
-
-
-                if (MouseButtonPressed && MouseButtonMenuWasPressed && (s.Tick - s.MenuRetireNoticeTick > 600 || s.MenuRetireNoticeTick == 0) )
-                {
-                    s.MenuRetireNoticeTick = s.Tick;
-                    MyAPIGateway.Utilities.ShowNotification("Old WeaponCore Menu has been retired, please use standard SE terminal blockgroups and toolbar actions", 9600, "Red");
-                }
             }
             else if (!s.InMenu)
             {

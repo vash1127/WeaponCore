@@ -370,10 +370,10 @@ namespace WeaponCore
             {
                 var sound = SoundsToClean[i];
                 var age = Tick - sound.SpawnTick;
-                if (force || age > 4 && (sound.Force || !sound.Emitter.IsPlaying))
+                if (force || age > 4 && (sound.Force || !sound.Emitter.IsPlaying) || sound.Hit && sound.Emitter.Loop && age > 180)
                 {
-                    if (sound.Force) {
-                        sound.Emitter.StopSound(true);
+                    if (sound.Force || sound.Emitter.Loop) {
+                        sound.Emitter.StopSound(sound.Emitter.Loop);
                     }
                     sound.Emitter.Entity = null;
                     sound.EmitterPool.Push(sound.Emitter);
