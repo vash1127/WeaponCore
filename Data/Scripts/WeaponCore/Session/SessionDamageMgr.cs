@@ -107,7 +107,6 @@ namespace WeaponCore
             var shield = hitEnt.Entity as IMyTerminalBlock;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             info.ObjectsHit++;
-
             AmmoModifer ammoModifer;
             AmmoDamageMap.TryGetValue(info.AmmoDef, out ammoModifer);
             var directDmgGlobal = ammoModifer == null ? Settings.Enforcement.DirectDamageModifer : Settings.Enforcement.DirectDamageModifer * ammoModifer.DirectDamageModifer;
@@ -233,6 +232,8 @@ namespace WeaponCore
             var outOfPew = false;
             IMySlimBlock rootBlock = null;
             var destroyed = 0;
+
+
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || outOfPew && !nova) break;
@@ -343,6 +344,7 @@ namespace WeaponCore
                     }
 
                     var scaledDamage = (damagePool * damageScale) * directDamageScale;
+
                     if (primaryDamage)
                     {
                         if (countBlocksAsObjects) objectsHit++;

@@ -28,7 +28,7 @@ namespace WeaponCore.Control
         {
             Separator<T>(session, -7, "WC_sep2", HasTracking);
 
-            AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange);
+            AddSliderRange<T>(session, -8, "WC_Range", "Aiming Radius", "Range", WepUi.GetRange, WepUi.RequestSetRange, WepUi.ShowRange, WepUi.GetMinRange, WepUi.GetMaxRange, true);
 
             AddOnOffSwitchNoAction<T>(session, -9, "Neutrals", "Target Neutrals", "Target Neutrals", WepUi.GetNeutrals, WepUi.RequestSetNeutrals, true, HasTracking);
 
@@ -224,7 +224,7 @@ namespace WeaponCore.Control
             return c;
         }
 
-        internal static IMyTerminalControlSlider AddSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null) where T : IMyTerminalBlock
+        internal static IMyTerminalControlSlider AddSliderRange<T>(Session session, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock, bool> visibleGetter, Func<IMyTerminalBlock, float> minGetter = null, Func<IMyTerminalBlock, float> maxGetter = null, bool group = false) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>(name);
 
@@ -242,7 +242,7 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             session.CustomControls.Add(c);
 
-            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter);
+            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, group);
             return c;
         }
 
@@ -264,7 +264,7 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             session.CustomControls.Add(c);
 
-            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter);
+            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, false);
             return c;
         }
 
@@ -286,7 +286,7 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             session.CustomControls.Add(c);
 
-            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter);
+            CreateCustomActions<T>.CreateSliderActionSet(session, c, name, id, 0, 1, .1f, visibleGetter, false);
             return c;
         }
 

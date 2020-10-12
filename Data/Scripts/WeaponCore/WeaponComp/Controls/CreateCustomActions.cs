@@ -226,7 +226,7 @@ namespace WeaponCore.Control
             action0.Action = CustomActions.TerminalActionMaxSizeIncrease;
             action0.Writer = CustomActions.MaxSizeWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
-            action0.ValidForGroups = false;
+            action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
@@ -237,7 +237,7 @@ namespace WeaponCore.Control
             action1.Action = CustomActions.TerminalActionMaxSizeDecrease;
             action1.Writer = CustomActions.MaxSizeWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
-            action1.ValidForGroups = false;
+            action1.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
             session.CustomActions.Add(action1);
@@ -251,7 +251,7 @@ namespace WeaponCore.Control
             action0.Action = CustomActions.TerminalActionMinSizeIncrease;
             action0.Writer = CustomActions.MinSizeWriter;
             action0.Enabled = TerminalHelpers.HasTracking;
-            action0.ValidForGroups = false;
+            action0.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
@@ -262,7 +262,7 @@ namespace WeaponCore.Control
             action1.Action = CustomActions.TerminalActionMinSizeDecrease;
             action1.Writer = CustomActions.MinSizeWriter;
             action1.Enabled = TerminalHelpers.HasTracking;
-            action1.ValidForGroups = false;
+            action1.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
             session.CustomActions.Add(action1);
@@ -370,7 +370,7 @@ namespace WeaponCore.Control
 
         }
 
-        internal static void CreateSliderActionSet(Session session, IMyTerminalControlSlider tc, string name, int id, int min, int max, float incAmt, Func<IMyTerminalBlock, bool> enabler)
+        internal static void CreateSliderActionSet(Session session, IMyTerminalControlSlider tc, string name, int id, int min, int max, float incAmt, Func<IMyTerminalBlock, bool> enabler, bool group)
         {
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Increase");
             action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
@@ -378,7 +378,7 @@ namespace WeaponCore.Control
             action0.Action = (b) => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
             action0.Writer = TerminalHelpers.EmptyStringBuilder;
             action0.Enabled = enabler;
-            action0.ValidForGroups = false;
+            action0.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action0);
             session.CustomActions.Add(action0);
@@ -389,7 +389,7 @@ namespace WeaponCore.Control
             action1.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action1.Writer = TerminalHelpers.EmptyStringBuilder;
             action1.Enabled = enabler;
-            action1.ValidForGroups = false;
+            action1.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action1);
             session.CustomActions.Add(action1);

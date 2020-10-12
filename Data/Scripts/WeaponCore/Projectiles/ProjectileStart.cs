@@ -41,7 +41,7 @@ namespace WeaponCore.Projectiles
                 p.Info.DummyTarget = w.Comp.Data.Repo.Base.State.TrackingReticle ? w.Comp.Session.PlayerDummyTargets[w.Comp.Data.Repo.Base.State.PlayerId] : null;
 
                 p.Info.WeaponId = w.WeaponId;
-                p.Info.BaseDamagePool = w.BaseDamage;
+                p.Info.BaseDamagePool = a == w.ActiveAmmoDef.AmmoDef ? w.BaseDamage : a.BaseDamage;
                 p.Info.EnableGuidance = w.Comp.Data.Repo.Base.Set.Guidance;
                 p.Info.WeaponCache = w.WeaponCache;
                 p.Info.WeaponRng = w.TargetData.WeaponRandom;
