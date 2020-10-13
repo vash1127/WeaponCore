@@ -80,12 +80,12 @@ namespace WeaponCore.Api
                 ["GetCoreStaticLaunchers"] = new Action<ICollection<MyDefinitionId>>(GetCoreStaticLaunchers),
                 ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool>(PbGetBlockWeaponMap),
-                ["GetProjectilesLockedOn"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, MyTuple<bool, int, int>>(PbGetProjectilesLockedOn),
-                ["GetSortedThreats"] = new Action<VRage.Game.ModAPI.Ingame.IMyEntity, IDictionary<VRage.Game.ModAPI.Ingame.IMyEntity, float>>(PbGetSortedThreats),
-                ["GetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetAiFocus),
-                ["SetAiFocus"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool>(PbSetAiFocus),
+                ["GetProjectilesLockedOn"] = new Func<long, MyTuple<bool, int, int>>(PbGetProjectilesLockedOn),
+                ["GetSortedThreats"] = new Action<long, IDictionary<long, float>>(PbGetSortedThreats),
+                ["GetAiFocus"] = new Func<long, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetAiFocus),
+                ["SetAiFocus"] = new Func<long, long, int, bool>(PbSetAiFocus),
                 ["GetWeaponTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetWeaponTarget),
-                ["SetWeaponTarget"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int>(PbSetWeaponTarget),
+                ["SetWeaponTarget"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int>(PbSetWeaponTarget),
                 ["FireWeaponOnce"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, int>(PbFireWeaponOnce),
                 ["ToggleWeaponFire"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, bool, int>(PbToggleWeaponFire),
                 ["IsWeaponReadyToFire"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, bool, bool, bool>(PbIsWeaponReadyToFire),
@@ -93,20 +93,20 @@ namespace WeaponCore.Api
                 ["GetTurretTargetTypes"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int, bool>(PbGetTurretTargetTypes),
                 ["SetTurretTargetTypes"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int>(PbSetTurretTargetTypes),
                 ["SetBlockTrackingRange"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float>(PbSetBlockTrackingRange),
-                ["IsTargetAligned"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool>(PbIsTargetAligned),
-                ["CanShootTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, bool>(PbCanShootTarget),
-                ["GetPredictedTargetPosition"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, VRage.Game.ModAPI.Ingame.IMyEntity, int, Vector3D?>(PbGetPredictedTargetPosition),
+                ["IsTargetAligned"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool>(PbIsTargetAligned),
+                ["CanShootTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool>(PbCanShootTarget),
+                ["GetPredictedTargetPosition"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, Vector3D?>(PbGetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float>(PbGetHeatLevel),
                 ["GetCurrentPower"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float>(PbGetCurrentPower),
                 ["GetMaxPower"] = new Func<MyDefinitionId, float>(GetMaxPower),
-                ["HasGridAi"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, bool>(PbHasGridAi),
+                ["HasGridAi"] = new Func<long, bool>(PbHasGridAi),
                 ["HasCoreWeapon"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool>(PbHasCoreWeapon),
-                ["GetOptimalDps"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, float>(PbGetOptimalDps),
+                ["GetOptimalDps"] = new Func<long, float>(PbGetOptimalDps),
                 ["GetActiveAmmo"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string>(PbGetActiveAmmo),
                 ["SetActiveAmmo"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string>(PbSetActiveAmmo),
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
-                ["GetConstructEffectiveDps"] = new Func<VRage.Game.ModAPI.Ingame.IMyEntity, float>(PbGetConstructEffectiveDps),
+                ["GetConstructEffectiveDps"] = new Func<long, float>(PbGetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long>(PbGetPlayerController),
                 ["GetWeaponAzimuthMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponAzimuthMatrix),
                 ["GetWeaponElevationMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponElevationMatrix),
@@ -117,9 +117,9 @@ namespace WeaponCore.Api
             _session.PbApiInited = true;
         }
 
-        private float PbGetConstructEffectiveDps(object arg)
+        private float PbGetConstructEffectiveDps(long arg)
         {
-            return GetConstructEffectiveDps((IMyEntity) arg);
+            return GetConstructEffectiveDps(MyEntities.GetEntityById(arg));
         }
 
         private void PbSetActiveAmmo(object arg1, int arg2, string arg3)
@@ -132,9 +132,9 @@ namespace WeaponCore.Api
             return GetActiveAmmo((IMyTerminalBlock) arg1, arg2);
         }
 
-        private float PbGetOptimalDps(object arg)
+        private float PbGetOptimalDps(long arg)
         {
-            return GetOptimalDps((IMyEntity) arg);
+            return GetOptimalDps(MyEntities.GetEntityById(arg));
         }
 
         private bool PbHasCoreWeapon(object arg)
@@ -142,9 +142,9 @@ namespace WeaponCore.Api
             return HasCoreWeapon((IMyTerminalBlock) arg);
         }
 
-        private bool PbHasGridAi(object arg)
+        private bool PbHasGridAi(long arg)
         {
-            return HasGridAi((IMyEntity) arg);
+            return HasGridAi(MyEntities.GetEntityById(arg));
         }
 
         private float PbGetCurrentPower(object arg)
@@ -157,19 +157,19 @@ namespace WeaponCore.Api
             return GetHeatLevel((IMyTerminalBlock) arg);
         }
 
-        private Vector3D? PbGetPredictedTargetPosition(object arg1, object arg2, int arg3)
+        private Vector3D? PbGetPredictedTargetPosition(object arg1, long arg2, int arg3)
         {
-            return GetPredictedTargetPosition((IMyTerminalBlock) arg1, (IMyEntity) arg2, arg3);
+            return GetPredictedTargetPosition((IMyTerminalBlock) arg1, MyEntities.GetEntityById(arg2), arg3);
         }
 
-        private bool PbCanShootTarget(object arg1, object arg2, int arg3)
+        private bool PbCanShootTarget(object arg1, long arg2, int arg3)
         {
-            return CanShootTarget((IMyTerminalBlock) arg1, (IMyEntity) arg2, arg3);
+            return CanShootTarget((IMyTerminalBlock) arg1, MyEntities.GetEntityById(arg2), arg3);
         }
 
-        private bool PbIsTargetAligned(object arg1, object arg2, int arg3)
+        private bool PbIsTargetAligned(object arg1, long arg2, int arg3)
         {
-            return IsTargetAligned((IMyTerminalBlock) arg1, (IMyEntity) arg2, arg3);
+            return IsTargetAligned((IMyTerminalBlock) arg1, MyEntities.GetEntityById(arg2), arg3);
         }
 
         private void PbSetBlockTrackingRange(object arg1, float arg2)
@@ -207,9 +207,9 @@ namespace WeaponCore.Api
             FireWeaponOnce((IMyTerminalBlock) arg1, arg2, arg3);
         }
 
-        private void PbSetWeaponTarget(object arg1, object arg2, int arg3)
+        private void PbSetWeaponTarget(object arg1, long arg2, int arg3)
         {
-            SetWeaponTarget((IMyTerminalBlock) arg1, (IMyEntity) arg2, arg3);
+            SetWeaponTarget((IMyTerminalBlock) arg1, MyEntities.GetEntityById(arg2), arg3);
         }
 
         private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetWeaponTarget(object arg1, int arg2)
@@ -217,14 +217,14 @@ namespace WeaponCore.Api
             return GetDetailedEntityInfo(GetWeaponTarget((IMyTerminalBlock)arg1, arg2));
         }
 
-        private bool PbSetAiFocus(object arg1, object arg2, int arg3)
+        private bool PbSetAiFocus(long arg1, long arg2, int arg3)
         {
-            return SetAiFocus((IMyEntity) arg1, (IMyEntity) arg2, arg3);
+            return SetAiFocus(MyEntities.GetEntityById(arg1), MyEntities.GetEntityById(arg2), arg3);
         }
 
-        private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetAiFocus(object arg1, int arg2)
+        private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetAiFocus(long arg1, int arg2)
         {
-            return GetEntityInfo(GetAiFocus((IMyEntity)arg1, arg2));
+            return GetEntityInfo(GetAiFocus(MyEntities.GetEntityById(arg1), arg2));
         }
 
         private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target)
@@ -303,22 +303,22 @@ namespace WeaponCore.Api
         }
 
         private readonly List<MyTuple<IMyEntity, float>> _tmpTargetList = new List<MyTuple<IMyEntity, float>>();
-        private void PbGetSortedThreats(object arg1, object arg2)
+        private void PbGetSortedThreats(long arg1, object arg2)
         {
-            GetSortedThreats((IMyEntity) arg1, _tmpTargetList);
+            GetSortedThreats(MyEntities.GetEntityById(arg1), _tmpTargetList);
             
-            var dict = (IDictionary<VRage.Game.ModAPI.Ingame.IMyEntity, float>) arg2;
+            var dict = (IDictionary<long, float>) arg2;
             
             foreach (var i in _tmpTargetList)
-                dict[i.Item1] = i.Item2;
+                dict[i.Item1.EntityId] = i.Item2;
 
             _tmpTargetList.Clear();
 
         }
 
-        private MyTuple<bool, int, int> PbGetProjectilesLockedOn(object arg)
+        private MyTuple<bool, int, int> PbGetProjectilesLockedOn(long arg)
         {
-            return GetProjectilesLockedOn((IMyEntity) arg);
+            return GetProjectilesLockedOn(MyEntities.GetEntityById(arg));
         }
 
         private bool PbGetBlockWeaponMap(object arg1, object arg2)
