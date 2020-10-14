@@ -19,9 +19,9 @@ namespace WeaponCore.Api
         private Action<ICollection<MyDefinitionId>> _getCoreTurrets;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool> _getBlockWeaponMap;
         private Func<long, MyTuple<bool, int, int>> _getProjectilesLockedOn;
-        private Action<long, IDictionary<long, float>> _getSortedThreats;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo, float>> _getSortedThreats;
         private Func<long, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo> _getAiFocus;
-        private Func<long, long, int, bool> _setAiFocus;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool> _setAiFocus;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo> _getWeaponTarget;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int> _setWeaponTarget;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, int> _fireWeaponOnce;
@@ -127,13 +127,13 @@ namespace WeaponCore.Api
         public MyTuple<bool, int, int> GetProjectilesLockedOn(long victim) =>
             _getProjectilesLockedOn?.Invoke(victim) ?? new MyTuple<bool, int, int>();
 
-        public void GetSortedThreats(long shooter, IDictionary<long, float> collection) =>
-            _getSortedThreats?.Invoke(shooter, collection);
+        public void GetSortedThreats(Sandbox.ModAPI.Ingame.IMyTerminalBlock pBlock, IDictionary<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo, float> collection) =>
+            _getSortedThreats?.Invoke(pBlock, collection);
 
         public MyDetectedEntityInfo? GetAiFocus(long shooter, int priority = 0) => _getAiFocus?.Invoke(shooter, priority);
 
-        public bool SetAiFocus(long shooter, long target, int priority = 0) =>
-            _setAiFocus?.Invoke(shooter, target, priority) ?? false;
+        public bool SetAiFocus(Sandbox.ModAPI.Ingame.IMyTerminalBlock pBlock, long target, int priority = 0) =>
+            _setAiFocus?.Invoke(pBlock, target, priority) ?? false;
 
         public MyDetectedEntityInfo? GetWeaponTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId = 0) =>
             _getWeaponTarget?.Invoke(weapon, weaponId);

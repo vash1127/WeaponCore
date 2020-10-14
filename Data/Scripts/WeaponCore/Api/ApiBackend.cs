@@ -81,9 +81,9 @@ namespace WeaponCore.Api
                 ["GetCoreTurrets"] = new Action<ICollection<MyDefinitionId>>(GetCoreTurrets),
                 ["GetBlockWeaponMap"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<string, int>, bool>(PbGetBlockWeaponMap),
                 ["GetProjectilesLockedOn"] = new Func<long, MyTuple<bool, int, int>>(PbGetProjectilesLockedOn),
-                ["GetSortedThreats"] = new Action<long, IDictionary<long, float>>(PbGetSortedThreats),
+                ["GetSortedThreats"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, IDictionary<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo, float>>(PbGetSortedThreats),
                 ["GetAiFocus"] = new Func<long, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetAiFocus),
-                ["SetAiFocus"] = new Func<long, long, int, bool>(PbSetAiFocus),
+                ["SetAiFocus"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool>(PbSetAiFocus),
                 ["GetWeaponTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo>(PbGetWeaponTarget),
                 ["SetWeaponTarget"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int>(PbSetWeaponTarget),
                 ["FireWeaponOnce"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, bool, int>(PbFireWeaponOnce),
@@ -214,12 +214,12 @@ namespace WeaponCore.Api
 
         private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetWeaponTarget(object arg1, int arg2)
         {
-            return GetDetailedEntityInfo(GetWeaponTarget((IMyTerminalBlock)arg1, arg2));
+            return GetDetailedEntityInfo(GetWeaponTarget((IMyTerminalBlock)arg1, arg2), (MyEntity)arg1);
         }
 
-        private bool PbSetAiFocus(long arg1, long arg2, int arg3)
+        private bool PbSetAiFocus(object arg1, long arg2, int arg3)
         {
-            return SetAiFocus(MyEntities.GetEntityById(arg1), MyEntities.GetEntityById(arg2), arg3);
+            return SetAiFocus((IMyEntity)arg1, MyEntities.GetEntityById(arg2), arg3);
         }
 
         private Sandbox.ModAPI.Ingame.MyDetectedEntityInfo PbGetAiFocus(long arg1, int arg2)
@@ -227,48 +227,46 @@ namespace WeaponCore.Api
             return GetEntityInfo(GetAiFocus(MyEntities.GetEntityById(arg1), arg2));
         }
 
-        private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target)
+        private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target, MyEntity shooter)
         {
             var e = target.Item4;
-            if (!target.Item1 || e?.Physics == null)
-                return new MyDetectedEntityInfo();
+            var name = string.Empty;
+            var type = MyDetectedEntityType.Unknown;
 
-            var grid = e.GetTopMostParent() as MyCubeGrid;
+            if (!target.Item1 || e?.Physics == null) {
+                var projectile = target.Item2;
+                var fake = target.Item3;
+                if (fake) {
+                    name = "ManualTargeting";
+                    type = MyDetectedEntityType.None;
+                }
+                else if (projectile) {
+                    name = "Projectile";
+                    type = MyDetectedEntityType.Missile;
+                }
+                return new MyDetectedEntityInfo(projectile ? -1 : -2, name, type,  Vector3D.Zero, MatrixD.Zero, Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
+            }
+
+            var topTarget = e.GetTopMostParent() as MyEntity;
+            var grid = topTarget as MyCubeGrid;
             var block = e as IMyTerminalBlock;
             var player = e as IMyCharacter;
-            var projectile = target.Item2;
-            var fake = target.Item3;
 
-            string name;
-            MyDetectedEntityType type;
+            if (grid != null) name = block != null ? block.CustomName : grid.DisplayName;
+            else if (player != null) name = player.GetFriendlyName();
+            else name = e.GetFriendlyName();
+
             var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
+            var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
+            
+            GridAi ai;
+            GridAi.TargetInfo info;
+            
+            if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
+                relation = info.EntInfo.Relationship;
+                type = info.EntInfo.Type;
+            }
 
-            if (grid != null)
-            {
-                name = block != null ? block.CustomName : grid.DisplayName;
-                type = grid.GridSizeEnum == MyCubeSize.Large ? MyDetectedEntityType.LargeGrid : MyDetectedEntityType.SmallGrid;
-            }
-            else if (player != null)
-            {
-                type = MyDetectedEntityType.CharacterOther;
-                name = player.GetFriendlyName();
-
-            }
-            else if (fake)
-            {
-                type = MyDetectedEntityType.None;
-                name = "ManualTargeting";
-            }
-            else if (projectile)
-            {
-                type = MyDetectedEntityType.Missile;
-                name = "Projectile";
-            }
-            else
-            {
-                type = MyDetectedEntityType.Unknown;
-                name = e.GetFriendlyName();
-            }
             return new MyDetectedEntityInfo(e.EntityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, e.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
         }
 
@@ -303,14 +301,15 @@ namespace WeaponCore.Api
         }
 
         private readonly List<MyTuple<IMyEntity, float>> _tmpTargetList = new List<MyTuple<IMyEntity, float>>();
-        private void PbGetSortedThreats(long arg1, object arg2)
+        private void PbGetSortedThreats(object arg1, object arg2)
         {
-            GetSortedThreats(MyEntities.GetEntityById(arg1), _tmpTargetList);
+            var shooter = (IMyTerminalBlock)arg1;
+            GetSortedThreats(shooter, _tmpTargetList);
             
-            var dict = (IDictionary<long, float>) arg2;
+            var dict = (IDictionary<Sandbox.ModAPI.Ingame.MyDetectedEntityInfo, float>) arg2;
             
             foreach (var i in _tmpTargetList)
-                dict[i.Item1.EntityId] = i.Item2;
+                dict[GetDetailedEntityInfo(new MyTuple<bool, bool, bool, IMyEntity>(true, false, false , i.Item1), (MyEntity)shooter)] = i.Item2;
 
             _tmpTargetList.Clear();
 
