@@ -164,6 +164,18 @@ namespace WeaponCore.Platform
             return isAligned;
         }
 
+        internal static Vector3D TargetCenter(Weapon weapon)
+        {
+            var targetCenter = Vector3D.Zero;
+            if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
+                targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Position;
+            else if (weapon.Target.IsProjectile)
+                targetCenter = weapon.Target.Projectile?.Position ?? Vector3D.Zero;
+            else if (!weapon.Target.IsFakeTarget)
+                targetCenter = weapon.Target.Entity?.PositionComp.WorldAABB.Center ?? Vector3D.Zero;
+            return targetCenter;
+        }
+
         internal static bool TrackingTarget(Weapon weapon, Target target, out bool targetLock)
         {
             Vector3D targetPos;

@@ -413,7 +413,7 @@ namespace WeaponCore.Support
                         effect.UserColorMultiplier = particles.Barrel1.Color;
                         effect.UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                         effect.WorldMatrix = matrix;
-                        //weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                        weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                         effect.Play();
                     }
                 }
@@ -482,7 +482,7 @@ namespace WeaponCore.Support
                             effect.UserColorMultiplier = particles.Barrel2.Color;
                             effect.UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                             effect.WorldMatrix = matrix;
-                            //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                            weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             effect.Play();
                         }
                     }

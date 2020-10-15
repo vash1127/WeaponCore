@@ -230,8 +230,23 @@ namespace WeaponCore.Api
         private MyDetectedEntityInfo GetDetailedEntityInfo(MyTuple<bool, bool, bool, IMyEntity> target, MyEntity shooter)
         {
             var e = target.Item4;
-            var name = string.Empty;
+            var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
+            var topTarget = e.GetTopMostParent() as MyEntity;
+            var grid = topTarget as MyCubeGrid;
+            var block = e as IMyTerminalBlock;
+            var player = e as IMyCharacter;
+            
+            var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
             var type = MyDetectedEntityType.Unknown;
+            var name = string.Empty;
+
+            GridAi ai;
+            GridAi.TargetInfo info = null;
+
+            if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
+                relation = info.EntInfo.Relationship;
+                type = info.EntInfo.Type;
+            }
 
             if (!target.Item1 || e?.Physics == null) {
                 var projectile = target.Item2;
@@ -244,28 +259,13 @@ namespace WeaponCore.Api
                     name = "Projectile";
                     type = MyDetectedEntityType.Missile;
                 }
-                return new MyDetectedEntityInfo(projectile ? -1 : -2, name, type,  Vector3D.Zero, MatrixD.Zero, Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
+                
+                return new MyDetectedEntityInfo(projectile ? -1 : -2, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
             }
-
-            var topTarget = e.GetTopMostParent() as MyEntity;
-            var grid = topTarget as MyCubeGrid;
-            var block = e as IMyTerminalBlock;
-            var player = e as IMyCharacter;
 
             if (grid != null) name = block != null ? block.CustomName : grid.DisplayName;
             else if (player != null) name = player.GetFriendlyName();
             else name = e.GetFriendlyName();
-
-            var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
-            var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
-            
-            GridAi ai;
-            GridAi.TargetInfo info;
-            
-            if (shooterGrid != null && topTarget != null && _session.GridToMasterAi.TryGetValue(shooterGrid, out ai) && ai.Targets.TryGetValue(topTarget, out info)) {
-                relation = info.EntInfo.Relationship;
-                type = info.EntInfo.Type;
-            }
 
             return new MyDetectedEntityInfo(e.EntityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, e.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
         }

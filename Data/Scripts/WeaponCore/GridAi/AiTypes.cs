@@ -112,6 +112,8 @@ namespace WeaponCore.Support
                         ConcurrentCachingList<MyCubeBlock> weaponBlocks;
                         if (blockTypeMap.TryGetValue(WeaponDefinition.TargetingDef.BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
                             armed = true;
+                        else if (blockTypeMap.TryGetValue(WeaponDefinition.TargetingDef.BlockTypes.Utility, out weaponBlocks) && weaponBlocks.Count > 0)
+                            armed = true;
                     }
                 }
                 else if (parent is MyMeteor || parent is IMyCharacter) armed = true;
@@ -198,6 +200,8 @@ namespace WeaponCore.Support
                 if (targetAi != null)
                 {
                     OffenseRating = targetAi.Construct.OptimalDps / myAi.Construct.OptimalDps;
+                    if (OffenseRating <= 0 && detectInfo.Armed)
+                        OffenseRating = 0.0001f;
                 }
                 else if (detectInfo.Armed) OffenseRating = 0.0001f;
                 else OffenseRating = 0;
