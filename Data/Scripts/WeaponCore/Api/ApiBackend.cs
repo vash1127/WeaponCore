@@ -231,8 +231,7 @@ namespace WeaponCore.Api
         {
             var e = target.Item4;
             var shooterGrid = shooter.GetTopMostParent() as MyCubeGrid;
-            var topTarget = e.GetTopMostParent() as MyEntity;
-            var grid = topTarget as MyCubeGrid;
+            var topTarget = e?.GetTopMostParent() as MyEntity;
             var block = e as IMyTerminalBlock;
             var player = e as IMyCharacter;
             
@@ -263,6 +262,7 @@ namespace WeaponCore.Api
                 return new MyDetectedEntityInfo(projectile ? -1 : -2, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
             }
 
+            var grid = topTarget as MyCubeGrid;
             if (grid != null) name = block != null ? block.CustomName : grid.DisplayName;
             else if (player != null) name = player.GetFriendlyName();
             else name = e.GetFriendlyName();
