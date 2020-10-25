@@ -924,7 +924,7 @@ namespace WeaponCore.Support
         {
             if (mexLogLevel > 0) Log.Line($"magCapacity={magCapacity} rof={rof} reloadTime={reloadTime} barrelsPerShot={barrelsPerShot} trajectilesPerBarrel={trajectilesPerBarrel} shotsInBurst={shotsInBurst} delayAfterBurst={delayAfterBurst}");
             var reloadsPerRoF = (float) rof /  ((float)magCapacity / (float)barrelsPerShot);
-            var burstsPerRoF = shotsInBurst == 0 ? reloadsPerRoF : (float)rof / (float)shotsInBurst;
+            var burstsPerRoF = shotsInBurst == 0 ? 0 : (float)rof / (float)shotsInBurst;
             var ticksReloading = (float) reloadsPerRoF * (float) reloadTime;
 
             var ticksDelaying = (float) burstsPerRoF * (float) delayAfterBurst;
