@@ -857,8 +857,7 @@ namespace WeaponCore.Support
             }
             else
             {
-                var shotyPerBurst = s.ShotsPerBurst > 0 ? s.ShotsPerBurst : 1;
-                shotsPerSec = GetShotsPerSecond(1, s.RateOfFire, 0, s.BarrelsPerShot, l.TrajectilesPerBarrel, shotyPerBurst, l.DelayAfterBurst);
+                shotsPerSec = GetShotsPerSecond(1, s.RateOfFire, 0, s.BarrelsPerShot, l.TrajectilesPerBarrel, s.ShotsPerBurst, l.DelayAfterBurst);
             }
             var shotsPerSecPower = shotsPerSec; //save for power calc
 
@@ -923,10 +922,9 @@ namespace WeaponCore.Support
 
         private float GetShotsPerSecond(int magCapacity, int rof, int reloadTime, int barrelsPerShot, int trajectilesPerBarrel, int shotsInBurst, int delayAfterBurst)
         {
-            shotsInBurst = shotsInBurst > 0 ? shotsInBurst : 1;
             if (mexLogLevel > 0) Log.Line($"magCapacity={magCapacity} rof={rof} reloadTime={reloadTime} barrelsPerShot={barrelsPerShot} trajectilesPerBarrel={trajectilesPerBarrel} shotsInBurst={shotsInBurst} delayAfterBurst={delayAfterBurst}");
-            var burstsPerRoF = (float) rof / (float) shotsInBurst;
             var reloadsPerRoF = (float) rof /  ((float)magCapacity / (float)barrelsPerShot);
+            var burstsPerRoF = shotsInBurst == 0 ? reloadsPerRoF : (float)rof / (float)shotsInBurst;
             var ticksReloading = (float) reloadsPerRoF * (float) reloadTime;
 
             var ticksDelaying = (float) burstsPerRoF * (float) delayAfterBurst;
