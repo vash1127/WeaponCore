@@ -951,7 +951,7 @@ namespace WeaponCore.Support
 
         private float GetDetDmg(AmmoDef a)
         {
-            if (!a.AreaEffect.Detonation.DetonateOnEnd && a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
+            if (!a.AreaEffect.Detonation.DetonateOnEnd || a.AreaEffect.AreaEffect == AreaEffectType.Disabled)
             {
                 return 0;
             }
