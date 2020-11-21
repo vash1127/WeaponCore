@@ -44,7 +44,6 @@ namespace WeaponCore.Support
         internal void WakeupComp()
         {
             if (IsAsleep) {
-                Log.Line($"force comp awake");
                 IsAsleep = false;
                 Ai.AwakeComps += 1;
                 Ai.SleepingComps -= 1;
@@ -53,6 +52,8 @@ namespace WeaponCore.Support
 
         internal void RequestShootUpdate(ShootActions action, long playerId)
         {
+            if (IsDisabled) return;
+
             if (Session.HandlesInput)
                 Session.TerminalMon.HandleInputUpdate(this);
             

@@ -86,6 +86,7 @@ namespace WeaponCore.Support
         internal bool UiEnabled;
         internal bool ShootSubmerged;
         internal bool HasTracking;
+        internal bool UnexpectedMag;
         internal string CustomIcon;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

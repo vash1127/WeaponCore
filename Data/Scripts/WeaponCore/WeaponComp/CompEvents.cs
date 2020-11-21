@@ -89,7 +89,6 @@ namespace WeaponCore.Support
         {
             if (!Registered) return;
             BetterInventoryItem cachedItem;
-
             if (!Session.BlockInventoryItems[BlockInventory].TryGetValue(item.ItemId, out cachedItem))
             {
                 cachedItem = Session.BetterInventoryItems.Get();
@@ -99,7 +98,9 @@ namespace WeaponCore.Support
                 Session.BlockInventoryItems[BlockInventory].TryAdd(item.ItemId, cachedItem);
             }
             else if (cachedItem.Amount + amount > 0)
+            {
                 cachedItem.Amount += (int)amount;
+            }
             else if (cachedItem.Amount + amount <= 0)
             {
                 BetterInventoryItem removedItem;
