@@ -234,7 +234,7 @@ namespace WeaponCore.Api
             var topTarget = e?.GetTopMostParent() as MyEntity;
             var block = e as IMyTerminalBlock;
             var player = e as IMyCharacter;
-            
+            long entityId = 0;
             var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
             var type = MyDetectedEntityType.Unknown;
             var name = string.Empty;
@@ -247,27 +247,28 @@ namespace WeaponCore.Api
                 type = info.EntInfo.Type;
             }
 
-            if (!target.Item1 || e?.Physics == null) {
+            if (!target.Item1 || e == null || topTarget?.Physics == null) {
                 var projectile = target.Item2;
                 var fake = target.Item3;
                 if (fake) {
                     name = "ManualTargeting";
                     type = MyDetectedEntityType.None;
+                    entityId = -2;
                 }
                 else if (projectile) {
                     name = "Projectile";
                     type = MyDetectedEntityType.Missile;
+                    entityId = -1;
                 }
-                
-                return new MyDetectedEntityInfo(projectile ? -1 : -2, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
+                return new MyDetectedEntityInfo(entityId, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
             }
-
+            entityId = e.EntityId;
             var grid = topTarget as MyCubeGrid;
             if (grid != null) name = block != null ? block.CustomName : grid.DisplayName;
             else if (player != null) name = player.GetFriendlyName();
             else name = e.GetFriendlyName();
 
-            return new MyDetectedEntityInfo(e.EntityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, e.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
+            return new MyDetectedEntityInfo(entityId, name, type, e.PositionComp.WorldAABB.Center, e.PositionComp.WorldMatrixRef, topTarget.Physics.LinearVelocity, relation, e.PositionComp.WorldAABB, _session.Tick);
         }
 
         private MyDetectedEntityInfo GetEntityInfo(IMyEntity target)
@@ -303,6 +304,7 @@ namespace WeaponCore.Api
         private readonly List<MyTuple<IMyEntity, float>> _tmpTargetList = new List<MyTuple<IMyEntity, float>>();
         private void PbGetSortedThreats(object arg1, object arg2)
         {
+            return;
             var shooter = (IMyTerminalBlock)arg1;
             GetSortedThreats(shooter, _tmpTargetList);
             
