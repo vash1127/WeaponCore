@@ -304,7 +304,6 @@ namespace WeaponCore.Api
         private readonly List<MyTuple<IMyEntity, float>> _tmpTargetList = new List<MyTuple<IMyEntity, float>>();
         private void PbGetSortedThreats(object arg1, object arg2)
         {
-            return;
             var shooter = (IMyTerminalBlock)arg1;
             GetSortedThreats(shooter, _tmpTargetList);
             
