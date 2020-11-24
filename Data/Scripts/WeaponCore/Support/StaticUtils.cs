@@ -315,5 +315,15 @@ namespace WeaponCore.Support
                 explosionInfo.Velocity = hitEnt.Physics.LinearVelocity;
             MyExplosions.AddExplosion(ref explosionInfo);
         }
+
+        public static void GetBlockOrientedBoundingBox(MyCubeBlock block, out MyOrientedBoundingBoxD blockBox)
+        {
+            var quat = Quaternion.CreateFromRotationMatrix(block.PositionComp.WorldMatrixRef);
+            double factor = (block.BlockDefinition.CubeSize == VRage.Game.MyCubeSize.Large ? 2.5d : 0.5d);
+            var halfExtents = new Vector3D(block.BlockDefinition.Size) * factor / 2d;
+            var worldMin = Vector3D.Transform(new Vector3D(block.Min) * factor, block.CubeGrid.WorldMatrix);
+            var worldMax = Vector3D.Transform(new Vector3D(block.Max) * factor, block.CubeGrid.WorldMatrix);
+            blockBox = new MyOrientedBoundingBoxD((worldMin + worldMax) / 2d, halfExtents, quat);
+        }
     }
 }

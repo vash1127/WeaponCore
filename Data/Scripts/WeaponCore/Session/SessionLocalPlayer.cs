@@ -193,7 +193,11 @@ namespace WeaponCore
                                     MyOrientedBoundingBoxD b;
                                     BoundingSphereD s;
                                     WeaponComponent Comp = gridAi.Weapons[i];
-                                    CalculateRestrictedShapes(Comp.MyCube.BlockDefinition.Id.SubtypeId, new MyOrientedBoundingBoxD(Comp.MyCube.PositionComp.LocalAABB, Comp.MyCube.PositionComp.WorldMatrixRef), out b, out s);
+                                    MyOrientedBoundingBoxD blockBox;
+                                    SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
+
+                                    CalculateRestrictedShapes(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, out b, out s);
+                                    
                                     if (s.Radius > 0)
                                     {
                                         DsDebugDraw.DrawSphere(s, RestrictionAreaColor);
