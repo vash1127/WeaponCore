@@ -39,7 +39,7 @@ namespace WeaponCore.Support
             NearByEntitiesTmp = _possibleTargets.Count;
 
             foreach (var grid in PrevSubGrids)
-                RemSubGrids.Add(grid);
+                RemSubGrids.Add((MyCubeGrid) grid);
 
             PrevSubGrids.Clear();
             for (int i = 0; i < NearByEntitiesTmp; i++) {

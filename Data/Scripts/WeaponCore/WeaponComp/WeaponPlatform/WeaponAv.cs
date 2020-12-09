@@ -318,7 +318,7 @@ namespace WeaponCore.Platform
             if (PreFiringEmitter == null)
                 return;
 
-            PreFiringEmitter.StopSound(false);
+            PreFiringEmitter.StopSound(true);
         }
 
         public void StartFiringSound()
@@ -334,7 +334,7 @@ namespace WeaponCore.Platform
             if (FiringEmitter == null)
                 return;
 
-            FiringEmitter.StopSound(false);
+            FiringEmitter.StopSound(true);
         }
 
         public void StopReloadSound()
