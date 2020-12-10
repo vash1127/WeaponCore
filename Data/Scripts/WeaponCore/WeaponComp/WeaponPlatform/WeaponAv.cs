@@ -334,7 +334,7 @@ namespace WeaponCore.Platform
             if (FiringEmitter == null)
                 return;
 
-            FiringEmitter.StopSound(true);
+            FiringEmitter.StopSound(false, true, true);
         }
 
         public void StopReloadSound()
