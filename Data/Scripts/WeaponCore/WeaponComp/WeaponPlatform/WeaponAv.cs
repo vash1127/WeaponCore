@@ -335,7 +335,7 @@ namespace WeaponCore.Platform
                 return;
 
             if (FiringEmitter.Loop)
-                FiringEmitter.StopSound(true);
+                FiringEmitter.StopSound(false);
             else
                 FiringEmitter.StopSound(false);
         }
