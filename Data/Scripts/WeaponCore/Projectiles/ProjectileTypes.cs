@@ -367,7 +367,6 @@ namespace WeaponCore.Support
             Client
         }
 
-        internal Weapon Weapon;
         internal Weapon.Muzzle Muzzle;
         internal AmmoDef AmmoDef;
         internal List<NewVirtual> NewVirts;

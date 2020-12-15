@@ -193,7 +193,7 @@ namespace WeaponCore.Platform
 
                                 if (i == 0) {
                                     vProList = s.Projectiles.VirtInfoPools.Get();
-                                    s.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Virtual });
+                                    s.Projectiles.NewProjectiles.Add(new NewProjectile { NewVirts = vProList, AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Virtual });
                                 }
 
                                 MyEntity primeE = null;
@@ -223,7 +223,7 @@ namespace WeaponCore.Platform
                                 vProList.Add(new NewVirtual { Info = info, Rotate = !ammoPattern.Const.RotateRealBeam && i == _nextVirtual, Muzzle = muzzle, VirtualId = _nextVirtual });
                             }
                             else
-                                s.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern,  Muzzle = muzzle, PatternCycle = patternCycle, Weapon = this, Type = NewProjectile.Kind.Normal});
+                                s.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Normal});
                         }
                     }
                     _muzzlesToFire.Add(MuzzleIdToName[current]);

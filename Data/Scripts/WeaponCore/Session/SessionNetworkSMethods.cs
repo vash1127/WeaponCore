@@ -363,7 +363,6 @@ namespace WeaponCore
             {
                 AmmoDef = weapon.System.AmmoTypes[hitPacket.AmmoIndex].AmmoDef,
                 Muzzle = weapon.Muzzles[hitPacket.MuzzleId],
-                Weapon = weapon,
                 TargetEnt = targetEnt,
                 Origin = origin,
                 OriginUp = hitPacket.Up,
