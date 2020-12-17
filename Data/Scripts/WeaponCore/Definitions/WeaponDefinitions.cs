@@ -774,4 +774,18 @@ namespace WeaponCore.Support
             [ProtoMember(6)] internal bool ShrinkByDistance;
         }
     }
+
+
+    [ProtoContract]
+    public struct ArmorCompatibilityDef
+    {
+        internal enum ArmorType
+        {
+            Light,
+            Heavy,
+            NonArmor,
+        }
+        [ProtoMember(1)] internal string SubtypeId;
+        [ProtoMember(2)] internal ArmorType Kind;
+    }
 }

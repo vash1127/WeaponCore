@@ -17,35 +17,62 @@ namespace WeaponCore
                 var message = o as byte[];
                 if (message == null) return;
                 var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<WeaponDefinition[]>(message);
-
-                var subTypes = new HashSet<string>();
-                foreach (var wepDef in slaveDefArray)
+                if (slaveDefArray != null)
                 {
-                    WeaponDefinitions.Add(wepDef);
-
-                    for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
-                        subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
-                }
-                var group = MyStringHash.GetOrCompute("Charging");
-
-                foreach (var def in AllDefinitions)
-                {
-                    if (subTypes.Contains(def.Id.SubtypeName))
+                    var subTypes = new HashSet<string>();
+                    foreach (var wepDef in slaveDefArray)
                     {
-                        if (def is MyLargeTurretBaseDefinition)
+                        WeaponDefinitions.Add(wepDef);
+
+                        for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
+                            subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
+                    }
+                    var group = MyStringHash.GetOrCompute("Charging");
+
+                    foreach (var def in AllDefinitions)
+                    {
+                        if (subTypes.Contains(def.Id.SubtypeName))
                         {
-                            var weaponDef = def as MyLargeTurretBaseDefinition;
-                            weaponDef.ResourceSinkGroup = group;
-                        }
-                        else if (def is MyConveyorSorterDefinition)
-                        {
-                            var weaponDef = def as MyConveyorSorterDefinition;
-                            weaponDef.ResourceSinkGroup = group;
+                            if (def is MyLargeTurretBaseDefinition)
+                            {
+                                var weaponDef = def as MyLargeTurretBaseDefinition;
+                                weaponDef.ResourceSinkGroup = group;
+                            }
+                            else if (def is MyConveyorSorterDefinition)
+                            {
+                                var weaponDef = def as MyConveyorSorterDefinition;
+                                weaponDef.ResourceSinkGroup = group;
+                            }
                         }
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
+            catch (Exception ex) { MyLog.Default.WriteLine($"Exception in Handler: {ex}"); }
+        }
+        public void ArmorHandler(object o)
+        {
+            try
+            {
+                var message = o as byte[];
+                if (message == null) return;
+                var armorCompatDefArray = MyAPIGateway.Utilities.SerializeFromBinary<ArmorCompatibilityDef[]>(message);
+                if (armorCompatDefArray != null)
+                {
+                    foreach (var armorDef in armorCompatDefArray)
+                    {
+                        if (armorDef.Kind == ArmorCompatibilityDef.ArmorType.Heavy)
+                        {
+                            CustomArmorSubtypes.Add(MyStringHash.GetOrCompute(armorDef.SubtypeId));
+                            CustomHeavyArmorSubtypes.Add(MyStringHash.GetOrCompute(armorDef.SubtypeId));
+                        }
+                        else if (armorDef.Kind == ArmorCompatibilityDef.ArmorType.Light)
+                        {
+                            CustomArmorSubtypes.Add(MyStringHash.GetOrCompute(armorDef.SubtypeId));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) { MyLog.Default.WriteLine($"Exception in ArmorHandler: {ex}"); }
         }
     }
 }
