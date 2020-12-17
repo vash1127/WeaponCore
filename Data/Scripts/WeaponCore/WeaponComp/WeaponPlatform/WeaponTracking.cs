@@ -385,7 +385,7 @@ namespace WeaponCore.Platform
                 projectileVel += aimDirectionNorm * projectileMaxSpeed;
             }
 
-            var count = projectileAccelerates ? 600 : 600000;
+            var count = projectileAccelerates ? 600 : 60;
 
             double dt = Math.Max(MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, timeToIntercept / count); // This can be a const somewhere
             double dtSqr = dt * dt;
