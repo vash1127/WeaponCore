@@ -414,7 +414,6 @@ namespace WeaponCore.Platform
             Vector3D projectileAccStep = aimDirectionNorm * projectileAccMag * dt;
             Vector3D gravityStep = gravity * gravityMultiplier * dt;
             Vector3D aimOffset = Vector3D.Zero;
-            double minDiff = double.MaxValue;
             for (int i = 0; i < count; ++i)
             {
                 targetVel += targetAccStep;
@@ -450,13 +449,13 @@ namespace WeaponCore.Platform
                     aimOffset = diff;
                     break;
                 }
-                if (diffLenSq < minDiff)
+                if (Vector3D.Dot(diff, aimDirectionNorm) < 0)
                 {
-                    minDiff = diffLenSq;
                     aimOffset = diff;
                 }
             }
-            return estimatedImpactPoint + aimOffset;
+            Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
+            return estimatedImpactPoint + perpendicularAimOffset;
         }
 
         /*
@@ -531,7 +530,6 @@ namespace WeaponCore.Platform
             Vector3D projectileAccStep = aimDirectionNorm * projectileAccMag * dt;
             Vector3D gravityStep = gravity * gravityMultiplier * dt;
             Vector3D aimOffset = Vector3D.Zero;
-            double minDiff = double.MaxValue;
             for (int i = 0; i < count; ++i)
             {
                 targetVel += targetAccStep;
@@ -560,13 +558,13 @@ namespace WeaponCore.Platform
                     aimOffset = diff;
                     break;
                 }
-                if (diffLenSq < minDiff)
+                if (Vector3D.Dot(diff, aimDirectionNorm) < 0)
                 {
-                    minDiff = diffLenSq;
                     aimOffset = diff;
                 }
             }
-            return estimatedImpactPoint + aimOffset;
+            Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
+            return estimatedImpactPoint + perpendicularAimOffset;
         }
 
         /*

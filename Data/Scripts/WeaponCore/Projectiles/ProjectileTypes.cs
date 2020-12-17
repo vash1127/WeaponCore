@@ -369,12 +369,12 @@ namespace WeaponCore.Support
 
         internal Weapon.Muzzle Muzzle;
         internal AmmoDef AmmoDef;
+        internal MyEntity TargetEnt;
         internal List<NewVirtual> NewVirts;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D Velocity;
-        internal MyEntity TargetEnt;
         internal long PatternCycle;
         internal float MaxTrajectory;
         internal Kind Type;
