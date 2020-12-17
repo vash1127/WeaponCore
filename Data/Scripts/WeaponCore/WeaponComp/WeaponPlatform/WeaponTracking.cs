@@ -444,11 +444,10 @@ namespace WeaponCore.Platform
                 projectilePos += projectileVel * dt;
                 Vector3D diff = (targetPos - projectilePos);
                 double diffLenSq = diff.LengthSquared();
+                aimOffset = diff;
+
                 if (diffLenSq < projectileMaxSpeedSqr * dtSqr || Vector3D.Dot(diff, aimDirectionNorm) < 0)
-                {
-                    aimOffset = diff;
                     break;
-                }
             }
             Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
             return estimatedImpactPoint + perpendicularAimOffset;
