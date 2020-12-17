@@ -22,8 +22,9 @@ namespace WeaponCore.Support
             AddSubGrids.Clear();
             foreach (var sub in PrevSubGrids)
             {
-                AddSubGrids.Add(sub);
-                TmpSubGrids.Add(sub);
+                var grid = (MyCubeGrid)sub;
+                AddSubGrids.Add(grid);
+                TmpSubGrids.Add(grid);
             }
 
             TmpSubGrids.IntersectWith(RemSubGrids);

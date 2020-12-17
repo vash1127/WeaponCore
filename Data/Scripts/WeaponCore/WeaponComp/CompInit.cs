@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -99,15 +100,14 @@ namespace WeaponCore.Support
                 Ai.SubGridInitTick = Session.Tick;
                 using (Ai.DbLock.AcquireExclusiveUsing()) 
                 {
-                    var subgrids = MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical);
                     Ai.PrevSubGrids.Clear();
                     Ai.SubGrids.Clear();
-                    for (int i = 0; i < subgrids.Count; i++)
-                    {
-                        var grid = (MyCubeGrid)subgrids[i];
-                        Ai.PrevSubGrids.Add(grid);
-                        Ai.SubGrids.Add(grid);
-                    }
+
+                    MyAPIGateway.GridGroups.GetGroup(MyCube.CubeGrid, GridLinkTypeEnum.Mechanical, Ai.PrevSubGrids);
+                    
+                    foreach (var grid in Ai.PrevSubGrids)
+                        Ai.SubGrids.Add((MyCubeGrid)grid);
+
                     Ai.SubGridDetect();
                     Ai.SubGridChanges(false, true);
                 }

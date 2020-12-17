@@ -105,12 +105,14 @@ namespace WeaponCore.Platform
 
         internal class Muzzle
         {
-            internal Muzzle(int id, Session session)
+            internal Muzzle(Weapon weapon, int id, Session session)
             {
                 MuzzleId = id;
                 UniqueId = session.NewVoxelCache.Id;
+                Weapon = weapon;
             }
 
+            internal Weapon Weapon;
             internal Vector3D Position;
             internal Vector3D Direction;
             internal Vector3D DeviatedDir;

@@ -83,7 +83,7 @@ namespace WeaponCore
                         if (ai.MyPlanetTmp != null)
                             ai.MyPlanetInfo();
 
-                        foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add(sub);
+                        foreach (var sub in ai.PrevSubGrids) ai.SubGrids.Add((MyCubeGrid) sub);
                         if (ai.SubGridsChanged) ai.SubGridChanges(false, true);
 
                         ai.CleanSortedTargets();
