@@ -444,14 +444,10 @@ namespace WeaponCore.Platform
                 projectilePos += projectileVel * dt;
                 Vector3D diff = (targetPos - projectilePos);
                 double diffLenSq = diff.LengthSquared();
-                if (diffLenSq < projectileMaxSpeedSqr * dtSqr)
+                if (diffLenSq < projectileMaxSpeedSqr * dtSqr || Vector3D.Dot(diff, aimDirectionNorm) < 0)
                 {
                     aimOffset = diff;
                     break;
-                }
-                if (Vector3D.Dot(diff, aimDirectionNorm) < 0)
-                {
-                    aimOffset = diff;
                 }
             }
             Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
@@ -553,14 +549,10 @@ namespace WeaponCore.Platform
                 projectilePos += projectileVel * dt;
                 Vector3D diff = (targetPos - projectilePos);
                 double diffLenSq = diff.LengthSquared();
-                if (diffLenSq < projectileMaxSpeedSqr * dtSqr)
+                if (diffLenSq < projectileMaxSpeedSqr * dtSqr || Vector3D.Dot(diff, aimDirectionNorm) < 0)
                 {
                     aimOffset = diff;
                     break;
-                }
-                if (Vector3D.Dot(diff, aimDirectionNorm) < 0)
-                {
-                    aimOffset = diff;
                 }
             }
             Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
