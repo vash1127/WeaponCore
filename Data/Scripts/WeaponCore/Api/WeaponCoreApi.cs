@@ -553,6 +553,7 @@ namespace WeaponCore.Api
                     [ProtoMember(3)] internal bool TurretController;
                     [ProtoMember(4)] internal bool PrimaryTracking;
                     [ProtoMember(5)] internal bool LockOnFocus;
+                    [ProtoMember(6)] internal bool AutoFire;
                 }
 
                 [ProtoContract]

@@ -224,7 +224,7 @@ namespace WeaponCore
                         /// Determine if its time to shoot
                         ///
                         ///
-                        w.AiShooting = targetLock && !comp.UserControlled;
+                        w.AiShooting = targetLock && !comp.UserControlled && w.System.AutoFire;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;
