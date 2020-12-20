@@ -321,7 +321,7 @@ namespace WeaponCore
         internal bool AuthLogging;
         internal bool DamageHandler;
         internal bool LocalVersion;
-        internal bool SupressLoad;
+        internal bool SuppressLoad;
         internal bool PbApiInited;
         internal bool PbActivate;
         internal bool ManualShot;

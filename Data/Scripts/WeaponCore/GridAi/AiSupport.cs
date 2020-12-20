@@ -323,7 +323,7 @@ namespace WeaponCore.Support
             AccelChecked = false;
             PointDefense = false;
             FadeOut = false;
-            SupressMouseShoot = false;
+            SuppressMouseShoot = false;
             OverPowered = false;
             UpdatePowerSources = false;
             AvailablePowerChanged = false;

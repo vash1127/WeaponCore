@@ -21,7 +21,7 @@ namespace WeaponCore.Support
             internal uint CheckTick;
             internal uint StartTick;
             internal uint Messages;
-            internal bool Supress;
+            internal bool Suppress;
 
             internal bool Paused()
             {
@@ -31,15 +31,15 @@ namespace WeaponCore.Support
                 var checkInTime = Session.Tick - CheckTick > 119;
                 var threshold = 122;
 
-                if (!Supress && checkInTime && Messages > threshold || !Supress && Messages > threshold * 3)
+                if (!Suppress && checkInTime && Messages > threshold || !Suppress && Messages > threshold * 3)
                     return Pause();
 
-                if (Supress && StartTick >= Session.Tick)
+                if (Suppress && StartTick >= Session.Tick)
                     return true;
 
                 ++Messages;
 
-                if (Supress)
+                if (Suppress)
                     UnPause();
                 else if (checkInTime) {
                     CheckTick = Session.Tick;
@@ -51,7 +51,7 @@ namespace WeaponCore.Support
 
             internal bool Pause()
             {
-                Supress = true;
+                Suppress = true;
                 StartTick = Session.Tick + 7200;
                 var message = $"{DateTime.Now:HH-mm-ss-fff} - " + "Debug flooding detected, supressing logs for two minutes.  Please report the first 500 lines of this file";
                 TextWriter.WriteLine(message);
@@ -61,7 +61,7 @@ namespace WeaponCore.Support
 
             internal void UnPause()
             {
-                Supress = false;
+                Suppress = false;
                 Messages = 0;
                 CheckTick = Session.Tick;
             }
@@ -72,7 +72,7 @@ namespace WeaponCore.Support
                 StartTick = CheckTick;
                 TextWriter = null;
                 Session = null;
-                Supress = false;
+                Suppress = false;
                 Messages = 0;
             }
         }

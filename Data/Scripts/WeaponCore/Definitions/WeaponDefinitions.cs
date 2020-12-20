@@ -248,7 +248,7 @@ namespace WeaponCore.Support
                 [ProtoMember(3)] internal bool TurretController;
                 [ProtoMember(4)] internal bool PrimaryTracking;
                 [ProtoMember(5)] internal bool LockOnFocus;
-                [ProtoMember(6)] internal bool SupressFire;
+                [ProtoMember(6)] internal bool SuppressFire;
             }
 
             [ProtoContract]
