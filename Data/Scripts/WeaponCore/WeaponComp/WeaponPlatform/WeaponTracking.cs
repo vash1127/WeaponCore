@@ -657,7 +657,7 @@ namespace WeaponCore.Platform
             if (Target.IsFakeTarget)
             {
                 Casting = true;
-                Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
+                Comp.Session.Physics.CastRayParallel(ref MyRayCheckPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return true;
             }
             if (Comp.Data.Repo.Base.State.TrackingReticle) return true;
@@ -721,7 +721,7 @@ namespace WeaponCore.Platform
 
             Casting = true;
 
-            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
+            Comp.Session.Physics.CastRayParallel(ref MyRayCheckPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
             return true;
         }
 

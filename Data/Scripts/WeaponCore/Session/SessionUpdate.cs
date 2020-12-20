@@ -199,7 +199,7 @@ namespace WeaponCore
 
                         if (comp.Data.Repo.Base.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
-
+                        
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 

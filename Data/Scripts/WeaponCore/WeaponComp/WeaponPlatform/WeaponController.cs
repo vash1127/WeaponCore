@@ -169,6 +169,9 @@ namespace WeaponCore.Platform
 
                 MyPivotPos += offSet;
             }
+
+            MyRayCheckPos = MyPivotPos + (MyPivotDir * Comp.MyCube.CubeGrid.GridSizeHalf);
+                
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));

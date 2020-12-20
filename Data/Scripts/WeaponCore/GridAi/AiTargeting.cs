@@ -290,7 +290,7 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, w.MyRayCheckPos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
