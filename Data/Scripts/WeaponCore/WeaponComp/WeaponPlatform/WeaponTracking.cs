@@ -296,15 +296,13 @@ namespace WeaponCore.Platform
             var ai = weapon.Comp.Ai;
             var session = ai.Session;
             var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
-            if (ai.VelocityUpdateTick != session.Tick)
-            {
+            if (ai.VelocityUpdateTick != session.Tick) {
                 ai.GridVel = ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                 ai.IsStatic = ai.MyGrid.Physics?.IsStatic ?? false;
                 ai.VelocityUpdateTick = session.Tick;
             }
 
-            if (ammoDef.Const.FeelsGravity && session.Tick - weapon.GravityTick > 119)
-            {
+            if (ammoDef.Const.FeelsGravity && session.Tick - weapon.GravityTick > 119) {
                 weapon.GravityTick = session.Tick;
                 weapon.GravityPoint = MyParticlesManager.CalculateGravityInPoint(weapon.MyPivotPos);
             }
@@ -334,8 +332,7 @@ namespace WeaponCore.Platform
             double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
             double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
 
-            if (ttiDiff < 0)
-            {
+            if (ttiDiff < 0) {
                 valid = false;
                 return targetPos;
             }
@@ -347,8 +344,7 @@ namespace WeaponCore.Platform
 
             double timeToIntercept = ttiDiff < 0 ? 0 : closingDistance / projectileClosingSpeed;
 
-            if (timeToIntercept < 0)
-            {
+            if (timeToIntercept < 0) {
                 valid = false;
                 return targetPos;
             }
@@ -369,15 +365,15 @@ namespace WeaponCore.Platform
             Vector3D projectilePos = shooterPos;
 
             Vector3D aimDirectionNorm;
-            if (projectileAccelerates)
-            {
+            if (projectileAccelerates) {
+                
                 if (Vector3D.IsZero(deltaPos)) aimDirectionNorm = Vector3D.Zero;
                 else if (Vector3D.IsUnit(ref deltaPos)) aimDirectionNorm = aimDirection;
                 else aimDirectionNorm = Vector3D.Normalize(aimDirection);
                 projectileVel += aimDirectionNorm * projectileInitSpeed;
             }
-            else
-            {
+            else {
+                
                 if (targetAcc.LengthSquared() < 1 && !hasGravity)
                     return estimatedImpactPoint;
 
@@ -396,12 +392,12 @@ namespace WeaponCore.Platform
 
             Vector3D aimOffset = Vector3D.Zero;
             double minTime = 0;
-            for (int i = 0; i < count; ++i)
-            {
+            
+            for (int i = 0; i < count; ++i) {
+                
                 targetVel += targetAccStep;
 
-                if (targetVel.LengthSquared() > maxSpeedSqr)
-                {
+                if (targetVel.LengthSquared() > maxSpeedSqr) {
                     Vector3D targetNormVel;
                     Vector3D.Normalize(ref targetVel, out targetNormVel);
                     targetVel = targetNormVel * targetMaxSpeed;
@@ -409,11 +405,10 @@ namespace WeaponCore.Platform
                 }
 
                 targetPos += targetVel * dt;
-                if (projectileAccelerates)
-                {
+                if (projectileAccelerates) {
+                    
                     projectileVel += projectileAccStep;
-                    if (projectileVel.LengthSquared() > projectileMaxSpeedSqr)
-                    {
+                    if (projectileVel.LengthSquared() > projectileMaxSpeedSqr) {
                         Vector3D pNormVel;
                         Vector3D.Normalize(ref projectileVel, out pNormVel);
                         projectileVel = pNormVel * projectileMaxSpeed;
