@@ -85,7 +85,7 @@ namespace WeaponCore
                     if (!PlayerMouseStates.TryGetValue(comp.Data.Repo.Base.State.PlayerId, out comp.InputState)) 
                         comp.InputState = DefaultInputStateData;
                     var compManualMode = comp.Data.Repo.Base.State.Control == ControlMode.Camera || (comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Manual && trackReticle);
-                    var canManualShoot = !ai.SupressMouseShoot && !comp.InputState.InMenu;
+                    var canManualShoot = !ai.SuppressMouseShoot && !comp.InputState.InMenu;
                     ///
                     /// Weapon update section
                     ///
@@ -166,7 +166,7 @@ namespace WeaponCore
                                 w.Target.Reset(Tick, States.Expired);
                             else if (!IsClient && w.Target.Entity == null && w.Target.Projectile == null && (!trackReticle || Tick - PlayerDummyTargets[comp.Data.Repo.Base.State.PlayerId].LastUpdateTick > 120))
                                 w.Target.Reset(Tick, States.Expired, !trackReticle);
-                            else if (!IsClient && w.Target.Entity != null && (comp.UserControlled || w.Target.Entity.MarkedForClose))
+                            else if (!IsClient && w.Target.Entity != null && (comp.UserControlled && !w.System.SuppressFire || w.Target.Entity.MarkedForClose))
                                 w.Target.Reset(Tick, States.Expired);
                             else if (!IsClient && w.Target.Projectile != null && (!ai.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                                 w.Target.Reset(Tick, States.Expired);
@@ -199,7 +199,7 @@ namespace WeaponCore
 
                         if (comp.Data.Repo.Base.State.Control == ControlMode.Camera && UiInput.MouseButtonPressed)
                             w.Target.TargetPos = Vector3D.Zero;
-
+                        
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
@@ -224,7 +224,7 @@ namespace WeaponCore
                         /// Determine if its time to shoot
                         ///
                         ///
-                        w.AiShooting = targetLock && !comp.UserControlled;
+                        w.AiShooting = targetLock && !comp.UserControlled && !w.System.SuppressFire;
                         var reloading = w.ActiveAmmoDef.AmmoDef.Const.Reloadable && w.ClientMakeUpShots == 0 && (w.Reloading || w.Ammo.CurrentAmmo == 0);
                         var canShoot = !w.State.Overheated && !reloading && !w.System.DesignatorWeapon && (!w.LastEventCanDelay || w.AnimationDelayTick <= Tick || w.ClientMakeUpShots > 0);
                         var fakeTarget = comp.Data.Repo.Base.Set.Overrides.Control == GroupOverrides.ControlModes.Painter && trackReticle && w.Target.IsFakeTarget && w.Target.IsAligned;

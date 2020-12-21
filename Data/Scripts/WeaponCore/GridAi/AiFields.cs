@@ -95,7 +95,7 @@ namespace WeaponCore.Support
         internal bool DbUpdated;
         internal bool TargetNonThreats;
         internal bool PointDefense;
-        internal bool SupressMouseShoot;
+        internal bool SuppressMouseShoot;
         internal bool OverPowered;
         internal bool IsStatic;
         internal bool DbReady;

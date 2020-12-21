@@ -103,6 +103,7 @@ namespace WeaponCore.Support
         public readonly bool PreFireSound;
         public readonly bool LockOnFocus;
         public readonly bool HasGuidedAmmo;
+        public readonly bool SuppressFire;
         public readonly double MaxTargetSpeed;
         public readonly double AzStep;
         public readonly double ElStep;
@@ -163,6 +164,7 @@ namespace WeaponCore.Support
             AlwaysFireFullBurst = Values.HardPoint.Loading.FireFullBurst;
             Prediction = Values.HardPoint.AimLeadingPrediction;
             LockOnFocus = Values.HardPoint.Ai.LockOnFocus && !Values.HardPoint.Ai.TrackTargets;
+            SuppressFire = Values.HardPoint.Ai.SuppressFire;
             Armor = Values.HardPoint.HardWare.Armor;
             HasEjector = !string.IsNullOrEmpty(Values.Assignments.Ejector);
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);

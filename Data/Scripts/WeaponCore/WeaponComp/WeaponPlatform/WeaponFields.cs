@@ -69,6 +69,7 @@ namespace WeaponCore.Platform
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
+        internal Vector3D MyRayCheckPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
