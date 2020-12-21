@@ -268,6 +268,7 @@ namespace WeaponCore.Platform
                             weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
                             weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
                             weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
+                            weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrix;
                             //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
 
                         }
@@ -279,6 +280,7 @@ namespace WeaponCore.Platform
                             weapon.AzimuthPart.FullRotationStep = MatrixD.Zero;
                             weapon.AzimuthPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.AzimuthPart.PartLocalLocation = Vector3.Zero;
+                            weapon.AzimuthPart.OriginalPosition = MatrixD.Zero;
                             //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
 
                         }
@@ -305,6 +307,7 @@ namespace WeaponCore.Platform
                             weapon.ElevationPart.FullRotationStep = fullStepElRotation;
                             weapon.ElevationPart.RevFullRotationStep = rFullStepElRotation;
                             weapon.ElevationPart.PartLocalLocation = elevationPartLocation;
+                            weapon.ElevationPart.OriginalPosition = elevationPart.PositionComp.LocalMatrix;
                             //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
 
                         }
@@ -316,6 +319,7 @@ namespace WeaponCore.Platform
                             weapon.ElevationPart.FullRotationStep = MatrixD.Zero;
                             weapon.ElevationPart.RevFullRotationStep = MatrixD.Zero;
                             weapon.ElevationPart.PartLocalLocation = Vector3.Zero;
+                            weapon.ElevationPart.OriginalPosition = MatrixD.Zero;
                             //weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                         }
                     }

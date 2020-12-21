@@ -17,6 +17,7 @@ using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Support.WeaponSystem.TurretType;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
 using static WeaponCore.Settings.CoreSettings.ServerSettings;
+
 namespace WeaponCore
 {
     public struct RadiatedBlock
@@ -298,13 +299,13 @@ namespace WeaponCore
                         if (t.AmmoDef.Const.ArmorScaling)
                         {
                             blockDef = block.BlockDefinition;
-                            var isArmor = AllArmorBaseDefinitions.Contains(blockDef);
+                            var isArmor = AllArmorBaseDefinitions.Contains(blockDef) || CustomArmorSubtypes.Contains(blockDef.Id.SubtypeId);
                             if (isArmor && d.Armor.Armor >= 0) damageScale *= d.Armor.Armor;
                             else if (!isArmor && d.Armor.NonArmor >= 0) damageScale *= d.Armor.NonArmor;
 
                             if (isArmor && (d.Armor.Light >= 0 || d.Armor.Heavy >= 0))
                             {
-                                var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef);
+                                var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef) || CustomHeavyArmorSubtypes.Contains(blockDef.Id.SubtypeId);
                                 if (isHeavy && d.Armor.Heavy >= 0) damageScale *= d.Armor.Heavy;
                                 else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
                             }

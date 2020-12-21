@@ -144,6 +144,8 @@ namespace WeaponCore
         internal readonly HashSet<string> VanillaSubpartNames = new HashSet<string>();
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+        internal readonly HashSet<MyStringHash> CustomArmorSubtypes = new HashSet<MyStringHash>();
+        internal readonly HashSet<MyStringHash> CustomHeavyArmorSubtypes = new HashSet<MyStringHash>();
         internal readonly HashSet<MyDefinitionId> AmmoDefIds = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
         internal readonly HashSet<MyCubeGrid> DeformProtection = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Weapon> PullingWeapons = new HashSet<Weapon>();

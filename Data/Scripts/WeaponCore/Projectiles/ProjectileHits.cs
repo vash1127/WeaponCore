@@ -713,6 +713,7 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
+        //TODO: In order to fix SphereShapes collisions with grids, this needs to be adjusted to take into account the Beam of the projectile
         internal static void GetAndSortBlocksInSphere(WeaponDefinition.AmmoDef ammoDef, WeaponSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
