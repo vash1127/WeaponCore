@@ -19,8 +19,8 @@ namespace WeaponCore.Platform
                 if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
                     Matrix azRotMatrix;
                     Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
-
-                    azRotMatrix.Translation = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation;
+                    var newForward = Vector3D.Rotate(AzimuthPart.OriginalFwd, azRotMatrix);
+                    azRotMatrix = Matrix.CreateWorld(AzimuthPart.Entity.PositionComp.LocalMatrixRef.Translation, newForward, AzimuthPart.RotationAxis);
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref azRotMatrix, null, true);
                 }
 
@@ -28,8 +28,8 @@ namespace WeaponCore.Platform
 
                     Matrix elRotMatrix;
                     Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
-
-                    elRotMatrix.Translation = ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation;
+                    var newForward = Vector3D.Rotate(ElevationPart.OriginalFwd, elRotMatrix);
+                    elRotMatrix = Matrix.CreateWorld(ElevationPart.Entity.PositionComp.LocalMatrixRef.Translation, newForward, Vector3.Cross(newForward, ElevationPart.RotationAxis));
                     ElevationPart.Entity.PositionComp.SetLocalMatrix(ref elRotMatrix, null, true);
                 }
             }
