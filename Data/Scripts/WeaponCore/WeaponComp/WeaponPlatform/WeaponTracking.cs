@@ -312,6 +312,150 @@ namespace WeaponCore.Platform
             var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
             var targetMaxSpeed = weapon.Comp.Session.MaxEntitySpeed;
             var shooterPos = weapon.MyPivotPos;
+
+            var shooterVel = (Vector3D)weapon.Comp.Ai.GridVel;
+            var projectileMaxSpeed = ammoDef.Const.DesiredProjectileSpeed;
+            var projectileInitSpeed = ammoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
+            var projectileAccMag = ammoDef.Trajectory.AccelPerSec;
+            var gravity = weapon.GravityPoint;
+            var basic = weapon.System.Prediction != Prediction.Advanced;
+            Vector3D deltaPos = targetPos - shooterPos;
+            Vector3D deltaVel = targetVel - shooterVel;
+            Vector3D deltaPosNorm;
+            if (Vector3D.IsZero(deltaPos)) deltaPosNorm = Vector3D.Zero;
+            else if (Vector3D.IsUnit(ref deltaPos)) deltaPosNorm = deltaPos;
+            else Vector3D.Normalize(ref deltaPos, out deltaPosNorm);
+
+            double closingSpeed;
+            Vector3D.Dot(ref deltaVel, ref deltaPosNorm, out closingSpeed);
+
+            Vector3D closingVel = closingSpeed * deltaPosNorm;
+            Vector3D lateralVel = deltaVel - closingVel;
+            double projectileMaxSpeedSqr = projectileMaxSpeed * projectileMaxSpeed;
+            double ttiDiff = projectileMaxSpeedSqr - lateralVel.LengthSquared();
+
+            if (ttiDiff < 0)
+            {
+                valid = false;
+                return targetPos;
+            }
+
+            double projectileClosingSpeed = Math.Sqrt(ttiDiff) - closingSpeed;
+
+            double closingDistance;
+            Vector3D.Dot(ref deltaPos, ref deltaPosNorm, out closingDistance);
+
+            double timeToIntercept = ttiDiff < 0 ? 0 : closingDistance / projectileClosingSpeed;
+
+            if (timeToIntercept < 0)
+            {
+                valid = false;
+                return targetPos;
+            }
+
+            double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
+            double shooterVelScaleFactor = 1;
+            bool projectileAccelerates = projectileAccMag > 1e-6;
+            bool hasGravity = gravityMultiplier > 1e-6;
+
+            if (!basic && projectileAccelerates)
+                shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
+
+            Vector3D estimatedImpactPoint = targetPos + timeToIntercept * (targetVel - shooterVel * shooterVelScaleFactor);
+            if (basic) return estimatedImpactPoint;
+            Vector3D aimDirection = estimatedImpactPoint - shooterPos;
+
+            Vector3D projectileVel = shooterVel;
+            Vector3D projectilePos = shooterPos;
+
+            Vector3D aimDirectionNorm;
+            if (projectileAccelerates)
+            {
+                if (Vector3D.IsZero(deltaPos)) aimDirectionNorm = Vector3D.Zero;
+                else if (Vector3D.IsUnit(ref deltaPos)) aimDirectionNorm = aimDirection;
+                else aimDirectionNorm = Vector3D.Normalize(aimDirection);
+                projectileVel += aimDirectionNorm * projectileInitSpeed;
+            }
+            else
+            {
+                if (targetAcc.LengthSquared() < 1 && !hasGravity)
+                    return estimatedImpactPoint;
+
+                if (Vector3D.IsZero(deltaPos)) aimDirectionNorm = Vector3D.Zero;
+                else if (Vector3D.IsUnit(ref deltaPos)) aimDirectionNorm = aimDirection;
+                else Vector3D.Normalize(ref aimDirection, out aimDirectionNorm);
+                projectileVel += aimDirectionNorm * projectileMaxSpeed;
+            }
+
+            var count = projectileAccelerates ? 600 : 60;
+
+            double dt = Math.Max(MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, timeToIntercept / count); // This can be a const somewhere
+            double dtSqr = dt * dt;
+            Vector3D targetAccStep = targetAcc * dt;
+            Vector3D projectileAccStep = aimDirectionNorm * projectileAccMag * dt;
+
+            Vector3D aimOffset = Vector3D.Zero;
+            double minTime = 0;
+            for (int i = 0; i < count; ++i)
+            {
+                targetVel += targetAccStep;
+
+                if (targetVel.LengthSquared() > maxSpeedSqr)
+                {
+                    Vector3D targetNormVel;
+                    Vector3D.Normalize(ref targetVel, out targetNormVel);
+                    targetVel = targetNormVel * targetMaxSpeed;
+
+                }
+
+                targetPos += targetVel * dt;
+                if (projectileAccelerates)
+                {
+                    projectileVel += projectileAccStep;
+                    if (projectileVel.LengthSquared() > projectileMaxSpeedSqr)
+                    {
+                        Vector3D pNormVel;
+                        Vector3D.Normalize(ref projectileVel, out pNormVel);
+                        projectileVel = pNormVel * projectileMaxSpeed;
+                    }
+                }
+
+                projectilePos += projectileVel * dt;
+                Vector3D diff = (targetPos - projectilePos);
+                double diffLenSq = diff.LengthSquared();
+                aimOffset = diff;
+                minTime = dt * i;
+
+                if (diffLenSq < projectileMaxSpeedSqr * dtSqr || Vector3D.Dot(diff, aimDirectionNorm) < 0)
+                    break;
+            }
+            Vector3D perpendicularAimOffset = aimOffset - Vector3D.Dot(aimOffset, aimDirectionNorm) * aimDirectionNorm;
+            Vector3D gravityOffset = hasGravity ? -0.5 * minTime * minTime * gravity : Vector3D.Zero;
+            return estimatedImpactPoint + perpendicularAimOffset + gravityOffset;
+        }
+
+        internal static Vector3D Old1TrajectoryEstimation(Weapon weapon, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, out bool valid)
+        {
+            valid = true;
+            var ai = weapon.Comp.Ai;
+            var session = ai.Session;
+            var ammoDef = weapon.ActiveAmmoDef.AmmoDef;
+            if (ai.VelocityUpdateTick != session.Tick)
+            {
+                ai.GridVel = ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                ai.IsStatic = ai.MyGrid.Physics?.IsStatic ?? false;
+                ai.VelocityUpdateTick = session.Tick;
+            }
+
+            if (ammoDef.Const.FeelsGravity && session.Tick - weapon.GravityTick > 119)
+            {
+                weapon.GravityTick = session.Tick;
+                weapon.GravityPoint = MyParticlesManager.CalculateGravityInPoint(weapon.MyPivotPos);
+            }
+
+            var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
+            var targetMaxSpeed = weapon.Comp.Session.MaxEntitySpeed;
+            var shooterPos = weapon.MyPivotPos;
             
             var shooterVel = (Vector3D)weapon.Comp.Ai.GridVel;
             var projectileMaxSpeed = ammoDef.Const.DesiredProjectileSpeed;
@@ -466,7 +610,7 @@ namespace WeaponCore.Platform
             }
             var gravityMultiplier = ActiveAmmoDef.AmmoDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.AmmoDef.Trajectory.GravityMultiplier : 0f;
 
-            var predictedPos = OldTrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
+            var predictedPos = Old2TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, ActiveAmmoDef.AmmoDef.Const.DesiredProjectileSpeed, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, ActiveAmmoDef.AmmoDef.Trajectory.AccelPerSec, gravityMultiplier, GravityPoint, System.Prediction != Prediction.Advanced);
 
             return predictedPos;
         }
@@ -475,7 +619,7 @@ namespace WeaponCore.Platform
         /*
         ** Whip's advanced Projectile Intercept 
         */
-        internal static Vector3D OldTrajectoryEstimation(Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, double targetMaxSpeed, Vector3D shooterPos, Vector3D shooterVel, double projectileMaxSpeed, double projectileInitSpeed = 0, double projectileAccMag = 0, double gravityMultiplier = 0, Vector3D gravity = default(Vector3D), bool basic = false)
+        internal static Vector3D Old2TrajectoryEstimation(Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, double targetMaxSpeed, Vector3D shooterPos, Vector3D shooterVel, double projectileMaxSpeed, double projectileInitSpeed = 0, double projectileAccMag = 0, double gravityMultiplier = 0, Vector3D gravity = default(Vector3D), bool basic = false)
         {
             Vector3D deltaPos = targetPos - shooterPos;
             Vector3D deltaVel = targetVel - shooterVel;
