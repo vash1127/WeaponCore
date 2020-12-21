@@ -352,7 +352,7 @@ namespace WeaponCore.Platform
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             double shooterVelScaleFactor = 1;
             bool projectileAccelerates = projectileAccMag > 1e-6;
-            bool hasGravity = gravityMultiplier > 1e-6;
+            bool hasGravity = gravityMultiplier > 1e-6 && !MyUtils.IsZero(weapon.GravityPoint);
 
             if (!basic && projectileAccelerates)
                 shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
@@ -383,7 +383,7 @@ namespace WeaponCore.Platform
                 projectileVel += aimDirectionNorm * projectileMaxSpeed;
             }
 
-            var count = projectileAccelerates ? 600 : 60;
+            var count = projectileAccelerates ? 600 : hasGravity ? 320 : 60;
 
             double dt = Math.Max(MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS, timeToIntercept / count); // This can be a const somewhere
             double dtSqr = dt * dt;
@@ -419,7 +419,7 @@ namespace WeaponCore.Platform
                 Vector3D diff = (targetPos - projectilePos);
                 double diffLenSq = diff.LengthSquared();
                 aimOffset = diff;
-                minTime = dt * i;
+                minTime = dt * (i + 1);
 
                 if (diffLenSq < projectileMaxSpeedSqr * dtSqr || Vector3D.Dot(diff, aimDirectionNorm) < 0)
                     break;
