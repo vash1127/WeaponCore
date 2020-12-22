@@ -387,7 +387,7 @@ namespace WeaponCore.Support
         {
             var localTargetVector = Vector3D.TransformNormal(targetVector, MatrixD.Transpose(matrix));
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
-            yaw = AngleBetween(matrix.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is positive
+            yaw = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is positive
             if (Math.Abs(yaw) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
                 yaw = Math.PI;
             if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
