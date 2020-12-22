@@ -101,7 +101,6 @@ namespace WeaponCore
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly ConcurrentCachingList<GridAi> DelayedGridAiClean = new ConcurrentCachingList<GridAi>();
-        internal readonly ConcurrentCachingList<Weapon> RotateWeapons = new ConcurrentCachingList<Weapon>(128);
 
         internal readonly CachingHashSet<PacketObj> ClientSideErrorPkt = new CachingHashSet<PacketObj>();
 
@@ -137,7 +136,6 @@ namespace WeaponCore
         internal readonly Dictionary<GridAi, int> GridsToUpdateInvetoriesIndexer = new Dictionary<GridAi, int>();
         internal readonly Dictionary<MyPlanet, Water> WaterMap = new Dictionary<MyPlanet, Water>();
         internal readonly Dictionary<MyPlanet, double> MaxWaterHeightSqr = new Dictionary<MyPlanet, double>();
-        internal readonly Dictionary<MyPlanet, MyEntity> WaterEntityMap = new Dictionary<MyPlanet, MyEntity>();
         internal readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> AmmoDamageMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
         internal readonly Dictionary<ulong, Projectile> MonitoredProjectiles = new Dictionary<ulong, Projectile>();
         internal readonly HashSet<MyDefinitionId> DefIdsComparer = new HashSet<MyDefinitionId>(MyDefinitionId.Comparer);
@@ -169,7 +167,6 @@ namespace WeaponCore
         internal readonly List<PacketInfo> PacketsToClient = new List<PacketInfo>(128);
         internal readonly List<Packet> PacketsToServer = new List<Packet>(128);
         internal readonly List<Fragment> FragmentsNeedingEntities = new List<Fragment>(128);
-        internal readonly List<DebugLine> DebugLines = new List<DebugLine>();
         internal readonly List<WeaponAmmoMoveRequest> AmmoToPullQueue = new List<WeaponAmmoMoveRequest>(128);
         internal readonly List<PacketObj> ClientPacketsToClean = new List<PacketObj>(64);
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);

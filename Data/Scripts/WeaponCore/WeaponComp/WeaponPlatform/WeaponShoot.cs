@@ -307,7 +307,10 @@ namespace WeaponCore.Platform
                 }
 
                 if (System.Values.HardPoint.Loading.GiveUpAfterBurst)
+                {
                     Target.Reset(System.Session.Tick, Target.States.FiredBurst);
+                    FastTargetResetTick = System.Session.Tick + 1;
+                }
             }
             else if (System.AlwaysFireFullBurst && ShotsFired < System.ShotsPerBurst)
                 FinishBurst = true;

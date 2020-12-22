@@ -337,6 +337,8 @@ namespace WeaponCore
 
 
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
+            MyAPIGateway.TerminalControls.CustomActionGetter += CustomActionHandler;
+
         }
 
     }
