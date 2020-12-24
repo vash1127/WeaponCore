@@ -19,16 +19,18 @@ namespace WeaponCore.Platform
                 if (AzimuthTick == Comp.Session.Tick && System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly) {
                     Matrix azRotMatrix;
                     Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
-                    var localMatrix = AzimuthPart.OriginalPosition * azRotMatrix;
-                    localMatrix.Translation = AzimuthPart.OriginalPosition.Translation;
+                    var localMatrix = AzimuthPart.OriginalPosition;
+                    localMatrix.Forward = Vector3D.Rotate(localMatrix.Forward, azRotMatrix);
+                    localMatrix.Left = Vector3D.Rotate(localMatrix.Left, azRotMatrix);
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                 }
 
                 if (ElevationTick == Comp.Session.Tick && (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)) {
                     Matrix elRotMatrix;
                     Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
-                    var localMatrix = ElevationPart.OriginalPosition * elRotMatrix;
-                    localMatrix.Translation = ElevationPart.OriginalPosition.Translation;
+                    var localMatrix = ElevationPart.OriginalPosition;
+                    localMatrix.Forward = Vector3D.Rotate(localMatrix.Forward, elRotMatrix);
+                    localMatrix.Left = Vector3D.Rotate(localMatrix.Left, elRotMatrix);
                     ElevationPart.Entity.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                 }
             }
