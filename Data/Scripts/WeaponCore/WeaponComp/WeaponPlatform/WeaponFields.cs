@@ -58,7 +58,8 @@ namespace WeaponCore.Platform
         internal uint PosChangedTick;
         internal uint ElevationTick;
         internal uint AzimuthTick;
-
+        internal uint FastTargetResetTick;
+        
         internal float HeatPerc;
 
         internal int ShortLoadId;

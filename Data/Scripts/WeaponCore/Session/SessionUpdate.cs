@@ -283,9 +283,6 @@ namespace WeaponCore
                 ai.DbUpdated = false;
             }
 
-            if (!RotateWeapons.IsEmpty)
-                RotatingWeapons();
-
             if (DbTask.IsComplete && DbsToUpdate.Count > 0 && !DbUpdating)
                 UpdateDbsInQueue();
         }
@@ -401,7 +398,7 @@ namespace WeaponCore
                 var acquire = (w.Acquire.IsSleeping && AsleepCount == w.Acquire.SlotId || !w.Acquire.IsSleeping && AwakeCount == w.Acquire.SlotId);
 
                 var seekProjectile = w.ProjectilesNear || w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles && w.Comp.Ai.CheckProjectiles;
-                var checkTime = w.Target.TargetChanged || acquire || seekProjectile;
+                var checkTime = w.Target.TargetChanged || acquire || seekProjectile || w.FastTargetResetTick == Tick;
 
                 if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
 

@@ -464,9 +464,9 @@ namespace WeaponCore.Support
                         if (bigOwners.Count == 0) enemy = true;
                         else
                         {
-                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                            var relationship = info.EntInfo.Relationship;
                             enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner &&
-                                    relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                                    relationship != MyRelationsBetweenPlayerAndBlock.FactionShare && relationship != MyRelationsBetweenPlayerAndBlock.Friends;
                         }
 
                         if (!enemy)

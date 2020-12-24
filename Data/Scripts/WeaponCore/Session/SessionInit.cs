@@ -335,8 +335,8 @@ namespace WeaponCore
                 WeaponPlatforms[defId] = new WeaponStructure(this, tDef, weapons, modPath);
             }
 
-
             MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
+
         }
 
     }

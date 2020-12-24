@@ -161,7 +161,9 @@ namespace WeaponCore.Support
                         MyShield = shield.ShieldEnt;
                     }
                     else {
-                        var relation = shield.ShieldBlock.IDModule.GetUserRelationToOwner(MyOwner);
+                        TargetInfo info;
+                        var found = Targets.TryGetValue(shield.ShieldBlock.CubeGrid, out info);
+                        var relation = found ? info.EntInfo.Relationship : shield.ShieldBlock.IDModule.GetUserRelationToOwner(MyOwner);
                         var friendly = relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Friends;
                         
                         if (friendly) {
