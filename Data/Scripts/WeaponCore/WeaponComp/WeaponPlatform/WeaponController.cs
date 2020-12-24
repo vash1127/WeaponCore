@@ -20,6 +20,7 @@ namespace WeaponCore.Platform
                     Matrix azRotMatrix;
                     Matrix.CreateFromAxisAngle(ref AzimuthPart.RotationAxis, (float)Azimuth, out azRotMatrix);
                     var localMatrix = AzimuthPart.OriginalPosition * azRotMatrix;
+                    localMatrix.Translation = AzimuthPart.OriginalPosition.Translation;
                     AzimuthPart.Entity.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                 }
 
@@ -27,6 +28,7 @@ namespace WeaponCore.Platform
                     Matrix elRotMatrix;
                     Matrix.CreateFromAxisAngle(ref ElevationPart.RotationAxis, -(float)Elevation, out elRotMatrix);
                     var localMatrix = ElevationPart.OriginalPosition * elRotMatrix;
+                    localMatrix.Translation = ElevationPart.OriginalPosition.Translation;
                     ElevationPart.Entity.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                 }
             }
