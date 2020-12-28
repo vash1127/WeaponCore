@@ -35,7 +35,6 @@ namespace WeaponCore.Support
                     Session.ArmorCubes.Add(comp.MyCube, comp);
                 }
                 WeaponsIdx.Add(comp, Weapons.Count);
-                //Session.IdToCompMap.Add(comp.MyCube.EntityId, comp);
                 Weapons.Add(comp);
             }
             else {
