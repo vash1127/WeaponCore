@@ -355,7 +355,7 @@ namespace WeaponCore.Platform
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
-            AzimuthRotation = MatrixD.Invert(azimuthPart.Parent.PositionComp.LocalMatrix) * AzimuthPart.Entity.PositionComp.LocalMatrix;
+            AzimuthRotation = AzimuthPart.Entity.PositionComp.WorldMatrixRef * MatrixD.Invert(azimuthPart.Parent.PositionComp.WorldMatrixRef);
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
             UniqueId = comp.Session.UniqueWeaponId;
