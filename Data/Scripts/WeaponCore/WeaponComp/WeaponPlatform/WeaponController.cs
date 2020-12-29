@@ -134,7 +134,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                var forward = AzimuthOnBase ? Comp.MyCube.PositionComp.WorldMatrixRef.Forward : AzimuthPart.Parent.PositionComp.WorldMatrixRef.Forward;
+                var forward = Vector3D.TransformNormal((AzimuthPart.Parent.PositionComp.LocalMatrix * AzimuthRotation).Forward, AzimuthPart.Parent.WorldMatrix);
                 Vector3D left;
                 Vector3D.Cross(ref MyPivotUp, ref forward, out left);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };

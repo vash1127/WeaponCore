@@ -32,7 +32,7 @@ namespace WeaponCore.Platform
         internal readonly Muzzle[] Muzzles;
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
-        internal readonly bool AzimuthOnBase;
+        internal MatrixD AzimuthRotation;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
@@ -355,7 +355,7 @@ namespace WeaponCore.Platform
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
-            AzimuthOnBase = azimuthPart.Parent == comp.MyCube;
+            AzimuthRotation = MatrixD.Invert(azimuthPart.Parent.PositionComp.LocalMatrix) * AzimuthPart.Entity.PositionComp.LocalMatrix;
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
 
             UniqueId = comp.Session.UniqueWeaponId;
