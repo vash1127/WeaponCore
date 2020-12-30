@@ -126,6 +126,7 @@ namespace WeaponCore.Platform
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
 
+
             if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
                 Vector3D forward;
