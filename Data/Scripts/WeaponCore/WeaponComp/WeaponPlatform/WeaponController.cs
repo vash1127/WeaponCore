@@ -123,6 +123,7 @@ namespace WeaponCore.Platform
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
             var centerTestPos = azimuthMatrix.Translation;
+            var muzzleRadius = MuzzlePart.Entity.PositionComp.LocalVolume.Radius;
             MyPivotUp = azimuthMatrix.Up;
             MyPivotFwd = elevationMatrix.Forward;
 
@@ -158,19 +159,12 @@ namespace WeaponCore.Platform
 
                 double myPivotUpDot;
                 Vector3D.Dot(ref MyPivotUp, ref barrelUp, out myPivotUpDot);
+                
                 var pivotOffsetMagnitude = azToMuzzleDot / myPivotUpDot;
-
-                Vector3D pivotOffset;
-                if (pivotOffsetMagnitude > 2.5)
-                {
-                    pivotOffset = (pivotOffsetMagnitude * MyPivotUp) - ((pivotOffsetMagnitude - 2.5) * MyPivotFwd);
-                } else
-                {
-                    pivotOffset = (pivotOffsetMagnitude * MyPivotUp);
-                }
+                var pivotOffset = pivotOffsetMagnitude > muzzleRadius ?  muzzleRadius * MyPivotUp : pivotOffsetMagnitude * MyPivotUp;
+                
                 MyPivotPos = centerTestPos + pivotOffset;
             }
-
 
             if (!Vector3D.IsZero(AimOffset))
             {
