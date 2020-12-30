@@ -944,8 +944,8 @@ namespace WeaponCore.Platform
                 LastMuzzleCheck = tick;
                 if (MuzzleHitSelf())
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.Data.Repo.Base.State.TrackingReticle);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed, !Comp.Data.Repo.Base.State.TrackingReticle);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, !Comp.Data.Repo.Base.State.TrackingReticle);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckSelfHit, !Comp.Data.Repo.Base.State.TrackingReticle);
                     return false;
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
@@ -965,8 +965,8 @@ namespace WeaponCore.Platform
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
                     return false;
                 }
             }
@@ -975,16 +975,17 @@ namespace WeaponCore.Platform
                 var character = Target.Entity as IMyCharacter;
                 if ((Target.Entity == null || Target.Entity.MarkedForClose) || character != null && (character.IsDead || character.Integrity <= 0 || Comp.Session.AdminMap.ContainsKey(character)))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckOther);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckOther);
                     return false;
                 }
 
                 var cube = Target.Entity as MyCubeBlock;
                 if (cube != null && !cube.IsWorking && !Comp.Ai.Construct.Focus.EntityIsFocused(Comp.Ai, cube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                    masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckDeadBlock);
+                    if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckDeadBlock);
+                    FastTargetResetTick = System.Session.Tick;
                     return false;
                 }
                 var topMostEnt = Target.Entity.GetTopMostParent();
@@ -995,13 +996,13 @@ namespace WeaponCore.Platform
                     return false;
                 }
             }
-
+            
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
             var distToTargetSqr = Vector3D.DistanceSquared(targetPos, MyPivotPos);
             if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {
-                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
-                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckFailed);
+                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckDistExceeded);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckDistExceeded);
                 return false;
             }
 

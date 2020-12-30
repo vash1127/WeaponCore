@@ -123,7 +123,6 @@ namespace WeaponCore.Platform
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
-
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
 
@@ -138,7 +137,6 @@ namespace WeaponCore.Platform
             {
                 //var forward = Comp.MyCube.PositionComp.WorldMatrixRef.Forward;
                 var forward = !AlternateForward ? Comp.MyCube.PositionComp.WorldMatrixRef.Forward : (AzimuthRotation * AzimuthPart.Parent.PositionComp.WorldMatrixRef).Forward;
-
                 Vector3D left;
                 Vector3D.Cross(ref MyPivotUp, ref forward, out left);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
