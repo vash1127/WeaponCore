@@ -178,7 +178,7 @@ namespace WeaponCore.Platform
             MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 16));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
-            AzimuthFwdLine = new LineD(AzimuthPart.Entity.PositionComp.WorldMatrixRef.Translation, AzimuthPart.Entity.PositionComp.WorldMatrixRef.Translation + (WeaponConstMatrix.Forward * 19));
+            AzimuthFwdLine = new LineD(weaponCenter, weaponCenter + (WeaponConstMatrix.Forward * 19));
             if (Target.HasTarget)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }
