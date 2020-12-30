@@ -71,7 +71,7 @@ namespace WeaponCore.Platform
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
         internal Vector3D MyRayCheckPos;
-        internal Vector3D MyPivotDir;
+        internal Vector3D MyPivotFwd;
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
         internal MatrixD WeaponConstMatrix;

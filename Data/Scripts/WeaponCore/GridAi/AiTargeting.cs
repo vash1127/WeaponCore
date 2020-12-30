@@ -31,7 +31,7 @@ namespace WeaponCore.Support
 
             if (!w.Comp.Data.Repo.Base.State.TrackingReticle)
             {
-                w.AimCone.ConeDir = w.MyPivotDir;
+                w.AimCone.ConeDir = w.MyPivotFwd;
                 w.AimCone.ConeTip = w.MyPivotPos;
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
                 var shootProjectile = pCount > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles;
