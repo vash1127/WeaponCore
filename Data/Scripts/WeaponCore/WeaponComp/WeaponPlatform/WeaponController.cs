@@ -151,16 +151,26 @@ namespace WeaponCore.Platform
             else
             {
                 Vector3D perpDir2;
-;               Vector3D.Cross(ref MyPivotDir, ref axis, out perpDir2);
+                Vector3D.Cross(ref MyPivotDir, ref axis, out perpDir2);
                 var point1To2 = weaponCenter - centerTestPos;
-                
+
+                Point1To2 = new LineD(MyPivotPos, MyPivotPos + (perpDir2 * 30));
                 double point1Dot;
                 Vector3D.Dot(ref point1To2, ref perpDir2, out point1Dot);
 
                 double myPivotUpDot;
                 Vector3D.Dot(ref MyPivotUp, ref perpDir2, out myPivotUpDot);
+                var shift = point1Dot / myPivotUpDot;
 
-                MyPivotPos = centerTestPos + point1Dot / myPivotUpDot * MyPivotUp;
+                Vector3D adjustment;
+                if (shift > 2.5)
+                {
+                    adjustment = (shift * MyPivotUp) - ((shift - 2.5) * MyPivotDir);
+                } else
+                {
+                    adjustment = (shift * MyPivotUp);
+                }
+                MyPivotPos = centerTestPos + adjustment;
             }
 
 
@@ -174,13 +184,13 @@ namespace WeaponCore.Platform
             }
 
             MyRayCheckPos = MyPivotPos + (MyPivotDir * Comp.MyCube.CubeGrid.GridSizeHalf);
-                
+
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 16));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
-            AzimuthFwdLine = new LineD(AzimuthPart.Entity.PositionComp.WorldMatrixRef.Translation, AzimuthPart.Entity.PositionComp.WorldMatrixRef.Translation + (WeaponConstMatrix.Forward * 19));
+            AzimuthFwdLine = new LineD(MyPivotPos, MyPivotPos + (WeaponConstMatrix.Forward * 19));
             if (Target.HasTarget)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }
