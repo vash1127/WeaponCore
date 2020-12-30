@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                             var message = $"Weapon inventory full, ejecting {ammoChange.Item.Content.SubtypeName} magazine";
                             Comp.Session.SendClientNotify(Comp.Data.Repo.Base.State.PlayerId, message, true, "Red", 3000);
                         }
-                        MyFloatingObjects.Spawn(ammoChange.Item, Dummies[0].Info.Position, MyPivotDir, MyPivotUp);
+                        MyFloatingObjects.Spawn(ammoChange.Item, Dummies[0].Info.Position, MyPivotFwd, MyPivotUp);
                     }
                 }
             }

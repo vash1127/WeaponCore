@@ -54,7 +54,7 @@ namespace WeaponCore.Projectiles
                 p.Info.UniqueMuzzleId = muzzle.UniqueId;
                 p.Info.WeaponCache.VirutalId = t != Kind.Virtual ? -1 : p.Info.WeaponCache.VirutalId;
                 p.Info.Origin = t != Kind.Client ? t != Kind.Virtual ? muzzle.Position : w.MyPivotPos : gen.Origin;
-                p.Info.Direction = t != Kind.Client ? t != Kind.Virtual ? gen.Direction : w.MyPivotDir : gen.Direction;
+                p.Info.Direction = t != Kind.Client ? t != Kind.Virtual ? gen.Direction : w.MyPivotFwd : gen.Direction;
                 if (t == Kind.Client) p.Velocity = gen.Velocity;
 
                 float shotFade;

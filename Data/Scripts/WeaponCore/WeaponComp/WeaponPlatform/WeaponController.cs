@@ -122,9 +122,9 @@ namespace WeaponCore.Platform
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
             var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
-            var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
+            var centerTestPos = azimuthMatrix.Translation;
             MyPivotUp = azimuthMatrix.Up;
-            MyPivotDir = elevationMatrix.Forward;
+            MyPivotFwd = elevationMatrix.Forward;
 
             if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
@@ -142,51 +142,51 @@ namespace WeaponCore.Platform
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
             }
 
-            Vector3D axis;
-            Vector3D.Cross(ref MyPivotUp ,ref MyPivotDir, out axis);
-            if (Vector3D.IsZero(axis))
+            Vector3D pivotLeft;
+            Vector3D.Cross(ref MyPivotUp ,ref MyPivotFwd, out pivotLeft);
+            if (Vector3D.IsZero(pivotLeft))
                 MyPivotPos = centerTestPos;
             else
             {
-                Vector3D perpDir2;
-                Vector3D.Cross(ref MyPivotDir, ref axis, out perpDir2);
-                var point1To2 = weaponCenter - centerTestPos;
+                Vector3D barrelUp;
+                Vector3D.Cross(ref MyPivotFwd, ref pivotLeft, out barrelUp);
+                var azToMuzzleOrigin = weaponCenter - centerTestPos;
 
-                double point1Dot;
-                Vector3D.Dot(ref point1To2, ref perpDir2, out point1Dot);
+                double azToMuzzleDot;
+                Vector3D.Dot(ref azToMuzzleOrigin, ref barrelUp, out azToMuzzleDot);
 
                 double myPivotUpDot;
-                Vector3D.Dot(ref MyPivotUp, ref perpDir2, out myPivotUpDot);
-                var shift = point1Dot / myPivotUpDot;
+                Vector3D.Dot(ref MyPivotUp, ref barrelUp, out myPivotUpDot);
+                var pivotOffsetMagnitude = azToMuzzleDot / myPivotUpDot;
 
-                Vector3D adjustment;
-                if (shift > 2.5)
+                Vector3D pivotOffset;
+                if (pivotOffsetMagnitude > 2.5)
                 {
-                    adjustment = (shift * MyPivotUp) - ((shift - 2.5) * MyPivotDir);
+                    pivotOffset = (pivotOffsetMagnitude * MyPivotUp) - ((pivotOffsetMagnitude - 2.5) * MyPivotFwd);
                 } else
                 {
-                    adjustment = (shift * MyPivotUp);
+                    pivotOffset = (pivotOffsetMagnitude * MyPivotUp);
                 }
-                MyPivotPos = centerTestPos + adjustment;
+                MyPivotPos = centerTestPos + pivotOffset;
             }
 
 
             if (!Vector3D.IsZero(AimOffset))
             {
-                var pivotRotMatrix = new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up };
+                var pivotRotMatrix = new MatrixD { Forward = MyPivotFwd, Left = elevationMatrix.Left, Up = elevationMatrix.Up };
                 Vector3D offSet;
                 Vector3D.Rotate(ref AimOffset, ref pivotRotMatrix, out offSet);
 
                 MyPivotPos += offSet;
             }
 
-            MyRayCheckPos = MyPivotPos + (MyPivotDir * Comp.MyCube.CubeGrid.GridSizeHalf);
+            MyRayCheckPos = MyPivotPos + (MyPivotFwd * Comp.MyCube.CubeGrid.GridSizeHalf);
 
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
-            MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 16));
-            MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
+            MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotFwd * 16));
+            MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotFwd * 20));
             AzimuthFwdLine = new LineD(weaponCenter, weaponCenter + (WeaponConstMatrix.Forward * 19));
             if (Target.HasTarget)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);

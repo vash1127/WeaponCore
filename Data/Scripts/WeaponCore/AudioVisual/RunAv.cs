@@ -401,7 +401,7 @@ namespace WeaponCore.Support
                 }
 
                 var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
-                var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
+                var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotFwd, weapon.MyPivotUp);
                 var particles = weapon.System.Values.HardPoint.Graphics;
                 
                 matrix.Translation +=  Vector3D.Rotate(particles.Barrel1.Offset, matrix);
@@ -471,7 +471,7 @@ namespace WeaponCore.Support
                     }
 
                     var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
-                    var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotDir, weapon.MyPivotUp);
+                    var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotFwd, weapon.MyPivotUp);
                     var particles = weapon.System.Values.HardPoint.Graphics;
 
                     matrix.Translation += Vector3D.Rotate(particles.Barrel2.Offset, matrix);

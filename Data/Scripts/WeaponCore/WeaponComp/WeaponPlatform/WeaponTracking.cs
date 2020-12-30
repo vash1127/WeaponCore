@@ -40,7 +40,7 @@ namespace WeaponCore.Platform
             if (weapon == trackingWeapon)
                 canTrack = validEstimate && MathFuncs.WeaponLookAt(weapon, ref targetDir, rangeToTarget, false, true, out isTracking);
             else
-                canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
 
             return (inRange && canTrack) || weapon.Comp.Data.Repo.Base.State.TrackingReticle;
         }
@@ -99,7 +99,7 @@ namespace WeaponCore.Platform
                         weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.ActiveAmmoDef.AmmoDef.Const.MaxTrajectory));
                 }
                 else
-                    canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                    canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
             }
             return canTrack;
         }
@@ -157,7 +157,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.MaxTargetDistanceSqr && rangeToTarget >= weapon.MinTargetDistanceSqr;
 
-            var isAligned = validEstimate && (inRange || weapon.Comp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = validEstimate && (inRange || weapon.Comp.Data.Repo.Base.State.TrackingReticle) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -251,7 +251,7 @@ namespace WeaponCore.Platform
             var isAligned = false;
 
             if (isTracking)
-                isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                isAligned = locked || MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
 
             var wasAligned = weapon.Target.IsAligned;
             weapon.Target.IsAligned = isAligned;
@@ -273,9 +273,9 @@ namespace WeaponCore.Platform
         {
             LastSmartLosCheck = Comp.Ai.Session.Tick;
             IHitInfo hitInfo;
-            Comp.Ai.Session.Physics.CastRay(MyPivotPos + (MyPivotDir * Comp.Ai.GridVolume.Radius), MyPivotPos, out hitInfo, 15, false);
+            Comp.Ai.Session.Physics.CastRay(MyPivotPos + (MyPivotFwd * Comp.Ai.GridVolume.Radius), MyPivotPos, out hitInfo, 15, false);
             var grid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
-            if (grid != null && grid.IsSameConstructAs(Comp.Ai.MyGrid) && grid.GetTargetedBlock(hitInfo.Position + (-MyPivotDir * 0.1f)) != Comp.MyCube.SlimBlock)
+            if (grid != null && grid.IsSameConstructAs(Comp.Ai.MyGrid) && grid.GetTargetedBlock(hitInfo.Position + (-MyPivotFwd * 0.1f)) != Comp.MyCube.SlimBlock)
             {
                 PauseShoot = true;
                 return false;
