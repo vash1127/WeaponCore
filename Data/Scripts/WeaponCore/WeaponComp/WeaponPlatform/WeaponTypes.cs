@@ -30,8 +30,8 @@ namespace WeaponCore.Platform
                     var targetDir = targetPos - Weapon.MyPivotPos;
                     if (Weapon.HitFriendlyShield(targetPos, targetDir))
                     {
-                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
-                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
+                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
+                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         return;
                     }
                 }
@@ -41,8 +41,8 @@ namespace WeaponCore.Platform
                 {
                     if (ignoreTargets)
                         return;
-                    masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
-                    if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
+                    masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckMiss);
+                    if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckMiss);
                     return;
                 }
 
@@ -57,8 +57,8 @@ namespace WeaponCore.Platform
                 {
                     if (hitTopEnt is MyVoxelBase)
                     {
-                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
-                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
+                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckVoxel);
+                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckVoxel);
                         return;
                     }
 
@@ -67,15 +67,15 @@ namespace WeaponCore.Platform
 
                     if (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid))
                     {
-                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
-                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
+                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         return;
                     }
 
                     if (!Session.GridEnemy(Weapon.Comp.Ai.MyOwner, topAsGrid))
                     {
-                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
-                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
+                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
+                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         return;
                     }
                     return;
@@ -96,8 +96,8 @@ namespace WeaponCore.Platform
                     var escapeDistExceed = distanceToTarget - Weapon.Target.OrigDistance > Weapon.Target.OrigDistance;
                     if (shortDistExceed || escapeDistExceed)
                     {
-                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
-                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFailed);
+                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckDistOffset);
+                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckDistOffset);
                     }
                 }
             }

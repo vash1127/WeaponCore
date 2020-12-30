@@ -56,6 +56,15 @@ namespace WeaponCore.Support
             NoTargetsSeen,
             ProjectileClosed,
             RayCheckFailed,
+            RayCheckSelfHit,
+            RayCheckFriendly,
+            RayCheckDistOffset,
+            RayCheckVoxel,
+            RayCheckProjectile,
+            RayCheckDeadBlock,
+            RayCheckDistExceeded,
+            RayCheckOther,
+            RayCheckMiss,
             ServerReset,
             Transfered,
             Invalid,
@@ -64,6 +73,7 @@ namespace WeaponCore.Support
             NoMagsToLoad,
             AiLost,
             Offline,
+            LostTracking,
         }
 
         internal Target(Weapon weapon = null, bool main = false)
