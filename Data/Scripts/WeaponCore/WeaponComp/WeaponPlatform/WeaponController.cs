@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -134,7 +135,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                var forward = (AzimuthRotation * AzimuthPart.Parent.PositionComp.WorldMatrixRef).Forward;
+                var forward = AzimuthOnBase ? Comp.MyCube.PositionComp.WorldMatrixRef.Forward : (AzimuthRotation * AzimuthPart.Parent.PositionComp.WorldMatrixRef).Forward;
                 Vector3D left;
                 Vector3D.Cross(ref MyPivotUp, ref forward, out left);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };

@@ -201,7 +201,8 @@ namespace WeaponCore.Platform
         internal bool Charging;
         internal bool ClientStaticShot;
         internal bool ShootOnce;
-
+        internal bool AzimuthOnBase;
+        
         internal bool CheckInventorySystem = true;
         internal bool ShotReady
         {
@@ -355,9 +356,9 @@ namespace WeaponCore.Platform
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
+            AzimuthOnBase = azimuthPart.Parent == comp.MyCube;
             AzimuthRotation = AzimuthPart.Entity.PositionComp.WorldMatrixRef * MatrixD.Invert(azimuthPart.Parent.PositionComp.WorldMatrixRef);
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
-
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
 
