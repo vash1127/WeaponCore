@@ -268,7 +268,7 @@ namespace WeaponCore.Platform
                             weapon.AzimuthPart.FullRotationStep = fullStepAzRotation;
                             weapon.AzimuthPart.RevFullRotationStep = rFullStepAzRotation;
                             weapon.AzimuthPart.PartLocalLocation = azimuthPartLocation;
-                            weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrix;
+                            weapon.AzimuthPart.OriginalPosition = azimuthPart.PositionComp.LocalMatrixRef;
                             //weapon.AzimuthPart.Entity.NeedsWorldMatrix = true;
 
                         }

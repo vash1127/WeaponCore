@@ -113,7 +113,7 @@ namespace WeaponCore.Platform
                 }
             }
         }
-
+        
         internal void UpdatePivotPos()
         {
             if (PosChangedTick == Comp.Session.Tick || AzimuthPart?.Parent == null || ElevationPart?.Entity == null || MuzzlePart?.Entity == null || Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
@@ -136,7 +136,9 @@ namespace WeaponCore.Platform
             }
             else
             {
-                var forward = ParentIsSubpart ? AzimuthPart.Parent.PositionComp.WorldMatrixRef.Forward : Comp.MyCube.PositionComp.WorldMatrixRef.Forward;
+                //var forward = Comp.MyCube.PositionComp.WorldMatrixRef.Forward;
+                var forward = !AlternateForward ? Comp.MyCube.PositionComp.WorldMatrixRef.Forward : (AzimuthRotation * AzimuthPart.Parent.PositionComp.WorldMatrixRef).Forward;
+
                 Vector3D left;
                 Vector3D.Cross(ref MyPivotUp, ref forward, out left);
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
@@ -175,9 +177,10 @@ namespace WeaponCore.Platform
                 
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
-            MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
             MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));
+            MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 16));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
+            AzimuthFwdLine = new LineD(AzimuthPart.Entity.PositionComp.WorldMatrixRef.Translation, AzimuthPart.Entity.PositionComp.WorldMatrixRef.Translation + (WeaponConstMatrix.Forward * 19));
             if (Target.HasTarget)
                 MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }

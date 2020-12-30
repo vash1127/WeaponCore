@@ -151,7 +151,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalAction> AlteredActions = new HashSet<IMyTerminalAction>();
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
-
+        internal readonly HashSet<MyStringHash> BadModAuthorWeapons = new HashSet<MyStringHash>(MyStringHash.Comparer);
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();

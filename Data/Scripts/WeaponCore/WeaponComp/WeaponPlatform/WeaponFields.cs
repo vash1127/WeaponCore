@@ -80,6 +80,7 @@ namespace WeaponCore.Platform
         internal LineD MyPivotTestLine;
         internal LineD MyAimTestLine;
         internal LineD MyShootAlignmentLine;
+        internal LineD AzimuthFwdLine;
 
         internal uint[] BeamSlot;
 
@@ -202,7 +203,7 @@ namespace WeaponCore.Platform
         internal bool ClientStaticShot;
         internal bool ShootOnce;
         internal bool ParentIsSubpart;
-        
+        internal bool AlternateForward;
         internal bool CheckInventorySystem = true;
         internal bool ShotReady
         {
@@ -356,17 +357,68 @@ namespace WeaponCore.Platform
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
-            ParentIsSubpart = AzimuthPart.Parent is MyEntitySubpart;
-            AzimuthRotation = AzimuthPart.Entity.PositionComp.WorldMatrixRef * MatrixD.Invert(azimuthPart.Parent.PositionComp.WorldMatrixRef);
+            
+            ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
+            AzimuthRotation = azimuthPart.PositionComp.WorldMatrixRef * MatrixD.Invert(azimuthPart.Parent.PositionComp.WorldMatrixRef);
+
+            FuckMyLife();
+
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
-
             MyEntity ejectorPart;
             if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
                 Ejector = new Dummy(ejectorPart,this, System.Values.Assignments.Ejector);
 
             Monitors = Comp.Monitors[WeaponId];
+        }
+        
+        private void FuckMyLife()
+        {
+            var bf = Comp.MyCube.PositionComp.LocalMatrixRef.Forward;
+            var af = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Forward;
+            var xAbs = Math.Abs(bf.X - af.X);
+            var yAbs = Math.Abs(bf.Y - af.Y);
+            var zAbs = Math.Abs(bf.Z - af.Z);
+            var xZero = MyUtils.IsZero(xAbs, 1E-04f);
+            var yZero = MyUtils.IsZero(yAbs, 1E-04f);
+            var zZero = MyUtils.IsZero(zAbs, 1E-04f);
+
+            var xFlip = MyUtils.IsZero(xAbs - 1) || MyUtils.IsZero(xAbs - 2);
+            var yFlip = MyUtils.IsZero(yAbs - 1) || MyUtils.IsZero(yAbs - 2);
+            var zFlip = MyUtils.IsZero(zAbs - 1) || MyUtils.IsZero(zAbs - 2);
+
+            var whyFlip = xFlip || yFlip || zFlip;
+
+            var xOk = xZero || xFlip;
+            var yOk = yZero || yFlip;
+            var zOk = zZero || zFlip;
+
+            var close = xOk && yOk && zOk;
+
+            AlternateForward = ParentIsSubpart || !close;
+            if (AlternateForward) Log.Line($"{System.WeaponName} is not using block forward direction - hasParentSubpart:{ParentIsSubpart} - bf:{bf} - af:{af}");
+            if (close && whyFlip)
+            {
+                var blockSubType = Comp.MyCube.BlockDefinition.Id.SubtypeId;
+                if (System.Session.BadModAuthorWeapons.Contains(blockSubType))
+                    return;
+                
+                var count = 0;
+                if (xZero)
+                    count++;
+                if (yZero)
+                    count++;
+                if (zZero)
+                    count++;
+
+                if (count > 0)
+                {
+                    System.Session.BadModAuthorWeapons.Add(blockSubType);
+                    Log.Line($"{System.WeaponName} needs fixing... its directions are dumb as shit - directionFlips:{count}");
+                }
+
+            }
         }
     }
 }
