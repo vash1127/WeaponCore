@@ -152,7 +152,6 @@ namespace WeaponCore.Platform
                 Vector3D.Cross(ref MyPivotDir, ref axis, out perpDir2);
                 var point1To2 = weaponCenter - centerTestPos;
 
-                Point1To2 = new LineD(MyPivotPos, MyPivotPos + (perpDir2 * 30));
                 double point1Dot;
                 Vector3D.Dot(ref point1To2, ref perpDir2, out point1Dot);
 
