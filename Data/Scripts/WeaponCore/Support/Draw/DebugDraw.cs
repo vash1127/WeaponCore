@@ -79,6 +79,12 @@ namespace WeaponCore.Support
             MySimpleObjectDraw.DrawLine(line.From, line.To, _square, ref c, width);
         }
 
+        public static void DrawLine(Vector3D start, Vector3D dir, Vector4 color, float width, float length)
+        {
+            var c = color;
+            MySimpleObjectDraw.DrawLine(start, start + (dir * length), _square, ref c, width);
+        }
+        
         public static void DrawRay(RayD ray, Vector4 color, float width, float length = float.MaxValue)
         {
             var c = color;

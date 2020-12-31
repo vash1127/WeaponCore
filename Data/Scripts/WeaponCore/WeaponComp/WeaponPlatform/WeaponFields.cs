@@ -32,7 +32,6 @@ namespace WeaponCore.Platform
         internal readonly Muzzle[] Muzzles;
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
-        internal MatrixD AzimuthRotation;
         internal readonly Dictionary<EventTriggers, ParticleEvent[]> ParticleEvents;
         internal readonly List<Action<long, int, ulong, long, Vector3D, bool>> Monitors = new List<Action<long, int, ulong, long, Vector3D, bool>>();
         internal readonly uint[] MIds = new uint[Enum.GetValues(typeof(PacketType)).Length];
@@ -75,6 +74,9 @@ namespace WeaponCore.Platform
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
         internal MatrixD WeaponConstMatrix;
+        //internal Matrix3x3 AzimuthRotation;
+        internal MatrixD AzimuthRotation;
+
         internal LineD MyCenterTestLine;
         internal LineD MyBarrelTestLine;
         internal LineD MyPivotTestLine;
@@ -359,10 +361,10 @@ namespace WeaponCore.Platform
             MuzzlePart = new PartInfo { Entity = entity };
             
             ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
-            AzimuthRotation = azimuthPart.PositionComp.WorldMatrixRef * MatrixD.Invert(azimuthPart.Parent.PositionComp.WorldMatrixRef);
-
+            AzimuthRotation = azimuthPart.PositionComp.LocalMatrixRef;
+            
             FuckMyLife();
-
+            
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
@@ -372,52 +374,45 @@ namespace WeaponCore.Platform
 
             Monitors = Comp.Monitors[WeaponId];
         }
-        
+
         private void FuckMyLife()
         {
-            var bf = Comp.MyCube.PositionComp.LocalMatrixRef.Forward;
-            var af = AzimuthPart.Entity.PositionComp.LocalMatrixRef.Forward;
-            var xAbs = Math.Abs(bf.X - af.X);
-            var yAbs = Math.Abs(bf.Y - af.Y);
-            var zAbs = Math.Abs(bf.Z - af.Z);
-            var xZero = MyUtils.IsZero(xAbs, 1E-04f);
-            var yZero = MyUtils.IsZero(yAbs, 1E-04f);
-            var zZero = MyUtils.IsZero(zAbs, 1E-04f);
+            var azPartMatrix = AzimuthPart.Entity.PositionComp.LocalMatrixRef;
+            
+            var fwdX = Math.Abs(azPartMatrix.Forward.X);
+            var fwdY = Math.Abs(azPartMatrix.Forward.Y);
+            var fwdZ = Math.Abs(azPartMatrix.Forward.Z);
 
-            var xFlip = MyUtils.IsZero(xAbs - 1) || MyUtils.IsZero(xAbs - 2);
-            var yFlip = MyUtils.IsZero(yAbs - 1) || MyUtils.IsZero(yAbs - 2);
-            var zFlip = MyUtils.IsZero(zAbs - 1) || MyUtils.IsZero(zAbs - 2);
+            var fwdXAngle = !MyUtils.IsEqual(fwdX, 1f) && !MyUtils.IsZero(fwdX);
+            var fwdYAngle = !MyUtils.IsEqual(fwdY, 1f) && !MyUtils.IsZero(fwdY);
+            var fwdZAngle = !MyUtils.IsEqual(fwdZ, 1f) && !MyUtils.IsZero(fwdZ);
 
-            var whyFlip = xFlip || yFlip || zFlip;
+            var fwdAngled = fwdXAngle || fwdYAngle || fwdZAngle; 
 
-            var xOk = xZero || xFlip;
-            var yOk = yZero || yFlip;
-            var zOk = zZero || zFlip;
+            var upX = Math.Abs(azPartMatrix.Up.X);
+            var upY = Math.Abs(azPartMatrix.Up.Y);
+            var upZ = Math.Abs(azPartMatrix.Up.Z);
 
-            var close = xOk && yOk && zOk;
+            var upXAngle = !MyUtils.IsEqual(upX, 1f) && !MyUtils.IsZero(upX);
+            var upYAngle = !MyUtils.IsEqual(upY, 1f) && !MyUtils.IsZero(upY);
+            var upZAngle = !MyUtils.IsEqual(upZ, 1f) && !MyUtils.IsZero(upZ);
+           
+            var upAngled = upXAngle || upYAngle || upZAngle;
 
-            AlternateForward = ParentIsSubpart || !close;
-            if (AlternateForward) Log.Line($"{System.WeaponName} is not using block forward direction - hasParentSubpart:{ParentIsSubpart} - bf:{bf} - af:{af}");
-            if (close && whyFlip)
+            var leftX = Math.Abs(azPartMatrix.Up.X);
+            var leftY = Math.Abs(azPartMatrix.Up.Y);
+            var leftZ = Math.Abs(azPartMatrix.Up.Z);
+
+            var leftXAngle = !MyUtils.IsEqual(leftX, 1f) && !MyUtils.IsZero(leftX);
+            var leftYAngle = !MyUtils.IsEqual(leftY, 1f) && !MyUtils.IsZero(leftY);
+            var leftZAngle = !MyUtils.IsEqual(leftZ, 1f) && !MyUtils.IsZero(leftZ);
+            
+            var leftAngled = leftXAngle || leftYAngle || leftZAngle;
+
+            if (fwdAngled || upAngled || leftAngled)
             {
-                var blockSubType = Comp.MyCube.BlockDefinition.Id.SubtypeId;
-                if (System.Session.BadModAuthorWeapons.Contains(blockSubType))
-                    return;
-                
-                var count = 0;
-                if (xZero)
-                    count++;
-                if (yZero)
-                    count++;
-                if (zZero)
-                    count++;
-
-                if (count > 0)
-                {
-                    System.Session.BadModAuthorWeapons.Add(blockSubType);
-                    Log.Line($"{System.WeaponName} needs fixing... its directions are dumb as shit - directionFlips:{count}");
-                }
-
+                AlternateForward = true;
+                Log.Line($"{System.WeaponName} - Fuck this weapon - {azPartMatrix.Forward} - {azPartMatrix.Up} - {azPartMatrix.Left}");
             }
         }
     }
