@@ -77,6 +77,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
+        internal readonly MyConcurrentPool<ConcurrentDictionary<long, MyFactionMember>> PlayerFactionDitionaryPool = new MyConcurrentPool<ConcurrentDictionary<long, MyFactionMember>>(32);
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
@@ -94,6 +95,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, List<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, List<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponToPullAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
+        internal readonly ConcurrentDictionary<long, FactionInfo> UserFactions = new ConcurrentDictionary<long, FactionInfo>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 

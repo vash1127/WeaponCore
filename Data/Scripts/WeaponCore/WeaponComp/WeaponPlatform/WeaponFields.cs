@@ -73,9 +73,8 @@ namespace WeaponCore.Platform
         internal Vector3D MyPivotFwd;
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
+        internal Vector3D AzimuthInitFwdDir;
         internal MatrixD WeaponConstMatrix;
-        //internal Matrix3x3 AzimuthRotation;
-        internal MatrixD AzimuthRotation;
 
         internal LineD MyCenterTestLine;
         internal LineD MyBarrelTestLine;
@@ -361,7 +360,7 @@ namespace WeaponCore.Platform
             MuzzlePart = new PartInfo { Entity = entity };
             
             ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
-            AzimuthRotation = azimuthPart.PositionComp.LocalMatrixRef;
+            AzimuthInitFwdDir = azimuthPart.PositionComp.LocalMatrixRef.Forward;
             
             FuckMyLife();
             
@@ -410,10 +409,7 @@ namespace WeaponCore.Platform
             var leftAngled = leftXAngle || leftYAngle || leftZAngle;
 
             if (fwdAngled || upAngled || leftAngled)
-            {
                 AlternateForward = true;
-                Log.Line($"{System.WeaponName} - Fuck this weapon - {azPartMatrix.Forward} - {azPartMatrix.Up} - {azPartMatrix.Left}");
-            }
         }
     }
 }

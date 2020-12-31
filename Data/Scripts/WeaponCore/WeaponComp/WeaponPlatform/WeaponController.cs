@@ -140,7 +140,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                var forward = !AlternateForward ? worldMatrix.Forward : Vector3D.TransformNormal(AzimuthRotation.Forward, worldMatrix);
+                var forward = !AlternateForward ? worldMatrix.Forward : Vector3D.TransformNormal(AzimuthInitFwdDir, worldMatrix);
 
                 Vector3D left;
                 Vector3D.Cross(ref MyPivotUp, ref forward, out left);

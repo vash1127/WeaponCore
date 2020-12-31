@@ -29,7 +29,9 @@ namespace WeaponCore
         {
             PurgedAll = true;
             FutureEvents.Purge((int)Tick);
-
+            
+            UpdateFactionDatabase(true);
+            
             foreach (var comp in CompsToStart)
                 if (comp?.Platform != null)
                     CloseComps(comp.MyCube);

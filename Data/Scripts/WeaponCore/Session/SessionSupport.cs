@@ -32,11 +32,16 @@ namespace WeaponCore
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             Tick3600 = Tick % 3600 == 0;
+            
             if (Tick60)
             {
                 if (Av.ExplosionCounter - 5 >= 0) Av.ExplosionCounter -= 5;
                 else Av.ExplosionCounter = 0;
             }
+            
+            if (Tick180)
+                UpdateFactionDatabase();
+            
             if (++SCount == 60) SCount = 0;
 
             if (++AwakeCount == AwakeBuckets) AwakeCount = 0;
@@ -592,6 +597,8 @@ namespace WeaponCore
         {
             try
             {
+
+
                 if (HandlesInput)
                 {
                     if (Session?.Player == null) return false;
@@ -609,6 +616,8 @@ namespace WeaponCore
                     if (IsClient)
                         SendUpdateRequest(-1, PacketType.RequestMouseStates);
                 }
+                
+                UpdateFactionDatabase();
 
                 return true;
             }
@@ -878,6 +887,121 @@ namespace WeaponCore
             VanillaSubpartNames.Add("GatlingTurretBase1");
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
+        }
+
+        public void UpdateFactionDatabase(bool clean = false)
+        {
+            foreach (var f in UserFactions) {
+                f.Value.Members.Clear();
+                PlayerFactionDitionaryPool.Return(f.Value.Members);
+            }
+            UserFactions.Clear();
+            
+            if (clean)
+                return;
+            
+            foreach (var f in MyAPIGateway.Session.Factions.Factions) {
+                var dict = PlayerFactionDitionaryPool.Get();
+                
+                foreach (var m in f.Value.Members)
+                    dict[m.Key] = m.Value;
+
+                UserFactions[f.Key] = new FactionInfo { Faction = f.Value, Members = dict };
+            }
+        }
+        
+        public MyRelationsBetweenPlayerAndBlock GetRelationPlayerBlock(long owner, long user, MyOwnershipShareModeEnum share = MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock noFactionResult = MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions defaultFactionRelations = MyRelationsBetweenFactions.Enemies,
+            MyRelationsBetweenPlayerAndBlock defaultShareWithAllRelations = MyRelationsBetweenPlayerAndBlock.FactionShare)
+        {
+            if (owner == user)
+                return MyRelationsBetweenPlayerAndBlock.Owner;
+            if (owner == 0L || user == 0L)
+                return MyRelationsBetweenPlayerAndBlock.NoOwnership;
+
+            FactionInfo playerFaction1;
+            FactionInfo playerFaction2;
+            UserFactions.TryGetValue(user, out playerFaction1);
+            UserFactions.TryGetValue(owner, out playerFaction2);
+            
+            if (playerFaction1.Faction != null && playerFaction1.Faction == playerFaction2.Faction && share == MyOwnershipShareModeEnum.Faction)
+                return MyRelationsBetweenPlayerAndBlock.FactionShare;
+            if (share == MyOwnershipShareModeEnum.All)
+                return defaultShareWithAllRelations;
+            
+            if (playerFaction1.Faction == null && playerFaction2.Faction == null)
+                return noFactionResult;
+            
+            var convertToPlayerRelation = ConvertToPlayerRelation(noFactionResult);
+            var playerPlayerRelation = MyIDModule.GetRelationPlayerPlayer(user, owner, defaultFactionRelations, convertToPlayerRelation);
+
+            return ConvertToPlayerBlockRelation(playerPlayerRelation);
+        }
+
+        private static MyRelationsBetweenPlayerAndBlock ConvertToPlayerBlockRelation(MyRelationsBetweenFactions factionRelation)
+        {
+            switch (factionRelation)
+            {
+                case MyRelationsBetweenFactions.Neutral:
+                    return MyRelationsBetweenPlayerAndBlock.Neutral;
+                case MyRelationsBetweenFactions.Enemies:
+                    return MyRelationsBetweenPlayerAndBlock.Enemies;
+                case MyRelationsBetweenFactions.Allies:
+                case MyRelationsBetweenFactions.Friends:
+                    return MyRelationsBetweenPlayerAndBlock.Friends;
+                default:
+                    return MyRelationsBetweenPlayerAndBlock.Enemies;
+            }
+        }
+
+        private static MyRelationsBetweenPlayerAndBlock ConvertToPlayerBlockRelation(
+            MyRelationsBetweenPlayers playerRelation)
+        {
+            switch (playerRelation)
+            {
+                case MyRelationsBetweenPlayers.Self:
+                case MyRelationsBetweenPlayers.Allies:
+                    return MyRelationsBetweenPlayerAndBlock.Friends;
+                case MyRelationsBetweenPlayers.Neutral:
+                    return MyRelationsBetweenPlayerAndBlock.Neutral;
+                case MyRelationsBetweenPlayers.Enemies:
+                    return MyRelationsBetweenPlayerAndBlock.Enemies;
+                default:
+                    return MyRelationsBetweenPlayerAndBlock.Enemies;
+            }
+        }
+        
+        private static MyRelationsBetweenPlayers ConvertToPlayerRelation(MyRelationsBetweenFactions factionRelation)
+        {
+            switch (factionRelation)
+            {
+                case MyRelationsBetweenFactions.Neutral:
+                    return MyRelationsBetweenPlayers.Neutral;
+                case MyRelationsBetweenFactions.Enemies:
+                    return MyRelationsBetweenPlayers.Enemies;
+                case MyRelationsBetweenFactions.Allies:
+                case MyRelationsBetweenFactions.Friends:
+                    return MyRelationsBetweenPlayers.Allies;
+                default:
+                    return MyRelationsBetweenPlayers.Enemies;
+            }
+        }
+
+        private static MyRelationsBetweenPlayers ConvertToPlayerRelation(MyRelationsBetweenPlayerAndBlock blockRelation)
+        {
+            switch (blockRelation)
+            {
+                case MyRelationsBetweenPlayerAndBlock.NoOwnership:
+                case MyRelationsBetweenPlayerAndBlock.Neutral:
+                    return MyRelationsBetweenPlayers.Neutral;
+                case MyRelationsBetweenPlayerAndBlock.Owner:
+                case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                case MyRelationsBetweenPlayerAndBlock.Friends:
+                    return MyRelationsBetweenPlayers.Allies;
+                case MyRelationsBetweenPlayerAndBlock.Enemies:
+                    return MyRelationsBetweenPlayers.Enemies;
+                default:
+                    return MyRelationsBetweenPlayers.Enemies;
+            }
         }
     }
 }

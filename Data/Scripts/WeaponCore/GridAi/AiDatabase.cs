@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Text;
+using System.Threading;
 using Jakaria;
 using Sandbox.Common.ObjectBuilders;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -307,30 +309,9 @@ namespace WeaponCore.Support
                 }
                 var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
                 if (topMostParent != null) {
-
-                    MyRelationsBetweenPlayerAndBlock relationship;
-                    if (topMostParent.BigOwners.Count > 0) {
-
-                        var topOwner = topMostParent.BigOwners[0];
-                        relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction);
-
-                        if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.Friends && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare) {
-
-                            var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
-                            if (topFaction != null) {
-
-                                var rep = MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(gridOwner, topFaction.FactionId);
-                                if (topFaction.Members.ContainsKey(gridOwner))
-                                    relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
-                                else if (rep < -500)
-                                    relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
-                                else if (rep <= 500)
-                                    relationship = MyRelationsBetweenPlayerAndBlock.Neutral;
-                                else relationship = MyRelationsBetweenPlayerAndBlock.Friends;
-                            }
-                        }
-                    }
-                    else relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
+                    
+                    var relationship = ComputeGridRelaations(gridOwner, topMostParent);
+                    
                     var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
                     entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
                     return true;
@@ -342,7 +323,7 @@ namespace WeaponCore.Support
                     var controllingId = myCharacter.ControllerInfo?.ControllingIdentityId;
                     var playerId = controllingId ?? 0;
                     var type = !myCharacter.IsPlayer ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterOther : Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterHuman;
-                    var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
+                    var relationPlayerBlock = ComputePlayerRelations(gridOwner, playerId);
 
                     entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
                     return !myCharacter.IsDead && myCharacter.Integrity > 0;
@@ -370,6 +351,74 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in CreateEntInfo: {ex}"); }
             entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
             return false;
+        }
+        
+        private MyRelationsBetweenPlayerAndBlock ComputePlayerRelations(long owner, long playerId)
+        {
+            var count = 0;
+            MyRelationsBetweenPlayerAndBlock relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
+            for (int attempts = 0; attempts < 5; attempts++) {
+                
+                count++;
+                try
+                {
+                    Session.GetRelationPlayerBlock(owner, playerId, MyOwnershipShareModeEnum.Faction);
+                    break;
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+            if (count > 1)
+                Log.Line($"ComputeGridRelations failed {count - 1} times");
+            return relationship;
+        }
+
+        private MyRelationsBetweenPlayerAndBlock ComputeGridRelaations(long owner, MyCubeGrid topGrid)
+        {
+            var count = 0;
+            MyRelationsBetweenPlayerAndBlock relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
+            for (int attempts = 0; attempts < 5; attempts++)
+            {
+
+                count++;
+                try
+                {
+                    var bigowners = topGrid.BigOwners;
+                    var topOwner = bigowners.Count > 0 ? bigowners[0] : long.MinValue;
+                    if (topOwner == long.MinValue)
+                        return relationship;
+                    
+                    relationship = Session.GetRelationPlayerBlock(owner, topOwner, MyOwnershipShareModeEnum.Faction);
+
+                    if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.Friends && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare)
+                    {
+
+                        Session.FactionInfo topFaction;
+                        if (Session.UserFactions.TryGetValue(topOwner, out topFaction))
+                        {
+
+                            var rep = MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(owner, topFaction.Faction.FactionId);
+                            if (topFaction.Members.ContainsKey(owner))
+                                relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
+                            else if (rep < -500)
+                                relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
+                            else if (rep <= 500)
+                                relationship = MyRelationsBetweenPlayerAndBlock.Neutral;
+                            else relationship = MyRelationsBetweenPlayerAndBlock.Friends;
+                        }
+                    }
+                    break;
+                }
+                catch
+                {
+                    // ignored
+                }
+            }
+            if (count > 1)
+                Log.Line($"ComputePlayerRelations failed {count - 1} times");
+            return relationship;
         }
     }
 }

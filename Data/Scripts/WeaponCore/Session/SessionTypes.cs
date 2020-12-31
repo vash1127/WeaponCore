@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -58,6 +59,12 @@ namespace WeaponCore
             }
         }
 
+        internal struct FactionInfo
+        {
+            internal IMyFaction Faction;
+            internal ConcurrentDictionary<long, MyFactionMember> Members;
+        }
+        
         internal class ProblemReport
         {
             internal readonly Dictionary<string, Dictionary<string, Func<string>>> AllDicts = new Dictionary<string, Dictionary<string, Func<string>>>();
