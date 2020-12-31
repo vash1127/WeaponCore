@@ -959,6 +959,8 @@ namespace WeaponCore.Support
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
                 effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 effect.WorldMatrix = matrix;
+                var pos = matrix.Translation;
+                effect.SetTranslation(ref pos);
                 effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
                 effect.Velocity = Hit.Entity != null ? HitVelocity : Vector3D.Zero;
@@ -970,6 +972,8 @@ namespace WeaponCore.Support
                 Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
                 effect.Velocity = HitVelocity;
                 effect.WorldMatrix = matrix;
+                var pos = matrix.Translation;
+                effect.SetTranslation(ref pos);
             }
         }
         internal void AvClose()
