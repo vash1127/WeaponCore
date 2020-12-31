@@ -179,7 +179,7 @@ namespace WeaponCore.Platform
                 MyPivotPos += offSet;
             }
 
-            MyRayCheckPos = MyPivotPos + (MyPivotFwd * Comp.MyCube.CubeGrid.GridSizeHalf);
+            MyRayCheckPos = ElevationPart.Entity.PositionComp.WorldAABB.Center;
 
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));

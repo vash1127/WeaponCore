@@ -290,9 +290,7 @@ namespace WeaponCore.Support
                                 continue;
                         }
 
-                        var dir = info.TargetPos - w.MyRayCheckPos;
-                        dir.Normalize();
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, w.MyRayCheckPos + (w.Comp.MyCube.PositionComp.LocalVolume.Radius * dir), w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, w.MyRayCheckPos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
