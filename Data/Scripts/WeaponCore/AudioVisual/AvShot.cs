@@ -887,8 +887,8 @@ namespace WeaponCore.Support
             {
 
                 AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
-                AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
-                AmmoEffect.UserScale = 1;
+                AmmoEffect.UserScale = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
+                //AmmoEffect.UserScale = 1;
 
 
                 AmmoParticleStopped = false;
@@ -905,8 +905,8 @@ namespace WeaponCore.Support
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
             {
                 FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
-                FieldEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
-                FieldEffect.UserScale = 1;
+                FieldEffect.UserScale = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
+                //FieldEffect.UserScale = 1;
                 FieldParticleStopped = false;
                 FieldParticleInited = true;
             }
