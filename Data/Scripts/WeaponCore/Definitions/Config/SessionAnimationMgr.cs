@@ -1093,7 +1093,7 @@ namespace WeaponCore
                         }
                         particleEvent.Effect.WorldMatrix = matrix;
                         particleEvent.Effect.UserColorMultiplier = particleEvent.Color;
-                        particleEvent.Effect.UserScale = particleEvent.Scale;
+                        particleEvent.Effect.UserRadiusMultiplier = particleEvent.Scale;
                     }
                     else if (particleEvent.Effect.IsStopped)
                     {

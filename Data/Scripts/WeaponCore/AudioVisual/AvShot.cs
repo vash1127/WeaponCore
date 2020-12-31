@@ -887,8 +887,8 @@ namespace WeaponCore.Support
             {
 
                 AmmoEffect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Color;
-                AmmoEffect.UserScale = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
-                //AmmoEffect.UserScale = 1;
+                AmmoEffect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Ammo.Extras.Scale;
+                AmmoEffect.UserScale = 1;
 
 
                 AmmoParticleStopped = false;
@@ -905,8 +905,8 @@ namespace WeaponCore.Support
             if (MyParticlesManager.TryCreateParticleEffect(AmmoDef.AreaEffect.Pulse.Particle.Name, ref TriggerMatrix, ref pos, uint.MaxValue, out FieldEffect))
             {
                 FieldEffect.UserColorMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Color;
-                FieldEffect.UserScale = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
-                //FieldEffect.UserScale = 1;
+                FieldEffect.UserRadiusMultiplier = AmmoDef.AreaEffect.Pulse.Particle.Extras.Scale;
+                FieldEffect.UserScale = 1;
                 FieldParticleStopped = false;
                 FieldParticleInited = true;
             }
@@ -959,8 +959,6 @@ namespace WeaponCore.Support
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
                 effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
                 effect.WorldMatrix = matrix;
-                var pos = matrix.Translation;
-                effect.SetTranslation(ref pos);
                 effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
                 Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
                 effect.Velocity = Hit.Entity != null ? HitVelocity : Vector3D.Zero;
@@ -972,8 +970,6 @@ namespace WeaponCore.Support
                 Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
                 effect.Velocity = HitVelocity;
                 effect.WorldMatrix = matrix;
-                var pos = matrix.Translation;
-                effect.SetTranslation(ref pos);
             }
         }
         internal void AvClose()

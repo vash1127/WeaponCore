@@ -378,7 +378,7 @@ namespace WeaponCore.Platform
                 if (MyParticlesManager.TryCreateParticleEffect(particle.Name, ref matrix, ref eInfo.Position, uint.MaxValue, out ejectEffect))
                 {
                     ejectEffect.UserColorMultiplier = particle.Color;
-                    var scaler = particle.Extras.Scale;
+                    var scaler = 1;
                     ejectEffect.UserRadiusMultiplier = particle.Extras.Scale * scaler;
                     var scale = particle.ShrinkByDistance ? MathHelper.Clamp(MathHelper.Lerp(1, 0, Vector3D.Distance(System.Session.CameraPos, eInfo.Position) / particle.Extras.MaxDistance), 0.05f, 1) : 1;
                     ejectEffect.UserScale = (float)scale * scaler;

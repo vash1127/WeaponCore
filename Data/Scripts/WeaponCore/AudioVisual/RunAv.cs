@@ -124,8 +124,8 @@ namespace WeaponCore.Support
                             if (MyParticlesManager.TryCreateParticleEffect(av.AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out hitEffect)) {
 
                                 hitEffect.UserColorMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                                var scaler = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
-                                //hitEffect.UserScale = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
+                                var scaler = 1;
+                                hitEffect.UserRadiusMultiplier = av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale * scaler;
                                 var scale = av.AmmoDef.Const.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(1, 0, av.DistanceToLine / av.AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance), 0.05f, 1) : 1;
                                 hitEffect.UserScale = scale * scaler;
                                 hitEffect.Velocity = av.Hit.HitVelocity;
@@ -411,7 +411,7 @@ namespace WeaponCore.Support
 
                         effect = weapon.BarrelEffects1[muzzle.MuzzleId];
                         effect.UserColorMultiplier = particles.Barrel1.Color;
-                        effect.UserScale = particles.Barrel1.Extras.Scale;
+                        effect.UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                         effect.WorldMatrix = matrix;
                         weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                         effect.Play();
@@ -480,7 +480,7 @@ namespace WeaponCore.Support
                         if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
                             effect = weapon.BarrelEffects2[muzzle.MuzzleId];
                             effect.UserColorMultiplier = particles.Barrel2.Color;
-                            effect.UserScale = particles.Barrel2.Extras.Scale;
+                            effect.UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                             effect.WorldMatrix = matrix;
                             weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             effect.Play();
