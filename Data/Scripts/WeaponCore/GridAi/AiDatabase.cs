@@ -303,6 +303,91 @@ namespace WeaponCore.Support
         {
             try
             {
+                if (entity == null)
+                {
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
+                    return false;
+                }
+                var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
+                if (topMostParent != null)
+                {
+
+                    MyRelationsBetweenPlayerAndBlock relationship;
+                    var bigOwners = topMostParent.BigOwners;
+                    var topOwner = bigOwners.Count > 0 ? bigOwners[0] : long.MinValue;
+                    if (topOwner != long.MinValue)
+                    {
+
+                        relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction);
+
+                        if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.Friends && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare)
+                        {
+
+                            var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
+                            if (topFaction != null)
+                            {
+
+                                var rep = MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(gridOwner, topFaction.FactionId);
+                                if (topFaction.Members.ContainsKey(gridOwner))
+                                    relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
+                                else if (rep < -500)
+                                    relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
+                                else if (rep <= 500)
+                                    relationship = MyRelationsBetweenPlayerAndBlock.Neutral;
+                                else relationship = MyRelationsBetweenPlayerAndBlock.Friends;
+                            }
+                        }
+                    }
+                    else relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
+                    var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
+                    return true;
+                }
+
+                var myCharacter = entity as IMyCharacter;
+                if (myCharacter != null)
+                {
+
+                    var controllingId = myCharacter.ControllerInfo?.ControllingIdentityId;
+                    var playerId = controllingId ?? 0;
+                    var type = !myCharacter.IsPlayer ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterOther : Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterHuman;
+                    var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
+
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
+                    return !myCharacter.IsDead && myCharacter.Integrity > 0;
+                }
+
+                const MyRelationsBetweenPlayerAndBlock relationship1 = MyRelationsBetweenPlayerAndBlock.Neutral;
+                var myPlanet = entity as MyPlanet;
+
+                if (myPlanet != null)
+                {
+                    const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Planet;
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Tick);
+                    return true;
+                }
+                if (entity is MyVoxelMap)
+                {
+                    const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Asteroid;
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Tick);
+                    return true;
+                }
+                if (entity is MyMeteor)
+                {
+                    const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Meteor;
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, new BoundingBoxD(), Session.Tick);
+                    return true;
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in CreateEntInfo: {ex}"); }
+            entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
+            return false;
+        }
+
+        internal bool CreateEntInfoNew(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+        {
+            try
+            {
                 if (entity == null) {
                     entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
                     return false;
