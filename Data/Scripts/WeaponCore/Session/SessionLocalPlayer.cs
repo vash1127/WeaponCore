@@ -22,7 +22,12 @@ namespace WeaponCore
         {
             InGridAiBlock = false;
             ActiveControlBlock = ControlledEntity as MyCubeBlock;
-            ActiveCockPit = ControlledEntity as MyCockpit;
+           
+            var cockPit = ControlledEntity as MyCockpit;
+            if (cockPit != null && cockPit.EnableShipControl)
+                ActiveCockPit = cockPit;
+            else ActiveCockPit = null;
+            
             long oldBlockId;
             var activeBlock = ActiveCockPit ?? ActiveControlBlock;
             if (activeBlock != null && ActiveControlBlock != null && GridToMasterAi.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
