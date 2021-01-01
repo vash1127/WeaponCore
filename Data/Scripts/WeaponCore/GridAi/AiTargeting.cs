@@ -32,7 +32,7 @@ namespace WeaponCore.Support
             if (!w.Comp.Data.Repo.Base.State.TrackingReticle)
             {
                 w.AimCone.ConeDir = w.MyPivotFwd;
-                w.AimCone.ConeTip = w.MyPivotPos;
+                w.AimCone.ConeTip = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
                 var pCount = w.Comp.Ai.LiveProjectile.Count;
                 var shootProjectile = pCount > 0 && w.System.TrackProjectile && w.Comp.Data.Repo.Base.Set.Overrides.Projectiles;
                 var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
@@ -186,7 +186,8 @@ namespace WeaponCore.Support
             var ai = comp.Ai;
             session.TargetRequests++;
             var physics = session.Physics;
-            var weaponPos = w.MyPivotPos;
+            var barrelPos = w.BarrelOrigin;
+            var muzzlePos = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -257,7 +258,7 @@ namespace WeaponCore.Support
                     if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius && maxTargetRadius < 8192 || !focusTarget && info.OffenseRating <= 0) continue;
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
-                    var targetDistSqr = Vector3D.DistanceSquared(targetCenter, w.MyPivotPos);
+                    var targetDistSqr = Vector3D.DistanceSquared(targetCenter, muzzlePos);
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
 
                     if (water != null) {
@@ -268,6 +269,8 @@ namespace WeaponCore.Support
                     session.TargetChecks++;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
+                    Vector3D targetNormDir;
+                    Vector3D predictedMuzzlePos;
 
                     if (info.IsGrid) {
 
@@ -285,12 +288,14 @@ namespace WeaponCore.Support
                         else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
 
                         if (w.Comp.Ai.FriendlyShieldNear) {
-                            var targetDir = newCenter - weaponPos;
-                            if (w.HitFriendlyShield(newCenter, targetDir))
+                            var targetDir = newCenter - muzzlePos;
+                            if (w.HitFriendlyShield(muzzlePos, newCenter, targetDir))
                                 continue;
                         }
+                        targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
+                        predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
 
-                        if (!AcquireBlock(s, w.Comp.Ai, target, info, w.MyRayCheckPos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
+                        if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
                         return;
@@ -304,22 +309,23 @@ namespace WeaponCore.Support
 
                     if (w.Comp.Ai.FriendlyShieldNear)
                     {
-                        var targetDir = predictedPos - weaponPos;
-                        if (w.HitFriendlyShield(predictedPos, targetDir))
+                        var targetDir = predictedPos - muzzlePos;
+                        if (w.HitFriendlyShield(muzzlePos, predictedPos, targetDir))
                             continue;
                     }
 
                     session.TopRayCasts++;
 
-                    var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     
                     IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, targetPos, out hitInfo, CollisionLayers.DefaultCollisionLayer);
+                    Vector3D.Normalize(targetNormDir = targetCenter - barrelPos);
+                    predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
+                    physics.CastRay(predictedMuzzlePos, targetCenter, out hitInfo, CollisionLayers.DefaultCollisionLayer);
 
                     if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
                         double rayDist;
-                        Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                        Vector3D.Distance(ref muzzlePos, ref targetCenter, out rayDist);
                         var shortDist = rayDist * (1 - hitInfo.Fraction);
                         var origDist = rayDist * hitInfo.Fraction;
                         var topEntId = info.Target.GetTopMostParent().EntityId;
@@ -638,7 +644,7 @@ namespace WeaponCore.Support
             var s = w.System;
             var physics = s.Session.Physics;
             var target = w.NewTarget;
-            var weaponPos = w.MyPivotPos;
+            var weaponPos = w.BarrelOrigin;
 
             var collection = ai.GetProCache();
             var numOfTargets = collection.Count;
@@ -669,7 +675,7 @@ namespace WeaponCore.Support
                 var card = deck[x];
                 var lp = collection[card];
                 var cube = lp.Info.Target.Entity as MyCubeBlock;
-                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.MyGrid)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) < w.MinTargetDistanceSqr) continue;
+                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.MyGrid)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, weaponPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, weaponPos) < w.MinTargetDistanceSqr) continue;
 
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, ref lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))

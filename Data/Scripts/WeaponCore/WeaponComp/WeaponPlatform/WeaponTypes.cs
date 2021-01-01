@@ -22,13 +22,14 @@ namespace WeaponCore.Platform
                 Weapon.Casting = false;
                 var masterWeapon = Weapon.TrackTarget ? Weapon : Weapon.Comp.TrackingWeapon;
                 var ignoreTargets = Weapon.Target.IsProjectile || Weapon.Target.Entity is IMyCharacter;
-
+                var trackingCheckPosition = Weapon.Dummies[Weapon.MiddleMuzzleIndex].CachedPos;
+                
                 double rayDist = 0;
                 if (Weapon.Comp.Ai.ShieldNear)
                 {
                     var targetPos = Weapon.Target.Projectile?.Position ?? Weapon.Target.Entity.PositionComp.WorldMatrixRef.Translation;
-                    var targetDir = targetPos - Weapon.MyPivotPos;
-                    if (Weapon.HitFriendlyShield(targetPos, targetDir))
+                    var targetDir = targetPos - trackingCheckPosition;
+                    if (Weapon.HitFriendlyShield(trackingCheckPosition, targetPos, targetDir))
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
@@ -67,6 +68,18 @@ namespace WeaponCore.Platform
 
                     if (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid))
                     {
+
+                        if (Weapon.System.Session.DebugLos) {
+                            Log.Line($"[RayCheckHitOwnGrid] Weapon:{Weapon.System.WeaponName} - DistanceFromCheckPosition:{Vector3D.Distance(trackingCheckPosition, hitInfo.Position)} - ClosestBlockIsWeapon:{Weapon.Comp.Ai.MyGrid.GetTargetedBlockLite(hitInfo.Position) == Weapon.Comp.MyCube.SlimBlock}");
+
+                            var weaponPos = trackingCheckPosition;
+                            var hitPos = hitInfo.Position;
+                            if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref hitPos, out rayDist);
+
+                            Weapon.System.Session.LosDebugList.Add(new Session.LosDebug { HitTick = Weapon.System.Session.Tick, Line = new LineD(weaponPos, hitPos) });
+                            Weapon.System.Session.LosDebugList.ApplyAdditions();
+                        }
+                        
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         return;
@@ -86,7 +99,7 @@ namespace WeaponCore.Platform
                     var minSize = topAsGrid.GridSizeR * 8;
                     var maxChange = halfExtMin > minSize ? halfExtMin : minSize;
                     var targetPos = Weapon.Target.Entity.PositionComp.WorldMatrixRef.Translation;
-                    var weaponPos = Weapon.MyPivotPos;
+                    var weaponPos = trackingCheckPosition;
 
                     if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
                     var newHitShortDist = rayDist * (1 - hitInfo.Fraction);

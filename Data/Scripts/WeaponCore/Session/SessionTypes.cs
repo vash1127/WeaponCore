@@ -64,6 +64,12 @@ namespace WeaponCore
             internal IMyFaction Faction;
             internal ConcurrentDictionary<long, MyFactionMember> Members;
         }
+
+        internal struct LosDebug
+        {
+            internal LineD Line;
+            internal uint HitTick;
+        }
         
         internal class ProblemReport
         {

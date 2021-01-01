@@ -103,17 +103,17 @@ namespace WeaponCore.Support
             MySimpleObjectDraw.DrawTransparentBox(ref worldMatrix, ref localbox, ref color, raster, 1, thickness, MyStringId.GetOrCompute("Square"), MyStringId.GetOrCompute("Square"));
         }
 
-        public static void DrawSingleVec(Vector3D vec, float size, Color color)
+        public static void DrawSingleVec(Vector3D vec, float size, Color color, bool solid = true, int divideRatio = 20, float lineWidth = 0.5f)
         {
-            DrawScaledPoint(vec, size, color, 20);
+            DrawScaledPoint(vec, size, color, divideRatio, solid, lineWidth);
         }
 
-        public static void DrawScaledPoint(Vector3D pos, double radius, Color color, int lineWidth = 1)
+        public static void DrawScaledPoint(Vector3D pos, double radius, Color color, int divideRatio = 1, bool solid = true, float lineWidth = -1)
         {
             var posMatCenterScaled = MatrixD.CreateTranslation(pos);
             var posMatScaler = MatrixD.Rescale(posMatCenterScaled, radius);
             var material = MyStringId.GetOrCompute("square");
-            MySimpleObjectDraw.DrawTransparentSphere(ref posMatScaler, 1f, ref color, MySimpleObjectRasterizer.Solid, lineWidth, null, material, -1, -1);
+            MySimpleObjectDraw.DrawTransparentSphere(ref posMatScaler, 1f, ref color, solid ? MySimpleObjectRasterizer.Solid : MySimpleObjectRasterizer.Wireframe, divideRatio, null, material, lineWidth, -1);
         }
 
         public static void DrawSphere(BoundingSphereD sphere, Color color)

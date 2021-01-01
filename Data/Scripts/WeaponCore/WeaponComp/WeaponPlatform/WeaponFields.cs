@@ -66,10 +66,11 @@ namespace WeaponCore.Platform
         internal int ArmorHits;
         internal int ShotsFired;
         internal int LastMuzzle;
+        internal int MiddleMuzzleIndex;
         internal List<MyEntity> HeatingParts;
         internal Vector3D GravityPoint;
         internal Vector3D MyPivotPos;
-        internal Vector3D MyRayCheckPos;
+        internal Vector3D BarrelOrigin;
         internal Vector3D MyPivotFwd;
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
@@ -169,7 +170,7 @@ namespace WeaponCore.Platform
         internal double MaxTargetDistanceSqr;
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
-
+        internal double MuzzleDistToBarrelCenter;
         internal bool ClientReloading;
         internal bool Rotating;
         internal bool IsTurret;
@@ -358,7 +359,8 @@ namespace WeaponCore.Platform
             AzimuthPart = new PartInfo {Entity = azimuthPart};
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
-            
+            MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
+
             ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
             AzimuthInitFwdDir = azimuthPart.PositionComp.LocalMatrixRef.Forward;
             

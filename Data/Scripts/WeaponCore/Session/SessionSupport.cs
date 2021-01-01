@@ -115,6 +115,21 @@ namespace WeaponCore
             }
         }
 
+        internal void LosDebuging()
+        {
+            foreach (var info in LosDebugList)
+            {
+                DsDebugDraw.DrawLine(info.Line, Color.Red, 1f);
+                DsDebugDraw.DrawSingleVec(info.Line.To, 2.5f, Color.Black);
+                DsDebugDraw.DrawSingleVec(info.Line.From, 50f, Color.Green, false, 20, 1f);
+                DsDebugDraw.DrawSingleVec(info.Line.From, 2.5f, Color.Blue, true);
+
+                if (Tick - info.HitTick > 1200)
+                    LosDebugList.Remove(info);
+            }
+            LosDebugList.ApplyRemovals();
+        }
+        
         internal void ProfilePerformance()
         {
             var netTime1 = DsUtil.GetValue("network1");

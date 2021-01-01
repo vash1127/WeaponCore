@@ -124,12 +124,13 @@ namespace WeaponCore.Platform
             PosChangedTick = Comp.Session.Tick;
             var azimuthMatrix = AzimuthPart.Entity.PositionComp.WorldMatrixRef;
             var elevationMatrix = ElevationPart.Entity.PositionComp.WorldMatrixRef;
-            var weaponCenter = MuzzlePart.Entity.PositionComp.WorldMatrixRef.Translation;
+            var weaponCenter = MuzzlePart.Entity.PositionComp.WorldAABB.Center;
+            BarrelOrigin = weaponCenter;
+            
             var centerTestPos = azimuthMatrix.Translation;
             var muzzleRadius = MuzzlePart.Entity.PositionComp.LocalVolume.Radius;
             MyPivotUp = azimuthMatrix.Up;
             MyPivotFwd = elevationMatrix.Forward;
-
 
             if (System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
             {
@@ -179,8 +180,7 @@ namespace WeaponCore.Platform
                 MyPivotPos += offSet;
             }
 
-            MyRayCheckPos = ElevationPart.Entity.PositionComp.WorldAABB.Center;
-
+            
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyPivotTestLine = new LineD(MyPivotPos, MyPivotPos - (WeaponConstMatrix.Left * 10));

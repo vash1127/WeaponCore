@@ -174,7 +174,7 @@ namespace WeaponCore
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly List<GridAi> GridsToUpdateInvetories = new List<GridAi>(64);
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
-
+        internal readonly CachingList<LosDebug> LosDebugList = new CachingList<LosDebug>(128);
 
         internal readonly int[] AuthorSettings = new int[6];
 
@@ -331,7 +331,7 @@ namespace WeaponCore
         internal bool InventoryUpdate;
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
-
+        internal bool DebugLos = false;
         [Flags]
         internal enum SafeZoneAction
         {

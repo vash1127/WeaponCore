@@ -184,9 +184,6 @@ namespace WeaponCore.Platform
             Vector3D targetCenter;
             targetLock = false;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
-            if (rayCheckTest && !weapon.RayCheckTest())
-                return false;
             if (weapon.Comp.Data.Repo.Base.State.TrackingReticle)
                 targetCenter = weapon.Comp.Session.PlayerDummyTargets[weapon.Comp.Data.Repo.Base.State.PlayerId].Position;
             else if (target.IsProjectile)
@@ -265,7 +262,14 @@ namespace WeaponCore.Platform
                         w.Target.Reset(weapon.System.Session.Tick, Target.States.Designator);
                 }
             }
-            targetLock = isTracking && weapon.Target.IsAligned;
+
+            var fireControlReady = isTracking && weapon.Target.IsAligned;
+
+            var rayCheckTest = !weapon.Comp.Session.IsClient && fireControlReady && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            if (rayCheckTest && !weapon.RayCheckTest())
+                return false;
+            
+            targetLock = fireControlReady;
             return isTracking;
         }
 
@@ -273,7 +277,11 @@ namespace WeaponCore.Platform
         {
             LastSmartLosCheck = Comp.Ai.Session.Tick;
             IHitInfo hitInfo;
-            Comp.Ai.Session.Physics.CastRay(MyPivotPos + (MyPivotFwd * Comp.Ai.GridVolume.Radius), MyPivotPos, out hitInfo, 15, false);
+
+            var middleMuzzle = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
+            var trackingCheckPosition = Dummies[middleMuzzle].Info.Position;
+            
+            Comp.Ai.Session.Physics.CastRay(trackingCheckPosition + (MyPivotFwd * Comp.Ai.GridVolume.Radius), trackingCheckPosition, out hitInfo, 15, false);
             var grid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
             if (grid != null && grid.IsSameConstructAs(Comp.Ai.MyGrid) && grid.GetTargetedBlock(hitInfo.Position + (-MyPivotFwd * 0.1f)) != Comp.MyCube.SlimBlock)
             {
@@ -939,6 +947,9 @@ namespace WeaponCore.Platform
         {
             var tick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
+
+            var trackingCheckPosition = Dummies[MiddleMuzzleIndex].Info.Position;
+            
             if (System.Values.HardPoint.Other.MuzzleCheck)
             {
                 LastMuzzleCheck = tick;
@@ -955,7 +966,7 @@ namespace WeaponCore.Platform
             if (Target.IsFakeTarget)
             {
                 Casting = true;
-                Comp.Session.Physics.CastRayParallel(ref MyRayCheckPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
+                Comp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return true;
             }
             if (Comp.Data.Repo.Base.State.TrackingReticle) return true;
@@ -998,7 +1009,7 @@ namespace WeaponCore.Platform
             }
             
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrixRef.Translation;
-            var distToTargetSqr = Vector3D.DistanceSquared(targetPos, MyPivotPos);
+            var distToTargetSqr = Vector3D.DistanceSquared(targetPos, trackingCheckPosition);
             if (distToTargetSqr > MaxTargetDistanceSqr && distToTargetSqr < MinTargetDistanceSqr)
             {
                 masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckDistExceeded);
@@ -1020,7 +1031,7 @@ namespace WeaponCore.Platform
 
             Casting = true;
 
-            Comp.Session.Physics.CastRayParallel(ref MyRayCheckPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
+            Comp.Session.Physics.CastRayParallel(ref trackingCheckPosition, ref targetPos, CollisionLayers.DefaultCollisionLayer, RayCallBack.NormalShootRayCallBack);
             return true;
         }
 
@@ -1040,11 +1051,11 @@ namespace WeaponCore.Platform
             }
         }
 
-        public bool HitFriendlyShield(Vector3D targetPos, Vector3D dir)
+        public bool HitFriendlyShield(Vector3D weaponPos, Vector3D targetPos, Vector3D dir)
         {
-            var testRay = new RayD(MyPivotPos, dir);
+            var testRay = new RayD(weaponPos, dir);
             Comp.Ai.TestShields.Clear();
-            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, MyPivotPos);
+            var checkDistanceSqr = Vector3.DistanceSquared(targetPos, weaponPos);
 
             for (int i = 0; i < Comp.Ai.NearByFriendlyShields.Count; i++)
             {
@@ -1116,6 +1127,9 @@ namespace WeaponCore.Platform
 
             if (MinAzToleranceRadians > MaxAzToleranceRadians)
                 MinAzToleranceRadians -= 6.283185f;
+
+            var dummyInfo = Dummies[MiddleMuzzleIndex];
+            MuzzleDistToBarrelCenter = Vector3D.Distance(dummyInfo.Info.Position, dummyInfo.Entity.PositionComp.WorldAABB.Center);
         }
     }
 }

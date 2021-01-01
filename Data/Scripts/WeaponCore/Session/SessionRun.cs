@@ -204,7 +204,12 @@ namespace WeaponCore
         {
             try
             {
+
                 if (SuppressLoad || DedicatedServer || _lastDrawTick == Tick || _paused) return;
+                
+                if (DebugLos)
+                    LosDebuging();
+                
                 _lastDrawTick = Tick;
                 DsUtil.Start("draw");
                 CameraMatrix = Session.Camera.WorldMatrix;
