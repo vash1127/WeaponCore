@@ -127,7 +127,7 @@ namespace WeaponCore
 
                         if (w.ActiveAmmoDef.AmmoDef.Const.Reloadable && !w.System.DesignatorWeapon && !w.Reloading) {
 
-                            if (IsServer && w.Ammo.CurrentAmmo == 0)
+                            if (IsServer && (w.Ammo.CurrentAmmo == 0 || w.CheckInventorySystem))
                                 w.ComputeServerStorage();
                             else if (IsClient) {
 

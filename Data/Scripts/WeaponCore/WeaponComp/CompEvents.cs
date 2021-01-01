@@ -107,6 +107,10 @@ namespace WeaponCore.Support
                 if (Session.BlockInventoryItems[BlockInventory].TryRemove(item.ItemId, out removedItem))
                     Session.BetterInventoryItems.Return(removedItem);
             }
+            if (Session.IsServer && amount <= 0) {
+                for (int i = 0; i < Platform.Weapons.Length; i++)
+                    Platform.Weapons[i].CheckInventorySystem = true;
+            }
         }
 
         private static void OnMarkForClose(MyEntity myEntity)
