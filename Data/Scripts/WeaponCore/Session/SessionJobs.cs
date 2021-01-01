@@ -224,10 +224,12 @@ namespace WeaponCore
                         var fat = allFat[j];
                         if (!(fat is IMyTerminalBlock)) continue;
                         terminals++;
-
                         using (fat.Pin()) {
 
+
                             if (fat.MarkedForClose) continue;
+                            var cockpit = fat as MyCockpit;
+
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
                             else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
@@ -237,7 +239,7 @@ namespace WeaponCore
 
                                 newTypeMap[Offense].Add(fat);
                             }
-                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || fat is MyCockpit || fat is MyRemoteControl || fat is IMyDecoy) newTypeMap[Utility].Add(fat);
+                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna || cockpit != null && cockpit.EnableShipControl || fat is MyRemoteControl || fat is IMyDecoy || fat is IMyShipGrinder || fat is IMyShipDrill) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);

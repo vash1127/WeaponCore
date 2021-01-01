@@ -385,6 +385,7 @@ namespace WeaponCore.Support
                     if (effectExists) {
 
                         if (muzzle.Av1Looping || manualExpire) effect.Stop();
+
                         weapon.BarrelEffects1[muzzle.MuzzleId] = null;
                     }
                     weapon.StopBarrelAv = false;
@@ -454,7 +455,8 @@ namespace WeaponCore.Support
                     {
 
                         if (effectExists) {
-                            if (muzzle.Av2Looping || manualExpire) weapon.BarrelEffects2[muzzle.MuzzleId].Stop();
+                            if (muzzle.Av2Looping || manualExpire) effect.Stop();
+                            
                             weapon.BarrelEffects2[muzzle.MuzzleId] = null;
                         }
                         muzzle.Av2Looping = false;

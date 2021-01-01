@@ -89,8 +89,7 @@ namespace WeaponCore
                     foreach (var t in AllDefinitions)
                     {
                         var name = t.Id.SubtypeName;
-                        var contains = name.Contains("BlockArmor");
-                        if (contains)
+                        if (name.Contains("BlockArmor"))
                         {
                             AllArmorBaseDefinitions.Add(t);
                             if (name.Contains("HeavyBlockArmor")) HeavyArmorBaseDefinitions.Add(t);
