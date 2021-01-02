@@ -88,7 +88,7 @@ namespace WeaponCore
 
             var depletable = info.AmmoDef.AreaEffect.EwarFields.Depletable;
             var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
-            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
+            ComputeEffects(grid, info.AmmoDef, info.AmmoDef.Const.AreaEffectDamage, ref healthPool, attackerId, hitEnt.Blocks);
 
             if (depletable) 
                 info.BaseHealthPool -= healthPool;
@@ -152,7 +152,7 @@ namespace WeaponCore
         }
 
 
-        private void ComputeEffects(MyCubeGrid grid, AmmoDef ammoDef, float damagePool, float healthPool, long attackerId, List<IMySlimBlock> blocks)
+        private void ComputeEffects(MyCubeGrid grid, AmmoDef ammoDef, float damagePool, ref float healthPool, long attackerId, List<IMySlimBlock> blocks)
         {
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var eWarInfo = ammoDef.AreaEffect.EwarFields;
@@ -278,7 +278,8 @@ namespace WeaponCore
                 foreach (var v in ge.Value)
                 {
                     GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                    ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
+                    var healthPool = v.Value.AmmoDef.Health;
+                    ComputeEffects(ge.Key, v.Value.AmmoDef, v.Value.Damage * v.Value.Hits, ref healthPool, v.Value.AttackerId, _tmpEffectCubes);
                     _tmpEffectCubes.Clear();
                     v.Value.Clean();
                     GridEffectPool.Return(v.Value);
@@ -381,7 +382,7 @@ namespace WeaponCore
             {
                 var aPos = grid.GridIntegerToWorld(a.Position);
                 var bPos = grid.GridIntegerToWorld(b.Position);
-                return -Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
             });
         }
 
