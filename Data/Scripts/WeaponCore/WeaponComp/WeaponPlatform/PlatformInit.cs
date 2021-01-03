@@ -101,21 +101,13 @@ namespace WeaponCore.Platform
             else
                 return HardCrash(comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
             
+            /*
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
             SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
-            if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, Comp.Ai, out b, out s))
-            {
-                if (!Comp.Session.DedicatedServer)
-                {
-                    if (Comp.MyCube.OwnerId == MyAPIGateway.Session.Player.Identity.IdentityId)
-                    {
-                        MyAPIGateway.Utilities.ShowNotification($"Block {Comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
-                    }
-                }
-                return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
-            }
+            if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, out b, out s))
+                return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon");
 
             Parts.Entity = comp.Entity as MyEntity;
 
@@ -595,7 +587,7 @@ namespace WeaponCore.Platform
             
             if (Comp.Session.HandlesInput) {
                 if (suppress)
-                    MyAPIGateway.Utilities.ShowNotification($"WeaponCore hard crashed during weapon block init, shutting down, please send log files to server admin and/or submit a bug report to weapon author: {comp.Platform?.Structure?.ModPath} - {comp.MyCube.BlockDefinition.Id.SubtypeName}", 10000);
+                    MyAPIGateway.Utilities.ShowNotification($"WeaponCore hard crashed during block init, shutting down\n Send log files to server admin or submit a bug report to mod author:\n {comp.Platform?.Structure?.ModPath} - {comp.MyCube.BlockDefinition.Id.SubtypeName}", 10000);
             }
 
             return State;
