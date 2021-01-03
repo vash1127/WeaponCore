@@ -148,6 +148,69 @@ namespace WeaponCore
         }
 
         private readonly Color RestrictionAreaColor = new Color(128, 0, 128, 96);
+        private readonly Color UninitializedColor = new Color(255, 0, 0, 200);
+
+        private BoundingSphereD NearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);
+        private List<MyEntity> GridsNearCamera = new List<MyEntity>();
+        private List<MyCubeBlock> UninitializedBlocks = new List<MyCubeBlock>();
+        private void DrawDisabledGuns()
+        {
+            if (Tick300)
+            {
+                Log.Line("Getting grids to check");
+                NearbyGridsTestSphere.Center = CameraPos;
+                GridsNearCamera.Clear();
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref NearbyGridsTestSphere, GridsNearCamera);
+            }
+            if (Tick60)
+            {
+                Log.Line("Finding bad blocks");
+                UninitializedBlocks.Clear();
+                foreach (var ent in GridsNearCamera)
+                {
+                    var grid = ent as MyCubeGrid;
+                    GridAi gridAi;
+                    if (grid != null)
+                    {
+                        foreach (var block in grid.GetFatBlocks())
+                        {
+                            if (block.IsFunctional && WeaponCoreBlockDefs.ContainsKey(block.BlockDefinition.Id.SubtypeId.String))
+                            {
+                                var hasAi = GridToMasterAi.TryGetValue(block.CubeGrid, out gridAi);
+                                if (hasAi)
+                                {
+                                    bool found = false;
+                                    foreach (var weapon in gridAi.Weapons)
+                                    {
+                                        if (weapon.MyCube == block)
+                                        {
+                                            found = true;
+                                        }
+                                    }
+                                    if (!found)
+                                    {
+                                        UninitializedBlocks.Add(block);
+                                    }
+                                }
+                                else
+                                {
+                                    UninitializedBlocks.Add(block);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            foreach (var badBlock in UninitializedBlocks)
+            {
+                if (badBlock.InScene)
+                {
+                    MyOrientedBoundingBoxD blockBox;
+                    SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
+                    DsDebugDraw.DrawBox(blockBox, UninitializedColor);
+                }
+            }
+        }
 
         private void UpdatePlacer()
         {
@@ -177,10 +240,10 @@ namespace WeaponCore
                         {
                             MyOrientedBoundingBoxD restrictedBox;
                             BoundingSphereD restrictedSphere;
-                            if (IsWeaponAreaRestricted(subtypeIdHash, MyCubeBuilder.Static.GetBuildBoundingBox(), grid, 0, out restrictedBox, out restrictedSphere))
+                            if (IsWeaponAreaRestricted(subtypeIdHash, MyCubeBuilder.Static.GetBuildBoundingBox(), grid, 0, null, out restrictedBox, out restrictedSphere))
                             {
-                                MyCubeBuilder.Static.NotifyPlacementUnable();
-                                MyCubeBuilder.Static.Deactivate();
+                                //MyCubeBuilder.Static.NotifyPlacementUnable();
+                                //MyCubeBuilder.Static.Deactivate();
                             }
 
                             if (MyAPIGateway.Session.Config.HudState == 1)

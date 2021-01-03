@@ -192,7 +192,7 @@ namespace WeaponCore
 
                 if (Placer != null) UpdatePlacer();
 
-                if(AnimationsToProcess.Count > 0 || ThreadedAnimations.Count > 0) ProcessAnimations();
+                if (AnimationsToProcess.Count > 0 || ThreadedAnimations.Count > 0) ProcessAnimations();
 
                 if (GridTask.IsComplete)
                     CheckDirtyGrids();
@@ -230,6 +230,7 @@ namespace WeaponCore
                     TargetUi.DrawTargetUi();
                 }
                 Av.Run();
+                DrawDisabledGuns();
                 DsUtil.Complete("draw", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
