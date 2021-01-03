@@ -586,7 +586,6 @@ namespace WeaponCore.Platform
         internal PlatformState HardCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
         {
             Log.Line($"{message}");
-            suppress = false;
             if (suppress)
                 comp.Session.SuppressWc = true;
             
