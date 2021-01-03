@@ -176,7 +176,7 @@ namespace WeaponCore
                         {
                             if (block.IsFunctional && WeaponCoreBlockDefs.ContainsKey(block.BlockDefinition.Id.SubtypeId.String))
                             {
-                                var hasAi = GridToMasterAi.TryGetValue(block.CubeGrid, out gridAi);
+                                var hasAi = GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi);
                                 if (hasAi)
                                 {
                                     bool found = false;
