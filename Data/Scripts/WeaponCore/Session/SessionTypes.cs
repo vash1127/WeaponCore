@@ -108,9 +108,14 @@ namespace WeaponCore
 
             internal void GenerateReport(MyCubeBlock targetBlock)
             {
+                GridAi ai;
                 if (Generating || Session.Tick - LastRequestTick < RequestTime) {
                     return;
                 }
+                
+                if (!Session.GridTargetingAIs.TryGetValue(targetBlock.CubeGrid, out ai) || !ai.WeaponBase.ContainsKey(targetBlock))
+                    Log.Line($"Failed to generate user report, either grid does not have Weaponcore or this block this wc block is not initialized.");
+                
                 Log.Line($"Generate User Weapon Report");
                 Generating = true;
                 LastRequestTick = Session.Tick;

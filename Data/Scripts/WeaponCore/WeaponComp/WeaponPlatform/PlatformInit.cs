@@ -41,7 +41,7 @@ namespace WeaponCore.Platform
         {
             if (!comp.Session.WeaponPlatforms.ContainsKey(comp.MyCube.BlockDefinition.Id))
             {
-                Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) was not found in platform setup, I am crashing now Dave.");
+                HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) was not found in platform setup, I am crashing now Dave.");
                 return;
             }
             Structure = comp.Session.WeaponPlatforms[comp.MyCube.BlockDefinition.Id];
@@ -63,11 +63,8 @@ namespace WeaponCore.Platform
         internal PlatformState Init(WeaponComponent comp)
         {
 
-            if (comp.MyCube.MarkedForClose) {
-                State = PlatformState.Invalid;
-                Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) markedForClose, init platform invalid, I am crashing now Dave.");
-                return State;
-            }
+            if (comp.MyCube.MarkedForClose) 
+                return HardCrash(comp, true, false, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) markedForClose, init platform invalid, I am crashing now Dave.");
             
             if (!comp.MyCube.IsFunctional) {
                 State = PlatformState.Delay;
@@ -102,21 +99,14 @@ namespace WeaponCore.Platform
                 State = PlatformState.Valid;
             }
             else
-            {
-                State = PlatformState.Invalid;
-                Log.Line($"{blockDef.String} over block limits: {wCounter.Current}.");
-                return State;
-            }
+                return HardCrash(comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
+            
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
             SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
             if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, out b, out s))
-            {
-                State = PlatformState.Invalid;
-                Log.Line($"{blockDef.String} was too close to another weapon");
-                return State;
-            }
+                return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon");
 
             Parts.Entity = comp.Entity as MyEntity;
 
@@ -140,19 +130,14 @@ namespace WeaponCore.Platform
             {
                 var muzzlePartHash = Structure.MuzzlePartNames[i];
                 WeaponSystem system;
-                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system)) {
-                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
-                    State = PlatformState.Invalid;
-                    return State;
-                }
+                if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system)) 
+                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
 
                 var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
                 MyEntity muzzlePartEntity;
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity)) {
-                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid barrelPart, I am crashing now Dave.");
-                    State = PlatformState.Invalid;
-                    return State;
+                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid barrelPart, I am crashing now Dave.");
                 }
                 foreach (var part in Parts.NameToEntity) {
                     part.Value.OnClose += comp.SubpartClosed;
@@ -164,18 +149,12 @@ namespace WeaponCore.Platform
                 var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                 MyEntity azimuthPart = null;
-                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart)) {
-                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
-                    State = PlatformState.Invalid;
-                    return State;
-                }
+                if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart)) 
+                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
 
                 MyEntity elevationPart = null;
-                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart)) {
-                    Log.Line($"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid elevationPart, I am crashing now Dave.");
-                    State = PlatformState.Invalid;
-                    return State;
-                }
+                if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart)) 
+                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid elevationPart, I am crashing now Dave.");
 
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
@@ -250,8 +229,8 @@ namespace WeaponCore.Platform
                             var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
                             if (partDummy == null)
                             {
-                                Log.Line($"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
-                                continue;
+                                HardCrash(comp, true, true, $"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
+                                return;
                             }
 
                             var azPartPosTo = MatrixD.CreateTranslation(-azimuthPartLocation);
@@ -289,10 +268,9 @@ namespace WeaponCore.Platform
                         {
                             var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
-                            if (partDummy == null)
-                            {
-                                Log.Line($"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
-                                continue;
+                            if (partDummy == null) {
+                                HardCrash(comp, true, true, $"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
+                                return;
                             }
                             var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = MatrixD.CreateTranslation(elevationPartLocation);
@@ -594,6 +572,24 @@ namespace WeaponCore.Platform
                     Comp.CustomIcon = m.IconName;
                 }
             }
+        }
+        
+        internal PlatformState HardCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
+        {
+            Log.Line($"{message}");
+
+            if (suppress)
+                comp.Session.SuppressWc = true;
+            
+            if (markInvalid)
+                State = PlatformState.Invalid;
+            
+            if (Comp.Session.HandlesInput) {
+                if (suppress)
+                    MyAPIGateway.Utilities.ShowNotification($"WeaponCore hard crashed during weapon block init, shutting down, please send log files to server admin and/or submit a bug report to weapon author: {comp.Platform?.Structure?.ModPath} - {comp.MyCube.BlockDefinition.Id.SubtypeName}", 10000);
+            }
+
+            return State;
         }
     }
 }

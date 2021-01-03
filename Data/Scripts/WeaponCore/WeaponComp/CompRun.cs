@@ -1,16 +1,10 @@
 ﻿using System;
-using Sandbox.Definitions;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using VRage;
 using VRage.Game.Components;
-using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 using static WeaponCore.Support.GridAi;
-using static WeaponCore.Support.PartAnimation;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 
 namespace WeaponCore.Support
@@ -54,10 +48,10 @@ namespace WeaponCore.Support
             switch (Platform.Init(this)) {
 
                 case MyWeaponPlatform.PlatformState.Invalid:
-                    Log.Line($"Platform PreInit is in an invalid state");
+                    Platform.HardCrash(this, false, true, "Platform PreInit is in an invalid state");
                     break;
                 case MyWeaponPlatform.PlatformState.Valid:
-                    Log.Line($"Something went wrong with Platform PreInit");
+                    Platform.HardCrash(this, false, true, "Something went wrong with Platform PreInit");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
                     Session.CompsDelayed.Add(this);

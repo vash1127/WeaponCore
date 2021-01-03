@@ -20,7 +20,7 @@ namespace WeaponCore
         {
             try
             {
-                if (!SuppressLoad)
+                if (!SuppressWc)
                     BeforeStartInit();
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
@@ -30,7 +30,7 @@ namespace WeaponCore
         {
             try
             {
-                if (!SuppressLoad)
+                if (!SuppressWc)
                     Paused();
 
             }
@@ -42,7 +42,7 @@ namespace WeaponCore
         {
             try
             {
-                if (SuppressLoad)
+                if (SuppressWc)
                     return;
 
                 if (DeformProtection.Count > 0 && Tick - LastDeform > 0)
@@ -112,7 +112,7 @@ namespace WeaponCore
         {
             try
             {
-                if (SuppressLoad)
+                if (SuppressWc)
                     return;
 
                 if (!DedicatedServer) {
@@ -187,7 +187,7 @@ namespace WeaponCore
         {
             try
             {
-                if (SuppressLoad)
+                if (SuppressWc)
                     return;
 
                 if (Placer != null) UpdatePlacer();
@@ -205,7 +205,7 @@ namespace WeaponCore
             try
             {
 
-                if (SuppressLoad || DedicatedServer || _lastDrawTick == Tick || _paused) return;
+                if (SuppressWc || DedicatedServer || _lastDrawTick == Tick || _paused) return;
                 
                 if (DebugLos)
                     LosDebuging();
@@ -237,7 +237,7 @@ namespace WeaponCore
 
         public override void HandleInput()  
         {
-            if (HandlesInput && !SuppressLoad) {
+            if (HandlesInput && !SuppressWc) {
 
                 if (ControlRequest != ControlQuery.None)
                     UpdateControlKeys();
@@ -279,13 +279,13 @@ namespace WeaponCore
                     else if (mod.PublishedFileId == 2123506303)
                     {
                         if (mod.Name != ModContext.ModId)
-                            SuppressLoad = true;
+                            SuppressWc = true;
                     }
                     else if (mod.PublishedFileId == 2200451495)
                         WaterMod = true;
                 }
 
-                if (SuppressLoad)
+                if (SuppressWc)
                     return;
 
                 if (WaterMod)
@@ -317,7 +317,7 @@ namespace WeaponCore
         {
             try
             {
-                if (SuppressLoad)
+                if (SuppressWc)
                     return;
 
                 if (!PTask.IsComplete)
