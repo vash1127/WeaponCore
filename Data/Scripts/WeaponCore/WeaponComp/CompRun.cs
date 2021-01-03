@@ -48,10 +48,10 @@ namespace WeaponCore.Support
             switch (Platform.Init(this)) {
 
                 case MyWeaponPlatform.PlatformState.Invalid:
-                    Platform.HardCrash(this, false, true, "Platform PreInit is in an invalid state");
+                    Platform.HardCrash(this, false, false, $"Platform PreInit is in an invalid state: {MyCube.BlockDefinition.Id.SubtypeName}");
                     break;
                 case MyWeaponPlatform.PlatformState.Valid:
-                    Platform.HardCrash(this, false, true, "Something went wrong with Platform PreInit");
+                    Platform.HardCrash(this, false, true, $"Something went wrong with Platform PreInit: {MyCube.BlockDefinition.Id.SubtypeName}");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
                     Session.CompsDelayed.Add(this);

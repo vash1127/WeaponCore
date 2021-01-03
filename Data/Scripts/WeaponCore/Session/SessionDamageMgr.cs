@@ -251,8 +251,7 @@ namespace WeaponCore
                         if (IsClient)
                         {
                             _destroyedSlimsClient.Add(rootBlock);
-                            if (_slimHealthClient.ContainsKey(rootBlock))
-                                _slimHealthClient.Remove(rootBlock);
+                            _slimHealthClient.Remove(rootBlock);
                         }
                         continue;
                     }
@@ -277,7 +276,8 @@ namespace WeaponCore
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
-                    var blockHp = !IsClient ? block.Integrity : _slimHealthClient.ContainsKey(block) ? _slimHealthClient[block] : block.Integrity;
+                    float cachedIntegrity;
+                    var blockHp = !IsClient ? block.Integrity : _slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity;
                     float damageScale = hits;
                     float directDamageScale = directDmgGlobal;
                     float areaDamageScale = areaDmgGlobal;
