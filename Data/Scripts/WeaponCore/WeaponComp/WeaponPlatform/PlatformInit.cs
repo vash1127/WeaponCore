@@ -105,8 +105,8 @@ namespace WeaponCore.Platform
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
             SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
-            if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, out b, out s))
-                return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon");
+            if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, Comp.Ai, out b, out s))
+                return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
 
             Parts.Entity = comp.Entity as MyEntity;
 
