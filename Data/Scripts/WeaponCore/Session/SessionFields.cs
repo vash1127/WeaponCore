@@ -56,7 +56,7 @@ namespace WeaponCore
         internal readonly TargetCompare TargetCompare = new TargetCompare();
         internal readonly WaterModAPI WApi = new WaterModAPI();
 
-        internal static readonly HashSet<ulong> AuthorIds = new HashSet<ulong> { 76561197969691953, 76561198061737246 };
+        internal static readonly HashSet<ulong> AuthorIds = new HashSet<ulong> { 76561197969691953, 76561198061737246, 76561198116813162 };
         internal readonly MyStringHash ShieldBypassDamageType = MyStringHash.GetOrCompute("bypass");
         internal readonly MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>(64);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());

@@ -106,7 +106,16 @@ namespace WeaponCore.Platform
             MyOrientedBoundingBoxD blockBox;
             SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
             if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, Comp.Ai, out b, out s))
+            {
+                if (!Comp.Session.DedicatedServer)
+                {
+                    if (Comp.MyCube.OwnerId == MyAPIGateway.Session.Player.Identity.IdentityId)
+                    {
+                        MyAPIGateway.Utilities.ShowNotification($"Block {Comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
+                    }
+                }
                 return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
+            }
 
             Parts.Entity = comp.Entity as MyEntity;
 
@@ -577,7 +586,7 @@ namespace WeaponCore.Platform
         internal PlatformState HardCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
         {
             Log.Line($"{message}");
-
+            suppress = false;
             if (suppress)
                 comp.Session.SuppressWc = true;
             
