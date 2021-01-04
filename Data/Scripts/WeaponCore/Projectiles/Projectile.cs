@@ -694,7 +694,8 @@ namespace WeaponCore.Projectiles
                     var character = ent as IMyCharacter;
                     if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.MyOwner, out entInfo)) continue;
+                    bool peace;
+                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.MyOwner, out entInfo, out peace)) continue;
                     switch (entInfo.Relationship)
                     {
                         case MyRelationsBetweenPlayerAndBlock.Owner:

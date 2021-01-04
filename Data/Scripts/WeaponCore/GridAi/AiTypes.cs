@@ -93,13 +93,15 @@ namespace WeaponCore.Support
             internal readonly bool Armed;
             internal readonly bool IsGrid;
             internal readonly bool LargeGrid;
+            internal readonly bool Peace;
 
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount)
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount, bool peace)
             {
                 Parent = parent;
                 EntInfo = entInfo;
                 PartCount = partCount;
                 FatCount = fatCount;
+                Peace = peace;
                 var armed = false;
                 var isGrid = false;
                 var largeGrid = false;
@@ -171,13 +173,14 @@ namespace WeaponCore.Support
 
             internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
-
+                EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
                 FatCount = detectInfo.FatCount;
                 IsStatic = Target.Physics.IsStatic;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
+                PeaceDeclared = detectInfo.Peace;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;
@@ -186,13 +189,6 @@ namespace WeaponCore.Support
                 var targetSphere = Target.PositionComp.WorldVolume;
                 TargetPos = targetSphere.Center;
                 TargetRadius = targetSphere.Radius;
-
-                if (detectInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies && detectInfo.EntInfo.TimeStamp != long.MaxValue && !MyAPIGateway.Session.Factions.AreFactionsEnemies(myAi.AiFactionId, detectInfo.EntInfo.TimeStamp)) {
-                    PeaceDeclared = true;
-                    EntInfo = EntInfo = new MyDetectedEntityInfo(detectInfo.EntInfo.EntityId, detectInfo.EntInfo.Name, detectInfo.EntInfo.Type, detectInfo.EntInfo.HitPosition, detectInfo.EntInfo.Orientation, detectInfo.EntInfo.Velocity, MyRelationsBetweenPlayerAndBlock.Neutral, detectInfo.EntInfo.BoundingBox, detectInfo.EntInfo.TimeStamp);
-                }
-                else EntInfo = detectInfo.EntInfo;
-                
                 var myCenter = myAi.GridVolume.Center;
 
                 if (!MyUtils.IsZero(Velocity, 1E-02F))

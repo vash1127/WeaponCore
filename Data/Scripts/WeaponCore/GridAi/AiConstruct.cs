@@ -133,7 +133,8 @@ namespace WeaponCore.Support
             internal float OptimalDps;
             internal int BlockCount;
             internal GridAi RootAi;
-
+            internal GridAi LargestAi;
+            
             internal enum RefreshCaller
             {
                 Init,
@@ -157,6 +158,8 @@ namespace WeaponCore.Support
                 FatMap fatMap;
                 if (ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap)) {
                     GridAi leadingAi = null;
+                    GridAi largestAi = null;
+                    int leadingBlocks = 0;
                     foreach (var grid in ai.SubGrids) {
 
                         GridAi thisAi;
@@ -171,23 +174,33 @@ namespace WeaponCore.Support
                             }
                         } 
                         if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
-                            BlockCount += ai.Session.GridToFatMap[grid].MostBlocks;
+                            var blockCount = ai.Session.GridToFatMap[grid].MostBlocks;
+                            if (blockCount > leadingBlocks)
+                            {
+                                leadingBlocks = blockCount;
+                                largestAi = thisAi;
+                            }
+                            BlockCount += blockCount;
                             if (thisAi != null) OptimalDps += thisAi.OptimalDps;
                         }
                         else Log.Line($"ConstructRefresh Failed sub no fatmap, sub is caller:{grid == ai.MyGrid}");
                     }
                     RootAi = leadingAi;
-
+                    LargestAi = largestAi;
                     if (RootAi == null) {
                         Log.Line($"[rootAi is null in Update] subCnt:{ai.SubGrids.Count}(includeMe:{ai.SubGrids.Contains(ai.MyGrid)}) - caller:{caller}, forcing rootAi to caller - inGridTarget:{ai.Session.GridTargetingAIs.ContainsKey(ai.MyGrid)} -  myGridMarked:{ai.MyGrid.MarkedForClose} - aiMarked:{ai.MarkedForClose} - lastClosed:{ai.AiCloseTick} - aiSpawned:{ai.AiSpawnTick} - diff:{ai.AiSpawnTick - ai.AiCloseTick} - sinceSpawn:{ai.Session.Tick - ai.AiSpawnTick}");
                         RootAi = ai;
                     }
-
+                    
+                    if (LargestAi == null)
+                        LargestAi = ai;
+                    
                     UpdateWeaponCounters(ai);
                     return;
                 }
                 Log.Line($"ConstructRefresh Failed main Ai no FatMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
                 RootAi = null;
+                LargestAi = null;
             }
 
 
@@ -335,6 +348,7 @@ namespace WeaponCore.Support
                 OptimalDps = 0;
                 BlockCount = 0;
                 RootAi = null;
+                LargestAi = null;
                 Counter.Clear();
                 RefreshedAis.Clear();
             }

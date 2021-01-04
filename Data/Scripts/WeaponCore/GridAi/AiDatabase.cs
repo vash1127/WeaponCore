@@ -18,11 +18,12 @@ namespace WeaponCore.Support
     {
         internal void RequestDbUpdate()
         {
-            using (MyGrid.Pin()) {
-                if (MyGrid == null || MyGrid.MarkedForClose || !MyGrid.InScene)
+            var grid = Construct.LargestAi.MyGrid;
+            using (grid.Pin()) {
+                if (grid == null || grid.MarkedForClose || !grid.InScene)
                     return;
 
-                var bigOwners = MyGrid.BigOwners;
+                var bigOwners = Construct.LargestAi.MyGrid.BigOwners;
                 MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
                 
                 IMyFaction faction;
@@ -62,7 +63,8 @@ namespace WeaponCore.Support
                     }
 
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                    if (!CreateEntInfo(ent, MyOwner, out entInfo))
+                    bool peace;
+                    if (!CreateEntInfo(ent, MyOwner, out entInfo, out peace))
                     {
                         continue;
                     }
@@ -109,10 +111,10 @@ namespace WeaponCore.Support
                         else 
                             partCount = fatMap.MostBlocks;
 
-                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount));
+                        NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount, peace));
                         ValidGrids.Add(ent);
                     }
-                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
+                    else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0, peace));
                 }
             }
             FinalizeTargetDb();
@@ -303,17 +305,17 @@ namespace WeaponCore.Support
             return new MyOrientedBoundingBoxD(safeZone.PositionComp.LocalAABB, safeZone.PositionComp.WorldMatrixRef).Contains(ref myObb) != ContainmentType.Disjoint;
         }
 
-        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, out bool declaredPeace)
         {
             try
             {
+                declaredPeace = false;
                 if (entity == null)
                 {
                     entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
                     return false;
                 }
                 var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
-                long topFactionId = long.MaxValue;
                 if (topMostParent != null)
                 {
 
@@ -330,21 +332,21 @@ namespace WeaponCore.Support
                             var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
                             if (topFaction != null)
                             {
-                                topFactionId = topFaction.FactionId;
                                 var rep = MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(gridOwner, topFaction.FactionId);
-                                if (topFaction.Members.ContainsKey(gridOwner))
-                                    relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
-                                else if (rep < -500)
+                                if (rep < -500 && MyAPIGateway.Session.Factions.AreFactionsEnemies(AiFactionId, topFaction.FactionId))
                                     relationship = MyRelationsBetweenPlayerAndBlock.Enemies;
                                 else if (rep <= 500)
                                     relationship = MyRelationsBetweenPlayerAndBlock.Neutral;
                                 else relationship = MyRelationsBetweenPlayerAndBlock.Friends;
+
+                                if (rep < -500 && relationship != MyRelationsBetweenPlayerAndBlock.Enemies)
+                                    declaredPeace = true;
                             }
                         }
                     }
                     else relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
                     var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
-                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), topFactionId);
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
                     return true;
                 }
 
@@ -356,14 +358,19 @@ namespace WeaponCore.Support
                     var playerId = controllingId ?? 0;
                     var type = !myCharacter.IsPlayer ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterOther : Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterHuman;
                     var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
-                    if (playerId != 0)
+                    if (relationPlayerBlock == MyRelationsBetweenPlayerAndBlock.Enemies && playerId != 0)
                     {
                         var faction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(playerId);
                         if (faction != null)
-                            topFactionId = faction.FactionId;
+                        {
+                            if (!MyAPIGateway.Session.Factions.AreFactionsEnemies(AiFactionId, faction.FactionId)) {
+                                relationPlayerBlock = MyRelationsBetweenPlayerAndBlock.Neutral;
+                                declaredPeace = true;
+                            }
+                        }
                     }
 
-                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), topFactionId);
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
                     return !myCharacter.IsDead && myCharacter.Integrity > 0;
                 }
 
@@ -390,6 +397,8 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in CreateEntInfo: {ex}"); }
+            
+            declaredPeace = false;
             entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
             return false;
         }
