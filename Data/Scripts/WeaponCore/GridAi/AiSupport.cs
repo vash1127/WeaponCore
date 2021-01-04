@@ -312,6 +312,7 @@ namespace WeaponCore.Support
             TestShields.Clear();
             NewEntities.Clear();
             SubGridsRegistered.Clear();
+            PreviousTargets.Clear();
             SourceCount = 0;
             BlockCount = 0;
             MyOwner = 0;

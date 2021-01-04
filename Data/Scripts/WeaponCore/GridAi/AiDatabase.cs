@@ -24,6 +24,10 @@ namespace WeaponCore.Support
 
                 var bigOwners = MyGrid.BigOwners;
                 MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
+                
+                IMyFaction faction;
+                if (MyOwner != 0 && MyAPIGateway.Session.Factions.Factions.TryGetValue(MyOwner, out faction)) 
+                    AiFactionId = faction.FactionId;
             }
 
             ScanInProgress = true;
@@ -309,24 +313,24 @@ namespace WeaponCore.Support
                     return false;
                 }
                 var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
+                long topFactionId = long.MaxValue;
                 if (topMostParent != null)
                 {
 
                     MyRelationsBetweenPlayerAndBlock relationship;
                     var bigOwners = topMostParent.BigOwners;
                     var topOwner = bigOwners.Count > 0 ? bigOwners[0] : long.MinValue;
+
                     if (topOwner != long.MinValue)
                     {
 
                         relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction);
-
                         if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.Friends && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare)
                         {
-
                             var topFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(topOwner);
                             if (topFaction != null)
                             {
-
+                                topFactionId = topFaction.FactionId;
                                 var rep = MyAPIGateway.Session.Factions.GetReputationBetweenPlayerAndFaction(gridOwner, topFaction.FactionId);
                                 if (topFaction.Members.ContainsKey(gridOwner))
                                     relationship = MyRelationsBetweenPlayerAndBlock.FactionShare;
@@ -340,7 +344,7 @@ namespace WeaponCore.Support
                     }
                     else relationship = MyRelationsBetweenPlayerAndBlock.NoOwnership;
                     var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
-                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), topFactionId);
                     return true;
                 }
 
@@ -352,8 +356,14 @@ namespace WeaponCore.Support
                     var playerId = controllingId ?? 0;
                     var type = !myCharacter.IsPlayer ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterOther : Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterHuman;
                     var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
+                    if (playerId != 0)
+                    {
+                        var faction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(playerId);
+                        if (faction != null)
+                            topFactionId = faction.FactionId;
+                    }
 
-                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
+                    entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), topFactionId);
                     return !myCharacter.IsDead && myCharacter.Integrity > 0;
                 }
 

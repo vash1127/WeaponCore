@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -158,6 +160,7 @@ namespace WeaponCore.Support
             internal bool LargeGrid;
             internal bool Approaching;
             internal bool IsStatic;
+            internal bool PeaceDeclared;
             internal int PartCount;
             internal int FatCount;
             internal float OffenseRating;
@@ -168,7 +171,7 @@ namespace WeaponCore.Support
 
             internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
-                EntInfo = detectInfo.EntInfo;
+
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
                 FatCount = detectInfo.FatCount;
@@ -184,6 +187,12 @@ namespace WeaponCore.Support
                 TargetPos = targetSphere.Center;
                 TargetRadius = targetSphere.Radius;
 
+                if (detectInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies && detectInfo.EntInfo.TimeStamp != long.MaxValue && !MyAPIGateway.Session.Factions.AreFactionsEnemies(myAi.AiFactionId, detectInfo.EntInfo.TimeStamp)) {
+                    PeaceDeclared = true;
+                    EntInfo = EntInfo = new MyDetectedEntityInfo(detectInfo.EntInfo.EntityId, detectInfo.EntInfo.Name, detectInfo.EntInfo.Type, detectInfo.EntInfo.HitPosition, detectInfo.EntInfo.Orientation, detectInfo.EntInfo.Velocity, MyRelationsBetweenPlayerAndBlock.Neutral, detectInfo.EntInfo.BoundingBox, detectInfo.EntInfo.TimeStamp);
+                }
+                else EntInfo = detectInfo.EntInfo;
+                
                 var myCenter = myAi.GridVolume.Center;
 
                 if (!MyUtils.IsZero(Velocity, 1E-02F))

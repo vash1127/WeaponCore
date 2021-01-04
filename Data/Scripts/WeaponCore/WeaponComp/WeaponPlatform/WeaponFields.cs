@@ -113,6 +113,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
+
         internal readonly bool PrimaryWeaponGroup;
         internal readonly bool AiOnlyWeapon;
 

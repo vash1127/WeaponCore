@@ -46,6 +46,7 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
         internal readonly HashSet<MyCubeGrid> SubGridsRegistered = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyEntity> PreviousTargets = new HashSet<MyEntity>();
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
@@ -91,6 +92,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD WaterVolume;
 
         internal long MyOwner;
+        internal long AiFactionId;
         internal bool AiSleep;
         internal bool DbUpdated;
         internal bool TargetNonThreats;
@@ -125,7 +127,6 @@ namespace WeaponCore.Support
         internal bool Closed;
         internal bool ScanInProgress;
         internal bool TouchingWater;
-
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;

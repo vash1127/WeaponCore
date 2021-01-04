@@ -779,6 +779,18 @@ namespace WeaponCore
             return false;
         }
 
+        internal void NewThreatLogging(Weapon w)
+        {
+            var topmost = w.Target.Entity.GetTopMostParent();
+            GridAi.TargetInfo info;
+            if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
+            {
+                Log.Line($"New Threat Detected:{topmost.DebugName}\nAttacking Weapon:{w.System.WeaponName}\n" +
+                         $"[Weapon] Owner:{w.Comp.MyCube.OwnerId} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
+                         $"[Ai] Owner:{w.Comp.Ai.Construct.RootAi.MyOwner} - Relationship:{info.EntInfo.Relationship} - Truce:{info.PeaceDeclared} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}");
+            }
+        }
+        
         public void CalculateRestrictedShapes(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
             restrictedSphere = new BoundingSphereD();

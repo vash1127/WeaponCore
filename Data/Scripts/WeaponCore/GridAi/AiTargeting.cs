@@ -298,6 +298,10 @@ namespace WeaponCore.Support
                         if (!AcquireBlock(s, w.Comp.Ai, target, info, predictedMuzzlePos, w.TargetData.WeaponRandom, Acquire, ref waterSphere, w, !focusTarget)) continue;
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
+
+                        if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
+                            ai.Session.NewThreatLogging(w);
+                        
                         return;
                     }
                     var meteor = info.Target as MyMeteor;
@@ -332,6 +336,10 @@ namespace WeaponCore.Support
                         target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
                         targetType = TargetType.Other;
                         target.TransferTo(w.Target, w.Comp.Session.Tick);
+                        
+                        if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
+                            ai.Session.NewThreatLogging(w);
+                        
                         return;
                     }
                     if (forceTarget) break;
@@ -339,6 +347,7 @@ namespace WeaponCore.Support
 
                 if (!attemptReset || !w.Target.HasTarget) targetType = TargetType.None;
                 else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
+                
             }
             catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}
         }
