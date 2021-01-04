@@ -147,65 +147,49 @@ namespace WeaponCore
             MyAPIGateway.Utilities.ShowNotification(notify.Message, notify.Duration > 0 ? notify.Duration : 1000, notify.Color == string.Empty ? "White" : notify.Color);
         }
 
-        private readonly Color RestrictionAreaColor = new Color(128, 0, 128, 96);
-        private readonly Color UninitializedColor = new Color(255, 0, 0, 200);
-
-        private BoundingSphereD NearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);
-        private List<MyEntity> GridsNearCamera = new List<MyEntity>();
-        private List<MyCubeBlock> UninitializedBlocks = new List<MyCubeBlock>();
+        private readonly Color _restrictionAreaColor = new Color(128, 0, 128, 96);
+        private readonly Color _uninitializedColor = new Color(255, 0, 0, 200);
+        private BoundingSphereD _nearbyGridsTestSphere = new BoundingSphereD(Vector3D.Zero, 350);
+        private readonly List<MyEntity> _gridsNearCamera = new List<MyEntity>();
+        private readonly List<MyCubeBlock> _uninitializedBlocks = new List<MyCubeBlock>();
         private void DrawDisabledGuns()
         {
-            if (Tick300)
-            {
-                NearbyGridsTestSphere.Center = CameraPos;
-                GridsNearCamera.Clear();
-                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref NearbyGridsTestSphere, GridsNearCamera);
-            }
-            if (Tick60)
-            {
-                UninitializedBlocks.Clear();
-                foreach (var ent in GridsNearCamera)
+            if (Tick600 || Tick60 && QuickDisableGunsCheck) {
+
+                QuickDisableGunsCheck = false;
+                _nearbyGridsTestSphere.Center = CameraPos;
+                _gridsNearCamera.Clear();
+                _uninitializedBlocks.Clear();
+
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref _nearbyGridsTestSphere, _gridsNearCamera);
+                for (int i = _gridsNearCamera.Count - 1; i >= 0; i--)
                 {
-                    var grid = ent as MyCubeGrid;
-                    GridAi gridAi;
-                    if (grid != null)
-                    {
-                        foreach (var block in grid.GetFatBlocks())
-                        {
-                            if (block.IsFunctional && WeaponCoreBlockDefs.ContainsKey(block.BlockDefinition.Id.SubtypeId.String))
-                            {
-                                var hasAi = GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi);
-                                if (hasAi)
-                                {
-                                    bool found = false;
-                                    foreach (var weapon in gridAi.Weapons)
-                                    {
-                                        if (weapon.MyCube == block)
-                                        {
-                                            found = true;
-                                        }
-                                    }
-                                    if (!found)
-                                    {
-                                        UninitializedBlocks.Add(block);
-                                    }
-                                }
-                                else
-                                {
-                                    UninitializedBlocks.Add(block);
-                                }
+                    var grid = _gridsNearCamera[i] as MyCubeGrid;
+                    if (grid?.Physics != null && !grid.MarkedForClose && !grid.IsPreview && !grid.Physics.IsPhantom) {
+                        
+                        var fatBlocks = grid.GetFatBlocks();
+                        for (int j = 0; j < fatBlocks.Count; j++) {
+                            
+                            var block = fatBlocks[j];
+                            if (block.IsFunctional && WeaponPlatforms.ContainsKey(block.BlockDefinition.Id)) {
+
+                                GridAi gridAi;
+                                if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi) || !gridAi.WeaponBase.ContainsKey(block)) 
+                                    _uninitializedBlocks.Add(block);
                             }
                         }
                     }
+
                 }
             }
-            foreach (var badBlock in UninitializedBlocks)
-            {
-                if (badBlock.InScene)
-                {
+
+            for (int i = 0; i < _uninitializedBlocks.Count; i++) {
+                
+                var badBlock = _uninitializedBlocks[i];
+                if (badBlock.InScene) {
                     MyOrientedBoundingBoxD blockBox;
                     SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
-                    DsDebugDraw.DrawBox(blockBox, UninitializedColor);
+                    DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
                 }
             }
         }
@@ -248,11 +232,11 @@ namespace WeaponCore
                             {
                                 if (restrictedBox.HalfExtent.AbsMax() > 0)
                                 {
-                                    DsDebugDraw.DrawBox(restrictedBox, RestrictionAreaColor);
+                                    DsDebugDraw.DrawBox(restrictedBox, _restrictionAreaColor);
                                 }
                                 if (restrictedSphere.Radius > 0)
                                 {
-                                    DsDebugDraw.DrawSphere(restrictedSphere, RestrictionAreaColor);
+                                    DsDebugDraw.DrawSphere(restrictedSphere, _restrictionAreaColor);
                                 }
                                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                                 {
@@ -266,11 +250,11 @@ namespace WeaponCore
                                     
                                     if (s.Radius > 0)
                                     {
-                                        DsDebugDraw.DrawSphere(s, RestrictionAreaColor);
+                                        DsDebugDraw.DrawSphere(s, _restrictionAreaColor);
                                     }
                                     if (b.HalfExtent.AbsMax() > 0)
                                     {
-                                        DsDebugDraw.DrawBox(b, RestrictionAreaColor);
+                                        DsDebugDraw.DrawBox(b, _restrictionAreaColor);
                                     }
                                 }
                             }

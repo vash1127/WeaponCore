@@ -37,6 +37,7 @@ namespace WeaponCore
                 if (weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose && weaponComp.MyCube.BlockDefinition.HasPhysics)
                     continue;
 
+                QuickDisableGunsCheck = true;
                 if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                 {
                     if (weaponComp.MyCube.MarkedForClose)

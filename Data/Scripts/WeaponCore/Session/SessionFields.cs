@@ -338,6 +338,7 @@ namespace WeaponCore
         internal bool GlobalDamageModifed;
         internal bool WaterMod;
         internal bool DebugLos = false;
+        internal bool QuickDisableGunsCheck;
         [Flags]
         internal enum SafeZoneAction
         {
