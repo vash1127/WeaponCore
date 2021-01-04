@@ -266,6 +266,12 @@ namespace WeaponCore.Platform
             var fireControlReady = isTracking && weapon.Target.IsAligned;
 
             var rayCheckTest = !weapon.Comp.Session.IsClient && fireControlReady && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            
+            if (rayCheckTest)
+            {
+ 
+
+            }
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
             
@@ -945,6 +951,26 @@ namespace WeaponCore.Platform
 
         private bool RayCheckTest()
         {
+            if (System.Session.DebugLos)
+            {
+                var trackPos = BarrelOrigin + (MyPivotFwd * MuzzleDistToBarrelCenter);
+                var targetTestPos = Target.Entity.PositionComp.WorldAABB.Center;
+                var topEntity = Target.Entity.GetTopMostParent();
+                IHitInfo hitInfo;
+                if (System.Session.Physics.CastRay(trackPos, targetTestPos, out hitInfo) && hitInfo.HitEntity == topEntity)
+                {
+                    var hitPos = hitInfo.Position;
+                    var muzzlePos = Dummies[MiddleMuzzleIndex].Info.Position;
+                    double closestDist;
+                    MyUtils.GetClosestPointOnLine(ref muzzlePos, ref targetTestPos, ref hitPos, out closestDist);
+                    var tDir = Vector3D.Normalize(targetTestPos - muzzlePos);
+                    var closestPos = muzzlePos + (tDir * closestDist);
+
+                    var missAmount = Vector3D.Distance(hitPos, closestPos);
+                    Session.Rays++;
+                    Session.RayMissAmounts += missAmount;
+                }
+            }
             var tick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
 

@@ -154,6 +154,8 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<MyStringHash> BadModAuthorWeapons = new HashSet<MyStringHash>(MyStringHash.Comparer);
+        internal readonly HashSet<Weapon> WeaponLosDebugActive = new HashSet<Weapon>();
+
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
@@ -174,7 +176,7 @@ namespace WeaponCore
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(64);
         internal readonly List<GridAi> GridsToUpdateInvetories = new List<GridAi>(64);
         internal readonly List<CleanSound> SoundsToClean = new List<CleanSound>(128);
-        internal readonly CachingList<LosDebug> LosDebugList = new CachingList<LosDebug>(128);
+        internal readonly List<LosDebug> LosDebugList = new List<LosDebug>(128);
 
         internal readonly int[] AuthorSettings = new int[6];
 
@@ -288,6 +290,10 @@ namespace WeaponCore
         internal double MaxEntitySpeed;
         internal double Load;
         internal double ScaleFov;
+        
+        internal static double RayMissAmounts;
+        internal static int Rays;
+
         internal float UiBkOpacity;
         internal float UiOpacity;
         internal float CurrentFovWithZoom;

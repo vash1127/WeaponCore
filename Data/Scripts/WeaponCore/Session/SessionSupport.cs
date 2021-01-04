@@ -114,19 +114,28 @@ namespace WeaponCore
             }
         }
 
+        internal void AddLosCheck(LosDebug debug)
+        {
+            if (!WeaponLosDebugActive.Add(debug.Weapon))
+                return;
+            
+            LosDebugList.Add(debug);
+        }
+        
         internal void LosDebuging()
         {
-            foreach (var info in LosDebugList)
+            for (var i = LosDebugList.Count - 1; i >= 0; i--)
             {
+                var info = LosDebugList[i];
                 DsDebugDraw.DrawLine(info.Line, Color.Red, 1f);
-                DsDebugDraw.DrawSingleVec(info.Line.To, 2.5f, Color.Black);
-                DsDebugDraw.DrawSingleVec(info.Line.From, 50f, Color.Green, false, 20, 1f);
                 DsDebugDraw.DrawSingleVec(info.Line.From, 2.5f, Color.Blue, true);
 
                 if (Tick - info.HitTick > 1200)
-                    LosDebugList.Remove(info);
+                {
+                    LosDebugList.RemoveAtFast(i);
+                    WeaponLosDebugActive.Remove(info.Weapon);
+                }
             }
-            LosDebugList.ApplyRemovals();
         }
         
         internal void ProfilePerformance()

@@ -41,7 +41,7 @@ namespace WeaponCore.Platform
         {
             if (!comp.Session.WeaponPlatforms.ContainsKey(comp.MyCube.BlockDefinition.Id))
             {
-                HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) was not found in platform setup, I am crashing now Dave.");
+                PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) was not found in platform setup, I am crashing now Dave.");
                 return;
             }
             Structure = comp.Session.WeaponPlatforms[comp.MyCube.BlockDefinition.Id];
@@ -64,7 +64,7 @@ namespace WeaponCore.Platform
         {
 
             if (comp.MyCube.MarkedForClose) 
-                return HardCrash(comp, true, false, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) markedForClose, init platform invalid, I am crashing now Dave.");
+                return PlatformCrash(comp, true, false, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) markedForClose, init platform invalid, I am crashing now Dave.");
             
             if (!comp.MyCube.IsFunctional) {
                 State = PlatformState.Delay;
@@ -99,7 +99,7 @@ namespace WeaponCore.Platform
                 State = PlatformState.Valid;
             }
             else
-                return HardCrash(comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
+                return PlatformCrash(comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
             
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
@@ -114,7 +114,7 @@ namespace WeaponCore.Platform
                         MyAPIGateway.Utilities.ShowNotification($"Block {Comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
                     }
                 }
-                return HardCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
+                return PlatformCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
             }
 
             Parts.Entity = comp.Entity as MyEntity;
@@ -140,13 +140,13 @@ namespace WeaponCore.Platform
                 var muzzlePartHash = Structure.MuzzlePartNames[i];
                 WeaponSystem system;
                 if (!Structure.WeaponSystems.TryGetValue(muzzlePartHash, out system)) 
-                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
+                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid weapon system, I am crashing now Dave.");
 
                 var muzzlePartName = muzzlePartHash.String != "Designator" ? muzzlePartHash.String : system.ElevationPartName.String;
 
                 MyEntity muzzlePartEntity;
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity)) {
-                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid barrelPart, I am crashing now Dave.");
+                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid barrelPart, I am crashing now Dave.");
                 }
                 foreach (var part in Parts.NameToEntity) {
                     part.Value.OnClose += comp.SubpartClosed;
@@ -159,11 +159,11 @@ namespace WeaponCore.Platform
 
                 MyEntity azimuthPart = null;
                 if (!Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPart)) 
-                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
+                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Weapon: {system.WeaponName} Invalid azimuthPart, I am crashing now Dave.");
 
                 MyEntity elevationPart = null;
                 if (!Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPart)) 
-                    return HardCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid elevationPart, I am crashing now Dave.");
+                    return PlatformCrash(comp, true, true, $"Your block subTypeId ({comp.MyCube.BlockDefinition.Id.SubtypeId.String}) Invalid elevationPart, I am crashing now Dave.");
 
                 azimuthPart.NeedsWorldMatrix = true;
                 elevationPart.NeedsWorldMatrix = true;
@@ -238,7 +238,7 @@ namespace WeaponCore.Platform
                             var partDummy = comp.Session.GetPartDummy("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
                             if (partDummy == null)
                             {
-                                HardCrash(comp, true, true, $"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
+                                PlatformCrash(comp, true, true, $"partDummy null: name:{azimuthPartName} - azimuthPartParentNull:{azimuthPart.Parent == null}, I am crashing now Dave.");
                                 return;
                             }
 
@@ -278,7 +278,7 @@ namespace WeaponCore.Platform
                             var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
                             var partDummy = comp.Session.GetPartDummy("subpart_" + elevationPartName, elevationPart.Parent.Model);
                             if (partDummy == null) {
-                                HardCrash(comp, true, true, $"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
+                                PlatformCrash(comp, true, true, $"partDummy null: name:{elevationPartName} - azimuthPartParentNull:{elevationPart.Parent == null}, I am crashing now Dave.");
                                 return;
                             }
                             var elPartPosTo = MatrixD.CreateTranslation(-elevationPartLocation);
@@ -583,7 +583,7 @@ namespace WeaponCore.Platform
             }
         }
         
-        internal PlatformState HardCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
+        internal PlatformState PlatformCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
         {
             Log.Line($"{message}");
             if (suppress)

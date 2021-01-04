@@ -196,6 +196,9 @@ namespace WeaponCore
 
                 if (GridTask.IsComplete)
                     CheckDirtyGrids();
+                
+                if (DebugLos && Tick1800)
+                    Log.Line($"RayMissAverage: {RayMissAmounts / Rays} - tick:{Tick}");
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

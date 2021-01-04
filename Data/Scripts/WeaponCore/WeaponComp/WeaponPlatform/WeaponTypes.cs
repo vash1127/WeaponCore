@@ -70,14 +70,13 @@ namespace WeaponCore.Platform
                     {
 
                         if (Weapon.System.Session.DebugLos) {
-                            Log.Line($"[RayCheckHitOwnGrid] Weapon:{Weapon.System.WeaponName} - DistanceFromCheckPosition:{Vector3D.Distance(trackingCheckPosition, hitInfo.Position)} - ClosestBlockIsWeapon:{Weapon.Comp.Ai.MyGrid.GetTargetedBlockLite(hitInfo.Position) == Weapon.Comp.MyCube.SlimBlock}");
+                            //Log.Line($"[RayCheckHitOwnGrid] Weapon:{Weapon.System.WeaponName} - DistanceFromCheckPosition:{Vector3D.Distance(trackingCheckPosition, hitInfo.Position)} - ClosestBlockIsWeapon:{Weapon.Comp.Ai.MyGrid.GetTargetedBlockLite(hitInfo.Position) == Weapon.Comp.MyCube.SlimBlock}");
 
                             var weaponPos = trackingCheckPosition;
                             var hitPos = hitInfo.Position;
                             if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref hitPos, out rayDist);
 
-                            Weapon.System.Session.LosDebugList.Add(new Session.LosDebug { HitTick = Weapon.System.Session.Tick, Line = new LineD(weaponPos, hitPos) });
-                            Weapon.System.Session.LosDebugList.ApplyAdditions();
+                            Weapon.System.Session.AddLosCheck(new Session.LosDebug { Weapon = Weapon, HitTick = Weapon.System.Session.Tick, Line = new LineD(weaponPos, hitPos) });
                         }
                         
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
@@ -98,7 +97,7 @@ namespace WeaponCore.Platform
                     var halfExtMin = topAsGrid.PositionComp.LocalAABB.HalfExtents.Min();
                     var minSize = topAsGrid.GridSizeR * 8;
                     var maxChange = halfExtMin > minSize ? halfExtMin : minSize;
-                    var targetPos = Weapon.Target.Entity.PositionComp.WorldMatrixRef.Translation;
+                    var targetPos = Weapon.Target.Entity.PositionComp.WorldAABB.Center;
                     var weaponPos = trackingCheckPosition;
 
                     if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);

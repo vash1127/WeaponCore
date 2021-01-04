@@ -157,14 +157,12 @@ namespace WeaponCore
         {
             if (Tick300)
             {
-                Log.Line("Getting grids to check");
                 NearbyGridsTestSphere.Center = CameraPos;
                 GridsNearCamera.Clear();
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref NearbyGridsTestSphere, GridsNearCamera);
             }
             if (Tick60)
             {
-                Log.Line("Finding bad blocks");
                 UninitializedBlocks.Clear();
                 foreach (var ent in GridsNearCamera)
                 {

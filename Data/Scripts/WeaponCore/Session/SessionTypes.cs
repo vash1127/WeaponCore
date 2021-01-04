@@ -67,6 +67,7 @@ namespace WeaponCore
 
         internal struct LosDebug
         {
+            internal Weapon Weapon;
             internal LineD Line;
             internal uint HitTick;
         }

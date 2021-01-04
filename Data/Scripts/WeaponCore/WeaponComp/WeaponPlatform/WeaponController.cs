@@ -179,7 +179,6 @@ namespace WeaponCore.Platform
 
                 MyPivotPos += offSet;
             }
-
             
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
