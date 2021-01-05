@@ -25,8 +25,13 @@ namespace WeaponCore.Support
                 if (grid == null || grid.MarkedForClose || !grid.InScene)
                     return;
 
-                var bigOwners = grid.BigOwners;
-                MyOwner = bigOwners == null || bigOwners.Count <= 0 ? 0 : MyOwner = bigOwners[0];
+                GridMap gridMap;
+                if (Session.GridToInfoMap.TryGetValue(MyGrid, out gridMap) && !gridMap.BigOwners.IsEmpty)
+                {
+                    MyOwner = gridMap.BigOwners[0];
+                }
+                else MyOwner = 0;
+                
                 IMyFaction faction;
                 if (MyOwner != 0 && MyAPIGateway.Session.Factions.Factions.TryGetValue(MyOwner, out faction)) 
                     AiFactionId = faction.FactionId;
@@ -80,11 +85,11 @@ namespace WeaponCore.Support
 
                     if (grid != null) {
 
-                        FatMap fatMap;
-                        if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
+                        GridMap gridMap;
+                        if (!Session.GridToInfoMap.TryGetValue(grid, out gridMap) || gridMap.Trash)
                             continue;
 
-                        var allFat = fatMap.MyCubeBocks;
+                        var allFat = gridMap.MyCubeBocks;
                         var fatCount = allFat.Count;
 
                         if (fatCount <= 0)
@@ -111,7 +116,7 @@ namespace WeaponCore.Support
                             partCount = targetAi.Construct.BlockCount;
                         }
                         else 
-                            partCount = fatMap.MostBlocks;
+                            partCount = gridMap.MostBlocks;
 
                         NewEntities.Add(new DetectInfo(Session, ent, entInfo, partCount, fatCount, peace, newRelation));
                         ValidGrids.Add(ent);
@@ -147,8 +152,8 @@ namespace WeaponCore.Support
                 if (voxel != null || safeZone != null || ent.Physics.IsStatic)
                     StaticsInRangeTmp.Add(ent);
 
-                FatMap map;
-                if (grid != null && (PrevSubGrids.Contains(grid) || ValidGrids.Contains(ent) || grid.PositionComp.LocalVolume.Radius < 10 || Session.GridToFatMap.TryGetValue(grid, out map) && map.Trash || grid.BigOwners.Count == 0) ) continue;
+                GridMap map;
+                if (grid != null && (PrevSubGrids.Contains(grid) || ValidGrids.Contains(ent) || grid.PositionComp.LocalVolume.Radius < 10 || Session.GridToInfoMap.TryGetValue(grid, out map) && map.Trash || grid.BigOwners.Count == 0) ) continue;
 
                 ObstructionsTmp.Add(ent);
             }

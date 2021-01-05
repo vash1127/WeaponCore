@@ -133,11 +133,11 @@ namespace WeaponCore
             DeferedUpBlockTypeCleanUp(true);
             BlockTypeCleanUp.Clear();
 
-            foreach (var map in GridToFatMap.Keys)
+            foreach (var map in GridToInfoMap.Keys)
                 RemoveGridFromMap(map);
 
-            GridToFatMap.Clear();
-            FatMapPool.Clean();
+            GridToInfoMap.Clear();
+            GridMapPool.Clean();
 
             DirtyGridsTmp.Clear();
 
@@ -181,7 +181,7 @@ namespace WeaponCore
                 playerGrids.Value.Clear();
 
             PlayerEntityIdInRange.Clear();
-            DirtyGrids.Clear();
+            DirtyGridInfos.Clear();
 
             DsUtil.Purge();
             DsUtil2.Purge();

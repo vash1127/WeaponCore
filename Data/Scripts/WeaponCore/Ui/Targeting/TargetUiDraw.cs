@@ -227,11 +227,11 @@ namespace WeaponCore
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
                     smallGrid = !largeGrid;
                     GridAi targetAi;
-                    FatMap fatMap;
+                    GridMap gridMap;
                     if (s.GridTargetingAIs.TryGetValue(grid, out targetAi))
                         partCount = targetAi.Construct.BlockCount;
-                    else if (s.GridToFatMap.TryGetValue(grid, out fatMap))
-                        partCount = fatMap.MostBlocks;
+                    else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
+                        partCount = gridMap.MostBlocks;
                 }
 
                 var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;

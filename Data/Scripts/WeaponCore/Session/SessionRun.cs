@@ -195,7 +195,10 @@ namespace WeaponCore
                 if (AnimationsToProcess.Count > 0 || ThreadedAnimations.Count > 0) ProcessAnimations();
 
                 if (GridTask.IsComplete)
-                    CheckDirtyGrids();
+                    CheckDirtyGridInfos();
+
+                if (Tick60 && DirtyGridOwners.Count > 0)
+                    CheckDirtyGridOwners();
                 
                 if (DebugLos && Tick1800)
                     Log.Line($"RayMissAverage: {RayMissAmounts / Rays} - tick:{Tick}");

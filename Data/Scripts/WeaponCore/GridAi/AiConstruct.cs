@@ -81,10 +81,10 @@ namespace WeaponCore.Support
 
             SubGridsRegistered.Add(grid);
 
-            FatMap fatMap;
-            if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
+            GridMap gridMap;
+            if (Session.GridToInfoMap.TryGetValue(grid, out gridMap))
             {
-                var blocks = fatMap.MyCubeBocks;
+                var blocks = gridMap.MyCubeBocks;
                 for (int i = 0; i < blocks.Count; i++)
                     FatBlockAdded(blocks[i]);
             }
@@ -155,8 +155,8 @@ namespace WeaponCore.Support
 
                 OptimalDps = 0;
                 BlockCount = 0;
-                FatMap fatMap;
-                if (ai.Session.GridToFatMap.TryGetValue(ai.MyGrid, out fatMap)) {
+                GridMap gridMap;
+                if (ai.Session.GridToInfoMap.TryGetValue(ai.MyGrid, out gridMap)) {
                     GridAi leadingAi = null;
                     GridAi largestAi = null;
                     int leadingBlocks = 0;
@@ -173,8 +173,8 @@ namespace WeaponCore.Support
                                     leadingAi = thisAi;
                             }
                         } 
-                        if (ai.Session.GridToFatMap.TryGetValue(grid, out fatMap)) {
-                            var blockCount = ai.Session.GridToFatMap[grid].MostBlocks;
+                        if (ai.Session.GridToInfoMap.TryGetValue(grid, out gridMap)) {
+                            var blockCount = ai.Session.GridToInfoMap[grid].MostBlocks;
                             if (blockCount > leadingBlocks)
                             {
                                 leadingBlocks = blockCount;
@@ -183,7 +183,7 @@ namespace WeaponCore.Support
                             BlockCount += blockCount;
                             if (thisAi != null) OptimalDps += thisAi.OptimalDps;
                         }
-                        else Log.Line($"ConstructRefresh Failed sub no fatmap, sub is caller:{grid == ai.MyGrid}");
+                        else Log.Line($"ConstructRefresh Failed sub no GridMap, sub is caller:{grid == ai.MyGrid}");
                     }
                     RootAi = leadingAi;
                     LargestAi = largestAi;
@@ -198,7 +198,7 @@ namespace WeaponCore.Support
                     UpdateWeaponCounters(ai);
                     return;
                 }
-                Log.Line($"ConstructRefresh Failed main Ai no FatMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
+                Log.Line($"ConstructRefresh Failed main Ai no GridMap: {caller} - Marked: {ai.MyGrid.MarkedForClose}");
                 RootAi = null;
                 LargestAi = null;
             }

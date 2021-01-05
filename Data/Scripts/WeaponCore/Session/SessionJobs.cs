@@ -15,17 +15,20 @@ using static WeaponCore.Support.GridAi.Constructs;
 using static WeaponCore.Support.WeaponDefinition.TargetingDef.BlockTypes;
 namespace WeaponCore
 {
-    public class FatMap
+    public class GridMap
     {
         public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
+        public ConcurrentCachingList<long> BigOwners;
+        public ConcurrentCachingList<long> SmallOwners;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
-
         internal void Clean()
         {
             Targeting = null;
             MyCubeBocks.ClearImmediate();
+            BigOwners.ClearImmediate();
+            SmallOwners.ClearImmediate();
         }
     }
 
@@ -181,12 +184,12 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in ProcessDbsCallBack: {ex}"); }
         }
 
-        internal void CheckDirtyGrids()
+        internal void CheckDirtyGridInfos()
         {
             if (!NewGrids.IsEmpty)
                 AddGridToMap();
 
-            if ((!GameLoaded || Tick20) && DirtyGrids.Count > 0)
+            if ((!GameLoaded || Tick20) && DirtyGridInfos.Count > 0)
             {
                 if (GridTask.valid && GridTask.Exceptions != null)
                     TaskHasErrors(ref GridTask, "GridTask");
@@ -195,13 +198,41 @@ namespace WeaponCore
             }
         }
 
+        internal void CheckDirtyGridOwners()
+        {
+            foreach (var grid in DirtyGridOwners)
+            {
+                GridMap gridMap;
+                if (GridToInfoMap.TryGetValue(grid, out gridMap))
+                {
+                    gridMap.BigOwners.ClearImmediate();
+                    gridMap.SmallOwners.ClearImmediate();
+
+                    var bigOwners = grid.BigOwners;
+                    var smallOwners = grid.SmallOwners;
+
+                    for (int i = 0; i < bigOwners.Count; i++)
+                        gridMap.BigOwners.Add(bigOwners[i]);
+
+                    for (int i = 0; i < smallOwners.Count; i++)
+                        gridMap.SmallOwners.Add(smallOwners[i]);
+                    
+                    gridMap.BigOwners.ApplyAdditions();
+                    gridMap.SmallOwners.ApplyAdditions();
+                }
+                else Log.Line($"GridMap check failed");
+            }
+            DirtyGridOwners.Clear();
+
+        }
+
         private void UpdateGrids()
         {
             DeferedUpBlockTypeCleanUp();
 
             DirtyGridsTmp.Clear();
-            DirtyGridsTmp.AddRange(DirtyGrids);
-            DirtyGrids.Clear();
+            DirtyGridsTmp.AddRange(DirtyGridInfos);
+            DirtyGridInfos.Clear();
             for (int i = 0; i < DirtyGridsTmp.Count; i++) {
                 var grid = DirtyGridsTmp[i];
                 var newTypeMap = BlockTypePool.Get();
@@ -215,11 +246,11 @@ namespace WeaponCore
 
                 ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
-                FatMap fatMap;
-                if (GridToFatMap.TryGetValue(grid, out fatMap)) {
-                    var allFat = fatMap.MyCubeBocks;
+                GridMap gridMap;
+                if (GridToInfoMap.TryGetValue(grid, out gridMap)) {
+                    var allFat = gridMap.MyCubeBocks;
                     var terminals = 0;
-                    var tStatus = fatMap.Targeting == null || fatMap.Targeting.AllowScanning;
+                    var tStatus = gridMap.Targeting == null || gridMap.Targeting.AllowScanning;
                     for (int j = 0; j < allFat.Count; j++) {
                         var fat = allFat[j];
                         if (!(fat is IMyTerminalBlock)) continue;
@@ -235,7 +266,7 @@ namespace WeaponCore
                             else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
                             {
                                 if (!tStatus && fat is IMyGunBaseUser && !WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id))
-                                    tStatus = fatMap.Targeting.AllowScanning = true;
+                                    tStatus = gridMap.Targeting.AllowScanning = true;
 
                                 newTypeMap[Offense].Add(fat);
                             }
@@ -249,11 +280,11 @@ namespace WeaponCore
                     foreach (var type in newTypeMap)
                         type.Value.ApplyAdditions();
                     
-                    fatMap.MyCubeBocks.ApplyAdditions();
+                    gridMap.MyCubeBocks.ApplyAdditions();
 
-                    fatMap.Trash = terminals == 0;
+                    gridMap.Trash = terminals == 0;
                     var gridBlocks = grid.BlocksCount;
-                    if (gridBlocks > fatMap.MostBlocks) fatMap.MostBlocks = gridBlocks;
+                    if (gridBlocks > gridMap.MostBlocks) gridMap.MostBlocks = gridBlocks;
                     ConcurrentDictionary<WeaponDefinition.TargetingDef.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap)) {
                         GridToBlockTypeMap[grid] = newTypeMap;

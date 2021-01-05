@@ -139,7 +139,7 @@ namespace WeaponCore.Support
                         Constructs.UpdateWeaponCounters(Ai);
                         // end ReInit
 
-                        if (!Ai.GridInit || !Ai.Session.GridToFatMap.ContainsKey(Ai.MyGrid)) 
+                        if (!Ai.GridInit || !Ai.Session.GridToInfoMap.ContainsKey(Ai.MyGrid)) 
                             Session.CompReAdds.Add(new CompReAdd { Ai = Ai, AiVersion = Ai.Version, AddTick = Ai.Session.Tick, Comp = this });
                         else 
                             OnAddedToSceneTasks();
@@ -164,7 +164,7 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit) {
 
                     Ai.GridInit = true;
-                    var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
+                    var fatList = Session.GridToInfoMap[MyCube.CubeGrid].MyCubeBocks;
 
                     for (int i = 0; i < fatList.Count; i++) {
 

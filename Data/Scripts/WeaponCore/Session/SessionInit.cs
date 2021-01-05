@@ -65,7 +65,7 @@ namespace WeaponCore
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
             TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
-            CheckDirtyGrids();
+            CheckDirtyGridInfos();
 
             ApiServer.Load();
             GenerateButtonMap();

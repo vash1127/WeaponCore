@@ -84,62 +84,79 @@ namespace WeaponCore
             while (NewGrids.TryDequeue(out grid))
             {
                 var allFat = ConcurrentListPool.Get();
+                var smallOwners = ConcurrentListLongPool.Get();
+                var bigOwners = ConcurrentListLongPool.Get();
+
                 var gridFat = grid.GetFatBlocks();
                 for (int i = 0; i < gridFat.Count; i++) allFat.Add(gridFat[i]);
                 allFat.ApplyAdditions();
 
-                var fatMap = FatMapPool.Get();
+                var gridMap = GridMapPool.Get();
 
-                if (grid.Components.TryGet(out fatMap.Targeting))
-                    fatMap.Targeting.AllowScanning = false;
-                fatMap.Trash = true;
+                if (grid.Components.TryGet(out gridMap.Targeting))
+                    gridMap.Targeting.AllowScanning = false;
+                gridMap.Trash = true;
 
-                fatMap.MyCubeBocks = allFat;
-                GridToFatMap.TryAdd(grid, fatMap);
-                grid.OnFatBlockAdded += ToFatMap;
-                grid.OnFatBlockRemoved += FromFatMap;
+                gridMap.MyCubeBocks = allFat;
+                gridMap.SmallOwners = smallOwners;
+                gridMap.BigOwners = bigOwners;
+                GridToInfoMap.TryAdd(grid, gridMap);
+                grid.OnFatBlockAdded += ToGridMap;
+                grid.OnFatBlockRemoved += FromGridMap;
                 grid.OnClose += RemoveGridFromMap;
-                DirtyGrids.Add(grid);
+                grid.OnBlockOwnershipChanged += OwnerShipChange;
+                DirtyGridInfos.Add(grid);
+                DirtyGridOwners.Add(grid);
+
             }
         }
 
+        private void OwnerShipChange(MyCubeGrid myCubeGrid)
+        {
+            DirtyGridOwners.Add(myCubeGrid);
+        }
+        
         private void RemoveGridFromMap(MyEntity myEntity)
         {
             var grid = (MyCubeGrid)myEntity;
-            FatMap fatMap;
-            if (GridToFatMap.TryRemove(grid, out fatMap))
+            GridMap gridMap;
+            if (GridToInfoMap.TryRemove(grid, out gridMap))
             {
-                ConcurrentListPool.Return(fatMap.MyCubeBocks);
-                fatMap.Trash = true;
-                FatMapPool.Return(fatMap);
-                grid.OnFatBlockAdded -= ToFatMap;
-                grid.OnFatBlockRemoved -= FromFatMap;
+                ConcurrentListPool.Return(gridMap.MyCubeBocks);
+                ConcurrentListLongPool.Return(gridMap.SmallOwners);
+                ConcurrentListLongPool.Return(gridMap.BigOwners);
+                gridMap.Trash = true;
+                GridMapPool.Return(gridMap);
+                
+                grid.OnFatBlockAdded -= ToGridMap;
+                grid.OnFatBlockRemoved -= FromGridMap;
                 grid.OnClose -= RemoveGridFromMap;
                 grid.AddedToScene -= GridAddedToScene;
-                DirtyGrids.Add(grid);
+                grid.OnBlockOwnershipChanged -= OwnerShipChange;
+                DirtyGridInfos.Add(grid);
             }
             else Log.Line($"grid not removed and list not cleaned: marked:{grid.MarkedForClose}({grid.Closed}) - inScene:{grid.InScene}");
         }
 
-        private void ToFatMap(MyCubeBlock myCubeBlock)
+        private void ToGridMap(MyCubeBlock myCubeBlock)
         {
             try
             {
-                GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
-                GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
-                DirtyGrids.Add(myCubeBlock.CubeGrid);
+                GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
+                GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
+                DirtyGridInfos.Add(myCubeBlock.CubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in ToFatMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
+            catch (Exception ex) { Log.Line($"Exception in ToGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
 
-        private void FromFatMap(MyCubeBlock myCubeBlock)
+        private void FromGridMap(MyCubeBlock myCubeBlock)
         {
             try
             {
-                GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
-                DirtyGrids.Add(myCubeBlock.CubeGrid);
+                GridToInfoMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
+                DirtyGridInfos.Add(myCubeBlock.CubeGrid);
             }
-            catch (Exception ex) { Log.Line($"Exception in FromFatMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
+            catch (Exception ex) { Log.Line($"Exception in FromGridMap: {ex} - marked:{myCubeBlock.MarkedForClose}"); }
         }
 
         internal void BeforeDamageHandler(object o, ref MyDamageInformation info)

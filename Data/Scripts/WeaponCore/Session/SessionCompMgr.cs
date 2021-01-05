@@ -45,7 +45,7 @@ namespace WeaponCore
                         CompsToStart.Remove(weaponComp);
                         continue;
                     }
-                    if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
+                    if (!GridToInfoMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                         continue;
 
                     IdToCompMap[weaponComp.MyCube.EntityId] = weaponComp;
@@ -89,7 +89,7 @@ namespace WeaponCore
                     continue;
                 }
 
-                if (!GridToFatMap.ContainsKey(reAdd.Comp.MyCube.CubeGrid))
+                if (!GridToInfoMap.ContainsKey(reAdd.Comp.MyCube.CubeGrid))
                     continue;
 
                 if (reAdd.Comp.Ai != null && reAdd.Comp.Entity != null) 

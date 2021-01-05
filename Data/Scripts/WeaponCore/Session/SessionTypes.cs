@@ -278,7 +278,7 @@ namespace WeaponCore
             {
                 var sessionFields = new Dictionary<string, Func<string>>
                 {
-                    {"HasFatMap", () => (GetComp() != null && Session.GridToFatMap.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
+                    {"HasGridMap", () => (GetComp() != null && Session.GridToInfoMap.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
                     {"HasGridAi", () => (GetComp() != null && Session.GridTargetingAIs.ContainsKey(GetComp().MyCube.CubeGrid)).ToString()},
                 };
 

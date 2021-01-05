@@ -247,6 +247,13 @@ namespace WeaponCore
                 "ShowOnHUD",
                 "CustomData",
                 "Control",
+                "Renamer_Separator",
+                "Renamer_Label",
+                "Renamer_Textbox",
+                "Renamer_RenameButton",
+                "Renamer_PrefixButton",
+                "Renamer_SuffixButton",
+                "Renamer_ResetButton",
             };
             for (int i = validType ? 12 : 0; i < controls.Count; i++) {
 

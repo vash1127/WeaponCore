@@ -724,7 +724,7 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in system.Session.GridToFatMap[grid].MyCubeBocks)
+                foreach (var cube in system.Session.GridToInfoMap[grid].MyCubeBocks)
                 {
                     if (!(cube is IMyTerminalBlock)) continue;
                     switch (fieldType)
