@@ -813,7 +813,7 @@ namespace WeaponCore.Projectiles
 
             var detInfo = Info.AmmoDef.AreaEffect.Detonation;
             var afInfo = Info.AmmoDef.AreaEffect;
-            var detExp = !afInfo.Explosions.NoVisuals && (afInfo.AreaEffect == AreaEffectType.Explosive || afInfo.AreaEffect == AreaEffectType.Radiant) && detInfo.DetonateOnEnd && (!detInfo.ArmOnlyOnHit || Info.ObjectsHit > 0);
+            var detExp = !afInfo.Explosions.NoVisuals && (afInfo.AreaEffect == AreaEffectType.Explosive || afInfo.AreaEffect == AreaEffectType.Radiant && afInfo.Explosions.CustomParticle != string.Empty) && detInfo.DetonateOnEnd && (!detInfo.ArmOnlyOnHit || Info.ObjectsHit > 0);
 
             if (EnableAv)
             {
