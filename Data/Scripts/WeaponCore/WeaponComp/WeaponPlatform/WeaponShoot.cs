@@ -53,6 +53,7 @@ namespace WeaponCore.Platform
                 }
 
                 ShootTick = tick + TicksPerShot;
+                LastShootTick = tick;
 
                 if (!IsShooting) StartShooting();
 

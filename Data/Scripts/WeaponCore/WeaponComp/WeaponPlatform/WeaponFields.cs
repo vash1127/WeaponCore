@@ -52,6 +52,7 @@ namespace WeaponCore.Platform
         internal uint LastMagSeenTick;
         internal uint GravityTick;
         internal uint ShootTick;
+        internal uint LastShootTick;
         internal uint TicksPerShot;
         internal uint LastSyncTick;
         internal uint PosChangedTick;
@@ -201,6 +202,7 @@ namespace WeaponCore.Platform
         internal bool CanUseBeams;
         internal bool PauseShoot;
         internal bool LastEventCanDelay;
+        internal bool ShowBurstDelayAsReload;
         internal bool Reloading;
         internal bool Charging;
         internal bool ClientStaticShot;
@@ -361,6 +363,9 @@ namespace WeaponCore.Platform
             ElevationPart = new PartInfo {Entity = elevationPart};
             MuzzlePart = new PartInfo { Entity = entity };
             MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
+
+            var burstDelay = System.Values.HardPoint.Loading.DelayAfterBurst;
+            ShowBurstDelayAsReload = burstDelay > 30 && burstDelay >= TicksPerShot && burstDelay >= System.Values.HardPoint.Loading.ReloadTime;
 
             ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
             AzimuthInitFwdDir = azimuthPart.PositionComp.LocalMatrixRef.Forward;
