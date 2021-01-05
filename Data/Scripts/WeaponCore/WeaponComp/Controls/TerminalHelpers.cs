@@ -181,7 +181,7 @@ namespace WeaponCore.Control
 
         internal static bool NotWcBlock(IMyTerminalBlock block)
         {
-            return !block.Components.Has<WeaponComponent>(); ;
+            return !block.Components.Has<WeaponComponent>(); 
         }
 
         internal static bool NotWcOrIsTurret(IMyTerminalBlock block)

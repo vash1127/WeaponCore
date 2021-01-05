@@ -88,7 +88,7 @@ namespace WeaponCore.Support
         public readonly bool ClosestFirst;
         public readonly bool DegRof;
         public readonly bool TrackProjectile;
-        public readonly bool TrackOther;
+        public readonly bool TrackTopMostEntities;
         public readonly bool TrackGrids;
         public readonly bool TrackCharacters;
         public readonly bool TrackMeteors;
@@ -171,7 +171,7 @@ namespace WeaponCore.Support
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);
             BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelSpinRate, out HasBarrelRotation);
-            Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
+            Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackTopMostEntities);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HardPointSoundSetup(out WeaponReloadSound, out HardPointRotationSound, out BarrelRotationSound, out NoAmmoSound, out PreFireSound, out HardPointAvMaxDistSqr, out FiringSound);
@@ -252,14 +252,14 @@ namespace WeaponCore.Support
         }
 
 
-        private void Track(out bool trackProjectile, out bool trackGrids, out bool trackCharacters, out bool trackMeteors, out bool trackNeutrals, out bool trackOther)
+        private void Track(out bool trackProjectile, out bool trackGrids, out bool trackCharacters, out bool trackMeteors, out bool trackNeutrals, out bool trackTopMostEntities)
         {
             trackProjectile = false;
             trackGrids = false;
             trackCharacters = false;
             trackMeteors = false;
             trackNeutrals = false;
-            trackOther = false;
+            trackTopMostEntities = false;
 
             var threats = Values.Targeting.Threats;
             foreach (var threat in threats)
@@ -269,22 +269,22 @@ namespace WeaponCore.Support
                 else if (threat == TargetingDef.Threat.Grids)
                 {
                     trackGrids = true;
-                    trackOther = true;
+                    trackTopMostEntities = true;
                 }
                 else if (threat == TargetingDef.Threat.Characters)
                 {
                     trackCharacters = true;
-                    trackOther = true;
+                    trackTopMostEntities = true;
                 }
                 else if (threat == TargetingDef.Threat.Meteors)
                 {
                     trackMeteors = true;
-                    trackOther = true;
+                    trackTopMostEntities = true;
                 }
                 else if (threat == TargetingDef.Threat.Neutrals)
                 {
                     trackNeutrals = true;
-                    trackOther = true;
+                    trackTopMostEntities = true;
                 }
             }
         }

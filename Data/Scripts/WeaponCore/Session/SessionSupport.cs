@@ -785,9 +785,12 @@ namespace WeaponCore
             GridAi.TargetInfo info;
             if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
             {
-                Log.Line($"New Threat Detected:{topmost.DebugName}\n" +
-                         $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{w.Comp.MyCube.OwnerId} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
-                         $"[Ai] Owner:{w.Comp.Ai.Construct.RootAi.MyOwner} - Relationship:{info.EntInfo.Relationship} - Truce:{info.PeaceDeclared} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n");
+                if (info.EntInfo.Relationship != info.NewRelation)
+                {
+                    Log.Line($"New Threat Detected:{topmost.DebugName}\n" +
+                             $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{w.Comp.MyCube.OwnerId} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
+                             $"[Ai] Owner:{w.Comp.Ai.Construct.RootAi.MyOwner} - Relationship:{info.EntInfo.Relationship}[{info.NewRelation}] - Truce:{info.PeaceDeclared} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n");
+                }
             }
         }
         

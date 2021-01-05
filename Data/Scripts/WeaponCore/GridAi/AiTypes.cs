@@ -94,14 +94,16 @@ namespace WeaponCore.Support
             internal readonly bool IsGrid;
             internal readonly bool LargeGrid;
             internal readonly bool Peace;
+            internal readonly MyRelationsBetweenPlayerAndBlock NewRelation;
 
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount, bool peace)
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount, bool peace, MyRelationsBetweenPlayerAndBlock newRelation)
             {
                 Parent = parent;
                 EntInfo = entInfo;
                 PartCount = partCount;
                 FatCount = fatCount;
                 Peace = peace;
+                NewRelation = newRelation;
                 var armed = false;
                 var isGrid = false;
                 var largeGrid = false;
@@ -170,7 +172,7 @@ namespace WeaponCore.Support
             internal MyCubeGrid MyGrid;
             internal GridAi MyAi;
             internal GridAi TargetAi;
-
+            internal MyRelationsBetweenPlayerAndBlock NewRelation;
             internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
@@ -181,6 +183,7 @@ namespace WeaponCore.Support
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
                 PeaceDeclared = detectInfo.Peace;
+                NewRelation = detectInfo.NewRelation;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;

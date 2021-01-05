@@ -38,9 +38,19 @@ namespace WeaponCore.Support
                 var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == Threat.Projectiles;
                 var onlyCheckProjectile = w.ProjectilesNear && !w.Target.TargetChanged && w.Comp.Session.Count != w.Acquire.SlotId && !attemptReset;
 
-                if (!projectilesFirst && w.System.TrackOther && !onlyCheckProjectile) AcquireOther(w, out targetType, attemptReset, targetGrid);
-                else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
-                if (projectilesFirst && targetType == TargetType.None && !onlyCheckProjectile) AcquireOther(w, out targetType, false, targetGrid);
+                if (!projectilesFirst && w.System.TrackTopMostEntities && !onlyCheckProjectile)
+                {
+                    AcquireTopMostEntity(w, out targetType, attemptReset, targetGrid);
+                }
+                else if (!attemptReset && shootProjectile)
+                {
+                    AcquireProjectile(w, out targetType);
+                }
+                
+                if (projectilesFirst && targetType == TargetType.None && !onlyCheckProjectile)
+                {
+                    AcquireTopMostEntity(w, out targetType, false, targetGrid);
+                }
             }
             else
             {
@@ -174,7 +184,7 @@ namespace WeaponCore.Support
             return acquired;
         }
 
-        private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
+        private static void AcquireTopMostEntity(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
             var comp = w.Comp;
             var overRides = comp.Data.Repo.Base.Set.Overrides;
@@ -349,7 +359,7 @@ namespace WeaponCore.Support
                 else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
                 
             }
-            catch (Exception ex) { Log.Line($"Exception in AcquireOther: {ex}"); targetType = TargetType.None;}
+            catch (Exception ex) { Log.Line($"Exception in AcquireTopMostEntity: {ex}"); targetType = TargetType.None;}
         }
 
         private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, WeaponRandomGenerator wRng, RandomType type, ref BoundingSphereD waterSphere, Weapon w = null, bool checkPower = true)

@@ -695,7 +695,9 @@ namespace WeaponCore.Projectiles
                     if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                     bool peace;
-                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.MyOwner, out entInfo, out peace)) continue;
+                    MyRelationsBetweenPlayerAndBlock newRelation;
+
+                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.MyOwner, out entInfo, out peace, out newRelation)) continue;
                     switch (entInfo.Relationship)
                     {
                         case MyRelationsBetweenPlayerAndBlock.Owner:
@@ -811,7 +813,7 @@ namespace WeaponCore.Projectiles
 
             var detInfo = Info.AmmoDef.AreaEffect.Detonation;
             var afInfo = Info.AmmoDef.AreaEffect;
-            var detExp = !afInfo.Explosions.NoVisuals && afInfo.AreaEffect == AreaEffectType.Explosive && detInfo.DetonateOnEnd && (!detInfo.ArmOnlyOnHit || Info.ObjectsHit > 0);
+            var detExp = !afInfo.Explosions.NoVisuals && (afInfo.AreaEffect == AreaEffectType.Explosive || afInfo.AreaEffect == AreaEffectType.Radiant) && detInfo.DetonateOnEnd && (!detInfo.ArmOnlyOnHit || Info.ObjectsHit > 0);
 
             if (EnableAv)
             {
