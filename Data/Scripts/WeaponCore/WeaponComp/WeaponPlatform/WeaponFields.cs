@@ -365,7 +365,7 @@ namespace WeaponCore.Platform
             MiddleMuzzleIndex = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
 
             var burstDelay = System.Values.HardPoint.Loading.DelayAfterBurst;
-            ShowBurstDelayAsReload = burstDelay > 30 && burstDelay >= TicksPerShot && burstDelay >= System.Values.HardPoint.Loading.ReloadTime;
+            ShowBurstDelayAsReload = System.Values.HardPoint.Loading.ShotsInBurst > 0 && burstDelay > 30 && burstDelay >= TicksPerShot && burstDelay >= System.Values.HardPoint.Loading.ReloadTime;
 
             ParentIsSubpart = azimuthPart.Parent is MyEntitySubpart;
             AzimuthInitFwdDir = azimuthPart.PositionComp.LocalMatrixRef.Forward;
