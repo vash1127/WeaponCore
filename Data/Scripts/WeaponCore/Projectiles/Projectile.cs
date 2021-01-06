@@ -697,7 +697,7 @@ namespace WeaponCore.Projectiles
                     bool peace;
                     MyRelationsBetweenPlayerAndBlock newRelation;
 
-                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.MyOwner, out entInfo, out peace, out newRelation)) continue;
+                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.AiOwner, out entInfo)) continue;
                     switch (entInfo.Relationship)
                     {
                         case MyRelationsBetweenPlayerAndBlock.Owner:

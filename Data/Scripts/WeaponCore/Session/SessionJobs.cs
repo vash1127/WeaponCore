@@ -18,8 +18,6 @@ namespace WeaponCore
     public class GridMap
     {
         public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
-        public ConcurrentCachingList<long> BigOwners;
-        public ConcurrentCachingList<long> SmallOwners;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;
@@ -27,8 +25,6 @@ namespace WeaponCore
         {
             Targeting = null;
             MyCubeBocks.ClearImmediate();
-            BigOwners.ClearImmediate();
-            SmallOwners.ClearImmediate();
         }
     }
 
@@ -196,34 +192,6 @@ namespace WeaponCore
                 if (!GameLoaded) UpdateGrids();
                 else GridTask = MyAPIGateway.Parallel.StartBackground(UpdateGrids);
             }
-        }
-
-        internal void CheckDirtyGridOwners()
-        {
-            foreach (var grid in DirtyGridOwners)
-            {
-                GridMap gridMap;
-                if (GridToInfoMap.TryGetValue(grid, out gridMap))
-                {
-                    gridMap.BigOwners.ClearImmediate();
-                    gridMap.SmallOwners.ClearImmediate();
-
-                    var bigOwners = grid.BigOwners;
-                    var smallOwners = grid.SmallOwners;
-
-                    for (int i = 0; i < bigOwners.Count; i++)
-                        gridMap.BigOwners.Add(bigOwners[i]);
-
-                    for (int i = 0; i < smallOwners.Count; i++)
-                        gridMap.SmallOwners.Add(smallOwners[i]);
-                    
-                    gridMap.BigOwners.ApplyAdditions();
-                    gridMap.SmallOwners.ApplyAdditions();
-                }
-                else Log.Line($"GridMap check failed");
-            }
-            DirtyGridOwners.Clear();
-
         }
 
         private void UpdateGrids()

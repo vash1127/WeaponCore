@@ -38,7 +38,7 @@ namespace WeaponCore.Platform
                     UnSetPreFire();
                 #endregion
 
-                #region weapon timing
+                #region Weapon timing
                 if (System.HasBarrelRotation && !SpinBarrel() || ShootTick > tick)
                     return;
 
@@ -84,6 +84,7 @@ namespace WeaponCore.Platform
                 var selfDamage = 0f;
                 for (int i = 0; i < System.Values.HardPoint.Loading.BarrelsPerShot; i++) {
 
+                    #region Update Ammo state
                     var skipMuzzle = s.IsClient && Ammo.CurrentAmmo == 0 && ClientMakeUpShots == 0 && ShootOnce;
                     if (ActiveAmmoDef.AmmoDef.Const.Reloadable) {
 
@@ -112,7 +113,9 @@ namespace WeaponCore.Platform
                                 SpawnEjection();
                         }
                     }
+                    #endregion
 
+                    #region Next muzzle
                     var current = !skipMuzzle ? NextMuzzle : LastMuzzle;
                     var muzzle = Muzzles[current];
                     if (muzzle.LastUpdateTick != tick) {
@@ -122,6 +125,7 @@ namespace WeaponCore.Platform
                         muzzle.Position = newInfo.Position;
                         muzzle.LastUpdateTick = tick;
                     }
+                    #endregion
 
                     if (ActiveAmmoDef.AmmoDef.Const.HasBackKickForce && !Comp.Ai.IsStatic && s.IsServer)
                         Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.AmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
@@ -142,6 +146,7 @@ namespace WeaponCore.Platform
 
                     for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++) {
 
+                        #region Pick projectile direction
                         if (System.Values.HardPoint.DeviateShotAngle > 0) {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
                             var rnd1 = rnd.TurretRandom.NextDouble();
@@ -152,6 +157,9 @@ namespace WeaponCore.Platform
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3D(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2), MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2), MyMath.FastCos(randomFloat1)), dirMatrix);
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
+                        #endregion
+
+                        #region Pick Ammo Pattern
                         var patternIndex = ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
 
                         if (pattern.Enable) {
@@ -178,7 +186,9 @@ namespace WeaponCore.Platform
                                     AmmoShufflePattern[p] = (AmmoShufflePattern[p] + patternIndex) % ActiveAmmoDef.AmmoDef.Const.PatternIndexCnt;
                             }
                         }
+                        #endregion
 
+                        #region Generate Projectiles
                         for (int k = 0; k < patternIndex; k++) {
 
                             var ammoPattern = ActiveAmmoDef.AmmoDef.Const.AmmoPattern[AmmoShufflePattern[k]];
@@ -225,6 +235,7 @@ namespace WeaponCore.Platform
                             else
                                 s.Projectiles.NewProjectiles.Add(new NewProjectile {AmmoDef = ammoPattern, Muzzle = muzzle, PatternCycle = patternCycle, Direction = muzzle.DeviatedDir, Type = NewProjectile.Kind.Normal});
                         }
+                        #endregion
                     }
                     _muzzlesToFire.Add(MuzzleIdToName[current]);
 

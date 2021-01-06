@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -37,7 +38,48 @@ namespace WeaponCore.Support
             }
         }
 
+        public static IMyTerminalControlOnOffSwitch RefreshToggle;
 
+        public static void UpdateTerminal(this MyCubeBlock block)
+        {
+            try
+            {
+                if (!GetRefreshToggle())
+                    return;
+
+                RefreshTerminalControls((IMyTerminalBlock)block);
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdateTerminal: {ex}"); }
+        }
+
+        public static bool GetRefreshToggle()
+        {
+
+            List<IMyTerminalControl> items;
+            MyAPIGateway.TerminalControls.GetControls<IMyTerminalBlock>(out items);
+
+            foreach (var item in items) {
+                
+                if (item.Id == "ShowInToolbarConfig") {
+                    RefreshToggle = (IMyTerminalControlOnOffSwitch)item;
+                    break;
+                }
+            }
+            return RefreshToggle != null;
+        }
+        
+        //forces GUI refresh
+        public static void RefreshTerminalControls(IMyTerminalBlock b)
+        {
+            if (RefreshToggle != null) {
+                
+                var originalSetting = RefreshToggle.Getter(b);
+                RefreshToggle.Setter(b, !originalSetting);
+                RefreshToggle.Setter(b, originalSetting);
+
+            }
+        }
+        /*
         public static void UpdateTerminal(this MyCubeBlock block)
         {
             MyOwnershipShareModeEnum shareMode;
@@ -60,7 +102,7 @@ namespace WeaponCore.Support
             block.ChangeOwner(ownerId, shareMode == MyOwnershipShareModeEnum.None ? MyOwnershipShareModeEnum.Faction : MyOwnershipShareModeEnum.None);
             block.ChangeOwner(ownerId, shareMode);
         }
-
+        */
         public static void SphereCloud(int pointLimit, Vector3D[] physicsArray, MyEntity shieldEnt, bool transformAndScale, bool debug, Random rnd = null)
         {
             if (pointLimit > 10000) pointLimit = 10000;

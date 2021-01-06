@@ -34,7 +34,9 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
+        internal readonly Dictionary<long, HashSet<WeaponComponent>> CompOwners = new Dictionary<long, HashSet<WeaponComponent>>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryIndexer = new ConcurrentDictionary<MyInventory, int>();
+
         internal readonly MyConcurrentList<MyInventory> Inventories = new MyConcurrentList<MyInventory>();
 
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
@@ -91,8 +93,7 @@ namespace WeaponCore.Support
         internal BoundingSphereD ScanVolume;
         internal BoundingSphereD WaterVolume;
 
-        internal long MyOwner;
-        internal long AiFactionId;
+        internal long AiOwner;
         internal bool AiSleep;
         internal bool DbUpdated;
         internal bool TargetNonThreats;

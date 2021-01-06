@@ -30,7 +30,6 @@ namespace WeaponCore
             PurgedAll = true;
             FutureEvents.Purge((int)Tick);
             
-            UpdateFactionDatabase(true);
             
             foreach (var comp in CompsToStart)
                 if (comp?.Platform != null)
@@ -138,7 +137,7 @@ namespace WeaponCore
 
             GridToInfoMap.Clear();
             GridMapPool.Clean();
-
+            
             DirtyGridsTmp.Clear();
 
             foreach (var structure in WeaponPlatforms.Values)

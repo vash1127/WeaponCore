@@ -16,6 +16,7 @@ namespace WeaponCore.Platform
         internal int NextMuzzle;
         internal volatile bool Casting;
         private readonly int _numOfBarrels;
+        private readonly int _numModelBarrels;
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
@@ -38,11 +39,12 @@ namespace WeaponCore.Platform
         internal readonly uint WeaponCreatedTick;
 
         internal Action<object> CancelableReloadAction = (o) => {};
-        private readonly int _numModelBarrels;
+
         private int _nextVirtual;
         private uint _ticksUntilShoot;
         private uint _spinUpTick;
         private uint _ticksBeforeSpinUp;
+
         internal bool HeatLoopRunning;
         internal bool PreFired;
         internal bool FinishBurst;

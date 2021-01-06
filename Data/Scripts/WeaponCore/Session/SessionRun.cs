@@ -196,9 +196,6 @@ namespace WeaponCore
 
                 if (GridTask.IsComplete)
                     CheckDirtyGridInfos();
-
-                if (Tick60 && DirtyGridOwners.Count > 0)
-                    CheckDirtyGridOwners();
                 
                 if (DebugLos && Tick1800)
                     Log.Line($"RayMissAverage: {RayMissAmounts / Rays} - tick:{Tick}");

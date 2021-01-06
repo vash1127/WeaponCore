@@ -39,9 +39,6 @@ namespace WeaponCore
                 else Av.ExplosionCounter = 0;
             }
             
-            if (Tick180)
-                UpdateFactionDatabase();
-            
             if (++SCount == 60) SCount = 0;
 
             if (++AwakeCount == AwakeBuckets) AwakeCount = 0;
@@ -274,7 +271,7 @@ namespace WeaponCore
 
                                 if (gridAi.Targets.ContainsKey((MyEntity)character) && gridAi.Weapons.Count > 0 && ((IMyTerminalBlock)gridAi.Weapons[0].MyCube).HasPlayerAccess(playerId)) {
 
-                                    if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.MyOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
+                                    if (MyIDModule.GetRelationPlayerBlock(playerId, gridAi.AiOwner) == MyRelationsBetweenPlayerAndBlock.Enemies) {
                                         isAdmin = true;
                                         break;
                                     }
@@ -502,10 +499,35 @@ namespace WeaponCore
 
             for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--)
             {
-                for (int j = 0; j < GridsToUpdateInvetories[i].Inventories.Count; j++)
+                var ai = GridsToUpdateInvetories[i];
+                for (int j = 0; j < ai.Inventories.Count; j++)
                 {
-                    var inventory = GridsToUpdateInvetories[i].Inventories[j];                 
-                    InventoryItems[inventory].AddRange(inventory.GetItems());
+                    var inventory = ai.Inventories[j];
+                    if (inventory !=null)
+                    {
+                        var items = inventory.GetItems();
+                        if (items != null)
+                        {
+                            List<MyPhysicalInventoryItem> phyItemList;
+                            if (InventoryItems.TryGetValue(inventory, out phyItemList))
+                            {
+                                InventoryItems[inventory].AddRange(items);
+                            }
+                            else
+                            {
+                                var entity = inventory.Entity as MyEntity;
+                                if (entity != null)
+                                {
+                                    var block = entity as MyCubeBlock;
+                                    var blockSubType = block?.BlockDefinition != null ? block.BlockDefinition.Id.SubtypeName : "NA";
+                                    Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
+                                }
+                                else Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
+                            }
+                        }
+                        else Log.Line($"items null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
+                    }
+                    else Log.Line($"Inventory null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
                 }
             }
 
@@ -640,8 +662,6 @@ namespace WeaponCore
                         SendUpdateRequest(-1, PacketType.RequestMouseStates);
                 }
                 
-                UpdateFactionDatabase();
-
                 return true;
             }
             catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Session:{Session != null} - Player:{Session?.Player != null} - ClientMouseState:{UiInput.ClientInputState != null}"); }
@@ -781,19 +801,32 @@ namespace WeaponCore
 
         internal void NewThreatLogging(Weapon w)
         {
-            var topmost = w.Target.Entity.GetTopMostParent();
-            GridAi.TargetInfo info;
-            if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
+            try
             {
-                if (info.EntInfo.Relationship != info.NewRelation)
+                var topmost = w.Target.Entity.GetTopMostParent();
+                GridAi.TargetInfo info;
+                if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
                 {
-                    Log.Line($"New Threat Detected:{topmost.DebugName}\n" +
-                             $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{w.Comp.MyCube.OwnerId} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
-                             $"[Ai] Owner:{w.Comp.Ai.Construct.RootAi.MyOwner} - Relationship:{info.EntInfo.Relationship}[{info.NewRelation}] - Truce:{info.PeaceDeclared} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n");
+                    IMyPlayer weaponOwner;
+                    Players.TryGetValue(w.Comp.MyCube.OwnerId, out weaponOwner);
+                    var wOwner = weaponOwner != null && !string.IsNullOrEmpty(weaponOwner.DisplayName) ? $"{weaponOwner.DisplayName}({w.Comp.MyCube.OwnerId})" : $"{w.Comp.MyCube.OwnerId}";
+                    var weaponFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.Comp.MyCube.OwnerId);
+                    var wFaction = weaponFaction != null && !string.IsNullOrEmpty(weaponFaction.Name) ? $"{weaponFaction.Name}({weaponFaction.FactionId})" : $"NA";
+
+                    IMyPlayer aiOwner;
+                    Players.TryGetValue(w.Comp.Ai.AiOwner, out aiOwner);
+                    var aOwner = aiOwner != null && !string.IsNullOrEmpty(aiOwner.DisplayName) ? $"{aiOwner.DisplayName}({w.Comp.Ai.AiOwner})" : $"{w.Comp.Ai.AiOwner}";
+                    var aiFaction = MyAPIGateway.Session.Factions.TryGetPlayerFaction(w.Comp.Ai.AiOwner);
+                    var aFaction = aiFaction != null && !string.IsNullOrEmpty(aiFaction.Name) ? $"{aiFaction.Name}({aiFaction.FactionId})" : $"NA";
+
+                    Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {w.Comp.Ai.MyGrid.DebugName}" +
+                             $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
+                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n");
                 }
             }
+            catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }
         }
-        
+
         public void CalculateRestrictedShapes(MyStringHash subtype, MyOrientedBoundingBoxD cubeBoundingBox, out MyOrientedBoundingBoxD restrictedBox, out BoundingSphereD restrictedSphere)
         {
             restrictedSphere = new BoundingSphereD();
@@ -932,121 +965,6 @@ namespace WeaponCore
             VanillaSubpartNames.Add("GatlingTurretBase1");
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
-        }
-
-        public void UpdateFactionDatabase(bool clean = false)
-        {
-            foreach (var f in UserFactions) {
-                f.Value.Members.Clear();
-                PlayerFactionDitionaryPool.Return(f.Value.Members);
-            }
-            UserFactions.Clear();
-            
-            if (clean)
-                return;
-            
-            foreach (var f in MyAPIGateway.Session.Factions.Factions) {
-                var dict = PlayerFactionDitionaryPool.Get();
-                
-                foreach (var m in f.Value.Members)
-                    dict[m.Key] = m.Value;
-
-                UserFactions[f.Key] = new FactionInfo { Faction = f.Value, Members = dict };
-            }
-        }
-        
-        public MyRelationsBetweenPlayerAndBlock GetRelationPlayerBlock(long owner, long user, MyOwnershipShareModeEnum share = MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock noFactionResult = MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions defaultFactionRelations = MyRelationsBetweenFactions.Enemies,
-            MyRelationsBetweenPlayerAndBlock defaultShareWithAllRelations = MyRelationsBetweenPlayerAndBlock.FactionShare)
-        {
-            if (owner == user)
-                return MyRelationsBetweenPlayerAndBlock.Owner;
-            if (owner == 0L || user == 0L)
-                return MyRelationsBetweenPlayerAndBlock.NoOwnership;
-
-            FactionInfo playerFaction1;
-            FactionInfo playerFaction2;
-            UserFactions.TryGetValue(user, out playerFaction1);
-            UserFactions.TryGetValue(owner, out playerFaction2);
-            
-            if (playerFaction1.Faction != null && playerFaction1.Faction == playerFaction2.Faction && share == MyOwnershipShareModeEnum.Faction)
-                return MyRelationsBetweenPlayerAndBlock.FactionShare;
-            if (share == MyOwnershipShareModeEnum.All)
-                return defaultShareWithAllRelations;
-            
-            if (playerFaction1.Faction == null && playerFaction2.Faction == null)
-                return noFactionResult;
-            
-            var convertToPlayerRelation = ConvertToPlayerRelation(noFactionResult);
-            var playerPlayerRelation = MyIDModule.GetRelationPlayerPlayer(user, owner, defaultFactionRelations, convertToPlayerRelation);
-
-            return ConvertToPlayerBlockRelation(playerPlayerRelation);
-        }
-
-        private static MyRelationsBetweenPlayerAndBlock ConvertToPlayerBlockRelation(MyRelationsBetweenFactions factionRelation)
-        {
-            switch (factionRelation)
-            {
-                case MyRelationsBetweenFactions.Neutral:
-                    return MyRelationsBetweenPlayerAndBlock.Neutral;
-                case MyRelationsBetweenFactions.Enemies:
-                    return MyRelationsBetweenPlayerAndBlock.Enemies;
-                case MyRelationsBetweenFactions.Allies:
-                case MyRelationsBetweenFactions.Friends:
-                    return MyRelationsBetweenPlayerAndBlock.Friends;
-                default:
-                    return MyRelationsBetweenPlayerAndBlock.Enemies;
-            }
-        }
-
-        private static MyRelationsBetweenPlayerAndBlock ConvertToPlayerBlockRelation(
-            MyRelationsBetweenPlayers playerRelation)
-        {
-            switch (playerRelation)
-            {
-                case MyRelationsBetweenPlayers.Self:
-                case MyRelationsBetweenPlayers.Allies:
-                    return MyRelationsBetweenPlayerAndBlock.Friends;
-                case MyRelationsBetweenPlayers.Neutral:
-                    return MyRelationsBetweenPlayerAndBlock.Neutral;
-                case MyRelationsBetweenPlayers.Enemies:
-                    return MyRelationsBetweenPlayerAndBlock.Enemies;
-                default:
-                    return MyRelationsBetweenPlayerAndBlock.Enemies;
-            }
-        }
-        
-        private static MyRelationsBetweenPlayers ConvertToPlayerRelation(MyRelationsBetweenFactions factionRelation)
-        {
-            switch (factionRelation)
-            {
-                case MyRelationsBetweenFactions.Neutral:
-                    return MyRelationsBetweenPlayers.Neutral;
-                case MyRelationsBetweenFactions.Enemies:
-                    return MyRelationsBetweenPlayers.Enemies;
-                case MyRelationsBetweenFactions.Allies:
-                case MyRelationsBetweenFactions.Friends:
-                    return MyRelationsBetweenPlayers.Allies;
-                default:
-                    return MyRelationsBetweenPlayers.Enemies;
-            }
-        }
-
-        private static MyRelationsBetweenPlayers ConvertToPlayerRelation(MyRelationsBetweenPlayerAndBlock blockRelation)
-        {
-            switch (blockRelation)
-            {
-                case MyRelationsBetweenPlayerAndBlock.NoOwnership:
-                case MyRelationsBetweenPlayerAndBlock.Neutral:
-                    return MyRelationsBetweenPlayers.Neutral;
-                case MyRelationsBetweenPlayerAndBlock.Owner:
-                case MyRelationsBetweenPlayerAndBlock.FactionShare:
-                case MyRelationsBetweenPlayerAndBlock.Friends:
-                    return MyRelationsBetweenPlayers.Allies;
-                case MyRelationsBetweenPlayerAndBlock.Enemies:
-                    return MyRelationsBetweenPlayers.Enemies;
-                default:
-                    return MyRelationsBetweenPlayers.Enemies;
-            }
         }
     }
 }

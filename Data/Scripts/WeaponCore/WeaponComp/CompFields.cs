@@ -45,6 +45,7 @@ namespace WeaponCore.Support
         internal double MaxTargetDistanceSqr = double.MinValue;
         internal double MinTargetDistance = double.MaxValue;
         internal double MinTargetDistanceSqr = double.MaxValue;
+        internal long PreviousOwner = long.MaxValue;
 
         internal float EffectiveDps;
         internal float PeakDps;

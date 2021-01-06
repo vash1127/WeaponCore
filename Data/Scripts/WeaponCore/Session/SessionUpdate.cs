@@ -3,6 +3,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
+using Sandbox.ModAPI;
 using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
@@ -54,7 +55,6 @@ namespace WeaponCore
                 for (int i = 0; i < ai.Weapons.Count; i++) {
 
                     var comp = ai.Weapons[i];
-
                     if (comp.Status != Started)
                         comp.HealthCheck();
 

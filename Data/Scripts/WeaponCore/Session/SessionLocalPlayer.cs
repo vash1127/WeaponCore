@@ -72,7 +72,10 @@ namespace WeaponCore
             {
                 if (lastControlledEnt is MyCockpit || lastControlledEnt is MyRemoteControl)
                     PlayerControlAcquired(lastControlledEnt);
-                
+
+                if (ControlledEntity is MyCockpit || ControlledEntity is MyRemoteControl)
+                    PlayerControlNotify(ControlledEntity);
+
                 if (ControlledEntity is IMyGunBaseUser && !(lastControlledEnt is IMyGunBaseUser))
                 {
                     var cube = (MyCubeBlock)ControlledEntity;
@@ -188,18 +191,11 @@ namespace WeaponCore
                 var badBlock = _uninitializedBlocks[i];
                 if (badBlock.InScene) {
 
-                    var blockPos = badBlock.PositionComp.WorldMatrixRef.Translation;
-                    double distSqr;
-                    Vector3D.DistanceSquared(ref CameraPos, ref blockPos, out distSqr);
-                    
-                    if (distSqr < 350 * 350) {
-                        
-                        var lookSphere = new BoundingSphereD(badBlock.PositionComp.WorldAABB.Center, 30f);
-                        if (Camera.IsInFrustum(ref lookSphere)) {
-                            MyOrientedBoundingBoxD blockBox;
-                            SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
-                            DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
-                        }
+                    var lookSphere = new BoundingSphereD(badBlock.PositionComp.WorldAABB.Center, 30f);
+                    if (Camera.IsInFrustum(ref lookSphere)) {
+                        MyOrientedBoundingBoxD blockBox;
+                        SUtils.GetBlockOrientedBoundingBox(badBlock, out blockBox);
+                        DsDebugDraw.DrawBox(blockBox, _uninitializedColor);
                     }
                 }
             }

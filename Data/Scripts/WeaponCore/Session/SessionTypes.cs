@@ -301,7 +301,7 @@ namespace WeaponCore
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
                     {"WeaponBase", () => GetAi()?.WeaponBase.Count.ToString() ?? string.Empty },
                     {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString(CultureInfo.InvariantCulture).Substring(0, 6) ?? string.Empty },
-                    {"MyOwner", () => GetAi()?.MyOwner.ToString() ?? string.Empty },
+                    {"AiOwner", () => GetAi()?.AiOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
                     {"BlockCount", () => GetAi()?.BlockCount.ToString() ?? string.Empty },
                     {"WeaponsTracking", () => GetAi()?.WeaponsTracking.ToString() ?? string.Empty },

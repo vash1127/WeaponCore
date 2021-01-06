@@ -62,7 +62,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128, invMove => invMove.Clean());
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100, cList => cList.ClearImmediate());
-        internal readonly MyConcurrentPool<ConcurrentCachingList<long>> ConcurrentListLongPool = new MyConcurrentPool<ConcurrentCachingList<long>>(100, cList => cList.ClearImmediate());
+        internal readonly MyConcurrentPool<HashSet<WeaponComponent>> HashsetCompPool = new MyConcurrentPool<HashSet<WeaponComponent>>(256, cList => cList.Clear());
 
         internal readonly MyConcurrentPool<GridMap> GridMapPool = new MyConcurrentPool<GridMap>(128, fatMap => fatMap.Clean());
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
@@ -79,7 +79,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<WeaponAmmoPacket> PacketAmmoPool = new MyConcurrentPool<WeaponAmmoPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<TargetPacket> PacketTargetPool = new MyConcurrentPool<TargetPacket>(64, packet => packet.CleanUp());
         internal readonly MyConcurrentPool<BetterInventoryItem> BetterInventoryItems = new MyConcurrentPool<BetterInventoryItem>(256);
-        internal readonly MyConcurrentPool<ConcurrentDictionary<long, MyFactionMember>> PlayerFactionDitionaryPool = new MyConcurrentPool<ConcurrentDictionary<long, MyFactionMember>>(32);
 
         internal readonly Stack<MyEntity3DSoundEmitter> Emitters = new Stack<MyEntity3DSoundEmitter>(256);
         internal readonly Stack<VoxelCache> VoxelCachePool = new Stack<VoxelCache>(256);
@@ -97,7 +96,6 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyInventory, List<BetterInventoryItem>> AmmoThreadItemList = new ConcurrentDictionary<MyInventory, List<BetterInventoryItem>>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponToPullAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
         internal readonly ConcurrentDictionary<Weapon, int> WeaponsToRemoveAmmoIndexer = new ConcurrentDictionary<Weapon, int>();
-        internal readonly ConcurrentDictionary<long, FactionInfo> UserFactions = new ConcurrentDictionary<long, FactionInfo>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGridInfos = new MyConcurrentHashSet<MyCubeGrid>();
 
@@ -155,9 +153,7 @@ namespace WeaponCore
         internal readonly HashSet<IMyTerminalAction> AlteredActions = new HashSet<IMyTerminalAction>();
         internal readonly HashSet<IMyTerminalControl> CustomControls = new HashSet<IMyTerminalControl>();
         internal readonly HashSet<IMyTerminalControl> AlteredControls = new HashSet<IMyTerminalControl>();
-        internal readonly HashSet<MyStringHash> BadModAuthorWeapons = new HashSet<MyStringHash>(MyStringHash.Comparer);
         internal readonly HashSet<Weapon> WeaponLosDebugActive = new HashSet<Weapon>();
-        internal readonly HashSet<MyCubeGrid> DirtyGridOwners = new HashSet<MyCubeGrid>();
 
         internal readonly List<Weapon> InvPullClean = new List<Weapon>();
         internal readonly List<Weapon> InvRemoveClean = new List<Weapon>();

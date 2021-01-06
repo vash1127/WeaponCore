@@ -93,17 +93,13 @@ namespace WeaponCore.Support
             internal readonly bool Armed;
             internal readonly bool IsGrid;
             internal readonly bool LargeGrid;
-            internal readonly bool Peace;
-            internal readonly MyRelationsBetweenPlayerAndBlock NewRelation;
 
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount, bool peace, MyRelationsBetweenPlayerAndBlock newRelation)
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount)
             {
                 Parent = parent;
                 EntInfo = entInfo;
                 PartCount = partCount;
                 FatCount = fatCount;
-                Peace = peace;
-                NewRelation = newRelation;
                 var armed = false;
                 var isGrid = false;
                 var largeGrid = false;
@@ -164,7 +160,6 @@ namespace WeaponCore.Support
             internal bool LargeGrid;
             internal bool Approaching;
             internal bool IsStatic;
-            internal bool PeaceDeclared;
             internal int PartCount;
             internal int FatCount;
             internal float OffenseRating;
@@ -172,7 +167,6 @@ namespace WeaponCore.Support
             internal MyCubeGrid MyGrid;
             internal GridAi MyAi;
             internal GridAi TargetAi;
-            internal MyRelationsBetweenPlayerAndBlock NewRelation;
             internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
@@ -182,8 +176,6 @@ namespace WeaponCore.Support
                 IsStatic = Target.Physics.IsStatic;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
-                PeaceDeclared = detectInfo.Peace;
-                NewRelation = detectInfo.NewRelation;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;

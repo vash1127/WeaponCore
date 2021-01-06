@@ -1094,7 +1094,7 @@ namespace WeaponCore.Platform
             if (Comp.Ai.TestShields.Count == 0)
                 return false;
 
-            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.MyOwner, checkDistanceSqr);
+            var result = Comp.Ai.Session.SApi.IntersectEntToShieldFast(Comp.Ai.TestShields, testRay, true, false, Comp.Ai.AiOwner, checkDistanceSqr);
 
             return result.Item1 && result.Item2 > 0;
         }

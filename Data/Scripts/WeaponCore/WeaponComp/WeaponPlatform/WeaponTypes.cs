@@ -84,7 +84,7 @@ namespace WeaponCore.Platform
                         return;
                     }
 
-                    if (!Session.GridEnemy(Weapon.Comp.Ai.MyOwner, topAsGrid))
+                    if (!Session.GridEnemy(Weapon.Comp.Ai.AiOwner, topAsGrid))
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);

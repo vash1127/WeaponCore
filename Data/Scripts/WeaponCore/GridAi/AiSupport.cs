@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage;
-using VRage.Game;
-using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Session;
 using static WeaponCore.WeaponRandomGenerator;
-using static WeaponCore.Support.WeaponComponent;
 
 namespace WeaponCore.Support
 {
@@ -36,6 +29,7 @@ namespace WeaponCore.Support
                 }
                 WeaponsIdx.Add(comp, Weapons.Count);
                 Weapons.Add(comp);
+                AddBlockOwner(comp);
             }
             else {
 
@@ -60,9 +54,58 @@ namespace WeaponCore.Support
 
                 //Session.IdToCompMap.Remove(comp.MyCube.EntityId);
                 WeaponsIdx.Remove(comp);
+                RemoveBlockOwner(comp);
             }
         }
 
+        internal void AddBlockOwner(WeaponComponent comp)
+        {
+            var currentOwner = comp.MyCube.IDModule.Owner;
+
+            HashSet<WeaponComponent> ownedComps;
+            if (CompOwners.TryGetValue(currentOwner, out ownedComps)) 
+                ownedComps.Add(comp);
+            else {
+                var owners = Session.HashsetCompPool.Get();
+                owners.Add(comp);
+                CompOwners[currentOwner] = owners;
+            }
+            comp.PreviousOwner = currentOwner;
+        }
+
+        internal void RemoveBlockOwner(WeaponComponent comp)
+        {
+            var currentOwner = comp.MyCube.IDModule.Owner;
+
+            HashSet<WeaponComponent> ownedComps;
+            if (!CompOwners.TryGetValue(comp.PreviousOwner, out ownedComps)) {
+                Log.Line($"RemoveOwner failed to find owner: {comp.PreviousOwner}({currentOwner}) from: {comp.MyCube.DebugName}");
+                return;
+            }
+            
+            if (!ownedComps.Remove(comp))
+                Log.Line($"RemoveOwner failed remove comp: {comp.PreviousOwner}({currentOwner}) from: {comp.MyCube.DebugName}");
+
+            if (ownedComps.Count == 0) {
+                Session.HashsetCompPool.Return(ownedComps);
+                CompOwners.Remove(comp.PreviousOwner);
+            }
+
+            comp.PreviousOwner = currentOwner;
+        }
+
+        internal void ChangeBlockOwner(WeaponComponent comp)
+        {
+            var currentOwner = comp.MyCube.IDModule.Owner;
+
+            if (currentOwner == comp.PreviousOwner) {
+                Log.Line($"ChangeOwner ownerid didn't change: {currentOwner}");
+                return;
+            }
+            RemoveBlockOwner(comp);
+            AddBlockOwner(comp);
+        }
+        
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle, WeaponRandomGenerator rng, RandomType type)
         {
             var count = cardsToSort - firstCard;
@@ -289,6 +332,7 @@ namespace WeaponCore.Support
             Data.Repo.ControllingPlayers.Clear();
             Data.Repo.ActiveTerminal = 0;
 
+            CompOwners.Clear();
             CleanSortedTargets();
             InventoryIndexer.Clear();
             Construct.Clean();
@@ -315,7 +359,7 @@ namespace WeaponCore.Support
             PreviousTargets.Clear();
             SourceCount = 0;
             BlockCount = 0;
-            MyOwner = 0;
+            AiOwner = 0;
             ProjectileTicker = 0;
             NearByEntities = 0;
             NearByEntitiesTmp = 0;

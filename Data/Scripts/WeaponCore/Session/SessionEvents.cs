@@ -84,8 +84,6 @@ namespace WeaponCore
             while (NewGrids.TryDequeue(out grid))
             {
                 var allFat = ConcurrentListPool.Get();
-                var smallOwners = ConcurrentListLongPool.Get();
-                var bigOwners = ConcurrentListLongPool.Get();
 
                 var gridFat = grid.GetFatBlocks();
                 for (int i = 0; i < gridFat.Count; i++) allFat.Add(gridFat[i]);
@@ -98,24 +96,15 @@ namespace WeaponCore
                 gridMap.Trash = true;
 
                 gridMap.MyCubeBocks = allFat;
-                gridMap.SmallOwners = smallOwners;
-                gridMap.BigOwners = bigOwners;
                 GridToInfoMap.TryAdd(grid, gridMap);
                 grid.OnFatBlockAdded += ToGridMap;
                 grid.OnFatBlockRemoved += FromGridMap;
                 grid.OnClose += RemoveGridFromMap;
-                grid.OnBlockOwnershipChanged += OwnerShipChange;
                 DirtyGridInfos.Add(grid);
-                DirtyGridOwners.Add(grid);
 
             }
         }
 
-        private void OwnerShipChange(MyCubeGrid myCubeGrid)
-        {
-            DirtyGridOwners.Add(myCubeGrid);
-        }
-        
         private void RemoveGridFromMap(MyEntity myEntity)
         {
             var grid = (MyCubeGrid)myEntity;
@@ -123,8 +112,7 @@ namespace WeaponCore
             if (GridToInfoMap.TryRemove(grid, out gridMap))
             {
                 ConcurrentListPool.Return(gridMap.MyCubeBocks);
-                ConcurrentListLongPool.Return(gridMap.SmallOwners);
-                ConcurrentListLongPool.Return(gridMap.BigOwners);
+
                 gridMap.Trash = true;
                 GridMapPool.Return(gridMap);
                 
@@ -132,7 +120,6 @@ namespace WeaponCore
                 grid.OnFatBlockRemoved -= FromGridMap;
                 grid.OnClose -= RemoveGridFromMap;
                 grid.AddedToScene -= GridAddedToScene;
-                grid.OnBlockOwnershipChanged -= OwnerShipChange;
                 DirtyGridInfos.Add(grid);
             }
             else Log.Line($"grid not removed and list not cleaned: marked:{grid.MarkedForClose}({grid.Closed}) - inScene:{grid.InScene}");
@@ -226,6 +213,19 @@ namespace WeaponCore
             }
         }
 
+        private void PlayerControlNotify(MyEntity entity)
+        {
+            var cube = entity as MyCubeBlock;
+            GridAi gridAi;
+            if (cube != null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+            {
+                if (HandlesInput && gridAi.AiOwner == 0)
+                {
+                    MyAPIGateway.Utilities.ShowNotification($"Ai computer is not owned, take ownership of grid weapons! - current ownerId is: {gridAi.AiOwner}", 10000);
+                }
+            }
+        }
+        
         private void PlayerConnected(long id)
         {
             try
