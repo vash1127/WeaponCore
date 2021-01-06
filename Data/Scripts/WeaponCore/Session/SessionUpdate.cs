@@ -142,11 +142,8 @@ namespace WeaponCore
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var isReload = w.Reloading && Tick - w.LastLoadedTick > 30;
-                        var isHot = w.HeatPerc >= 0.01;
                         var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Reloading && Tick - w.LastShootTick > 30 && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst && w.ShootTick > w.Comp.Session.Tick;
-
-                        if (( isReload || isHot || isWaitingForBurstDelay) && HandlesInput && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        if (HandlesInput && (w.Reloading && Tick - w.LastLoadedTick > 30 || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
