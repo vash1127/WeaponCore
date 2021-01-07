@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using WeaponCore.Support;
-using static WeaponCore.Session;
 
 namespace WeaponCore
 {

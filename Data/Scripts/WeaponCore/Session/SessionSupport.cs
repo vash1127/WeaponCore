@@ -803,7 +803,6 @@ namespace WeaponCore
         {
             try
             {
-                /*
                 var topmost = w.Target.Entity.GetTopMostParent();
                 GridAi.TargetInfo info;
                 if (topmost != null && w.Comp.Ai.PreviousTargets.Add(topmost) && w.Comp.Ai.Targets.TryGetValue(topmost, out info))
@@ -822,9 +821,8 @@ namespace WeaponCore
 
                     Log.Line($"New Threat Detected:{topmost.DebugName}\n - by: {w.Comp.Ai.MyGrid.DebugName}" +
                              $"Attacking Weapon:{w.System.WeaponName} " + $"[Weapon] Owner:{wOwner} - Faction:{wFaction} - Neutrals:{w.Comp.Data.Repo.Base.Set.Overrides.Neutrals} - Friends:{w.Comp.Data.Repo.Base.Set.Overrides.Friendly} - Unowned:{w.Comp.Data.Repo.Base.Set.Overrides.Unowned}\n" +
-                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n");
+                             $"[Ai] Owner:{aOwner} - Faction:{aFaction} - Relationship:{info.EntInfo.Relationship} - ThreatLevel:{info.OffenseRating} - isFocus:{w.Comp.Ai.Construct.RootAi.Construct.Focus.OldHasFocus}\n", "combat");
                 }
-                */
             }
             catch (Exception ex) { Log.Line($"NewThreatLogging in SessionDraw: {ex}"); }
         }
