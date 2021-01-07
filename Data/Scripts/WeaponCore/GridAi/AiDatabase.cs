@@ -8,6 +8,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -25,23 +26,8 @@ namespace WeaponCore.Support
                 if (MyGrid.MarkedForClose || !MyGrid.InScene)
                     return;
 
-                long newOwner = 0;
-                int highestCount = 0;
-                foreach (var pair in CompOwners) {
-                    var compCount = pair.Value.Count;
-                    if (compCount > highestCount) {
-                        highestCount = compCount;
-                        newOwner = pair.Key;
-                    }
-                }
-                
-                if (highestCount == 0)
-                    Log.Line($"highestCount:{highestCount} - {MyGrid.DebugName} - {Weapons.Count} - {CompOwners.Count}");
-                
-                AiOwner = newOwner;
-                
-                if (AiOwner ==  long.MaxValue)
-                    Log.Line($"AiOwner invalid: {AiOwner}");
+                var bigOwners = MyGrid.BigOwners;
+                AiOwner = bigOwners.Count > 0 ? bigOwners[0] : 0;
             }
 
             ScanInProgress = true;
@@ -331,19 +317,8 @@ namespace WeaponCore.Support
                 var grid = entity.GetTopMostParent() as MyCubeGrid;
                 if (grid != null)
                 {
-                    long topOwner;
-                    GridAi rootAi;
-                    if (Session.GridToMasterAi.TryGetValue(grid, out rootAi)) {
-                        GridAi gridAi;
-                        if (grid != rootAi.MyGrid && Session.GridTargetingAIs.TryGetValue(grid, out gridAi))
-                            topOwner = gridAi.AiOwner;
-                        else
-                            topOwner = rootAi.AiOwner;
-                    }
-                    else {
-                        var bigOwners = grid.BigOwners;
-                        topOwner = bigOwners.Count > 0 ? bigOwners[0] : long.MaxValue;
-                    }
+                    var bigOwners = grid.BigOwners;
+                    var topOwner = bigOwners.Count > 0 ? bigOwners[0] : long.MaxValue;
 
                     relationship = topOwner != long.MinValue ? MyIDModule.GetRelationPlayerBlock(gridOwner, topOwner, MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
 
@@ -355,9 +330,18 @@ namespace WeaponCore.Support
                 var myCharacter = entity as IMyCharacter;
                 if (myCharacter != null)
                 {
-                    var controllingId = myCharacter.ControllerInfo?.ControllingIdentityId;
-                    var playerId = controllingId ?? 0;
                     var type = !myCharacter.IsPlayer ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterOther : Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterHuman;
+
+                    var getComponentOwner = entity as IMyComponentOwner<MyIDModule>;
+
+                    long playerId;
+                    MyIDModule targetIdModule;
+                    if (getComponentOwner != null && getComponentOwner.GetComponent(out targetIdModule))
+                        playerId = targetIdModule.Owner;
+                    else {
+                        var controllingId = myCharacter.ControllerInfo?.ControllingIdentityId;
+                        playerId = controllingId ?? 0;
+                    }
                     
                     relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
                     

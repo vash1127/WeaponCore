@@ -34,7 +34,6 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyStringHash, WeaponCount> WeaponCounter = new Dictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
-        internal readonly Dictionary<long, HashSet<WeaponComponent>> CompOwners = new Dictionary<long, HashSet<WeaponComponent>>();
         internal readonly ConcurrentDictionary<MyInventory, int> InventoryIndexer = new ConcurrentDictionary<MyInventory, int>();
 
         internal readonly MyConcurrentList<MyInventory> Inventories = new MyConcurrentList<MyInventory>();
@@ -136,7 +135,6 @@ namespace WeaponCore.Support
         internal uint LastPowerUpdateTick;
         internal uint ProjectileTicker;
         internal uint LastDetectEvent;
-        internal uint LastGroupScanTick;
         internal uint SubGridInitTick;
         internal int SleepingComps;
         internal int AwakeComps;

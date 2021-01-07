@@ -56,7 +56,6 @@ namespace WeaponCore.Platform
         internal uint ShootTick;
         internal uint LastShootTick;
         internal uint TicksPerShot;
-        internal uint LastSyncTick;
         internal uint PosChangedTick;
         internal uint ElevationTick;
         internal uint AzimuthTick;
@@ -130,7 +129,6 @@ namespace WeaponCore.Platform
         internal float ShotEnergyCost;
         internal float LastHeat;
         internal uint CeaseFireDelayTick = uint.MaxValue / 2;
-        internal uint LastRotateTick;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint LastMuzzleCheck;

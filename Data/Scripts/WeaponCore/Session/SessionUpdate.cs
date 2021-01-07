@@ -3,7 +3,6 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using System.Collections.Generic;
-using Sandbox.ModAPI;
 using VRage.Game;
 using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
@@ -24,9 +23,12 @@ namespace WeaponCore
                 ai.MyProjectiles = 0;
                 ai.ProInMinCacheRange = 0;
                 ai.AccelChecked = false;
+                
+                if (ai.MarkedForClose || !ai.GridInit || ai.MyGrid == null || ai.Construct.RootAi == null || ai.MyGrid.MarkedForClose)
+                    continue;
+                
                 ai.Concealed = ((uint)ai.MyGrid.Flags & 4) > 0;
-
-                if (ai.MarkedForClose || ai.Concealed || !ai.GridInit || ai.MyGrid.MarkedForClose)
+                if (ai.Concealed)
                     continue;
 
                 if (!ai.ScanInProgress && Tick - ai.TargetsUpdatedTick > 100 && DbTask.IsComplete)

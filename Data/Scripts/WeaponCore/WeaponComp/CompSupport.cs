@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Sandbox.ModAPI;
-using VRageMath;
-using WeaponCore.Api;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support

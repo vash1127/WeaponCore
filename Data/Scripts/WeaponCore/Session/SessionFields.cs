@@ -62,7 +62,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>(256, info => info.Clean());
         internal readonly MyConcurrentPool<WeaponAmmoMoveRequest> InventoryMoveRequestPool = new MyConcurrentPool<WeaponAmmoMoveRequest>(128, invMove => invMove.Clean());
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100, cList => cList.ClearImmediate());
-        internal readonly MyConcurrentPool<HashSet<WeaponComponent>> HashsetCompPool = new MyConcurrentPool<HashSet<WeaponComponent>>(256, cList => cList.Clear());
 
         internal readonly MyConcurrentPool<GridMap> GridMapPool = new MyConcurrentPool<GridMap>(128, fatMap => fatMap.Clean());
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);

@@ -23,7 +23,6 @@ namespace WeaponCore.Support
                 //TODO change this
                 Registered = true;
                 TerminalBlock.AppendingCustomInfo += AppendingCustomInfo;
-                TerminalBlock.OwnershipChanged += OnChangeOwner;
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 MyCube.OnMarkForClose += OnMarkForClose;
                 IsWorkingChanged(MyCube);
@@ -58,7 +57,6 @@ namespace WeaponCore.Support
                     //TODO change this
                     Registered = false;
                     TerminalBlock.AppendingCustomInfo -= AppendingCustomInfo;
-                    TerminalBlock.OwnershipChanged -= OnChangeOwner;
 
                     MyCube.IsWorkingChanged -= IsWorkingChanged;
                     MyCube.OnMarkForClose -= OnMarkForClose;
@@ -85,14 +83,8 @@ namespace WeaponCore.Support
             }
         }
 
-        private void OnChangeOwner(IMyTerminalBlock myTerminalBlock)
-        {
-            Ai.ChangeBlockOwner(this);
-        }
-        
         private void OnContentsChanged(MyInventoryBase inv, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            if (!Registered) return;
             BetterInventoryItem cachedItem;
             if (!Session.BlockInventoryItems[BlockInventory].TryGetValue(item.ItemId, out cachedItem))
             {
@@ -183,7 +175,7 @@ namespace WeaponCore.Support
         {
             if (!MyCube.IsFunctional) return "[Fault]";
             if (!MyCube.IsWorking) return "[Offline]";
-            return Ai.AiOwner != 0 ? "[Online]" : "[Rouge Ai] Weapons are unowned!!";
+            return Ai.AiOwner != 0 ? "[Online]" : "[Rogue Ai] Weapons are unowned!!";
         }
 
         private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder stringBuilder)

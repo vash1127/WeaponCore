@@ -104,8 +104,15 @@ namespace WeaponCore
             for (int i = CompsDelayed.Count - 1; i >= 0; i--)
             {
                 var delayed = CompsDelayed[i];
-                if (delayed.MyCube.MarkedForClose || delayed.Entity == null || forceRemove)
+                if (forceRemove || delayed.Entity == null || delayed.Platform == null || delayed.MyCube.MarkedForClose || delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
+                {
+                    if (delayed.Platform == null)
+                        Log.Line($"[DelayedComps skip due to null platform] marked: {delayed.MyCube.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
+                    else if (delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
+                        Log.Line($"[DelayedComps skip due to platform != Delay] marked:{delayed.MyCube.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
+
                     CompsDelayed.RemoveAtFast(i);
+                }
                 else if (delayed.MyCube.IsFunctional)
                 {
                     delayed.PlatformInit();

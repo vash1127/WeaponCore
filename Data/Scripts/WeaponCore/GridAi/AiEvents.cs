@@ -58,7 +58,7 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id));
 
-                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector))
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler )) // readd IMyShipConnector
                 {
                     MyInventory inventory;
                     if (cube.HasInventory && cube.TryGetInventory(out inventory))

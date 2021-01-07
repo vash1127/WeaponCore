@@ -32,8 +32,13 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     ReInit();
-                else
-                   PlatformInit();
+                else {
+                    
+                    if (Platform.State != MyWeaponPlatform.PlatformState.Fresh)
+                        Log.Line($"OnAddedToScene != Fresh, Inited or Ready: {Platform.State}");
+
+                    PlatformInit();
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -157,8 +162,8 @@ namespace WeaponCore.Support
         internal void OnAddedToSceneTasks()
         {
             try {
-                if (Ai.MarkedForClose && !Ai.Session.MpActive)
-                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - CubeMarked:{MyCube.MarkedForClose} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} - AiContainsMe:{Ai.WeaponBase.ContainsKey(MyCube)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(MyCube.CubeGrid)}[{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}]");
+                if (Ai.MarkedForClose)
+                    Log.Line($"OnAddedToSceneTasks and AI MarkedForClose - Subtype:{MyCube.BlockDefinition.Id.SubtypeName}({MyCube.CubeGrid.DebugName}) - CubeMarked:{MyCube.MarkedForClose} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} - AiContainsMe:{Ai.WeaponBase.ContainsKey(MyCube)} - MyGridInAi:{Ai.Session.GridToMasterAi.ContainsKey(MyCube.CubeGrid)}[{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}]");
                 Ai.UpdatePowerSources = true;
                 RegisterEvents();
                 if (!Ai.GridInit) {
