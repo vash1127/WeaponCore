@@ -86,7 +86,7 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\CompSerializedValues.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Definitions\Config\SessionAnimationMgr.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionAnimationMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionAreaEffect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionCleanUp.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionCompMgr.cs" />
