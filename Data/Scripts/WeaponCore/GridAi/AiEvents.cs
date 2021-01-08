@@ -132,9 +132,11 @@ namespace WeaponCore.Support
                 if (amount <= 0 || item.Content == null || inventory == null) return;
                 var itemDef = item.Content.GetObjectId();
                 if (Session.AmmoDefIds.Contains(itemDef))
+                {
                     Construct.RootAi?.Construct.RecentItems.Add(itemDef);
+                }
             }
-            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName}[{((MyCubeBlock)inventory?.Entity)?.BlockDefinition.Id.SubtypeName}] - item:{item.Content?.SubtypeName} - amount:{amount} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
         }
 
         internal void GridClose(MyEntity myEntity)

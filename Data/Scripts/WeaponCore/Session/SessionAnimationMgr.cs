@@ -203,8 +203,8 @@ namespace WeaponCore
             var rate = 0d;
             var decay = move.MovementType == RelMove.MoveType.ExpoDecay;
             var check = decay ? 1d : 0d;
-
-            while (check > 0) {
+            
+            while (decay ? check > 0 : check < distance) {
                 rate += 0.001;
                 check = decay ? distance * Math.Pow(1 - rate, move.TicksToMove) : 0.001 * Math.Pow(1 + rate, move.TicksToMove);
 
@@ -217,8 +217,7 @@ namespace WeaponCore
             var vecTotalMoved = 0d;
             rate = decay ? 1 - rate : rate + 1;
 
-            for (int j = 0; j < move.TicksToMove; j++)
-            {
+            for (int j = 0; j < move.TicksToMove; j++) {
 
                 var toPow = Math.Pow(rate, j + 1);
                 var step = decay ? distance * toPow : 0.001 * toPow;
@@ -236,16 +235,14 @@ namespace WeaponCore
                     progress = (float)(traveled / distance);
 
                 changed += remaining;
-                if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
-                {
+                if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved) {
 
                     var origMove = changed;
                     changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
                     remaining = origMove - changed;
                     vecTotalMoved = 0;
                 }
-                else
-                {
+                else {
                     vecTotalMoved += changed;
                     remaining = 0;
                 }
@@ -259,8 +256,7 @@ namespace WeaponCore
                 WeaponEmissive emissive;
                 if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                     CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                else
-                {
+                else {
                     weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
                     currentEmissivePart.Add(-1);
                 }
