@@ -59,12 +59,6 @@ namespace WeaponCore
             }
         }
 
-        internal struct FactionInfo
-        {
-            internal IMyFaction Faction;
-            internal ConcurrentDictionary<long, MyFactionMember> Members;
-        }
-
         internal struct LosDebug
         {
             internal Weapon Weapon;
@@ -300,7 +294,7 @@ namespace WeaponCore
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },
                     {"TargetAis", () => GetAi()?.TargetAis.Count.ToString() ?? string.Empty },
                     {"WeaponBase", () => GetAi()?.WeaponBase.Count.ToString() ?? string.Empty },
-                    {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString(CultureInfo.InvariantCulture).Substring(0, 6) ?? string.Empty },
+                    {"ThreatRangeSqr", () => GetAi()?.TargetingInfo.ThreatRangeSqr.ToString("0.####", CultureInfo.InvariantCulture) ?? string.Empty },
                     {"AiOwner", () => GetAi()?.AiOwner.ToString() ?? string.Empty },
                     {"AwakeComps", () => GetAi()?.AwakeComps.ToString() ?? string.Empty },
                     {"BlockCount", () => GetAi()?.BlockCount.ToString() ?? string.Empty },

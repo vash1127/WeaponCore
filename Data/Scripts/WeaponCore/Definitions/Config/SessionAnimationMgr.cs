@@ -18,96 +18,107 @@ namespace WeaponCore
     {
         internal void CreateAnimationSets(AnimationDef animations, WeaponSystem system, out Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<EventTriggers, uint> animationLengths, out string[] heatingSubpartNames, out Dictionary<EventTriggers, ParticleEvent[]> particleEvents)
         {
-            var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
             weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
             particleEvents = new Dictionary<EventTriggers, ParticleEvent[]>();
             weaponEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
             animationLengths = new Dictionary<EventTriggers, uint>();
-
-            var wepAnimationSets = animations.WeaponAnimationSets;
-            var wepEmissivesSet = animations.Emissives;
-
             weaponLinearMoveSet = new Dictionary<string, Matrix[]>();
 
             var emissiveLookup = new Dictionary<string, WeaponEmissive>();
 
+            CompileHeating(animations, emissiveLookup, out heatingSubpartNames);
+
+            CompileParticles(animations, particleEvents);
+
+            if (animations.WeaponAnimationSets == null)
+                return;
+
+            var allAnimationSet = new Dictionary<EventTriggers, HashSet<PartAnimation>>();
+            CompileAnimationSets(system, animations.WeaponAnimationSets, allAnimationSet, animationLengths, animationIdLookup, weaponEmissivesSet, emissiveLookup, weaponLinearMoveSet);
+
+            FinalizeAnimationSets(allAnimationSet, weaponAnimationSets);
+        }
+        
+        private void CompileHeating(AnimationDef animations, Dictionary<string, WeaponEmissive> emissiveLookup, out string[] heatingSubpartNames)
+        {
             if (animations.HeatingEmissiveParts != null && animations.HeatingEmissiveParts.Length > 0)
                 heatingSubpartNames = animations.HeatingEmissiveParts;
             else
                 heatingSubpartNames = new string[0];
 
-            if (wepEmissivesSet != null)
-            {
+            var wepEmissivesSet = animations.Emissives;
+            if (wepEmissivesSet != null) {
                 foreach (var emissive in wepEmissivesSet)
                     emissiveLookup.Add(emissive.EmissiveName, emissive);
             }
-
-            if (animations.EventParticles != null)
-            {
+        }
+        
+        private void CompileParticles(AnimationDef animations, Dictionary<EventTriggers, ParticleEvent[]> particleEvents)
+        {
+            if (animations.EventParticles != null) {
+                
                 var tmpEvents = new Dictionary<EventTriggers, List<ParticleEvent>>();
 
-                foreach (var particleEvent in animations.EventParticles)
-                {
+                foreach (var particleEvent in animations.EventParticles) {
+                    
                     tmpEvents[particleEvent.Key] = new List<ParticleEvent>();
 
-                    var eventParticles = particleEvent.Value;
-
-                    for (int i = 0; i < particleEvent.Value.Length; i++)
-                    {
+                    for (int i = 0; i<particleEvent.Value.Length; i++) {
+                        
                         var eventParticle = particleEvent.Value[i];
 
                         if (eventParticle.MuzzleNames == null)
                             eventParticle.MuzzleNames = new string[0];
 
-                        if (eventParticle.EmptyNames.Length == eventParticle.MuzzleNames.Length)
-                        {
-                            for (int j = 0; j < eventParticle.EmptyNames.Length; j++)
-                            {
-                                tmpEvents[particleEvent.Key].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyNames[j], eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), (uint)eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop, eventParticle.MuzzleNames[j]));
-                            }
+                        if (eventParticle.EmptyNames.Length == eventParticle.MuzzleNames.Length) {
+                            
+                            for (int j = 0; j<eventParticle.EmptyNames.Length; j++)
+                                tmpEvents[particleEvent.Key].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyNames[j], eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance* eventParticle.Particle.Extras.MaxDistance), (uint) eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop, eventParticle.MuzzleNames[j]));
                         }
-                        else
-                        {
-                            for (int j = 0; j < eventParticle.EmptyNames.Length; j++)
-                            {
-                                tmpEvents[particleEvent.Key].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyNames[j], eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance * eventParticle.Particle.Extras.MaxDistance), (uint)eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop, eventParticle.MuzzleNames));
-                            }
+                        else {
+                            
+                            for (int j = 0; j<eventParticle.EmptyNames.Length; j++)
+                                tmpEvents[particleEvent.Key].Add(new ParticleEvent(eventParticle.Particle.Name, eventParticle.EmptyNames[j], eventParticle.Particle.Color, eventParticle.Particle.Offset, eventParticle.Particle.Extras.Scale, (eventParticle.Particle.Extras.MaxDistance* eventParticle.Particle.Extras.MaxDistance), (uint) eventParticle.Particle.Extras.MaxDuration, eventParticle.StartDelay, eventParticle.LoopDelay, eventParticle.Particle.Extras.Loop, eventParticle.Particle.Extras.Restart, eventParticle.ForceStop, eventParticle.MuzzleNames));
                         }
                     }                    
                 }
 
                 foreach (var particleEvent in tmpEvents)
                     particleEvents[particleEvent.Key] = particleEvent.Value.ToArray();
-            }            
+            }  
+        }
 
-            if (wepAnimationSets == null)
-                return;
+        private void CompileAnimationSets(WeaponSystem system, PartAnimationSetDef[] wepAnimationSets, Dictionary<EventTriggers, HashSet<PartAnimation>> allAnimationSet, Dictionary<EventTriggers, uint> animationLengths, HashSet<string> animationIdLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, Matrix[]> weaponLinearMoveSet)
+        {
+            
+            foreach (var animationSet in wepAnimationSets) {
+                for (int t = 0; t < animationSet.SubpartId.Length; t++) {
 
-            foreach (var animationSet in wepAnimationSets)
-            {                
-                for (int t = 0; t < animationSet.SubpartId.Length; t++)
-                {
-                    
-                    foreach (var moves in animationSet.EventMoveSets)
-                    {
-                        if (!allAnimationSet.ContainsKey(moves.Key))
-                        {
+                    foreach (var moves in animationSet.EventMoveSets) {
+                        
+                        if (!allAnimationSet.ContainsKey(moves.Key)) {
                             allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
                             animationLengths[moves.Key] = 0;
                         }
 
-                        List<Matrix> moveSet = new List<Matrix>();
-                        List<Matrix> rotationSet = new List<Matrix>();
-                        List<Matrix> rotCenterSet = new List<Matrix>();
-                        List<string> rotCenterNameSet = new List<string>();
-                        List<string> emissiveIdSet = new List<string>();
-
                         Guid guid = Guid.NewGuid();
                         var id = Convert.ToBase64String(guid.ToByteArray());
                         animationIdLookup.Add(id);
-                        AnimationType[] typeSet = new[]
-                        {
+
+                        List<Matrix> moveSet;
+                        List<Matrix> rotationSet;
+                        List<Matrix> rotCenterSet;
+                        List<string> rotCenterNameSet;
+                        List<string> emissiveIdSet;
+                        List<int[]> moveIndexer;
+                        List<int> currentEmissivePart;
+                        
+                        CompileAnimationMoves(moves, emissiveLookup, animationSet, weaponEmissivesSet, animationLengths, id, out moveSet, out rotationSet, out rotCenterSet, out rotCenterNameSet, out emissiveIdSet, out moveIndexer, out currentEmissivePart);
+
+
+                        var typeSet = new[]
+{
                             AnimationType.Movement,
                             AnimationType.ShowInstant,
                             AnimationType.HideInstant,
@@ -117,452 +128,12 @@ namespace WeaponCore
                             AnimationType.EmissiveOnly
                         };
 
-                        var moveIndexer = new List<int[]>();
-                        var currentEmissivePart = new List<int>();
-                        uint totalPlayLength = animationSet.AnimationDelays[moves.Key];
+                        var loop = animationSet.Loop != null && animationSet.Loop.Contains(moves.Key);
+                        var reverse = animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key);
+                        var triggerOnce = animationSet.TriggerOnce != null && animationSet.TriggerOnce.Contains(moves.Key);
+                        var resetEmissives = animationSet.ResetEmissives != null && animationSet.ResetEmissives.Contains(moves.Key);
                         
-                        for (int i = 0; i < moves.Value.Length; i++)
-                        {
-                            var move = moves.Value[i];
-
-                            totalPlayLength += move.TicksToMove;
-
-                            var hasEmissive = !string.IsNullOrEmpty(move.EmissiveName);
-
-                            if (move.MovementType == RelMove.MoveType.Delay ||
-                            move.MovementType == RelMove.MoveType.Show ||
-                            move.MovementType == RelMove.MoveType.Hide)
-                            {
-                                moveSet.Add(Matrix.Zero);
-                                rotationSet.Add(Matrix.Zero);
-                                rotCenterSet.Add(Matrix.Zero);
-                                for (var j = 0; j < move.TicksToMove; j++)
-                                {
-                                    var type = 5;
-
-                                    switch (move.MovementType)
-                                    {
-                                        case RelMove.MoveType.Delay:
-                                            break;
-
-                                        case RelMove.MoveType.Show:
-                                            type = move.Fade ? 3 : 1;
-                                            break;
-
-                                        case RelMove.MoveType.Hide:
-                                            type = move.Fade ? 4 : 2;
-                                            break;
-                                    }
-
-                                    WeaponEmissive emissive;
-                                    if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                    {
-                                        var progress = 0f;
-                                        if (move.TicksToMove == 1)
-                                            progress = 1;
-                                        else
-                                            progress = (float)j / (move.TicksToMove - 1);
-
-                                        CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                    }
-                                    else
-                                    {
-                                        weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
-                                        currentEmissivePart.Add(-1);
-                                    }
-
-                                    emissiveIdSet.Add(id + moveIndexer.Count);
-
-                                    moveIndexer.Add(new[]
-                                        {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
-                                }
-                            }
-                            else
-                            {
-                                var type = 6;
-                                Vector3D rotChanged = Vector3D.Zero;
-                                Vector3D rotCenterChanged = Vector3D.Zero;
-
-                                if (move.LinearPoints != null && move.LinearPoints.Length > 0)
-                                {
-                                    double distance = 0;
-                                    var tmpDirVec = new double[move.LinearPoints.Length][];
-
-                                    for (int j = 0; j < move.LinearPoints.Length; j++)
-                                    {
-                                        var point = move.LinearPoints[j];
-
-                                        var d = Math.Sqrt((point.x * point.x) + (point.y * point.y) +
-                                                          (point.z * point.z));
-
-                                        distance += d;
-
-                                        var dv = new[] { d, point.x / d, point.y / d, point.z / d };
-
-                                        tmpDirVec[j] = dv;
-                                    }
-
-                                    if (move.MovementType == RelMove.MoveType.ExpoDecay)
-                                    {
-                                        var traveled = 0d;
-
-                                        var check = 1d;
-                                        var rate = 0d;
-                                        while (check > 0)
-                                        {
-                                            rate += 0.001;
-                                            check = distance * Math.Pow(1 - rate, move.TicksToMove);
-                                            if (check < 0.001) check = 0;
-
-                                        }
-
-                                        var vectorCount = 0;
-                                        var remaining = 0d;
-                                        var vecTotalMoved = 0d;
-                                        rate = 1 - rate;
-
-                                        for (int j = 0; j < move.TicksToMove; j++)
-                                        {
-                                            var step = distance * Math.Pow(rate, j + 1);
-                                            if (step < 0.001) step = 0;
-
-                                            var lastTraveled = traveled;
-                                            traveled = distance - step;
-                                            var changed = traveled - lastTraveled;
-
-                                            var progress = 0f;
-                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
-                                                progress = 1;
-                                            else
-                                                progress = (float)(traveled / distance);
-
-                                            changed += remaining;
-                                            if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
-                                            {
-                                                var origMove = changed;
-                                                changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
-                                                remaining = origMove - changed;
-                                                vecTotalMoved = 0;
-                                            }
-                                            else
-                                            {
-                                                vecTotalMoved += changed;
-                                                remaining = 0;
-                                            }
-
-
-                                            var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
-                                                tmpDirVec[vectorCount][2] * changed,
-                                                tmpDirVec[vectorCount][3] * changed);
-
-                                            var matrix = Matrix.CreateTranslation(vector);
-
-                                            moveSet.Add(matrix);
-
-                                            WeaponEmissive emissive;
-                                            if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                            {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                            }
-                                            else
-                                            {
-                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
-                                                currentEmissivePart.Add(-1);
-                                            }
-
-                                            emissiveIdSet.Add(id + moveIndexer.Count);
-
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
-
-                                            moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
-
-                                            if (remaining > 0)
-                                                vectorCount++;
-
-                                        }
-                                    }
-                                    else if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                    {
-                                        var traveled = 0d;
-
-                                        var rate = 0d;
-                                        var check = 0d;
-                                        while (check < distance)
-                                        {
-                                            rate += 0.001;
-                                            check = 0.001 * Math.Pow(1 + rate, move.TicksToMove);
-                                        }
-
-                                        var vectorCount = 0;
-                                        var remaining = 0d;
-                                        var vecTotalMoved = 0d;
-                                        rate += 1;
-
-                                        for (int j = 0; j < move.TicksToMove; j++)
-                                        {
-                                            var step = 0.001 * Math.Pow(rate, j + 1);
-                                            if (step > distance) step = distance;
-
-                                            var lastTraveled = traveled;
-                                            traveled = step;
-                                            var changed = traveled - lastTraveled;
-
-                                            var progress = 0f;
-                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
-                                                progress = 1;
-                                            else
-                                                progress = (float)(traveled / distance);
-
-                                            changed += remaining;
-                                            if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
-                                            {
-                                                var origMove = changed;
-                                                changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
-                                                remaining = origMove - changed;
-                                                vecTotalMoved = 0;
-                                            }
-                                            else
-                                            {
-                                                vecTotalMoved += changed;
-                                                remaining = 0;
-                                            }
-
-
-                                            var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
-                                                tmpDirVec[vectorCount][2] * changed,
-                                                tmpDirVec[vectorCount][3] * changed);
-
-                                            var matrix = Matrix.CreateTranslation(vector);
-
-                                            moveSet.Add(matrix);
-
-                                            WeaponEmissive emissive;
-                                            if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                            {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                            }
-                                            else
-                                            {
-                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
-                                                currentEmissivePart.Add(-1);
-                                            }
-
-                                            emissiveIdSet.Add(id + moveIndexer.Count);
-
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
-
-                                            moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
-
-                                            if (remaining > 0)
-                                                vectorCount++;
-                                        }
-                                    }
-                                    else if (move.MovementType == RelMove.MoveType.Linear)
-                                    {
-                                        var distancePerTick = distance / move.TicksToMove;
-                                        var vectorCount = 0;
-                                        var remaining = 0d;
-                                        var vecTotalMoved = 0d;
-                                        var totalChanged = 0d;
-
-                                        for (int j = 0; j < move.TicksToMove; j++)
-                                        {
-                                            var changed = distancePerTick + remaining;
-                                            if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
-                                            {
-                                                var origMove = changed;
-                                                changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
-                                                remaining = origMove - changed;
-                                                vecTotalMoved = 0;
-                                            }
-                                            else
-                                            {
-                                                vecTotalMoved += changed;
-                                                remaining = 0;
-                                            }
-
-                                            if (j == move.TicksToMove - 1)
-                                            {
-                                                if (totalChanged + changed != distance)
-                                                    changed += (distance - (totalChanged + changed));
-                                            }
-
-                                            totalChanged += changed;
-
-                                            var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
-                                                tmpDirVec[vectorCount][2] * changed,
-                                                tmpDirVec[vectorCount][3] * changed);
-
-                                            var matrix = Matrix.CreateTranslation(vector);
-
-                                            moveSet.Add(matrix);
-
-                                            var progress = 0f;
-                                            if (move.TicksToMove == 1)
-                                                progress = 1;
-                                            else
-                                                progress = (float)j / (move.TicksToMove - 1);
-
-                                            WeaponEmissive emissive;
-                                            if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                            else
-                                            {
-                                                weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
-                                                currentEmissivePart.Add(-1);
-                                            }
-
-                                            emissiveIdSet.Add(id + moveIndexer.Count);
-
-                                            CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
-
-                                            moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
-
-                                            if (remaining > 0)
-                                                vectorCount++;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    moveSet.Add(Matrix.Zero);
-
-
-                                    MatrixD rotation = MatrixD.Zero;
-                                    MatrixD centerRotation = MatrixD.Zero;
-
-                                    var hasX = !MyUtils.IsZero(move.Rotation.x, 1E-04f);
-                                    var hasY = !MyUtils.IsZero(move.Rotation.y, 1E-04f);
-                                    var hasZ = !MyUtils.IsZero(move.Rotation.z, 1E-04f);
-                                    
-                                    if (hasX)
-                                        rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.Rotation.x));
-                                    if(hasY)
-                                    {
-                                        if(hasX)
-                                            rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.y));
-                                        else
-                                            rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.y));
-                                    }
-                                    if (hasZ)
-                                    {
-                                        if (hasX || hasY)
-                                            rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.z));
-                                        else
-                                            rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.z));
-                                    }
-
-                                    hasX = !MyUtils.IsZero(move.RotAroundCenter.x, 1E-04f);
-                                    hasY = !MyUtils.IsZero(move.RotAroundCenter.y, 1E-04f);
-                                    hasZ = !MyUtils.IsZero(move.RotAroundCenter.z, 1E-04f);
-
-                                    if (hasX)
-                                        centerRotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.RotAroundCenter.x));
-                                    if (hasY)
-                                    {
-                                        if (hasX)
-                                            centerRotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.y));
-                                        else
-                                            centerRotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.y));
-                                    }
-                                    if (hasZ)
-                                    {
-                                        if (hasX || hasY)
-                                            centerRotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.z));
-                                        else
-                                            centerRotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.z));
-                                    }
-
-                                    var angle = Math.Round(MathHelperD.ToDegrees(Math.Acos(((rotation.Rotation.M11 + rotation.Rotation.M22 + rotation.Rotation.M33) - 1) / 2)), 2);
-                                    var centerAngle = Math.Round(MathHelperD.ToDegrees(Math.Acos(((centerRotation.Rotation.M11 + centerRotation.Rotation.M22 + centerRotation.Rotation.M33) - 1) / 2)), 2);
-
-                                    var rateAngle = centerAngle > angle ? centerAngle : angle;
-
-                                    var rate = GetRate(move.MovementType, rateAngle, move.TicksToMove);
-
-                                    for (int j = 0; j < move.TicksToMove; j++)
-                                    {
-
-                                        var progress = 0d;
-                                        var traveled = 0d;
-                                        if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                        {
-                                            var step = 0.001 * Math.Pow(rate, j + 1);
-                                            if (step > angle) step = angle;
-                                            traveled = step;                                            
-
-                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
-                                                progress = 1;
-                                            else
-                                                progress = (float)(traveled / angle);
-                                        }
-                                        if (move.MovementType == RelMove.MoveType.ExpoDecay)
-                                        {
-                                            var step = angle * Math.Pow(rate, j + 1);
-                                            if (step < 0.001) step = 0;
-
-                                            traveled = angle - step;
-
-                                            if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
-                                                progress = 1;
-                                            else
-                                                progress = traveled / angle;
-                                        }
-                                        else
-                                            progress = (double)j / (double)(move.TicksToMove - 1);
-
-                                        if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
-                                            progress = 1;
-
-                                        WeaponEmissive emissive;
-                                        if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
-                                        {
-                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)progress, ref weaponEmissivesSet, ref currentEmissivePart);
-                                        }
-                                        else
-                                        {
-                                            weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
-                                            currentEmissivePart.Add(-1);
-                                        }
-
-                                        emissiveIdSet.Add(id + moveIndexer.Count);
-
-                                        CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
-
-                                        moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
-                                    }
-                                }
-                            }
-
-                        }
-
-                        if (animationLengths[moves.Key] < totalPlayLength)
-                            animationLengths[moves.Key] = totalPlayLength;
-
-                        var loop = false;
-                        var reverse = false;
-                        var triggerOnce = false;
-                        var resetEmissives = false;
-
-                        if (animationSet.Loop != null && animationSet.Loop.Contains(moves.Key))
-                            loop = true;
-
-                        if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
-                            reverse = true;
-
-                        if (animationSet.TriggerOnce != null && animationSet.TriggerOnce.Contains(moves.Key))
-                            triggerOnce = true;
-
-                        if (animationSet.ResetEmissives != null && animationSet.ResetEmissives.Contains(moves.Key))
-                            resetEmissives = true;
-
-                        var partAnim = new PartAnimation(moves.Key, id, rotationSet.ToArray(),
-                            rotCenterSet.ToArray(), typeSet, emissiveIdSet.ToArray(), currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
-                            animationSet.BarrelId, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce, resetEmissives);
+                        var partAnim = new PartAnimation(moves.Key, id, rotationSet.ToArray(), rotCenterSet.ToArray(), typeSet, emissiveIdSet.ToArray(), currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null, animationSet.BarrelId, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce, resetEmissives);
 
                         weaponLinearMoveSet.Add(id, moveSet.ToArray());
 
@@ -571,13 +142,386 @@ namespace WeaponCore
                     }
                 }
             }
+        }
+        
+        private void CompileAnimationMoves(KeyValuePair<EventTriggers, RelMove[]> moves, Dictionary<string, WeaponEmissive> emissiveLookup, PartAnimationSetDef animationSet, Dictionary<string, EmissiveState> weaponEmissivesSet, Dictionary<EventTriggers, uint> animationLengths, string id, out List<Matrix> moveSet, out List<Matrix> rotationSet, out List<Matrix> rotCenterSet, out List<string> rotCenterNameSet, out List<string> emissiveIdSet, out List<int[]> moveIndexer, out List<int> currentEmissivePart)
+        {
+            moveSet = new List<Matrix>();
+            rotationSet = new List<Matrix>();
+            rotCenterSet = new List<Matrix>();
+            rotCenterNameSet = new List<string>();
+            emissiveIdSet = new List<string>();
+            moveIndexer = new List<int[]>();
+            currentEmissivePart = new List<int>();
+            
+            var totalPlayLength = animationSet.AnimationDelays[moves.Key];
 
+            for (int i = 0; i < moves.Value.Length; i++) {
+                
+                var move = moves.Value[i];
+                totalPlayLength += move.TicksToMove;
+                var hasEmissive = !string.IsNullOrEmpty(move.EmissiveName);
+
+                if (move.MovementType == RelMove.MoveType.Delay || move.MovementType == RelMove.MoveType.Show || move.MovementType == RelMove.MoveType.Hide) 
+                    Absolute(move, emissiveLookup, weaponEmissivesSet, rotCenterSet, id, moveSet, rotationSet, emissiveIdSet, moveIndexer, currentEmissivePart, hasEmissive);
+                else {
+                    
+                    var type = 6;
+                    Vector3D rotChanged = Vector3D.Zero;
+                    Vector3D rotCenterChanged = Vector3D.Zero;
+
+                    if (move.LinearPoints != null && move.LinearPoints.Length > 0) {
+
+                        double[][] tmpDirVec;
+                        double distance;
+                        ComputeLinearPoints(move, out tmpDirVec, out distance);
+                        
+                        switch (move.MovementType) {
+
+                            case RelMove.MoveType.ExpoDecay:
+                            case RelMove.MoveType.ExpoGrowth:
+                                Expo(move, tmpDirVec, emissiveLookup, weaponEmissivesSet, id, moveSet, rotationSet, rotCenterSet, rotCenterNameSet, emissiveIdSet, moveIndexer, currentEmissivePart, hasEmissive, ref type, ref rotCenterChanged, ref rotChanged);
+                                break;
+                            case RelMove.MoveType.Linear:
+                                Linear(move, tmpDirVec, emissiveLookup, weaponEmissivesSet, id, moveSet, rotationSet, rotCenterSet, rotCenterNameSet, emissiveIdSet, moveIndexer, currentEmissivePart, hasEmissive, distance, ref type, ref rotCenterChanged, ref rotChanged);
+                                break;
+                        }
+                    }
+                    else 
+                        NonLinear(move,  emissiveLookup, weaponEmissivesSet, id, moveSet, rotationSet, rotCenterSet, rotCenterNameSet, emissiveIdSet, moveIndexer, currentEmissivePart, hasEmissive, ref type, ref rotCenterChanged, ref rotChanged);
+                }
+
+            }
+
+            if (animationLengths[moves.Key] < totalPlayLength)
+                animationLengths[moves.Key] = totalPlayLength;
+        }
+
+        private void Absolute(RelMove move, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, List<Matrix> rotCenterSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive)
+        {
+            moveSet.Add(Matrix.Zero);
+            rotationSet.Add(Matrix.Zero);
+            rotCenterSet.Add(Matrix.Zero);
+            for (var j = 0; j < move.TicksToMove; j++) {
+
+                var type = 5;
+                switch (move.MovementType) {
+
+                    case RelMove.MoveType.Delay:
+                        break;
+
+                    case RelMove.MoveType.Show:
+                        type = move.Fade ? 3 : 1;
+                        break;
+
+                    case RelMove.MoveType.Hide:
+                        type = move.Fade ? 4 : 2;
+                        break;
+                }
+
+                WeaponEmissive emissive;
+                if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive)) {
+
+                    var progress = 0f;
+                    if (move.TicksToMove == 1)
+                        progress = 1;
+                    else
+                        progress = (float)j / (move.TicksToMove - 1);
+
+                    CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
+                }
+                else {
+                    weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
+                    currentEmissivePart.Add(-1);
+                }
+
+                emissiveIdSet.Add(id + moveIndexer.Count);
+
+                moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1 });
+            }
+        }
+        
+        private void NonLinear(RelMove move, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
+        {
+            moveSet.Add(Matrix.Zero);
+            MatrixD rotation = MatrixD.Zero;
+            MatrixD centerRotation = MatrixD.Zero;
+
+            var hasX = !MyUtils.IsZero(move.Rotation.x, 1E-04f);
+            var hasY = !MyUtils.IsZero(move.Rotation.y, 1E-04f);
+            var hasZ = !MyUtils.IsZero(move.Rotation.z, 1E-04f);
+
+            if (hasX)
+                rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.Rotation.x));
+
+            if (hasY) {
+
+                if (hasX)
+                    rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.y));
+                else
+                    rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.y));
+            }
+
+            if (hasZ) {
+
+                if (hasX || hasY)
+                    rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.z));
+                else
+                    rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.Rotation.z));
+            }
+
+            hasX = !MyUtils.IsZero(move.RotAroundCenter.x, 1E-04f);
+            hasY = !MyUtils.IsZero(move.RotAroundCenter.y, 1E-04f);
+            hasZ = !MyUtils.IsZero(move.RotAroundCenter.z, 1E-04f);
+
+            if (hasX)
+                centerRotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.RotAroundCenter.x));
+
+            if (hasY) {
+
+                if (hasX)
+                    centerRotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.y));
+                else
+                    centerRotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.y));
+            }
+
+            if (hasZ) {
+
+                if (hasX || hasY)
+                    centerRotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.z));
+                else
+                    centerRotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.RotAroundCenter.z));
+            }
+
+            var angle = Math.Round(MathHelperD.ToDegrees(Math.Acos(((rotation.Rotation.M11 + rotation.Rotation.M22 + rotation.Rotation.M33) - 1) / 2)), 2);
+            var centerAngle = Math.Round(MathHelperD.ToDegrees(Math.Acos(((centerRotation.Rotation.M11 + centerRotation.Rotation.M22 + centerRotation.Rotation.M33) - 1) / 2)), 2);
+
+            var rateAngle = centerAngle > angle ? centerAngle : angle;
+
+            var rate = GetRate(move.MovementType, rateAngle, move.TicksToMove);
+
+            for (int j = 0; j < move.TicksToMove; j++) {
+
+                var progress = 0d;
+                var traveled = 0d;
+
+                if (move.MovementType == RelMove.MoveType.ExpoGrowth) { // This if does nothing, because progress is overwritten
+
+                    var step = 0.001 * Math.Pow(rate, j + 1);
+                    if (step > angle) step = angle;
+                    traveled = step;
+
+                    if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                        progress = 1;
+                    else
+                        progress = (float)(traveled / angle);
+                }
+
+                if (move.MovementType == RelMove.MoveType.ExpoDecay) {
+
+                    var step = angle * Math.Pow(rate, j + 1);
+                    if (step < 0.001) step = 0;
+
+                    traveled = angle - step;
+
+                    if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                        progress = 1;
+                    else
+                        progress = traveled / angle;
+                }
+                else
+                    progress = (double)j / (double)(move.TicksToMove - 1);
+
+                if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                    progress = 1;
+
+                WeaponEmissive emissive;
+                if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
+                    CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)progress, ref weaponEmissivesSet, ref currentEmissivePart);
+                else
+                {
+                    weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
+                    currentEmissivePart.Add(-1);
+                }
+
+                emissiveIdSet.Add(id + moveIndexer.Count);
+
+                CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
+
+                moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1 });
+            }
+        }
+        
+        private void Linear(RelMove move, double[][] tmpDirVec, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, double distance, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
+        {
+            var distancePerTick = distance / move.TicksToMove;
+            var vectorCount = 0;
+            var remaining = 0d;
+            var vecTotalMoved = 0d;
+            var totalChanged = 0d;
+
+            for (int j = 0; j < move.TicksToMove; j++) {
+                
+                var changed = distancePerTick + remaining;
+                if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved) {
+                    
+                    var origMove = changed;
+                    changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
+                    remaining = origMove - changed;
+                    vecTotalMoved = 0;
+                }
+                else {
+                    vecTotalMoved += changed;
+                    remaining = 0;
+                }
+
+                if (j == move.TicksToMove - 1) {
+                    if (totalChanged + changed != distance)
+                        changed += (distance - (totalChanged + changed));
+                }
+
+                totalChanged += changed;
+
+                var vector = new Vector3(tmpDirVec[vectorCount][1] * changed, tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
+
+                var matrix = Matrix.CreateTranslation(vector);
+
+                moveSet.Add(matrix);
+
+                var progress = 0f;
+                if (move.TicksToMove == 1)
+                    progress = 1;
+                else
+                    progress = (float)j / (move.TicksToMove - 1);
+
+                WeaponEmissive emissive;
+                if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
+                    CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
+                else {
+                    weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
+                    currentEmissivePart.Add(-1);
+                }
+
+                emissiveIdSet.Add(id + moveIndexer.Count);
+
+                CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
+
+                moveIndexer.Add(new[] {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
+
+                if (remaining > 0)
+                    vectorCount++;
+            }
+        }
+
+        private void Expo(RelMove move, double[][] tmpDirVec, Dictionary<string, WeaponEmissive> emissiveLookup, Dictionary<string, EmissiveState> weaponEmissivesSet, string id, List<Matrix> moveSet, List<Matrix> rotationSet, List<Matrix> rotCenterSet, List<string> rotCenterNameSet, List<string> emissiveIdSet, List<int[]> moveIndexer, List<int> currentEmissivePart, bool hasEmissive, ref int type, ref Vector3D rotCenterChanged, ref Vector3D rotChanged)
+        {
+            var traveled = 0d;
+            var rate = 0d;
+            var decay = move.MovementType == RelMove.MoveType.ExpoDecay;
+            var check = decay ? 1d : 0d;
+            var distance = 0;
+
+            while (check > 0) {
+                rate += 0.001;
+                check = decay ? distance * Math.Pow(1 - rate, move.TicksToMove) : 0.001 * Math.Pow(1 + rate, move.TicksToMove);
+
+                if (decay && check < 0.001) 
+                    check = 0;
+            }
+
+            var vectorCount = 0;
+            var remaining = 0d;
+            var vecTotalMoved = 0d;
+            rate = decay ? 1 - rate : rate + 1;
+
+            for (int j = 0; j < move.TicksToMove; j++)
+            {
+
+                var toPow = Math.Pow(rate, j + 1);
+                var step = decay ? distance * toPow : 0.001 * toPow;
+                var reset = decay ? step < 0.001 : step > distance;
+                if (reset) step = decay ? 0 : distance;
+
+                var lastTraveled = traveled;
+                traveled = decay ? distance - step : step;
+                var changed = traveled - lastTraveled;
+
+                var progress = 0f;
+                if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
+                    progress = 1;
+                else
+                    progress = (float)(traveled / distance);
+
+                changed += remaining;
+                if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                {
+
+                    var origMove = changed;
+                    changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
+                    remaining = origMove - changed;
+                    vecTotalMoved = 0;
+                }
+                else
+                {
+                    vecTotalMoved += changed;
+                    remaining = 0;
+                }
+
+
+                var vector = new Vector3(tmpDirVec[vectorCount][1] * changed, tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
+                var matrix = Matrix.CreateTranslation(vector);
+
+                moveSet.Add(matrix);
+
+                WeaponEmissive emissive;
+                if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
+                    CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
+                else
+                {
+                    weaponEmissivesSet[id + moveIndexer.Count] = new EmissiveState();
+                    currentEmissivePart.Add(-1);
+                }
+
+                emissiveIdSet.Add(id + moveIndexer.Count);
+
+                CreateRotationSets(move, progress, ref type, ref rotCenterNameSet, ref rotCenterSet, ref rotationSet, ref rotCenterChanged, ref rotChanged);
+
+                moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1 });
+
+                if (remaining > 0)
+                    vectorCount++;
+
+            }
+        }
+        
+        private void FinalizeAnimationSets(Dictionary<EventTriggers, HashSet<PartAnimation>> allAnimationSet, Dictionary<EventTriggers, PartAnimation[]> weaponAnimationSets)
+        {
             foreach (var animationsKv in allAnimationSet)
             {
                 weaponAnimationSets[animationsKv.Key] = new PartAnimation[animationsKv.Value.Count];
                 animationsKv.Value.CopyTo(weaponAnimationSets[animationsKv.Key], 0);
             }
         }
+
+        private void ComputeLinearPoints(RelMove move, out double[][] tmpDirVec, out double distance)
+        {
+            distance = 0;
+            tmpDirVec = new double[move.LinearPoints.Length][];
+
+            for (int j = 0; j < move.LinearPoints.Length; j++) {
+
+                var point = move.LinearPoints[j];
+
+                var d = Math.Sqrt((point.x * point.x) + (point.y * point.y) + (point.z * point.z));
+
+                distance += d;
+
+                var dv = new[] { d, point.x / d, point.y / d, point.z / d };
+
+                tmpDirVec[j] = dv;
+            }
+        }
+
 
         internal double GetRate(RelMove.MoveType move, double fullRotAmount, uint ticksToMove)
         {
