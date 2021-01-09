@@ -228,22 +228,14 @@ namespace WeaponCore.Support
 
         private void ForceCloseAiInventories()
         {
-            var invCount = Inventories.Count;
-            var removed = 0;
-            for (int i = 0; i < invCount; i++)
-            {
-                var inventory = Inventories[i];
-                var cube = inventory.Entity as MyCubeBlock;
-                if (cube != null)
-                {
-                    removed++;
-                    FatBlockRemoved(cube);
-                }
+            foreach (var pair in InventoryMonitor)
+                InventoryRemove(pair.Key, pair.Value);
+            
+            if (InventoryMonitor.Count > 0) {
+                Log.Line($"Found stale inventories during AI close - failedToRemove:{InventoryMonitor.Count}");
+                InventoryMonitor.Clear();
             }
-            if (invCount > 0)
-            {
-                Log.Line($"Found stale inventories during AI close: {invCount} - forceRemoved:{removed}");
-            }
+
         }
         
         internal void AiDelayedClose()

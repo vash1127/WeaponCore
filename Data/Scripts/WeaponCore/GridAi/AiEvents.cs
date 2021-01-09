@@ -58,16 +58,18 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id));
 
-                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler )) // readd IMyShipConnector
-                {
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler )) { // readd IMyShipConnector
+                    
                     MyInventory inventory;
-                    if (cube.HasInventory && cube.TryGetInventory(out inventory))
-                    {
-                        if (inventory != null && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
-                        {
+                    if (cube.HasInventory && cube.TryGetInventory(out inventory)) {
+                        
+                        if (inventory != null && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories)) {
+                            
                             inventory.InventoryContentChanged += CheckAmmoInventory;
                             Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
                             Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
+                            
+                            InventoryMonitor[cube] = inventory;
                         }
                     }
 
@@ -78,7 +80,6 @@ namespace WeaponCore.Support
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
                 }
-
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null}"); }
         }
@@ -91,38 +92,51 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var cubeDef = cube.BlockDefinition;
                 var isWeaponBase = weaponType && cubeDef != null && !sessionNull && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.WeaponPlatforms.ContainsKey(cubeDef.Id));
+                var battery = cube as MyBatteryBlock;
+
                 if (sessionNull)
                     Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose} - isRegistered:{SubGridsRegistered.Contains(cube.CubeGrid)} - regCnt:{SubGridsRegistered.Count}");
 
-                try {
-                    var battery = cube as MyBatteryBlock;
-                    MyInventory inventory;
-                    if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory))
-                    {
-                        try
-                        {
-                            if (inventory != null && !sessionNull && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
-                            {
-                                inventory.InventoryContentChanged -= CheckAmmoInventory;
-                                List<MyPhysicalInventoryItem> removedPhysical;
-                                List<BetterInventoryItem> removedBetter;
-                                if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
-                                    removedPhysical.Clear();
-
-                                if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
-                                    removedBetter.Clear();
-                            }
-                            
-                        } catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
-                    }
-                    else if (battery != null) {
-                        if (Batteries.Remove(battery)) SourceCount--;
-                        UpdatePowerSources = true;
-                    }
+                MyInventory inventory;
+                if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory)) {
+                    
+                    if (!InventoryRemove(cube, inventory))
+                        Log.Line($"FatBlockRemoved failed to remove inventory for: {cube.BlockDefinition.Id.SubtypeName} - inCollection: {InventoryMonitor.ContainsKey(cube)}");
                 }
-                catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
+                else if (battery != null) {
+                    
+                    if (Batteries.Remove(battery)) 
+                        SourceCount--;
+                    
+                    UpdatePowerSources = true;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex} - Marked: {MarkedForClose} - Closed:{Closed}"); }
+        }
+        
+        
+        private bool InventoryRemove(MyCubeBlock cube, MyInventory inventory)
+        {
+            try
+            {
+                if (Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
+                {
+                    inventory.InventoryContentChanged -= CheckAmmoInventory;
+                    List<MyPhysicalInventoryItem> removedPhysical;
+                    List<BetterInventoryItem> removedBetter;
+                    
+                    if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
+                        removedPhysical.Clear();
+
+                    if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
+                        removedBetter.Clear();
+
+                    MyInventory oldInventory;
+                    return InventoryMonitor.TryRemove(cube, out oldInventory);
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in InventoryRemove: {ex}"); }
+            return false;
         }
 
         internal void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
