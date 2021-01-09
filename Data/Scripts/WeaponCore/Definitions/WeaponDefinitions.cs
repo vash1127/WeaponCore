@@ -21,6 +21,7 @@ namespace WeaponCore.Support
             [ProtoMember(1)] internal MountPointDef[] MountPoints;
             [ProtoMember(2)] internal string[] Barrels;
             [ProtoMember(3)] internal string Ejector;
+            [ProtoMember(4)] internal string Scope;
 
             [ProtoContract]
             public struct MountPointDef

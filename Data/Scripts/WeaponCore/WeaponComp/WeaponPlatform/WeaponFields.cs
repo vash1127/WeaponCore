@@ -30,6 +30,7 @@ namespace WeaponCore.Platform
         internal readonly PartInfo MuzzlePart;
         internal readonly Dummy[] Dummies;
         internal readonly Dummy Ejector;
+        internal readonly Dummy Scope;
         internal readonly Muzzle[] Muzzles;
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
@@ -221,6 +222,8 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal Dummy GetScope => Scope ?? Dummies[MiddleMuzzleIndex];
+
         internal struct AmmoLoad
         {
             internal enum ChangeType
@@ -378,6 +381,10 @@ namespace WeaponCore.Platform
             MyEntity ejectorPart;
             if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
                 Ejector = new Dummy(ejectorPart,this, System.Values.Assignments.Ejector);
+
+            MyEntity scopePart;
+            if (System.HasScope && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Scope, out scopePart))
+                Scope = new Dummy(scopePart, this, System.Values.Assignments.Scope);
 
             Monitors = Comp.Monitors[WeaponId];
         }

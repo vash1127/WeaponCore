@@ -22,7 +22,7 @@ namespace WeaponCore.Platform
                 Weapon.Casting = false;
                 var masterWeapon = Weapon.TrackTarget ? Weapon : Weapon.Comp.TrackingWeapon;
                 var ignoreTargets = Weapon.Target.IsProjectile || Weapon.Target.Entity is IMyCharacter;
-                var trackingCheckPosition = Weapon.Dummies[Weapon.MiddleMuzzleIndex].CachedPos;
+                var trackingCheckPosition = Weapon.GetScope.CachedPos;
                 
                 double rayDist = 0;
                 if (Weapon.Comp.Ai.ShieldNear)
