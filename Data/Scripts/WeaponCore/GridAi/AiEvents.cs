@@ -136,7 +136,7 @@ namespace WeaponCore.Support
                     Construct.RootAi?.Construct.RecentItems.Add(itemDef);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName}[{((MyCubeBlock)inventory?.Entity)?.BlockDefinition.Id.SubtypeName}] - item:{item.Content?.SubtypeName} - amount:{amount} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName} - BlockMarked:{((MyCubeBlock)inventory?.Entity)?.MarkedForClose} - aiMarked:{MarkedForClose} - gridMatch:{MyGrid == ((MyCubeBlock)inventory?.Entity)?.CubeGrid} - Session:{Session != null} - item:{item.Content?.SubtypeName} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
         }
 
         internal void GridClose(MyEntity myEntity)
@@ -154,8 +154,8 @@ namespace WeaponCore.Support
 
             CleanSubGrids();
 
-            Session.DelayedGridAiClean.Add(this);
-            Session.DelayedGridAiClean.ApplyAdditions();
+            Session.DelayedAiClean.Add(this);
+            Session.DelayedAiClean.ApplyAdditions();
         }
     }
 }

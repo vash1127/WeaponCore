@@ -106,9 +106,7 @@ namespace WeaponCore
                 var delayed = CompsDelayed[i];
                 if (forceRemove || delayed.Entity == null || delayed.Platform == null || delayed.MyCube.MarkedForClose || delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
                 {
-                    if (delayed.Platform == null)
-                        Log.Line($"[DelayedComps skip due to null platform] marked: {delayed.MyCube.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
-                    else if (delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
+                    if (delayed.Platform != null && delayed.Platform.State != MyWeaponPlatform.PlatformState.Delay)
                         Log.Line($"[DelayedComps skip due to platform != Delay] marked:{delayed.MyCube.MarkedForClose} - entityNull:{delayed.Entity == null} - force:{forceRemove}");
 
                     CompsDelayed.RemoveAtFast(i);
@@ -121,16 +119,16 @@ namespace WeaponCore
             }
         }
 
-        private void DelayedGridAiCleanup()
+        private void DelayedAiCleanup()
         {
-            for (int i = 0; i < DelayedGridAiClean.Count; i++)
+            for (int i = 0; i < DelayedAiClean.Count; i++)
             {
-                var gridAi = DelayedGridAiClean[i];
-                gridAi.GridDelayedClose();
-                if (gridAi.Closed)
-                    DelayedGridAiClean.Remove(gridAi);
+                var ai = DelayedAiClean[i];
+                ai.AiDelayedClose();
+                if (ai.Closed)
+                    DelayedAiClean.Remove(ai);
             }
-            DelayedGridAiClean.ApplyRemovals();
+            DelayedAiClean.ApplyRemovals();
         }
 
         internal void CloseComps(MyEntity ent)

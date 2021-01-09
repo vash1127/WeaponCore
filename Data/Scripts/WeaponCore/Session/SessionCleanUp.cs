@@ -37,7 +37,7 @@ namespace WeaponCore
 
             foreach (var readd in CompReAdds)
             {
-                if (!readd.Ai.Closed) readd.Ai.GridForceClose();
+                if (!readd.Ai.Closed) readd.Ai.AiForceClose();
                 if (readd.Comp?.Platform != null)
                 {
                     CloseComps(readd.Comp.MyCube);
@@ -50,15 +50,15 @@ namespace WeaponCore
                     CloseComps(comp.MyCube);
             }
 
-            foreach (var gridAi in DelayedGridAiClean)
+            foreach (var gridAi in DelayedAiClean)
             {
                 if (!gridAi.Closed)
-                    gridAi.GridForceClose();
+                    gridAi.AiForceClose();
             }
 
             PlatFormPool.Clean();
             CompsToStart.ClearImmediate();
-            DelayedGridAiClean.ClearImmediate();
+            DelayedAiClean.ClearImmediate();
 
             CompsDelayed.Clear();
             CompReAdds.Clear();

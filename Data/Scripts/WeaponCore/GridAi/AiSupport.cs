@@ -226,10 +226,30 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{MyGrid == null}"); }
         }
 
-        internal void GridDelayedClose()
+        private void ForceCloseAiInventories()
+        {
+            var invCount = Inventories.Count;
+            var removed = 0;
+            for (int i = 0; i < invCount; i++)
+            {
+                var inventory = Inventories[i];
+                var cube = inventory.Entity as MyCubeBlock;
+                if (cube != null)
+                {
+                    removed++;
+                    FatBlockRemoved(cube);
+                }
+            }
+            if (invCount > 0)
+            {
+                Log.Line($"Found stale inventories during AI close: {invCount} - forceRemoved:{removed}");
+            }
+        }
+        
+        internal void AiDelayedClose()
         {
             if (Session == null || MyGrid == null || Closed) {
-                Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
+                Log.Line($"AiDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
                 return;
             }
 
@@ -245,10 +265,10 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void GridForceClose()
+        internal void AiForceClose()
         {
             if (Session == null || MyGrid == null || Closed) {
-                Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null} - Closed: {Closed}");
+                Log.Line($"AiDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null} - Closed: {Closed}");
                 return;
             }
 
@@ -274,6 +294,8 @@ namespace WeaponCore.Support
         {
             AiCloseTick = Session.Tick;
 
+            ForceCloseAiInventories();
+            
             MyGrid.Components.Remove<AiComponent>();
 
             if (Session.IsClient)
