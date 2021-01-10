@@ -67,7 +67,7 @@ namespace WeaponCore.Support
                                 EntityToName[res] = name;
                             }
                         }
-                        //else NameToEntity[kv.Key] = Entity;
+                        else NameToEntity[kv.Key] = Entity;
                     }
                 }
                 NameToEntity["None"] = Entity;

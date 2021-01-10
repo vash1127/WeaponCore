@@ -379,9 +379,16 @@ namespace WeaponCore.Platform
         private void SpawnEjection()
         {
             var eInfo = Ejector.Info;
+            var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
+            if (ejectDef.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item)
+            {
+                if (ejectDef.CompDef.Delay <= 0)
+                    MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
+                else
+                    System.Session.FutureEvents.Schedule(EjectionDelayed, null, (uint)(System.Session.Tick + ejectDef.CompDef.Delay));
 
-            if (ActiveAmmoDef.AmmoDef.Ejection.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item)
-                MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
+
+            }
             else if (System.Session.HandlesInput)
             {
                 var particle = ActiveAmmoDef.AmmoDef.AmmoGraphics.Particles.Eject;
@@ -399,24 +406,25 @@ namespace WeaponCore.Platform
             }
         }
 
+        private void EjectionDelayed(object o)
+        {
+            if (ActiveAmmoDef?.AmmoDef != null) 
+                MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, Ejector.Info.Position, Ejector.Info.Direction, MyPivotUp, null, EjectionSpawnCallback);
+        }
+
         private void EjectionSpawnCallback(MyEntity entity)
         {
-            var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-            var itemTtl = ejectDef.CompDef.ItemLifeTime;
+            if (ActiveAmmoDef?.AmmoDef != null) {
+                
+                var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
+                var itemTtl = ejectDef.CompDef.ItemLifeTime;
 
-            if (ejectDef.Speed > 0) {
-
-                var delay = ejectDef.CompDef.Delay;
-                var delaySpeed = itemTtl + 1 > delay || itemTtl == 0;
-
-                if (delay <=0)
+                if (ejectDef.Speed > 0) 
                     SetSpeed(entity);
-                else if (delaySpeed)
-                    System.Session.FutureEvents.Schedule(SetSpeed, entity, (uint)(System.Session.Tick + delay));
-            }
 
-            if (itemTtl > 0)
-                System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + itemTtl));
+                if (itemTtl > 0)
+                    System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + itemTtl));
+            }
         }
 
         private void SetSpeed(object o)
