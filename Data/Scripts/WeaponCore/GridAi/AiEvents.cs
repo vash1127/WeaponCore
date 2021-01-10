@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Entity;
 using static WeaponCore.Session;
 
@@ -58,7 +54,7 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id));
 
-                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler )) { // readd IMyShipConnector
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector)) { // readd IMyShipConnector
                     
                     MyInventory inventory;
                     if (cube.HasInventory && cube.TryGetInventory(out inventory)) {
@@ -99,9 +95,10 @@ namespace WeaponCore.Support
 
                 MyInventory inventory;
                 if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory)) {
-                    
-                    if (!InventoryRemove(cube, inventory))
-                        Log.Line($"FatBlockRemoved failed to remove inventory for: {cube.BlockDefinition.Id.SubtypeName} - inCollection: {InventoryMonitor.ContainsKey(cube)}");
+
+                    InventoryRemove(cube, inventory);
+                    //if (!InventoryRemove(cube, inventory))
+                    //Log.Line($"FatBlockRemoved failed to remove inventory for: {cube.BlockDefinition.Id.SubtypeName} - inCollection: {InventoryMonitor.ContainsKey(cube)}");
                 }
                 else if (battery != null) {
                     
