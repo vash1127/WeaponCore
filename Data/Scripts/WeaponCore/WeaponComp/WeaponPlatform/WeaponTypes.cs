@@ -22,17 +22,16 @@ namespace WeaponCore.Platform
                 Weapon.Casting = false;
                 var masterWeapon = Weapon.TrackTarget ? Weapon : Weapon.Comp.TrackingWeapon;
                 var ignoreTargets = Weapon.Target.IsProjectile || Weapon.Target.Entity is IMyCharacter;
-                var trackingCheckPosition = Weapon.GetScope.Info.Position;
+                var trackingCheckPosition = Weapon.GetScope.CachedPos;
                 double rayDist = 0;
 
 
                 if (Weapon.System.Session.DebugLos)
                 {
-                    var weaponPos = Weapon.Scope.Info.Position;
                     var hitPos = hitInfo.Position;
-                    if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref hitPos, out rayDist);
+                    if (rayDist <= 0) Vector3D.Distance(ref trackingCheckPosition, ref hitPos, out rayDist);
 
-                    Weapon.System.Session.AddLosCheck(new Session.LosDebug { Weapon = Weapon, HitTick = Weapon.System.Session.Tick, Line = new LineD(weaponPos, hitPos) });
+                    Weapon.System.Session.AddLosCheck(new Session.LosDebug { Weapon = Weapon, HitTick = Weapon.System.Session.Tick, Line = new LineD(trackingCheckPosition, hitPos) });
                 }
 
                 
