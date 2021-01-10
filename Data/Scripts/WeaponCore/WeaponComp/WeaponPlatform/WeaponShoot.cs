@@ -407,7 +407,7 @@ namespace WeaponCore.Platform
             if (ejectDef.Speed > 0) {
 
                 var delay = ejectDef.CompDef.Delay;
-                var delaySpeed = delay > itemTtl + 1 || itemTtl == 0;
+                var delaySpeed = itemTtl + 1 > delay || itemTtl == 0;
 
                 if (delay <=0)
                     SetSpeed(entity);
@@ -423,7 +423,7 @@ namespace WeaponCore.Platform
         {
             var entity = (MyEntity)o;
 
-            if (entity != null) {
+            if (entity?.Physics != null && ActiveAmmoDef?.AmmoDef != null) {
                 var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
                 entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS), Vector3.Zero);
             }

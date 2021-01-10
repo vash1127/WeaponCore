@@ -425,13 +425,13 @@ namespace WeaponCore.Platform
                     }
 
                     MyEntity ejectorPart;
-                    if (weapon.System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(weapon.System.Values.Assignments.Ejector, out ejectorPart))
+                    if (weapon.System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Ejector, weapon.System.AltEjectorName, out ejectorPart))
                         weapon.Ejector.Entity = ejectorPart;
 
                     MyEntity scopePart;
-                    if (weapon.System.HasScope && Comp.Platform.Parts.NameToEntity.TryGetValue(weapon.System.Values.Assignments.Scope, out scopePart))
+                    if (weapon.System.HasScope && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Scope, weapon.System.AltScopeName, out scopePart))
                         weapon.Scope.Entity = scopePart;
-                    
+
                     if (m.Value.DesignatorWeapon)
                         muzzlePart = weapon.ElevationPart.Entity;
 

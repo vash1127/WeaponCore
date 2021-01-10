@@ -22,9 +22,20 @@ namespace WeaponCore.Platform
                 Weapon.Casting = false;
                 var masterWeapon = Weapon.TrackTarget ? Weapon : Weapon.Comp.TrackingWeapon;
                 var ignoreTargets = Weapon.Target.IsProjectile || Weapon.Target.Entity is IMyCharacter;
-                var trackingCheckPosition = Weapon.GetScope.CachedPos;
-                
+                var trackingCheckPosition = Weapon.GetScope.Info.Position;
                 double rayDist = 0;
+
+
+                if (Weapon.System.Session.DebugLos)
+                {
+                    var weaponPos = Weapon.Scope.Info.Position;
+                    var hitPos = hitInfo.Position;
+                    if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref hitPos, out rayDist);
+
+                    Weapon.System.Session.AddLosCheck(new Session.LosDebug { Weapon = Weapon, HitTick = Weapon.System.Session.Tick, Line = new LineD(weaponPos, hitPos) });
+                }
+
+                
                 if (Weapon.Comp.Ai.ShieldNear)
                 {
                     var targetPos = Weapon.Target.Projectile?.Position ?? Weapon.Target.Entity.PositionComp.WorldMatrixRef.Translation;
@@ -68,17 +79,6 @@ namespace WeaponCore.Platform
 
                     if (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid))
                     {
-
-                        if (Weapon.System.Session.DebugLos) {
-                            //Log.Line($"[RayCheckHitOwnGrid] Weapon:{Weapon.System.WeaponName} - DistanceFromCheckPosition:{Vector3D.Distance(trackingCheckPosition, hitInfo.Position)} - ClosestBlockIsWeapon:{Weapon.Comp.Ai.MyGrid.GetTargetedBlockLite(hitInfo.Position) == Weapon.Comp.MyCube.SlimBlock}");
-
-                            var weaponPos = trackingCheckPosition;
-                            var hitPos = hitInfo.Position;
-                            if (rayDist <= 0) Vector3D.Distance(ref weaponPos, ref hitPos, out rayDist);
-
-                            Weapon.System.Session.AddLosCheck(new Session.LosDebug { Weapon = Weapon, HitTick = Weapon.System.Session.Tick, Line = new LineD(weaponPos, hitPos) });
-                        }
-                        
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         return;

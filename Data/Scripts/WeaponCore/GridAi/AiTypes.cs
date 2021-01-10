@@ -67,8 +67,7 @@ namespace WeaponCore.Support
                 var comp = w.Comp;
                 var ai = comp.Ai;
 
-                var targetInrange = !comp.TargetNonThreats ? ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr : 
-                    (OtherRangeSqr <= w.MaxTargetDistanceSqr && OtherRangeSqr >= w.MinTargetDistanceSqr || ThreatRangeSqr <= w.MaxTargetDistanceSqr && ThreatRangeSqr >= w.MinTargetDistanceSqr);
+                var targetInrange = !comp.TargetNonThreats ? ThreatRangeSqr <= w.MaxTargetDistanceSqr : (OtherRangeSqr <= w.MaxTargetDistanceSqr || ThreatRangeSqr <= w.MaxTargetDistanceSqr);
 
                 return targetInrange || ai.Construct.Data.Repo.FocusData.HasFocus || ai.LiveProjectile.Count > 0;
             }

@@ -237,7 +237,6 @@ namespace WeaponCore
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             var value = newValue ? 1 : 0;
-            Log.Line($"newValue:{value} - oldValue:{comp.Data.Repo.Base.Set.Overrides.Projectiles}");
             WeaponComponent.RequestSetValue(comp, "Projectiles", value, comp.Session.PlayerId);
         }
 

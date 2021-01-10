@@ -15,10 +15,10 @@ namespace WeaponCore.Support
     internal class RecursiveSubparts : IEnumerable<MyEntity>
     {
         private readonly List<MyEntity> _subparts = new List<MyEntity>();
-        private readonly Dictionary<string, IMyModelDummy> _tmp = new Dictionary<string, IMyModelDummy>();
+        private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
+        private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
         internal readonly Dictionary<string, MyEntity> NameToEntity = new Dictionary<string, MyEntity>();
         internal readonly Dictionary<MyEntity, string> EntityToName = new Dictionary<MyEntity, string>();
-
         private IMyModel _trackedModel;
         internal MyEntity Entity;
 
@@ -26,7 +26,7 @@ namespace WeaponCore.Support
         {
             //GetEnumerator().Dispose(); // Don't this this is needed?
             _subparts.Clear();
-            _tmp.Clear();
+            _tmp1.Clear();
             NameToEntity.Clear();
             EntityToName.Clear();
             _trackedModel = null;
@@ -44,17 +44,17 @@ namespace WeaponCore.Support
             if (Entity != null)
             {
                 var head = -1;
-                _tmp.Clear();
+                _tmp1.Clear();
                 while (head < _subparts.Count)
                 {
                     var query = head == -1 ? Entity : _subparts[head];
                     head++;
                     if (query.Model == null)
                         continue;
-                    _tmp.Clear();
-                    ((IMyEntity)query).Model.GetDummies(_tmp);
+                    _tmp1.Clear();
+                    ((IMyEntity)query).Model.GetDummies(_tmp1);
                     //Log.Line($"next part: {((IMyEntity)query).Model.AssetName}");
-                    foreach (var kv in _tmp)
+                    foreach (var kv in _tmp1)
                     {
                         if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))
                         {
@@ -67,14 +67,37 @@ namespace WeaponCore.Support
                                 EntityToName[res] = name;
                             }
                         }
-                        else NameToEntity[kv.Key] = Entity;
+                        //else NameToEntity[kv.Key] = Entity;
                     }
-                    NameToEntity["None"] = Entity;
-                    EntityToName[Entity] = "None";
                 }
+                NameToEntity["None"] = Entity;
+                EntityToName[Entity] = "None";
             }
         }
 
+        internal bool FindFirstDummyByName(string name1, string name2, out MyEntity entity)
+        {
+            entity = null;
+            foreach (var parts in NameToEntity) {
+                
+                ((IMyEntity)parts.Value)?.Model?.GetDummies(_tmp2);
+                
+                foreach (var pair in _tmp2) {
+                    
+                    if (pair.Key == name1 || pair.Key == name2) {
+                        entity = parts.Value;
+                        break;
+                    }
+                }
+                _tmp2.Clear();
+                
+                if (entity != null)
+                    break;
+            }
+            
+            return entity != null;
+        }
+        
         IEnumerator<MyEntity> IEnumerable<MyEntity>.GetEnumerator()
         {
             return GetEnumerator();

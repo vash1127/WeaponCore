@@ -75,6 +75,7 @@ namespace WeaponCore.Support
             _cachedDummyMatrix = null;
             _tmp1.Clear();
             _cachedSubpartModel?.GetDummies(_tmp1);
+
             IMyModelDummy dummy;
             if (_tmp1.TryGetValue(_path[_path.Length - 1], out dummy))
             {

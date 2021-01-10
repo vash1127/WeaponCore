@@ -124,8 +124,7 @@ namespace WeaponCore
             for (var i = LosDebugList.Count - 1; i >= 0; i--)
             {
                 var info = LosDebugList[i];
-                DsDebugDraw.DrawLine(info.Line, Color.Red, 1f);
-                DsDebugDraw.DrawSingleVec(info.Line.From, 2.5f, Color.Blue, true);
+                DsDebugDraw.DrawLine(info.Line, Color.Red, 0.15f);
 
                 if (Tick - info.HitTick > 1200)
                 {

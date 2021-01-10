@@ -379,11 +379,11 @@ namespace WeaponCore.Platform
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
             MyEntity ejectorPart;
-            if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
+            if (System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Ejector, System.AltEjectorName, out ejectorPart))
                 Ejector = new Dummy(ejectorPart,this, System.Values.Assignments.Ejector);
 
             MyEntity scopePart;
-            if (System.HasScope && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Scope, out scopePart))
+            if (System.HasScope && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Scope, System.AltScopeName, out scopePart))
                 Scope = new Dummy(scopePart, this, System.Values.Assignments.Scope);
 
             Monitors = Comp.Monitors[WeaponId];
