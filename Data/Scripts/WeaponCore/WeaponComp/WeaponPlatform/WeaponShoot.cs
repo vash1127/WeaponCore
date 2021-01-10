@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
+using VRageRender;
 using static WeaponCore.Support.WeaponDefinition.AnimationDef.PartAnimationSetDef;
 using static WeaponCore.Support.WeaponComponent;
 namespace WeaponCore.Platform
@@ -108,10 +109,11 @@ namespace WeaponCore.Platform
                         }
                         else if (ClientMakeUpShots > 0)
                             --ClientMakeUpShots;
-
                         if (System.HasEjector && ActiveAmmoDef.AmmoDef.Const.HasEjectEffect)  {
                             if (ActiveAmmoDef.AmmoDef.Ejection.SpawnChance >= 1 || rnd.TurretRandom.Next(0, 1) >= ActiveAmmoDef.AmmoDef.Ejection.SpawnChance)
+                            {
                                 SpawnEjection();
+                            }
                         }
                     }
                     #endregion
@@ -382,20 +384,19 @@ namespace WeaponCore.Platform
             var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
             if (ejectDef.Type == WeaponDefinition.AmmoDef.AmmoEjectionDef.SpawnType.Item)
             {
-                if (ejectDef.CompDef.Delay <= 0)
+                var delay = (uint)ejectDef.CompDef.Delay;
+                if (delay <= 0)
                     MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, eInfo.Position, eInfo.Direction, MyPivotUp, null, EjectionSpawnCallback);
-                else
-                    System.Session.FutureEvents.Schedule(EjectionDelayed, null, (uint)(System.Session.Tick + ejectDef.CompDef.Delay));
-
-
+                else 
+                    System.Session.FutureEvents.Schedule(EjectionDelayed, null, delay);
             }
-            else if (System.Session.HandlesInput)
-            {
+            else if (System.Session.HandlesInput) {
+                
                 var particle = ActiveAmmoDef.AmmoDef.AmmoGraphics.Particles.Eject;
                 MyParticleEffect ejectEffect;
                 var matrix = MatrixD.CreateTranslation(eInfo.Position);
-                if (MyParticlesManager.TryCreateParticleEffect(particle.Name, ref matrix, ref eInfo.Position, uint.MaxValue, out ejectEffect))
-                {
+                
+                if (MyParticlesManager.TryCreateParticleEffect(particle.Name, ref matrix, ref eInfo.Position, uint.MaxValue, out ejectEffect)) {
                     ejectEffect.UserColorMultiplier = particle.Color;
                     var scaler = 1;
                     ejectEffect.UserRadiusMultiplier = particle.Extras.Scale * scaler;
@@ -423,7 +424,7 @@ namespace WeaponCore.Platform
                     SetSpeed(entity);
 
                 if (itemTtl > 0)
-                    System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)(System.Session.Tick + itemTtl));
+                    System.Session.FutureEvents.Schedule(RemoveEjection, entity, (uint)itemTtl);
             }
         }
 
@@ -433,7 +434,7 @@ namespace WeaponCore.Platform
 
             if (entity?.Physics != null && ActiveAmmoDef?.AmmoDef != null) {
                 var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-                entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS), Vector3.Zero);
+                entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) * 100, Vector3.Zero);
             }
         }
 
