@@ -9,6 +9,7 @@ namespace WeaponCore.Support
     // based on code of Equinox's
     public class Dummy
     {
+        internal bool NullEntity => _entity == null;
 
         internal MyEntity Entity
         {

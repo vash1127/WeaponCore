@@ -409,7 +409,7 @@ namespace WeaponCore.Platform
 
         private void EjectionDelayed(object o)
         {
-            if (ActiveAmmoDef?.AmmoDef != null) 
+            if (ActiveAmmoDef?.AmmoDef != null && !Ejector.NullEntity) 
                 MyFloatingObjects.Spawn(ActiveAmmoDef.AmmoDef.Const.EjectItem, Ejector.Info.Position, Ejector.Info.Direction, MyPivotUp, null, EjectionSpawnCallback);
         }
 
@@ -432,9 +432,10 @@ namespace WeaponCore.Platform
         {
             var entity = (MyEntity)o;
 
-            if (entity?.Physics != null && ActiveAmmoDef?.AmmoDef != null) {
+            if (entity?.Physics != null && ActiveAmmoDef?.AmmoDef != null && !entity.MarkedForClose) {
+                
                 var ejectDef = ActiveAmmoDef.AmmoDef.Ejection;
-                entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) * 100, Vector3.Zero);
+                entity.Physics.SetSpeeds(Ejector.CachedDir * (ejectDef.Speed), Vector3.Zero);
             }
         }
 
@@ -442,7 +443,7 @@ namespace WeaponCore.Platform
         {
             var entity = (MyEntity) o;
             
-            if (entity != null) {
+            if (entity?.Physics != null) {
                 using (entity.Pin())  {
                     if (!entity.MarkedForClose && !entity.Closed)
                         entity.Close();
