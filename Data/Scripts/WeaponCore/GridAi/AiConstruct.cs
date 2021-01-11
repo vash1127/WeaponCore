@@ -134,6 +134,7 @@ namespace WeaponCore.Support
             internal int BlockCount;
             internal GridAi RootAi;
             internal GridAi LargestAi;
+            internal bool NewInventoryDetected;
             
             internal enum RefreshCaller
             {
@@ -336,12 +337,19 @@ namespace WeaponCore.Support
                 RecentItems.Clear();
             }
 
+            internal void CheckForMissingAmmo()
+            {
+                NewInventoryDetected = false;
+                foreach (var w in RootAi.Construct.OutOfAmmoWeapons)
+                    w.CheckInventorySystem = true;
+            }
+            
             internal void Init(GridAi ai)
             {
                 RootAi = ai;
                 Data.Init(ai);
             }
-
+            
             internal void Clean()
             {
                 Data.Clean();
