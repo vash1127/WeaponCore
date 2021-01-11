@@ -75,16 +75,23 @@ namespace WeaponCore.Support
             }
         }
 
-        internal bool FindFirstDummyByName(string name1, string name2, out MyEntity entity)
+        internal bool FindFirstDummyByName(string name1, string name2, out MyEntity entity, out string matched)
         {
             entity = null;
+            matched = string.Empty;
+            var checkSecond = !string.IsNullOrEmpty(name2);
             foreach (var parts in NameToEntity) {
                 
                 ((IMyEntity)parts.Value)?.Model?.GetDummies(_tmp2);
                 
                 foreach (var pair in _tmp2) {
-                    
-                    if (pair.Key == name1 || pair.Key == name2) {
+
+                    var firstCheck = pair.Key == name1;
+                    var secondCheck = checkSecond && pair.Key == name2;
+                    if (firstCheck || secondCheck) {
+                        
+                        matched = firstCheck ? name1 : name2;
+                        
                         entity = parts.Value;
                         break;
                     }
@@ -94,8 +101,8 @@ namespace WeaponCore.Support
                 if (entity != null)
                     break;
             }
-            
-            return entity != null;
+
+            return entity != null && !string.IsNullOrEmpty(matched);
         }
         
         IEnumerator<MyEntity> IEnumerable<MyEntity>.GetEnumerator()

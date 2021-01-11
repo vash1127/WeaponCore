@@ -496,30 +496,29 @@ namespace WeaponCore
             if (ITask.valid && ITask.Exceptions != null)
                 TaskHasErrors(ref ITask, "ITask");
 
-            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--)
-            {
+            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--) {
+                
                 var ai = GridsToUpdateInvetories[i];
-                for (int j = 0; j < ai.Inventories.Count; j++)
-                {
+                for (int j = 0; j < ai.Inventories.Count; j++) {
+                    
                     var inventory = ai.Inventories[j];
-                    if (inventory !=null)
-                    {
+                    if (inventory !=null) {
+                        
                         var items = inventory.GetItems();
-                        if (items != null)
-                        {
+                        if (items != null) {
+                            
                             List<MyPhysicalInventoryItem> phyItemList;
                             if (InventoryItems.TryGetValue(inventory, out phyItemList))
-                            {
                                 InventoryItems[inventory].AddRange(items);
-                            }
-                            else
-                            {
+                            else {
+                                
                                 var entity = inventory.Entity as MyEntity;
-                                if (entity != null)
-                                {
+                                if (entity != null) {
+                                    
                                     var block = entity as MyCubeBlock;
                                     var blockSubType = block?.BlockDefinition != null ? block.BlockDefinition.Id.SubtypeName : "NA";
-                                    Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
+                                    var invMon = block != null ? $"{ai.InventoryMonitor.ContainsKey(block)}" : "NA";
+                                    Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - inAiInvIndex:{ai.InventoryIndexer.ContainsKey(inventory)} - inAiInvMon:{invMon} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
                                 }
                                 else Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
                             }
