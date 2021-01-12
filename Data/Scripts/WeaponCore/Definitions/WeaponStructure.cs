@@ -58,6 +58,8 @@ namespace WeaponCore.Support
         public readonly HardwareDef.ArmorState Armor;
 
         public readonly string WeaponName;
+        public readonly string AltScopeName;
+        public readonly string AltEjectorName;
         public readonly string[] Barrels;
         public readonly string[] HeatingSubparts;
 
@@ -79,6 +81,7 @@ namespace WeaponCore.Support
 
         public readonly bool HasAmmoSelection;
         public readonly bool HasEjector;
+        public readonly bool HasScope;
         public readonly bool HasBarrelRotation;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
@@ -167,6 +170,9 @@ namespace WeaponCore.Support
             SuppressFire = Values.HardPoint.Ai.SuppressFire;
             Armor = Values.HardPoint.HardWare.Armor;
             HasEjector = !string.IsNullOrEmpty(Values.Assignments.Ejector);
+            AltEjectorName = HasEjector ? "subpart_" + Values.Assignments.Ejector : string.Empty;
+            HasScope = !string.IsNullOrEmpty(Values.Assignments.Scope);
+            AltScopeName = HasScope ? "subpart_" + Values.Assignments.Scope : string.Empty;
             TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out RateOfFire, out ShotsPerBurst);

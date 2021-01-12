@@ -9,6 +9,7 @@ namespace WeaponCore.Support
     // based on code of Equinox's
     public class Dummy
     {
+        internal bool NullEntity => _entity == null;
 
         internal MyEntity Entity
         {
@@ -16,7 +17,7 @@ namespace WeaponCore.Support
             {
                 if (_entity?.Model == null) {
                     if (_weapon.System.Session.LocalVersion) Log.Line($"reset parts");
-                    _weapon.Comp.Platform.ResetParts(_weapon.Comp);
+                    _weapon.Comp.Platform?.ResetParts(_weapon.Comp);
                     if (_entity?.Model == null)
                         Log.Line($"Dummy Entity/Model null");
                 }
@@ -75,6 +76,7 @@ namespace WeaponCore.Support
             _cachedDummyMatrix = null;
             _tmp1.Clear();
             _cachedSubpartModel?.GetDummies(_tmp1);
+
             IMyModelDummy dummy;
             if (_tmp1.TryGetValue(_path[_path.Length - 1], out dummy))
             {

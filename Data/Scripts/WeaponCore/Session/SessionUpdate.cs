@@ -48,8 +48,14 @@ namespace WeaponCore
                 if (!ai.HasPower || Settings.Enforcement.ServerSleepSupport && IsServer && ai.AwakeComps == 0 && ai.WeaponsTracking == 0 && ai.SleepingComps > 0 && !ai.CheckProjectiles && ai.AiSleep && !ai.DbUpdated) 
                     continue;
 
-                if (IsServer && Tick60 && ai.Construct.RootAi.Construct.RecentItems.Count > 0)
-                    ai.Construct.RootAi.Construct.CheckEmptyWeapons();
+                if (IsServer) {
+
+                    if (ai.Construct.RootAi.Construct.NewInventoryDetected)
+                        ai.Construct.RootAi.Construct.CheckForMissingAmmo();
+                    else if (Tick60 && ai.Construct.RootAi.Construct.RecentItems.Count > 0)
+                        ai.Construct.RootAi.Construct.CheckEmptyWeapons();
+                }
+
 
                 ///
                 /// Comp update section
@@ -403,7 +409,6 @@ namespace WeaponCore
                 var checkTime = w.Target.TargetChanged || acquire || seekProjectile || w.FastTargetResetTick == Tick;
 
                 if (checkTime || w.Comp.Ai.TargetResetTick == Tick && w.Target.HasTarget) {
-
 
                     if (seekProjectile || comp.Data.Repo.Base.State.TrackingReticle || (comp.TargetNonThreats && w.Comp.Ai.TargetingInfo.OtherInRange || w.Comp.Ai.TargetingInfo.ThreatInRange) && w.Comp.Ai.TargetingInfo.ValidTargetExists(w)) {
 

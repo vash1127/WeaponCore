@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Entity;
 using static WeaponCore.Session;
 
@@ -57,30 +53,30 @@ namespace WeaponCore.Support
                 var battery = cube as MyBatteryBlock;
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id));
-
-                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler )) // readd IMyShipConnector
-                {
+                
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector) && cube.CubeGrid.IsSameConstructAs(MyGrid)) { // readd IMyShipConnector
+                    
+                    if (cube.CubeGrid != MyGrid)
+                        Log.Line($"FatBlockAdded is sameConstruct and inventory block but not same grid");
+                    
                     MyInventory inventory;
-                    if (cube.HasInventory && cube.TryGetInventory(out inventory))
-                    {
-                        if (inventory != null && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories))
-                        {
-                            inventory.InventoryContentChanged += CheckAmmoInventory;
-                            Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
-                            Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
-                        }
-                    }
+                    if (cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories)) {
+                        
+                        inventory.InventoryContentChanged += CheckAmmoInventory;
+                        Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
+                        Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
+                        
+                        InventoryMonitor[cube] = inventory;
 
-                    foreach (var weapon in Construct.RootAi.Construct.OutOfAmmoWeapons)
-                        weapon.CheckInventorySystem = true;
+                        Construct.RootAi.Construct.NewInventoryDetected = true;
+                    }
                 }
                 else if (battery != null) {
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
                 }
-
             }
-            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null} - RootAiNull: {Construct.RootAi == null}"); }
         }
 
         private void FatBlockRemoved(MyCubeBlock cube)
@@ -91,38 +87,53 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var cubeDef = cube.BlockDefinition;
                 var isWeaponBase = weaponType && cubeDef != null && !sessionNull && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cubeDef.Id) || Session.WeaponPlatforms.ContainsKey(cubeDef.Id));
+                var battery = cube as MyBatteryBlock;
                 if (sessionNull)
                     Log.Line($"FatBlockRemoved Session was null: AiMarked:{MarkedForClose} - AiClosed:{Closed} - cubeMarked:{cube.MarkedForClose} - CubeGridMarked:{cube.CubeGrid.MarkedForClose} - isRegistered:{SubGridsRegistered.Contains(cube.CubeGrid)} - regCnt:{SubGridsRegistered.Count}");
 
-                try {
-                    var battery = cube as MyBatteryBlock;
-                    MyInventory inventory;
-                    if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory))
-                    {
-                        try
-                        {
-                            if (inventory != null && !sessionNull && Session.UniqueListRemove(inventory, InventoryIndexer, Inventories))
-                            {
-                                inventory.InventoryContentChanged -= CheckAmmoInventory;
-                                List<MyPhysicalInventoryItem> removedPhysical;
-                                List<BetterInventoryItem> removedBetter;
-                                if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
-                                    removedPhysical.Clear();
+                MyInventory inventory;
+                if (!isWeaponBase && cube.HasInventory && cube.TryGetInventory(out inventory)) {
 
-                                if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
-                                    removedBetter.Clear();
-                            }
-                            
-                        } catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved inventory: {ex}"); }
-                    }
-                    else if (battery != null) {
-                        if (Batteries.Remove(battery)) SourceCount--;
-                        UpdatePowerSources = true;
-                    }
+                    if (!InventoryRemove(cube, inventory))
+                        Log.Line($"FatBlock inventory remove failed: {cube.BlockDefinition?.Id.SubtypeName} - gridMatch:{cube.CubeGrid == MyGrid} - aiMarked:{MarkedForClose} - {cube.CubeGrid.DebugName} - {MyGrid?.DebugName}");
                 }
-                catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved main: {ex}"); }
+                else if (battery != null) {
+                    
+                    if (Batteries.Remove(battery)) 
+                        SourceCount--;
+                    
+                    UpdatePowerSources = true;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in FatBlockRemoved last: {ex} - Marked: {MarkedForClose} - Closed:{Closed}"); }
+        }
+        
+        
+        private bool InventoryRemove(MyCubeBlock cube, MyInventory inventory)
+        {
+            try
+            {
+                MyInventory oldInventory;
+                if (InventoryMonitor.TryRemove(cube, out oldInventory)) {
+                    
+                    inventory.InventoryContentChanged -= CheckAmmoInventory;
+                    if (Session.UniqueListRemove(inventory, InventoryIndexer, Inventories)) {
+                        
+                        List<MyPhysicalInventoryItem> removedPhysical;
+                        List<BetterInventoryItem> removedBetter;
+
+                        if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
+                            removedPhysical.Clear();
+
+                        if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
+                            removedBetter.Clear();
+    
+                    }
+                    else return false;
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in InventoryRemove: {ex}"); }
+            return true;
         }
 
         internal void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
@@ -136,7 +147,7 @@ namespace WeaponCore.Support
                     Construct.RootAi?.Construct.RecentItems.Add(itemDef);
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName}[{((MyCubeBlock)inventory?.Entity)?.BlockDefinition.Id.SubtypeName}] - item:{item.Content?.SubtypeName} - amount:{amount} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
+            catch (Exception ex) { Log.Line($"Exception in CheckAmmoInventory: {ex} - BlockName:{((MyEntity)inventory?.Entity)?.DebugName} - BlockMarked:{((MyCubeBlock)inventory?.Entity)?.MarkedForClose} - aiMarked:{MarkedForClose} - gridMatch:{MyGrid == ((MyCubeBlock)inventory?.Entity)?.CubeGrid} - Session:{Session != null} - item:{item.Content?.SubtypeName} - RootConstruct:{Construct?.RootAi?.Construct != null}"); }
         }
 
         internal void GridClose(MyEntity myEntity)
@@ -154,8 +165,8 @@ namespace WeaponCore.Support
 
             CleanSubGrids();
 
-            Session.DelayedGridAiClean.Add(this);
-            Session.DelayedGridAiClean.ApplyAdditions();
+            Session.DelayedAiClean.Add(this);
+            Session.DelayedAiClean.ApplyAdditions();
         }
     }
 }

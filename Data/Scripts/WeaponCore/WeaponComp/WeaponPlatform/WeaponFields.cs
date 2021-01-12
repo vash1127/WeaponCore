@@ -30,6 +30,7 @@ namespace WeaponCore.Platform
         internal readonly PartInfo MuzzlePart;
         internal readonly Dummy[] Dummies;
         internal readonly Dummy Ejector;
+        internal readonly Dummy Scope;
         internal readonly Muzzle[] Muzzles;
         internal readonly PartInfo AzimuthPart;
         internal readonly PartInfo ElevationPart;
@@ -221,6 +222,8 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal Dummy GetScope => Scope ?? Dummies[MiddleMuzzleIndex];
+
         internal struct AmmoLoad
         {
             internal enum ChangeType
@@ -375,9 +378,16 @@ namespace WeaponCore.Platform
             AiOnlyWeapon = Comp.BaseType != WeaponComponent.BlockType.Turret || (Comp.BaseType == WeaponComponent.BlockType.Turret && (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2"));
             UniqueId = comp.Session.UniqueWeaponId;
             ShortLoadId = comp.Session.ShortLoadAssigner();
+
+            string ejectorMatch;
             MyEntity ejectorPart;
-            if (System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(System.Values.Assignments.Ejector, out ejectorPart))
+            if (System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Ejector, System.AltEjectorName, out ejectorPart, out ejectorMatch))
                 Ejector = new Dummy(ejectorPart,this, System.Values.Assignments.Ejector);
+
+            string scopeMatch;
+            MyEntity scopePart;
+            if (System.HasScope && Comp.Platform.Parts.FindFirstDummyByName(System.Values.Assignments.Scope, System.AltScopeName, out scopePart, out scopeMatch))
+                Scope = new Dummy(scopePart, this, scopeMatch);
 
             Monitors = Comp.Monitors[WeaponId];
         }

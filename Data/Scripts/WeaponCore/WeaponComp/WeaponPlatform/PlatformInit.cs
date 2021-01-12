@@ -424,9 +424,15 @@ namespace WeaponCore.Platform
                         weapon.ElevationPart.Entity.NeedsWorldMatrix = true;
                     }
 
+                    string ejectorMatch;
                     MyEntity ejectorPart;
-                    if (weapon.System.HasEjector && Comp.Platform.Parts.NameToEntity.TryGetValue(weapon.System.Values.Assignments.Ejector, out ejectorPart))
+                    if (weapon.System.HasEjector && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Ejector, weapon.System.AltEjectorName, out ejectorPart, out ejectorMatch))
                         weapon.Ejector.Entity = ejectorPart;
+
+                    string scopeMatch;
+                    MyEntity scopePart;
+                    if ((weapon.System.HasScope) && Comp.Platform.Parts.FindFirstDummyByName(weapon.System.Values.Assignments.Scope, weapon.System.AltScopeName, out scopePart, out scopeMatch))
+                        weapon.Scope.Entity = scopePart;
 
                     if (m.Value.DesignatorWeapon)
                         muzzlePart = weapon.ElevationPart.Entity;

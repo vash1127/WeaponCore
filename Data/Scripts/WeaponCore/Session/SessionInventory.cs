@@ -37,42 +37,45 @@ namespace WeaponCore
                         for (int j = 0; j < weapon.Comp.Ai.Inventories.Count; j++) {
 
                             var inventory = weapon.Comp.Ai.Inventories[j];
-                            var items = AmmoThreadItemList[inventory];
+                            
+                            List<BetterInventoryItem> items;
+                            if (AmmoThreadItemList.TryGetValue(inventory, out items)) {
+                                
+                                for (int l = items.Count - 1; l >= 0; l--) {
+                                    
+                                    var item = items[l];
+                                    if (!item.DefId.Equals(defId)) continue;
 
-                            for (int l = items.Count - 1; l >= 0; l--)
-                            {
-                                var item = items[l];
+                                    var magsAvailable = item.Amount;
 
-                                if (!item.DefId.Equals(defId)) continue;
+                                    if (magsAvailable > 0 && magsNeeded > 0 && ((IMyInventory)inventory).CanTransferItemTo(weapon.Comp.BlockInventory, defId)) {
+                                        
+                                        if (magsAvailable >= magsNeeded) {
+                                            
+                                            ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsNeeded });
+                                            magsAdded += magsNeeded;
+                                            item.Amount -= magsNeeded;
+                                            magsNeeded = 0;
+                                        }
+                                        else {
+                                            
+                                            ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsAvailable });
 
-                                var magsAvailable = item.Amount;
+                                            magsNeeded -= magsAvailable;
+                                            magsAdded += magsAvailable;
+                                            item.Amount -= magsAvailable;
 
-                                if (magsAvailable > 0 && magsNeeded > 0 && ((IMyInventory)inventory).CanTransferItemTo(weapon.Comp.BlockInventory, defId))
-                                {
-                                    if (magsAvailable >= magsNeeded)
-                                    {
-                                        ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsNeeded });
-                                        magsAdded += magsNeeded;
-                                        item.Amount -= magsNeeded;
-                                        magsNeeded = 0;
+                                            items.RemoveAtFast(l);
+                                            BetterInventoryItems.Return(item);
+                                        }
+                                        weapon.CurrentAmmoVolume = magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
                                     }
-                                    else
-                                    {
-                                        ammoPullRequests.Inventories.Add(new InventoryMags { Inventory = inventory, Item = item, Amount = magsAvailable });
 
-                                        magsNeeded -= magsAvailable;
-                                        magsAdded += magsAvailable;
-                                        item.Amount -= magsAvailable;
-
-                                        items.RemoveAtFast(l);
-                                        BetterInventoryItems.Return(item);
-                                    }
-                                    weapon.CurrentAmmoVolume = magsAdded * weapon.ActiveAmmoDef.AmmoDef.Const.MagVolume;
+                                    if (magsNeeded <= 0)
+                                        break;
                                 }
-
-                                if (magsNeeded <= 0)
-                                    break;
                             }
+                            else Log.Line($"[Inventory invalid in AmmoPull] Weapon:{weapon.Comp.MyCube.BlockDefinition.Id.SubtypeName} - inAiInvIndex: {weapon.Comp.Ai.InventoryIndexer.ContainsKey(inventory)} - blockMarked:{weapon.Comp.MyCube.MarkedForClose} - aiMarked:{weapon.Comp.Ai.MarkedForClose} - cTick:{Tick - weapon.Comp.Ai.AiCloseTick} - mTick:{Tick - weapon.Comp.Ai.AiMarkedTick} - sTick:{Tick - weapon.Comp.Ai.CreatedTick}");
                         }
 
                         if (ammoPullRequests.Inventories.Count > 0)

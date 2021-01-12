@@ -124,8 +124,7 @@ namespace WeaponCore
             for (var i = LosDebugList.Count - 1; i >= 0; i--)
             {
                 var info = LosDebugList[i];
-                DsDebugDraw.DrawLine(info.Line, Color.Red, 1f);
-                DsDebugDraw.DrawSingleVec(info.Line.From, 2.5f, Color.Blue, true);
+                DsDebugDraw.DrawLine(info.Line, Color.Red, 0.15f);
 
                 if (Tick - info.HitTick > 1200)
                 {
@@ -151,7 +150,7 @@ namespace WeaponCore
             var charge = DsUtil.GetValue("charge");
             var acquire = DsUtil.GetValue("acquire");
             Log.LineShortDate($"(CPU-T) --- <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PS>{psTime.Median:0.0000}/{psTime.Min:0.0000}/{psTime.Max:0.0000} <PI>{piTIme.Median:0.0000}/{piTIme.Min:0.0000}/{piTIme.Max:0.0000} <PD>{pdTime.Median:0.0000}/{pdTime.Min:0.0000}/{pdTime.Max:0.0000} <PA>{paTime.Median:0.0000}/{paTime.Min:0.0000}/{paTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AV>{av.Median:0.0000}/{av.Min:0.0000}/{av.Max:0.0000} <NET1>{netTime1.Median:0.0000}/{netTime1.Min:0.0000}/{netTime1.Max:0.0000}> <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}>", "perf");
-            Log.LineShortDate($"(STATS) -------- AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
+            Log.LineShortDate($"(STATS) -------- AIs:[{GridTargetingAIs.Count}] - WcBlocks:[{IdToCompMap.Count}] - AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]", "stats");
             TargetRequests = 0;
             TargetChecks = 0;
             BlockChecks = 0;
@@ -497,30 +496,29 @@ namespace WeaponCore
             if (ITask.valid && ITask.Exceptions != null)
                 TaskHasErrors(ref ITask, "ITask");
 
-            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--)
-            {
+            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--) {
+                
                 var ai = GridsToUpdateInvetories[i];
-                for (int j = 0; j < ai.Inventories.Count; j++)
-                {
+                for (int j = 0; j < ai.Inventories.Count; j++) {
+                    
                     var inventory = ai.Inventories[j];
-                    if (inventory !=null)
-                    {
+                    if (inventory !=null) {
+                        
                         var items = inventory.GetItems();
-                        if (items != null)
-                        {
+                        if (items != null) {
+                            
                             List<MyPhysicalInventoryItem> phyItemList;
                             if (InventoryItems.TryGetValue(inventory, out phyItemList))
-                            {
                                 InventoryItems[inventory].AddRange(items);
-                            }
-                            else
-                            {
+                            else {
+                                
                                 var entity = inventory.Entity as MyEntity;
-                                if (entity != null)
-                                {
+                                if (entity != null) {
+                                    
                                     var block = entity as MyCubeBlock;
                                     var blockSubType = block?.BlockDefinition != null ? block.BlockDefinition.Id.SubtypeName : "NA";
-                                    Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
+                                    var invMon = block != null ? $"{ai.InventoryMonitor.ContainsKey(block)}" : "NA";
+                                    Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - inAiInvIndex:{ai.InventoryIndexer.ContainsKey(inventory)} - inAiInvMon:{invMon} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
                                 }
                                 else Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
                             }

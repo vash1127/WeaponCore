@@ -61,7 +61,7 @@ namespace WeaponCore
                 }
                 else Log.Line($"ServerActiveControlUpdate: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
             }
-            else Log.Line($"ServerActiveControlUpdate: ai:{ai != null}({GridTargetingAIs.ContainsKey(cube.CubeGrid)}) - playerId:{playerId}({packet.SenderId}) - marked:{cube.MarkedForClose}({cube.CubeGrid.MarkedForClose}) - active:{dPacket.Data}");
+            else Log.Line($"ServerActiveControlUpdate: ai:{ai != null} - targetingAi:{GridTargetingAIs.ContainsKey(cube.CubeGrid)} - masterAi:{GridToMasterAi.ContainsKey(cube.CubeGrid)} - IdToComp:{IdToCompMap.ContainsKey(cube.EntityId)} - {cube.BlockDefinition.Id.SubtypeName} - playerId:{playerId}({packet.SenderId}) - marked:{cube.MarkedForClose}({cube.CubeGrid.MarkedForClose}) - active:{dPacket.Data}");
 
             return true;
         }

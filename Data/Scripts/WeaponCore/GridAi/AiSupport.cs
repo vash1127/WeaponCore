@@ -226,10 +226,22 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{MyGrid == null}"); }
         }
 
-        internal void GridDelayedClose()
+        private void ForceCloseAiInventories()
+        {
+            foreach (var pair in InventoryMonitor)
+                InventoryRemove(pair.Key, pair.Value);
+            
+            if (InventoryMonitor.Count > 0) {
+                Log.Line($"Found stale inventories during AI close - failedToRemove:{InventoryMonitor.Count}");
+                InventoryMonitor.Clear();
+            }
+
+        }
+        
+        internal void AiDelayedClose()
         {
             if (Session == null || MyGrid == null || Closed) {
-                Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
+                Log.Line($"AiDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null}  - Closed: {Closed}");
                 return;
             }
 
@@ -245,10 +257,10 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void GridForceClose()
+        internal void AiForceClose()
         {
             if (Session == null || MyGrid == null || Closed) {
-                Log.Line($"GridDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null} - Closed: {Closed}");
+                Log.Line($"AiDelayedClose: Session is null {Session == null} - Grid is null {MyGrid == null} - Closed: {Closed}");
                 return;
             }
 
@@ -274,6 +286,8 @@ namespace WeaponCore.Support
         {
             AiCloseTick = Session.Tick;
 
+            ForceCloseAiInventories();
+            
             MyGrid.Components.Remove<AiComponent>();
 
             if (Session.IsClient)

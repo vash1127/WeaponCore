@@ -197,7 +197,7 @@ namespace WeaponCore.Support
             session.TargetRequests++;
             var physics = session.Physics;
             var barrelPos = w.BarrelOrigin;
-            var muzzlePos = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
+            var weaponPos = w.BarrelOrigin + (w.MyPivotFwd * w.MuzzleDistToBarrelCenter);
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -268,7 +268,7 @@ namespace WeaponCore.Support
                     if (targetRadius < minTargetRadius || info.TargetRadius > maxTargetRadius && maxTargetRadius < 8192 || !focusTarget && info.OffenseRating <= 0) continue;
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
-                    var targetDistSqr = Vector3D.DistanceSquared(targetCenter, muzzlePos);
+                    var targetDistSqr = Vector3D.DistanceSquared(targetCenter, weaponPos);
                     if (targetDistSqr > (w.MaxTargetDistance + info.TargetRadius) * (w.MaxTargetDistance + info.TargetRadius) || targetDistSqr < w.MinTargetDistanceSqr) continue;
 
                     if (water != null) {
@@ -298,8 +298,8 @@ namespace WeaponCore.Support
                         else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel, out newCenter)) continue;
 
                         if (w.Comp.Ai.FriendlyShieldNear) {
-                            var targetDir = newCenter - muzzlePos;
-                            if (w.HitFriendlyShield(muzzlePos, newCenter, targetDir))
+                            var targetDir = newCenter - weaponPos;
+                            if (w.HitFriendlyShield(weaponPos, newCenter, targetDir))
                                 continue;
                         }
                         targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
@@ -323,8 +323,8 @@ namespace WeaponCore.Support
 
                     if (w.Comp.Ai.FriendlyShieldNear)
                     {
-                        var targetDir = predictedPos - muzzlePos;
-                        if (w.HitFriendlyShield(muzzlePos, predictedPos, targetDir))
+                        var targetDir = predictedPos - weaponPos;
+                        if (w.HitFriendlyShield(weaponPos, predictedPos, targetDir))
                             continue;
                     }
 
@@ -339,7 +339,7 @@ namespace WeaponCore.Support
                     if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
                         double rayDist;
-                        Vector3D.Distance(ref muzzlePos, ref targetCenter, out rayDist);
+                        Vector3D.Distance(ref weaponPos, ref targetCenter, out rayDist);
                         var shortDist = rayDist * (1 - hitInfo.Fraction);
                         var origDist = rayDist * hitInfo.Fraction;
                         var topEntId = info.Target.GetTopMostParent().EntityId;

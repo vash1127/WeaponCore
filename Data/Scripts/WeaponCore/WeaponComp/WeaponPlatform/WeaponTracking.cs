@@ -263,19 +263,13 @@ namespace WeaponCore.Platform
                 }
             }
 
-            var fireControlReady = isTracking && weapon.Target.IsAligned;
+            targetLock = isTracking && weapon.Target.IsAligned;
 
-            var rayCheckTest = !weapon.Comp.Session.IsClient && fireControlReady && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance == GuidanceType.None && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
+            var rayCheckTest = !weapon.Comp.Session.IsClient && targetLock && (weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.None || weapon.Comp.Data.Repo.Base.State.Control == CompStateValues.ControlMode.Ui) && weapon.ActiveAmmoDef.AmmoDef.Trajectory.Guidance != GuidanceType.Smart && (!weapon.Casting && weapon.Comp.Session.Tick - weapon.Comp.LastRayCastTick > 29 || weapon.System.Values.HardPoint.Other.MuzzleCheck && weapon.Comp.Session.Tick - weapon.LastMuzzleCheck > 29);
             
-            if (rayCheckTest)
-            {
- 
-
-            }
             if (rayCheckTest && !weapon.RayCheckTest())
                 return false;
             
-            targetLock = fireControlReady;
             return isTracking;
         }
 
@@ -284,8 +278,7 @@ namespace WeaponCore.Platform
             LastSmartLosCheck = Comp.Ai.Session.Tick;
             IHitInfo hitInfo;
 
-            var middleMuzzle = Muzzles.Length > 1 ? Muzzles.Length / 2 - 1 : 0;
-            var trackingCheckPosition = Dummies[middleMuzzle].Info.Position;
+            var trackingCheckPosition = GetScope.Info.Position;
             
             Comp.Ai.Session.Physics.CastRay(trackingCheckPosition + (MyPivotFwd * Comp.Ai.GridVolume.Radius), trackingCheckPosition, out hitInfo, 15, false);
             var grid = hitInfo?.HitEntity?.GetTopMostParent() as MyCubeGrid;
@@ -951,30 +944,31 @@ namespace WeaponCore.Platform
 
         private bool RayCheckTest()
         {
+            var trackingCheckPosition = GetScope.Info.Position;
+
             if (System.Session.DebugLos)
             {
                 var trackPos = BarrelOrigin + (MyPivotFwd * MuzzleDistToBarrelCenter);
                 var targetTestPos = Target.Entity.PositionComp.WorldAABB.Center;
                 var topEntity = Target.Entity.GetTopMostParent();
+
                 IHitInfo hitInfo;
                 if (System.Session.Physics.CastRay(trackPos, targetTestPos, out hitInfo) && hitInfo.HitEntity == topEntity)
                 {
                     var hitPos = hitInfo.Position;
-                    var muzzlePos = Dummies[MiddleMuzzleIndex].Info.Position;
                     double closestDist;
-                    MyUtils.GetClosestPointOnLine(ref muzzlePos, ref targetTestPos, ref hitPos, out closestDist);
-                    var tDir = Vector3D.Normalize(targetTestPos - muzzlePos);
-                    var closestPos = muzzlePos + (tDir * closestDist);
+                    MyUtils.GetClosestPointOnLine(ref trackingCheckPosition, ref targetTestPos, ref hitPos, out closestDist);
+                    var tDir = Vector3D.Normalize(targetTestPos - trackingCheckPosition);
+                    var closestPos = trackingCheckPosition + (tDir * closestDist);
 
                     var missAmount = Vector3D.Distance(hitPos, closestPos);
                     Session.Rays++;
                     Session.RayMissAmounts += missAmount;
                 }
             }
+            
             var tick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-
-            var trackingCheckPosition = Dummies[MiddleMuzzleIndex].Info.Position;
             
             if (System.Values.HardPoint.Other.MuzzleCheck)
             {
@@ -1153,7 +1147,7 @@ namespace WeaponCore.Platform
 
             if (MinAzToleranceRadians > MaxAzToleranceRadians)
                 MinAzToleranceRadians -= 6.283185f;
-
+            
             var dummyInfo = Dummies[MiddleMuzzleIndex];
             MuzzleDistToBarrelCenter = Vector3D.Distance(dummyInfo.Info.Position, dummyInfo.Entity.PositionComp.WorldAABB.Center);
         }
