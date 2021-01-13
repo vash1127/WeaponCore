@@ -188,7 +188,6 @@ namespace WeaponCore
             ShootingWeapons.Clear();
             RemoveEffectsFromGrid.Clear();
             WeaponToPullAmmo.Clear();
-            WeaponToPullAmmoIndexer.Clear();
             AmmoToPullQueue.Clear();
             ChargingWeaponsIndexer.Clear();
             WeaponsToRemoveAmmoIndexer.Clear();

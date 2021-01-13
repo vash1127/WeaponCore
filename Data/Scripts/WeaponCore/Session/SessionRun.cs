@@ -71,7 +71,7 @@ namespace WeaponCore
                 if (Tick60 && UiInput.ActionKeyPressed && UiInput.CtrlPressed && GetAimedAtBlock(out cube) && cube.BlockDefinition != null && WeaponCoreBlockDefs.ContainsKey(cube.BlockDefinition.Id.SubtypeName))
                     ProblemRep.GenerateReport(cube);
 
-                if (!IsClient && !InventoryUpdate && (!WeaponToPullAmmo.Empty) && ITask.IsComplete)
+                if (!IsClient && !InventoryUpdate && WeaponToPullAmmo.Count > 0 && ITask.IsComplete)
                     StartAmmoTask();
 
                 if (!CompsToStart.IsEmpty)

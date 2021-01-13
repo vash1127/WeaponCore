@@ -20,13 +20,11 @@ namespace WeaponCore
             if (ITask.valid && ITask.Exceptions != null)
                 TaskHasErrors(ref ITask, "ITask");
 
-            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--) {
+            foreach (var ai in GridsToUpdateInvetories) { 
 
-                var ai = GridsToUpdateInvetories[i];
                 var logged = 0;
-                for (int j = 0; j < ai.Inventories.Count; j++) {
-
-                    var inventory = ai.Inventories[j];
+                foreach (var inventory in ai.InventoryMonitor.Values) { 
+                    
                     var items = inventory?.GetItems();
                     if (items != null) {
 
@@ -41,7 +39,7 @@ namespace WeaponCore
                                 var block = entity as MyCubeBlock;
                                 var blockSubType = block?.BlockDefinition != null ? block.BlockDefinition.Id.SubtypeName : "NA";
                                 var invMon = block != null ? $"{ai.InventoryMonitor.ContainsKey(block)}" : "NA";
-                                Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - inAiInvIndex:{ai.InventoryIndexer.ContainsKey(inventory)} - inAiInvMon:{invMon} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
+                                Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - inAiInvMon:{invMon} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
                             }
                         }
                     }
@@ -50,7 +48,6 @@ namespace WeaponCore
 
             DefIdsComparer.Clear();
             GridsToUpdateInvetories.Clear();
-            GridsToUpdateInvetoriesIndexer.Clear();
 
             ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
         }
@@ -101,12 +98,10 @@ namespace WeaponCore
         
         internal void AmmoPull()  // In Thread
         {
-            Weapon weapon = null;
             try
             {
-                for (int i = WeaponToPullAmmo.Count - 1; i >= 0; i--) {
+                foreach (var weapon in WeaponToPullAmmo) { 
 
-                    weapon = WeaponToPullAmmo[i];
                     using (weapon.Comp.Ai?.MyGrid.Pin())
                     using (weapon.Comp.MyCube.Pin()) {
 
@@ -126,10 +121,8 @@ namespace WeaponCore
                         var magsAdded = 0;
                         var logged = 0;
 
-                        for (int j = 0; j < weapon.Comp.Ai.Inventories.Count; j++) {
+                        foreach (var inventory in weapon.Comp.Ai.InventoryMonitor.Values) { 
 
-                            var inventory = weapon.Comp.Ai.Inventories[j];
-                            
                             List<BetterInventoryItem> items;
                             if (AmmoThreadItemList.TryGetValue(inventory, out items)) {
                                 
@@ -168,7 +161,7 @@ namespace WeaponCore
                                 }
                             }
                             else if (logged++ == 0) 
-                                Log.Line($"[Inventory invalid in AmmoPull] Weapon:{weapon.Comp.MyCube.BlockDefinition.Id.SubtypeName} - inAiInvIndex: {weapon.Comp.Ai.InventoryIndexer.ContainsKey(inventory)} - blockMarked:{weapon.Comp.MyCube.MarkedForClose} - aiMarked:{weapon.Comp.Ai.MarkedForClose} - cTick:{Tick - weapon.Comp.Ai.AiCloseTick} - mTick:{Tick - weapon.Comp.Ai.AiMarkedTick} - sTick:{Tick - weapon.Comp.Ai.CreatedTick}");
+                                Log.Line($"[Inventory invalid in AmmoPull] Weapon:{weapon.Comp.MyCube.BlockDefinition.Id.SubtypeName}  - blockMarked:{weapon.Comp.MyCube.MarkedForClose} - aiMarked:{weapon.Comp.Ai.MarkedForClose} - cTick:{Tick - weapon.Comp.Ai.AiCloseTick} - mTick:{Tick - weapon.Comp.Ai.AiMarkedTick} - sTick:{Tick - weapon.Comp.Ai.CreatedTick}");
                         }
 
                         if (ammoPullRequests.Inventories.Count > 0)
@@ -180,18 +173,15 @@ namespace WeaponCore
                     InvPullClean.Add(weapon);
                 }
             }
-            catch (Exception e)
-            {
-                Log.Line($"Error in AmmoPull: {e}");
-                if(weapon != null)
-                    UniqueListRemove(weapon, WeaponToPullAmmoIndexer, WeaponToPullAmmo);
-            }
+            catch (Exception e) { Log.Line($"Error in AmmoPull: {e}");            }
         }
 
         internal void ProccessAmmoCallback()
         {
-            for (int i = 0; i < InvPullClean.Count; i++)
-                UniqueListRemove(InvPullClean[i], WeaponToPullAmmoIndexer, WeaponToPullAmmo, PullingWeapons);
+            for (int i = 0; i < InvPullClean.Count; i++) {
+                var weapon = InvPullClean[i];
+                WeaponToPullAmmo.Remove(weapon);
+            }
 
             InvPullClean.Clear();
             InvRemoveClean.Clear();
@@ -259,57 +249,6 @@ namespace WeaponCore
             return false;
         }
         
-        internal bool UniqueListRemove<T>(T item, ConcurrentDictionary<T, int> indexer, MyConcurrentList<T> list)
-        {
-            int oldPos;
-            if (indexer.TryGetValue(item, out oldPos)) {
-
-                int test;
-                if (!indexer.TryRemove(item, out test))
-                    Log.Line($"UniqueListRemove failed");
-                list.RemoveAtFast(oldPos);
-                var count = list.Count;
-                
-                if (count > 0) {
-                    
-                    count--;
-                    if (oldPos <= count)
-                        indexer[list[oldPos]] = oldPos;
-                    else
-                        indexer[list[count]] = count;
-                }
-
-                return true;
-            }
-            return false;
-        }
-
-        internal bool UniqueListRemove<T>(T item, ConcurrentDictionary<T, int> indexer, MyConcurrentList<T> list, HashSet<T> checkCache)
-        {
-            int oldPos;
-            if (indexer.TryGetValue(item, out oldPos)) {
-
-                int test;
-                if (!indexer.TryRemove(item, out test))
-                    Log.Line($"UniqueListRemove failed w. cache");
-                checkCache.Remove(item);
-                list.RemoveAtFast(oldPos);
-                var count = list.Count;
-                
-                if (count > 0) {
-                    
-                    count--;
-                    if (oldPos <= count)
-                        indexer[list[oldPos]] = oldPos;
-                    else
-                        indexer[list[count]] = count;
-                }
-
-                return true;
-            }
-            return false;
-        }
-
         internal bool UniqueListAdd<T>(T item, Dictionary<T, int> indexer, List<T> list)
         {
             if (indexer.ContainsKey(item))
@@ -317,29 +256,6 @@ namespace WeaponCore
 
             list.Add(item);
             indexer.Add(item, list.Count - 1);
-            return true;
-        }
-
-        internal bool UniqueListAdd<T>(T item, ConcurrentDictionary<T, int> indexer, MyConcurrentList<T> list)
-        {
-            if (indexer.ContainsKey(item))
-                return false;
-
-            list.Add(item);
-            if (!indexer.TryAdd(item, list.Count - 1))
-                Log.Line($"UniqueListAdd failed");
-            return true;
-        }
-        
-        internal bool UniqueListAdd<T>(T item, ConcurrentDictionary<T, int> indexer, MyConcurrentList<T> list, HashSet<T> checkCache)
-        {
-            if (indexer.ContainsKey(item))
-                return false;
-
-            list.Add(item);
-            if (!indexer.TryAdd(item, list.Count - 1))
-                Log.Line($"UniqueListAdd failed w/ cache");
-            checkCache.Add(item);
             return true;
         }
     }

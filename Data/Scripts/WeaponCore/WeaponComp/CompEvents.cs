@@ -32,7 +32,7 @@ namespace WeaponCore.Support
                 {
                     BlockInventory.InventoryContentChanged += OnContentsChanged;
                     Session.BlockInventoryItems[BlockInventory] = new ConcurrentDictionary<uint, BetterInventoryItem>();
-                    Session.AmmoThreadItemList[BlockInventory] = new List<BetterInventoryItem>();
+                    Session.AmmoThreadItemList[BlockInventory] = Session.BetterItemsListPool.Get();
 
                     var items = BlockInventory.GetItems();
                     for (int i = 0; i < items.Count; i++)
@@ -77,7 +77,7 @@ namespace WeaponCore.Support
                         }
 
                         if (Session.AmmoThreadItemList.TryRemove(BlockInventory, out removedList))
-                            removedList.Clear();
+                            Session.BetterItemsListPool.Return(removedList);
                     }
                 }
             }
