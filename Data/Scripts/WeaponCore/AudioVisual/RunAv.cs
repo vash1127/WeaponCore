@@ -234,7 +234,7 @@ namespace WeaponCore.Support
 
                                     var notLast = travel + rawLen < av.VisualLength;
                                     var len = notLast ? rawLen : av.VisualLength - travel;
-                                    var clampStep = !gap ? MathHelperD.Clamp((int)((len / segStepLen) + 0.5) - 1, 0, segTextureCnt - 1) : MathHelperD.Clamp((int)((len / gapStepLen) + 0.5) - 1, 0, gapTextureCnt);
+                                    var clampStep = !gap ? MathHelperD.Clamp((int)((len / segStepLen) + 0.5) - 1, 0, segTextureCnt - 1) : MathHelperD.Clamp((int)((len / gapStepLen) + 0.5) - 1, 0, gapTextureCnt - 1);
                                     var material = !gap ? av.AmmoDef.Const.SegmentTextures[(int)clampStep] : av.AmmoDef.Const.TracerTextures[(int)clampStep];
 
                                     MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);

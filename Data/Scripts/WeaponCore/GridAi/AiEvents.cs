@@ -54,14 +54,11 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id));
                 
-                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector) && cube.CubeGrid.IsSameConstructAs(MyGrid)) { // readd IMyShipConnector
-                    
-                    if (cube.CubeGrid != MyGrid)
-                        Log.Line($"FatBlockAdded is sameConstruct and inventory block but not same grid");
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector) && cube.CubeGrid.IsSameConstructAs(MyGrid)) { 
                     
                     MyInventory inventory;
                     if (cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories)) {
-                        
+
                         inventory.InventoryContentChanged += CheckAmmoInventory;
                         Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
                         Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();

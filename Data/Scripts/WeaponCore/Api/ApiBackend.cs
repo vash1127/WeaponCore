@@ -49,6 +49,7 @@ namespace WeaponCore.Api
                 ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, ICollection<string>, int>(SetTurretTargetTypes),
                 ["SetBlockTrackingRange"] = new Action<IMyTerminalBlock, float>(SetBlockTrackingRange),
                 ["IsTargetAligned"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(IsTargetAligned),
+                ["IsTargetAlignedExtended"] = new Func<IMyTerminalBlock, IMyEntity, int, MyTuple<bool, Vector3D?>>(IsTargetAlignedExtended),
                 ["CanShootTarget"] = new Func<IMyTerminalBlock, IMyEntity, int, bool>(CanShootTarget),
                 ["GetPredictedTargetPosition"] = new Func<IMyTerminalBlock, IMyEntity, int, Vector3D?>(GetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float>(GetHeatLevel),
@@ -69,6 +70,8 @@ namespace WeaponCore.Api
                 ["GetPlayerController"] = new Func<IMyTerminalBlock, long>(GetPlayerController),
                 ["GetWeaponAzimuthMatrix"] = new Func<IMyTerminalBlock, int, Matrix>(GetWeaponAzimuthMatrix),
                 ["GetWeaponElevationMatrix"] = new Func<IMyTerminalBlock, int, Matrix>(GetWeaponElevationMatrix),
+                ["IsTargetValid"] = new Func<IMyTerminalBlock, IMyEntity, bool, bool, bool>(IsTargetValid),
+                ["GetWeaponScope"] = new Func<IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>>(GetWeaponScope),
             };
         }
 
@@ -94,6 +97,7 @@ namespace WeaponCore.Api
                 ["SetTurretTargetTypes"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int>(PbSetTurretTargetTypes),
                 ["SetBlockTrackingRange"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float>(PbSetBlockTrackingRange),
                 ["IsTargetAligned"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool>(PbIsTargetAligned),
+                ["IsTargetAlignedExtended"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, MyTuple<bool, Vector3D?>>(PbIsTargetAlignedExtended),
                 ["CanShootTarget"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool>(PbCanShootTarget),
                 ["GetPredictedTargetPosition"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, Vector3D?>(PbGetPredictedTargetPosition),
                 ["GetHeatLevel"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float>(PbGetHeatLevel),
@@ -110,6 +114,9 @@ namespace WeaponCore.Api
                 ["GetPlayerController"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long>(PbGetPlayerController),
                 ["GetWeaponAzimuthMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponAzimuthMatrix),
                 ["GetWeaponElevationMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponElevationMatrix),
+                ["IsTargetValid"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, bool, bool, bool>(PbIsTargetValid),
+                ["GetWeaponScope"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>>(PbGetWeaponScope),
+
             };
             var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WcPbAPI");
             pb.Getter = (b) => PbApiMethods;
@@ -172,6 +179,11 @@ namespace WeaponCore.Api
             return IsTargetAligned((IMyTerminalBlock) arg1, MyEntities.GetEntityById(arg2), arg3);
         }
 
+        private MyTuple<bool, Vector3D?> PbIsTargetAlignedExtended(object arg1, long arg2, int arg3)
+        {
+            return IsTargetAlignedExtended((IMyTerminalBlock)arg1, MyEntities.GetEntityById(arg2), arg3);
+        }
+        
         private void PbSetBlockTrackingRange(object arg1, float arg2)
         {
             SetBlockTrackingRange((IMyTerminalBlock) arg1, arg2);
@@ -235,7 +247,7 @@ namespace WeaponCore.Api
             var block = e as IMyTerminalBlock;
             var player = e as IMyCharacter;
             long entityId = 0;
-            var relation = MyRelationsBetweenPlayerAndBlock.Enemies;
+            var relation = MyRelationsBetweenPlayerAndBlock.NoOwnership;
             var type = MyDetectedEntityType.Unknown;
             var name = string.Empty;
 
@@ -260,7 +272,7 @@ namespace WeaponCore.Api
                     type = MyDetectedEntityType.Missile;
                     entityId = -1;
                 }
-                return new MyDetectedEntityInfo(entityId, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, BoundingBoxD.CreateInvalid(), _session.Tick);
+                return new MyDetectedEntityInfo(entityId, name, type, info?.TargetPos, MatrixD.Zero, info != null ? (Vector3)info.Velocity : Vector3.Zero, relation, BoundingBoxD.CreateInvalid(), _session.Tick);
             }
             entityId = e.EntityId;
             var grid = topTarget as MyCubeGrid;
@@ -341,6 +353,16 @@ namespace WeaponCore.Api
             return GetWeaponElevationMatrix((IMyTerminalBlock)arg1, arg2);
         }
 
+        private bool PbIsTargetValid(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, long arg2, bool arg3, bool arg4)
+        {
+            return IsTargetValid((IMyTerminalBlock)arg1, MyEntities.GetEntityById(arg2), arg3, arg4);
+        }
+
+        private MyTuple<Vector3D, Vector3D> PbGetWeaponScope(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, int arg2)
+        {
+            return GetWeaponScope((IMyTerminalBlock)arg1, arg2);
+        }
+        
         // Non-PB Methods
         private void GetAllWeaponDefinitions(IList<byte[]> collection)
         {
@@ -618,6 +640,23 @@ namespace WeaponCore.Api
             return false;
         }
 
+        private static MyTuple<bool, Vector3D?> IsTargetAlignedExtended(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
+            {
+                var w = comp.Platform.Weapons[weaponId];
+
+                w.NewTarget.Entity = (MyEntity)targetEnt;
+
+                Vector3D targetPos;
+                var targetAligned = Weapon.TargetAligned(w, w.NewTarget, out targetPos);
+                
+                return new MyTuple<bool, Vector3D?>(targetAligned, targetAligned ? targetPos : (Vector3D?)null);
+            }
+            return new MyTuple<bool, Vector3D?>(false, null);
+        }
+
         private static bool CanShootTarget(IMyTerminalBlock weaponBlock, IMyEntity targetEnt, int weaponId)
         {
             WeaponComponent comp;
@@ -681,7 +720,7 @@ namespace WeaponCore.Api
 
         private bool HasGridAi(IMyEntity entity)
         {
-            var grid = entity.GetTopMostParent() as MyCubeGrid;
+            var grid = entity?.GetTopMostParent() as MyCubeGrid;
 
             return grid != null && _session.GridTargetingAIs.ContainsKey(grid);
         }
@@ -794,6 +833,57 @@ namespace WeaponCore.Api
                 return gridAi.EffectiveDps;
 
             return 0;
+        }
+        
+        private bool IsTargetValid(IMyTerminalBlock weaponBlock, IMyEntity targetEntity, bool onlyThreats, bool checkRelations)
+        {
+
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready) {
+                
+                var ai = comp.Ai;
+                
+                GridAi.TargetInfo targetInfo;
+                if (ai.Targets.TryGetValue((MyEntity)targetEntity, out targetInfo)) {
+                    var marked = targetInfo.Target?.MarkedForClose;
+                    if (!marked.HasValue || marked.Value)
+                        return false;
+                    
+                    if (!onlyThreats && !checkRelations)
+                        return true;
+                    
+                    var isThreat = targetInfo.OffenseRating > 0;
+                    var relation = targetInfo.EntInfo.Relationship;
+
+                    var o = comp.Data.Repo.Base.Set.Overrides;
+                    var shootNoOwners = o.Unowned && relation == MyRelationsBetweenPlayerAndBlock.NoOwnership;
+                    var shootNeutrals = o.Neutrals && relation == MyRelationsBetweenPlayerAndBlock.Neutral;
+                    var shootFriends = o.Friendly && relation == MyRelationsBetweenPlayerAndBlock.Friends;
+                    var shootEnemies = relation == MyRelationsBetweenPlayerAndBlock.Enemies;
+                    
+                    if (onlyThreats && checkRelations)
+                        return isThreat && (shootEnemies || shootNoOwners || shootNeutrals || shootFriends);
+
+                    if (onlyThreats)
+                        return isThreat;
+
+                    if (shootEnemies || shootNoOwners || shootNeutrals || shootFriends)
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        internal MyTuple<Vector3D, Vector3D> GetWeaponScope(IMyTerminalBlock weaponBlock, int weaponId)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.State == Ready && comp.Platform.Weapons.Length > weaponId)
+            {
+                var w = comp.Platform.Weapons[weaponId];
+                var info = w.GetScope.Info;
+                return new MyTuple<Vector3D, Vector3D>(info.Position, info.Direction);
+            }
+            return new MyTuple<Vector3D, Vector3D>();
         }
     }
 }

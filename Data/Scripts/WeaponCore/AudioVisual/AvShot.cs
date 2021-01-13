@@ -344,6 +344,11 @@ namespace WeaponCore.Support
 
                 var lineOnScreen = a.OnScreen > (Screen)2;
 
+                if (!a.Active && (a.OnScreen != Screen.None || a.HitSoundInitted || a.AmmoSound)) {
+                    a.Active = true;
+                    s.Av.AvShots.Add(a);
+                }
+                
                 if (lineEffect && (a.Active || lineOnScreen))
                     a.LineVariableEffects();
 
@@ -365,12 +370,6 @@ namespace WeaponCore.Support
                 var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
                 if (a.Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
                     a.RunGlow(ref a.EmptyShrink, false, saveHit);
-
-                if (!a.Active && (a.OnScreen != Screen.None || a.HitSoundInitted || a.AmmoSound))
-                {
-                    a.Active = true;
-                    s.Av.AvShots.Add(a);
-                }
 
                 if (a.AmmoDef.Const.AmmoParticle && a.Active)
                 {

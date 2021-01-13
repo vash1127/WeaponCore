@@ -92,8 +92,7 @@ namespace WeaponCore.Support
 
         public void UnRegisterSubGrid(MyCubeGrid grid, bool clean = false)
         {
-            if (!SubGridsRegistered.Contains(grid))
-            {
+            if (!SubGridsRegistered.Contains(grid)) {
                 Log.Line($"sub Grid Already UnRegistered: [Main]:{grid == MyGrid}");
             }
 
@@ -102,6 +101,14 @@ namespace WeaponCore.Support
             SubGridsRegistered.Remove(grid);
             grid.OnFatBlockAdded -= FatBlockAdded;
             grid.OnFatBlockRemoved -= FatBlockRemoved;
+
+            GridMap gridMap;
+            if (Session.GridToInfoMap.TryGetValue(grid, out gridMap)) {
+                var blocks = gridMap.MyCubeBocks;
+                for (int i = 0; i < blocks.Count; i++)
+                    FatBlockRemoved(blocks[i]);
+            }
+            
             GridAi removeAi;
             if (!Session.GridTargetingAIs.ContainsKey(grid))
                 Session.GridToMasterAi.TryRemove(grid, out removeAi);

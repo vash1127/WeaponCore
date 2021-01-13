@@ -32,6 +32,7 @@ namespace WeaponCore.Api
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int> _setTurretTargetTypes;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _setBlockTrackingRange;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool> _isTargetAligned;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, MyTuple<bool, Vector3D?>> _isTargetAlignedExtended;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool> _canShootTarget;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, Vector3D?> _getPredictedTargetPos;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _getHeatLevel;
@@ -48,6 +49,9 @@ namespace WeaponCore.Api
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long> _getPlayerController;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix> _getWeaponAzimuthMatrix;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix> _getWeaponElevationMatrix;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, bool, bool, bool> _isTargetValid;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>> _getWeaponScope;
+        
         private bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
         {
             var dict = pbBlock.GetProperty("WcPbAPI")?.As<Dictionary<string, Delegate>>().GetValue(pbBlock);
@@ -78,6 +82,7 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "SetTurretTargetTypes", ref _setTurretTargetTypes);
             AssignMethod(delegates, "SetBlockTrackingRange", ref _setBlockTrackingRange);
             AssignMethod(delegates, "IsTargetAligned", ref _isTargetAligned);
+            AssignMethod(delegates, "IsTargetAlignedExtended", ref _isTargetAlignedExtended);
             AssignMethod(delegates, "CanShootTarget", ref _canShootTarget);
             AssignMethod(delegates, "GetPredictedTargetPosition", ref _getPredictedTargetPos);
             AssignMethod(delegates, "GetHeatLevel", ref _getHeatLevel);
@@ -94,6 +99,8 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
             AssignMethod(delegates, "GetWeaponAzimuthMatrix", ref _getWeaponAzimuthMatrix);
             AssignMethod(delegates, "GetWeaponElevationMatrix", ref _getWeaponElevationMatrix);
+            AssignMethod(delegates, "IsTargetValid", ref _isTargetValid);
+            AssignMethod(delegates, "GetWeaponScope", ref _getWeaponScope);
             return true;
         }
 
@@ -166,6 +173,9 @@ namespace WeaponCore.Api
         public bool IsTargetAligned(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetEnt, int weaponId) =>
             _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
+        public MyTuple<bool, Vector3D?> IsTargetAlignedExtended(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetEnt, int weaponId) =>
+            _isTargetAlignedExtended?.Invoke(weapon, targetEnt, weaponId) ?? new MyTuple<bool, Vector3D?>();
+
         public bool CanShootTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetEnt, int weaponId) =>
             _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
@@ -200,5 +210,11 @@ namespace WeaponCore.Api
 
         public Matrix GetWeaponElevationMatrix(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
             _getWeaponElevationMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
+
+        public bool IsTargetValid(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetId, bool onlyThreats, bool checkRelations) =>
+            _isTargetValid?.Invoke(weapon, targetId, onlyThreats, checkRelations) ?? false;
+
+        public MyTuple<Vector3D, Vector3D> GetWeaponScope(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponScope?.Invoke(weapon, weaponId) ?? new MyTuple<Vector3D, Vector3D>();
     }
 }

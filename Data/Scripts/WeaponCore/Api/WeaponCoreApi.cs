@@ -35,6 +35,7 @@ namespace WeaponCore.Api
         private Action<IMyTerminalBlock, ICollection<string>, int> _setTurretTargetTypes;
         private Action<IMyTerminalBlock, float> _setBlockTrackingRange;
         private Func<IMyTerminalBlock, IMyEntity, int, bool> _isTargetAligned;
+        private Func<IMyTerminalBlock, IMyEntity, int, MyTuple<bool, Vector3D?>> _isTargetAlignedExtended;
         private Func<IMyTerminalBlock, IMyEntity, int, bool> _canShootTarget;
         private Func<IMyTerminalBlock, IMyEntity, int, Vector3D?> _getPredictedTargetPos;
         private Func<IMyTerminalBlock, float> _getHeatLevel;
@@ -56,6 +57,8 @@ namespace WeaponCore.Api
         private Func<IMyTerminalBlock, long> _getPlayerController;
         private Func<IMyTerminalBlock, int, Matrix> _getWeaponAzimuthMatrix;
         private Func<IMyTerminalBlock, int, Matrix> _getWeaponElevationMatrix;
+        private Func<IMyTerminalBlock, IMyEntity, bool, bool, bool> _isTargetValid;
+        private Func<IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>> _getWeaponScope;
 
         private const long Channel = 67549756549;
         private bool _getWeaponDefinitions;
@@ -141,6 +144,7 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "SetTurretTargetTypes", ref _setTurretTargetTypes);
             AssignMethod(delegates, "SetBlockTrackingRange", ref _setBlockTrackingRange);
             AssignMethod(delegates, "IsTargetAligned", ref _isTargetAligned);
+            AssignMethod(delegates, "IsTargetAlignedExtended", ref _isTargetAlignedExtended);
             AssignMethod(delegates, "CanShootTarget", ref _canShootTarget);
             AssignMethod(delegates, "GetPredictedTargetPosition", ref _getPredictedTargetPos);
             AssignMethod(delegates, "GetHeatLevel", ref _getHeatLevel);
@@ -161,14 +165,15 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
             AssignMethod(delegates, "GetWeaponAzimuthMatrix", ref _getWeaponAzimuthMatrix);
             AssignMethod(delegates, "GetWeaponElevationMatrix", ref _getWeaponElevationMatrix);
+            AssignMethod(delegates, "IsTargetValid", ref _isTargetValid);
+            AssignMethod(delegates, "GetWeaponScope", ref _getWeaponScope);
 
             if (getWeaponDefinitions)
             {
                 var byteArrays = new List<byte[]>();
                 GetAllWeaponDefinitions(byteArrays);
                 foreach (var byteArray in byteArrays)
-                    WeaponDefinitions.Add(
-                        MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
+                    WeaponDefinitions.Add(MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
             }
         }
 
@@ -245,6 +250,9 @@ namespace WeaponCore.Api
         public bool IsTargetAligned(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
             _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
+        public MyTuple<bool, Vector3D?> IsTargetAlignedExtended(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+            _isTargetAlignedExtended?.Invoke(weapon, targetEnt, weaponId) ?? new MyTuple<bool, Vector3D?>();
+
         public bool CanShootTarget(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
             _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
@@ -289,6 +297,12 @@ namespace WeaponCore.Api
 
         public Matrix GetWeaponElevationMatrix(IMyTerminalBlock weapon, int weaponId) =>
             _getWeaponElevationMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
+
+        public bool IsTargetValid(IMyTerminalBlock weapon, IMyEntity target, bool onlyThreats, bool checkRelations) =>
+            _isTargetValid?.Invoke(weapon, target, onlyThreats, checkRelations) ?? false;
+
+        public MyTuple<Vector3D, Vector3D> GetWeaponScope(IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponScope?.Invoke(weapon, weaponId) ?? new MyTuple<Vector3D, Vector3D>();
     }
 
     public static class WcApiDef
