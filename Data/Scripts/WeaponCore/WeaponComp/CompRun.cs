@@ -33,6 +33,9 @@ namespace WeaponCore.Support
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     ReInit();
                 else {
+
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Delay)
+                        return;
                     
                     if (Platform.State != MyWeaponPlatform.PlatformState.Fresh)
                         Log.Line($"OnAddedToScene != Fresh, Inited or Ready: {Platform.State}");

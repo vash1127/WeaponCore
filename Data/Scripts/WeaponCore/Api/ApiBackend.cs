@@ -72,6 +72,7 @@ namespace WeaponCore.Api
                 ["GetWeaponElevationMatrix"] = new Func<IMyTerminalBlock, int, Matrix>(GetWeaponElevationMatrix),
                 ["IsTargetValid"] = new Func<IMyTerminalBlock, IMyEntity, bool, bool, bool>(IsTargetValid),
                 ["GetWeaponScope"] = new Func<IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>>(GetWeaponScope),
+                ["IsInRange"] = new Func<IMyEntity, MyTuple<bool, bool>>(IsInRange),
             };
         }
 
@@ -110,13 +111,16 @@ namespace WeaponCore.Api
                 ["SetActiveAmmo"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string>(PbSetActiveAmmo),
                 ["RegisterProjectileAdded"] = new Action<Action<Vector3, float>>(RegisterProjectileAddedCallback),
                 ["UnRegisterProjectileAdded"] = new Action<Action<Vector3, float>>(UnRegisterProjectileAddedCallback),
+                ["UnMonitorProjectile"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(PbUnMonitorProjectileCallback),
+                ["MonitorProjectile"] = new Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>>(PbMonitorProjectileCallback),
+                ["GetProjectileState"] = new Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>>(GetProjectileState),
                 ["GetConstructEffectiveDps"] = new Func<long, float>(PbGetConstructEffectiveDps),
                 ["GetPlayerController"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long>(PbGetPlayerController),
                 ["GetWeaponAzimuthMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponAzimuthMatrix),
                 ["GetWeaponElevationMatrix"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix>(PbGetWeaponElevationMatrix),
                 ["IsTargetValid"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, bool, bool, bool>(PbIsTargetValid),
                 ["GetWeaponScope"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>>(PbGetWeaponScope),
-
+                ["IsInRange"] = new Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, MyTuple<bool, bool>>(PbIsInRange),
             };
             var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WcPbAPI");
             pb.Getter = (b) => PbApiMethods;
@@ -361,6 +365,30 @@ namespace WeaponCore.Api
         private MyTuple<Vector3D, Vector3D> PbGetWeaponScope(Sandbox.ModAPI.Ingame.IMyTerminalBlock arg1, int arg2)
         {
             return GetWeaponScope((IMyTerminalBlock)arg1, arg2);
+        }
+
+        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        internal static void PbMonitorProjectileCallback(Sandbox.ModAPI.Ingame.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.Weapons.Length > weaponId)
+                comp.Monitors[weaponId].Add(callback);
+        }
+
+        // Block EntityId, WeaponId, ProjectileId, LastHitId, LastPos, Start 
+        internal static void PbUnMonitorProjectileCallback(Sandbox.ModAPI.Ingame.IMyTerminalBlock weaponBlock, int weaponId, Action<long, int, ulong, long, Vector3D, bool> callback)
+        {
+            WeaponComponent comp;
+            if (weaponBlock.Components.TryGet(out comp) && comp.Platform.Weapons.Length > weaponId)
+                comp.Monitors[weaponId].Remove(callback);
+        }
+
+        // terminalBlock, Threat, Other, Something 
+        private MyTuple<bool, bool> PbIsInRange(object arg1)
+        {
+            var tBlock = arg1 as IMyTerminalBlock;
+            
+            return tBlock != null ? IsInRange(MyEntities.GetEntityById(tBlock.EntityId)) : new MyTuple<bool, bool>();
         }
         
         // Non-PB Methods
@@ -884,6 +912,18 @@ namespace WeaponCore.Api
                 return new MyTuple<Vector3D, Vector3D>(info.Position, info.Direction);
             }
             return new MyTuple<Vector3D, Vector3D>();
+        }
+        
+        // block/grid entityId, Threat, Other 
+        private MyTuple<bool, bool> IsInRange(IMyEntity entity)
+        {
+            var grid = entity?.GetTopMostParent() as MyCubeGrid;
+            GridAi ai;
+            if (grid != null && _session.GridTargetingAIs.TryGetValue(grid, out ai))
+            {
+                return new MyTuple<bool, bool>(ai.TargetingInfo.ThreatInRange, ai.TargetingInfo.OtherInRange);
+            }
+            return new MyTuple<bool, bool>();
         }
     }
 }
