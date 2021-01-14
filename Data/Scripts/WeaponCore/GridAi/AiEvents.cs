@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game.Entity;
 using static WeaponCore.Session;
 
@@ -125,8 +126,8 @@ namespace WeaponCore.Support
 
                         if (--monitors < 0) {
 
-                            List<MyPhysicalInventoryItem> removedPhysical;
-                            List<BetterInventoryItem> removedBetter;
+                            MyConcurrentList<MyPhysicalInventoryItem> removedPhysical;
+                            MyConcurrentList<BetterInventoryItem> removedBetter;
 
                             if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
                                 Session.PhysicalItemListPool.Return(removedPhysical);
@@ -173,7 +174,8 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(false, MyGrid);
 
             CleanSubGrids();
-
+            ForceCloseAiInventories();
+            
             Session.DelayedAiClean.Add(this);
             Session.DelayedAiClean.ApplyAdditions();
         }

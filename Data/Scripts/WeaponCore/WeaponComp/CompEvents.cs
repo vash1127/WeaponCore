@@ -5,6 +5,7 @@ using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game.Entity;
 using static WeaponCore.Platform.MyWeaponPlatform;
 using static WeaponCore.Session;
@@ -66,7 +67,7 @@ namespace WeaponCore.Support
                     {
                         BlockInventory.InventoryContentChanged -= OnContentsChanged;
                         ConcurrentDictionary<uint, BetterInventoryItem> removedItems;
-                        List<BetterInventoryItem> removedList;
+                        MyConcurrentList<BetterInventoryItem> removedList;
 
                         if (Session.BlockInventoryItems.TryRemove(BlockInventory, out removedItems))
                         {

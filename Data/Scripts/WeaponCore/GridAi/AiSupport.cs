@@ -286,8 +286,6 @@ namespace WeaponCore.Support
         {
             AiCloseTick = Session.Tick;
 
-            ForceCloseAiInventories();
-            
             MyGrid.Components.Remove<AiComponent>();
 
             if (Session.IsClient)
@@ -309,7 +307,6 @@ namespace WeaponCore.Support
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             LiveProjectile.Clear();
-            InventoryMonitor.Clear();
             DeadProjectiles.Clear();
             NearByShieldsTmp.Clear();
             NearByFriendlyShields.Clear();

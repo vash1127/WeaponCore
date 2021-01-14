@@ -37,16 +37,16 @@ namespace WeaponCore.Support
 
         public void SubGridChanges(bool clean = false, bool dupCheck = false)
         {
-            foreach (var grid in AddSubGrids)
-            {
+            foreach (var grid in AddSubGrids) {
+                
                 if (grid == MyGrid) continue;
                 RegisterSubGrid(grid, dupCheck);
 
             }
             AddSubGrids.Clear();
 
-            foreach (var grid in RemSubGrids)
-            {
+            foreach (var grid in RemSubGrids) {
+                
                 if (grid == MyGrid) continue;
                 UnRegisterSubGrid(grid);
             }
@@ -59,8 +59,9 @@ namespace WeaponCore.Support
         public void UpdateRoot()
         {
             Construct.Refresh(this, Constructs.RefreshCaller.SubGridChange);
-            foreach (var grid in SubGrids)
-            {
+            
+            foreach (var grid in SubGrids) {
+                
                 if (Construct.RootAi != null)
                     Session.GridToMasterAi[grid] = Construct.RootAi;
                 else Log.Line($"Construct.RootAi is null");
@@ -70,23 +71,21 @@ namespace WeaponCore.Support
         public void RegisterSubGrid(MyCubeGrid grid, bool dupCheck = false)
         {
             if (dupCheck && SubGridsRegistered.Contains(grid))
-            {
                 Log.Line($"sub Grid Already Registered: [Main]:{grid == MyGrid}");
-            }
 
             grid.Flags |= (EntityFlags)(1 << 31);
             grid.OnFatBlockAdded += FatBlockAdded;
             grid.OnFatBlockRemoved += FatBlockRemoved;
 
-
             SubGridsRegistered.Add(grid);
 
-            GridMap gridMap;
-            if (Session.GridToInfoMap.TryGetValue(grid, out gridMap))
-            {
-                var blocks = gridMap.MyCubeBocks;
-                for (int i = 0; i < blocks.Count; i++)
-                    FatBlockAdded(blocks[i]);
+            foreach (var cube in grid.GetFatBlocks()) {
+
+                var battery = cube as MyBatteryBlock;
+                if (battery != null || cube.HasInventory)
+                {
+                    FatBlockAdded(cube);
+                }
             }
         }
 
@@ -102,13 +101,15 @@ namespace WeaponCore.Support
             grid.OnFatBlockAdded -= FatBlockAdded;
             grid.OnFatBlockRemoved -= FatBlockRemoved;
 
-            GridMap gridMap;
-            if (Session.GridToInfoMap.TryGetValue(grid, out gridMap)) {
-                var blocks = gridMap.MyCubeBocks;
-                for (int i = 0; i < blocks.Count; i++)
-                    FatBlockRemoved(blocks[i]);
+            foreach (var cube in grid.GetFatBlocks()) {
+                
+                var battery = cube as MyBatteryBlock;
+                if (InventoryMonitor.ContainsKey(cube) || battery != null && Batteries.Contains(battery))
+                {
+                    FatBlockRemoved(cube);
+                }
             }
-            
+
             GridAi removeAi;
             if (!Session.GridTargetingAIs.ContainsKey(grid))
                 Session.GridToMasterAi.TryRemove(grid, out removeAi);
@@ -116,8 +117,7 @@ namespace WeaponCore.Support
 
         public void CleanSubGrids()
         {
-            foreach (var grid in SubGrids)
-            {
+            foreach (var grid in SubGrids) {
                 if (grid == MyGrid) continue;
                 UnRegisterSubGrid(grid, true);
             }

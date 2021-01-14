@@ -794,5 +794,42 @@ namespace WeaponCore
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
         }
+
+
+        //Would use DSUnique but to many profiler hits
+        internal bool UniqueListRemove<T>(T item, Dictionary<T, int> indexer, List<T> list)
+        {
+            int oldPos;
+            if (indexer.TryGetValue(item, out oldPos))
+            {
+
+                indexer.Remove(item);
+                list.RemoveAtFast(oldPos);
+                var count = list.Count;
+
+                if (count > 0)
+                {
+
+                    count--;
+                    if (oldPos <= count)
+                        indexer[list[oldPos]] = oldPos;
+                    else
+                        indexer[list[count]] = count;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+        internal bool UniqueListAdd<T>(T item, Dictionary<T, int> indexer, List<T> list)
+        {
+            if (indexer.ContainsKey(item))
+                return false;
+
+            list.Add(item);
+            indexer.Add(item, list.Count - 1);
+            return true;
+        }
     }
 }

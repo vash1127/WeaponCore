@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -20,7 +19,8 @@ namespace WeaponCore
             if (ITask.valid && ITask.Exceptions != null)
                 TaskHasErrors(ref ITask, "ITask");
 
-            foreach (var ai in GridsToUpdateInvetories) { 
+            StallReporter.Start("StartAmmoTask", 3);
+            foreach (var ai in GridsToUpdateInventories) { 
 
                 var logged = 0;
                 foreach (var inventory in ai.InventoryMonitor.Values) { 
@@ -28,7 +28,7 @@ namespace WeaponCore
                     var items = inventory?.GetItems();
                     if (items != null) {
 
-                        List<MyPhysicalInventoryItem> phyItemList;
+                        MyConcurrentList<MyPhysicalInventoryItem> phyItemList;
                         if (InventoryItems.TryGetValue(inventory, out phyItemList))
                             phyItemList.AddRange(items);
                         else {
@@ -45,14 +45,15 @@ namespace WeaponCore
                     }
                 }
             }
+            StallReporter.End();
 
             DefIdsComparer.Clear();
-            GridsToUpdateInvetories.Clear();
+            GridsToUpdateInventories.Clear();
 
             ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
         }
 
-        internal void ProccessAmmoMoves()
+        internal void ProccessAmmoMoves() // In Thread
         {
             foreach (var inventoryItems in InventoryItems) {
                 
@@ -121,9 +122,9 @@ namespace WeaponCore
                         var magsAdded = 0;
                         var logged = 0;
 
-                        foreach (var inventory in weapon.Comp.Ai.InventoryMonitor.Values) { 
+                        foreach (var inventory in weapon.Comp.Ai.InventoryMonitor.Values) {
 
-                            List<BetterInventoryItem> items;
+                            MyConcurrentList<BetterInventoryItem> items;
                             if (AmmoThreadItemList.TryGetValue(inventory, out items)) {
                                 
                                 for (int l = items.Count - 1; l >= 0; l--) {
@@ -220,43 +221,6 @@ namespace WeaponCore
                 InventoryMoveRequestPool.Return(weaponAmmoToPull);
             }
             AmmoToPullQueue.Clear();
-        }
-
-
-        //Would use DSUnique but to many profiler hits
-        internal bool UniqueListRemove<T>(T item, Dictionary<T, int> indexer, List<T> list)
-        {
-            int oldPos;
-            if (indexer.TryGetValue(item, out oldPos))
-            {
-
-                indexer.Remove(item);
-                list.RemoveAtFast(oldPos);
-                var count = list.Count;
-
-                if (count > 0)
-                {
-
-                    count--;
-                    if (oldPos <= count)
-                        indexer[list[oldPos]] = oldPos;
-                    else
-                        indexer[list[count]] = count;
-                }
-
-                return true;
-            }
-            return false;
-        }
-        
-        internal bool UniqueListAdd<T>(T item, Dictionary<T, int> indexer, List<T> list)
-        {
-            if (indexer.ContainsKey(item))
-                return false;
-
-            list.Add(item);
-            indexer.Add(item, list.Count - 1);
-            return true;
         }
     }
 }

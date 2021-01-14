@@ -222,7 +222,7 @@ namespace WeaponCore.Platform
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;
                         s.WeaponToPullAmmo.Add(this);
-                        s.GridsToUpdateInvetories.Add(Comp.Ai);
+                        s.GridsToUpdateInventories.Add(Comp.Ai);
                     }
                     else if (CheckInventorySystem && failSafeTimer && !s.WeaponToPullAmmo.Contains(this))
                         CheckInventorySystem = false;
