@@ -95,6 +95,7 @@ namespace WeaponCore.Support
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
+        internal Vector3D PointDir;
         internal Vector3D HitVelocity;
         internal Vector3D ShootVelStep;
         internal Vector3D TracerFront;
@@ -247,7 +248,8 @@ namespace WeaponCore.Support
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
                 a.Direction = d.Direction;
-                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
+                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : d.Direction;
+                a.TracerBack = a.TracerFront + (-a.PointDir * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
 
                 if (a.ModelOnly)
@@ -261,8 +263,8 @@ namespace WeaponCore.Support
                 }
                 else if (lineEffect || a.AmmoDef.Const.AmmoParticle)
                 {
-                    var rayTracer = new RayD(a.TracerBack, a.Direction);
-                    var rayTrail = new RayD(a.TracerFront + (-a.Direction * a.ShortEstTravel), a.Direction);
+                    var rayTracer = new RayD(a.TracerBack, a.PointDir);
+                    var rayTrail = new RayD(a.TracerFront + (-a.PointDir * a.ShortEstTravel), a.PointDir);
 
                     //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
                     //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
@@ -362,7 +364,7 @@ namespace WeaponCore.Support
                     }
 
                     if (a.AmmoDef.Const.OffsetEffect)
-                        a.PrepOffsetEffect(a.TracerFront, a.Direction, a.VisualLength);
+                        a.PrepOffsetEffect(a.TracerFront, a.PointDir, a.VisualLength);
                 }
 
                 var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
@@ -510,7 +512,7 @@ namespace WeaponCore.Support
             if (TracerStep > 0)
             {
                 Hit.LastHit += ShootVelStep;
-                var newTracerFront = Hit.LastHit + -(Direction * (TracerStep * StepSize));
+                var newTracerFront = Hit.LastHit + -(PointDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float)reduced);
             }
@@ -874,7 +876,7 @@ namespace WeaponCore.Support
             if (Model != ModelState.None && PrimeEntity != null)
                 matrix = PrimeMatrix;
             else {
-                matrix = MatrixD.CreateWorld(TracerFront, Direction, OriginUp);
+                matrix = MatrixD.CreateWorld(TracerFront, PointDir, OriginUp);
                 var offVec = TracerFront + Vector3D.Rotate(AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }
