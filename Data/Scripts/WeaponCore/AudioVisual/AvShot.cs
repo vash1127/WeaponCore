@@ -95,7 +95,6 @@ namespace WeaponCore.Support
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
-        internal Vector3D PointDir;
         internal Vector3D HitVelocity;
         internal Vector3D ShootVelStep;
         internal Vector3D TracerFront;
@@ -248,7 +247,6 @@ namespace WeaponCore.Support
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
                 a.Direction = d.Direction;
-                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : d.VisualDir;
                 a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
 
@@ -263,7 +261,7 @@ namespace WeaponCore.Support
                 }
                 else if (lineEffect || a.AmmoDef.Const.AmmoParticle)
                 {
-                    var rayTracer = new RayD(a.TracerBack, a.PointDir);
+                    var rayTracer = new RayD(a.TracerBack, a.Direction);
                     var rayTrail = new RayD(a.TracerFront + (-a.Direction * a.ShortEstTravel), a.Direction);
 
                     //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
@@ -364,7 +362,7 @@ namespace WeaponCore.Support
                     }
 
                     if (a.AmmoDef.Const.OffsetEffect)
-                        a.PrepOffsetEffect(a.TracerFront, a.PointDir, a.VisualLength);
+                        a.PrepOffsetEffect(a.TracerFront, a.Direction, a.VisualLength);
                 }
 
                 var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
@@ -512,7 +510,7 @@ namespace WeaponCore.Support
             if (TracerStep > 0)
             {
                 Hit.LastHit += ShootVelStep;
-                var newTracerFront = Hit.LastHit + -(PointDir * (TracerStep * StepSize));
+                var newTracerFront = Hit.LastHit + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float)reduced);
             }
@@ -751,7 +749,7 @@ namespace WeaponCore.Support
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = this, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = info.TriggerGrowthSteps, Direction = info.Direction, VisualDir = info.VisualDir });
+            System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = this, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = info.TriggerGrowthSteps, Direction = info.Direction });
         }
 
         internal void HitEffects(bool force = false)
@@ -876,7 +874,7 @@ namespace WeaponCore.Support
             if (Model != ModelState.None && PrimeEntity != null)
                 matrix = PrimeMatrix;
             else {
-                matrix = MatrixD.CreateWorld(TracerFront, PointDir, OriginUp);
+                matrix = MatrixD.CreateWorld(TracerFront, Direction, OriginUp);
                 var offVec = TracerFront + Vector3D.Rotate(AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }
@@ -1160,7 +1158,6 @@ namespace WeaponCore.Support
         internal int TriggerGrowthSteps;
         internal Vector3D TracerFront;
         internal Vector3D Direction;
-        internal Vector3D VisualDir;
     }
 
     internal struct Shrunk

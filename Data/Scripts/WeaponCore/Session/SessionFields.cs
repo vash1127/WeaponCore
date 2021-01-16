@@ -279,6 +279,7 @@ namespace WeaponCore
         internal int LogLevel;
         internal int AwakeCount = -1;
         internal int AsleepCount = -1;
+        internal int Rays;
         internal ulong MultiplayerId;
         internal ulong MuzzleIdCounter;
         internal long PlayerId;
@@ -288,9 +289,7 @@ namespace WeaponCore
         internal double MaxEntitySpeed;
         internal double Load;
         internal double ScaleFov;
-        
-        internal static double RayMissAmounts;
-        internal static int Rays;
+        internal double RayMissAmounts;
 
         internal float UiBkOpacity;
         internal float UiOpacity;

@@ -198,9 +198,9 @@ namespace WeaponCore.Support
                         if (av.Tracer != AvShot.TracerState.Shrink)
                         {
                             if (av.AmmoDef.Const.TracerMode == AmmoConstants.Texture.Normal)
-                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], color, av.TracerBack, av.Direction, (float)av.VisualLength, (float)av.TracerWidth);
                             else if (av.AmmoDef.Const.TracerMode != AmmoConstants.Texture.Resize)
-                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.TextureIdx], color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                                MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[av.TextureIdx], color, av.TracerBack, av.Direction, (float)av.VisualLength, (float)av.TracerWidth);
                             else {
                                 
                                 var seg = av.AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation;
@@ -237,12 +237,12 @@ namespace WeaponCore.Support
                                     var clampStep = !gap ? MathHelperD.Clamp((int)((len / segStepLen) + 0.5) - 1, 0, segTextureCnt - 1) : MathHelperD.Clamp((int)((len / gapStepLen) + 0.5) - 1, 0, gapTextureCnt - 1);
                                     var material = !gap ? av.AmmoDef.Const.SegmentTextures[(int)clampStep] : av.AmmoDef.Const.TracerTextures[(int)clampStep];
 
-                                    MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.PointDir, (float)len, (float)width);
+                                    MyTransparentGeometry.AddLineBillboard(material, dyncColor, stepPos, av.Direction, (float)len, (float)width);
                                     if (!notLast)
                                         travel = av.VisualLength;
                                     else
                                         travel += len;
-                                    stepPos += (av.PointDir * len);
+                                    stepPos += (av.Direction * len);
                                 }
                             }
                         }
@@ -340,10 +340,10 @@ namespace WeaponCore.Support
                 if (!av.AmmoDef.Const.OffsetEffect) {
 
                     if (av.OnScreen != AvShot.Screen.None)
-                        MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
+                        MyTransparentGeometry.AddLineBillboard(av.AmmoDef.Const.TracerTextures[0], s.Color, s.NewFront, av.Direction, s.Length, s.Thickness);
                 }
                 else if (av.OnScreen != AvShot.Screen.None)
-                    av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
+                    av.DrawLineOffsetEffect(s.NewFront, -av.Direction, s.Length, s.Thickness, s.Color);
 
                 if (av.Trail != AvShot.TrailState.Off && av.Back)
                     av.RunGlow(ref s, true);

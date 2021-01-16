@@ -135,7 +135,6 @@ namespace WeaponCore.Projectiles
                 if (p.Info.Target.IsProjectile)
                     if (p.Info.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
-
                 if (!p.AtMaxRange) {
 
                     if (p.FeelsGravity) {
@@ -222,7 +221,7 @@ namespace WeaponCore.Projectiles
 
                     var up = MatrixD.Identity.Up;
                     MatrixD matrix;
-                    MatrixD.CreateWorld(ref p.Position, ref p.Info.VisualDir, ref up, out matrix);
+                    MatrixD.CreateWorld(ref p.Position, ref p.Info.Direction, ref up, out matrix);
 
                     if (p.Info.AmmoDef.Const.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
@@ -393,7 +392,7 @@ namespace WeaponCore.Projectiles
 
                         if (p.Info.AmmoDef.Const.ConvergeBeams) {
                             var beam = p.Intersecting ? new LineD(vs.Origin, hitPos ?? p.Position) : new LineD(vs.Origin, p.Position);
-                            p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = p.Intersecting, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = beam.Direction, VisualDir = beam.Direction });
+                            p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = beam.Length, TracerFront = beam.To, ShortStepSize = beam.Length, Hit = p.Intersecting, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = beam.Direction });
                         }
                         else {
                             Vector3D beamEnd;
@@ -405,9 +404,9 @@ namespace WeaponCore.Projectiles
 
                             var line = new LineD(vs.Origin, beamEnd, !hit ? p.Info.MaxTrajectory : p.Info.WeaponCache.HitDistance);
                             if (p.Intersecting && hitPos.HasValue)
-                                p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
+                                p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = true, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = line.Direction });
                             else
-                                p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = line.Direction, VisualDir = line.Direction });
+                                p.Info.System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = vs, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = line.Length, TracerFront = line.To, ShortStepSize = line.Length, Hit = false, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = line.Direction  });
                         }
                     }
                     continue;
@@ -433,19 +432,15 @@ namespace WeaponCore.Projectiles
                 if ((int)p.State > 3)
                     continue;
 
-                if (p.SmartsOn)
-                    p.Info.VisualDir = p.Info.Direction;
-                else if (p.FeelsGravity) p.Info.VisualDir = p.Info.Direction;
-
                 if (p.LineOrNotModel)
                 {
                     if (p.State == ProjectileState.OneAndDone)
-                        DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
+                        DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.MaxTrajectory, VisualLength = p.Info.MaxTrajectory, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction });
                     else if (p.ModelState == EntityState.None && p.Info.AmmoDef.Const.AmmoParticle && !p.Info.AmmoDef.Const.DrawLine)
                     {
                         if (p.AtMaxRange) p.Info.AvShot.ShortStepAvUpdate(p.Info,true, false, p.EarlyEnd, p.Position);
                         else
-                            DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.AmmoDef.Const.CollisionSize, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir});
+                            DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.AmmoDef.Const.CollisionSize, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction});
                     }
                     else
                     {
@@ -460,20 +455,20 @@ namespace WeaponCore.Projectiles
                             if (p.AtMaxRange) p.Info.AvShot.ShortStepAvUpdate(p.Info,false, false, p.EarlyEnd, p.Position);
                             else
                             {
-                                DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.ProjectileDisplacement, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
+                                DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.ProjectileDisplacement, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction});
                             }
                         }
                         else
                         {
                             if (p.AtMaxRange) p.Info.AvShot.ShortStepAvUpdate(p.Info, false, false, p.EarlyEnd, p.Position);
                             else
-                                DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
+                                DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction });
                         }
                     }
                 }
 
                 if (p.Info.AvShot.ModelOnly)
-                    DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction, VisualDir = p.Info.VisualDir });
+                    DeferedAvDraw.Add(new DeferedAv { AvShot = p.Info.AvShot, StepSize = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, VisualLength = p.Info.TracerLength, TracerFront = p.Position, TriggerGrowthSteps = p.Info.TriggerGrowthSteps, Direction = p.Info.Direction });
             }
         }
     }
