@@ -5,6 +5,7 @@ using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game.Entity;
 using static WeaponCore.Platform.MyWeaponPlatform;
 using static WeaponCore.Session;
@@ -32,7 +33,7 @@ namespace WeaponCore.Support
                 {
                     BlockInventory.InventoryContentChanged += OnContentsChanged;
                     Session.BlockInventoryItems[BlockInventory] = new ConcurrentDictionary<uint, BetterInventoryItem>();
-                    Session.AmmoThreadItemList[BlockInventory] = new List<BetterInventoryItem>();
+                    Session.AmmoThreadItemList[BlockInventory] = Session.BetterItemsListPool.Get();
 
                     var items = BlockInventory.GetItems();
                     for (int i = 0; i < items.Count; i++)
@@ -66,7 +67,7 @@ namespace WeaponCore.Support
                     {
                         BlockInventory.InventoryContentChanged -= OnContentsChanged;
                         ConcurrentDictionary<uint, BetterInventoryItem> removedItems;
-                        List<BetterInventoryItem> removedList;
+                        MyConcurrentList<BetterInventoryItem> removedList;
 
                         if (Session.BlockInventoryItems.TryRemove(BlockInventory, out removedItems))
                         {
@@ -77,7 +78,7 @@ namespace WeaponCore.Support
                         }
 
                         if (Session.AmmoThreadItemList.TryRemove(BlockInventory, out removedList))
-                            removedList.Clear();
+                            Session.BetterItemsListPool.Return(removedList);
                     }
                 }
             }

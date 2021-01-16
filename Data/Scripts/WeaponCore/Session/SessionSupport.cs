@@ -312,62 +312,6 @@ namespace WeaponCore
             MyAPIGateway.Physics.CastRay(new Vector3D { X = 10, Y = 10, Z = 10 }, new Vector3D { X = -10, Y = -10, Z = -10 }, tmpList);
         }
 
-        //threaded
-        internal void ProccessAmmoMoves()
-        {
-            foreach (var inventoryItems in InventoryItems)
-            {
-                for (int i = 0; i < inventoryItems.Value.Count; i++)
-                {
-                    var item = inventoryItems.Value[i];
-                    if (AmmoDefIds.Contains(item.Content.GetId()))
-                    {
-                        var newItem = BetterInventoryItems.Get();
-                        newItem.Item = item;
-                        newItem.Amount = (int)item.Amount;
-                        newItem.Content = item.Content;
-                        newItem.DefId = item.Content.GetId();
-                        AmmoThreadItemList[inventoryItems.Key].Add(newItem);
-                    }
-                }
-                inventoryItems.Value.Clear();
-            }
-
-            foreach (var blockInventoryItems in BlockInventoryItems)
-            {
-                foreach (var itemList in blockInventoryItems.Value)
-                {
-                    var newItem = BetterInventoryItems.Get();
-                    newItem.Item = itemList.Value.Item;
-                    newItem.Amount = itemList.Value.Amount;
-                    newItem.Content = itemList.Value.Content;
-                    newItem.DefId = itemList.Value.Content.GetId();
-                    AmmoThreadItemList[blockInventoryItems.Key].Add(newItem);
-                }
-            }
-
-            AmmoPull();
-
-            foreach (var itemList in AmmoThreadItemList)
-            {
-                for (int i = 0; i < itemList.Value.Count; i++)
-                    BetterInventoryItems.Return(itemList.Value[i]);
-
-                itemList.Value.Clear();
-            }
-        }
-
-        internal void ProccessAmmoCallback()
-        {
-            for (int i = 0; i < InvPullClean.Count; i++)
-                UniqueListRemove(InvPullClean[i], WeaponToPullAmmoIndexer, WeaponToPullAmmo, PullingWeapons);
-
-            InvPullClean.Clear();
-            InvRemoveClean.Clear();
-
-            MoveAmmo();
-            InventoryUpdate = false;
-        }
 
         internal void UpdateHomingWeapons()
         {
@@ -490,120 +434,6 @@ namespace WeaponCore
             }
         }
 
-        internal void StartAmmoTask()
-        {
-            InventoryUpdate = true;
-            if (ITask.valid && ITask.Exceptions != null)
-                TaskHasErrors(ref ITask, "ITask");
-
-            for (int i = GridsToUpdateInvetories.Count - 1; i >= 0; i--) {
-                
-                var ai = GridsToUpdateInvetories[i];
-                for (int j = 0; j < ai.Inventories.Count; j++) {
-                    
-                    var inventory = ai.Inventories[j];
-                    if (inventory !=null) {
-                        
-                        var items = inventory.GetItems();
-                        if (items != null) {
-                            
-                            List<MyPhysicalInventoryItem> phyItemList;
-                            if (InventoryItems.TryGetValue(inventory, out phyItemList))
-                                InventoryItems[inventory].AddRange(items);
-                            else {
-                                
-                                var entity = inventory.Entity as MyEntity;
-                                if (entity != null) {
-                                    
-                                    var block = entity as MyCubeBlock;
-                                    var blockSubType = block?.BlockDefinition != null ? block.BlockDefinition.Id.SubtypeName : "NA";
-                                    var invMon = block != null ? $"{ai.InventoryMonitor.ContainsKey(block)}" : "NA";
-                                    Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - inAiInvIndex:{ai.InventoryIndexer.ContainsKey(inventory)} - inAiInvMon:{invMon} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
-                                }
-                                else Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
-                            }
-                        }
-                        else Log.Line($"items null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
-                    }
-                    else Log.Line($"Inventory null in StartAmmoTask - grid:{ai.MyGrid.DebugName}");
-                }
-            }
-
-            DefIdsComparer.Clear();
-            GridsToUpdateInvetories.Clear();
-            GridsToUpdateInvetoriesIndexer.Clear();
-
-            ITask = MyAPIGateway.Parallel.StartBackground(ProccessAmmoMoves, ProccessAmmoCallback);
-        }
-
-        //Would use DSUnique but to many profiler hits
-        internal bool UniqueListRemove<T>(T item, IDictionary<T, int> indexer, IList<T> list)
-        {
-            int oldPos;
-            if (indexer.TryGetValue(item, out oldPos))
-            {
-
-                indexer.Remove(item);
-                list.RemoveAtFast(oldPos);
-                var count = list.Count;
-                if (count > 0)
-                {
-                    count--;
-                    if (oldPos <= count)
-                        indexer[list[oldPos]] = oldPos;
-                    else
-                        indexer[list[count]] = count;
-                }
-
-                return true;
-            }
-            return false;
-        }
-
-        internal bool UniqueListRemove<T>(T item, IDictionary<T, int> indexer, IList<T> list, HashSet<T> checkCache)
-        {
-            int oldPos;
-            if (indexer.TryGetValue(item, out oldPos))
-            {
-
-                indexer.Remove(item);
-                checkCache.Remove(item);
-                list.RemoveAtFast(oldPos);
-                var count = list.Count;
-                if (count > 0)
-                {
-                    count--;
-                    if (oldPos <= count)
-                        indexer[list[oldPos]] = oldPos;
-                    else
-                        indexer[list[count]] = count;
-                }
-
-                return true;
-            }
-            return false;
-        }
-
-        internal bool UniqueListAdd<T>(T item, IDictionary<T, int> indexer, IList<T> list)
-        {
-            if (indexer.ContainsKey(item))
-                return false;
-
-            list.Add(item);
-            indexer.Add(item, list.Count - 1);
-            return true;
-        }
-
-        internal bool UniqueListAdd<T>(T item, IDictionary<T, int> indexer, IList<T> list, HashSet<T> checkCache)
-        {
-            if (indexer.ContainsKey(item))
-                return false;
-
-            list.Add(item);
-            indexer.Add(item, list.Count - 1);
-            checkCache.Add(item);
-            return true;
-        }
 
         internal void RemoveCoreToolbarWeapons(MyCubeGrid grid)
         {
@@ -963,6 +793,43 @@ namespace WeaponCore
             VanillaSubpartNames.Add("GatlingTurretBase1");
             VanillaSubpartNames.Add("GatlingTurretBase2");
             VanillaSubpartNames.Add("GatlingBarrel");
+        }
+
+
+        //Would use DSUnique but to many profiler hits
+        internal bool UniqueListRemove<T>(T item, Dictionary<T, int> indexer, List<T> list)
+        {
+            int oldPos;
+            if (indexer.TryGetValue(item, out oldPos))
+            {
+
+                indexer.Remove(item);
+                list.RemoveAtFast(oldPos);
+                var count = list.Count;
+
+                if (count > 0)
+                {
+
+                    count--;
+                    if (oldPos <= count)
+                        indexer[list[oldPos]] = oldPos;
+                    else
+                        indexer[list[count]] = count;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+        internal bool UniqueListAdd<T>(T item, Dictionary<T, int> indexer, List<T> list)
+        {
+            if (indexer.ContainsKey(item))
+                return false;
+
+            list.Add(item);
+            indexer.Add(item, list.Count - 1);
+            return true;
         }
     }
 }

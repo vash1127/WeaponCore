@@ -32,6 +32,7 @@ namespace WeaponCore.Api
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, ICollection<string>, int> _setTurretTargetTypes;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _setBlockTrackingRange;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool> _isTargetAligned;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, MyTuple<bool, Vector3D?>> _isTargetAlignedExtended;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, bool> _canShootTarget;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, int, Vector3D?> _getPredictedTargetPos;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, float> _getHeatLevel;
@@ -42,12 +43,17 @@ namespace WeaponCore.Api
         private Func<long, float> _getOptimalDps;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string> _getActiveAmmo;
         private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, string> _setActiveAmmo;
-        private Action<Action<Vector3, float>> _registerProjectileAdded;
-        private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>> _monitorProjectile;
+        private Action<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>> _unMonitorProjectile;
+        private Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>> _getProjectileState;
         private Func<long, float> _getConstructEffectiveDps;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long> _getPlayerController;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix> _getWeaponAzimuthMatrix;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, Matrix> _getWeaponElevationMatrix;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, long, bool, bool, bool> _isTargetValid;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>> _getWeaponScope;
+        private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, MyTuple<bool, bool>> _isInRange;
+
         private bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
         {
             var dict = pbBlock.GetProperty("WcPbAPI")?.As<Dictionary<string, Delegate>>().GetValue(pbBlock);
@@ -78,6 +84,7 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "SetTurretTargetTypes", ref _setTurretTargetTypes);
             AssignMethod(delegates, "SetBlockTrackingRange", ref _setBlockTrackingRange);
             AssignMethod(delegates, "IsTargetAligned", ref _isTargetAligned);
+            AssignMethod(delegates, "IsTargetAlignedExtended", ref _isTargetAlignedExtended);
             AssignMethod(delegates, "CanShootTarget", ref _canShootTarget);
             AssignMethod(delegates, "GetPredictedTargetPosition", ref _getPredictedTargetPos);
             AssignMethod(delegates, "GetHeatLevel", ref _getHeatLevel);
@@ -88,12 +95,16 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetOptimalDps", ref _getOptimalDps);
             AssignMethod(delegates, "GetActiveAmmo", ref _getActiveAmmo);
             AssignMethod(delegates, "SetActiveAmmo", ref _setActiveAmmo);
-            AssignMethod(delegates, "RegisterProjectileAdded", ref _registerProjectileAdded);
-            AssignMethod(delegates, "UnRegisterProjectileAdded", ref _unRegisterProjectileAdded);
+            AssignMethod(delegates, "MonitorProjectile", ref _monitorProjectile);
+            AssignMethod(delegates, "UnMonitorProjectile", ref _unMonitorProjectile);
+            AssignMethod(delegates, "GetProjectileState", ref _getProjectileState);
             AssignMethod(delegates, "GetConstructEffectiveDps", ref _getConstructEffectiveDps);
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
             AssignMethod(delegates, "GetWeaponAzimuthMatrix", ref _getWeaponAzimuthMatrix);
             AssignMethod(delegates, "GetWeaponElevationMatrix", ref _getWeaponElevationMatrix);
+            AssignMethod(delegates, "IsTargetValid", ref _isTargetValid);
+            AssignMethod(delegates, "GetWeaponScope", ref _getWeaponScope);
+            AssignMethod(delegates, "IsInRange", ref _isInRange);
             return true;
         }
 
@@ -166,6 +177,9 @@ namespace WeaponCore.Api
         public bool IsTargetAligned(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetEnt, int weaponId) =>
             _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
+        public MyTuple<bool, Vector3D?> IsTargetAlignedExtended(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetEnt, int weaponId) =>
+            _isTargetAlignedExtended?.Invoke(weapon, targetEnt, weaponId) ?? new MyTuple<bool, Vector3D?>();
+
         public bool CanShootTarget(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetEnt, int weaponId) =>
             _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
@@ -185,12 +199,15 @@ namespace WeaponCore.Api
         public void SetActiveAmmo(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId, string ammoType) =>
             _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
 
-        public void RegisterProjectileAddedCallback(Action<Vector3, float> action) =>
-            _registerProjectileAdded?.Invoke(action);
+        public void MonitorProjectileCallback(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D, bool> action) =>
+            _monitorProjectile?.Invoke(weapon, weaponId, action);
 
-        public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) =>
-            _unRegisterProjectileAdded?.Invoke(action);
+        public void UnMonitorProjectileCallback(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D, bool> action) =>
+            _unMonitorProjectile?.Invoke(weapon, weaponId, action);
 
+        public MyTuple<Vector3D, Vector3D, float, float, long, string> GetProjectileState(ulong projectileId) =>
+            _getProjectileState?.Invoke(projectileId) ?? new MyTuple<Vector3D, Vector3D, float, float, long, string>();
+        
         public float GetConstructEffectiveDps(long entity) => _getConstructEffectiveDps?.Invoke(entity) ?? 0f;
 
         public long GetPlayerController(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon) => _getPlayerController?.Invoke(weapon) ?? -1;
@@ -200,5 +217,14 @@ namespace WeaponCore.Api
 
         public Matrix GetWeaponElevationMatrix(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
             _getWeaponElevationMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
+
+        public bool IsTargetValid(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, long targetId, bool onlyThreats, bool checkRelations) =>
+            _isTargetValid?.Invoke(weapon, targetId, onlyThreats, checkRelations) ?? false;
+
+        public MyTuple<Vector3D, Vector3D> GetWeaponScope(Sandbox.ModAPI.Ingame.IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponScope?.Invoke(weapon, weaponId) ?? new MyTuple<Vector3D, Vector3D>();
+        // terminalBlock, Threat, Other, Something 
+        public MyTuple<bool, bool> IsInRange(Sandbox.ModAPI.Ingame.IMyTerminalBlock block) =>
+            _isInRange?.Invoke(block) ?? new MyTuple<bool, bool>();
     }
 }

@@ -248,8 +248,8 @@ namespace WeaponCore.Support
                 a.VisualLength = d.VisualLength;
                 a.TracerFront = d.TracerFront;
                 a.Direction = d.Direction;
-                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : d.VisualDir;
-                a.TracerBack = a.TracerFront + (-a.Direction * a.VisualLength);
+                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : d.Direction;
+                a.TracerBack = a.TracerFront + (-a.PointDir * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
 
                 if (a.ModelOnly)
@@ -264,7 +264,7 @@ namespace WeaponCore.Support
                 else if (lineEffect || a.AmmoDef.Const.AmmoParticle)
                 {
                     var rayTracer = new RayD(a.TracerBack, a.PointDir);
-                    var rayTrail = new RayD(a.TracerFront + (-a.Direction * a.ShortEstTravel), a.Direction);
+                    var rayTrail = new RayD(a.TracerFront + (-a.PointDir * a.ShortEstTravel), a.PointDir);
 
                     //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
                     //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
@@ -344,12 +344,11 @@ namespace WeaponCore.Support
 
                 var lineOnScreen = a.OnScreen > (Screen)2;
 
-                if (!a.Active && (a.OnScreen != Screen.None || a.HitSoundInitted || a.AmmoSound))
-                {
+                if (!a.Active && (a.OnScreen != Screen.None || a.HitSoundInitted || a.AmmoSound)) {
                     a.Active = true;
                     s.Av.AvShots.Add(a);
                 }
-
+                
                 if (lineEffect && (a.Active || lineOnScreen))
                     a.LineVariableEffects();
 
@@ -371,7 +370,6 @@ namespace WeaponCore.Support
                 var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
                 if (a.Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
                     a.RunGlow(ref a.EmptyShrink, false, saveHit);
-
 
                 if (a.AmmoDef.Const.AmmoParticle && a.Active)
                 {
@@ -752,7 +750,7 @@ namespace WeaponCore.Support
             }
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
-            System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = this, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = info.TriggerGrowthSteps, Direction = info.Direction, VisualDir = info.VisualDir });
+            System.Session.Projectiles.DeferedAvDraw.Add(new DeferedAv { AvShot = this, StepSize = stepSize, VisualLength = remainingTracer, TracerFront = endPos, ShortStepSize = stepSizeToHit, Hit = hit, TriggerGrowthSteps = info.TriggerGrowthSteps, Direction = info.Direction });
         }
 
         internal void HitEffects(bool force = false)
@@ -1161,7 +1159,6 @@ namespace WeaponCore.Support
         internal int TriggerGrowthSteps;
         internal Vector3D TracerFront;
         internal Vector3D Direction;
-        internal Vector3D VisualDir;
     }
 
     internal struct Shrunk

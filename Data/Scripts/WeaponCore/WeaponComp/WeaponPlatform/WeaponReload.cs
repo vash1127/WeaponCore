@@ -215,17 +215,16 @@ namespace WeaponCore.Platform
                     magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
 
                     var needsAmmo = magsNeeded > 0 && CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume * magsNeeded;
-                    var readyToPull = needsAmmo && !s.PullingWeapons.Contains(this);
                     var failSafeTimer = s.Tick - LastInventoryTick > 600;
                     
-                    if (readyToPull && (CheckInventorySystem || failSafeTimer && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this))) {
+                    if (needsAmmo && (CheckInventorySystem || failSafeTimer && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)) && !s.WeaponToPullAmmo.Contains(this)) {
 
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;
-                        s.UniqueListAdd(this, s.WeaponToPullAmmoIndexer, s.WeaponToPullAmmo, s.PullingWeapons);
-                        s.UniqueListAdd(Comp.Ai, s.GridsToUpdateInvetoriesIndexer, s.GridsToUpdateInvetories);
+                        s.WeaponToPullAmmo.Add(this);
+                        s.GridsToUpdateInventories.Add(Comp.Ai);
                     }
-                    else if (CheckInventorySystem && failSafeTimer && !s.PullingWeapons.Contains(this))
+                    else if (CheckInventorySystem && failSafeTimer && !s.WeaponToPullAmmo.Contains(this))
                         CheckInventorySystem = false;
                 }
             }

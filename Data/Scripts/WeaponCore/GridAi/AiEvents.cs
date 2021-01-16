@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game.Entity;
 using static WeaponCore.Session;
 
@@ -54,21 +55,23 @@ namespace WeaponCore.Support
                 var weaponType = (cube is MyConveyorSorter || cube is IMyUserControllableGun);
                 var isWeaponBase = weaponType && cube.BlockDefinition != null && (Session.ReplaceVanilla && Session.VanillaIds.ContainsKey(cube.BlockDefinition.Id) || Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id));
                 
-                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector) && cube.CubeGrid.IsSameConstructAs(MyGrid)) { // readd IMyShipConnector
-                    
-                    if (cube.CubeGrid != MyGrid)
-                        Log.Line($"FatBlockAdded is sameConstruct and inventory block but not same grid");
+                if (!isWeaponBase && (cube is MyConveyor || cube is IMyConveyorTube || cube is MyConveyorSorter || cube is MyCargoContainer || cube is MyCockpit || cube is IMyAssembler || cube is IMyShipConnector) && cube.CubeGrid.IsSameConstructAs(MyGrid)) { 
                     
                     MyInventory inventory;
-                    if (cube.HasInventory && cube.TryGetInventory(out inventory) && Session.UniqueListAdd(inventory, InventoryIndexer, Inventories)) {
-                        
-                        inventory.InventoryContentChanged += CheckAmmoInventory;
-                        Session.InventoryItems.TryAdd(inventory, new List<MyPhysicalInventoryItem>());
-                        Session.AmmoThreadItemList[inventory] = new List<BetterInventoryItem>();
-                        
-                        InventoryMonitor[cube] = inventory;
+                    if (cube.HasInventory && cube.TryGetInventory(out inventory) && InventoryMonitor.TryAdd(cube, inventory)) {
 
+                        inventory.InventoryContentChanged += CheckAmmoInventory;
                         Construct.RootAi.Construct.NewInventoryDetected = true;
+
+                        int monitors;
+                        if (!Session.InventoryMonitors.TryGetValue(inventory, out monitors)) {
+                            
+                            Session.InventoryMonitors[inventory] = 0;
+                            Session.InventoryItems[inventory] = Session.PhysicalItemListPool.Get();
+                            Session.AmmoThreadItemList[inventory] = Session.BetterItemsListPool.Get();
+                        }
+                        else
+                            Session.InventoryMonitors[inventory] = monitors + 1;
                     }
                 }
                 else if (battery != null) {
@@ -115,19 +118,26 @@ namespace WeaponCore.Support
             {
                 MyInventory oldInventory;
                 if (InventoryMonitor.TryRemove(cube, out oldInventory)) {
-                    
+
                     inventory.InventoryContentChanged -= CheckAmmoInventory;
-                    if (Session.UniqueListRemove(inventory, InventoryIndexer, Inventories)) {
-                        
-                        List<MyPhysicalInventoryItem> removedPhysical;
-                        List<BetterInventoryItem> removedBetter;
 
-                        if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
-                            removedPhysical.Clear();
+                    int monitors;
+                    if (Session.InventoryMonitors.TryGetValue(inventory, out monitors)) {
 
-                        if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
-                            removedBetter.Clear();
-    
+                        if (--monitors < 0) {
+
+                            MyConcurrentList<MyPhysicalInventoryItem> removedPhysical;
+                            MyConcurrentList<BetterInventoryItem> removedBetter;
+
+                            if (Session.InventoryItems.TryRemove(inventory, out removedPhysical))
+                                Session.PhysicalItemListPool.Return(removedPhysical);
+
+                            if (Session.AmmoThreadItemList.TryRemove(inventory, out removedBetter))
+                                Session.BetterItemsListPool.Return(removedBetter);
+                            
+                            Session.InventoryMonitors.Remove(inventory);
+                        }
+                        else Session.InventoryMonitors[inventory] = monitors;
                     }
                     else return false;
                 }
@@ -164,7 +174,8 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(false, MyGrid);
 
             CleanSubGrids();
-
+            ForceCloseAiInventories();
+            
             Session.DelayedAiClean.Add(this);
             Session.DelayedAiClean.ApplyAdditions();
         }

@@ -288,7 +288,7 @@ namespace WeaponCore
                     {"SubGrids", () => GetAi()?.SubGrids.Count.ToString() ?? string.Empty },
                     {"AiSleep", () => GetAi()?.AiSleep.ToString() ?? string.Empty },
                     {"ControllingPlayers", () => GetAi()?.Data.Repo.ControllingPlayers.Count.ToString() ?? string.Empty },
-                    {"Inventories", () => GetAi()?.Inventories.Count.ToString() ?? string.Empty },
+                    {"Inventories", () => GetAi()?.InventoryMonitor.Count.ToString() ?? string.Empty },
                     {"SortedTargets", () => GetAi()?.SortedTargets.Count.ToString() ?? string.Empty },
                     {"Obstructions", () => GetAi()?.Obstructions.Count.ToString() ?? string.Empty },
                     {"NearByEntities", () => GetAi()?.NearByEntities.ToString() ?? string.Empty },

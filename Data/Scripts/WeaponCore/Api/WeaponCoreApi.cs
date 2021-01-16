@@ -35,6 +35,7 @@ namespace WeaponCore.Api
         private Action<IMyTerminalBlock, ICollection<string>, int> _setTurretTargetTypes;
         private Action<IMyTerminalBlock, float> _setBlockTrackingRange;
         private Func<IMyTerminalBlock, IMyEntity, int, bool> _isTargetAligned;
+        private Func<IMyTerminalBlock, IMyEntity, int, MyTuple<bool, Vector3D?>> _isTargetAlignedExtended;
         private Func<IMyTerminalBlock, IMyEntity, int, bool> _canShootTarget;
         private Func<IMyTerminalBlock, IMyEntity, int, Vector3D?> _getPredictedTargetPos;
         private Func<IMyTerminalBlock, float> _getHeatLevel;
@@ -46,17 +47,16 @@ namespace WeaponCore.Api
         private Func<IMyEntity, float> _getOptimalDps;
         private Func<IMyTerminalBlock, int, string> _getActiveAmmo;
         private Action<IMyTerminalBlock, int, string> _setActiveAmmo;
-        private Action<Action<Vector3, float>> _registerProjectileAdded;
-        private Action<Action<Vector3, float>> _unRegisterProjectileAdded;
         private Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>> _monitorProjectile;
         private Action<IMyTerminalBlock, int, Action<long, int, ulong, long, Vector3D, bool>> _unMonitorProjectile;
         private Func<ulong, MyTuple<Vector3D, Vector3D, float, float, long, string>> _getProjectileState;
-
         private Func<IMyEntity, float> _getConstructEffectiveDps;
         private Func<IMyTerminalBlock, long> _getPlayerController;
         private Func<IMyTerminalBlock, int, Matrix> _getWeaponAzimuthMatrix;
         private Func<IMyTerminalBlock, int, Matrix> _getWeaponElevationMatrix;
-
+        private Func<IMyTerminalBlock, IMyEntity, bool, bool, bool> _isTargetValid;
+        private Func<IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>> _getWeaponScope;
+        private Func<IMyEntity, MyTuple<bool,bool>> _isInRange;
         private const long Channel = 67549756549;
         private bool _getWeaponDefinitions;
         private bool _isRegistered;
@@ -141,6 +141,7 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "SetTurretTargetTypes", ref _setTurretTargetTypes);
             AssignMethod(delegates, "SetBlockTrackingRange", ref _setBlockTrackingRange);
             AssignMethod(delegates, "IsTargetAligned", ref _isTargetAligned);
+            AssignMethod(delegates, "IsTargetAlignedExtended", ref _isTargetAlignedExtended);
             AssignMethod(delegates, "CanShootTarget", ref _canShootTarget);
             AssignMethod(delegates, "GetPredictedTargetPosition", ref _getPredictedTargetPos);
             AssignMethod(delegates, "GetHeatLevel", ref _getHeatLevel);
@@ -152,8 +153,6 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetOptimalDps", ref _getOptimalDps);
             AssignMethod(delegates, "GetActiveAmmo", ref _getActiveAmmo);
             AssignMethod(delegates, "SetActiveAmmo", ref _setActiveAmmo);
-            AssignMethod(delegates, "RegisterProjectileAdded", ref _registerProjectileAdded);
-            AssignMethod(delegates, "UnRegisterProjectileAdded", ref _unRegisterProjectileAdded);
             AssignMethod(delegates, "MonitorProjectile", ref _monitorProjectile);
             AssignMethod(delegates, "UnMonitorProjectile", ref _unMonitorProjectile);
             AssignMethod(delegates, "GetProjectileState", ref _getProjectileState);
@@ -161,14 +160,16 @@ namespace WeaponCore.Api
             AssignMethod(delegates, "GetPlayerController", ref _getPlayerController);
             AssignMethod(delegates, "GetWeaponAzimuthMatrix", ref _getWeaponAzimuthMatrix);
             AssignMethod(delegates, "GetWeaponElevationMatrix", ref _getWeaponElevationMatrix);
+            AssignMethod(delegates, "IsTargetValid", ref _isTargetValid);
+            AssignMethod(delegates, "GetWeaponScope", ref _getWeaponScope);
+            AssignMethod(delegates, "IsInRange", ref _isInRange);
 
             if (getWeaponDefinitions)
             {
                 var byteArrays = new List<byte[]>();
                 GetAllWeaponDefinitions(byteArrays);
                 foreach (var byteArray in byteArrays)
-                    WeaponDefinitions.Add(
-                        MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
+                    WeaponDefinitions.Add(MyAPIGateway.Utilities.SerializeFromBinary<WcApiDef.WeaponDefinition>(byteArray));
             }
         }
 
@@ -245,6 +246,9 @@ namespace WeaponCore.Api
         public bool IsTargetAligned(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
             _isTargetAligned?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
+        public MyTuple<bool, Vector3D?> IsTargetAlignedExtended(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
+            _isTargetAlignedExtended?.Invoke(weapon, targetEnt, weaponId) ?? new MyTuple<bool, Vector3D?>();
+
         public bool CanShootTarget(IMyTerminalBlock weapon, IMyEntity targetEnt, int weaponId) =>
             _canShootTarget?.Invoke(weapon, targetEnt, weaponId) ?? false;
 
@@ -265,12 +269,6 @@ namespace WeaponCore.Api
         public void SetActiveAmmo(IMyTerminalBlock weapon, int weaponId, string ammoType) =>
             _setActiveAmmo?.Invoke(weapon, weaponId, ammoType);
 
-        public void RegisterProjectileAddedCallback(Action<Vector3, float> action) =>
-            _registerProjectileAdded?.Invoke(action);
-
-        public void UnRegisterProjectileAddedCallback(Action<Vector3, float> action) =>
-            _unRegisterProjectileAdded?.Invoke(action);
-
         public void MonitorProjectileCallback(IMyTerminalBlock weapon, int weaponId, Action<long, int, ulong, long, Vector3D, bool> action) =>
             _monitorProjectile?.Invoke(weapon, weaponId, action);
 
@@ -289,6 +287,16 @@ namespace WeaponCore.Api
 
         public Matrix GetWeaponElevationMatrix(IMyTerminalBlock weapon, int weaponId) =>
             _getWeaponElevationMatrix?.Invoke(weapon, weaponId) ?? Matrix.Zero;
+
+        public bool IsTargetValid(IMyTerminalBlock weapon, IMyEntity target, bool onlyThreats, bool checkRelations) =>
+            _isTargetValid?.Invoke(weapon, target, onlyThreats, checkRelations) ?? false;
+
+        public MyTuple<Vector3D, Vector3D> GetWeaponScope(IMyTerminalBlock weapon, int weaponId) =>
+            _getWeaponScope?.Invoke(weapon, weaponId) ?? new MyTuple<Vector3D, Vector3D>();
+
+        // block/grid, Threat, Other 
+        public MyTuple<bool, bool> IsInRange(IMyEntity entity) =>
+            _isInRange?.Invoke(entity) ?? new MyTuple<bool, bool>();
     }
 
     public static class WcApiDef

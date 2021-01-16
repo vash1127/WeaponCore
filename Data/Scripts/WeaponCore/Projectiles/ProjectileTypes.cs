@@ -35,7 +35,6 @@ namespace WeaponCore.Support
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
-        internal Vector3D VisualDir;
         internal Hit Hit = new Hit();
         internal WeaponRandomGenerator WeaponRng;
         internal FakeTarget DummyTarget;
@@ -157,7 +156,6 @@ namespace WeaponCore.Support
             EnableGuidance = true;
             Hit = new Hit();
             Direction = Vector3D.Zero;
-            VisualDir = Vector3D.Zero;
             Origin = Vector3D.Zero;
             ShooterVel = Vector3D.Zero;
             TriggerMatrix = MatrixD.Identity;

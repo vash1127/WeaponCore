@@ -114,7 +114,6 @@ namespace WeaponCore.Projectiles
         {
             Position = Info.Origin;
             AccelDir = Info.Direction;
-            Info.VisualDir = Info.Direction;
             var cameraStart = Info.System.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Info.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = Info.AmmoDef.Const.ShrapnelId > -1;
@@ -222,7 +221,7 @@ namespace WeaponCore.Projectiles
                 Info.WeaponRng.ClientProjectileCurrentCounter++;
             }
 
-            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (Info.Direction * Info.MaxTrajectory);
+            if (Vector3D.IsZero(PredictedTargetPos)) PredictedTargetPos = Position + (AccelDir * Info.MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             Info.ObjectsHit = 0;
@@ -243,7 +242,7 @@ namespace WeaponCore.Projectiles
                 {
                     var forward = Info.WeaponRng.ClientProjectileRandom.Next(100) < 50;
                     Info.WeaponRng.ClientProjectileCurrentCounter++;
-                    distancePos = forward ? distancePos + (Info.Direction * variance) : distancePos + (-Info.Direction * variance);
+                    distancePos = forward ? distancePos + (AccelDir * variance) : distancePos + (-AccelDir * variance);
                 }
                 Vector3D.DistanceSquared(ref Info.Origin, ref distancePos, out DistanceToTravelSqr);
             }
@@ -266,13 +265,13 @@ namespace WeaponCore.Projectiles
             var accelPerSec = Info.AmmoDef.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             AccelInMetersPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed;
-            var desiredSpeed = (Info.Direction * DesiredSpeed);
+            var desiredSpeed = (AccelDir * DesiredSpeed);
             var relativeSpeedCap = StartSpeed + desiredSpeed;
             MaxVelocity = relativeSpeedCap;
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             DeltaVelocityPerTick = accelPerSec * StepConst;
-            AccelVelocity = (Info.Direction * DeltaVelocityPerTick);
+            AccelVelocity = (AccelDir * DeltaVelocityPerTick);
 
             if (ConstantSpeed)
             {
@@ -280,6 +279,8 @@ namespace WeaponCore.Projectiles
                 VelocityLengthSqr = MaxSpeed * MaxSpeed;
             }
             else Velocity = StartSpeed + AccelVelocity;
+            
+            Vector3D.Normalize(ref Velocity, out Info.Direction);
 
             InitalStep = !Info.IsShrapnel && ConstantSpeed ? desiredSpeed * StepConst : Velocity * StepConst;
 
@@ -402,7 +403,6 @@ namespace WeaponCore.Projectiles
 
             Info.Direction = Vector3D.Normalize(predictedPos - Position);
             AccelDir = Info.Direction;
-            Info.VisualDir = Info.Direction;
             VelocityLengthSqr = 0;
 
             MaxVelocity = (Info.Direction * DesiredSpeed);

@@ -1,5 +1,6 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game.Entity;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -233,6 +234,7 @@ namespace WeaponCore
 
         private bool ServerClientAiExists(PacketObj data)
         {
+            MyEntity exists;
             var packet = data.Packet;
             uint[] mIds;
             if (PlayerMIds.TryGetValue(packet.SenderId, out mIds) && mIds[(int) packet.PType] < packet.MId) {
@@ -248,7 +250,7 @@ namespace WeaponCore
                 
                 data.Report.PacketValid = true;
             }
-            else Log.Line($"ServerClientAiExists: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
+            else Log.Line($"ServerClientAiExists: MidsHasSenderId:{PlayerMIds.ContainsKey(packet.SenderId)} - entityExists:{MyEntities.TryGetEntityById(packet.EntityId, out exists, true)}({packet.EntityId}) - entityName:{exists?.DebugName} - entityMarked:{exists?.MarkedForClose} - midsNull:{mIds == null} - senderId:{packet.SenderId}");
 
 
             return true;
