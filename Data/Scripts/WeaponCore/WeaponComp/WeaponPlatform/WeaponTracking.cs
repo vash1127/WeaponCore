@@ -962,8 +962,8 @@ namespace WeaponCore.Platform
                     var closestPos = trackingCheckPosition + (tDir * closestDist);
 
                     var missAmount = Vector3D.Distance(hitPos, closestPos);
-                    Session.Rays++;
-                    Session.RayMissAmounts += missAmount;
+                    System.Session.Rays++;
+                    System.Session.RayMissAmounts += missAmount;
                 }
             }
             
