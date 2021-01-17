@@ -251,7 +251,7 @@ namespace WeaponCore.Support
 
                 if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;
-                else if (!MyUtils.IsEqual(d.Direction, a.Direction)) {
+                else if (!MyUtils.IsEqual(d.Direction, a.Direction) && !d.Hit) {
                     var relativeDifference = (d.TracerFront - a.TracerFront) - a.ShootVelStep;
                     Vector3D.Normalize(ref relativeDifference, out a.VisualDir);
                 }
@@ -341,10 +341,10 @@ namespace WeaponCore.Support
                     {
                         a.Tracer = TracerState.Off;
                     }
-                    else if (a.Hitting  && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
+                    else if (a.Hitting  && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-05F))
                     {
                         a.Tracer = TracerState.Shrink;
-                        a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.25f, Vector3D.Distance(a.Origin, a.TracerFront));
+                        a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
                     }
                     else if (a.Tracer == TracerState.Grow && a.LastStep)
                     {
@@ -523,8 +523,8 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                TracerFront+= ShootVelStep;
-                var newTracerFront = TracerFront + -(VisualDir * (TracerStep * StepSize));
+                Hit.LastHit += ShootVelStep;
+                var newTracerFront = Hit.LastHit + -(VisualDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float)reduced);
             }
@@ -737,7 +737,7 @@ namespace WeaponCore.Support
             var stepSize = (info.DistanceTraveled - info.PrevDistanceTraveled);
             var avSize = useCollisionSize ? AmmoDef.Const.CollisionSize : info.TracerLength;
 
-            var endPos = hit ? TracerFront + (VisualDir * stepSize) : !earlyEnd ? position + -info.Direction * (info.DistanceTraveled - info.MaxTrajectory) : position;
+            var endPos = hit ? Hit.LastHit : !earlyEnd ? position + -info.Direction * (info.DistanceTraveled - info.MaxTrajectory) : position;
 
             double remainingTracer;
             double stepSizeToHit;

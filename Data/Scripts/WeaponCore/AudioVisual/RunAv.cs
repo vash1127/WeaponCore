@@ -334,7 +334,6 @@ namespace WeaponCore.Support
         private void RunShrinks(AvShot av)
         {
             var s = av.TracerShrinks.Dequeue();
-            Log.Line($"test");
             if (av.LastTick != Session.Tick)
             {
                 if (!av.AmmoDef.Const.OffsetEffect) {
