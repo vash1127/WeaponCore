@@ -251,7 +251,7 @@ namespace WeaponCore.Support
 
                 if (a.LifeTime == 1)
                     a.VisualDir = a.OriginDir;
-                else if (!MyUtils.IsEqual(d.Direction, a.Direction) && !d.Hit) {
+                else if (!MyUtils.IsEqual(d.Direction, a.Direction) && !saveHit) {
                     var relativeDifference = (d.TracerFront - a.TracerFront) - a.ShootVelStep;
                     Vector3D.Normalize(ref relativeDifference, out a.VisualDir);
                 }
@@ -287,7 +287,7 @@ namespace WeaponCore.Support
                     else if (a.AmmoDef.Const.Trail)
                     {
                         s.CameraFrustrum.Intersects(ref rayTrail, out dist);
-                        if (dist != null && dist <= a.ShortEstTravel + a.ShortStepSize)
+                        if (dist != null && dist <= a.ShortEstTravel + a.ShortStepSize + a.MaxGlowLength)
                             a.OnScreen = Screen.Trail;
                     }
                     if (a.OnScreen != Screen.None && !a.TrailActivated && a.AmmoDef.Const.Trail) a.TrailActivated = true;
