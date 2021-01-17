@@ -94,8 +94,9 @@ namespace WeaponCore.Support
         internal MatrixD OffsetMatrix;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
+        internal Vector3D OriginDir;
         internal Vector3D Direction;
-        internal Vector3D PointDir;
+        internal Vector3D VisualDir;
         internal Vector3D HitVelocity;
         internal Vector3D ShootVelStep;
         internal Vector3D TracerFront;
@@ -158,7 +159,7 @@ namespace WeaponCore.Support
         }
 
         #region Run
-        internal void Init(ProInfo info, double firstStepSize, double maxSpeed)
+        internal void Init(ProInfo info, double firstStepSize, double maxSpeed, ref Vector3D originDir)
         {
             System = info.System;
             AmmoDef = info.AmmoDef;
@@ -184,6 +185,7 @@ namespace WeaponCore.Support
             FireCounter = info.FireCounter;
             ShrinkInited = false;
             ModelOnly = info.ModelOnly;
+            OriginDir = originDir;
             if (AmmoDef.Const.DrawLine) Tracer = !AmmoDef.Const.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 
@@ -246,10 +248,18 @@ namespace WeaponCore.Support
                 a.ShortEstTravel = MathHelperD.Clamp((a.EstTravel - a.StepSize) + a.ShortStepSize, 0, double.MaxValue);
 
                 a.VisualLength = d.VisualLength;
-                a.TracerFront = d.TracerFront;
+
+                if (a.LifeTime == 1)
+                    a.VisualDir = a.OriginDir;
+                else if (!MyUtils.IsEqual(d.Direction, a.Direction)) {
+                    var relativeDifference = (d.TracerFront - a.TracerFront) - a.ShootVelStep;
+                    Vector3D.Normalize(ref relativeDifference, out a.VisualDir);
+                }
+
                 a.Direction = d.Direction;
-                a.PointDir = !saveHit && a.GlowSteps.Count > 1 ? a.GlowSteps[a.GlowSteps.Count - 1].Line.Direction : d.Direction;
-                a.TracerBack = a.TracerFront + (-a.PointDir * a.VisualLength);
+
+                a.TracerFront = d.TracerFront;
+                a.TracerBack = a.TracerFront + (-a.VisualDir * a.VisualLength);
                 a.OnScreen = Screen.None; // clear OnScreen
 
                 if (a.ModelOnly)
@@ -263,8 +273,8 @@ namespace WeaponCore.Support
                 }
                 else if (lineEffect || a.AmmoDef.Const.AmmoParticle)
                 {
-                    var rayTracer = new RayD(a.TracerBack, a.PointDir);
-                    var rayTrail = new RayD(a.TracerFront + (-a.PointDir * a.ShortEstTravel), a.PointDir);
+                    var rayTracer = new RayD(a.TracerBack, a.VisualDir);
+                    var rayTrail = new RayD(a.TracerFront + (-a.VisualDir * a.ShortEstTravel), a.VisualDir);
 
                     //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
                     //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
@@ -334,7 +344,7 @@ namespace WeaponCore.Support
                     else if (a.Hitting  && !a.ModelOnly && lineEffect && a.VisualLength / a.StepSize > 1 && !MyUtils.IsZero(a.EstTravel - a.ShortEstTravel, 1E-01F))
                     {
                         a.Tracer = TracerState.Shrink;
-                        a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.1f, Vector3D.Distance(a.Origin, a.TracerFront));
+                        a.TotalLength = MathHelperD.Clamp(a.VisualLength + a.MaxGlowLength, 0.25f, Vector3D.Distance(a.Origin, a.TracerFront));
                     }
                     else if (a.Tracer == TracerState.Grow && a.LastStep)
                     {
@@ -364,7 +374,7 @@ namespace WeaponCore.Support
                     }
 
                     if (a.AmmoDef.Const.OffsetEffect)
-                        a.PrepOffsetEffect(a.TracerFront, a.PointDir, a.VisualLength);
+                        a.PrepOffsetEffect(a.TracerFront, a.VisualDir, a.VisualLength);
                 }
 
                 var backAndGrowing = a.Back && a.Tracer == TracerState.Grow;
@@ -424,8 +434,10 @@ namespace WeaponCore.Support
             }
             else
             {
-                var futureStep = (Direction * ShortStepSize);
-                var pastStep = (-Direction * ShortStepSize);
+                //frontPos = Back && !onlyStep ? TracerBack : TracerFront;
+                //backPos = Back && !extStart ? TracerBack : TracerFront;
+                var futureStep = (VisualDir * ShortStepSize);
+                var pastStep = (-VisualDir * ShortStepSize);
                 if (!Back) futureStep -= velStep;
                 frontPos = Back && !onlyStep ? TracerBack + futureStep : TracerFront;
                 backPos = Back && !extStart ? TracerBack : TracerFront + pastStep;
@@ -511,8 +523,8 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                Hit.LastHit += ShootVelStep;
-                var newTracerFront = Hit.LastHit + -(PointDir * (TracerStep * StepSize));
+                TracerFront+= ShootVelStep;
+                var newTracerFront = TracerFront + -(VisualDir * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerFront, (float)reduced);
             }
@@ -622,14 +634,14 @@ namespace WeaponCore.Support
                     trailWidth += randomValue;
             }
 
-            var target = TracerFront + (-Direction * TotalLength);
-            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref System.Session.CameraPos);
+            var checkPos = TracerFront + (-VisualDir * TotalLength);
+            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref checkPos, ref System.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, System.Session.CameraMatrix.Translation);
 
             if (AmmoDef.Const.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
             {
-                target = TracerFront + (-Direction * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, MaxTrajectory * 0.5)));
-                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref System.Session.CameraPos);
+                checkPos = TracerFront + (-VisualDir * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, MaxTrajectory * 0.5)));
+                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref checkPos, ref System.Session.CameraPos);
                 DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, System.Session.CameraMatrix.Translation);
             }
 
@@ -722,9 +734,12 @@ namespace WeaponCore.Support
 
         internal void ShortStepAvUpdate(ProInfo info, bool useCollisionSize, bool hit, bool earlyEnd, Vector3D position)
         {
-            var endPos = hit ? info.Hit.LastHit : !earlyEnd ? position + -info.Direction * (info.DistanceTraveled - info.MaxTrajectory) : position;
+
             var stepSize = (info.DistanceTraveled - info.PrevDistanceTraveled);
             var avSize = useCollisionSize ? AmmoDef.Const.CollisionSize : info.TracerLength;
+
+            var endPos = hit ? TracerFront + (VisualDir * stepSize) : !earlyEnd ? position + -info.Direction * (info.DistanceTraveled - info.MaxTrajectory) : position;
+
             double remainingTracer;
             double stepSizeToHit;
             if (AmmoDef.Const.IsBeamWeapon)
@@ -876,7 +891,7 @@ namespace WeaponCore.Support
             if (Model != ModelState.None && PrimeEntity != null)
                 matrix = PrimeMatrix;
             else {
-                matrix = MatrixD.CreateWorld(TracerFront, PointDir, OriginUp);
+                matrix = MatrixD.CreateWorld(TracerFront, Direction, OriginUp);
                 var offVec = TracerFront + Vector3D.Rotate(AmmoDef.AmmoGraphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }

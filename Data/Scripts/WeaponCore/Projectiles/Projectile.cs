@@ -280,7 +280,8 @@ namespace WeaponCore.Projectiles
             }
             else Velocity = StartSpeed + AccelVelocity;
             
-            Vector3D.Normalize(ref Velocity, out Info.Direction);
+            if (Info.IsShrapnel) 
+                Vector3D.Normalize(ref Velocity, out Info.Direction);
 
             InitalStep = !Info.IsShrapnel && ConstantSpeed ? desiredSpeed * StepConst : Velocity * StepConst;
 
@@ -291,7 +292,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 Info.AvShot = Info.System.Session.Av.AvShotPool.Get();
-                Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed);
+                Info.AvShot.Init(Info, AccelInMetersPerSec * StepConst, MaxSpeed, ref AccelDir);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr); //Pool initted sounds per Projectile type... this is expensive
                 if (Info.AmmoDef.Const.HitParticle && !Info.AmmoDef.Const.IsBeamWeapon || Info.AmmoDef.Const.AreaEffect == AreaEffectType.Explosive && !Info.AmmoDef.AreaEffect.Explosions.NoVisuals && Info.AmmoDef.Const.AreaEffectSize > 0 && Info.AmmoDef.Const.AreaEffectDamage > 0)
                 {
