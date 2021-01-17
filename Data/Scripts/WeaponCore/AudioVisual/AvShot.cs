@@ -536,7 +536,6 @@ namespace WeaponCore.Support
         {
             var color = AmmoDef.AmmoGraphics.Lines.Tracer.Color;
             var segmentColor = AmmoDef.AmmoGraphics.Lines.Tracer.Segmentation.Color;
-
             if (AmmoDef.Const.TracerMode != AmmoConstants.Texture.Normal && TextureLastUpdate != System.Session.Tick)
             {
                 if (System.Session.Tick - TextureLastUpdate > 1)

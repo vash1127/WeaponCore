@@ -132,8 +132,9 @@ namespace WeaponCore
                 var fallOffMultipler = MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
-            
-            var detonateDamage = detonateOnEnd ? (areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : (info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f)) * info.AmmoDef.Const.ShieldModifier) * detDmgGlobal : 0;
+
+            var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
+            var detonateDamage = detonateOnEnd ? unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * detDmgGlobal : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
            
