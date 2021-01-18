@@ -12,6 +12,7 @@ namespace WeaponCore.Settings
     {
         public CoreSettings Core;
         private readonly Dictionary<WeaponDefinition.AmmoDef, AmmoModifer> _tmpAmmoModiferMap = new Dictionary<WeaponDefinition.AmmoDef, AmmoModifer>();
+        public bool VersionChange;
         public VersionControl(CoreSettings core)
         {
             Core = core;
@@ -62,6 +63,11 @@ namespace WeaponCore.Settings
                 GenerateBlockDmgMap();
                GenerateAmmoDmgMap();
             }
+
+            if (VersionChange)
+            {
+                Core.Session.PlayerMessage = "You may access WeaponCore client settings with the /wc chat command";
+            }
         }
 
         public void UpdateClientEnforcements(CoreSettings.ServerSettings data)
@@ -81,10 +87,12 @@ namespace WeaponCore.Settings
 
             CorruptionCheck();
             SaveServerCfg();
+            VersionChange = true;
         }
 
         private void WriteNewClientCfg()
         {
+            VersionChange = true;
             MyAPIGateway.Utilities.DeleteFileInGlobalStorage(Session.ClientCfgName);
             Core.ClientConfig = new CoreSettings.ClientSettings {Version = Session.ClientCfgVersion};
             var writer = MyAPIGateway.Utilities.WriteFileInGlobalStorage(Session.ClientCfgName);

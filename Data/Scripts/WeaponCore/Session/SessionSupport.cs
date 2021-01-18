@@ -54,14 +54,23 @@ namespace WeaponCore
                 
                 if (IsServer && PbActivate && !PbApiInited) Api.PbInit();
 
-                if (IsClient && !ClientCheck && Tick > 1200)  {
+                if (HandlesInput && !ClientCheck && Tick > 1200)
+                {
+                    if (IsClient)
+                    {
+                        if (ServerVersion != ModContext.ModName)
+                        {
+                            var message = $"::WeaponCore Version Mismatch::    Server:{ServerVersion} - Client:{ModContext.ModName} -   Unexpected behavior may occur.";
+                            MyAPIGateway.Utilities.ShowNotification(message, 10000, "Red");
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(PlayerMessage))
+                        MyAPIGateway.Utilities.ShowNotification(PlayerMessage, 10000, "White");
 
                     ClientCheck = true;
-                    if (ServerVersion != ModContext.ModName) {
-                        var message = $"::WeaponCore Version Mismatch::    Server:{ServerVersion} - Client:{ModContext.ModName} -   Unexpected behavior may occur.";
-                        MyAPIGateway.Utilities.ShowNotification(message, 10000, "Red");
-                    }
                 }
+
             }
             LCount++;
             if (LCount == 129)
@@ -393,7 +402,7 @@ namespace WeaponCore
         {
             var somethingUpdated = false;
 
-            if (message.StartsWith("/wc "))
+            if (message == "/wc" || message.StartsWith("/wc "))
             {
                 switch (message)
                 {
@@ -414,22 +423,39 @@ namespace WeaponCore
 
                     string[] tokens = message.Split(' ');
 
-                    if (tokens.Length > 2 && tokens[1].Equals("drawlimit")) {
+                    var tokenLength = tokens.Length;
+                    if (tokenLength > 1)
+                    {
+                        switch (tokens[1])
+                        {
+                            case "drawlimit":
+                            {
+                                int maxDrawCount;
+                                if (tokenLength > 2 && int.TryParse(tokens[2], out maxDrawCount))
+                                {
+                                    Settings.ClientConfig.MaxProjectiles = maxDrawCount;
+                                    var enabled = maxDrawCount != 0;
+                                    Settings.ClientConfig.ClientOptimizations = enabled;
+                                    somethingUpdated = true;
+                                    MyAPIGateway.Utilities.ShowNotification($"The maximum onscreen projectiles is now set to {maxDrawCount} and is Enabled:{enabled}", 10000);
+                                    Settings.VersionControl.UpdateClientCfgFile();
+                                }
 
-                        int maxDrawCount;
-                        if (int.TryParse(tokens[2], out maxDrawCount)) {
-                            Settings.ClientConfig.MaxProjectiles = maxDrawCount;
-                            var enabled = maxDrawCount != 0;
-                            Settings.ClientConfig.ClientOptimizations = enabled;
-                            somethingUpdated = true;
-                            MyAPIGateway.Utilities.ShowNotification($"The maximum onscreen projectiles is now set to {maxDrawCount} and is Enabled:{enabled}", 10000);
-                            Settings.VersionControl.UpdateClientCfgFile();
+                                break;
+                            }
+                            case "shipsizes":
+                                Settings.ClientConfig.ShowHudTargetSizes = !Settings.ClientConfig.ShowHudTargetSizes;
+                                somethingUpdated = true;
+                                MyAPIGateway.Utilities.ShowNotification($"Shipsize icons have been set to: {Settings.ClientConfig.ShowHudTargetSizes}", 10000);
+                                Settings.VersionControl.UpdateClientCfgFile();
+                                FovChanged();
+                                break;
                         }
                     }
                 }
 
                 if (!somethingUpdated)
-                    MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n '/wc remap keyboard'  -- Remaps action key (default R)\n '/wc remap mouse'  -- Remaps menu mouse key (default middle button)\n '/wc drawlimit 3000'  -- Limits total number of projectiles on screen (default unlimited)\n", 10000);
+                    MyAPIGateway.Utilities.ShowNotification("Valid WeaponCore Commands:\n '/wc remap keyboard'  -- Remaps action key (default R)\n '/wc remap mouse'  -- Remaps menu mouse key (default middle button)\n '/wc shipsizes'  -- Toggles the displaying of ship size icons\n '/wc drawlimit 1000'  -- Limits total number of projectiles on screen (default unlimited)\n", 10000);
                 sendToOthers = false;
             }
         }

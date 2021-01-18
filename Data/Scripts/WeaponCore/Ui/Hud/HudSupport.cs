@@ -9,7 +9,9 @@ namespace WeaponCore
 {
     partial class Hud
     {
-        
+        internal uint TicksSinceUpdated => _session.Tick - _lastHudUpdateTick;
+        internal bool KeepBackground => _session.Tick - _lastHudUpdateTick < _minUpdateTicks;
+
         internal void AddText(string text, Vector4 color, float x, float y, float fontSize = 10f)
         {
             TextDrawRequest textInfo;
@@ -138,10 +140,8 @@ namespace WeaponCore
             var fovModifier = _session.CurrentFovWithZoom / _defaultFov;
             NeedsUpdate = false;
             _lastHudUpdateTick = 0;
-            _aspectratio = _session.Camera.ViewportSize.X / _session.Camera.ViewportSize.Y;
-            _aspectratioInv = _session.Camera.ViewportSize.Y / _session.Camera.ViewportSize.X;
             _viewPortSize.Y = 2 * _session.Camera.NearPlaneDistance * _session.ScaleFov;
-            _viewPortSize.X = (_viewPortSize.Y * _aspectratio);
+            _viewPortSize.X = (_viewPortSize.Y * _session.AspectRatio);
             _viewPortSize.Z = -(_session.Camera.NearPlaneDistance * 2);
 
             _currWeaponDisplayPos.X = _viewPortSize.X;
@@ -152,11 +152,11 @@ namespace WeaponCore
             _reloadWidth = _reloadWidthConst * fovModifier;
             _reloadHeight = _reloadHeightConst * fovModifier;
             _reloadOffset = _reloadWidth * fovModifier;
-            _reloadHeightOffset = (_reloadHeightOffsetConst * (2 * fovModifier)) * fovModifier;
+            _reloadHeightOffset = (_reloadHeightOffsetConst * (2 * fovModifier)) * fovModifier; //never used
 
             _textSize = _WeaponHudFontHeight * fovModifier;
             _sTextSize = _textSize * .5f;
-            _textWidth = (_WeaponHudFontHeight * _aspectratioInv) * fovModifier;
+            _textWidth = (_WeaponHudFontHeight * _session.AspectRatioInv) * fovModifier;
             _stextWidth = (_textWidth * .75f);
             _stackPadding = _stextWidth * 6; // gives max limit of 6 characters (x999)
 
@@ -362,7 +362,7 @@ namespace WeaponCore
             _textDrawPool.Clear();
             _weaponSortingListPool.Clear();
             _weaponStackedInfoPool.Clear();
-            _characterMap.Clear();
+            CharacterMap.Clear();
             _textureAddList.Clear();
             _textAddList.Clear();
             _drawList.Clear();

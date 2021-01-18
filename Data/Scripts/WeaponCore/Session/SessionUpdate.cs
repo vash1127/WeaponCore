@@ -150,8 +150,8 @@ namespace WeaponCore
                         ///
                         /// Update Weapon Hud Info
                         /// 
-                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Reloading && Tick - w.LastShootTick > 30 && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst && w.ShootTick > w.Comp.Session.Tick;
-                        if (HandlesInput && (w.Reloading && Tick - w.LastLoadedTick > 30 || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
+                        var isWaitingForBurstDelay = w.ShowBurstDelayAsReload && !w.Reloading && w.ShootTick > Tick && w.ShootTick >= w.LastShootTick + w.System.Values.HardPoint.Loading.DelayAfterBurst;
+                        if (HandlesInput && (w.Reloading || w.HeatPerc >= 0.01 || isWaitingForBurstDelay) && Tick - w.LastLoadedTick > 30 && !Session.Config.MinimalHud && ActiveControlBlock != null && ai.SubGrids.Contains(ActiveControlBlock.CubeGrid)) {
                             HudUi.TexturesToAdd++;
                             HudUi.WeaponsToDisplay.Add(w);
                         }
@@ -211,7 +211,6 @@ namespace WeaponCore
                         ///
                         /// Queue for target acquire or set to tracking weapon.
                         /// 
-                        //if (w.System.WeaponName.Contains("RailgunxTurret")) Log.Line($"{w.System.WeaponName} - track:{trackReticle} - fake:{w.Target.IsFakeTarget} - state:{w.Target.CurrentState}");
                         var seek = trackReticle && !w.Target.IsFakeTarget || (!noAmmo && !w.Target.HasTarget && w.TrackTarget && (comp.TargetNonThreats && ai.TargetingInfo.OtherInRange || ai.TargetingInfo.ThreatInRange) && (!comp.UserControlled || w.State.Action == ShootClick));
                         if (!IsClient && (seek || w.TrackTarget && ai.TargetResetTick == Tick && !comp.UserControlled) && !w.AcquiringTarget && (comp.Data.Repo.Base.State.Control == ControlMode.None || comp.Data.Repo.Base.State.Control== ControlMode.Ui)) {
                             w.AcquiringTarget = true;

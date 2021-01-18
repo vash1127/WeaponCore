@@ -21,6 +21,9 @@ namespace WeaponCore
         internal uint ReticleOnSelfTick;
         internal uint MasterUpdateTick;
         internal int ReticleAgeOnSelf;
+        internal readonly char FocusChar = "_"[0];
+        internal Hud.TextureMap FocusTextureMap;
+
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
@@ -36,7 +39,6 @@ namespace WeaponCore
         private Vector2 _pointerPosition = new Vector2(0, 0.0f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.0f);
         private Color _reticleColor = Color.White;
-
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
         {
             {"size", new[] {
@@ -116,6 +118,12 @@ namespace WeaponCore
         internal TargetUi(Session session)
         {
             _session = session;
+            var cm = session.HudUi.CharacterMap;
+            Dictionary<char, Hud.TextureMap> monoText;
+            if (cm.TryGetValue(Hud.FontType.Mono, out monoText))
+            {
+                FocusTextureMap = monoText[FocusChar];
+            }
         }
     }
 }

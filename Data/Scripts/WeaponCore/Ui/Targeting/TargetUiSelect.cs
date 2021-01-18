@@ -20,14 +20,18 @@ namespace WeaponCore
             return enableActivator;
         }
 
+        internal void ResetCache()
+        {
+            _cachedPointerPos = false;
+            _cachedTargetPos = false;
+        }
+
         private void InitPointerOffset(double adjust)
         {
             var position = new Vector3D(_pointerPosition.X, _pointerPosition.Y, 0);
-            var fov = _session.Session.Camera.FovWithZoom;
-            double aspectratio = _session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
-            var scale = 0.075 * Math.Tan(fov * 0.5);
+            var scale = 0.075 * _session.ScaleFov;
 
-            position.X *= scale * aspectratio;
+            position.X *= scale * _session.AspectRatio;
             position.Y *= scale;
 
             PointerAdjScale = adjust * scale;
@@ -140,16 +144,19 @@ namespace WeaponCore
 
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
-            var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1;
+            var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1 || _sortedMasterList.Count - 1 < _endIdx;
+            
             if (s.UiInput.ShiftPressed || s.UiInput.ActionKeyPressed || s.UiInput.AltPressed || s.UiInput.CtrlPressed || updateTick && !UpdateCache()) return;
             _cacheIdleTicks = s.Tick;
 
+            var canMoveForward = _currentIdx + 1 <= _endIdx;
+            var canMoveBackward = _currentIdx - 1 >= 0;
             if (s.UiInput.WheelForward)
-                if (_currentIdx + 1 <= _endIdx)
+                if (canMoveForward)
                     _currentIdx += 1;
                 else _currentIdx = 0;
             else if (s.UiInput.WheelBackward)
-                if (_currentIdx - 1 >= 0)
+                if (canMoveBackward)
                     _currentIdx -= 1;
                 else _currentIdx = _endIdx;
 

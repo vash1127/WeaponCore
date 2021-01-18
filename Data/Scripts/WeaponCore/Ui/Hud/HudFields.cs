@@ -25,14 +25,11 @@ namespace WeaponCore
         private readonly MyStringId _shadowEnglishFontAtlas1 = MyStringId.GetOrCompute("EnglishFontShadow");
         private MatrixD _cameraWorldMatrix;
         private Vector3D _viewPortSize = new Vector3D();
-        private readonly Dictionary<FontType, Dictionary<char, TextureMap>> _characterMap;
         private readonly List<TextureDrawData> _textureAddList = new List<TextureDrawData>(256);
         private readonly List<TextDrawRequest> _textAddList = new List<TextDrawRequest>(256);
         private readonly List<TextureDrawData> _drawList = new List<TextureDrawData>(_initialPoolCapacity);
         private List<StackedWeaponInfo> _weapontoDraw = new List<StackedWeaponInfo>(256);
         private Vector2D _currWeaponDisplayPos = new Vector2D();
-        private float _aspectratio;
-        private float _aspectratioInv;
         private uint _lastHudUpdateTick;
 
         ///
@@ -50,8 +47,7 @@ namespace WeaponCore
         private const float _infoPanelOffset = _WeaponHudFontHeight + (_heatHeightConst * 2f);
         private const float _defaultFov = 1.22f;
         private const float _bgBorderRatio = .166f;
-        private const uint _minUpdateTicks = 60;
-
+        private const uint _minUpdateTicks = 120;
         private readonly TextureMap[] _reloadingTexture = new TextureMap[6];
         private readonly TextureMap[] _outofAmmoTexture = new TextureMap[2];
         private readonly TextureMap[] _chargingTexture = new TextureMap[10];
@@ -86,6 +82,7 @@ namespace WeaponCore
         /// 
         ///
 
+        internal readonly Dictionary<FontType, Dictionary<char, TextureMap>> CharacterMap;
         internal int TexturesToAdd;
         internal bool NeedsUpdate = true;
         internal List<Weapon> WeaponsToDisplay = new List<Weapon>(128);
@@ -103,7 +100,7 @@ namespace WeaponCore
             _session = session;
 
 
-            LoadTextMaps("EN", out _characterMap); // possible translations in future
+            LoadTextMaps("EN", out CharacterMap); // possible translations in future
 
             BuildMap(MyStringId.GetOrCompute("WeaponStatWindow"), 0, 0, 0, 128, 768, 128, 768, 384, ref _infoBackground);
             BuildMap(MyStringId.GetOrCompute("HeatAtlasBar"), 0, 0, 0, 64, 1024, 64, 1024, 1024, ref _heatBarTexture);

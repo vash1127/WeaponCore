@@ -226,14 +226,20 @@ namespace WeaponCore
                     FovChanged();
 
                 CurrentFovWithZoom = newFov;
+                AspectRatio = Camera.ViewportSize.X / Camera.ViewportSize.Y;
+                AspectRatioInv = Camera.ViewportSize.Y / Camera.ViewportSize.X;
+
                 ScaleFov = Math.Tan(CurrentFovWithZoom * 0.5);
 
-                if (HudUi.TexturesToAdd > 0) HudUi.DrawTextures();
+                if (!Session.Config.MinimalHud && InGridAiBlock) {
 
-                if ((UiInput.PlayerCamera || UiInput.FirstPersonView || InGridAiBlock) && !InMenu && !Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
-                {
-                    TargetUi.DrawTargetUi();
+                    if (HudUi.TexturesToAdd > 0 || HudUi.KeepBackground) 
+                        HudUi.DrawTextures();
+
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
+                        TargetUi.DrawTargetUi();
                 }
+
                 Av.Run();
                 DrawDisabledGuns();
                 DsUtil.Complete("draw", true);

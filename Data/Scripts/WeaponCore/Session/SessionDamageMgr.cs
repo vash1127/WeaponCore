@@ -198,7 +198,7 @@ namespace WeaponCore
                 t.BaseDamagePool = 0;
                 return;
             }
-
+            
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;

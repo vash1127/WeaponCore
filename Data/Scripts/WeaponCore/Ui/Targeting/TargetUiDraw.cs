@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -75,26 +76,27 @@ namespace WeaponCore
         {
             var s = _session;
             var focus = s.TrackingAi.Construct.Data.Repo.FocusData;
-            for (int i = 0; i < s.TrackingAi.TargetState.Length; i++)
-            {
+            for (int i = 0; i < s.TrackingAi.TargetState.Length; i++) {
+
                 if (focus.Target[i] <= 0) continue;
                 var lockMode = focus.Locked[i];
 
                 var targetState = s.TrackingAi.TargetState[i];
                 var displayCount = 0;
-                foreach (var icon in _targetIcons.Keys)
-                {
+                foreach (var icon in _targetIcons.Keys) {
+
                     int iconLevel;
                     if (!IconStatus(icon, targetState, out iconLevel)) continue;
 
                     Vector3D offset;
                     float scale;
                     MyStringId textureName;
-                    _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, false, s, out textureName, out scale, out offset);
+                    var iconInfo = _targetIcons[icon][iconLevel];
+                    iconInfo.GetTextureInfo(i, displayCount, s, out textureName, out scale, out offset);
 
                     var color = Color.White;
-                    switch (lockMode)
-                    {
+
+                    switch (lockMode) {
                         case FocusData.LockModes.None:
                             color = Color.White;
                             break;
@@ -106,35 +108,50 @@ namespace WeaponCore
                             break;
                             
                     }
-                    MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
 
-                    if (focus.ActiveId == i && displayCount == 0)
-                    {
-                        var focusTexture = focus.ActiveId == 0 ? _focus : _focusSecondary;
-                        MyTransparentGeometry.AddBillboardOriented(focusTexture, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                    var skipSize = !s.Settings.ClientConfig.ShowHudTargetSizes && icon.Equals("size");
+
+                    if (!skipSize) 
+                        MyTransparentGeometry.AddBillboardOriented(textureName, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+
+                    if (focus.ActiveId == i && displayCount == 0) {
+
+                        if (!skipSize) {
+                            var focusTexture = focus.ActiveId == 0 ? _focus : _focusSecondary;
+                            MyTransparentGeometry.AddBillboardOriented(focusTexture, color, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                        }
+                        else {
+
+                            var focusColor = focus.ActiveId == 0 ? Color.Red : Color.LightBlue;
+                            MyQuadD quad;
+                            var up = (Vector3)s.CameraMatrix.Up;
+                            var left = (Vector3)s.CameraMatrix.Left;
+
+                            MyUtils.GetBillboardQuadOriented(out quad, ref offset, 0.002f, 0.002f, ref left, ref up);
+                            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point1, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, FocusTextureMap.P0, FocusTextureMap.P1, FocusTextureMap.P3, FocusTextureMap.Material, 0, offset, focusColor, BlendTypeEnum.PostPP);
+                            MyTransparentGeometry.AddTriangleBillboard(quad.Point0, quad.Point3, quad.Point2, Vector3.Zero, Vector3.Zero, Vector3.Zero, FocusTextureMap.P0, FocusTextureMap.P2, FocusTextureMap.P3, FocusTextureMap.Material, 0, offset, focusColor, BlendTypeEnum.PostPP);
+                        }
                     }
 
                     displayCount++;
                 }
 
                 MyEntity target;
-                if (i == focus.ActiveId && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target))
-                {
+                if (i == focus.ActiveId && MyEntities.TryGetEntityById(focus.Target[focus.ActiveId], out target)) {
+
                     var targetSphere = target.PositionComp.WorldVolume;
                     var targetCenter = targetSphere.Center;
                     var screenPos = s.Camera.WorldToScreen(ref targetCenter);
-                    var fov = MyAPIGateway.Session.Camera.FovWithZoom;
-                    double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
-                    var screenScale = 0.1 * Math.Tan(fov * 0.5);
-                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
-                    {
+                    var screenScale = 0.1 * s.ScaleFov;
+
+                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0) {
                         screenPos.X *= -1;
                         screenPos.Y = -1;
                     }
 
                     var dotpos = new Vector2D(MathHelper.Clamp(screenPos.X, -0.98, 0.98), MathHelper.Clamp(screenPos.Y, -0.98, 0.98));
 
-                    dotpos.X *= (float)(screenScale * aspectratio);
+                    dotpos.X *= (float)(screenScale * _session.AspectRatio);
                     dotpos.Y *= (float)screenScale;
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
@@ -182,11 +199,9 @@ namespace WeaponCore
         private void InitTargetOffset()
         {
             var position = new Vector3D(_targetDrawPosition.X, _targetDrawPosition.Y, 0);
-            var fov = _session.Session.Camera.FovWithZoom;
-            double aspectratio = _session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
-            var scale = 0.075 * Math.Tan(fov * 0.5);
+            var scale = 0.075 * _session.ScaleFov;
 
-            position.X *= scale * aspectratio;
+            position.X *= scale * _session.AspectRatio;
             position.Y *= scale;
 
             AdjScale = 0.125 * scale;

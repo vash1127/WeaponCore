@@ -40,7 +40,7 @@ namespace WeaponCore
         internal const int AwakeBuckets = 60;
         internal const int AsleepBuckets = 180;
         internal const int ServerCfgVersion = 3;
-        internal const int ClientCfgVersion = 1;
+        internal const int ClientCfgVersion = 2;
         internal const string ServerCfgName = "WeaponCoreServer.cfg";
         internal const string ClientCfgName = "WeaponCoreClient.cfg";
         internal volatile bool Inited;
@@ -258,6 +258,7 @@ namespace WeaponCore
         internal MyStringHash WaterHash;
         internal string TriggerEntityModel;
         internal string ServerVersion;
+        internal string PlayerMessage;
         internal object InitObj = new object();
 
         internal int WeaponIdCounter;
@@ -290,7 +291,8 @@ namespace WeaponCore
         internal double Load;
         internal double ScaleFov;
         internal double RayMissAmounts;
-
+        internal float AspectRatio;
+        internal float AspectRatioInv;
         internal float UiBkOpacity;
         internal float UiOpacity;
         internal float CurrentFovWithZoom;
@@ -403,8 +405,8 @@ namespace WeaponCore
         public Session()
         {
             UiInput = new UiInput(this);
-            TargetUi = new TargetUi(this);
             HudUi = new Hud(this);
+            TargetUi = new TargetUi(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
             StallReporter = new StallReporter();

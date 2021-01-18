@@ -88,6 +88,7 @@ namespace WeaponCore.Settings
             [ProtoMember(3)] public int MaxProjectiles = 3000;
             [ProtoMember(4)] public string MenuButton = MyMouseButtonsEnum.Middle.ToString();
             [ProtoMember(5)] public string ActionKey = MyKeys.R.ToString();
+            [ProtoMember(6)] public bool ShowHudTargetSizes;
         }
     }
 }

@@ -143,6 +143,7 @@ namespace WeaponCore
         private void FovChanged()
         {
             HudUi.NeedsUpdate = true;
+            TargetUi.ResetCache();
         }
 
         private void ShowClientNotify(ClientNotifyPacket notify)
