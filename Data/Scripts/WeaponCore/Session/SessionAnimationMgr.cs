@@ -299,7 +299,7 @@ namespace WeaponCore
                 WeaponEmissive emissive;
                 if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive)) {
 
-                    var progress = 0f;
+                    float progress;
                     if (move.TicksToMove == 1)
                         progress = 1;
                     else
@@ -379,9 +379,8 @@ namespace WeaponCore
 
             for (int j = 0; j < move.TicksToMove; j++) {
 
-                var progress = 0d;
-                var traveled = 0d;
-
+                double progress;
+                double traveled;
                 if (move.MovementType == RelMove.MoveType.ExpoGrowth) { // This if does nothing, because progress is overwritten
 
                     var step = 0.001 * Math.Pow(rate, j + 1);
@@ -391,10 +390,9 @@ namespace WeaponCore
                     if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
                         progress = 1;
                     else
-                        progress = (float)(traveled / angle);
+                        progress = (traveled / angle);
                 }
-
-                if (move.MovementType == RelMove.MoveType.ExpoDecay) {
+                else  if (move.MovementType == RelMove.MoveType.ExpoDecay) {
 
                     var step = angle * Math.Pow(rate, j + 1);
                     if (step < 0.001) step = 0;
@@ -407,7 +405,7 @@ namespace WeaponCore
                         progress = traveled / angle;
                 }
                 else
-                    progress = (double)j / (double)(move.TicksToMove - 1);
+                    progress = (double)j / (move.TicksToMove - 1);
 
                 if (move.TicksToMove == 1 || j == move.TicksToMove - 1)
                     progress = 1;
@@ -924,8 +922,7 @@ namespace WeaponCore
 
                         if (animationType == AnimationType.Movement)
                         {
-                            animation.Part.PositionComp.SetLocalMatrix(ref localMatrix,
-                                null, true);
+                            animation.Part.PositionComp.SetLocalMatrix(ref localMatrix, null, true);
                         }
                         else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
                         {
