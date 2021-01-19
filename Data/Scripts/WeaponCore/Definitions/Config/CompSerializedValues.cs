@@ -392,6 +392,7 @@ namespace WeaponCore
         [ProtoMember(11), DefaultValue(true)] public bool Projectiles = true;
         [ProtoMember(12), DefaultValue(16384)] public int MaxSize = 16384;
         [ProtoMember(13), DefaultValue(MoveModes.Any)] public MoveModes MoveMode = MoveModes.Any;
+        [ProtoMember(14), DefaultValue(true)] public bool Grids = true;
 
         public GroupOverrides() { }
 
@@ -408,9 +409,9 @@ namespace WeaponCore
             FocusSubSystem = syncFrom.FocusSubSystem;
             SubSystem = syncFrom.SubSystem;
             Meteors = syncFrom.Meteors;
+            Grids = syncFrom.Grids;
             Biologicals = syncFrom.Biologicals;
             Projectiles = syncFrom.Projectiles;
-
         }
     }
 }

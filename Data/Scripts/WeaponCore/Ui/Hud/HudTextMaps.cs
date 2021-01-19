@@ -24,6 +24,9 @@ namespace WeaponCore
             };
         }
 
+        private readonly Dictionary<char, float> _shadowCharWidthMap = new Dictionary<char, float> {[' '] = 0.375f, ['.'] = 0.4f };
+        private readonly Dictionary<char, float> _monoCharWidthMap = new Dictionary<char, float> { [' '] = 0.5f, ['.'] = 0.5f};
+
         private void LoadTextMaps(string language, out Dictionary<FontType, Dictionary<char, TextureMap>> characterMap)
         {
 

@@ -83,6 +83,7 @@ namespace WeaponCore
 
                 var targetState = s.TrackingAi.TargetState[i];
                 var displayCount = 0;
+
                 foreach (var icon in _targetIcons.Keys) {
 
                     int iconLevel;
@@ -155,6 +156,8 @@ namespace WeaponCore
                     dotpos.Y *= (float)screenScale;
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
                     MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
+
+                    if (s.Tick20) s.HudUi.AddText(text: $"TargetSize: {targetState.SizeExtended}", x: i == 0 ? 0f : -0.345f, y: 0.83f, name: Hud.ElementNames.Test1, ttl: 18, color: i == 0 ? Color.OrangeRed : Color.MediumOrchid, justify: Hud.Justify.Center, fontType: Hud.FontType.Shadow, fontSize: 5, heightScale: 0.75f);
                 }
             }
         }
@@ -243,7 +246,7 @@ namespace WeaponCore
                     smallGrid = !largeGrid;
                     GridAi targetAi;
                     GridMap gridMap;
-                    if (s.GridTargetingAIs.TryGetValue(grid, out targetAi))
+                    if (s.GridToMasterAi.TryGetValue(grid, out targetAi))
                         partCount = targetAi.Construct.BlockCount;
                     else if (s.GridToInfoMap.TryGetValue(grid, out gridMap))
                         partCount = gridMap.MostBlocks;
@@ -264,6 +267,8 @@ namespace WeaponCore
                 else if ((size2.LargeGrid && largeGrid || !size2.LargeGrid && smallGrid) && partCount > size2.BlockCount) ai.TargetState[i].Size = 2;
                 else if ((size1.LargeGrid && largeGrid || !size1.LargeGrid && smallGrid) && partCount > size1.BlockCount) ai.TargetState[i].Size = 1;
                 else ai.TargetState[i].Size = 0;
+
+                ai.TargetState[i].SizeExtended = partCount / (largeGrid ? 100f : 500f);
 
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, s.ApproachDegrees);
                 var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, s.ApproachDegrees);

@@ -40,6 +40,8 @@ namespace WeaponCore.Control
 
             AddOnOffSwitchNoAction<T>(session, -12, "Meteors", "Target Meteors", "Target Meteors", WepUi.GetMeteors, WepUi.RequestSetMeteors, true, TrackMeteors);
 
+            AddOnOffSwitchNoAction<T>(session, -12, "Grids", "Target Grids", "Target Grids", WepUi.GetGrids, WepUi.RequestSetGrids, true, TrackGrids);
+
             AddOnOffSwitchNoAction<T>(session, -13, "FocusFire", "Target FocusFire", "Target FocusFire", WepUi.GetFocusFire,  WepUi.RequestSetFocusFire, true, HasTracking);
 
             AddOnOffSwitchNoAction<T>(session, -14, "SubSystems", "Target SubSystems", "Target SubSystems", WepUi.GetSubSystems, WepUi.RequestSetSubSystems, true, HasTracking);
@@ -110,6 +112,13 @@ namespace WeaponCore.Control
 
             var comp = block?.Components?.Get<WeaponComponent>();
             return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.TrackingWeapon.System.TrackMeteors;
+        }
+
+        internal static bool TrackGrids(IMyTerminalBlock block)
+        {
+
+            var comp = block?.Components?.Get<WeaponComponent>();
+            return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready && comp.TrackingWeapon.System.TrackGrids;
         }
 
         internal static bool TrackProjectiles(IMyTerminalBlock block)

@@ -72,6 +72,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Api\Water.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Api\WaterModAPI.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VersionControl.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudText.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Hud\HudTextMaps.cs" />

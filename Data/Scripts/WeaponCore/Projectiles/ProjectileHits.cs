@@ -318,7 +318,14 @@ namespace WeaponCore.Projectiles
 
                     var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.AmmoDef.Const.CollisionSize);
                     sphere.Include(new BoundingSphereD(p.Info.Target.Projectile.LastPosition, 1));
-                    var rayCheck = useLine && sphere.Intersects(new RayD(p.LastPosition, p.Info.Direction)) != null;
+                    
+                    bool rayCheck = false;
+                    if (useLine) {
+                        var dist = sphere.Intersects(new RayD(p.LastPosition, p.Info.Direction));
+                        if (dist <= hitTolerance || p.Info.AmmoDef.Const.IsBeamWeapon && dist <= p.Beam.Length)
+                            rayCheck = true;
+                    }
+                    
                     var testSphere = p.PruneSphere;
                     testSphere.Radius = hitTolerance;
 
@@ -376,7 +383,6 @@ namespace WeaponCore.Projectiles
                             voxelHit = p.Beam.From;
                     }
                 }
-                else Log.Line($"impossible");
 
                 if (!voxelHit.HasValue) {
 

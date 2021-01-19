@@ -13,6 +13,7 @@ namespace WeaponCore
         public int Speed;
         public int Distance;
         public int Engagement;
+        public float SizeExtended;
     }
 
     public class IconInfo

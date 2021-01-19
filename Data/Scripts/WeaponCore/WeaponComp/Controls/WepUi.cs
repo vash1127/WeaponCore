@@ -256,6 +256,22 @@ namespace WeaponCore
             WeaponComponent.RequestSetValue(comp, "Meteors", value, comp.Session.PlayerId);
         }
 
+        internal static bool GetGrids(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            return comp.Data.Repo.Base.Set.Overrides.Grids;
+        }
+
+        internal static void RequestSetGrids(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+
+            var value = newValue ? 1 : 0;
+            WeaponComponent.RequestSetValue(comp, "Grids", value, comp.Session.PlayerId);
+        }
+
         internal static bool GetShoot(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();

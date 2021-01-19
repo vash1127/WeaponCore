@@ -981,6 +981,14 @@ namespace WeaponCore.Platform
                 }
                 if (tick - Comp.LastRayCastTick <= 29) return true;
             }
+            
+            if (Target.Entity is IMyCharacter && !Comp.Data.Repo.Base.Set.Overrides.Biologicals || Target.Entity is MyCubeBlock && !Comp.Data.Repo.Base.Set.Overrides.Grids)
+            {
+                masterWeapon.Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
+                if (masterWeapon != this) Target.Reset(Comp.Session.Tick, Target.States.RayCheckProjectile);
+                return false;
+            }
+
             Comp.LastRayCastTick = tick;
 
             if (Target.IsFakeTarget)

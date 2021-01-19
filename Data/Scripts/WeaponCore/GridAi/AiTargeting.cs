@@ -158,9 +158,9 @@ namespace WeaponCore.Support
                         continue;
                 }
 
-                if (info.IsGrid && s.TrackGrids)
+                if (info.IsGrid)
                 {
-                    if (!focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
+                    if (!s.TrackGrids || !overRides.Grids || !focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
                     if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, ref waterSphere, null, !focusTarget)) continue;
                     acquired = true;
@@ -284,7 +284,7 @@ namespace WeaponCore.Support
 
                     if (info.IsGrid) {
 
-                        if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
+                        if (!s.TrackGrids || !overRides.Grids || !focusTarget && info.FatCount < 2) continue;
                         session.CanShoot++;
                         Vector3D newCenter;
                         if (!w.AiEnabled) {

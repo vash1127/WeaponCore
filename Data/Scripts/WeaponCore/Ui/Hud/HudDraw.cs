@@ -19,17 +19,18 @@ namespace WeaponCore
 
             if (WeaponsToDisplay.Count > 0 || KeepBackground) {
 
-                if (ticksSinceUpdate >= _minUpdateTicks) {
+                if (ticksSinceUpdate >= MinUpdateTicks) {
                     _weapontoDraw = SortDisplayedWeapons(WeaponsToDisplay);
                     _lastHudUpdateTick = _session.Tick;
                 }
-                else if (ticksSinceUpdate + 1 >= _minUpdateTicks)
+                else if (ticksSinceUpdate + 1 >= MinUpdateTicks)
                     reset = true;
 
                 BuildHud(reset);
             }
+            
             AddTextAndTextures();
-            DrawHud();
+            DrawHudOnce();
 
             WeaponsToDisplay.Clear();
             _textAddList.Clear();
@@ -47,7 +48,7 @@ namespace WeaponCore
                 var largestName = (_currentLargestName * _textWidth) + _reloadWidth + _stackPadding;
 
                 _bgWidth = largestName > _symbolWidth ? largestName : _symbolWidth;
-                _bgBorderHeight = _bgWidth * _bgBorderRatio;
+                _bgBorderHeight = _bgWidth * BgBorderRatio;
                 _bgCenterHeight = _weapontoDraw.Count > 3 ? (_weapontoDraw.Count - 2) * _infoPaneloffset : _infoPaneloffset * 2;
             }
 
@@ -66,14 +67,9 @@ namespace WeaponCore
             }
         }
 
-        private void DrawHud()
+        private void DrawHudOnce()
         {
             foreach (var textureToDraw in _drawList) {
-
-                if (textureToDraw.Simple) {
-                    textureToDraw.Position.X = (textureToDraw.Position.X / (-_viewPortSize.X) * (_viewPortSize.X - 100) + 100);
-                    textureToDraw.Position.Y = (textureToDraw.Position.Y / (-_viewPortSize.Y) * (_viewPortSize.Y - 100) + 100);
-                }
 
                 if (textureToDraw.UvDraw) {
 
@@ -95,7 +91,9 @@ namespace WeaponCore
                 }
 
                 if (!textureToDraw.Persistant)
+                {
                     _textureDrawPool.Enqueue(textureToDraw);
+                }
             }
         }
 
@@ -112,7 +110,9 @@ namespace WeaponCore
 
                 for (int j = 0; j < textAdd.Text.Length; j++) {
 
-                    var cm = CharacterMap[textAdd.Font][textAdd.Text[j]];
+                    var c = textAdd.Text[j];
+
+                    var cm = CharacterMap[textAdd.Font][c];
 
                     TextureDrawData tdd;
 
@@ -131,7 +131,6 @@ namespace WeaponCore
                     tdd.P2 = cm.P2;
                     tdd.P3 = cm.P3;
                     tdd.UvDraw = true;
-                    tdd.Simple = textAdd.Simple;
 
                     _drawList.Add(tdd);
 
@@ -231,7 +230,6 @@ namespace WeaponCore
                 textInfo.Position.X = textOffset;
                 textInfo.Position.Y = currWeaponDisplayPos.Y;
                 textInfo.FontSize = _textSize;
-                textInfo.Simple = false;
                 textInfo.Font = _hudFont;
                 _textAddList.Add(textInfo);
 
@@ -247,7 +245,6 @@ namespace WeaponCore
 
                     textInfo.Position.Y = currWeaponDisplayPos.Y - (_sTextSize * .5f);
                     textInfo.FontSize = _sTextSize;
-                    textInfo.Simple = false;
                     textInfo.Font = FontType.Mono;
                     _textAddList.Add(textInfo);
                 }

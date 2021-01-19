@@ -54,7 +54,7 @@ namespace WeaponCore.Api
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, int, MyTuple<Vector3D, Vector3D>> _getWeaponScope;
         private Func<Sandbox.ModAPI.Ingame.IMyTerminalBlock, MyTuple<bool, bool>> _isInRange;
 
-        private bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
+        public bool Activate(Sandbox.ModAPI.Ingame.IMyTerminalBlock pbBlock)
         {
             var dict = pbBlock.GetProperty("WcPbAPI")?.As<Dictionary<string, Delegate>>().GetValue(pbBlock);
             if (dict == null) throw new Exception($"WcPbAPI failed to activate");

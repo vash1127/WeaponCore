@@ -63,6 +63,7 @@ namespace WeaponCore
             CreateCustomActions<T>.CreateProjectiles(session);
             CreateCustomActions<T>.CreateBiologicals(session);
             CreateCustomActions<T>.CreateMeteors(session);
+            CreateCustomActions<T>.CreateGrids(session);
             CreateCustomActions<T>.CreateFocusTargets(session);
             CreateCustomActions<T>.CreateFocusSubSystem(session);
         }

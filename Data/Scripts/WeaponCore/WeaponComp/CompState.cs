@@ -248,6 +248,9 @@ namespace WeaponCore.Support
                 case "Meteors":
                     o.Meteors = enabled;
                     break;
+                case "Grids":
+                    o.Grids = enabled;
+                    break;
                 case "Biologicals":
                     o.Biologicals = enabled;
                     break;

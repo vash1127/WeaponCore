@@ -238,6 +238,9 @@ namespace WeaponCore
 
                     if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Gui.IsCursorVisible)
                         TargetUi.DrawTargetUi();
+
+                    if (HudUi.AgingTextures)
+                        HudUi.DrawText();
                 }
 
                 Av.Run();

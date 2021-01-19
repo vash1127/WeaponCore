@@ -136,6 +136,18 @@ namespace WeaponCore.Control
             WeaponComponent.RequestSetValue(comp, "Meteors", newValue, comp.Session.PlayerId);
         }
 
+        internal static void TerminalActionToggleGrids(IMyTerminalBlock blk)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                return;
+
+            var newBool = !comp.Data.Repo.Base.Set.Overrides.Grids;
+            var newValue = newBool ? 1 : 0;
+
+            WeaponComponent.RequestSetValue(comp, "Grids", newValue, comp.Session.PlayerId);
+        }
+
         internal static void TerminalActionToggleFriendly(IMyTerminalBlock blk)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
@@ -324,6 +336,16 @@ namespace WeaponCore.Control
             var comp = blk.Components.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             if (comp.Data.Repo.Base.Set.Overrides.Meteors)
+                sb.Append("On");
+            else
+                sb.Append("Off");
+        }
+
+        internal static void GridsWriter(IMyTerminalBlock blk, StringBuilder sb)
+        {
+            var comp = blk.Components.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp.Data.Repo.Base.Set.Overrides.Grids)
                 sb.Append("On");
             else
                 sb.Append("Off");
