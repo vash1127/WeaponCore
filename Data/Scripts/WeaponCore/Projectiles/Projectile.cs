@@ -514,7 +514,7 @@ namespace WeaponCore.Projectiles
                     var roam = Info.AmmoDef.Trajectory.Smarts.Roam;
                     PrevTargetPos = roam ? PredictedTargetPos : Position + (Info.Direction * Info.MaxTrajectory);
 
-                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget)) {
+                    if (ZombieLifeTime++ > Info.AmmoDef.Const.TargetLossTime && !Info.AmmoDef.Trajectory.Smarts.KeepAliveAfterTargetLoss && (Info.AmmoDef.Trajectory.Smarts.NoTargetExpire || HadTarget)) {
                         DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
                         EarlyEnd = true;
                     }
