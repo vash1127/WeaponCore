@@ -66,6 +66,7 @@ namespace WeaponCore.Platform
                 State = PlatformState.Delay;
                 return State;
             }
+
             //Get or init Ai
             var newAi = false;
             if (!Comp.Session.GridTargetingAIs.TryGetValue(Comp.MyCube.CubeGrid, out Comp.Ai)) {
@@ -82,8 +83,8 @@ namespace WeaponCore.Platform
             var wCounter = comp.Ai.WeaponCounter[blockDef];
             wCounter.Max = Structure.GridWeaponCap;
 
-            if (newAi)
-            {
+            if (newAi) {
+
                 Comp.SubGridInit();
                 if (Comp.Ai.MarkedForClose)
                     Log.Line($"PlatFormInit and AI MarkedForClose: CubeMarked:{Comp.MyCube.MarkedForClose}");
@@ -97,25 +98,6 @@ namespace WeaponCore.Platform
             else
                 return PlatformCrash(comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
             
-            MyOrientedBoundingBoxD b;
-            BoundingSphereD s;
-            MyOrientedBoundingBoxD blockBox;
-            SUtils.GetBlockOrientedBoundingBox(Comp.MyCube, out blockBox);
-            if (Comp.Ai.Session.IsWeaponAreaRestricted(Comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, Comp.MyCube.CubeGrid, Comp.MyCube.EntityId, Comp.Ai, out b, out s))
-            {
-                if (!Comp.Session.DedicatedServer)
-                {
-                    if (Comp.MyCube.OwnerId == MyAPIGateway.Session.Player.Identity.IdentityId)
-                    {
-                        MyAPIGateway.Utilities.ShowNotification($"Block {Comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
-                    }
-                }
-                if (comp.Session.IsServer)
-                {
-                    comp.MyCube.CubeGrid.RemoveBlock(comp.MyCube.SlimBlock);
-                }
-                return PlatformCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
-            }
             Parts.Entity = comp.Entity as MyEntity;
 
             return GetParts(comp);

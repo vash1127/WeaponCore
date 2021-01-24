@@ -6,6 +6,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -21,13 +22,42 @@ namespace WeaponCore
             public uint AddTick;
         }
 
+        private bool CompRestricted(WeaponComponent comp)
+        {
+            var grid = comp.MyCube?.CubeGrid;
+
+            GridAi ai;
+            if (grid == null || !GridTargetingAIs.TryGetValue(grid, out ai))
+                return false;
+
+            MyOrientedBoundingBoxD b;
+            BoundingSphereD s;
+            MyOrientedBoundingBoxD blockBox;
+            SUtils.GetBlockOrientedBoundingBox(comp.MyCube, out blockBox);
+
+            if (IsWeaponAreaRestricted(comp.MyCube.BlockDefinition.Id.SubtypeId, blockBox, grid, comp.MyCube.EntityId, ai, out b, out s)) {
+
+                if (!DedicatedServer) {
+
+                    if (comp.MyCube.OwnerId == PlayerId)
+                        MyAPIGateway.Utilities.ShowNotification($"Block {comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
+                }
+
+                if (IsServer)
+                    comp.MyCube.CubeGrid.RemoveBlock(comp.MyCube.SlimBlock);
+                return true;
+            }
+
+            return false;
+        }
+
         private void StartComps()
         {
-            for (int i = 0; i < CompsToStart.Count; i++)
-            {
+            for (int i = 0; i < CompsToStart.Count; i++) {
+
                 var weaponComp = CompsToStart[i];
-                if (weaponComp.MyCube.CubeGrid.IsPreview)
-                {
+                if (weaponComp.MyCube.CubeGrid.IsPreview || CompRestricted(weaponComp)) {
+
                     PlatFormPool.Return(weaponComp.Platform);
                     weaponComp.Platform = null;
                     CompsToStart.Remove(weaponComp);
@@ -38,13 +68,13 @@ namespace WeaponCore
                     continue;
 
                 QuickDisableGunsCheck = true;
-                if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
-                {
-                    if (weaponComp.MyCube.MarkedForClose)
-                    {
+                if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh) {
+
+                    if (weaponComp.MyCube.MarkedForClose) {
                         CompsToStart.Remove(weaponComp);
                         continue;
                     }
+
                     if (!GridToInfoMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                         continue;
 
@@ -52,8 +82,7 @@ namespace WeaponCore
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);
                 }
-                else
-                {
+                else {
                     Log.Line($"comp didn't match CompsToStart condition, removing");
                     CompsToStart.Remove(weaponComp);
                 }
