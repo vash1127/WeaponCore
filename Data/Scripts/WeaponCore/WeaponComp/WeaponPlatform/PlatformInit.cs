@@ -96,7 +96,7 @@ namespace WeaponCore.Platform
             }
             else
                 return PlatformCrash(comp, true, false, $"{blockDef.String} over block limits: {wCounter.Current}.");
-            /*
+            
             MyOrientedBoundingBoxD b;
             BoundingSphereD s;
             MyOrientedBoundingBoxD blockBox;
@@ -110,9 +110,12 @@ namespace WeaponCore.Platform
                         MyAPIGateway.Utilities.ShowNotification($"Block {Comp.MyCube.DisplayNameText} was placed too close to another gun", 10000);
                     }
                 }
+                if (comp.Session.IsServer)
+                {
+                    comp.MyCube.CubeGrid.RemoveBlock(comp.MyCube.SlimBlock);
+                }
                 return PlatformCrash(comp, true, false, $"{blockDef.String} was too close to another weapon on grid" + Comp.MyCube.CubeGrid.Name);
             }
-            */
             Parts.Entity = comp.Entity as MyEntity;
 
             return GetParts(comp);

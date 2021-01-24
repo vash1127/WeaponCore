@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRageMath;
 using VRage.Collections;
 using VRage.Game.Entity;
 using static WeaponCore.Session;
@@ -77,6 +78,19 @@ namespace WeaponCore.Support
                 else if (battery != null) {
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
+                } else if (isWeaponBase)
+                {
+                    MyOrientedBoundingBoxD b;
+                    BoundingSphereD s;
+                    MyOrientedBoundingBoxD blockBox;
+                    SUtils.GetBlockOrientedBoundingBox(cube, out blockBox);
+                    if (Session.IsWeaponAreaRestricted(cube.BlockDefinition.Id.SubtypeId, blockBox, cube.CubeGrid, cube.EntityId, null, out b, out s))
+                    {
+                        if (Session.IsServer)
+                        {
+                            cube.CubeGrid.RemoveBlock(cube.SlimBlock);
+                        }
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex} - {cube?.BlockDefinition == null} - RootAiNull: {Construct.RootAi == null}"); }
