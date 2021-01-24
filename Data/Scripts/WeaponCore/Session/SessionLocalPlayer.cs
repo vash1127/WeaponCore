@@ -229,11 +229,11 @@ namespace WeaponCore
                         if (WeaponAreaRestrictions.ContainsKey(subtypeIdHash))
                         {
                             MyOrientedBoundingBoxD restrictedBox;
+                            MyOrientedBoundingBoxD buildBox = MyCubeBuilder.Static.GetBuildBoundingBox();
                             BoundingSphereD restrictedSphere;
-                            if (IsWeaponAreaRestricted(subtypeIdHash, MyCubeBuilder.Static.GetBuildBoundingBox(), grid, 0, null, out restrictedBox, out restrictedSphere))
+                            if (IsWeaponAreaRestricted(subtypeIdHash, buildBox, grid, 0, null, out restrictedBox, out restrictedSphere))
                             {
-                                //MyCubeBuilder.Static.NotifyPlacementUnable();
-                                //MyCubeBuilder.Static.Deactivate();
+                                DsDebugDraw.DrawBox(buildBox, _uninitializedColor);
                             }
 
                             if (MyAPIGateway.Session.Config.HudState == 1)
