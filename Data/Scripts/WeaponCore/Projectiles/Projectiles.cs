@@ -141,8 +141,9 @@ namespace WeaponCore.Projectiles
 
                         var update = (p.Info.Age % 60 == 0 || (p.FakeGravityNear || p.EntitiesNear) && p.Info.Age % 10 == 0) && p.Info.Age > 0;
                         if (update) {
-                            
-                            p.Gravity = MyParticlesManager.CalculateGravityInPoint(p.Position);
+
+                            float interference;
+                            p.Gravity = Session.Physics.CalculateNaturalGravityAt(p.Position, out interference);
                             if (!p.Info.InPlanetGravity && !MyUtils.IsZero(p.Gravity)) p.FakeGravityNear = true;
                             else p.FakeGravityNear = false;
                             p.EntitiesNear = false;

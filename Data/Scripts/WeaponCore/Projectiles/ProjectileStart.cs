@@ -75,10 +75,12 @@ namespace WeaponCore.Projectiles
                 if (a.Const.FeelsGravity && w.System.Session.Tick - w.GravityTick > 60)
                 {
                     w.GravityTick = w.System.Session.Tick;
-                    w.GravityPoint = MyParticlesManager.CalculateGravityInPoint(p.Info.Origin);
+                    float interference;
+                    w.GravityPoint = Session.Physics.CalculateNaturalGravityAt(p.Position, out interference);
                 }
 
                 p.Gravity = w.GravityPoint;
+
                 if (t != Kind.Virtual)
                 {
                     p.Info.PrimeEntity = a.Const.PrimeModel ? a.Const.PrimeEntityPool.Get() : null;

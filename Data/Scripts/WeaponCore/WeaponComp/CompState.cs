@@ -87,6 +87,9 @@ namespace WeaponCore.Support
             for (int i = 0; i < Platform.Weapons.Length; i++) {
                 var w = Platform.Weapons[i];
 
+                if (w.State.Overheated)
+                    return false;
+
                 if ((w.Ammo.CurrentAmmo > 0 || w.System.DesignatorWeapon) && (checkAllWeapons || weaponToCheck == i))
                     ++loadedWeapons;
             }

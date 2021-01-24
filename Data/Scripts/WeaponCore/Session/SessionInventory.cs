@@ -31,17 +31,8 @@ namespace WeaponCore
                         MyConcurrentList<MyPhysicalInventoryItem> phyItemList;
                         if (InventoryItems.TryGetValue(inventory, out phyItemList))
                             phyItemList.AddRange(items);
-                        else {
-
-                            var entity = inventory.Entity as MyEntity;
-                            if (entity != null && logged++ == 0) {
-
-                                var block = entity as MyCubeBlock;
-                                var blockSubType = block?.BlockDefinition != null ? block.BlockDefinition.Id.SubtypeName : "NA";
-                                var invMon = block != null ? $"{ai.InventoryMonitor.ContainsKey(block)}" : "NA";
-                                Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - inAiInvMon:{invMon} - block:{entity.DebugName} - subType:{blockSubType} - goodParent:{ai.MyGrid == block?.CubeGrid} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
-                            }
-                        }
+                        else if (logged++ == 0)
+                            Log.Line($"phyItemList and inventory.entity is null in StartAmmoTask - grid:{ai.MyGrid.DebugName} - aiMarked:{ai.MarkedForClose} - cTick:{Tick - ai.AiCloseTick} - mTick:{Tick - ai.AiMarkedTick} - sTick:{Tick - ai.CreatedTick}");
                     }
                 }
             }

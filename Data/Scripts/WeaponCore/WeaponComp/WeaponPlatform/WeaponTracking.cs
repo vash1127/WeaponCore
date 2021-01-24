@@ -470,7 +470,8 @@ namespace WeaponCore.Platform
 
             if (ammoDef.Const.FeelsGravity && session.Tick - weapon.GravityTick > 119) {
                 weapon.GravityTick = session.Tick;
-                weapon.GravityPoint = MyParticlesManager.CalculateGravityInPoint(weapon.MyPivotPos);
+                float interference;
+                weapon.GravityPoint = session.Physics.CalculateNaturalGravityAt(weapon.MyPivotPos, out interference);
             }
 
             var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
@@ -611,7 +612,8 @@ namespace WeaponCore.Platform
             if (ammoDef.Const.FeelsGravity && session.Tick - weapon.GravityTick > 119)
             {
                 weapon.GravityTick = session.Tick;
-                weapon.GravityPoint = MyParticlesManager.CalculateGravityInPoint(weapon.MyPivotPos);
+                float interference;
+                weapon.GravityPoint = session.Physics.CalculateNaturalGravityAt(weapon.MyPivotPos, out interference);
             }
 
             var gravityMultiplier = ammoDef.Const.FeelsGravity && !MyUtils.IsZero(weapon.GravityPoint) ? ammoDef.Trajectory.GravityMultiplier : 0f;
@@ -767,7 +769,8 @@ namespace WeaponCore.Platform
             if (ActiveAmmoDef.AmmoDef.Const.FeelsGravity && Comp.Ai.Session.Tick - GravityTick > 119)
             {
                 GravityTick = Comp.Ai.Session.Tick;
-                GravityPoint = MyParticlesManager.CalculateGravityInPoint(MyPivotPos);
+                float interference;
+                GravityPoint = System.Session.Physics.CalculateNaturalGravityAt(MyPivotPos, out interference);
             }
             var gravityMultiplier = ActiveAmmoDef.AmmoDef.Const.FeelsGravity && !MyUtils.IsZero(GravityPoint) ? ActiveAmmoDef.AmmoDef.Trajectory.GravityMultiplier : 0f;
 
