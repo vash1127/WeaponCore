@@ -173,6 +173,7 @@ namespace WeaponCore.Platform
         internal double MaxTargetDistanceSqr;
         internal double MinTargetDistance;
         internal double MinTargetDistanceSqr;
+        internal double MinTargetDistanceBufferSqr;
         internal double MuzzleDistToBarrelCenter;
         internal bool ClientReloading;
         internal bool Rotating;

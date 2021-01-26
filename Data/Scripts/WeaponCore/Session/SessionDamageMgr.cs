@@ -194,7 +194,8 @@ namespace WeaponCore
                 hitEnt.Blocks?.Clear();
                 return;
             }
-            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal || (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsSameConstructAs(grid)) {
+            if (t.AmmoDef.DamageScales.Shields.Type == ShieldDef.ShieldType.Heal|| (!t.AmmoDef.Const.SelfDamage || !MyAPIGateway.Session.SessionSettings.EnableTurretsFriendlyFire) && t.Target.FiringCube.CubeGrid.IsSameConstructAs(grid) || !grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+            {
                 t.BaseDamagePool = 0;
                 return;
             }

@@ -317,6 +317,12 @@ namespace WeaponCore.Support
                 var grid = entity.GetTopMostParent() as MyCubeGrid;
                 if (grid != null)
                 {
+                    if (!grid.DestructibleBlocks || grid.Immune || grid.GridGeneralDamageModifier <= 0)
+                    {
+                        entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
+                        return false;
+                    }
+
                     var bigOwners = grid.BigOwners;
                     var topOwner = bigOwners.Count > 0 ? bigOwners[0] : long.MaxValue;
 

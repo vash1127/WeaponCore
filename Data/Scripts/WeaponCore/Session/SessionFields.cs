@@ -30,9 +30,9 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        internal const ushort StringPacketId = 62517;
         internal const ushort ServerPacketId = 62518;
         internal const ushort ClientPacketId = 62519;
-        internal const ushort StringPacketId = 62520;
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees

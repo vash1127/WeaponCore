@@ -182,6 +182,10 @@ namespace WeaponCore.Platform
             MaxTargetDistanceSqr = MaxTargetDistance * MaxTargetDistance;
             MinTargetDistance = System.Values.Targeting.MinTargetDistance;
             MinTargetDistanceSqr = MinTargetDistance * MinTargetDistance;
+            
+            var minBuffer = MinTargetDistance * 0.50;
+            var minBufferSqr = (MinTargetDistance + minBuffer) * (MinTargetDistance + minBuffer);
+            MinTargetDistanceBufferSqr = minBufferSqr;
 
             if (Comp.MaxTargetDistance < MaxTargetDistance) {
                 Comp.MaxTargetDistance = MaxTargetDistance;

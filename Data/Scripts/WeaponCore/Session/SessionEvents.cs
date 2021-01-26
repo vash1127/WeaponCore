@@ -298,7 +298,6 @@ namespace WeaponCore
 
                         WaterMap[water.planet] = water;
                         var maxWaterHeight = water.radius;
-                        Log.Line($"{water.radius}");
                         var maxWaterHeightSqr = maxWaterHeight * maxWaterHeight;
                         MaxWaterHeightSqr[water.planet] = maxWaterHeightSqr;
                     }
