@@ -206,18 +206,22 @@ namespace WeaponCore.Platform
                 if (!s.IsCreative)
                 {
                     Comp.CurrentInventoryVolume = (float)Comp.BlockInventory.CurrentVolume;
-                    var freeSpace = System.MaxAmmoVolume - Comp.CurrentInventoryVolume;
-                    var spotsFree = (int)(freeSpace / ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    var freeVolume = System.MaxAmmoVolume - Comp.CurrentInventoryVolume;
+                    var spotsFree = (int)(freeVolume / ActiveAmmoDef.AmmoDef.Const.MagVolume);
                     Ammo.CurrentMags = Comp.BlockInventory.GetItemAmount(ActiveAmmoDef.AmmoDefinitionId).ToIntSafe();
                     CurrentAmmoVolume = Ammo.CurrentMags * ActiveAmmoDef.AmmoDef.Const.MagVolume;
 
-                    var magsNeeded = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.AmmoDef.Const.MagVolume);
-                    magsNeeded = magsNeeded > spotsFree ? spotsFree : magsNeeded;
+                    var magsRequested = (int)((System.FullAmmoVolume - CurrentAmmoVolume) / ActiveAmmoDef.AmmoDef.Const.MagVolume);
+                    var magsGranted = magsRequested > spotsFree ? spotsFree : magsRequested;
+                    var requestedVolume = ActiveAmmoDef.AmmoDef.Const.MagVolume * magsGranted;
+                    var spaceAvailable = freeVolume > requestedVolume;
+                    var lowThreshold = System.MaxAmmoVolume * 0.25f;
 
-                    var needsAmmo = magsNeeded > 0 && CurrentAmmoVolume < 0.25f * System.MaxAmmoVolume && freeSpace > ActiveAmmoDef.AmmoDef.Const.MagVolume * magsNeeded;
+                    var pullAmmo = magsGranted > 0 && CurrentAmmoVolume < lowThreshold && spaceAvailable;
+                    
                     var failSafeTimer = s.Tick - LastInventoryTick > 600;
                     
-                    if (needsAmmo && (CheckInventorySystem || failSafeTimer && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)) && !s.WeaponToPullAmmo.Contains(this)) {
+                    if (pullAmmo && (CheckInventorySystem || failSafeTimer && Comp.Ai.Construct.RootAi.Construct.OutOfAmmoWeapons.Contains(this)) && !s.WeaponToPullAmmo.Contains(this)) {
 
                         CheckInventorySystem = false;
                         LastInventoryTick = s.Tick;

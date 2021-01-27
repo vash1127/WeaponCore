@@ -127,8 +127,8 @@ namespace WeaponCore
             var areaDamage = areaEffect.AreaEffect != AreaEffectType.Disabled ? (info.AmmoDef.Const.AreaEffectDamage * (info.AmmoDef.Const.AreaEffectSize * 0.5f)) * areaDmgGlobal : 0;
             var scaledBaseDamage = info.BaseDamagePool * damageScale;
             var scaledDamage = (((scaledBaseDamage + areaDamage) * info.AmmoDef.Const.ShieldModifier) * info.AmmoDef.Const.ShieldBypassMod) ;
-            if (fallOff)
-            {
+            
+            if (fallOff) {
                 var fallOffMultipler = MathHelperD.Clamp(1.0 - ((info.DistanceTraveled - info.AmmoDef.DamageScales.FallOff.Distance) / (info.AmmoDef.Const.MaxTrajectory - info.AmmoDef.DamageScales.FallOff.Distance)), info.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
                 scaledDamage *= fallOffMultipler;
             }
@@ -136,44 +136,47 @@ namespace WeaponCore
             var unscaledDetDmg = areaEffect.AreaEffect == AreaEffectType.Radiant ? info.AmmoDef.Const.DetonationDamage : info.AmmoDef.Const.DetonationDamage * (info.AmmoDef.Const.DetonationRadius * 0.5f);
             var detonateDamage = detonateOnEnd ? unscaledDetDmg * info.AmmoDef.Const.ShieldModifier * detDmgGlobal : 0;
 
-            var combinedDamage = (float) (scaledDamage + detonateDamage);
-           
             if (heal) {
                 var heat = SApi.GetShieldHeat(shield);
 
                 switch (heat)
                 {
                     case 0:
-                        combinedDamage *= -1;
+                        scaledDamage *= -1;
+                        detonateDamage *= -1;
                         break;
                     case 100:
-                        combinedDamage = -0.01f;
+                        scaledDamage = -0.01f;
+                        detonateDamage = -0.01f;
                         break;
                     default:
                     {
                         var dec = heat / 100f;
                         var healFactor = 1 - dec;
-                        combinedDamage *= healFactor;
-                        combinedDamage *= -1;
+                        scaledDamage *= healFactor;
+                        scaledDamage *= -1;
+                        detonateDamage *= healFactor;
+                        detonateDamage *= -1;
                         break;
                     }
                 }
             }
             var applyToShield = info.AmmoDef.AmmoGraphics.ShieldHitDraw && (!info.AmmoDef.AmmoGraphics.Particles.Hit.ApplyToShield || !info.AmmoDef.Const.HitParticle);
+            var hit = SApi.PointAttackShieldCon(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, (float)scaledDamage, (float)detonateDamage, energy, applyToShield);
+           
+            if (hit.HasValue) {
 
-            var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, combinedDamage, energy, applyToShield);
-            if (hit.HasValue)
-            {
-                if (heal)
-                {
+                if (heal) {
                     info.BaseDamagePool = 0;
                     return;
                 }
+
                 var objHp = hit.Value;
+
                 if (info.EwarActive)
                     info.BaseHealthPool -= 1;
-                else if (objHp > 0)
-                {
+                else if (objHp > 0) {
+
                     if (!shieldByPass)
                         info.BaseDamagePool = 0;
                     else 
