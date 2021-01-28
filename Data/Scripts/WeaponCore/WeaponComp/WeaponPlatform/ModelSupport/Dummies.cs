@@ -102,17 +102,22 @@ namespace WeaponCore.Support
                 }
 
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
-                CachedPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
-                CachedDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
-                return new DummyInfo { Position = CachedPos, Direction = CachedDir, DummyMatrix = _cachedSubpart.WorldMatrix };
+                var localPos = dummyMatrix.Translation;
+                var localDir = dummyMatrix.Forward;
+                CachedPos = Vector3D.Transform(localPos, _cachedSubpart.WorldMatrix);
+                CachedDir = Vector3D.TransformNormal(localDir, _cachedSubpart.WorldMatrix);
+                return new DummyInfo { Position = CachedPos, Direction = CachedDir, DummyMatrix = _cachedSubpart.WorldMatrix, Entity = _entity, LocalPosition = localPos, LocalDir = localDir };
             }
         }
 
         public struct DummyInfo
         {
             public Vector3D Position;
+            public Vector3D LocalPosition;
+            public Vector3D LocalDir;
             public Vector3D Direction;
             public MatrixD DummyMatrix;
+            public MyEntity Entity;
         }
     }
 }
