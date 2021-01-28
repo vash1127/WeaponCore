@@ -160,6 +160,7 @@ namespace WeaponCore.Support
 
                 if (info.IsGrid)
                 {
+                    
                     if (!s.TrackGrids || !overRides.Grids || !focusTarget && info.FatCount < 2 || Obstruction(ref info, ref targetPos, p)) continue;
 
                     if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, p.Info.WeaponRng, ReAcquire, ref waterSphere, null, !focusTarget)) continue;
@@ -386,7 +387,7 @@ namespace WeaponCore.Support
                                 target.Top5.Clear();
 
                             target.LastBlockType = bt;
-                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, ref waterSphere, w,  checkPower))
+                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, info, weaponPos, targetLinVel, targetAccel, ref waterSphere, w,  checkPower))
                                 return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, wRng, type,  ref waterSphere, checkPower)) return true;
@@ -482,7 +483,7 @@ namespace WeaponCore.Support
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
                     if (hitGrid != null)
                     {
-                        if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && hitGrid.IsSameConstructAs(ai.MyGrid)) continue;
+                        if (hitGrid.MarkedForClose || hitGrid != block.CubeGrid && (hitGrid.IsSameConstructAs(ai.MyGrid) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
                         bool enemy;
 
                         var bigOwners = hitGrid.BigOwners;
@@ -515,7 +516,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere ,Weapon w = null, bool checkPower = true)
+        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, TargetInfo info, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, ref BoundingSphereD waterSphere ,Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -569,8 +570,24 @@ namespace WeaponCore.Support
                                 if (ai.Session.Physics.CastRay(testPos, cubePos, out hit, CollisionLayers.DefaultCollisionLayer))  {
                                     var hitEnt = hit.HitEntity?.GetTopMostParent() as MyEntity;
                                     var hitGrid = hitEnt as MyCubeGrid;
-                                    if (hitGrid != null && grid == hitGrid || hit.HitEntity is MyFloatingObject || hit.HitEntity is IMyCharacter || hitEnt != null && w.Comp.Ai.Targets.ContainsKey(hitEnt)) 
+
+                                    if (hitGrid != null) {
+
+                                        if (hitGrid.MarkedForClose || hitGrid != cube.CubeGrid && (hitGrid.IsSameConstructAs(ai.MyGrid) || !hitGrid.DestructibleBlocks || hitGrid.Immune || hitGrid.GridGeneralDamageModifier <= 0)) continue;
+                                        bool enemy;
+
+                                        var bigOwners = hitGrid.BigOwners;
+
+                                        if (bigOwners.Count == 0) enemy = true;
+                                        else {
+                                            var relationship = info.EntInfo.Relationship;
+                                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare && relationship != MyRelationsBetweenPlayerAndBlock.Friends;
+                                        }
+
+                                        if (!enemy)
+                                            continue;
                                         bestTest = true;
+                                    }
                                 }
                             }
                         }
@@ -694,7 +711,7 @@ namespace WeaponCore.Support
                 var card = deck[x];
                 var lp = collection[card];
                 var cube = lp.Info.Target.Entity as MyCubeBlock;
-                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.MyGrid)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, weaponPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, weaponPos) < w.MinTargetDistanceSqr) continue;
+                if (smartOnly && !lp.SmartsOn || lockedOnly && (!lp.SmartsOn || cube != null && cube.CubeGrid.IsSameConstructAs(w.Comp.Ai.MyGrid)) || lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, weaponPos) > w.MaxTargetDistanceSqr || Vector3D.DistanceSquared(lp.Position, weaponPos) < w.MinTargetDistanceBufferSqr) continue;
 
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, ref lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))

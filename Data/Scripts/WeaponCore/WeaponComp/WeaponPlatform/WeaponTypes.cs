@@ -75,8 +75,7 @@ namespace WeaponCore.Platform
 
                     if (topAsGrid == null)
                         return;
-
-                    if (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid))
+                    if (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid) || !topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0)
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
                         if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);

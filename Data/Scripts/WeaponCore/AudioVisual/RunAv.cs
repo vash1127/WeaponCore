@@ -399,21 +399,25 @@ namespace WeaponCore.Support
                     weapon.Comp.Ai.IsStatic = weapon.Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                     weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
                 }
+                var info = weapon.Dummies[muzzle.MuzzleId].Info;
+                if (info.Entity == null)
+                    continue;
 
-                var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
-                var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotFwd, weapon.MyPivotUp);
                 var particles = weapon.System.Values.HardPoint.Graphics;
-                
-                matrix.Translation +=  Vector3D.Rotate(particles.Barrel1.Offset, matrix);
+                var renderId = info.Entity.Render.GetRenderObjectID();
+                var matrix = MatrixD.Identity;
+                var pos = info.LocalPosition;
+                pos += Vector3D.Rotate(particles.Barrel1.Offset, matrix);
+
                 if (!effectExists && ticksAgo <= 0) {
 ;
-                    if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
+                    if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
 
                         effect = weapon.BarrelEffects1[muzzle.MuzzleId];
                         effect.UserColorMultiplier = particles.Barrel1.Color;
                         effect.UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                         effect.WorldMatrix = matrix;
-                        weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                        //weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                         effect.Play();
                     }
                 }
@@ -436,7 +440,6 @@ namespace WeaponCore.Support
         internal void RunAvBarrels2()
         {
             for (int i = AvBarrels2.Count - 1; i >= 0; i--) {
-
                 var avBarrel = AvBarrels2[i];
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
@@ -471,19 +474,24 @@ namespace WeaponCore.Support
                         weapon.Comp.Ai.VelocityUpdateTick = weapon.Comp.Session.Tick;
                     }
 
-                    var pos = weapon.Dummies[muzzle.MuzzleId].Info.Position;
-                    var matrix = MatrixD.CreateWorld(pos, weapon.MyPivotFwd, weapon.MyPivotUp);
-                    var particles = weapon.System.Values.HardPoint.Graphics;
+                    var info = weapon.Dummies[muzzle.MuzzleId].Info;
+                    if (info.Entity == null)
+                        continue;
 
-                    matrix.Translation += Vector3D.Rotate(particles.Barrel2.Offset, matrix);
+                    var particles = weapon.System.Values.HardPoint.Graphics;
+                    var renderId = info.Entity.Render.GetRenderObjectID();
+                    var matrix = MatrixD.Identity;
+                    var pos = info.LocalPosition;
+                    pos += Vector3D.Rotate(particles.Barrel1.Offset, matrix);
+
                     if (!effectExists && ticksAgo <= 0)  {
 
-                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
                             effect = weapon.BarrelEffects2[muzzle.MuzzleId];
                             effect.UserColorMultiplier = particles.Barrel2.Color;
                             effect.UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                             effect.WorldMatrix = matrix;
-                            weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
+                            //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             effect.Play();
                         }
                     }

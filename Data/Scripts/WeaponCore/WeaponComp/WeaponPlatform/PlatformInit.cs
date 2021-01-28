@@ -572,7 +572,6 @@ namespace WeaponCore.Platform
         
         internal PlatformState PlatformCrash(WeaponComponent comp, bool markInvalid, bool suppress, string message)
         {
-            Log.Line($"{message}");
             if (suppress)
                 comp.Session.SuppressWc = true;
             
@@ -583,6 +582,7 @@ namespace WeaponCore.Platform
                 if (suppress)
                     MyAPIGateway.Utilities.ShowNotification($"WeaponCore hard crashed during block init, shutting down\n Send log files to server admin or submit a bug report to mod author:\n {comp.Platform?.Structure?.ModPath} - {comp.MyCube.BlockDefinition.Id.SubtypeName}", 10000);
             }
+            Log.Line($"PlatformCrash: {Comp.MyCube.BlockDefinition.Id.SubtypeName} - {message}");
 
             return State;
         }
