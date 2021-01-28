@@ -23,10 +23,11 @@ Please try your best to leave good issues, with clear titles and descriptions th
 
 ***
 
+# Join the Discord
+https://discord.gg/qyEtQwPC5K
 
 # On Steam
 https://steamcommunity.com/sharedfiles/filedetails/?id=1918681825
-
 
 # Player Guide
 
@@ -42,7 +43,6 @@ https://steamcommunity.com/sharedfiles/filedetails/?id=1998506274
 
 
 ***
-
 
 # Documentation
 
