@@ -582,8 +582,7 @@ namespace WeaponCore.Platform
                 if (suppress)
                     MyAPIGateway.Utilities.ShowNotification($"WeaponCore hard crashed during block init, shutting down\n Send log files to server admin or submit a bug report to mod author:\n {comp.Platform?.Structure?.ModPath} - {comp.MyCube.BlockDefinition.Id.SubtypeName}", 10000);
             }
-            else
-                Log.Line($"PlatformCrash: {Comp.MyCube.BlockDefinition.Id.SubtypeName} - {message}");
+            Log.Line($"PlatformCrash: {Comp.MyCube.BlockDefinition.Id.SubtypeName} - {message}");
 
             return State;
         }

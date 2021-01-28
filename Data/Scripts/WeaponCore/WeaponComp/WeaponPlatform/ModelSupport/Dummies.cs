@@ -106,7 +106,7 @@ namespace WeaponCore.Support
                 var localDir = dummyMatrix.Forward;
                 CachedPos = Vector3D.Transform(localPos, _cachedSubpart.WorldMatrix);
                 CachedDir = Vector3D.TransformNormal(localDir, _cachedSubpart.WorldMatrix);
-                return new DummyInfo { Position = CachedPos, Direction = CachedDir, DummyMatrix = _cachedSubpart.WorldMatrix, Entity = _entity, LocalPosition = localPos, LocalDir = localDir };
+                return new DummyInfo { Position = CachedPos, Direction = CachedDir, ParentMatrix = _cachedSubpart.WorldMatrix, Entity = _entity, LocalPosition = localPos};
             }
         }
 
@@ -114,9 +114,8 @@ namespace WeaponCore.Support
         {
             public Vector3D Position;
             public Vector3D LocalPosition;
-            public Vector3D LocalDir;
             public Vector3D Direction;
-            public MatrixD DummyMatrix;
+            public MatrixD ParentMatrix;
             public MyEntity Entity;
         }
     }
