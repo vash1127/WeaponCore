@@ -29,8 +29,10 @@ namespace WeaponCore
 
     public partial class Session
     {
+        private bool _shieldNull;
         internal void ProcessHits()
         {
+            _shieldNull = false;
             for (int x = 0; x < Hits.Count; x++)
             {
                 var p = Hits[x];
@@ -188,6 +190,10 @@ namespace WeaponCore
                 var speed = info.AmmoDef.Trajectory.DesiredSpeed > 0 ? info.AmmoDef.Trajectory.DesiredSpeed : 1;
                 if (Session.IsServer) ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, info.AmmoDef.Mass * speed);
             }
+            else if (!_shieldNull) {
+                Log.Line($"DamageShield PointAttack returned null");
+                _shieldNull = true;
+            }
         }
 
         private void DamageGrid(HitEntity hitEnt, ProInfo t, bool canDamage)
@@ -303,6 +309,7 @@ namespace WeaponCore
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
                     float cachedIntegrity;
                     var blockHp = !IsClient ? block.Integrity : _slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity;
+
                     float damageScale = hits;
                     float directDamageScale = directDmgGlobal;
                     float areaDamageScale = areaDmgGlobal;

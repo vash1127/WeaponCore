@@ -131,6 +131,14 @@ namespace WeaponCore.Projectiles
                                     hitEntity.HitPos = p.Beam.From + (p.Beam.Direction * dist.Value);
                                     hitEntity.HitDist = dist;
                                 }
+                                else if (dist != null && dist.Value < 0)
+                                {
+                                    Log.Line($"dist less than zero: from:{Vector3D.Transform(p.Beam.From, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1} - To:{Vector3D.Transform(p.Beam.To, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1}");
+                                }
+                                else if (dist == null && Vector3D.Transform(p.Beam.To, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
+                                {
+                                    Log.Line($"dist null and origin outside but projectile position inside");
+                                }
                                 else continue;
                             }
                         }
@@ -779,5 +787,6 @@ namespace WeaponCore.Projectiles
             });
         }
         public static object GetHackDict<TVal>(TVal valueType) => new Dictionary<Vector3I, TVal>();
+
     }
 }
