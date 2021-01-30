@@ -372,15 +372,18 @@ namespace WeaponCore.Support
                 var weapon = avBarrel.Weapon;
                 var muzzle = avBarrel.Muzzle;
                 var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
+                var bAv = weapon.System.Values.HardPoint.Graphics.Barrel1;
                 var effect = weapon.BarrelEffects1[muzzle.MuzzleId];
-                var somethingEnded = weapon.StopBarrelAvTick >= weapon.Comp.Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
                 var effectExists = effect != null;
+                var windDown = effectExists ? (uint)bAv.Extras.MaxDuration : 0u;
+                var somethingEnded = weapon.StopBarrelAvTick + windDown >= weapon.Comp.Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+
                 var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
-                        if (effect.Loop) effect.Stop(true);
+                        if (effect.Loop) effect.Stop(bAv.Extras.Restart);
                         weapon.BarrelEffects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
@@ -443,16 +446,18 @@ namespace WeaponCore.Support
                 try
                 {
                     var ticksAgo = weapon.Comp.Session.Tick - avBarrel.StartTick;
+                    var bAv = weapon.System.Values.HardPoint.Graphics.Barrel2;
 
-                    var somethingEnded = weapon.StopBarrelAvTick >= weapon.Comp.Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
                     var effect = weapon.BarrelEffects2[muzzle.MuzzleId];
                     var effectExists = effect != null;
+                    var windDown = effectExists ? (uint)bAv.Extras.MaxDuration : 0u;
+                    var somethingEnded = weapon.StopBarrelAvTick + windDown >= weapon.Comp.Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
                     var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
                     if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
                     {
                         if (effectExists) {
-                            if (effect.Loop) effect.Stop(true);
+                            if (effect.Loop) effect.Stop(bAv.Extras.Restart);
                             weapon.BarrelEffects2[muzzle.MuzzleId] = null;
                         }
                         muzzle.Av2Looping = false;
