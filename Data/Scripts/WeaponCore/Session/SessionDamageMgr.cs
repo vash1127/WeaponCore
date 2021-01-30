@@ -33,6 +33,7 @@ namespace WeaponCore
     {
         internal void ProcessHits()
         {
+            _damagedBlocks.Clear();
             for (int x = 0; x < Hits.Count; x++)
             {
                 var p = Hits[x];
