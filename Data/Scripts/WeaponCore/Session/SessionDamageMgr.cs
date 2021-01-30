@@ -317,7 +317,7 @@ namespace WeaponCore
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
                     var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
                     float cachedIntegrity;
-                    var blockHp = !IsClient ? (_damagedBlocks.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity) : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
+                    var blockHp = !IsClient ? block.Integrity - block.AccumulatedDamage : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
                     var blockDmgModifier = cubeBlockDef.GeneralDamageMultiplier;
                     float damageScale = hits;
                     float directDamageScale = directDmgGlobal;
@@ -412,9 +412,6 @@ namespace WeaponCore
                                 _destroyedSlimsClient.Add(block);
                                 if (_slimHealthClient.ContainsKey(block))
                                     _slimHealthClient.Remove(block);
-                            } else
-                            {
-                                _damagedBlocks[block] = 0;
                             }
                             damagePool -= (blockHp / (damageScale * directDamageScale));
                         }
@@ -432,27 +429,11 @@ namespace WeaponCore
                                 if (_slimHealthClient.ContainsKey(block))
                                     _slimHealthClient.Remove(block);
                             }
-                            else
-                            {
-                                _damagedBlocks[block] = 0;
-                            }
                         }
                     }
 
                     if (canDamage)
                     {
-
-                        var hasBlock = _damagedBlocks.ContainsKey(block);
-                        var realDmg = scaledDamage * gridDamageModifier * blockDmgModifier;
-                        if (hasBlock && _damagedBlocks[block] - realDmg > 0)
-                            _damagedBlocks[block] -= realDmg;
-                        else if (hasBlock)
-                            _damagedBlocks[block] = 0;
-                        else if (block.Integrity - realDmg > 0)
-                            _damagedBlocks[block] = (blockHp * blockDmgModifier * gridDamageModifier) - realDmg;
-                        else
-                            _damagedBlocks[block] = 0;
-
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
                     }
                     else
