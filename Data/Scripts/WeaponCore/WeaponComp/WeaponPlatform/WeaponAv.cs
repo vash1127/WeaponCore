@@ -62,11 +62,9 @@ namespace WeaponCore.Platform
             for (int i = 0; i < Muzzles.Length; i++)
             {
                 var muzzle = Muzzles[i];
-                muzzle.Av1Looping = false;
                 muzzle.LastAv1Tick = Comp.Session.Tick;
-                muzzle.Av2Looping = false;
                 muzzle.LastAv2Tick = Comp.Session.Tick;
-
+                StopBarrelAvTick = Comp.Session.Tick;
                 MyParticleEffect effect;
                 if (System.Session.Av.BeamEffects.TryGetValue(muzzle.UniqueId, out effect)) {
                     effect.Stop();

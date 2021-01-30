@@ -112,7 +112,7 @@ namespace WeaponCore
                             double distSqr;
                             Vector3D.DistanceSquared(ref CameraPos, ref w.MyPivotPos, out distSqr);
                             w.PlayTurretAv = distSqr < w.System.HardPointAvMaxDistSqr;
-                            if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAv = !w.PlayTurretAv;
+                            if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAvTick = Tick;
                         }
 
                         if (!ai.HadPower && w.ActiveAmmoDef.AmmoDef.Const.MustCharge && w.State.Action != ShootOff) {

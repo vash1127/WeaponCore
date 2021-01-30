@@ -80,7 +80,7 @@ namespace WeaponCore.Support
             IMyModelDummy dummy;
             if (_tmp1.TryGetValue(_path[_path.Length - 1], out dummy))
             {
-                _cachedDummyMatrix = MatrixD.Normalize(dummy.Matrix);
+                _cachedDummyMatrix = dummy.Matrix;
                 _failed = false;
                 return;
             }
@@ -116,6 +116,7 @@ namespace WeaponCore.Support
             public Vector3D LocalPosition;
             public Vector3D Direction;
             public MatrixD ParentMatrix;
+            public MatrixD ParentLocalMatrix;
             public MyEntity Entity;
         }
     }
