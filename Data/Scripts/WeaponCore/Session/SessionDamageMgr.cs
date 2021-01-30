@@ -313,19 +313,23 @@ namespace WeaponCore
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
+                    var cubeBlockDef = (MyCubeBlockDefinition)block.BlockDefinition;
                     float cachedIntegrity;
-                    var blockHp = !IsClient ? (_damagedBlocks.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity)  
-                        : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
-                    var blockDmgModifier = (block.BlockDefinition as MyCubeBlockDefinition).GeneralDamageMultiplier;
+                    var blockHp = !IsClient ? (_damagedBlocks.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity) : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
+                    var blockDmgModifier = cubeBlockDef.GeneralDamageMultiplier;
                     float damageScale = hits;
                     float directDamageScale = directDmgGlobal;
                     float areaDamageScale = areaDmgGlobal;
                     float detDamageScale = detDmgGlobal;
+
                     if (t.AmmoDef.Const.DamageScaling || !MyUtils.IsEqual(blockDmgModifier, 1f) || !MyUtils.IsEqual(gridDamageModifier, 1f))
                     {
-                        blockDmgModifier = blockDmgModifier < 0.000000001f ? 0.000000001f : blockDmgModifier;
-                        gridDamageModifier = gridDamageModifier < 0.000000001f ? 0.000000001f : gridDamageModifier;
-                        blockHp = (float)(blockHp / blockDmgModifier / gridDamageModifier);
+
+                        if (blockDmgModifier < 0.000000001f || gridDamageModifier < 0.000000001f)
+                            blockHp = float.MaxValue;
+                        else
+                            blockHp = (blockHp / blockDmgModifier / gridDamageModifier);
+
                         var d = t.AmmoDef.DamageScales;
                         if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
                         {
