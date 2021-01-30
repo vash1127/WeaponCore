@@ -201,7 +201,6 @@ namespace WeaponCore
                     var averageMisses = RayMissAmounts > 0 ? RayMissAmounts / Rays : 0; 
                     Log.Line($"RayMissAverage: {averageMisses} - tick:{Tick}");
                 }
-                _damagedBlocks.Clear();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

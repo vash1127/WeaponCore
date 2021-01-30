@@ -34,6 +34,7 @@ namespace WeaponCore
         private bool _shieldNull;
         internal void ProcessHits()
         {
+            _damagedBlocks.Clear();
             _shieldNull = false;
             for (int x = 0; x < Hits.Count; x++)
             {
