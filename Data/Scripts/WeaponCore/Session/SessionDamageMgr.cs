@@ -244,7 +244,7 @@ namespace WeaponCore
 
             float gridDamageModifier = grid.GridGeneralDamageModifier;
 
-            var distTraveled = t.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist.Value : t.DistanceTraveled;
+            var distTraveled = t.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist ?? t.DistanceTraveled: t.DistanceTraveled;
 
             var fallOff = t.AmmoDef.Const.FallOffScaling && distTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
