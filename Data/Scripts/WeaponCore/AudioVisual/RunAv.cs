@@ -380,7 +380,7 @@ namespace WeaponCore.Support
 
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
-                        if (effect.Loop) effect.Stop(false);
+                        if (effect.Loop) effect.Stop(true);
                         weapon.BarrelEffects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
@@ -400,7 +400,7 @@ namespace WeaponCore.Support
 
                 var particles = weapon.System.Values.HardPoint.Graphics;
                 var renderId = info.Entity.Render.GetRenderObjectID();
-                var matrix = MatrixD.Identity;
+                var matrix = info.ParentLocalMatrix;
                 var pos = info.LocalPosition;
                 pos += Vector3D.Rotate(particles.Barrel1.Offset, matrix);
 
@@ -452,7 +452,7 @@ namespace WeaponCore.Support
                     if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
                     {
                         if (effectExists) {
-                            if (effect.Loop) effect.Stop(false);
+                            if (effect.Loop) effect.Stop(true);
                             weapon.BarrelEffects2[muzzle.MuzzleId] = null;
                         }
                         muzzle.Av2Looping = false;
@@ -473,7 +473,7 @@ namespace WeaponCore.Support
 
                     var particles = weapon.System.Values.HardPoint.Graphics;
                     var renderId = info.Entity.Render.GetRenderObjectID();
-                    var matrix = MatrixD.Identity;
+                    var matrix = info.ParentLocalMatrix;
                     var pos = info.LocalPosition;
                     pos += Vector3D.Rotate(particles.Barrel1.Offset, matrix);
 

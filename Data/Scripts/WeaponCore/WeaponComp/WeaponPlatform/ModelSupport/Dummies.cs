@@ -80,7 +80,7 @@ namespace WeaponCore.Support
             IMyModelDummy dummy;
             if (_tmp1.TryGetValue(_path[_path.Length - 1], out dummy))
             {
-                _cachedDummyMatrix = dummy.Matrix;
+                _cachedDummyMatrix = MatrixD.Normalize(dummy.Matrix);
                 _failed = false;
                 return;
             }
@@ -106,7 +106,7 @@ namespace WeaponCore.Support
                 var localDir = dummyMatrix.Forward;
                 CachedPos = Vector3D.Transform(localPos, _cachedSubpart.WorldMatrix);
                 CachedDir = Vector3D.TransformNormal(localDir, _cachedSubpart.WorldMatrix);
-                return new DummyInfo { Position = CachedPos, Direction = CachedDir, ParentMatrix = _cachedSubpart.WorldMatrix, Entity = _entity, LocalPosition = localPos};
+                return new DummyInfo { Position = CachedPos, Direction = CachedDir, ParentMatrix = _cachedSubpart.WorldMatrix, Entity = _entity, LocalPosition = localPos, ParentLocalMatrix = dummyMatrix};
             }
         }
 
