@@ -245,11 +245,13 @@ namespace WeaponCore
 
             float gridDamageModifier = grid.GridGeneralDamageModifier;
 
-            var fallOff = t.AmmoDef.Const.FallOffScaling && t.DistanceTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
+            var distTraveled = t.AmmoDef.Const.IsBeamWeapon ? hitEnt.HitDist.Value : t.DistanceTraveled;
+
+            var fallOff = t.AmmoDef.Const.FallOffScaling && distTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
             if (fallOff)
             {
-                fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((t.DistanceTraveled - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+                fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((distTraveled - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
             }
 
             var damagePool = t.BaseDamagePool;
