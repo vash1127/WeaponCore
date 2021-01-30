@@ -135,13 +135,23 @@ namespace WeaponCore.Platform
 
                     if (PlayTurretAv) {
                         if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping) {
+
                             muzzle.LastAv1Tick = tick;
-                            s.Av.AvBarrels1.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                            var avBarrel = s.Av.AvBarrelPool.Get();
+                            avBarrel.Weapon = this;
+                            avBarrel.Muzzle = muzzle;
+                            avBarrel.StartTick = tick;
+                            s.Av.AvBarrels1.Add(avBarrel);
                         }
 
                         if (System.BarrelEffect2 && tick - muzzle.LastAv2Tick > System.Barrel2AvTicks && !muzzle.Av2Looping) {
+
                             muzzle.LastAv2Tick = tick;
-                            s.Av.AvBarrels2.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                            var avBarrel = s.Av.AvBarrelPool.Get();
+                            avBarrel.Weapon = this;
+                            avBarrel.Muzzle = muzzle;
+                            avBarrel.StartTick = tick;
+                            s.Av.AvBarrels2.Add(avBarrel);
                         }
                     }
 
