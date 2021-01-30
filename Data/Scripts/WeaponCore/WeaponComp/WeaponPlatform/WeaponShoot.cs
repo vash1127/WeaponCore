@@ -134,7 +134,7 @@ namespace WeaponCore.Platform
                         Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * ActiveAmmoDef.AmmoDef.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     if (PlayTurretAv) {
-                        if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping) {
+                        if (System.BarrelEffect1 && muzzle.LastAv1Tick == 0 && !muzzle.Av1Looping) {
 
                             muzzle.LastAv1Tick = tick;
                             var avBarrel = s.Av.AvBarrelPool.Get();
@@ -144,7 +144,7 @@ namespace WeaponCore.Platform
                             s.Av.AvBarrels1.Add(avBarrel);
                         }
 
-                        if (System.BarrelEffect2 && tick - muzzle.LastAv2Tick > System.Barrel2AvTicks && !muzzle.Av2Looping) {
+                        if (System.BarrelEffect2 && muzzle.LastAv2Tick == 0 && !muzzle.Av2Looping) {
 
                             muzzle.LastAv2Tick = tick;
                             var avBarrel = s.Av.AvBarrelPool.Get();

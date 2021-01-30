@@ -379,16 +379,16 @@ namespace WeaponCore.Support
                 if (effectExists && avBarrel.EndTick == 0 && weapon.StopBarrelAvTick >= Session.Tick)
                     avBarrel.EndTick = (uint)bAv.Extras.MaxDuration + Session.Tick;
 
-                var somethingEnded = avBarrel.EndTick >= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+                var somethingEnded = avBarrel.EndTick != 0 && avBarrel.EndTick <= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
 
                 var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
-
                 if (effectStale || somethingEnded || !weapon.Comp.IsWorking) {
                     if (effectExists) {
                         if (effect.Loop) effect.Stop(bAv.Extras.Restart);
                         weapon.BarrelEffects1[muzzle.MuzzleId] = null;
                     }
                     muzzle.Av1Looping = false;
+                    muzzle.LastAv1Tick = 0;
                     AvBarrels1.RemoveAtFast(i);
                     AvBarrelPool.Return(avBarrel);
                     continue;
@@ -456,7 +456,7 @@ namespace WeaponCore.Support
                     if (effectExists && avBarrel.EndTick == 0 && weapon.StopBarrelAvTick >= Session.Tick)
                         avBarrel.EndTick = (uint)bAv.Extras.MaxDuration + Session.Tick;
 
-                    var somethingEnded = avBarrel.EndTick >= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
+                    var somethingEnded = avBarrel.EndTick != 0 && avBarrel.EndTick <= Session.Tick || weapon.Comp.Ai == null || weapon.MuzzlePart.Entity?.Parent == null || weapon.Comp.Data.Repo == null || weapon.Comp.MyCube.MarkedForClose || weapon.MuzzlePart.Entity.MarkedForClose;
                     var effectStale = effectExists && (effect.IsEmittingStopped || effect.IsStopped || effect.GetElapsedTime() >= effect.DurationMax);
 
                     if (effectStale || somethingEnded || !weapon.Comp.IsWorking)
@@ -466,6 +466,7 @@ namespace WeaponCore.Support
                             weapon.BarrelEffects2[muzzle.MuzzleId] = null;
                         }
                         muzzle.Av2Looping = false;
+                        muzzle.LastAv2Tick = 0;
                         AvBarrels2.RemoveAtFast(i);
                         AvBarrelPool.Return(avBarrel);
                         continue;
