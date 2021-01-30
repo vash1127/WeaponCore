@@ -210,7 +210,6 @@ namespace WeaponCore
             _destroyedSlims.Clear();
             _destroyedSlimsClient.Clear();
             _slimHealthClient.Clear();
-            _damagedBlocks.Clear();
             _slimsSet.Clear();
             _turretDefinitions.Clear();
             _tmpNearByBlocks.Clear();
