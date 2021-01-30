@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Engine.Utils;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.Definitions;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -17,6 +18,7 @@ using static WeaponCore.Support.WeaponDefinition.AmmoDef.DamageScaleDef;
 using static WeaponCore.Support.WeaponSystem.TurretType;
 using static WeaponCore.Support.WeaponDefinition.AmmoDef.TrajectoryDef.GuidanceType;
 using static WeaponCore.Settings.CoreSettings.ServerSettings;
+using VRage.Utils;
 
 namespace WeaponCore
 {
@@ -240,11 +242,15 @@ namespace WeaponCore
             var areaDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.AreaDamageModifer;
             var detDmgGlobal = ammoModifer == null ? Settings.Enforcement.AreaDamageModifer : Settings.Enforcement.AreaDamageModifer * ammoModifer.DetonationDamageModifer;
 
+            float gridDamageModifier = grid.GridGeneralDamageModifier;
+
             var fallOff = t.AmmoDef.Const.FallOffScaling && t.DistanceTraveled > t.AmmoDef.DamageScales.FallOff.Distance;
             var fallOffMultipler = 1f;
             if (fallOff)
-                fallOffMultipler = (float) MathHelperD.Clamp(1.0 - ((t.DistanceTraveled - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
-            
+            {
+                fallOffMultipler = (float)MathHelperD.Clamp(1.0 - ((t.DistanceTraveled - t.AmmoDef.DamageScales.FallOff.Distance) / (t.AmmoDef.Const.MaxTrajectory - t.AmmoDef.DamageScales.FallOff.Distance)), t.AmmoDef.DamageScales.FallOff.MinMultipler, 1);
+            }
+
             var damagePool = t.BaseDamagePool;
             int hits = 1;
             if (t.AmmoDef.Const.VirtualBeams)
@@ -264,7 +270,6 @@ namespace WeaponCore
             var outOfPew = false;
             IMySlimBlock rootBlock = null;
             var destroyed = 0;
-
 
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
@@ -308,14 +313,18 @@ namespace WeaponCore
                 {
                     var block = radiate ? SlimsSortedList[j].Slim : rootBlock;
                     float cachedIntegrity;
-                    var blockHp = !IsClient ? block.Integrity : _slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity;
-
+                    var blockHp = !IsClient ? (_damagedBlocks.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity)  
+                        : (_slimHealthClient.TryGetValue(block, out cachedIntegrity) ? cachedIntegrity : block.Integrity);
+                    var blockDmgModifier = (block.BlockDefinition as MyCubeBlockDefinition).GeneralDamageMultiplier;
                     float damageScale = hits;
                     float directDamageScale = directDmgGlobal;
                     float areaDamageScale = areaDmgGlobal;
                     float detDamageScale = detDmgGlobal;
-                    if (t.AmmoDef.Const.DamageScaling)
+                    if (t.AmmoDef.Const.DamageScaling || !MyUtils.IsEqual(blockDmgModifier, 1f) || !MyUtils.IsEqual(gridDamageModifier, 1f))
                     {
+                        blockDmgModifier = blockDmgModifier < 0.000000001f ? 0.000000001f : blockDmgModifier;
+                        gridDamageModifier = gridDamageModifier < 0.000000001f ? 0.000000001f : gridDamageModifier;
+                        blockHp = (float)(blockHp / blockDmgModifier / gridDamageModifier);
                         var d = t.AmmoDef.DamageScales;
                         if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
                         {
@@ -376,7 +385,7 @@ namespace WeaponCore
                         break;
                     }
 
-                    var scaledDamage = (damagePool * damageScale) * directDamageScale;
+                    var scaledDamage = damagePool * damageScale * directDamageScale;
 
                     if (primaryDamage)
                     {
@@ -396,8 +405,11 @@ namespace WeaponCore
                                 _destroyedSlimsClient.Add(block);
                                 if (_slimHealthClient.ContainsKey(block))
                                     _slimHealthClient.Remove(block);
+                            } else
+                            {
+                                _damagedBlocks[block] = 0;
                             }
-                            damagePool -= blockHp;
+                            damagePool -= (blockHp / (damageScale * directDamageScale));
                         }
                     }
                     else
@@ -413,20 +425,39 @@ namespace WeaponCore
                                 if (_slimHealthClient.ContainsKey(block))
                                     _slimHealthClient.Remove(block);
                             }
+                            else
+                            {
+                                _damagedBlocks[block] = 0;
+                            }
                         }
                     }
 
                     if (canDamage)
+                    {
+
+                        var hasBlock = _damagedBlocks.ContainsKey(block);
+                        var realDmg = scaledDamage * gridDamageModifier * blockDmgModifier;
+                        if (hasBlock && _damagedBlocks[block] - realDmg > 0)
+                            _damagedBlocks[block] -= realDmg;
+                        else if (hasBlock)
+                            _damagedBlocks[block] = 0;
+                        else if (block.Integrity - realDmg > 0)
+                            _damagedBlocks[block] = (blockHp * blockDmgModifier * gridDamageModifier) - realDmg;
+                        else
+                            _damagedBlocks[block] = 0;
+
                         block.DoDamage(scaledDamage, damageType, sync, null, attackerId);
+                    }
                     else
                     {
                         var hasBlock = _slimHealthClient.ContainsKey(block);
-                        if (hasBlock && _slimHealthClient[block] - scaledDamage > 0)
-                            _slimHealthClient[block] -= scaledDamage;
+                        var realDmg = scaledDamage * gridDamageModifier * blockDmgModifier;
+                        if (hasBlock && _slimHealthClient[block] - realDmg > 0)
+                            _slimHealthClient[block] -= realDmg;
                         else if (hasBlock)
                             _slimHealthClient.Remove(block);
-                        else if (block.Integrity - scaledDamage > 0)
-                            _slimHealthClient[block] = blockHp - scaledDamage;
+                        else if (block.Integrity - realDmg > 0)
+                            _slimHealthClient[block] = blockHp - realDmg;
                     }
 
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
@@ -455,7 +486,6 @@ namespace WeaponCore
                             i--;
                             t.BaseDamagePool = 0;
                             t.ObjectsHit = objectsHit;
-
                             if (t.AmmoDef.Const.DetonationDamage > 0) damagePool = (detonateDmg * detDamageScale);
                             else if (t.AmmoDef.Const.AreaEffectDamage > 0) damagePool = (areaEffectDmg * areaDamageScale);
                             else damagePool = scaledDamage;
