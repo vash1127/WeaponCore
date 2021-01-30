@@ -142,6 +142,7 @@ namespace WeaponCore.Platform
         internal uint AnimationDelayTick;
         internal uint LastHeatUpdateTick;
         internal uint LastInventoryTick;
+        internal uint StopBarrelAvTick;
         internal int ProposedAmmoId = -1;
         internal int FireCounter;
         internal int UniqueId;
@@ -193,7 +194,6 @@ namespace WeaponCore.Platform
         internal bool ResetPower;
         internal bool RecalcPower;
         internal bool ProjectilesNear;
-        internal bool StopBarrelAv;
         internal bool AcquiringTarget;
         internal bool BarrelSpinning;
         internal bool ReturingHome;

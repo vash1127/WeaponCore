@@ -284,7 +284,7 @@ namespace WeaponCore
             {
                 foreach (var mod in Session.Mods)
                 {
-                    if (mod.PublishedFileId == 1365616918) ShieldMod = true;
+                    if (mod.PublishedFileId == 1365616918 || mod.PublishedFileId == 2189703321) ShieldMod = true;
                     else if (mod.GetPath().Contains("AppData\\Roaming\\SpaceEngineers\\Mods\\DefenseShields"))
                         ShieldMod = true;
                     else if (mod.PublishedFileId == 1931509062 || mod.PublishedFileId == 1995197719 || mod.PublishedFileId == 2006751214 || mod.PublishedFileId == 2015560129)
