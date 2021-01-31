@@ -59,10 +59,11 @@ namespace WeaponCore.Platform
             StopPreFiringSound();
             if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
             if (!power) StopRotateSound();
-            for (int i = 0; i < Muzzles.Length; i++)
-            {
+            
+            StopBarrelAvTick = Comp.Session.Tick;
+
+            for (int i = 0; i < Muzzles.Length; i++) {
                 var muzzle = Muzzles[i];
-                StopBarrelAvTick = Comp.Session.Tick;
                 MyParticleEffect effect;
                 if (System.Session.Av.BeamEffects.TryGetValue(muzzle.UniqueId, out effect)) {
                     effect.Stop();
