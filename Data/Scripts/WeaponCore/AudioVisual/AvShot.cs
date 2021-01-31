@@ -960,10 +960,11 @@ namespace WeaponCore.Support
         {
             MyParticleEffect effect;
             MatrixD matrix;
+            var vel = HitVelocity;
             if (!System.Session.Av.BeamEffects.TryGetValue(UniqueMuzzleId, out effect)) {
 
-                MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
-                if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref Hit.SurfaceHit, uint.MaxValue, out effect)) {
+                MatrixD.CreateTranslation(ref TracerFront, out matrix);
+                if (!MyParticlesManager.TryCreateParticleEffect(AmmoDef.AmmoGraphics.Particles.Hit.Name, ref matrix, ref TracerFront, uint.MaxValue, out effect)) {
                     return;
                 }
 
@@ -972,17 +973,16 @@ namespace WeaponCore.Support
 
                 effect.UserRadiusMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Extras.Scale;
                 effect.UserColorMultiplier = AmmoDef.AmmoGraphics.Particles.Hit.Color;
-                effect.WorldMatrix = matrix;
+                //effect.WorldMatrix = matrix;
                 effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
-                effect.Velocity = Hit.Entity != null ? HitVelocity : Vector3D.Zero;
+                Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
+                //if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
             }
             else if (effect != null && !effect.IsEmittingStopped) {
                 MatrixD.CreateTranslation(ref Hit.SurfaceHit, out matrix);
-                Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
+                Vector3D.ClampToSphere(ref vel, (float)MaxSpeed);
                 effect.UserScale = MathHelper.Lerp(1, 0, (DistanceToLine * 2) / AmmoDef.AmmoGraphics.Particles.Hit.Extras.MaxDistance);
-                Vector3D.ClampToSphere(ref HitVelocity, (float)MaxSpeed);
-                effect.Velocity = HitVelocity;
+                // if (Hit.Entity != null && !MyUtils.IsZero(vel)) effect.Velocity = vel;
                 effect.WorldMatrix = matrix;
             }
         }
