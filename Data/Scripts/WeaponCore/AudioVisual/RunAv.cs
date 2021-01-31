@@ -404,26 +404,26 @@ namespace WeaponCore.Support
                 if (info.Entity == null)
                     continue;
 
-                var particles = weapon.System.Values.HardPoint.Graphics;
+                var particles = weapon.System.Values.HardPoint.Graphics.Barrel1;
                 var renderId = info.Entity.Render.GetRenderObjectID();
                 var matrix = info.DummyMatrix;
                 var pos = info.LocalPosition;
-                pos += Vector3D.Rotate(particles.Barrel1.Offset, matrix);
+                pos += Vector3D.Rotate(particles.Offset, matrix);
 
                 if (!effectExists && ticksAgo <= 0) {
 
-                    if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
+                    if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects1[muzzle.MuzzleId])) {
 
                         effect = weapon.BarrelEffects1[muzzle.MuzzleId];
-                        effect.UserColorMultiplier = particles.Barrel1.Color;
-                        effect.UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
+                        effect.UserColorMultiplier = particles.Color;
+                        effect.UserRadiusMultiplier = particles.Extras.Scale;
                         //effect.WorldMatrix = matrix;
                         //weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                         //effect.Play();
                         muzzle.Av1Looping = effect.Loop || effect.DurationMax <= 0;
                     }
                 }
-                else if (particles.Barrel1.Extras.Restart && effectExists && effect.IsEmittingStopped) {
+                else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped) {
 
                     effect.WorldMatrix = matrix;
                     //weapon.BarrelEffects1[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
@@ -483,25 +483,26 @@ namespace WeaponCore.Support
                     if (info.Entity == null)
                         continue;
 
-                    var particles = weapon.System.Values.HardPoint.Graphics;
+                    var particles = weapon.System.Values.HardPoint.Graphics.Barrel2;
                     var renderId = info.Entity.Render.GetRenderObjectID();
                     var matrix = info.DummyMatrix;
                     var pos = info.LocalPosition;
-                    pos += Vector3D.Rotate(particles.Barrel1.Offset, matrix);
+                    pos += Vector3D.Rotate(particles.Offset, matrix);
 
                     if (!effectExists && ticksAgo <= 0)  {
 
-                        if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
+                        if (MyParticlesManager.TryCreateParticleEffect(particles.Name, ref matrix, ref pos, renderId, out weapon.BarrelEffects2[muzzle.MuzzleId]))  {
                             effect = weapon.BarrelEffects2[muzzle.MuzzleId];
-                            effect.UserColorMultiplier = particles.Barrel2.Color;
-                            effect.UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
+                            effect.UserColorMultiplier = particles.Color;
+                            effect.UserRadiusMultiplier = particles.Extras.Scale;
                             //effect.WorldMatrix = matrix;
                             //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
                             //effect.Play();
                             muzzle.Av2Looping = effect.Loop || effect.DurationMax <= 0;
+                            //Log.Line($"[2] {weapon.System.WeaponName} - {effect.GetName()} - wcLoop:{muzzle.Av2Looping} - maxDur:{bAv.Extras.MaxDuration} - restart:{bAv.Extras.Restart} - effectLoop:{effect.Loop} - {particles.Offset}");
                         }
                     }
-                    else if (particles.Barrel2.Extras.Restart && effectExists && effect.IsEmittingStopped)  {
+                    else if (particles.Extras.Restart && effectExists && effect.IsEmittingStopped)  {
 
                         effect.WorldMatrix = matrix;
                         //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;
@@ -510,6 +511,7 @@ namespace WeaponCore.Support
                     }
                     else if (effectExists)  {
 
+                        //Log.Line($"[2] {muzzle.UniqueId}");
                         //Log.Line($"{effect.GetElapsedTime()} > {effect.DurationMax} - {effect.GetName()} - {ticksAgo} - {effectStale} - {somethingEnded} - {effect.Loop}");
                         //effect.WorldMatrix = matrix;
                         //weapon.BarrelEffects2[muzzle.MuzzleId].Velocity = weapon.Comp.Ai?.GridVel ?? Vector3D.Zero;

@@ -143,7 +143,6 @@ namespace WeaponCore.Platform
                             avBarrel.StartTick = tick;
                             s.Av.AvBarrels1.Add(avBarrel);
                         }
-
                         if (System.BarrelEffect2 && muzzle.LastAv2Tick == 0 && !muzzle.Av2Looping) {
 
                             muzzle.LastAv2Tick = tick;
