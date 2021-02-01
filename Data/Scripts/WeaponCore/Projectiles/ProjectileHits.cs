@@ -245,7 +245,6 @@ namespace WeaponCore.Projectiles
 
                             hitEntity = HitEntityPool.Get();
                             if (entIsSelf) {
-
                                 if (!p.Info.AmmoDef.Const.IsBeamWeapon && p.Beam.Length <= grid.GridSize * 2) {
                                     MyCube cube;
                                     if (!(grid.TryGetCube(grid.WorldToGridInteger(p.Position), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock || grid.TryGetCube(grid.WorldToGridInteger(p.LastPosition), out cube) && cube.CubeBlock != p.Info.Target.FiringCube.SlimBlock)) {
@@ -588,19 +587,11 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null) {
 
-                    /*
-                    var otherGrid = otherHit?.Entity as MyCubeGrid;
-                    if (otherGrid != null && otherGrid.IsInSameLogicalGroupAs(grid))
-                        hitEnt.SubGrids.Add(otherHit);
-                    */
-
                     if (hitEnt.Hit) {
-
                         dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                         hitEnt.HitDist = dist;
                     }
                     else if (hitEnt.HitPos != null) {
-
                         dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                         hitEnt.HitDist = dist;
                         hitEnt.Hit = true;
@@ -652,7 +643,6 @@ namespace WeaponCore.Projectiles
                                     var hitPos = beam.From + (beam.Direction * hitDist);
                                     
                                     if (hitEnt.SelfHit) {
-
                                         if (Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) <= grid.GridSize * 3) {
                                             hitEnt.Blocks.Clear();
                                         }

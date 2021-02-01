@@ -29,6 +29,7 @@ namespace WeaponCore.Support
         internal volatile uint LastAiDataSave;
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
+
         internal readonly Constructs Construct = new Constructs();
         internal readonly FastResourceLock DbLock = new FastResourceLock();
 
@@ -75,6 +76,7 @@ namespace WeaponCore.Support
         internal MyCubeGrid MyGrid;
         internal MyCubeBlock PowerBlock;
         internal MyResourceDistributorComponent PowerDistributor;
+        internal MyCubeGrid.MyCubeGridHitInfo GridHitInfo = new MyCubeGrid.MyCubeGridHitInfo();
         internal uint CreatedTick;
         internal Vector3 GridVel;
         internal IMyGridTerminalSystem TerminalSystem;

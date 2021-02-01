@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Jakaria;
+using Sandbox.Engine.Physics;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
@@ -97,7 +100,6 @@ namespace WeaponCore.Support
             var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
             var acquired = false;
-
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
             if (s.Session.WaterApiLoaded && !p.Info.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && s.Session.WaterMap.TryGetValue(ai.MyPlanet, out water))
@@ -211,7 +213,6 @@ namespace WeaponCore.Support
             var movingMode = moveMode == GroupOverrides.MoveModes.Moving;
             var fireOnStation = moveMode == GroupOverrides.MoveModes.Any || moveMode == GroupOverrides.MoveModes.Moored;
             var stationOnly = moveMode == GroupOverrides.MoveModes.Moored;
-
             Water water = null;
             BoundingSphereD waterSphere = new BoundingSphereD(Vector3D.Zero, 1f);
             if (session.WaterApiLoaded && !w.ActiveAmmoDef.AmmoDef.IgnoreWater && ai.InPlanetGravity && ai.MyPlanet != null && session.WaterMap.TryGetValue(ai.MyPlanet, out water))
@@ -303,6 +304,7 @@ namespace WeaponCore.Support
                             if (w.HitFriendlyShield(weaponPos, newCenter, targetDir))
                                 continue;
                         }
+
                         targetNormDir = Vector3D.Normalize(targetCenter - barrelPos);
                         predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
 
@@ -320,7 +322,7 @@ namespace WeaponCore.Support
 
                     if (character != null && (!s.TrackCharacters || !overRides.Biologicals || character.IsDead || character.Integrity <= 0 || session.AdminMap.ContainsKey(character))) continue;
                     Vector3D predictedPos;
-                    if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
+                    if (!Weapon.CanShootTarget(w, ref targetCenter, targetLinVel, targetAccel, out predictedPos, true, info.Target)) continue;
 
                     if (w.Comp.Ai.FriendlyShieldNear)
                     {
@@ -331,28 +333,27 @@ namespace WeaponCore.Support
 
                     session.TopRayCasts++;
 
-                    
-                    IHitInfo hitInfo;
-                    Vector3D.Normalize(targetNormDir = targetCenter - barrelPos);
-                    predictedMuzzlePos = barrelPos + (targetNormDir * w.MuzzleDistToBarrelCenter);
-                    physics.CastRay(predictedMuzzlePos, targetCenter, out hitInfo, CollisionLayers.DefaultCollisionLayer);
+                    if (w.LastHitInfo?.HitEntity != null && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf())) {
 
-                    if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.Other.MuzzleCheck || !w.MuzzleHitSelf()))
-                    {
-                        double rayDist;
-                        Vector3D.Distance(ref weaponPos, ref targetCenter, out rayDist);
-                        var shortDist = rayDist * (1 - hitInfo.Fraction);
-                        var origDist = rayDist * hitInfo.Fraction;
-                        var topEntId = info.Target.GetTopMostParent().EntityId;
-                        target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
-                        targetType = TargetType.Other;
-                        target.TransferTo(w.Target, w.Comp.Session.Tick);
-                        
-                        if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
-                            ai.Session.NewThreatLogging(w);
-                        
-                        return;
+                        TargetInfo hitInfo;
+                        if (w.LastHitInfo.HitEntity == info.Target || ai.Targets.TryGetValue((MyEntity)w.LastHitInfo.HitEntity, out hitInfo) && (hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Enemies || hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || hitInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership)) {
+
+                            double rayDist;
+                            Vector3D.Distance(ref weaponPos, ref targetCenter, out rayDist);
+                            var shortDist = rayDist * (1 - w.LastHitInfo.Fraction);
+                            var origDist = rayDist * w.LastHitInfo.Fraction;
+                            var topEntId = info.Target.GetTopMostParent().EntityId;
+                            target.Set(info.Target, w.LastHitInfo.Position, shortDist, origDist, topEntId);
+                            targetType = TargetType.Other;
+                            target.TransferTo(w.Target, w.Comp.Session.Tick);
+
+                            if (ai.Session.DebugTargetAcquire && targetType == TargetType.Other && w.Target.Entity != null)
+                                ai.Session.NewThreatLogging(w);
+
+                            return;
+                        }
                     }
+
                     if (forceTarget) break;
                 }
 

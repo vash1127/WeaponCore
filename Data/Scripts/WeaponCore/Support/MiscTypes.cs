@@ -190,7 +190,6 @@ namespace WeaponCore.Support
             TopEntityId = 0;
             TargetId = 0;
             ResetTick = expiredTick;
- 
             if (expire)
             {
                 StateChange(false, reason);

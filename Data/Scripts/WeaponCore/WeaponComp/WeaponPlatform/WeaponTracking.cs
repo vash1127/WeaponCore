@@ -15,7 +15,7 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool CanShootTarget(Weapon weapon, ref Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
+        internal static bool CanShootTarget(Weapon weapon, ref Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos, bool checkSelfHit = false, MyEntity target = null)
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
@@ -42,8 +42,64 @@ namespace WeaponCore.Platform
             else
                 canTrack = validEstimate && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotFwd, ref targetDir, weapon.AimingTolerance);
 
-            return (inRange && canTrack) || weapon.Comp.Data.Repo.Base.State.TrackingReticle;
+            bool selfHit = false;
+            weapon.LastHitInfo = null;
+            if (checkSelfHit && target != null) {
+
+                var testLine = new LineD(targetPos, weapon.BarrelOrigin);
+                var predictedMuzzlePos = testLine.To + (-testLine.Direction * weapon.MuzzleDistToBarrelCenter);
+                var ai = weapon.Comp.Ai;
+                var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.MyGrid.PositionComp.WorldMatrixNormalizedInv) * ai.MyGrid.GridSizeR);
+
+                MyCube cube;
+                var noCubeAtPosition = !ai.MyGrid.TryGetCube(localPredictedPos, out cube);
+                if (noCubeAtPosition || cube.CubeBlock == weapon.Comp.MyCube.SlimBlock) {
+
+                    var noCubeInLine = !ai.MyGrid.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
+                    var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == weapon.Comp.MyCube.Position;
+
+                    if (noCubesInLineOrHitSelf) {
+
+                        weapon.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out weapon.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
+                        
+                        if (weapon.LastHitInfo != null && weapon.LastHitInfo.HitEntity == ai.MyGrid)
+                            selfHit = true;
+                    }
+                }
+                else selfHit = true;
+            }
+
+            return !selfHit && (inRange && canTrack || weapon.Comp.Data.Repo.Base.State.TrackingReticle);
         }
+
+        internal static bool CheckSelfHit(Weapon w, ref Vector3D targetPos, ref Vector3D testPos, out Vector3D predictedMuzzlePos)
+        {
+
+            var testLine = new LineD(targetPos, testPos);
+            predictedMuzzlePos = testLine.To + (-testLine.Direction * w.MuzzleDistToBarrelCenter);
+            var ai = w.Comp.Ai;
+            var localPredictedPos = Vector3I.Round(Vector3D.Transform(predictedMuzzlePos, ai.MyGrid.PositionComp.WorldMatrixNormalizedInv) * ai.MyGrid.GridSizeR);
+
+            MyCube cube;
+            var noCubeAtPosition = !ai.MyGrid.TryGetCube(localPredictedPos, out cube);
+            if (noCubeAtPosition || cube.CubeBlock == w.Comp.MyCube.SlimBlock) {
+
+                var noCubeInLine = !ai.MyGrid.GetIntersectionWithLine(ref testLine, ref ai.GridHitInfo);
+                var noCubesInLineOrHitSelf = noCubeInLine || ai.GridHitInfo.Position == w.Comp.MyCube.Position;
+
+                if (noCubesInLineOrHitSelf) {
+
+                    w.System.Session.Physics.CastRay(predictedMuzzlePos, testLine.From, out w.LastHitInfo, CollisionLayers.DefaultCollisionLayer);
+
+                    if (w.LastHitInfo != null && w.LastHitInfo.HitEntity == ai.MyGrid)
+                        return true;
+                }
+            }
+            else return true;
+
+            return false;
+        }
+
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {

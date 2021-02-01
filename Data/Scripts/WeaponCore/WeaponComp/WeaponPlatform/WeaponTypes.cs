@@ -75,13 +75,18 @@ namespace WeaponCore.Platform
 
                     if (topAsGrid == null)
                         return;
-                    if (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid) || !topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0)
+                    if (Weapon.Target.Entity != null && (topAsGrid.IsSameConstructAs(Weapon.Comp.Ai.MyGrid) || !topAsGrid.DestructibleBlocks || topAsGrid.Immune || topAsGrid.GridGeneralDamageModifier <= 0))
                     {
-                        masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
-                        if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                        var hitPos = Weapon.Target.Entity.PositionComp.WorldAABB.Center;
+                        Vector3D pos; 
+                        if (CheckSelfHit(Weapon, ref trackingCheckPosition, ref hitPos, out pos))
+                        {
+                            masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                            if (masterWeapon != Weapon) Weapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckSelfHit);
+                            return;
+                        }
                         return;
                     }
-
                     if (!Session.GridEnemy(Weapon.Comp.Ai.AiOwner, topAsGrid))
                     {
                         masterWeapon.Target.Reset(Weapon.Comp.Session.Tick, Target.States.RayCheckFriendly);
